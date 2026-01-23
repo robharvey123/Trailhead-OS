@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { formatNumber } from '@/lib/format'
+import { formatMonthLabel, formatNumber } from '@/lib/format'
 
 type DashboardChartDatum = {
   month: string
@@ -38,7 +38,12 @@ export default function DashboardCharts({
           <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <BarChart data={data} barGap={8} barSize={20}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
+              <XAxis
+                dataKey="month"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickFormatter={(value) => formatMonthLabel(String(value))}
+              />
               <YAxis stroke="#94a3b8" fontSize={12} />
               <Tooltip
                 contentStyle={{
@@ -47,6 +52,7 @@ export default function DashboardCharts({
                   color: '#e2e8f0',
                 }}
                 formatter={tooltipFormatter}
+                labelFormatter={(value) => formatMonthLabel(String(value))}
               />
               <Legend />
               <Bar
@@ -74,7 +80,12 @@ export default function DashboardCharts({
           <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
+              <XAxis
+                dataKey="month"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickFormatter={(value) => formatMonthLabel(String(value))}
+              />
               <YAxis stroke="#94a3b8" fontSize={12} />
               <Tooltip
                 contentStyle={{
@@ -83,6 +94,7 @@ export default function DashboardCharts({
                   color: '#e2e8f0',
                 }}
                 formatter={tooltipFormatter}
+                labelFormatter={(value) => formatMonthLabel(String(value))}
               />
               <Area
                 type="monotone"

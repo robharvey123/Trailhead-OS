@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import DataTable from '@/components/table/DataTable'
-import { formatCurrency, formatNumber } from '@/lib/format'
+import { formatCurrency, formatMonthLabel, formatNumber } from '@/lib/format'
 
 type PromoRow = Record<string, string | number>
 
@@ -25,7 +25,7 @@ export default function PromoTable({
     },
     ...months.map((month) => ({
       accessorKey: month,
-      header: month,
+      header: formatMonthLabel(month),
       cell: ({ getValue }) => formatNumber(Number(getValue() ?? 0)),
     })),
     {

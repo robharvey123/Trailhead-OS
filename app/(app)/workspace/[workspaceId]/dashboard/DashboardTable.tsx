@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import DataTable from '@/components/table/DataTable'
-import { formatNumber } from '@/lib/format'
+import { formatMonthLabel, formatNumber } from '@/lib/format'
 
 type MonthlySummary = {
   month: string
@@ -24,7 +24,7 @@ export default function DashboardTable({
     {
       accessorKey: 'month',
       header: 'Month',
-      cell: ({ getValue }) => String(getValue()),
+      cell: ({ getValue }) => formatMonthLabel(String(getValue())),
     },
     {
       accessorKey: 'sellIn',

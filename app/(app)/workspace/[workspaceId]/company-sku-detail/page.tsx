@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatNumber, formatPercent } from '@/lib/format'
 import CompanySkuTable from './CompanySkuTable'
+import CompanySkuCharts from './CompanySkuCharts'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
 import {
@@ -198,6 +199,16 @@ export default async function CompanySkuDetailPage({
     a.company.localeCompare(b.company)
   )
 
+  const grandTotals = groups.reduce(
+    (totals, group) => {
+      totals.sellIn += group.totals.sellIn
+      totals.sellOut += group.totals.sellOut
+      totals.totalShipped += group.totals.totalShipped
+      return totals
+    },
+    { sellIn: 0, sellOut: 0, totalShipped: 0 }
+  )
+
   return (
     <div className="space-y-6">
       <header>
@@ -214,40 +225,81 @@ export default async function CompanySkuDetailPage({
         end={end}
       />
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Grand total sell in
+          </p>
+          <p className="mt-3 text-2xl font-semibold text-slate-100">
+            {formatNumber(grandTotals.sellIn)}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Grand total sell out
+          </p>
+          <p className="mt-3 text-2xl font-semibold text-slate-100">
+            {formatNumber(grandTotals.sellOut)}
+          </p>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {groups.map((group) => (
-          <details
-            key={group.company}
-            className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4"
-            open={groups.length <= 3}
-          >
-            <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <span>{group.company}</span>
-                <span className="text-xs text-slate-400">
-                  Total shipped: {formatNumber(group.totals.totalShipped)} | Sell
-                  out: {formatNumber(group.totals.sellOut)} | ST%:{' '}
-                  {formatPercent(group.totals.sellThrough)}
-                </span>
-              </div>
-            </summary>
-            <div className="mt-4">
-              <CompanySkuTable
-                data={group.skus.sort((a, b) => b.totalShipped - a.totalShipped)}
-                totals={{
-                  ...group.totals,
-                  sellIn: formatNumber(group.totals.sellIn),
-                  promo: formatNumber(group.totals.promo),
-                  totalShipped: formatNumber(group.totals.totalShipped),
-                  sellOut: formatNumber(group.totals.sellOut),
-                  variance: formatNumber(group.totals.variance),
-                  sellThrough: formatPercent(group.totals.sellThrough),
-                }}
-                csvFilename={`${group.company}-sku-detail.csv`}
-              />
-            </div>
-          </details>
-        ))}
+        {groups.length ? (
+          groups.map((group) => {
+            const chartData = group.skus
+              .slice()
+              .sort((a, b) => b.totalShipped - a.totalShipped)
+              .slice(0, 12)
+              .map((sku) => ({
+                sku: sku.sku,
+                sellIn: sku.sellIn,
+                sellOut: sku.sellOut,
+              }))
+
+            return (
+              <details
+                key={group.company}
+                className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4"
+                open={groups.length <= 3}
+              >
+                <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <span>{group.company}</span>
+                    <span className="text-xs text-slate-400">
+                      Total shipped: {formatNumber(group.totals.totalShipped)} | Sell
+                      out: {formatNumber(group.totals.sellOut)} | ST%:{' '}
+                      {formatPercent(group.totals.sellThrough)}
+                    </span>
+                  </div>
+                </summary>
+                <div className="mt-4 space-y-4">
+                  <CompanySkuCharts data={chartData} />
+                  <CompanySkuTable
+                    data={group.skus.sort(
+                      (a, b) => b.totalShipped - a.totalShipped
+                    )}
+                    totals={{
+                      ...group.totals,
+                      sellIn: formatNumber(group.totals.sellIn),
+                      promo: formatNumber(group.totals.promo),
+                      totalShipped: formatNumber(group.totals.totalShipped),
+                      sellOut: formatNumber(group.totals.sellOut),
+                      variance: formatNumber(group.totals.variance),
+                      sellThrough: formatPercent(group.totals.sellThrough),
+                    }}
+                    csvFilename={`${group.company}-sku-detail.csv`}
+                  />
+                </div>
+              </details>
+            )
+          })
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-sm text-slate-300">
+            No SKU data yet. Import sell-in and sell-out rows to populate company
+            drilldowns.
+          </div>
+        )}
       </div>
     </div>
   )

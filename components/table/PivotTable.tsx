@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import DataTable from './DataTable'
-import { formatNumber } from '@/lib/format'
+import { formatMonthLabel, formatNumber } from '@/lib/format'
 
 type PivotRow = Record<string, string | number>
 
@@ -33,7 +33,7 @@ export default function PivotTable({
     },
     ...months.map((month) => ({
       accessorKey: month,
-      header: month,
+      header: formatMonthLabel(month),
       cell: ({ getValue }) => formatNumber(Number(getValue() ?? 0)),
     })),
     {

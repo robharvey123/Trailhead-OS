@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import DataTable from '@/components/table/DataTable'
-import { formatCurrency } from '@/lib/format'
+import { formatCurrency, formatMonthLabel } from '@/lib/format'
 
 type PnlRow = {
   month: string
@@ -26,7 +26,7 @@ export default function PnlTable({
     {
       accessorKey: 'month',
       header: 'Month',
-      cell: ({ getValue }) => String(getValue()),
+      cell: ({ getValue }) => formatMonthLabel(String(getValue())),
     },
     {
       accessorKey: 'revenue',
