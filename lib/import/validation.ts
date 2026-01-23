@@ -78,6 +78,123 @@ const parseInteger = (value: unknown, defaultValue?: number) => {
 
 const toIsoDate = (date: Date) => date.toISOString().slice(0, 10)
 
+const pad2 = (value: number) => String(value).padStart(2, '0')
+
+const normalizeYear = (year: number) => (year < 100 ? 2000 + year : year)
+
+const buildIsoDate = (year: number, month: number, day: number) => {
+  const safeYear = normalizeYear(year)
+  const date = new Date(Date.UTC(safeYear, month - 1, day))
+
+  if (
+    date.getUTCFullYear() !== safeYear ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null
+  }
+
+  return `${safeYear}-${pad2(month)}-${pad2(day)}`
+}
+
+const monthMap: Record<string, number> = {
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+}
+
+const parseDateText = (text: string) => {
+  const normalized = text.trim().replace(/,/g, ' ')
+  const lower = normalized.toLowerCase()
+
+  if (/^\d{8}$/.test(lower)) {
+    const year = Number(lower.slice(0, 4))
+    const month = Number(lower.slice(4, 6))
+    const day = Number(lower.slice(6, 8))
+    return buildIsoDate(year, month, day)
+  }
+
+  if (/^\d{6}$/.test(lower)) {
+    const year = Number(lower.slice(0, 4))
+    const month = Number(lower.slice(4, 6))
+    return buildIsoDate(year, month, 1)
+  }
+
+  let match = lower.match(/^(\d{4})[\/.-](\d{1,2})[\/.-](\d{1,2})$/)
+  if (match) {
+    const [, year, month, day] = match
+    return buildIsoDate(Number(year), Number(month), Number(day))
+  }
+
+  match = lower.match(/^(\d{4})[\/.-](\d{1,2})$/)
+  if (match) {
+    const [, year, month] = match
+    return buildIsoDate(Number(year), Number(month), 1)
+  }
+
+  match = lower.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/)
+  if (match) {
+    const [, part1, part2, year] = match
+    const first = Number(part1)
+    const second = Number(part2)
+    const yearNum = Number(year)
+    const dayFirst = first > 12 || (first <= 12 && second <= 12)
+    const day = dayFirst ? first : second
+    const month = dayFirst ? second : first
+    return buildIsoDate(yearNum, month, day)
+  }
+
+  match = lower.match(/^(\d{1,2})[\s-]([a-z]{3,})[\s-](\d{2,4})$/)
+  if (match) {
+    const [, day, monthName, year] = match
+    const month = monthMap[monthName]
+    if (month) {
+      return buildIsoDate(Number(year), month, Number(day))
+    }
+  }
+
+  match = lower.match(/^([a-z]{3,})[\s-](\d{1,2})[\s-](\d{2,4})$/)
+  if (match) {
+    const [, monthName, day, year] = match
+    const month = monthMap[monthName]
+    if (month) {
+      return buildIsoDate(Number(year), month, Number(day))
+    }
+  }
+
+  match = lower.match(/^([a-z]{3,})[\s-](\d{2,4})$/)
+  if (match) {
+    const [, monthName, year] = match
+    const month = monthMap[monthName]
+    if (month) {
+      return buildIsoDate(Number(year), month, 1)
+    }
+  }
+
+  return null
+}
+
 const parseDate = (value: unknown) => {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return toIsoDate(value)
@@ -93,23 +210,7 @@ const parseDate = (value: unknown) => {
     return null
   }
 
-  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
-    return text
-  }
-
-  if (/^\d{4}\/\d{2}\/\d{2}$/.test(text)) {
-    return text.replace(/\//g, '-')
-  }
-
-  if (/^\d{4}-\d{2}$/.test(text)) {
-    return `${text}-01`
-  }
-
-  if (/^\d{4}\/\d{2}$/.test(text)) {
-    return `${text.replace(/\//g, '-')}-01`
-  }
-
-  return null
+  return parseDateText(text)
 }
 
 const parseMonth = (value: unknown) => {
