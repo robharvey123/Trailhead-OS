@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const searchParams = useSearchParams()
-  const next = searchParams.get('next') ?? '/dashboard'
+  const next = searchParams.get('next') ?? '/workspaces'
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)

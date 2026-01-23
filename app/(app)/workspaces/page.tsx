@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import CreateWorkspaceForm from './CreateWorkspaceForm'
 
-export default async function DashboardPage() {
+export default async function WorkspacesPage() {
   const supabase = createClient()
   const { data: workspaces } = await supabase
     .from('workspaces')
@@ -15,9 +15,9 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <header>
         <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Overview
+          Workspace
         </p>
-        <h1 className="mt-2 text-2xl font-semibold">Dashboard</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Workspaces</h1>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -32,7 +32,7 @@ export default async function DashboardPage() {
               {workspaces?.map((workspace) => (
                 <Link
                   key={workspace.id}
-                  href={`/workspace/${workspace.id}`}
+                  href={`/workspace/${workspace.id}/dashboard`}
                   className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm transition hover:border-slate-700"
                 >
                   <span>{workspace.name}</span>
