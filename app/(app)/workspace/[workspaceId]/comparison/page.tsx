@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatNumber, formatPercent } from '@/lib/format'
 import ComparisonTable from './ComparisonTable'
 import FiltersBar from '@/components/filters/FiltersBar'
+import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
 
 type SellInTotalsRow = {
   customer: string
@@ -38,8 +39,9 @@ export default async function ComparisonPage({
   searchParams,
 }: {
   params: { workspaceId: string }
-  searchParams: { brand?: string; start?: string; end?: string }
+  searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
@@ -49,9 +51,9 @@ export default async function ComparisonPage({
     .maybeSingle()
 
   const brandFilter =
-    searchParams.brand?.trim() || settings?.brand_filter || ''
-  const start = searchParams.start ?? ''
-  const end = searchParams.end ?? ''
+    resolvedSearchParams.brand?.trim() || settings?.brand_filter || ''
+  const start = resolvedSearchParams.start ?? ''
+  const end = resolvedSearchParams.end ?? ''
   const startDate = start ? `${start}-01` : null
   const endDate = end ? `${end}-01` : null
 

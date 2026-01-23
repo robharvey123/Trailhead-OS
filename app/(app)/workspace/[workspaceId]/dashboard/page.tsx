@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
+import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
 import DashboardCharts from './DashboardCharts'
 import DashboardTable from './DashboardTable'
 import FiltersBar from '@/components/filters/FiltersBar'
@@ -77,8 +78,9 @@ export default async function DashboardPage({
   searchParams,
 }: {
   params: { workspaceId: string }
-  searchParams: { brand?: string; start?: string; end?: string }
+  searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
@@ -88,10 +90,10 @@ export default async function DashboardPage({
     .maybeSingle()
 
   const brandFilter =
-    searchParams.brand?.trim() || settings?.brand_filter || ''
+    resolvedSearchParams.brand?.trim() || settings?.brand_filter || ''
   const currencySymbol = settings?.currency_symbol ?? '$'
-  const start = searchParams.start ?? ''
-  const end = searchParams.end ?? ''
+  const start = resolvedSearchParams.start ?? ''
+  const end = resolvedSearchParams.end ?? ''
   const startDate = start ? `${start}-01` : null
   const endDate = end ? `${end}-01` : null
 

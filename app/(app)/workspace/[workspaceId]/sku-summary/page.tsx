@@ -5,6 +5,7 @@ import SkuCharts from './SkuCharts'
 import SkuSummaryTable from './SkuSummaryTable'
 import PivotTable from '@/components/table/PivotTable'
 import FiltersBar from '@/components/filters/FiltersBar'
+import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
 
 type SellInSkuRow = {
   product: string
@@ -35,8 +36,9 @@ export default async function SkuSummaryPage({
   searchParams,
 }: {
   params: { workspaceId: string }
-  searchParams: { brand?: string; start?: string; end?: string }
+  searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
@@ -46,9 +48,9 @@ export default async function SkuSummaryPage({
     .maybeSingle()
 
   const brandFilter =
-    searchParams.brand?.trim() || settings?.brand_filter || ''
-  const start = searchParams.start ?? ''
-  const end = searchParams.end ?? ''
+    resolvedSearchParams.brand?.trim() || settings?.brand_filter || ''
+  const start = resolvedSearchParams.start ?? ''
+  const end = resolvedSearchParams.end ?? ''
   const startDate = start ? `${start}-01` : null
   const endDate = end ? `${end}-01` : null
 
