@@ -12,6 +12,7 @@ import {
 } from '@/lib/route-params'
 
 type SellInSkuRow = {
+  customer?: string
   product: string
   month: string
   sell_in_units: number
@@ -20,6 +21,7 @@ type SellInSkuRow = {
 }
 
 type SellOutSkuRow = {
+  company?: string
   product: string
   month: string
   sell_out_units: number
@@ -54,19 +56,22 @@ export default async function SkuSummaryPage({
 
   const brandFilter =
     resolvedSearchParams.brand?.trim() || settings?.brand_filter || ''
+  const companyFilter = resolvedSearchParams.company?.trim() || ''
   const start = resolvedSearchParams.start ?? ''
   const end = resolvedSearchParams.end ?? ''
   const startDate = start ? `${start}-01` : null
   const endDate = end ? `${end}-01` : null
 
   let sellInQuery = supabase
-    .from('vw_sell_in_sku_monthly')
-    .select('product, month, sell_in_units, promo_units, total_shipped')
+    .from('vw_sell_in_customer_sku_monthly')
+    .select(
+      'customer, product, month, sell_in_units, promo_units, total_shipped'
+    )
     .eq('workspace_id', resolvedParams.workspaceId)
 
   let sellOutQuery = supabase
-    .from('vw_sell_out_sku_monthly')
-    .select('product, month, sell_out_units')
+    .from('vw_sell_out_company_sku_monthly')
+    .select('company, product, month, sell_out_units')
     .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
@@ -84,14 +89,53 @@ export default async function SkuSummaryPage({
     sellOutQuery = sellOutQuery.lte('month', endDate)
   }
 
-  const [{ data: sellInRows }, { data: sellOutRows }] = await Promise.all([
-    sellInQuery,
-    sellOutQuery,
-  ])
+  const [{ data: sellInRows }, { data: sellOutRows }, { data: mappings }] =
+    await Promise.all([
+      sellInQuery,
+      sellOutQuery,
+      supabase
+        .from('vw_sell_in_customer_match')
+        .select('customer, sell_out_company')
+        .eq('workspace_id', resolvedParams.workspaceId),
+    ])
+
+  const mappingByCustomer = new Map<string, string>()
+  ;(mappings ?? []).forEach((mapping) => {
+    if (mapping.customer) {
+      mappingByCustomer.set(mapping.customer, mapping.sell_out_company ?? '')
+    }
+  })
+
+  const companyOptions = Array.from(
+    new Set(
+      [
+        ...(sellOutRows ?? []).map((row) => row.company),
+        ...(sellInRows ?? []).map((row) =>
+          mappingByCustomer.get(row.customer ?? '') || row.customer
+        ),
+      ].filter(Boolean)
+    )
+  ).sort()
+
+  const filteredSellInRows = (sellInRows ?? []).filter((row) => {
+    if (!companyFilter) {
+      return true
+    }
+    const mapped =
+      mappingByCustomer.get(row.customer ?? '') || row.customer || ''
+    return mapped === companyFilter
+  })
+
+  const filteredSellOutRows = (sellOutRows ?? []).filter((row) => {
+    if (!companyFilter) {
+      return true
+    }
+    return (row.company ?? '') === companyFilter
+  })
 
   const summaryMap = new Map<string, SkuSummaryRow>()
 
-  ;(sellInRows ?? []).forEach((row) => {
+  filteredSellInRows.forEach((row) => {
     const sku = row.product
     const entry = summaryMap.get(sku) ?? {
       sku,
@@ -108,7 +152,7 @@ export default async function SkuSummaryPage({
     summaryMap.set(sku, entry)
   })
 
-  ;(sellOutRows ?? []).forEach((row) => {
+  filteredSellOutRows.forEach((row) => {
     const sku = row.product
     const entry = summaryMap.get(sku) ?? {
       sku,
@@ -173,14 +217,14 @@ export default async function SkuSummaryPage({
   }))
 
   const sellInPivot = pivotMonthly({
-    rows: (sellInRows ?? []) as SellInSkuRow[],
+    rows: filteredSellInRows as SellInSkuRow[],
     rowKey: 'product',
     monthKey: 'month',
     valueKey: 'sell_in_units',
   })
 
   const sellOutPivot = pivotMonthly({
-    rows: (sellOutRows ?? []) as SellOutSkuRow[],
+    rows: filteredSellOutRows as SellOutSkuRow[],
     rowKey: 'product',
     monthKey: 'month',
     valueKey: 'sell_out_units',
@@ -205,6 +249,8 @@ export default async function SkuSummaryPage({
         start={start}
         end={end}
         availableMonths={availableMonths}
+        company={companyFilter}
+        availableCompanies={companyOptions}
       />
 
       <SkuCharts data={topSkuChart} />

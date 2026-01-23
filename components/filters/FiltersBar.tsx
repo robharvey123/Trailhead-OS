@@ -7,6 +7,8 @@ type FiltersBarProps = {
   start: string
   end: string
   availableMonths?: string[]
+  company?: string
+  availableCompanies?: string[]
 }
 
 export default function FiltersBar({
@@ -15,6 +17,8 @@ export default function FiltersBar({
   start,
   end,
   availableMonths,
+  company,
+  availableCompanies,
 }: FiltersBarProps) {
   const normalizedMonths = (availableMonths ?? [])
     .map((month) => month.slice(0, 7))
@@ -37,6 +41,16 @@ export default function FiltersBar({
         )}`
       : 'All months'
 
+  const normalizedCompanies = (availableCompanies ?? [])
+    .map((value) => value.trim())
+    .filter(Boolean)
+  const uniqueCompanies = Array.from(new Set(normalizedCompanies)).sort()
+  const companyOptions = [...uniqueCompanies]
+  if (company && !companyOptions.includes(company)) {
+    companyOptions.unshift(company)
+  }
+  const showCompanySelect = companyOptions.length > 0
+
   return (
     <form
       method="get"
@@ -54,6 +68,25 @@ export default function FiltersBar({
           className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
         />
       </label>
+      {showCompanySelect ? (
+        <label className="flex flex-col gap-2">
+          <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Company
+          </span>
+          <select
+            name="company"
+            defaultValue={company}
+            className="min-w-[180px] rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+          >
+            <option value="">All companies</option>
+            {companyOptions.map((value) => (
+              <option key={`company-${value}`} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       <label className="flex flex-col gap-2">
         <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
           Start month

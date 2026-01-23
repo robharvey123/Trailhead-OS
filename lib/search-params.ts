@@ -2,6 +2,7 @@ export type WorkspaceSearchParams = {
   brand?: string
   start?: string
   end?: string
+  company?: string
 }
 
 export const resolveSearchParams = async (
