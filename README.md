@@ -37,7 +37,7 @@ Visit `http://localhost:3000`.
 
 1) Create a Supabase project.
 2) Run the SQL migrations from `supabase/migrations` in order.
-3) Enable magic link auth in Supabase Auth settings.
+3) Enable email/password auth in Supabase Auth settings (and disable magic links if not needed).
 4) Add the following env vars locally and in Netlify:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
