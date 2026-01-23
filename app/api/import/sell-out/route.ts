@@ -1,7 +1,28 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { parseImportPayload, validateSellOutRows } from '@/lib/import/validation'
+import {
+  parseImportPayload,
+  validateSellOutRows,
+  type SellOutInsert,
+} from '@/lib/import/validation'
 import { chunkArray, getDateRange } from '@/lib/import/utils'
+
+const normalizeKeyPart = (value: string | number | null | undefined) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase()
+
+const buildSellOutKey = (row: SellOutInsert) =>
+  [
+    row.workspace_id,
+    normalizeKeyPart(row.brand),
+    normalizeKeyPart(row.company),
+    normalizeKeyPart(row.product),
+    row.month,
+    normalizeKeyPart(row.units),
+    normalizeKeyPart(row.platform),
+    normalizeKeyPart(row.region),
+  ].join('|')
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -40,7 +61,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const { validRows, rejected } = validateSellOutRows(
+  let { validRows, rejected } = validateSellOutRows(
     rows,
     workspaceId,
     rowOffset
@@ -50,9 +71,62 @@ export async function POST(request: Request) {
     return NextResponse.json({ inserted: 0, rejected })
   }
 
+  const seen = new Set<string>()
+  let uniqueRows = validRows.filter((entry) => {
+    const key = buildSellOutKey(entry.data)
+    if (seen.has(key)) {
+      rejected.push({ row: entry.row, reason: 'Duplicate row in import file.' })
+      return false
+    }
+    seen.add(key)
+    return true
+  })
+
+  if (!uniqueRows.length) {
+    return NextResponse.json({ inserted: 0, rejected })
+  }
+
+  if (mode === 'append') {
+    const brands = Array.from(new Set(uniqueRows.map((row) => row.data.brand)))
+    const range = getDateRange(uniqueRows.map((row) => row.data.month))
+
+    if (brands.length && range) {
+      const { data: existingRows, error } = await supabase
+        .from('sell_out')
+        .select('workspace_id, company, brand, product, month, units, platform, region')
+        .eq('workspace_id', workspaceId)
+        .in('brand', brands)
+        .gte('month', range.min)
+        .lte('month', range.max)
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 })
+      }
+
+      const existingKeys = new Set(
+        (existingRows ?? []).map((row) => buildSellOutKey(row))
+      )
+
+      uniqueRows = uniqueRows.filter((entry) => {
+        const key = buildSellOutKey(entry.data)
+        if (existingKeys.has(key)) {
+          rejected.push({ row: entry.row, reason: 'Duplicate row already exists.' })
+          return false
+        }
+        return true
+      })
+    }
+  }
+
+  const insertRows = uniqueRows.map((row) => row.data)
+
+  if (!insertRows.length) {
+    return NextResponse.json({ inserted: 0, rejected })
+  }
+
   if (mode === 'replace') {
-    const brands = Array.from(new Set(validRows.map((row) => row.brand)))
-    const range = getDateRange(validRows.map((row) => row.month))
+    const brands = Array.from(new Set(insertRows.map((row) => row.brand)))
+    const range = getDateRange(insertRows.map((row) => row.month))
 
     if (!brands.length || !range) {
       return NextResponse.json(
@@ -76,7 +150,7 @@ export async function POST(request: Request) {
 
   let inserted = 0
 
-  for (const chunk of chunkArray(validRows, 500)) {
+  for (const chunk of chunkArray(insertRows, 500)) {
     const { error } = await supabase.from('sell_out').insert(chunk)
 
     if (error) {

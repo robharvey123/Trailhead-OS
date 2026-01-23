@@ -19,6 +19,11 @@ export type ImportRejectedRow = {
   reason: string
 }
 
+export type ValidatedRow<T> = {
+  row: number
+  data: T
+}
+
 export type SellInInsert = {
   workspace_id: string
   customer: string
@@ -280,7 +285,7 @@ export const validateSellInRows = (
   workspaceId: string,
   rowOffset = 1
 ) => {
-  const validRows: SellInInsert[] = []
+  const validRows: ValidatedRow<SellInInsert>[] = []
   const rejected: ImportRejectedRow[] = []
 
   rows.forEach((row, index) => {
@@ -325,16 +330,19 @@ export const validateSellInRows = (
     }
 
     validRows.push({
-      workspace_id: workspaceId,
-      customer,
-      country: normalizeText(row.country) || null,
-      brand,
-      product,
-      date,
-      qty_cans: qtyCans,
-      unit_price: unitPrice,
-      total,
-      promo_cans: promoCans,
+      row: rowNumber,
+      data: {
+        workspace_id: workspaceId,
+        customer,
+        country: normalizeText(row.country) || null,
+        brand,
+        product,
+        date,
+        qty_cans: qtyCans,
+        unit_price: unitPrice,
+        total,
+        promo_cans: promoCans,
+      },
     })
   })
 
@@ -346,7 +354,7 @@ export const validateSellOutRows = (
   workspaceId: string,
   rowOffset = 1
 ) => {
-  const validRows: SellOutInsert[] = []
+  const validRows: ValidatedRow<SellOutInsert>[] = []
   const rejected: ImportRejectedRow[] = []
 
   rows.forEach((row, index) => {
@@ -383,14 +391,17 @@ export const validateSellOutRows = (
     }
 
     validRows.push({
-      workspace_id: workspaceId,
-      company,
-      brand,
-      product,
-      month,
-      units,
-      platform: normalizeText(row.platform) || null,
-      region: normalizeText(row.region) || null,
+      row: rowNumber,
+      data: {
+        workspace_id: workspaceId,
+        company,
+        brand,
+        product,
+        month,
+        units,
+        platform: normalizeText(row.platform) || null,
+        region: normalizeText(row.region) || null,
+      },
     })
   })
 

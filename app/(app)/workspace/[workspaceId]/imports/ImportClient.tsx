@@ -28,6 +28,23 @@ type ImportSectionConfig = {
   dateField: 'date' | 'month'
 }
 
+type ManualFieldConfig = {
+  key: string
+  label: string
+  type: 'text' | 'number' | 'date' | 'month'
+  placeholder?: string
+  optional?: boolean
+}
+
+type ManualEntryConfig = {
+  title: string
+  description: string
+  endpoint: string
+  expectedHeaders: string[]
+  requiredKeys: string[]
+  fields: ManualFieldConfig[]
+}
+
 type ImportFormValues = {
   mode: ImportMode
 }
@@ -150,6 +167,41 @@ const parseFile = async (
   return parseCsvFile(file, expectedHeaders)
 }
 
+const parseTextRows = (
+  text: string,
+  expectedHeaders: string[]
+): ParsedFile => {
+  const { data, meta } = Papa.parse<Record<string, unknown>>(text, {
+    header: true,
+    skipEmptyLines: true,
+    dynamicTyping: false,
+    delimiter: '',
+  })
+
+  const normalizedRows = data
+    .map((row) => {
+      const normalized: Record<string, unknown> = {}
+      Object.entries(row).forEach(([key, value]) => {
+        const normalizedKey = normalizeHeader(key)
+        normalized[normalizedKey] = serializeCell(value)
+      })
+      return normalized
+    })
+    .filter((row) => !isEmptyRow(row))
+
+  const headerKeys = (meta.fields ?? []).map(normalizeHeader)
+  const missing = expectedHeaders.filter(
+    (header) => !headerKeys.includes(header)
+  )
+
+  return {
+    rows: normalizedRows,
+    errors: missing.length
+      ? [`Missing required columns: ${missing.join(', ')}`]
+      : [],
+  }
+}
+
 const downloadTemplate = (filename: string, content: string) => {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
@@ -177,6 +229,260 @@ const formatDateRange = (dates: string[], fieldLabel: string) => {
   const min = sorted[0]
   const max = sorted[sorted.length - 1]
   return `${fieldLabel}: ${min} -> ${max}`
+}
+
+const ManualEntrySection = ({
+  workspaceId,
+  config,
+}: {
+  workspaceId: string
+  config: ManualEntryConfig
+}) => {
+  const emptyForm = useMemo(
+    () =>
+      config.fields.reduce<Record<string, string>>((acc, field) => {
+        acc[field.key] = ''
+        return acc
+      }, {}),
+    [config.fields]
+  )
+
+  const [formValues, setFormValues] = useState<Record<string, string>>(
+    emptyForm
+  )
+  const [queue, setQueue] = useState<Record<string, unknown>[]>([])
+  const [pasteText, setPasteText] = useState('')
+  const [errors, setErrors] = useState<string[]>([])
+  const [result, setResult] = useState<ImportResult | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleChange = (key: string, value: string) => {
+    setFormValues((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleAddRow = () => {
+    const missing = config.requiredKeys.filter(
+      (key) => !String(formValues[key] ?? '').trim()
+    )
+
+    if (missing.length) {
+      setErrors([`Missing required fields: ${missing.join(', ')}`])
+      return
+    }
+
+    setQueue((prev) => [...prev, { ...formValues }])
+    setFormValues(emptyForm)
+    setErrors([])
+    setResult(null)
+  }
+
+  const handlePasteRows = () => {
+    if (!pasteText.trim()) {
+      setErrors(['Paste CSV/TSV rows including headers.'])
+      return
+    }
+
+    const parsed = parseTextRows(pasteText, config.expectedHeaders)
+    if (parsed.errors.length) {
+      setErrors(parsed.errors)
+      return
+    }
+
+    if (!parsed.rows.length) {
+      setErrors(['No rows detected in the pasted data.'])
+      return
+    }
+
+    setQueue((prev) => [...prev, ...parsed.rows])
+    setPasteText('')
+    setErrors([])
+    setResult(null)
+  }
+
+  const handleRemoveRow = (index: number) => {
+    setQueue((prev) => prev.filter((_, idx) => idx !== index))
+    setResult(null)
+  }
+
+  const handleSubmit = async () => {
+    if (!queue.length) {
+      setErrors(['Add at least one row to submit.'])
+      return
+    }
+
+    setIsSubmitting(true)
+    setErrors([])
+    setResult(null)
+
+    try {
+      const chunkSize = 500
+      const chunks = chunkArray(queue, chunkSize)
+      let totalInserted = 0
+      const allRejected: ImportResult['rejected'] = []
+
+      for (let i = 0; i < chunks.length; i += 1) {
+        const response = await fetch(config.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workspaceId,
+            mode: 'append',
+            rows: chunks[i],
+            rowOffset: i * chunkSize + 1,
+          }),
+        })
+
+        const payload = await response.json()
+
+        if (!response.ok) {
+          setErrors([payload.error ?? 'Manual import failed.'])
+          setIsSubmitting(false)
+          return
+        }
+
+        totalInserted += payload.inserted ?? 0
+        allRejected.push(...(payload.rejected ?? []))
+      }
+
+      setResult({ inserted: totalInserted, rejected: allRejected })
+      setQueue([])
+    } catch (error) {
+      setErrors([
+        error instanceof Error ? error.message : 'Unexpected manual import error.',
+      ])
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const rowPreview = (row: Record<string, unknown>) => {
+    if (config.title === 'Sell In') {
+      return `${row.customer ?? ''} | ${row.product ?? ''} | ${row.date ?? ''} | ${row.qty_cans ?? ''}`
+    }
+    return `${row.company ?? ''} | ${row.product ?? ''} | ${row.month ?? ''} | ${row.units ?? ''}`
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <div>
+        <h2 className="text-lg font-semibold">{config.title}</h2>
+        <p className="mt-1 text-sm text-slate-300">{config.description}</p>
+      </div>
+
+      <div className="mt-6 space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {config.fields.map((field) => (
+            <label key={field.key} className="space-y-1 text-xs text-slate-400">
+              <span className="uppercase tracking-[0.2em]">
+                {field.label}
+                {field.optional ? '' : ' *'}
+              </span>
+              <input
+                type={field.type}
+                value={formValues[field.key] ?? ''}
+                onChange={(event) =>
+                  handleChange(field.key, event.target.value)
+                }
+                placeholder={field.placeholder}
+                className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+              />
+            </label>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleAddRow}
+            className="rounded-lg border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
+          >
+            Add row
+          </button>
+          <span className="text-xs text-slate-400">
+            Rows queued: {queue.length}
+          </span>
+        </div>
+
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Paste rows (CSV/TSV with headers)
+          </p>
+          <textarea
+            value={pasteText}
+            onChange={(event) => setPasteText(event.target.value)}
+            placeholder={config.expectedHeaders.join(',')}
+            rows={4}
+            className="mt-2 w-full resize-none rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+          />
+          <button
+            type="button"
+            onClick={handlePasteRows}
+            className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
+          >
+            Add pasted rows
+          </button>
+        </div>
+
+        {queue.length ? (
+          <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              Pending rows
+            </p>
+            <div className="mt-2 max-h-40 space-y-2 overflow-auto text-sm">
+              {queue.map((row, index) => (
+                <div
+                  key={`${index}-${String(row[config.expectedHeaders[0]])}`}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <span>{rowPreview(row)}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveRow(index)}
+                    className="text-xs text-rose-200 transition hover:text-rose-100"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {errors.length ? (
+          <div className="rounded-xl border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
+            {errors.map((error) => (
+              <p key={error}>{error}</p>
+            ))}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isSubmitting || !queue.length}
+          className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {isSubmitting ? 'Submitting...' : `Submit ${config.title} rows`}
+        </button>
+      </div>
+
+      {result ? (
+        <div className="mt-6 space-y-3 rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
+          <div>Inserted rows: {result.inserted}</div>
+          <div>Rejected rows: {result.rejected.length}</div>
+          {result.rejected.length ? (
+            <div className="max-h-40 space-y-1 overflow-auto text-xs text-emerald-100">
+              {result.rejected.map((item) => (
+                <p key={`${item.row}-${item.reason}`}>
+                  Row {item.row}: {item.reason}
+                </p>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 const ImportSection = ({
@@ -421,6 +727,53 @@ export default function ImportClient({
     },
   ]
 
+  const manualConfigs: ManualEntryConfig[] = [
+    {
+      title: 'Sell In',
+      description: 'Manually add sell-in rows without uploading a file.',
+      endpoint: '/api/import/sell-in',
+      expectedHeaders: SELL_IN_HEADERS,
+      requiredKeys: ['customer', 'brand', 'product', 'date', 'qty_cans'],
+      fields: [
+        { key: 'customer', label: 'Customer', type: 'text' },
+        { key: 'country', label: 'Country', type: 'text', optional: true },
+        { key: 'brand', label: 'Brand', type: 'text' },
+        { key: 'product', label: 'Product', type: 'text' },
+        { key: 'date', label: 'Date', type: 'date', placeholder: 'YYYY-MM-DD' },
+        { key: 'qty_cans', label: 'Qty Cans', type: 'number' },
+        {
+          key: 'unit_price',
+          label: 'Unit Price',
+          type: 'number',
+          optional: true,
+        },
+        { key: 'total', label: 'Total', type: 'number', optional: true },
+        {
+          key: 'promo_cans',
+          label: 'Promo Cans',
+          type: 'number',
+          optional: true,
+        },
+      ],
+    },
+    {
+      title: 'Sell Out',
+      description: 'Manually add sell-out rows without uploading a file.',
+      endpoint: '/api/import/sell-out',
+      expectedHeaders: SELL_OUT_HEADERS,
+      requiredKeys: ['company', 'brand', 'product', 'month', 'units'],
+      fields: [
+        { key: 'company', label: 'Company', type: 'text' },
+        { key: 'brand', label: 'Brand', type: 'text' },
+        { key: 'product', label: 'Product', type: 'text' },
+        { key: 'month', label: 'Month', type: 'month', placeholder: 'YYYY-MM' },
+        { key: 'units', label: 'Units', type: 'number' },
+        { key: 'platform', label: 'Platform', type: 'text', optional: true },
+        { key: 'region', label: 'Region', type: 'text', optional: true },
+      ],
+    },
+  ]
+
   return (
     <div className="space-y-8">
       <header>
@@ -443,6 +796,29 @@ export default function ImportClient({
           />
         ))}
       </div>
+
+      <section className="space-y-6">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Manual entry
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">Add rows by hand</h2>
+          <p className="mt-2 text-sm text-slate-300">
+            Enter a few rows quickly or paste CSV/TSV text without uploading a
+            file. Manual entry always appends.
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {manualConfigs.map((config) => (
+            <ManualEntrySection
+              key={config.title}
+              workspaceId={workspaceId}
+              config={config}
+            />
+          ))}
+        </div>
+      </section>
     </div>
   )
 }
