@@ -1,7 +1,300 @@
-export default function Page() {
+import { createClient } from '@/lib/supabase/server'
+import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
+import { pivotMonthly } from '@/lib/analytics/pivot'
+import CompanyCharts from './CompanyCharts'
+import CompanySummaryTable from './CompanySummaryTable'
+import PivotTable from '@/components/table/PivotTable'
+import FiltersBar from '@/components/filters/FiltersBar'
+
+type SellInMonthlyRow = {
+  customer: string
+  month: string
+  sell_in_units: number
+  promo_units: number
+  total_shipped: number
+  revenue: number
+}
+
+type SellOutMonthlyRow = {
+  company: string
+  month: string
+  sell_out_units: number
+}
+
+type MappingRow = {
+  customer: string
+  sell_out_company: string | null
+}
+
+type CompanySummaryRow = {
+  company: string
+  sellIn: number
+  promo: number
+  totalShipped: number
+  sellOut: number
+  channelStock: number
+  sellThrough: number
+  revenue: number
+}
+
+export default async function CompanySummaryPage({
+  params,
+  searchParams,
+}: {
+  params: { workspaceId: string }
+  searchParams: { brand?: string; start?: string; end?: string }
+}) {
+  const supabase = createClient()
+
+  const { data: settings } = await supabase
+    .from('workspace_settings')
+    .select('brand_filter, currency_symbol')
+    .eq('workspace_id', params.workspaceId)
+    .maybeSingle()
+
+  const brandFilter =
+    searchParams.brand?.trim() || settings?.brand_filter || ''
+  const start = searchParams.start ?? ''
+  const end = searchParams.end ?? ''
+  const startDate = start ? `${start}-01` : null
+  const endDate = end ? `${end}-01` : null
+
+  let sellInQuery = supabase
+    .from('vw_sell_in_customer_monthly')
+    .select('customer, month, sell_in_units, promo_units, total_shipped, revenue')
+    .eq('workspace_id', params.workspaceId)
+
+  let sellOutQuery = supabase
+    .from('vw_sell_out_company_monthly')
+    .select('company, month, sell_out_units')
+    .eq('workspace_id', params.workspaceId)
+
+  if (brandFilter) {
+    sellInQuery = sellInQuery.eq('brand', brandFilter)
+    sellOutQuery = sellOutQuery.eq('brand', brandFilter)
+  }
+
+  if (startDate) {
+    sellInQuery = sellInQuery.gte('month', startDate)
+    sellOutQuery = sellOutQuery.gte('month', startDate)
+  }
+
+  if (endDate) {
+    sellInQuery = sellInQuery.lte('month', endDate)
+    sellOutQuery = sellOutQuery.lte('month', endDate)
+  }
+
+  const [{ data: sellInRows }, { data: sellOutRows }, { data: mappings }] =
+    await Promise.all([
+      sellInQuery,
+      sellOutQuery,
+      supabase
+        .from('vw_sell_in_customer_match')
+        .select('customer, sell_out_company')
+        .eq('workspace_id', params.workspaceId),
+    ])
+
+  const mappingByCustomer = new Map<string, MappingRow>()
+  ;(mappings ?? []).forEach((mapping) => {
+    mappingByCustomer.set(mapping.customer, mapping)
+  })
+
+  const sellInCompanyMonthlyMap = new Map<string, SellInMonthlyRow>()
+
+  ;(sellInRows ?? []).forEach((row) => {
+    const mapping = mappingByCustomer.get(row.customer)
+    const company = mapping?.sell_out_company ?? row.customer
+    const month = row.month
+    const key = `${company}__${month}`
+    const entry = sellInCompanyMonthlyMap.get(key) ?? {
+      customer: company,
+      month,
+      sell_in_units: 0,
+      promo_units: 0,
+      total_shipped: 0,
+      revenue: 0,
+    }
+
+    entry.sell_in_units += row.sell_in_units ?? 0
+    entry.promo_units += row.promo_units ?? 0
+    entry.total_shipped += row.total_shipped ?? 0
+    entry.revenue += row.revenue ?? 0
+    sellInCompanyMonthlyMap.set(key, entry)
+  })
+
+  const sellInCompanyMonthly = Array.from(sellInCompanyMonthlyMap.values())
+
+  const summaryMap = new Map<string, CompanySummaryRow>()
+
+  sellInCompanyMonthly.forEach((row) => {
+    const entry = summaryMap.get(row.customer) ?? {
+      company: row.customer,
+      sellIn: 0,
+      promo: 0,
+      totalShipped: 0,
+      sellOut: 0,
+      channelStock: 0,
+      sellThrough: 0,
+      revenue: 0,
+    }
+    entry.sellIn += row.sell_in_units ?? 0
+    entry.promo += row.promo_units ?? 0
+    entry.totalShipped += row.total_shipped ?? 0
+    entry.revenue += row.revenue ?? 0
+    summaryMap.set(row.customer, entry)
+  })
+
+  ;(sellOutRows ?? []).forEach((row) => {
+    const entry = summaryMap.get(row.company) ?? {
+      company: row.company,
+      sellIn: 0,
+      promo: 0,
+      totalShipped: 0,
+      sellOut: 0,
+      channelStock: 0,
+      sellThrough: 0,
+      revenue: 0,
+    }
+    entry.sellOut += row.sell_out_units ?? 0
+    summaryMap.set(row.company, entry)
+  })
+
+  const summary = Array.from(summaryMap.values())
+    .map((row) => {
+      const channelStock = row.totalShipped - row.sellOut
+      const sellThrough =
+        row.totalShipped > 0 ? (row.sellOut / row.totalShipped) * 100 : 0
+      return { ...row, channelStock, sellThrough }
+    })
+    .sort((a, b) => b.totalShipped - a.totalShipped)
+
+  const currencySymbol = settings?.currency_symbol ?? '$'
+
+  const totals = summary.reduce(
+    (acc, row) => {
+      acc.sellIn += row.sellIn
+      acc.promo += row.promo
+      acc.totalShipped += row.totalShipped
+      acc.sellOut += row.sellOut
+      acc.channelStock += row.channelStock
+      acc.revenue += row.revenue
+      return acc
+    },
+    {
+      sellIn: 0,
+      promo: 0,
+      totalShipped: 0,
+      sellOut: 0,
+      channelStock: 0,
+      revenue: 0,
+    }
+  )
+
+  const totalSellThrough =
+    totals.totalShipped > 0
+      ? (totals.sellOut / totals.totalShipped) * 100
+      : 0
+
+  const totalsRow = {
+    company: 'Total',
+    sellIn: formatNumber(totals.sellIn),
+    promo: formatNumber(totals.promo),
+    totalShipped: formatNumber(totals.totalShipped),
+    sellOut: formatNumber(totals.sellOut),
+    channelStock: formatNumber(totals.channelStock),
+    sellThrough: formatPercent(totalSellThrough),
+    revenue: formatCurrency(totals.revenue, currencySymbol),
+  }
+
+  const topCompanies = summary.slice(0, 8).map((row) => ({
+    company: row.company,
+    totalShipped: row.totalShipped,
+    sellOut: row.sellOut,
+    sellThrough: Number(row.sellThrough.toFixed(1)),
+  }))
+
+  const sellInPivot = pivotMonthly({
+    rows: sellInCompanyMonthly.map((row) => ({
+      company: row.customer,
+      month: row.month,
+      sell_in_units: row.sell_in_units,
+    })),
+    rowKey: 'company',
+    monthKey: 'month',
+    valueKey: 'sell_in_units',
+  })
+
+  const sellOutPivot = pivotMonthly({
+    rows: (sellOutRows ?? []) as SellOutMonthlyRow[],
+    rowKey: 'company',
+    monthKey: 'month',
+    valueKey: 'sell_out_units',
+  })
+
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-300">
-      company-summary view coming soon.
+    <div className="space-y-8">
+      <header>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+          Company Summary
+        </p>
+        <h1 className="mt-2 text-2xl font-semibold">Company performance</h1>
+      </header>
+
+      <FiltersBar
+        basePath={`/workspace/${params.workspaceId}/company-summary`}
+        brand={brandFilter}
+        start={start}
+        end={end}
+      />
+
+      <CompanyCharts data={topCompanies} />
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <h2 className="text-lg font-semibold">Company performance summary</h2>
+        <div className="mt-6">
+          <CompanySummaryTable
+            data={summary}
+            totals={totalsRow}
+            currencySymbol={currencySymbol}
+          />
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+          <h3 className="text-sm font-semibold text-slate-200">
+            Sell in by company
+          </h3>
+          <div className="mt-4">
+            <PivotTable
+              data={sellInPivot.data}
+              months={sellInPivot.months}
+              totals={sellInPivot.totals}
+              rowKey="company"
+              rowLabel="Company"
+              csvFilename="company-sell-in-by-month.csv"
+              filterPlaceholder="Filter companies..."
+            />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+          <h3 className="text-sm font-semibold text-slate-200">
+            Sell out by company
+          </h3>
+          <div className="mt-4">
+            <PivotTable
+              data={sellOutPivot.data}
+              months={sellOutPivot.months}
+              totals={sellOutPivot.totals}
+              rowKey="company"
+              rowLabel="Company"
+              csvFilename="company-sell-out-by-month.csv"
+              filterPlaceholder="Filter companies..."
+            />
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

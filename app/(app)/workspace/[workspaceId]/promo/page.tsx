@@ -1,7 +1,102 @@
-export default function Page() {
+import { createClient } from '@/lib/supabase/server'
+import { pivotMonthly } from '@/lib/analytics/pivot'
+import PromoTable from './PromoTable'
+import FiltersBar from '@/components/filters/FiltersBar'
+
+type PromoMonthlyRow = {
+  customer: string
+  month: string
+  promo_units: number
+}
+
+type PromoPivotRow = Record<string, string | number> & { estCost?: number }
+
+export default async function PromoSummaryPage({
+  params,
+  searchParams,
+}: {
+  params: { workspaceId: string }
+  searchParams: { brand?: string; start?: string; end?: string }
+}) {
+  const supabase = createClient()
+
+  const { data: settings } = await supabase
+    .from('workspace_settings')
+    .select('brand_filter, promo_cost, currency_symbol')
+    .eq('workspace_id', params.workspaceId)
+    .maybeSingle()
+
+  const brandFilter =
+    searchParams.brand?.trim() || settings?.brand_filter || ''
+  const start = searchParams.start ?? ''
+  const end = searchParams.end ?? ''
+  const startDate = start ? `${start}-01` : null
+  const endDate = end ? `${end}-01` : null
+
+  let query = supabase
+    .from('vw_sell_in_customer_monthly')
+    .select('customer, month, promo_units')
+    .eq('workspace_id', params.workspaceId)
+
+  if (brandFilter) {
+    query = query.eq('brand', brandFilter)
+  }
+
+  if (startDate) {
+    query = query.gte('month', startDate)
+  }
+
+  if (endDate) {
+    query = query.lte('month', endDate)
+  }
+
+  const { data: rows } = await query
+
+  const { data: pivotData, months, totals } = pivotMonthly({
+    rows: (rows ?? []) as PromoMonthlyRow[],
+    rowKey: 'customer',
+    monthKey: 'month',
+    valueKey: 'promo_units',
+  })
+
+  const promoCost = settings?.promo_cost ?? 0
+  const currencySymbol = settings?.currency_symbol ?? '$'
+
+  const dataWithCost: PromoPivotRow[] = pivotData.map((row) => ({
+    ...row,
+    estCost: Number(row.total ?? 0) * promoCost,
+  }))
+
+  const totalPromo = Number(totals.total ?? 0)
+  const totalCost = totalPromo * promoCost
+
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-300">
-      promo view coming soon.
+    <div className="space-y-6">
+      <header>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+          Promo Summary
+        </p>
+        <h1 className="mt-2 text-2xl font-semibold">
+          Promo units by customer
+        </h1>
+        <p className="mt-2 text-sm text-slate-300">
+          Estimated cost uses promo cost {promoCost}.
+        </p>
+      </header>
+
+      <FiltersBar
+        basePath={`/workspace/${params.workspaceId}/promo`}
+        brand={brandFilter}
+        start={start}
+        end={end}
+      />
+
+      <PromoTable
+        data={dataWithCost}
+        months={months}
+        totals={{ ...totals, estCost: totalCost }}
+        currencySymbol={currencySymbol}
+      />
     </div>
   )
 }

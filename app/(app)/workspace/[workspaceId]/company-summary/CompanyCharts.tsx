@@ -1,0 +1,86 @@
+'use client'
+
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { formatNumber, formatPercent } from '@/lib/format'
+
+type CompanyChartDatum = {
+  company: string
+  totalShipped: number
+  sellOut: number
+  sellThrough: number
+}
+
+const tooltipFormatter = (value: number, name: string) => {
+  if (name === 'Sell Through %') {
+    return formatPercent(value)
+  }
+
+  return formatNumber(value)
+}
+
+export default function CompanyCharts({ data }: { data: CompanyChartDatum[] }) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <h3 className="text-sm font-semibold text-slate-200">
+        Top companies: shipped vs sell through
+      </h3>
+      <div className="mt-4 h-72">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <XAxis dataKey="company" stroke="#94a3b8" fontSize={12} />
+            <YAxis yAxisId="left" stroke="#94a3b8" fontSize={12} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              stroke="#94a3b8"
+              fontSize={12}
+              tickFormatter={(value) => `${value}%`}
+            />
+            <Tooltip
+              contentStyle={{
+                background: '#0f172a',
+                border: '1px solid #1f2937',
+                color: '#e2e8f0',
+              }}
+              formatter={tooltipFormatter}
+            />
+            <Legend />
+            <Bar
+              yAxisId="left"
+              dataKey="totalShipped"
+              name="Total Shipped"
+              fill="#38bdf8"
+              radius={[6, 6, 0, 0]}
+            />
+            <Bar
+              yAxisId="left"
+              dataKey="sellOut"
+              name="Sell Out"
+              fill="#f97316"
+              radius={[6, 6, 0, 0]}
+            />
+            <Line
+              yAxisId="right"
+              dataKey="sellThrough"
+              name="Sell Through %"
+              stroke="#22c55e"
+              strokeWidth={2}
+              dot={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}

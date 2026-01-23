@@ -175,7 +175,7 @@ const formatDateRange = (dates: string[], fieldLabel: string) => {
   const sorted = [...dates].sort()
   const min = sorted[0]
   const max = sorted[sorted.length - 1]
-  return `${fieldLabel}: ${min} → ${max}`
+  return `${fieldLabel}: ${min} -> ${max}`
 }
 
 const ImportSection = ({
