@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null)
-  const parsed = ImportPayloadSchema.safeParse(body)
+  const parsed = ImportPayloadSchema.safeParse.call(ImportPayloadSchema, body)
 
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid payload.' }, { status: 400 })

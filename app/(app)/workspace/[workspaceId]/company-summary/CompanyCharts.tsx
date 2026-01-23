@@ -34,8 +34,8 @@ export default function CompanyCharts({ data }: { data: CompanyChartDatum[] }) {
       <h3 className="text-sm font-semibold text-slate-200">
         Top companies: shipped vs sell through
       </h3>
-      <div className="mt-4 h-72">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="mt-4 h-72 min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={220}>
           <ComposedChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
             <XAxis dataKey="company" stroke="#94a3b8" fontSize={12} />

@@ -1,6 +1,7 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import type { SettingsState } from './actions'
 import { updateSettings } from './actions'
 
@@ -34,7 +35,7 @@ export default function SettingsForm({
   workspaceId: string
   settings: WorkspaceSettings
 }) {
-  const [state, formAction] = useFormState(updateSettings, initialState)
+  const [state, formAction] = useActionState(updateSettings, initialState)
 
   return (
     <form action={formAction} className="space-y-4">

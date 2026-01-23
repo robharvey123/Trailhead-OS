@@ -1,6 +1,7 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import type { CreateWorkspaceState } from './actions'
 import { createWorkspace } from './actions'
 
@@ -21,7 +22,7 @@ function SubmitButton() {
 }
 
 export default function CreateWorkspaceForm() {
-  const [state, formAction] = useFormState(createWorkspace, initialState)
+  const [state, formAction] = useActionState(createWorkspace, initialState)
 
   return (
     <form action={formAction} className="flex flex-col gap-4">

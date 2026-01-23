@@ -1,6 +1,7 @@
 'use client'
 
-import { useFormState, useFormStatus } from 'react-dom'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import type { MappingState } from './actions'
 import { addMapping } from './actions'
 
@@ -21,7 +22,7 @@ function SubmitButton() {
 }
 
 export default function MappingForm({ workspaceId }: { workspaceId: string }) {
-  const [state, formAction] = useFormState(addMapping, initialState)
+  const [state, formAction] = useActionState(addMapping, initialState)
 
   return (
     <form action={formAction} className="space-y-4">

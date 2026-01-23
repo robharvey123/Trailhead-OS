@@ -34,8 +34,8 @@ export default function DashboardCharts({
         <h3 className="text-sm font-semibold text-slate-200">
           Monthly shipped vs sell out
         </h3>
-        <div className="mt-4 h-64">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="mt-4 h-64 min-w-0">
+          <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <BarChart data={data} barGap={8} barSize={20}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
               <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
@@ -70,8 +70,8 @@ export default function DashboardCharts({
         <h3 className="text-sm font-semibold text-slate-200">
           Cumulative channel stock build
         </h3>
-        <div className="mt-4 h-64">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="mt-4 h-64 min-w-0">
+          <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
               <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
