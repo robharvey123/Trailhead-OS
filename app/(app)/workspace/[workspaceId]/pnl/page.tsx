@@ -3,6 +3,10 @@ import { formatCurrency } from '@/lib/format'
 import PnlTable from './PnlTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 type SellInMonthlyRow = {
   month: string
@@ -23,16 +27,17 @@ export default async function PnlPage({
   params,
   searchParams,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
   searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter, cogs_pct, promo_cost, currency_symbol')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const brandFilter =
@@ -45,7 +50,7 @@ export default async function PnlPage({
   let query = supabase
     .from('vw_sell_in_monthly')
     .select('month, revenue, promo_units')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
     query = query.eq('brand', brandFilter)
@@ -122,7 +127,7 @@ export default async function PnlPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${params.workspaceId}/pnl`}
+        basePath={`/workspace/${resolvedParams.workspaceId}/pnl`}
         brand={brandFilter}
         start={start}
         end={end}

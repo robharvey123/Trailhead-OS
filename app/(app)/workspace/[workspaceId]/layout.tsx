@@ -2,6 +2,10 @@ import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 const navItems = [
   { slug: 'dashboard', label: 'Dashboard' },
@@ -22,9 +26,10 @@ export default async function WorkspaceLayout({
   params,
 }: {
   children: ReactNode
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
 }) {
-  const { workspaceId } = params
+  const resolvedParams = await resolveWorkspaceParams(params)
+  const { workspaceId } = resolvedParams
   const supabase = await createClient()
   const {
     data: { user },

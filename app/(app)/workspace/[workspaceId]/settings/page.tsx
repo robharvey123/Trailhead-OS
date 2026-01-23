@@ -2,24 +2,29 @@ import { createClient } from '@/lib/supabase/server'
 import SettingsForm from './SettingsForm'
 import MappingForm from './MappingForm'
 import MappingTable from './MappingTable'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 export default async function SettingsPage({
   params,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter, cogs_pct, promo_cost, currency_symbol')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const { data: mappings } = await supabase
     .from('customer_mappings')
     .select('id, sell_in_customer, sell_out_company, group_name')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .order('sell_in_customer')
 
   const currentSettings = settings ?? {
@@ -44,7 +49,10 @@ export default async function SettingsPage({
           Configure brand filters and cost assumptions for this workspace.
         </p>
         <div className="mt-6">
-          <SettingsForm workspaceId={params.workspaceId} settings={currentSettings} />
+          <SettingsForm
+            workspaceId={resolvedParams.workspaceId}
+            settings={currentSettings}
+          />
         </div>
       </section>
 
@@ -54,7 +62,7 @@ export default async function SettingsPage({
           Map sell-in customers to sell-out companies and optional groups.
         </p>
         <div className="mt-6">
-          <MappingForm workspaceId={params.workspaceId} />
+          <MappingForm workspaceId={resolvedParams.workspaceId} />
         </div>
         <div className="mt-8">
           <MappingTable
@@ -64,7 +72,7 @@ export default async function SettingsPage({
               sell_out_company: row.sell_out_company,
               group_name: row.group_name,
             }))}
-            workspaceId={params.workspaceId}
+            workspaceId={resolvedParams.workspaceId}
           />
         </div>
       </section>

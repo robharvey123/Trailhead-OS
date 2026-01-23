@@ -3,6 +3,10 @@ import { formatNumber, formatPercent } from '@/lib/format'
 import CompanySkuTable from './CompanySkuTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 type SellInSkuRow = {
   customer: string
@@ -47,16 +51,17 @@ export default async function CompanySkuDetailPage({
   params,
   searchParams,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
   searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const brandFilter =
@@ -69,12 +74,12 @@ export default async function CompanySkuDetailPage({
   let sellInQuery = supabase
     .from('vw_sell_in_customer_sku_monthly')
     .select('customer, product, sell_in_units, promo_units, total_shipped, month')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   let sellOutQuery = supabase
     .from('vw_sell_out_company_sku_monthly')
     .select('company, product, sell_out_units, month')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
     sellInQuery = sellInQuery.eq('brand', brandFilter)
@@ -98,7 +103,7 @@ export default async function CompanySkuDetailPage({
       supabase
         .from('vw_sell_in_customer_match')
         .select('customer, sell_out_company')
-        .eq('workspace_id', params.workspaceId),
+        .eq('workspace_id', resolvedParams.workspaceId),
     ])
 
   const mappingByCustomer = new Map<string, MappingRow>()
@@ -203,7 +208,7 @@ export default async function CompanySkuDetailPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${params.workspaceId}/company-sku-detail`}
+        basePath={`/workspace/${resolvedParams.workspaceId}/company-sku-detail`}
         brand={brandFilter}
         start={start}
         end={end}

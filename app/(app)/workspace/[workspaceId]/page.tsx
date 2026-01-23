@@ -1,9 +1,14 @@
 import { redirect } from 'next/navigation'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
-export default function WorkspaceIndex({
+export default async function WorkspaceIndex({
   params,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
 }) {
-  redirect(`/workspace/${params.workspaceId}/dashboard`)
+  const { workspaceId } = await resolveWorkspaceParams(params)
+  redirect(`/workspace/${workspaceId}/dashboard`)
 }

@@ -1,9 +1,14 @@
 import ImportClient from './ImportClient'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
-export default function ImportsPage({
+export default async function ImportsPage({
   params,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
 }) {
-  return <ImportClient workspaceId={params.workspaceId} />
+  const { workspaceId } = await resolveWorkspaceParams(params)
+  return <ImportClient workspaceId={workspaceId} />
 }

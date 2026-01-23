@@ -3,6 +3,10 @@ import { formatNumber, formatPercent } from '@/lib/format'
 import ComparisonTable from './ComparisonTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 type SellInTotalsRow = {
   customer: string
@@ -38,16 +42,17 @@ export default async function ComparisonPage({
   params,
   searchParams,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
   searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const brandFilter =
@@ -60,12 +65,12 @@ export default async function ComparisonPage({
   let sellInQuery = supabase
     .from('vw_sell_in_customer_monthly')
     .select('customer, sell_in_units, promo_units, total_shipped, month')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   let sellOutQuery = supabase
     .from('vw_sell_out_company_monthly')
     .select('company, sell_out_units, month')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
     sellInQuery = sellInQuery.eq('brand', brandFilter)
@@ -89,7 +94,7 @@ export default async function ComparisonPage({
       supabase
         .from('vw_sell_in_customer_match')
         .select('customer, sell_out_company, group_name')
-        .eq('workspace_id', params.workspaceId),
+        .eq('workspace_id', resolvedParams.workspaceId),
     ])
 
   const sellInTotals = new Map<string, SellInTotalsRow>()
@@ -261,7 +266,7 @@ export default async function ComparisonPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${params.workspaceId}/comparison`}
+        basePath={`/workspace/${resolvedParams.workspaceId}/comparison`}
         brand={brandFilter}
         start={start}
         end={end}

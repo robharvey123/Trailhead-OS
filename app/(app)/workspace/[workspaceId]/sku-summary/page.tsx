@@ -6,6 +6,10 @@ import SkuSummaryTable from './SkuSummaryTable'
 import PivotTable from '@/components/table/PivotTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 type SellInSkuRow = {
   product: string
@@ -35,16 +39,17 @@ export default async function SkuSummaryPage({
   params,
   searchParams,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
   searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const brandFilter =
@@ -57,12 +62,12 @@ export default async function SkuSummaryPage({
   let sellInQuery = supabase
     .from('vw_sell_in_sku_monthly')
     .select('product, month, sell_in_units, promo_units, total_shipped')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   let sellOutQuery = supabase
     .from('vw_sell_out_sku_monthly')
     .select('product, month, sell_out_units')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
     sellInQuery = sellInQuery.eq('brand', brandFilter)
@@ -191,7 +196,7 @@ export default async function SkuSummaryPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${params.workspaceId}/sku-summary`}
+        basePath={`/workspace/${resolvedParams.workspaceId}/sku-summary`}
         brand={brandFilter}
         start={start}
         end={end}

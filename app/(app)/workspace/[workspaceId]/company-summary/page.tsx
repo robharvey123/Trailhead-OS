@@ -6,6 +6,10 @@ import CompanySummaryTable from './CompanySummaryTable'
 import PivotTable from '@/components/table/PivotTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 type SellInMonthlyRow = {
   customer: string
@@ -42,16 +46,17 @@ export default async function CompanySummaryPage({
   params,
   searchParams,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
   searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter, currency_symbol')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const brandFilter =
@@ -64,12 +69,12 @@ export default async function CompanySummaryPage({
   let sellInQuery = supabase
     .from('vw_sell_in_customer_monthly')
     .select('customer, month, sell_in_units, promo_units, total_shipped, revenue')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   let sellOutQuery = supabase
     .from('vw_sell_out_company_monthly')
     .select('company, month, sell_out_units')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
     sellInQuery = sellInQuery.eq('brand', brandFilter)
@@ -93,7 +98,7 @@ export default async function CompanySummaryPage({
       supabase
         .from('vw_sell_in_customer_match')
         .select('customer, sell_out_company')
-        .eq('workspace_id', params.workspaceId),
+        .eq('workspace_id', resolvedParams.workspaceId),
     ])
 
   const mappingByCustomer = new Map<string, MappingRow>()
@@ -243,7 +248,7 @@ export default async function CompanySummaryPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${params.workspaceId}/company-summary`}
+        basePath={`/workspace/${resolvedParams.workspaceId}/company-summary`}
         brand={brandFilter}
         start={start}
         end={end}

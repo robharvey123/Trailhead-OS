@@ -3,6 +3,10 @@ import { pivotMonthly } from '@/lib/analytics/pivot'
 import PromoTable from './PromoTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 type PromoMonthlyRow = {
   customer: string
@@ -16,16 +20,17 @@ export default async function PromoSummaryPage({
   params,
   searchParams,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
   searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter, promo_cost, currency_symbol')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const brandFilter =
@@ -38,7 +43,7 @@ export default async function PromoSummaryPage({
   let query = supabase
     .from('vw_sell_in_customer_monthly')
     .select('customer, month, promo_units')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
     query = query.eq('brand', brandFilter)
@@ -87,7 +92,7 @@ export default async function PromoSummaryPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${params.workspaceId}/promo`}
+        basePath={`/workspace/${resolvedParams.workspaceId}/promo`}
         brand={brandFilter}
         start={start}
         end={end}

@@ -3,6 +3,10 @@ import { pivotMonthly } from '@/lib/analytics/pivot'
 import PivotTable from '@/components/table/PivotTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
+import {
+  resolveWorkspaceParams,
+  type WorkspaceRouteParams,
+} from '@/lib/route-params'
 
 type SellOutMonthlyRow = {
   company: string
@@ -14,16 +18,17 @@ export default async function SellOutSummaryPage({
   params,
   searchParams,
 }: {
-  params: { workspaceId: string }
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
   searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
 }) {
+  const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
   const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
   const brandFilter =
@@ -36,7 +41,7 @@ export default async function SellOutSummaryPage({
   let query = supabase
     .from('vw_sell_out_company_monthly')
     .select('company, month, sell_out_units')
-    .eq('workspace_id', params.workspaceId)
+    .eq('workspace_id', resolvedParams.workspaceId)
 
   if (brandFilter) {
     query = query.eq('brand', brandFilter)
@@ -71,7 +76,7 @@ export default async function SellOutSummaryPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${params.workspaceId}/sell-out`}
+        basePath={`/workspace/${resolvedParams.workspaceId}/sell-out`}
         brand={brandFilter}
         start={start}
         end={end}
