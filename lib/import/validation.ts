@@ -7,6 +7,13 @@ export const ImportPayloadSchema = z.object({
   rowOffset: z.number().int().optional(),
 })
 
+export type ImportPayload = {
+  workspaceId: string
+  mode: 'append' | 'replace'
+  rows: Record<string, unknown>[]
+  rowOffset?: number
+}
+
 export type ImportRejectedRow = {
   row: number
   reason: string
@@ -112,6 +119,59 @@ const parseMonth = (value: unknown) => {
   }
 
   return `${date.slice(0, 7)}-01`
+}
+
+const uuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+export const parseImportPayload = (
+  body: unknown
+): { success: true; data: ImportPayload } | { success: false; error: string } => {
+  if (!isRecord(body)) {
+    return { success: false, error: 'Invalid payload.' }
+  }
+
+  const workspaceId =
+    typeof body.workspaceId === 'string' ? body.workspaceId.trim() : ''
+  if (!uuidRegex.test(workspaceId)) {
+    return { success: false, error: 'Invalid workspace id.' }
+  }
+
+  const mode = body.mode
+  if (mode !== 'append' && mode !== 'replace') {
+    return { success: false, error: 'Invalid import mode.' }
+  }
+
+  if (!Array.isArray(body.rows) || !body.rows.every(isRecord)) {
+    return { success: false, error: 'Invalid rows payload.' }
+  }
+
+  let rowOffset: number | undefined
+  if (body.rowOffset !== undefined && body.rowOffset !== null) {
+    const parsed =
+      typeof body.rowOffset === 'string'
+        ? Number(body.rowOffset)
+        : body.rowOffset
+
+    if (!Number.isInteger(parsed)) {
+      return { success: false, error: 'Invalid row offset.' }
+    }
+
+    rowOffset = parsed
+  }
+
+  return {
+    success: true,
+    data: {
+      workspaceId,
+      mode,
+      rows: body.rows as Record<string, unknown>[],
+      rowOffset,
+    },
+  }
 }
 
 export const validateSellInRows = (
