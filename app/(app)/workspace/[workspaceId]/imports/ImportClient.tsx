@@ -66,6 +66,7 @@ const parseCsvFile = async (
     header: true,
     skipEmptyLines: true,
     dynamicTyping: false,
+    delimiter: '',
   })
 
   const normalizedRows = data

@@ -6,6 +6,7 @@ import {
   type WorkspaceRouteParams,
 } from '@/lib/route-params'
 import DashboardCharts from './DashboardCharts'
+import DashboardInsights from './DashboardInsights'
 import DashboardTable from './DashboardTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 
@@ -18,6 +19,31 @@ type SellInMonthlyRow = {
 }
 
 type SellOutMonthlyRow = {
+  month: string
+  sell_out_units: number
+}
+
+type SellOutPlatformMonthlyRow = {
+  platform: string | null
+  month: string
+  sell_out_units: number
+}
+
+type SellOutRegionMonthlyRow = {
+  region: string | null
+  month: string
+  sell_out_units: number
+}
+
+type SellInCustomerMonthlyRow = {
+  customer: string
+  month: string
+  revenue: number
+  sell_in_units: number
+}
+
+type SellOutCompanyMonthlyRow = {
+  company: string
   month: string
   sell_out_units: number
 }
@@ -77,6 +103,46 @@ const buildMonthlyMap = (
     .sort((a, b) => a.month.localeCompare(b.month))
 }
 
+const aggregateTotals = <T,>(
+  rows: T[],
+  keyFn: (row: T) => string,
+  valueFn: (row: T) => number
+) => {
+  const map = new Map<string, number>()
+
+  rows.forEach((row) => {
+    const key = keyFn(row)
+    const value = valueFn(row)
+    if (!key || Number.isNaN(value)) {
+      return
+    }
+    map.set(key, (map.get(key) ?? 0) + value)
+  })
+
+  return Array.from(map.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value)
+}
+
+const topWithOther = (
+  rows: { label: string; value: number }[],
+  limit: number,
+  otherLabel: string
+) => {
+  if (rows.length <= limit) {
+    return rows
+  }
+
+  const top = rows.slice(0, limit)
+  const remainder = rows.slice(limit).reduce((sum, row) => sum + row.value, 0)
+
+  if (remainder > 0) {
+    top.push({ label: otherLabel, value: remainder })
+  }
+
+  return top
+}
+
 export default async function DashboardPage({
   params,
   searchParams,
@@ -127,8 +193,62 @@ export default async function DashboardPage({
     sellOutQuery = sellOutQuery.lte('month', endDate)
   }
 
-  const [{ data: sellInMonthly }, { data: sellOutMonthly }] =
-    await Promise.all([sellInQuery, sellOutQuery])
+  let sellOutPlatformQuery = supabase
+    .from('vw_sell_out_platform_monthly')
+    .select('platform, month, sell_out_units')
+    .eq('workspace_id', resolvedParams.workspaceId)
+
+  let sellOutRegionQuery = supabase
+    .from('vw_sell_out_region_monthly')
+    .select('region, month, sell_out_units')
+    .eq('workspace_id', resolvedParams.workspaceId)
+
+  let sellInCustomerQuery = supabase
+    .from('vw_sell_in_customer_monthly')
+    .select('customer, month, revenue, sell_in_units')
+    .eq('workspace_id', resolvedParams.workspaceId)
+
+  let sellOutCompanyQuery = supabase
+    .from('vw_sell_out_company_monthly')
+    .select('company, month, sell_out_units')
+    .eq('workspace_id', resolvedParams.workspaceId)
+
+  if (brandFilter) {
+    sellOutPlatformQuery = sellOutPlatformQuery.eq('brand', brandFilter)
+    sellOutRegionQuery = sellOutRegionQuery.eq('brand', brandFilter)
+    sellInCustomerQuery = sellInCustomerQuery.eq('brand', brandFilter)
+    sellOutCompanyQuery = sellOutCompanyQuery.eq('brand', brandFilter)
+  }
+
+  if (startDate) {
+    sellOutPlatformQuery = sellOutPlatformQuery.gte('month', startDate)
+    sellOutRegionQuery = sellOutRegionQuery.gte('month', startDate)
+    sellInCustomerQuery = sellInCustomerQuery.gte('month', startDate)
+    sellOutCompanyQuery = sellOutCompanyQuery.gte('month', startDate)
+  }
+
+  if (endDate) {
+    sellOutPlatformQuery = sellOutPlatformQuery.lte('month', endDate)
+    sellOutRegionQuery = sellOutRegionQuery.lte('month', endDate)
+    sellInCustomerQuery = sellInCustomerQuery.lte('month', endDate)
+    sellOutCompanyQuery = sellOutCompanyQuery.lte('month', endDate)
+  }
+
+  const [
+    { data: sellInMonthly },
+    { data: sellOutMonthly },
+    { data: sellOutPlatformMonthly },
+    { data: sellOutRegionMonthly },
+    { data: sellInCustomerMonthly },
+    { data: sellOutCompanyMonthly },
+  ] = await Promise.all([
+    sellInQuery,
+    sellOutQuery,
+    sellOutPlatformQuery,
+    sellOutRegionQuery,
+    sellInCustomerQuery,
+    sellOutCompanyQuery,
+  ])
 
   const monthlySummary = buildMonthlyMap(
     (sellInMonthly ?? []) as SellInMonthlyRow[],
@@ -157,6 +277,20 @@ export default async function DashboardPage({
   const channelStockBuild = totalShipped - totalSellOut
   const sellThroughRate =
     totalShipped > 0 ? (totalSellOut / totalShipped) * 100 : 0
+  const aspOverall = totalSellIn > 0 ? totalRevenue / totalSellIn : 0
+  const promoRateOverall =
+    totalShipped > 0 ? (totalPromo / totalShipped) * 100 : 0
+  const sellOutMoM = (() => {
+    if (monthlySummary.length < 2) {
+      return 0
+    }
+    const previous = monthlySummary[monthlySummary.length - 2]
+    const current = monthlySummary[monthlySummary.length - 1]
+    if (!previous.sellOut) {
+      return 0
+    }
+    return ((current.sellOut - previous.sellOut) / previous.sellOut) * 100
+  })()
 
   const chartData = (() => {
     let cumulative = 0
@@ -170,6 +304,62 @@ export default async function DashboardPage({
       }
     })
   })()
+
+  const aspData = (sellInMonthly ?? [])
+    .map((row) => {
+      const month = row.month.slice(0, 7)
+      const units = row.sell_in_units ?? 0
+      return {
+        month,
+        value: units > 0 ? (row.revenue ?? 0) / units : 0,
+      }
+    })
+    .sort((a, b) => a.month.localeCompare(b.month))
+
+  const promoRateData = monthlySummary.map((row) => ({
+    month: row.month,
+    value: row.totalShipped > 0 ? (row.promo / row.totalShipped) * 100 : 0,
+  }))
+
+  const platformData = topWithOther(
+    aggregateTotals(
+      (sellOutPlatformMonthly ?? []) as SellOutPlatformMonthlyRow[],
+      (row) => row.platform?.trim() || 'Unknown',
+      (row) => row.sell_out_units ?? 0
+    ),
+    8,
+    'Other'
+  )
+
+  const regionData = topWithOther(
+    aggregateTotals(
+      (sellOutRegionMonthly ?? []) as SellOutRegionMonthlyRow[],
+      (row) => row.region?.trim() || 'Unknown',
+      (row) => row.sell_out_units ?? 0
+    ),
+    8,
+    'Other'
+  )
+
+  const topCustomerRevenue = topWithOther(
+    aggregateTotals(
+      (sellInCustomerMonthly ?? []) as SellInCustomerMonthlyRow[],
+      (row) => row.customer?.trim() || 'Unknown',
+      (row) => row.revenue ?? 0
+    ),
+    10,
+    'Other'
+  )
+
+  const topCompanySellOut = topWithOther(
+    aggregateTotals(
+      (sellOutCompanyMonthly ?? []) as SellOutCompanyMonthlyRow[],
+      (row) => row.company?.trim() || 'Unknown',
+      (row) => row.sell_out_units ?? 0
+    ),
+    10,
+    'Other'
+  )
 
   const totalsRow = {
     month: 'Total',
@@ -209,6 +399,18 @@ export default async function DashboardPage({
       label: 'Sell Through Rate',
       value: formatPercent(sellThroughRate),
     },
+    {
+      label: 'Average Selling Price',
+      value: formatCurrency(aspOverall, currencySymbol),
+    },
+    {
+      label: 'Promo Rate',
+      value: formatPercent(promoRateOverall),
+    },
+    {
+      label: 'Sell-Out MoM',
+      value: formatPercent(sellOutMoM),
+    },
   ]
 
   return (
@@ -247,6 +449,16 @@ export default async function DashboardPage({
       </section>
 
       <DashboardCharts data={chartData} />
+
+      <DashboardInsights
+        aspData={aspData}
+        promoRateData={promoRateData}
+        platformData={platformData}
+        regionData={regionData}
+        topCustomerRevenue={topCustomerRevenue}
+        topCompanySellOut={topCompanySellOut}
+        currencySymbol={currencySymbol}
+      />
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Monthly summary</h2>
