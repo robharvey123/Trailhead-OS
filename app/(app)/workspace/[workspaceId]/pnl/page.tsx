@@ -87,6 +87,10 @@ export default async function PnlPage({
     }
   })
 
+  const availableMonths = (rows ?? [])
+    .map((row) => row.month?.slice(0, 7) ?? '')
+    .filter(Boolean)
+
   const totals = pnlRows.reduce(
     (acc, row) => {
       acc.revenue += row.revenue
@@ -131,6 +135,7 @@ export default async function PnlPage({
         brand={brandFilter}
         start={start}
         end={end}
+        availableMonths={availableMonths}
       />
 
       <PnlTable

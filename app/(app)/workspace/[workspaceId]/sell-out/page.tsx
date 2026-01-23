@@ -80,6 +80,7 @@ export default async function SellOutSummaryPage({
         brand={brandFilter}
         start={start}
         end={end}
+        availableMonths={months}
       />
 
       <PivotTable

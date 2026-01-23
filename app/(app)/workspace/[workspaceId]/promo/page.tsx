@@ -96,6 +96,7 @@ export default async function PromoSummaryPage({
         brand={brandFilter}
         start={start}
         end={end}
+        availableMonths={months}
       />
 
       <PromoTable

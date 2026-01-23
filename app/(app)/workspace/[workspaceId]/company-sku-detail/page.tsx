@@ -199,6 +199,15 @@ export default async function CompanySkuDetailPage({
     a.company.localeCompare(b.company)
   )
 
+  const availableMonths = Array.from(
+    new Set(
+      [
+        ...(sellInRows ?? []).map((row) => row.month?.slice(0, 7)),
+        ...(sellOutRows ?? []).map((row) => row.month?.slice(0, 7)),
+      ].filter(Boolean)
+    )
+  ).sort()
+
   const grandTotals = groups.reduce(
     (totals, group) => {
       totals.sellIn += group.totals.sellIn
@@ -223,6 +232,7 @@ export default async function CompanySkuDetailPage({
         brand={brandFilter}
         start={start}
         end={end}
+        availableMonths={availableMonths}
       />
 
       <div className="grid gap-4 sm:grid-cols-2">

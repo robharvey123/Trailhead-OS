@@ -430,6 +430,7 @@ export default async function DashboardPage({
         brand={brandFilter}
         start={start}
         end={end}
+        availableMonths={monthlySummary.map((row) => row.month)}
       />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

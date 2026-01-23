@@ -97,6 +97,15 @@ export default async function ComparisonPage({
         .eq('workspace_id', resolvedParams.workspaceId),
     ])
 
+  const availableMonths = Array.from(
+    new Set(
+      [
+        ...(sellInMonthly ?? []).map((row) => row.month?.slice(0, 7)),
+        ...(sellOutMonthly ?? []).map((row) => row.month?.slice(0, 7)),
+      ].filter(Boolean)
+    )
+  ).sort()
+
   const sellInTotals = new Map<string, SellInTotalsRow>()
   ;(sellInMonthly ?? []).forEach((row) => {
     const entry = sellInTotals.get(row.customer) ?? {
@@ -270,6 +279,7 @@ export default async function ComparisonPage({
         brand={brandFilter}
         start={start}
         end={end}
+        availableMonths={availableMonths}
       />
 
       <ComparisonTable data={comparisonRows} totals={totalsRow} />

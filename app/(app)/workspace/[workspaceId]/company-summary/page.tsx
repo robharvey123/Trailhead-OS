@@ -238,6 +238,10 @@ export default async function CompanySummaryPage({
     valueKey: 'sell_out_units',
   })
 
+  const availableMonths = Array.from(
+    new Set([...sellInPivot.months, ...sellOutPivot.months])
+  ).sort()
+
   return (
     <div className="space-y-8">
       <header>
@@ -252,6 +256,7 @@ export default async function CompanySummaryPage({
         brand={brandFilter}
         start={start}
         end={end}
+        availableMonths={availableMonths}
       />
 
       <CompanyCharts data={topCompanies} />
