@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rush Analytics
 
-## Getting Started
+Production-ready, multi-tenant analytics for sell-in and sell-out performance. Built for subscription brands to ingest their own data and replicate the RUSH Sales Model outputs without Google Sheets.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + TypeScript + Tailwind
+- Supabase (Postgres + Auth, RLS)
+- Recharts + TanStack Table
+- Netlify deployment (SSR)
+
+## Local development
+
+1) Install dependencies
+
+```bash
+npm install
+```
+
+2) Create your env file
+
+```bash
+cp .env.example .env.local
+```
+
+Populate `.env.local` with your Supabase project keys.
+
+3) Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Supabase setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1) Create a Supabase project.
+2) Run the SQL migrations from `supabase/migrations` in order.
+3) Enable magic link auth in Supabase Auth settings.
+4) Add the following env vars locally and in Netlify:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
 
-## Learn More
+## Seed data
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+SEED_USER_EMAIL=demo@rushanalytics.local npm run seed
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This script creates a demo user, workspace, mappings, and sample sell-in/out rows. It requires the service role key.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Imports
 
-## Deploy on Vercel
+Navigate to `/workspace/:id/imports` and upload CSV or XLSX files.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Sell In columns: `customer, country, brand, product, date, qty_cans, unit_price, total, promo_cans`
+- Sell Out columns: `company, brand, product, month, units, platform, region`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Templates are available via the “Download template” buttons on the Imports page.
+
+## Settings & mappings
+
+Open `/workspace/:id/settings` to configure:
+
+- Brand filter
+- COGS %
+- Promo cost
+- Currency symbol
+- Customer mapping rules (including optional group names)
+
+## Analytics computations
+
+- SQL rollups live in `supabase/migrations/*_analytics_views.sql`.
+- Pivoting and grouping (per workspace and filter set) are completed server-side in Next.js pages.
+
+## Netlify deployment
+
+1) Create a Netlify site from the GitHub repo.
+2) Set environment variables (same as local).
+3) Netlify picks up `netlify.toml` for build settings.
+
+## Conventional commits
+
+Use Conventional Commits for all changes:
+
+- `feat: add import validation`
+- `fix: handle empty sell-out uploads`
+- `chore: update docs`
+
+## GitHub flow
+
+- Branch naming: `feature/*`, `fix/*`, `chore/*`
+- Open a PR to `main` for review
+
+### PR checklist
+
+- [ ] Typecheck passes (`npm run typecheck`)
+- [ ] Lint passes (`npm run lint`)
+- [ ] Build passes (`npm run build`)
+- [ ] Screenshots for UI changes
+- [ ] Supabase migrations reviewed (if applicable)
+
+## Run CI locally
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
