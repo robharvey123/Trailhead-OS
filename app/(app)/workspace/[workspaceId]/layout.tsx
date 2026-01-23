@@ -13,11 +13,11 @@ const navItems = [
   { slug: 'sell-in', label: 'Sell In' },
   { slug: 'sell-out', label: 'Sell Out' },
   { slug: 'promo', label: 'Promo' },
+  { slug: 'comparison', label: 'Compare' },
   { slug: 'pnl', label: 'P&L' },
-  { slug: 'comparison', label: 'Comparison' },
   { slug: 'sku-summary', label: 'SKU Summary' },
   { slug: 'company-summary', label: 'Company Summary' },
-  { slug: 'company-sku-detail', label: 'Company SKU Detail' },
+  { slug: 'company-sku-detail', label: 'Company SKU' },
   { slug: 'settings', label: 'Settings' },
   { slug: 'imports', label: 'Imports' },
 ]
