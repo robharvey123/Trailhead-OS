@@ -16,7 +16,7 @@ export default async function SellOutSummaryPage({
   params: { workspaceId: string }
   searchParams: { brand?: string; start?: string; end?: string }
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')

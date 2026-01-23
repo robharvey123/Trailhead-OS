@@ -19,7 +19,7 @@ export async function createWorkspace(
     return { error: 'Workspace name is required.' }
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()

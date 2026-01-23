@@ -8,7 +8,7 @@ export default async function SettingsPage({
 }: {
   params: { workspaceId: string }
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: settings } = await supabase
     .from('workspace_settings')

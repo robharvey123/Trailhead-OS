@@ -31,7 +31,7 @@ export async function updateSettings(
     return { error: 'COGS and promo cost must be numbers.' }
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { error } = await supabase.from('workspace_settings').upsert({
     workspace_id: workspaceId,
     brand_filter: brandFilter,
@@ -61,7 +61,7 @@ export async function addMapping(
     return { error: 'Customer and company are required.' }
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { error } = await supabase.from('customer_mappings').insert({
     workspace_id: workspaceId,
     sell_in_customer: sellInCustomer,
@@ -85,7 +85,7 @@ export async function deleteMapping(formData: FormData) {
     return
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   await supabase
     .from('customer_mappings')
     .delete()

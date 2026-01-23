@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import CreateWorkspaceForm from './CreateWorkspaceForm'
 
 export default async function WorkspacesPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: workspaces } = await supabase
     .from('workspaces')
     .select('id, name, created_at, is_paid')

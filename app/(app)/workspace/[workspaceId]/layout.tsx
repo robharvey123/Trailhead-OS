@@ -25,7 +25,7 @@ export default async function WorkspaceLayout({
   params: { workspaceId: string }
 }) {
   const { workspaceId } = params
-  const supabase = createClient()
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
