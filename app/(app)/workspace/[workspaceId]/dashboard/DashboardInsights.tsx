@@ -43,13 +43,13 @@ type DashboardInsightsProps = {
 const chartCardClass =
   'rounded-2xl border border-slate-800 bg-slate-900/70 p-6'
 
-const formatNumberValue = (value: ValueType) =>
+const formatNumberValue = (value?: ValueType) =>
   value == null ? '' : formatNumber(Number(value))
 
-const formatPercentValue = (value: ValueType) =>
+const formatPercentValue = (value?: ValueType) =>
   value == null ? '' : formatPercent(Number(value))
 
-const formatCurrencyValue = (value: ValueType, symbol: string) =>
+const formatCurrencyValue = (value: ValueType | undefined, symbol: string) =>
   value == null ? '' : formatCurrency(Number(value), symbol)
 
 export default function DashboardInsights({
