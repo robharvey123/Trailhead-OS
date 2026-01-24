@@ -33,6 +33,9 @@ type ManualFieldConfig = {
   type: 'text' | 'number' | 'date' | 'month'
   placeholder?: string
   optional?: boolean
+  options?: string[]
+  defaultValue?: string
+  allowAdd?: boolean
 }
 
 type ManualEntryConfig = {
@@ -42,6 +45,22 @@ type ManualEntryConfig = {
   expectedHeaders: string[]
   requiredKeys: string[]
   fields: ManualFieldConfig[]
+}
+
+type ManualOptions = {
+  sellIn: {
+    customers: string[]
+    brands: string[]
+    products: string[]
+    countries: string[]
+  }
+  sellOut: {
+    companies: string[]
+    brands: string[]
+    products: string[]
+    platforms: string[]
+    regions: string[]
+  }
 }
 
 type ImportFormValues = {
@@ -272,12 +291,20 @@ const ManualEntrySection = ({
   const emptyForm = useMemo(
     () =>
       config.fields.reduce<Record<string, string>>((acc, field) => {
-        acc[field.key] = ''
+        acc[field.key] = field.defaultValue ?? ''
         return acc
       }, {}),
     [config.fields]
   )
 
+  const [optionsMap, setOptionsMap] = useState<Record<string, string[]>>(() =>
+    config.fields.reduce<Record<string, string[]>>((acc, field) => {
+      if (field.options?.length) {
+        acc[field.key] = [...field.options].sort((a, b) => a.localeCompare(b))
+      }
+      return acc
+    }, {})
+  )
   const [formValues, setFormValues] = useState<Record<string, string>>(
     emptyForm
   )
@@ -291,6 +318,27 @@ const ManualEntrySection = ({
     setFormValues((prev) => ({ ...prev, [key]: value }))
   }
 
+  const addOption = (key: string, value: string) => {
+    const trimmed = value.trim()
+    if (!trimmed) {
+      return
+    }
+
+    setOptionsMap((prev) => {
+      const current = prev[key] ?? []
+      const exists = current.some(
+        (option) => option.toLowerCase() === trimmed.toLowerCase()
+      )
+      if (exists) {
+        return prev
+      }
+      return {
+        ...prev,
+        [key]: [...current, trimmed].sort((a, b) => a.localeCompare(b)),
+      }
+    })
+  }
+
   const handleAddRow = () => {
     const missing = config.requiredKeys.filter(
       (key) => !String(formValues[key] ?? '').trim()
@@ -302,6 +350,11 @@ const ManualEntrySection = ({
     }
 
     setQueue((prev) => [...prev, { ...formValues }])
+    config.fields.forEach((field) => {
+      if (field.allowAdd) {
+        addOption(field.key, String(formValues[field.key] ?? ''))
+      }
+    })
     setFormValues(emptyForm)
     setErrors([])
     setResult(null)
@@ -325,6 +378,14 @@ const ManualEntrySection = ({
     }
 
     setQueue((prev) => [...prev, ...parsed.rows])
+    config.fields.forEach((field) => {
+      if (!field.allowAdd) {
+        return
+      }
+      parsed.rows.forEach((row) => {
+        addOption(field.key, String(row[field.key] ?? ''))
+      })
+    })
     setPasteText('')
     setErrors([])
     setResult(null)
@@ -402,23 +463,63 @@ const ManualEntrySection = ({
 
       <div className="mt-6 space-y-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {config.fields.map((field) => (
-            <label key={field.key} className="space-y-1 text-xs text-slate-400">
-              <span className="uppercase tracking-[0.2em]">
-                {field.label}
-                {field.optional ? '' : ' *'}
-              </span>
-              <input
-                type={field.type}
-                value={formValues[field.key] ?? ''}
-                onChange={(event) =>
-                  handleChange(field.key, event.target.value)
-                }
-                placeholder={field.placeholder}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
-              />
-            </label>
-          ))}
+          {config.fields.map((field) => {
+            const fieldOptions = optionsMap[field.key] ?? field.options ?? []
+            const inputValue = formValues[field.key] ?? ''
+            const listId =
+              fieldOptions.length && field.type === 'text'
+                ? `${config.title}-${field.key}-list`
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')
+                : undefined
+            const canAdd =
+              field.allowAdd &&
+              inputValue.trim().length > 0 &&
+              !fieldOptions.some(
+                (option) =>
+                  option.toLowerCase() === inputValue.trim().toLowerCase()
+              )
+
+            return (
+              <label
+                key={field.key}
+                className="space-y-1 text-xs text-slate-400"
+              >
+                <span className="flex items-center justify-between gap-2 uppercase tracking-[0.2em]">
+                  <span>
+                    {field.label}
+                    {field.optional ? '' : ' *'}
+                  </span>
+                  {canAdd ? (
+                    <button
+                      type="button"
+                      onClick={() => addOption(field.key, inputValue)}
+                      className="text-[10px] font-semibold text-slate-400 hover:text-slate-200"
+                    >
+                      Add to list
+                    </button>
+                  ) : null}
+                </span>
+                <input
+                  type={field.type}
+                  value={inputValue}
+                  onChange={(event) =>
+                    handleChange(field.key, event.target.value)
+                  }
+                  placeholder={field.placeholder}
+                  list={listId}
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                />
+                {listId ? (
+                  <datalist id={listId}>
+                    {fieldOptions.map((option) => (
+                      <option key={option} value={option} />
+                    ))}
+                  </datalist>
+                ) : null}
+              </label>
+            )
+          })}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -751,9 +852,27 @@ const ImportSection = ({
 
 export default function ImportClient({
   workspaceId,
+  manualOptions,
+  defaultBrand,
 }: {
   workspaceId: string
+  manualOptions: ManualOptions
+  defaultBrand?: string
 }) {
+  const sellInOptions = manualOptions?.sellIn ?? {
+    customers: [],
+    brands: [],
+    products: [],
+    countries: [],
+  }
+  const sellOutOptions = manualOptions?.sellOut ?? {
+    companies: [],
+    brands: [],
+    products: [],
+    platforms: [],
+    regions: [],
+  }
+
   const configs: ImportSectionConfig[] = [
     {
       title: 'Sell In',
@@ -783,10 +902,34 @@ export default function ImportClient({
       expectedHeaders: SELL_IN_HEADERS,
       requiredKeys: ['customer', 'brand', 'product', 'date', 'qty_cans'],
       fields: [
-        { key: 'customer', label: 'Customer', type: 'text' },
-        { key: 'country', label: 'Country', type: 'text', optional: true },
-        { key: 'brand', label: 'Brand', type: 'text' },
-        { key: 'product', label: 'Product', type: 'text' },
+        {
+          key: 'customer',
+          label: 'Customer',
+          type: 'text',
+          options: sellInOptions.customers,
+          allowAdd: true,
+        },
+        {
+          key: 'country',
+          label: 'Country',
+          type: 'text',
+          optional: true,
+          options: sellInOptions.countries,
+        },
+        {
+          key: 'brand',
+          label: 'Brand',
+          type: 'text',
+          options: sellInOptions.brands,
+          defaultValue: defaultBrand?.trim() || undefined,
+        },
+        {
+          key: 'product',
+          label: 'Product',
+          type: 'text',
+          options: sellInOptions.products,
+          allowAdd: true,
+        },
         { key: 'date', label: 'Date', type: 'date', placeholder: 'YYYY-MM-DD' },
         { key: 'qty_cans', label: 'Qty Cans', type: 'number' },
         {
@@ -811,13 +954,43 @@ export default function ImportClient({
       expectedHeaders: SELL_OUT_HEADERS,
       requiredKeys: ['company', 'brand', 'product', 'month', 'units'],
       fields: [
-        { key: 'company', label: 'Company', type: 'text' },
-        { key: 'brand', label: 'Brand', type: 'text' },
-        { key: 'product', label: 'Product', type: 'text' },
+        {
+          key: 'company',
+          label: 'Company',
+          type: 'text',
+          options: sellOutOptions.companies,
+          allowAdd: true,
+        },
+        {
+          key: 'brand',
+          label: 'Brand',
+          type: 'text',
+          options: sellOutOptions.brands,
+          defaultValue: defaultBrand?.trim() || undefined,
+        },
+        {
+          key: 'product',
+          label: 'Product',
+          type: 'text',
+          options: sellOutOptions.products,
+          allowAdd: true,
+        },
         { key: 'month', label: 'Month', type: 'month', placeholder: 'YYYY-MM' },
         { key: 'units', label: 'Units', type: 'number' },
-        { key: 'platform', label: 'Platform', type: 'text', optional: true },
-        { key: 'region', label: 'Region', type: 'text', optional: true },
+        {
+          key: 'platform',
+          label: 'Platform',
+          type: 'text',
+          optional: true,
+          options: sellOutOptions.platforms,
+        },
+        {
+          key: 'region',
+          label: 'Region',
+          type: 'text',
+          optional: true,
+          options: sellOutOptions.regions,
+        },
       ],
     },
   ]
