@@ -13,16 +13,19 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@react-pdf/renderer": "^4.3.2",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.91.0",
     "@tanstack/react-table": "^8.21.3",
+    "exceljs": "^4.4.0",
     "next": "16.1.4",
+    "openai": "^6.16.0",
     "papaparse": "^5.5.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.1",
     "recharts": "^3.7.0",
-    "xlsx": "^0.18.5",
+    "resend": "^6.8.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

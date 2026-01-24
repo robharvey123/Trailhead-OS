@@ -10,6 +10,7 @@ import WorkspaceNav from '@/components/nav/WorkspaceNav'
 
 const navItems = [
   { slug: 'dashboard', label: 'Dashboard' },
+  { slug: 'insights', label: 'Insights' },
   { slug: 'sell-in', label: 'Sell In' },
   { slug: 'sell-out', label: 'Sell Out' },
   { slug: 'promo', label: 'Promo' },

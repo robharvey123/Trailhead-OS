@@ -3,7 +3,6 @@
 import type { ChangeEvent } from 'react'
 import { useMemo, useState } from 'react'
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
 import { useForm } from 'react-hook-form'
 import {
   SELL_IN_HEADERS,
@@ -110,42 +109,71 @@ const parseCsvFile = async (
   }
 }
 
+const normalizeExcelCell = (value: unknown) => {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value
+  }
+
+  if (value && typeof value === 'object') {
+    if ('text' in value && typeof (value as { text?: string }).text === 'string') {
+      return (value as { text?: string }).text ?? ''
+    }
+    if ('richText' in value) {
+      const rich = (value as { richText?: { text: string }[] }).richText ?? []
+      return rich.map((item) => item.text).join('')
+    }
+    if ('result' in value) {
+      return (value as { result?: unknown }).result ?? ''
+    }
+  }
+
+  return value ?? ''
+}
+
 const parseExcelFile = async (
   file: File,
   expectedHeaders: string[]
 ): Promise<ParsedFile> => {
+  const { Workbook } = await import('exceljs')
   const buffer = await file.arrayBuffer()
-  const workbook = XLSX.read(buffer, { type: 'array', cellDates: true })
-  const sheetName = workbook.SheetNames[0]
+  const workbook = new Workbook()
+  await workbook.xlsx.load(buffer)
+  const sheet = workbook.worksheets[0]
 
-  if (!sheetName) {
+  if (!sheet) {
     return { rows: [], errors: ['Excel file has no sheets.'] }
   }
 
-  const sheet = workbook.Sheets[sheetName]
-  const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
-    defval: '',
-  })
+  const headerRow = sheet.getRow(1)
+  const rawHeaders = headerRow.values
+    .slice(1)
+    .map((value) => String(value ?? '').trim())
+  const headerKeys = rawHeaders.map(normalizeHeader).filter(Boolean)
 
-  if (!data.length) {
-    return { rows: [], errors: ['Excel sheet is empty.'] }
-  }
-
-  const normalizedRows = data
-    .map((row) => {
-      const normalized: Record<string, unknown> = {}
-      Object.entries(row).forEach(([key, value]) => {
-        const normalizedKey = normalizeHeader(key)
-        normalized[normalizedKey] = serializeCell(value)
-      })
-      return normalized
-    })
-    .filter((row) => !isEmptyRow(row))
-
-  const headerKeys = Object.keys(data[0] ?? {}).map(normalizeHeader)
   const missing = expectedHeaders.filter(
     (header) => !headerKeys.includes(header)
   )
+
+  const normalizedRows: Record<string, unknown>[] = []
+  const rowCount = sheet.rowCount
+
+  for (let rowIndex = 2; rowIndex <= rowCount; rowIndex += 1) {
+    const row = sheet.getRow(rowIndex)
+    const normalized: Record<string, unknown> = {}
+
+    rawHeaders.forEach((header, headerIndex) => {
+      const normalizedKey = normalizeHeader(header)
+      if (!normalizedKey) {
+        return
+      }
+      const cellValue = normalizeExcelCell(row.getCell(headerIndex + 1).value)
+      normalized[normalizedKey] = serializeCell(cellValue)
+    })
+
+    if (!isEmptyRow(normalized)) {
+      normalizedRows.push(normalized)
+    }
+  }
 
   return {
     rows: normalizedRows,

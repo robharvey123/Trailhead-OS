@@ -19,10 +19,12 @@ export default function CompanySummaryTable({
   data,
   totals,
   currencySymbol,
+  showFinancials = true,
 }: {
   data: CompanySummaryRow[]
   totals: Record<string, string | number>
   currencySymbol: string
+  showFinancials?: boolean
 }) {
   const columns: ColumnDef<CompanySummaryRow>[] = [
     {
@@ -60,13 +62,16 @@ export default function CompanySummaryTable({
       header: 'ST%',
       cell: ({ getValue }) => formatPercent(Number(getValue() ?? 0)),
     },
-    {
+  ]
+
+  if (showFinancials) {
+    columns.push({
       accessorKey: 'revenue',
       header: 'Revenue',
       cell: ({ getValue }) =>
         formatCurrency(Number(getValue() ?? 0), currencySymbol),
-    },
-  ]
+    })
+  }
 
   return (
     <DataTable
