@@ -2,14 +2,14 @@ import { z } from 'zod'
 
 export const ImportPayloadSchema = z.object({
   workspaceId: z.string().uuid(),
-  mode: z.enum(['append', 'replace']),
+  mode: z.enum(['append', 'replace', 'update']),
   rows: z.array(z.record(z.unknown())),
   rowOffset: z.number().int().optional(),
 })
 
 export type ImportPayload = {
   workspaceId: string
-  mode: 'append' | 'replace'
+  mode: 'append' | 'replace' | 'update'
   rows: Record<string, unknown>[]
   rowOffset?: number
 }
@@ -247,7 +247,7 @@ export const parseImportPayload = (
   }
 
   const mode = body.mode
-  if (mode !== 'append' && mode !== 'replace') {
+  if (mode !== 'append' && mode !== 'replace' && mode !== 'update') {
     return { success: false, error: 'Invalid import mode.' }
   }
 

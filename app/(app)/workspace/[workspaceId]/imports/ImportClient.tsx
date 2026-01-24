@@ -12,7 +12,7 @@ import {
   SELL_OUT_TEMPLATE,
 } from '@/lib/import/templates'
 
-type ImportMode = 'append' | 'replace'
+type ImportMode = 'append' | 'replace' | 'update'
 
 type ImportResult = {
   inserted: number
@@ -558,12 +558,13 @@ const ImportSection = ({
       const allRejected: ImportResult['rejected'] = []
 
       for (let i = 0; i < chunks.length; i += 1) {
+        const effectiveMode = i === 0 ? values.mode : 'append'
         const response = await fetch(config.endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             workspaceId,
-            mode: i === 0 ? values.mode : 'append',
+            mode: effectiveMode,
             rows: chunks[i],
             rowOffset: i * chunkSize + 1,
           }),
@@ -642,6 +643,15 @@ const ImportSection = ({
               <label className="flex items-center gap-2">
                 <input
                   type="radio"
+                  value="update"
+                  className="accent-white"
+                  {...register('mode')}
+                />
+                Update matching customers/companies
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
                   value="replace"
                   className="accent-white"
                   {...register('mode')}
@@ -651,8 +661,9 @@ const ImportSection = ({
             </div>
             <p className="text-xs text-slate-400">
               Append adds new rows only (duplicates are skipped). It will not
-              update or correct existing rows. Use Replace to delete and re-load
-              the detected brand/date range when fixing mistakes.
+              update or correct existing rows. Update replaces only the
+              customers/companies in your file within the detected date range.
+              Replace deletes and re-loads the full brand/date range.
             </p>
           </div>
         </div>
@@ -696,10 +707,11 @@ const ImportSection = ({
         </div>
       ) : null}
 
-      {mode === 'replace' ? (
+      {mode !== 'append' ? (
         <p className="mt-4 text-xs text-slate-400">
-          Replace deletes existing rows for the detected brand(s) within the
-          detected date range.
+          {mode === 'update'
+            ? 'Update deletes existing rows for matching customers/companies within the detected brand/date range before inserting.'
+            : 'Replace deletes existing rows for the detected brand(s) within the detected date range.'}
         </p>
       ) : null}
     </div>
@@ -790,6 +802,12 @@ export default function ImportClient({
           Upload CSV or Excel files to keep workspace data up to date. Row
           numbers in errors refer to data rows (excluding headers).
         </p>
+        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
+          <strong className="text-slate-200">Modes:</strong> Append adds new
+          rows only (duplicates skipped). Update replaces only the
+          customers/companies in your file within the detected brand/date range.
+          Replace deletes and reloads the full brand/date range.
+        </div>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-2">

@@ -56,9 +56,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Workspace access denied.' }, { status: 403 })
   }
 
-  if (mode === 'replace' && !['owner', 'admin', 'editor'].includes(member.role)) {
+  if (
+    (mode === 'replace' || mode === 'update') &&
+    !['owner', 'admin', 'editor'].includes(member.role)
+  ) {
     return NextResponse.json(
-      { error: 'You do not have permission to replace data.' },
+      { error: 'You do not have permission to modify existing data.' },
       { status: 403 }
     )
   }
@@ -128,7 +131,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ inserted: 0, rejected })
   }
 
-  if (mode === 'replace') {
+  if (mode === 'replace' || mode === 'update') {
     const brands = Array.from(new Set(insertRows.map((row) => row.brand)))
     const range = getDateRange(insertRows.map((row) => row.date))
 
@@ -139,13 +142,24 @@ export async function POST(request: Request) {
       )
     }
 
-    const { error: deleteError } = await supabase
+    const deleteQuery = supabase
       .from('sell_in')
       .delete()
       .eq('workspace_id', workspaceId)
       .in('brand', brands)
       .gte('date', range.min)
       .lte('date', range.max)
+
+    if (mode === 'update') {
+      const customers = Array.from(
+        new Set(insertRows.map((row) => row.customer))
+      )
+      if (customers.length) {
+        deleteQuery.in('customer', customers)
+      }
+    }
+
+    const { error: deleteError } = await deleteQuery
 
     if (deleteError) {
       return NextResponse.json({ error: deleteError.message }, { status: 400 })
