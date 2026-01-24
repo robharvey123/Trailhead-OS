@@ -61,6 +61,7 @@ export default async function CompanySummaryPage({
 
   const brandFilter =
     resolvedSearchParams.brand?.trim() || settings?.brand_filter || ''
+  const customerFilter = resolvedSearchParams.company?.trim() || ''
   const start = resolvedSearchParams.start ?? ''
   const end = resolvedSearchParams.end ?? ''
   const startDate = start ? `${start}-01` : null
@@ -106,9 +107,33 @@ export default async function CompanySummaryPage({
     mappingByCustomer.set(mapping.customer, mapping)
   })
 
+  const availableCustomers = Array.from(
+    new Set((sellInRows ?? []).map((row) => row.customer).filter(Boolean))
+  ).sort()
+
+  const filteredSellInRows = (sellInRows ?? []).filter((row) => {
+    if (!customerFilter) {
+      return true
+    }
+    return row.customer === customerFilter
+  })
+
+  const mappedCompanies = new Set<string>()
+  if (customerFilter) {
+    const mapping = mappingByCustomer.get(customerFilter)
+    mappedCompanies.add(mapping?.sell_out_company ?? customerFilter)
+  }
+
+  const filteredSellOutRows = (sellOutRows ?? []).filter((row) => {
+    if (!customerFilter) {
+      return true
+    }
+    return mappedCompanies.has(row.company)
+  })
+
   const sellInCompanyMonthlyMap = new Map<string, SellInMonthlyRow>()
 
-  ;(sellInRows ?? []).forEach((row) => {
+  filteredSellInRows.forEach((row) => {
     const mapping = mappingByCustomer.get(row.customer)
     const company = mapping?.sell_out_company ?? row.customer
     const month = row.month
@@ -151,7 +176,7 @@ export default async function CompanySummaryPage({
     summaryMap.set(row.customer, entry)
   })
 
-  ;(sellOutRows ?? []).forEach((row) => {
+  filteredSellOutRows.forEach((row) => {
     const entry = summaryMap.get(row.company) ?? {
       company: row.company,
       sellIn: 0,
@@ -232,7 +257,7 @@ export default async function CompanySummaryPage({
   })
 
   const sellOutPivot = pivotMonthly({
-    rows: (sellOutRows ?? []) as SellOutMonthlyRow[],
+    rows: filteredSellOutRows as SellOutMonthlyRow[],
     rowKey: 'company',
     monthKey: 'month',
     valueKey: 'sell_out_units',
@@ -257,6 +282,9 @@ export default async function CompanySummaryPage({
         start={start}
         end={end}
         availableMonths={availableMonths}
+        company={customerFilter}
+        availableCompanies={availableCustomers}
+        companyLabel="Customer"
       />
 
       <CompanyCharts data={topCompanies} />

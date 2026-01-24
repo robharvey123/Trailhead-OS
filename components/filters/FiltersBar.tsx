@@ -9,6 +9,7 @@ type FiltersBarProps = {
   availableMonths?: string[]
   company?: string
   availableCompanies?: string[]
+  companyLabel?: string
 }
 
 export default function FiltersBar({
@@ -19,6 +20,7 @@ export default function FiltersBar({
   availableMonths,
   company,
   availableCompanies,
+  companyLabel = 'Company',
 }: FiltersBarProps) {
   const normalizedMonths = (availableMonths ?? [])
     .map((month) => month.slice(0, 7))
@@ -71,7 +73,7 @@ export default function FiltersBar({
       {showCompanySelect ? (
         <label className="flex flex-col gap-2">
           <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Company
+            {companyLabel}
           </span>
           <select
             name="company"

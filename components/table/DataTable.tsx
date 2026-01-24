@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   flexRender,
   getCoreRowModel,
@@ -8,6 +8,7 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type ColumnFiltersState,
   type SortingState,
 } from '@tanstack/react-table'
 
@@ -42,6 +43,9 @@ export default function DataTable<T>({
   filterPlaceholder = 'Filter rows...',
   csvFilename = 'export.csv',
   showToolbar = true,
+  monthOptions,
+  monthColumnId = 'month',
+  monthFilterLabel = 'Month',
 }: {
   data: T[]
   columns: ColumnDef<T, unknown>[]
@@ -49,16 +53,36 @@ export default function DataTable<T>({
   filterPlaceholder?: string
   csvFilename?: string
   showToolbar?: boolean
+  monthOptions?: { value: string; label: string }[]
+  monthColumnId?: string
+  monthFilterLabel?: string
 }) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [monthFilter, setMonthFilter] = useState('')
+
+  useEffect(() => {
+    if (!monthOptions?.length) {
+      return
+    }
+
+    setColumnFilters((prev) => {
+      const next = prev.filter((filter) => filter.id !== monthColumnId)
+      if (monthFilter) {
+        next.push({ id: monthColumnId, value: monthFilter })
+      }
+      return next
+    })
+  }, [monthFilter, monthColumnId, monthOptions])
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter },
+    state: { sorting, globalFilter, columnFilters },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -88,12 +112,31 @@ export default function DataTable<T>({
     <div className="space-y-4">
       {showToolbar ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <input
-            value={globalFilter}
-            onChange={(event) => setGlobalFilter(event.target.value)}
-            placeholder={filterPlaceholder}
-            className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 md:max-w-xs"
-          />
+          <div className="flex w-full flex-wrap items-center gap-3 md:w-auto">
+            <input
+              value={globalFilter}
+              onChange={(event) => setGlobalFilter(event.target.value)}
+              placeholder={filterPlaceholder}
+              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 md:max-w-xs"
+            />
+            {monthOptions?.length ? (
+              <label className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+                {monthFilterLabel}
+                <select
+                  value={monthFilter}
+                  onChange={(event) => setMonthFilter(event.target.value)}
+                  className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+                >
+                  <option value="">All</option>
+                  {monthOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+          </div>
           <button
             type="button"
             onClick={handleExport}
