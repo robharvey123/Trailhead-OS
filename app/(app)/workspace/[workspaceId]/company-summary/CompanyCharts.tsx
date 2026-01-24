@@ -11,6 +11,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import type {
+  Formatter,
+  NameType,
+  ValueType,
+} from 'recharts/types/component/DefaultTooltipContent'
 import { formatNumber, formatPercent } from '@/lib/format'
 
 type CompanyChartDatum = {
@@ -20,12 +25,15 @@ type CompanyChartDatum = {
   sellThrough: number
 }
 
-const tooltipFormatter = (value: number, name: string) => {
+const tooltipFormatter: Formatter<ValueType, NameType> = (value, name) => {
+  if (value == null) {
+    return ''
+  }
   if (name === 'Sell Through %') {
-    return formatPercent(value)
+    return formatPercent(Number(value))
   }
 
-  return formatNumber(value)
+  return formatNumber(Number(value))
 }
 
 export default function CompanyCharts({ data }: { data: CompanyChartDatum[] }) {
