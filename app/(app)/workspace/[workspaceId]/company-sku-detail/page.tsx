@@ -67,6 +67,7 @@ export default async function CompanySkuDetailPage({
 
   const brandFilter =
     resolvedSearchParams.brand?.trim() || settings?.brand_filter || ''
+  const companyFilter = resolvedSearchParams.company?.trim() || ''
   const start = resolvedSearchParams.start ?? ''
   const end = resolvedSearchParams.end ?? ''
   const startDate = start ? `${start}-01` : null
@@ -112,9 +113,36 @@ export default async function CompanySkuDetailPage({
     mappingByCustomer.set(mapping.customer, mapping)
   })
 
+  const companyOptions = Array.from(
+    new Set(
+      [
+        ...(sellOutRows ?? []).map((row) => row.company),
+        ...(sellInRows ?? []).map((row) =>
+          mappingByCustomer.get(row.customer)?.sell_out_company ?? row.customer
+        ),
+      ].filter(Boolean)
+    )
+  ).sort()
+
+  const filteredSellInRows = (sellInRows ?? []).filter((row) => {
+    if (!companyFilter) {
+      return true
+    }
+    const mapped =
+      mappingByCustomer.get(row.customer)?.sell_out_company ?? row.customer
+    return mapped === companyFilter
+  })
+
+  const filteredSellOutRows = (sellOutRows ?? []).filter((row) => {
+    if (!companyFilter) {
+      return true
+    }
+    return row.company === companyFilter
+  })
+
   const skuMap = new Map<string, CompanySkuAccum>()
 
-  ;(sellInRows ?? []).forEach((row) => {
+  filteredSellInRows.forEach((row) => {
     const mapping = mappingByCustomer.get(row.customer)
     const company = mapping?.sell_out_company ?? row.customer
     const key = `${company}__${row.product}`
@@ -135,7 +163,7 @@ export default async function CompanySkuDetailPage({
     skuMap.set(key, { ...entry, company })
   })
 
-  ;(sellOutRows ?? []).forEach((row) => {
+  filteredSellOutRows.forEach((row) => {
     const key = `${row.company}__${row.product}`
     const entry = skuMap.get(key) ?? {
       sku: row.product,
@@ -202,8 +230,8 @@ export default async function CompanySkuDetailPage({
   const availableMonths = Array.from(
     new Set(
       [
-        ...(sellInRows ?? []).map((row) => row.month?.slice(0, 7)),
-        ...(sellOutRows ?? []).map((row) => row.month?.slice(0, 7)),
+        ...filteredSellInRows.map((row) => row.month?.slice(0, 7)),
+        ...filteredSellOutRows.map((row) => row.month?.slice(0, 7)),
       ].filter(Boolean)
     )
   ).sort()
@@ -233,6 +261,8 @@ export default async function CompanySkuDetailPage({
         start={start}
         end={end}
         availableMonths={availableMonths}
+        company={companyFilter}
+        availableCompanies={companyOptions}
       />
 
       <div className="grid gap-4 sm:grid-cols-2">

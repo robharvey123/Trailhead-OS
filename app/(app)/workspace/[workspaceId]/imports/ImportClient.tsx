@@ -649,6 +649,11 @@ const ImportSection = ({
                 Replace for brand + date range
               </label>
             </div>
+            <p className="text-xs text-slate-400">
+              Append adds new rows only (duplicates are skipped). It will not
+              update or correct existing rows. Use Replace to delete and re-load
+              the detected brand/date range when fixing mistakes.
+            </p>
           </div>
         </div>
 
