@@ -12,6 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import type { ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import {
   formatCurrency,
   formatMonthLabel,
@@ -41,6 +42,15 @@ type DashboardInsightsProps = {
 
 const chartCardClass =
   'rounded-2xl border border-slate-800 bg-slate-900/70 p-6'
+
+const formatNumberValue = (value: ValueType) =>
+  value == null ? '' : formatNumber(Number(value))
+
+const formatPercentValue = (value: ValueType) =>
+  value == null ? '' : formatPercent(Number(value))
+
+const formatCurrencyValue = (value: ValueType, symbol: string) =>
+  value == null ? '' : formatCurrency(Number(value), symbol)
 
 export default function DashboardInsights({
   aspData,
@@ -79,8 +89,8 @@ export default function DashboardInsights({
                     border: '1px solid #1f2937',
                     color: '#e2e8f0',
                   }}
-                  formatter={(value: number) =>
-                    formatCurrency(Number(value), currencySymbol)
+                  formatter={(value) =>
+                    formatCurrencyValue(value, currencySymbol)
                   }
                   labelFormatter={(value) => formatMonthLabel(String(value))}
                 />
@@ -120,7 +130,7 @@ export default function DashboardInsights({
                     border: '1px solid #1f2937',
                     color: '#e2e8f0',
                   }}
-                  formatter={(value: number) => formatPercent(Number(value))}
+                  formatter={(value) => formatPercentValue(value)}
                   labelFormatter={(value) => formatMonthLabel(String(value))}
                 />
                 <Line
@@ -154,7 +164,7 @@ export default function DashboardInsights({
                     border: '1px solid #1f2937',
                     color: '#e2e8f0',
                   }}
-                  formatter={(value: number) => formatNumber(Number(value))}
+                  formatter={(value) => formatNumberValue(value)}
                 />
                 <Legend />
                 <Bar dataKey="value" name="Sell Out" fill="#22c55e" radius={[6, 6, 0, 0]} />
@@ -179,7 +189,7 @@ export default function DashboardInsights({
                     border: '1px solid #1f2937',
                     color: '#e2e8f0',
                   }}
-                  formatter={(value: number) => formatNumber(Number(value))}
+                  formatter={(value) => formatNumberValue(value)}
                 />
                 <Legend />
                 <Bar dataKey="value" name="Sell Out" fill="#f97316" radius={[6, 6, 0, 0]} />
@@ -217,8 +227,8 @@ export default function DashboardInsights({
                     border: '1px solid #1f2937',
                     color: '#e2e8f0',
                   }}
-                  formatter={(value: number) =>
-                    formatCurrency(Number(value), currencySymbol)
+                  formatter={(value) =>
+                    formatCurrencyValue(value, currencySymbol)
                   }
                 />
                 <Legend />
@@ -255,7 +265,7 @@ export default function DashboardInsights({
                     border: '1px solid #1f2937',
                     color: '#e2e8f0',
                   }}
-                  formatter={(value: number) => formatNumber(Number(value))}
+                  formatter={(value) => formatNumberValue(value)}
                 />
                 <Legend />
                 <Bar dataKey="value" name="Sell Out" fill="#f59e0b" radius={[0, 6, 6, 0]} />

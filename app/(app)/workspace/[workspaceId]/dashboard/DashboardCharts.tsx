@@ -12,6 +12,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import type {
+  Formatter,
+  NameType,
+  ValueType,
+} from 'recharts/types/component/DefaultTooltipContent'
 import { formatMonthLabel, formatNumber } from '@/lib/format'
 
 type DashboardChartDatum = {
@@ -21,7 +26,8 @@ type DashboardChartDatum = {
   cumulativeStock: number
 }
 
-const tooltipFormatter = (value: number) => formatNumber(value)
+const tooltipFormatter: Formatter<ValueType, NameType> = (value) =>
+  value == null ? '' : formatNumber(Number(value))
 
 export default function DashboardCharts({
   data,
