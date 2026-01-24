@@ -97,6 +97,7 @@ If financials are excluded, do not mention revenue, COGS, profit, or contributio
 Always mention inbound vs outbound performance and channel stock.
 Sell-out reporting can lag by ~2-4 weeks; if the latest month shows low/zero sell-out,
 call out that it may be incomplete and avoid negative conclusions based solely on that month.
+Promo stock is valued at zero; do not treat promo units as a cost line item.
 `
 
   const response = await openai.chat.completions.create({

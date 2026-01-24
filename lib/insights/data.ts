@@ -238,13 +238,13 @@ export const getInsightsData = async ({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('currency_symbol, cogs_pct, promo_cost')
+    .select('currency_symbol, cogs_pct')
     .eq('workspace_id', workspaceId)
     .maybeSingle()
 
   const currencySymbol = settings?.currency_symbol ?? '$'
   const cogsPct = settings?.cogs_pct ?? 0.55
-  const promoCost = settings?.promo_cost ?? 0.55
+  const promoCost = 0
 
   let sellInQuery = supabase
     .from('vw_sell_in_monthly')

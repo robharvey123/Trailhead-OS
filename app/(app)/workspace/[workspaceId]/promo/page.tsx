@@ -66,7 +66,7 @@ export default async function PromoSummaryPage({
     valueKey: 'promo_units',
   })
 
-  const promoCost = settings?.promo_cost ?? 0
+  const promoCost = 0
   const currencySymbol = settings?.currency_symbol ?? '$'
 
   const dataWithCost: PromoPivotRow[] = pivotData.map((row) => ({
@@ -87,7 +87,7 @@ export default async function PromoSummaryPage({
           Promo units by customer
         </h1>
         <p className="mt-2 text-sm text-slate-300">
-          Estimated cost uses promo cost {promoCost}.
+          Promo stock is valued at zero for reporting.
         </p>
       </header>
 

@@ -67,7 +67,7 @@ export default async function PnlPage({
   const { data: rows } = await query
 
   const cogsPct = settings?.cogs_pct ?? 0.55
-  const promoCost = settings?.promo_cost ?? 0.55
+  const promoCost = 0
   const currencySymbol = settings?.currency_symbol ?? '$'
 
   const pnlRows: PnlRow[] = (rows ?? []).map((row) => {
@@ -126,7 +126,7 @@ export default async function PnlPage({
         </p>
         <h1 className="mt-2 text-2xl font-semibold">Monthly P&L</h1>
         <p className="mt-2 text-sm text-slate-300">
-          COGS {cogsPct}, promo cost {promoCost}.
+          COGS {cogsPct}, promo stock valued at zero.
         </p>
       </header>
 
