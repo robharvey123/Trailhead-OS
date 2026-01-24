@@ -10,7 +10,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import type { Formatter, NameType } from 'recharts/types/component/DefaultTooltipContent'
+import type {
+  Formatter,
+  NameType,
+  ValueType,
+} from 'recharts/types/component/DefaultTooltipContent'
 import { formatNumber } from '@/lib/format'
 
 type CompanySkuChartDatum = {
@@ -19,7 +23,7 @@ type CompanySkuChartDatum = {
   sellOut: number
 }
 
-const tooltipFormatter: Formatter<number | undefined, NameType> = (value) =>
+const tooltipFormatter: Formatter<ValueType, NameType> = (value) =>
   value == null ? '' : formatNumber(Number(value))
 
 export default function CompanySkuCharts({
