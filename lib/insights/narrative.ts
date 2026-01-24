@@ -24,6 +24,12 @@ const buildPayload = (
     revenue: includeFinancials ? row.revenue : undefined,
   }))
 
+  const latestMonth = data.monthlySummary.at(-1)?.month ?? null
+  const latestSellOutMonth =
+    [...data.monthlySummary]
+      .reverse()
+      .find((row) => row.sellOut > 0)?.month ?? null
+
   const totals = {
     sellIn: data.totals.sellIn,
     promo: data.totals.promo,
@@ -43,6 +49,13 @@ const buildPayload = (
       brand: data.brand,
       start: data.start || null,
       end: data.end || null,
+    },
+    reportingNotes: {
+      sellOutLagDays: 15,
+      guidance:
+        'Sell-out reports are typically received mid-next-month, so the latest month may be incomplete.',
+      latestMonth,
+      latestSellOutMonth,
     },
     currencySymbol: data.currencySymbol,
     totals,
@@ -82,6 +95,8 @@ For exec reports, keep it tight (summary 3-4 sentences, 3-5 bullets each list).
 For detailed reports, provide deeper insight (summary 6-8 sentences, 5-7 bullets each list).
 If financials are excluded, do not mention revenue, COGS, profit, or contribution.
 Always mention inbound vs outbound performance and channel stock.
+Sell-out reporting can lag by ~2-4 weeks; if the latest month shows low/zero sell-out,
+call out that it may be incomplete and avoid negative conclusions based solely on that month.
 `
 
   const response = await openai.chat.completions.create({
