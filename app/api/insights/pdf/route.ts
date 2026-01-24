@@ -73,8 +73,9 @@ export async function POST(request: Request) {
       : null) as InsightsNarrative | null
 
     const buffer = await renderInsightsPdf(data, narrative)
+    const body = new Uint8Array(buffer)
 
-    return new NextResponse(buffer, {
+    return new NextResponse(body, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

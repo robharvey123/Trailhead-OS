@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const ImportPayloadSchema = z.object({
   workspaceId: z.string().uuid(),
   mode: z.enum(['append', 'replace', 'update']),
-  rows: z.array(z.record(z.unknown())),
+  rows: z.array(z.record(z.string(), z.unknown())),
   rowOffset: z.number().int().optional(),
 })
 
@@ -260,7 +260,9 @@ export const parseImportPayload = (
     const parsed =
       typeof body.rowOffset === 'string'
         ? Number(body.rowOffset)
-        : body.rowOffset
+        : typeof body.rowOffset === 'number'
+          ? body.rowOffset
+          : Number.NaN
 
     if (!Number.isInteger(parsed)) {
       return { success: false, error: 'Invalid row offset.' }

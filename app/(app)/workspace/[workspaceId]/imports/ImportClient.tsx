@@ -145,7 +145,10 @@ const parseExcelFile = async (
   }
 
   const headerRow = sheet.getRow(1)
-  const rawHeaders = (headerRow?.values ?? [])
+  const headerValues = Array.isArray(headerRow?.values)
+    ? headerRow.values
+    : Object.values(headerRow?.values ?? {})
+  const rawHeaders = headerValues
     .slice(1)
     .map((value) => String(value ?? '').trim())
   const headerKeys = rawHeaders.map(normalizeHeader).filter(Boolean)

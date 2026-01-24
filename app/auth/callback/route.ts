@@ -7,6 +7,10 @@ export async function GET(request: NextRequest) {
   const tokenHash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type')
   const next = requestUrl.searchParams.get('next') ?? '/workspaces'
+  const emailOtpTypes = ['magiclink', 'recovery', 'invite', 'email'] as const
+  const otpType = emailOtpTypes.includes(type as typeof emailOtpTypes[number])
+    ? (type as (typeof emailOtpTypes)[number])
+    : null
 
   const response = NextResponse.redirect(new URL(next, request.url))
   const supabase = createServerClient(
@@ -28,10 +32,10 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     await supabase.auth.exchangeCodeForSession(code)
-  } else if (tokenHash && type) {
+  } else if (tokenHash && otpType) {
     await supabase.auth.verifyOtp({
       token_hash: tokenHash,
-      type: type as Parameters<typeof supabase.auth.verifyOtp>[0]['type'],
+      type: otpType,
     })
   }
 

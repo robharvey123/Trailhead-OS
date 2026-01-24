@@ -1,6 +1,6 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import type { CellContext, ColumnDef } from '@tanstack/react-table'
 import DataTable from './DataTable'
 import { formatMonthLabel, formatNumber } from '@/lib/format'
 
@@ -29,17 +29,20 @@ export default function PivotTable({
     {
       accessorKey: rowKey,
       header: rowLabel,
-      cell: ({ getValue }) => String(getValue()),
+      cell: ({ getValue }: CellContext<PivotRow, unknown>) =>
+        String(getValue()),
     },
-    ...months.map((month) => ({
+    ...months.map<ColumnDef<PivotRow>>((month) => ({
       accessorKey: month,
       header: formatMonthLabel(month),
-      cell: ({ getValue }) => formatNumber(Number(getValue() ?? 0)),
+      cell: ({ getValue }: CellContext<PivotRow, unknown>) =>
+        formatNumber(Number(getValue() ?? 0)),
     })),
     {
       accessorKey: 'total',
       header: 'Total',
-      cell: ({ getValue }) => formatNumber(Number(getValue() ?? 0)),
+      cell: ({ getValue }: CellContext<PivotRow, unknown>) =>
+        formatNumber(Number(getValue() ?? 0)),
     },
   ]
 

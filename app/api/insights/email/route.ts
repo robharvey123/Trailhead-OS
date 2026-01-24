@@ -84,13 +84,19 @@ export async function POST(request: Request) {
       end,
     })
 
-    const narrative =
-      report ??
-      (await generateInsightsNarrative({
-        data,
-        reportType,
-        includeFinancials,
-      }))
+    const narrative = report
+      ? {
+          title: report.title ?? 'Monthly S&OP summary',
+          summary: report.summary ?? '',
+          highlights: report.highlights ?? [],
+          risks: report.risks ?? [],
+          actions: report.actions ?? [],
+        }
+      : await generateInsightsNarrative({
+          data,
+          reportType,
+          includeFinancials,
+        })
 
     const buffer = await renderInsightsPdf(data, narrative)
     const periodLabel = data.start || data.end

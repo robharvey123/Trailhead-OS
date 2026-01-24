@@ -1,6 +1,6 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import type { CellContext, ColumnDef } from '@tanstack/react-table'
 import DataTable from '@/components/table/DataTable'
 import { formatCurrency, formatMonthLabel, formatNumber } from '@/lib/format'
 
@@ -21,22 +21,25 @@ export default function PromoTable({
     {
       accessorKey: 'customer',
       header: 'Customer',
-      cell: ({ getValue }) => String(getValue()),
+      cell: ({ getValue }: CellContext<PromoRow, unknown>) =>
+        String(getValue()),
     },
-    ...months.map((month) => ({
+    ...months.map<ColumnDef<PromoRow>>((month) => ({
       accessorKey: month,
       header: formatMonthLabel(month),
-      cell: ({ getValue }) => formatNumber(Number(getValue() ?? 0)),
+      cell: ({ getValue }: CellContext<PromoRow, unknown>) =>
+        formatNumber(Number(getValue() ?? 0)),
     })),
     {
       accessorKey: 'total',
       header: 'Total',
-      cell: ({ getValue }) => formatNumber(Number(getValue() ?? 0)),
+      cell: ({ getValue }: CellContext<PromoRow, unknown>) =>
+        formatNumber(Number(getValue() ?? 0)),
     },
     {
       accessorKey: 'estCost',
       header: 'Est. Cost',
-      cell: ({ getValue }) =>
+      cell: ({ getValue }: CellContext<PromoRow, unknown>) =>
         formatCurrency(Number(getValue() ?? 0), currencySymbol),
     },
   ]
