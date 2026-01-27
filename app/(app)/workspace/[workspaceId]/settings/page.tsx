@@ -17,6 +17,29 @@ export default async function SettingsPage({
   const resolvedParams = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return <div className="p-8">You must be logged in to view this page.</div>
+  }
+
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', resolvedParams.workspaceId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!member || !['owner', 'admin'].includes(member.role)) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-semibold mb-2">Access denied</h2>
+        <p className="text-slate-400">Only workspace admins can view or edit settings.</p>
+      </div>
+    )
+  }
+
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select('brand_filter, cogs_pct, promo_cost, currency_symbol')

@@ -28,6 +28,29 @@ export default async function ImportsPage({
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return <div className="p-8">You must be logged in to view this page.</div>
+  }
+
+  const { data: member } = await supabase
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!member || !['owner', 'admin', 'editor'].includes(member.role)) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-semibold mb-2">Access denied</h2>
+        <p className="text-slate-400">Only workspace admins and editors can import data.</p>
+      </div>
+    )
+  }
+
   const [sellInResult, sellOutResult, settingsResult] = await Promise.all([
     supabase
       .from('sell_in')

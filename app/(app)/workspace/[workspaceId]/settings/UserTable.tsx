@@ -45,6 +45,7 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
             <tr className="bg-slate-900">
               <th className="p-2 text-left">Email</th>
               <th className="p-2 text-left">Role</th>
+              <th className="p-2 text-left">Last Login</th>
               <th className="p-2 text-left">Change Password</th>
             </tr>
           </thead>
@@ -53,6 +54,11 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
               <tr key={user.id} className="border-t border-slate-800">
                 <td className="p-2">{user.email}</td>
                 <td className="p-2">{user.role}</td>
+                <td className="p-2">
+                  {user.lastSignIn
+                    ? new Date(user.lastSignIn).toLocaleString()
+                    : 'Never'}
+                </td>
                 <td className="p-2">
                   {editId === user.id ? (
                     <div className="flex gap-2">

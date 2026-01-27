@@ -30,6 +30,7 @@ export async function GET(request: Request) {
     id: m.user_id,
     email: userMap[m.user_id]?.email || '',
     role: m.role,
+    lastSignIn: userMap[m.user_id]?.last_sign_in_at || null,
   }))
   return NextResponse.json({ users: result })
 }
