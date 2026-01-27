@@ -20,7 +20,7 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800 bg-slate-950/70">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
           <Link href="/workspaces" className="text-sm font-semibold">
             Rush Analytics
           </Link>
@@ -34,7 +34,9 @@ export default async function AppLayout({
           </form>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main className="mx-auto w-full max-w-screen-2xl px-6 py-8">
+        {children}
+      </main>
     </div>
   )
 }

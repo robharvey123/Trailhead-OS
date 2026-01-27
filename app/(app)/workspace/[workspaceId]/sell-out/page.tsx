@@ -91,6 +91,7 @@ export default async function SellOutSummaryPage({
         rowLabel="Company"
         csvFilename="sell-out-summary.csv"
         filterPlaceholder="Filter companies..."
+        stickyRowHeader
       />
     </div>
   )

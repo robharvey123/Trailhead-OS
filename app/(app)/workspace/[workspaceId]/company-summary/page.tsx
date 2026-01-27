@@ -314,6 +314,7 @@ export default async function CompanySummaryPage({
               rowLabel="Company"
               csvFilename="company-sell-in-by-month.csv"
               filterPlaceholder="Filter companies..."
+              stickyRowHeader
             />
           </div>
         </div>
@@ -331,6 +332,7 @@ export default async function CompanySummaryPage({
               rowLabel="Company"
               csvFilename="company-sell-out-by-month.csv"
               filterPlaceholder="Filter companies..."
+              stickyRowHeader
             />
           </div>
         </div>

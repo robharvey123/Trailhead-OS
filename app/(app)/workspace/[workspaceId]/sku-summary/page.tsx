@@ -279,6 +279,7 @@ export default async function SkuSummaryPage({
               rowLabel="SKU"
               csvFilename="sku-sell-in-by-month.csv"
               filterPlaceholder="Filter SKUs..."
+              stickyRowHeader
             />
           </div>
         </div>
@@ -296,6 +297,7 @@ export default async function SkuSummaryPage({
               rowLabel="SKU"
               csvFilename="sku-sell-out-by-month.csv"
               filterPlaceholder="Filter SKUs..."
+              stickyRowHeader
             />
           </div>
         </div>

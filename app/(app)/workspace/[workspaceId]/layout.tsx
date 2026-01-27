@@ -54,7 +54,7 @@ export default async function WorkspaceLayout({
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="border-b border-slate-800 bg-slate-950/80">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-6">
+        <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-6 py-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
@@ -72,7 +72,9 @@ export default async function WorkspaceLayout({
           <WorkspaceNav items={navItems} workspaceId={workspaceId} />
         </div>
       </div>
-      <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      <main className="mx-auto w-full max-w-screen-2xl px-6 py-8">
+        {children}
+      </main>
     </div>
   )
 }
