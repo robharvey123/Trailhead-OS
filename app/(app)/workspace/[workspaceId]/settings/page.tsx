@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import SettingsForm from './SettingsForm'
 import MappingForm from './MappingForm'
 import MappingTable from './MappingTable'
+import InviteMemberForm from './InviteMemberForm'
 import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
@@ -43,6 +44,15 @@ export default async function SettingsPage({
         <h1 className="mt-2 text-2xl font-semibold">Workspace settings</h1>
       </header>
 
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <h2 className="text-lg font-semibold">Invite member</h2>
+        <p className="mt-2 text-sm text-slate-300">
+          Add a user to this workspace by email and password. (Password will be visible to you and the user.)
+        </p>
+        <div className="mt-6">
+          <InviteMemberForm workspaceId={resolvedParams.workspaceId} />
+        </div>
+      </section>
       <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Model settings</h2>
         <p className="mt-2 text-sm text-slate-300">
