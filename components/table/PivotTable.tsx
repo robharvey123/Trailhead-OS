@@ -14,6 +14,7 @@ type PivotTableProps = {
   rowLabel: string
   csvFilename: string
   filterPlaceholder: string
+  stickyRowHeader?: boolean
 }
 
 export default function PivotTable({
@@ -24,6 +25,7 @@ export default function PivotTable({
   rowLabel,
   csvFilename,
   filterPlaceholder,
+  stickyRowHeader = false,
 }: PivotTableProps) {
   const columns: ColumnDef<PivotRow>[] = [
     {
@@ -60,6 +62,7 @@ export default function PivotTable({
       totals={totalsRow}
       csvFilename={csvFilename}
       filterPlaceholder={filterPlaceholder}
+      stickyColumnId={stickyRowHeader ? rowKey : undefined}
     />
   )
 }

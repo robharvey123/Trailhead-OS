@@ -91,6 +91,7 @@ export default async function SellInSummaryPage({
         rowLabel="Customer"
         csvFilename="sell-in-summary.csv"
         filterPlaceholder="Filter customers..."
+        stickyRowHeader
       />
     </div>
   )

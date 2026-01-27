@@ -46,6 +46,7 @@ export default function DataTable<T>({
   monthOptions,
   monthColumnId = 'month',
   monthFilterLabel = 'Month',
+  stickyColumnId,
 }: {
   data: T[]
   columns: ColumnDef<T, unknown>[]
@@ -56,6 +57,7 @@ export default function DataTable<T>({
   monthOptions?: { value: string; label: string }[]
   monthColumnId?: string
   monthFilterLabel?: string
+  stickyColumnId?: string
 }) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -155,7 +157,11 @@ export default function DataTable<T>({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-4 py-3 text-left font-medium"
+                    className={`px-4 py-3 text-left font-medium${
+                      header.column.id === stickyColumnId
+                        ? ' sticky left-0 z-20 bg-slate-950 shadow-[2px_0_0_0_rgba(15,23,42,0.8)]'
+                        : ''
+                    }`}
                   >
                     {header.isPlaceholder ? null : (
                       <button
@@ -185,7 +191,14 @@ export default function DataTable<T>({
               table.getRowModel().rows.map((row) => (
                 <tr key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3">
+                    <td
+                      key={cell.id}
+                      className={`px-4 py-3${
+                        cell.column.id === stickyColumnId
+                          ? ' sticky left-0 z-10 bg-slate-950 shadow-[2px_0_0_0_rgba(15,23,42,0.8)]'
+                          : ''
+                      }`}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
@@ -206,7 +219,14 @@ export default function DataTable<T>({
             <tfoot className="border-t border-slate-800 bg-slate-950/80 text-slate-100">
               <tr>
                 {table.getVisibleLeafColumns().map((column) => (
-                  <td key={column.id} className="px-4 py-3 font-semibold">
+                  <td
+                    key={column.id}
+                    className={`px-4 py-3 font-semibold${
+                      column.id === stickyColumnId
+                        ? ' sticky left-0 z-10 bg-slate-950 shadow-[2px_0_0_0_rgba(15,23,42,0.8)]'
+                        : ''
+                    }`}
+                  >
                     {totals[column.id] ?? ''}
                   </td>
                 ))}
