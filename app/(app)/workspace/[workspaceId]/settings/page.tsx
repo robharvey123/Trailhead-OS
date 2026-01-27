@@ -3,6 +3,7 @@ import SettingsForm from './SettingsForm'
 import MappingForm from './MappingForm'
 import MappingTable from './MappingTable'
 import InviteMemberForm from './InviteMemberForm'
+import UserTable from './UserTable'
 import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
@@ -52,6 +53,7 @@ export default async function SettingsPage({
         <div className="mt-6">
           <InviteMemberForm workspaceId={resolvedParams.workspaceId} />
         </div>
+        <UserTable workspaceId={resolvedParams.workspaceId} />
       </section>
       <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Model settings</h2>
