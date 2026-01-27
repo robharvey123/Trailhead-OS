@@ -270,17 +270,25 @@ export default async function CompanySummaryPage({
 
   const sellInByMonth = new Map<string, number>()
   sellInCompanyMonthly.forEach((row) => {
+    const month = String(row.month ?? '').slice(0, 7)
+    if (!month) {
+      return
+    }
     sellInByMonth.set(
-      row.month,
-      (sellInByMonth.get(row.month) ?? 0) + (row.sell_in_units ?? 0)
+      month,
+      (sellInByMonth.get(month) ?? 0) + (row.sell_in_units ?? 0)
     )
   })
 
   const sellOutByMonth = new Map<string, number>()
   filteredSellOutRows.forEach((row) => {
+    const month = String(row.month ?? '').slice(0, 7)
+    if (!month) {
+      return
+    }
     sellOutByMonth.set(
-      row.month,
-      (sellOutByMonth.get(row.month) ?? 0) + (row.sell_out_units ?? 0)
+      month,
+      (sellOutByMonth.get(month) ?? 0) + (row.sell_out_units ?? 0)
     )
   })
 
