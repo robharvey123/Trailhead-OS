@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
 import { pivotMonthly } from '@/lib/analytics/pivot'
 import CompanyCharts from './CompanyCharts'
+import CompanyMonthlyCharts from './CompanyMonthlyCharts'
 import CompanySummaryTable from './CompanySummaryTable'
 import PivotTable from '@/components/table/PivotTable'
 import FiltersBar from '@/components/filters/FiltersBar'
@@ -267,6 +268,32 @@ export default async function CompanySummaryPage({
     new Set([...sellInPivot.months, ...sellOutPivot.months])
   ).sort()
 
+  const sellInByMonth = new Map<string, number>()
+  sellInCompanyMonthly.forEach((row) => {
+    sellInByMonth.set(
+      row.month,
+      (sellInByMonth.get(row.month) ?? 0) + (row.sell_in_units ?? 0)
+    )
+  })
+
+  const sellOutByMonth = new Map<string, number>()
+  filteredSellOutRows.forEach((row) => {
+    sellOutByMonth.set(
+      row.month,
+      (sellOutByMonth.get(row.month) ?? 0) + (row.sell_out_units ?? 0)
+    )
+  })
+
+  const monthlyChartData = availableMonths.map((month) => ({
+    month,
+    sellIn: sellInByMonth.get(month) ?? 0,
+    sellOut: sellOutByMonth.get(month) ?? 0,
+  }))
+
+  const monthlyChartTitle = customerFilter
+    ? `Monthly sell in vs sell out • ${customerFilter}`
+    : 'Monthly sell in vs sell out • All companies'
+
   return (
     <div className="space-y-8">
       <header>
@@ -286,6 +313,8 @@ export default async function CompanySummaryPage({
         availableCompanies={availableCustomers}
         companyLabel="Customer"
       />
+
+      <CompanyMonthlyCharts data={monthlyChartData} title={monthlyChartTitle} />
 
       <CompanyCharts data={topCompanies} />
 
