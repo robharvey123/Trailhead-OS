@@ -529,7 +529,9 @@ export const getInsightsData = async ({
   totals.channelStock = totals.totalShipped - totals.sellOut
   totals.sellThrough =
     totals.totalShipped > 0 ? (totals.sellOut / totals.totalShipped) * 100 : 0
-  totals.cogs = totals.revenue * cogsPct * -1
+  // Apply COGS to FOC (promo) stock as well
+  const focCogs = totals.promo * cogsPct * -1
+  totals.cogs = (totals.revenue * cogsPct * -1) + focCogs
   totals.grossProfit = totals.revenue + totals.cogs
   totals.promoCost = totals.promo * promoCost * -1
   totals.netContribution = totals.grossProfit + totals.promoCost
