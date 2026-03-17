@@ -1,20 +1,18 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { MarketingContent, ContentType, ContentStatus, ContentChannel } from '@/lib/marketing/types'
 import { CONTENT_TYPES, CONTENT_STATUSES, CONTENT_STATUS_LABELS, CONTENT_CHANNELS, CONTENT_CHANNEL_LABELS } from '@/lib/marketing/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type CampaignOption = { id: string; name: string }
 
 export default function ContentClient({ workspaceId, initialContent, campaigns }: { workspaceId: string; initialContent: MarketingContent[]; campaigns: CampaignOption[] }) {
   const [content, setContent] = useState(initialContent)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar')
   const [filterStatus, setFilterStatus] = useState<string>('all')
@@ -39,6 +37,8 @@ export default function ContentClient({ workspaceId, initialContent, campaigns }
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = {
       workspace_id: workspaceId, title, content_type: contentType, channel: channel || null,
       campaign_id: campaignId || null, scheduled_date: scheduledDate || null, scheduled_time: scheduledTime || null,
@@ -52,11 +52,22 @@ export default function ContentClient({ workspaceId, initialContent, campaigns }
       setContent((prev) => [...prev, created])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Content updated' : 'Content created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, title, contentType, channel, campaignId, scheduledDate, scheduledTime, status, body])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/marketing/content/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setContent((prev) => prev.filter((c) => c.id !== id))
+    try {
+      await apiFetch(`/api/marketing/content/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setContent((prev) => prev.filter((c) => c.id !== id))
+      toast.success('Content deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = content.filter((c) => filterStatus === 'all' || c.status === filterStatus)
@@ -126,7 +137,7 @@ export default function ContentClient({ workspaceId, initialContent, campaigns }
                   <div key={c.id} className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
                     <div className="flex-1">
                       <p className="text-sm font-medium">{c.title}</p>
-                      <p className="text-xs text-slate-400">{c.content_type} {c.channel ? `· ${CONTENT_CHANNEL_LABELS[c.channel]}` : ''} {c.campaign_id ? `· ${campaignMap.get(c.campaign_id)}` : ''}</p>
+                      <p className="text-xs text-slate-400">{c.content_type} {c.channel ? `· ${CONTENT_CHANNEL_LABELS[c.channel]}` : ''} {c.campaign_id ? <>{' · '}<Link href={`/workspace/${workspaceId}/campaigns`} className="hover:text-white hover:underline">{campaignMap.get(c.campaign_id)}</Link></> : ''}</p>
                     </div>
                     <span className="rounded-full border border-slate-700 px-2 py-0.5 text-[10px] uppercase">{CONTENT_STATUS_LABELS[c.status]}</span>
                     <div className="flex gap-2">

@@ -1,14 +1,10 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { StaffSchedule, ScheduleType } from '@/lib/staffing/types'
 import { SCHEDULE_TYPES, SCHEDULE_TYPE_LABELS, SCHEDULE_TYPE_COLORS } from '@/lib/staffing/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type StaffOption = { id: string; display_name: string }
 
@@ -17,6 +13,7 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 export default function ScheduleClient({ workspaceId, initialSchedules, staffList, weekStart }: { workspaceId: string; initialSchedules: StaffSchedule[]; staffList: StaffOption[]; weekStart: string }) {
   const [schedules, setSchedules] = useState(initialSchedules)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
   const [staffId, setStaffId] = useState('')
@@ -36,6 +33,8 @@ export default function ScheduleClient({ workspaceId, initialSchedules, staffLis
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, staff_profile_id: staffId, date, start_time: startTime, end_time: endTime, type, title: title || null, notes: notes || null }
     if (editingId) {
       const { schedule } = await apiFetch<{ schedule: StaffSchedule }>(`/api/staffing/schedules/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -47,11 +46,22 @@ export default function ScheduleClient({ workspaceId, initialSchedules, staffLis
       setSchedules((prev) => [...prev, { ...schedule, staff_name: staff?.display_name }].sort((a, b) => `${a.date}${a.start_time}`.localeCompare(`${b.date}${b.start_time}`)))
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Schedule updated' : 'Schedule created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, staffId, date, startTime, endTime, type, title, notes, staffList])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/staffing/schedules/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setSchedules((prev) => prev.filter((s) => s.id !== id))
+    try {
+      await apiFetch(`/api/staffing/schedules/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setSchedules((prev) => prev.filter((s) => s.id !== id))
+      toast.success('Schedule deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   // Build week dates

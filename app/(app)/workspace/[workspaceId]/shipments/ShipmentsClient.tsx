@@ -1,18 +1,15 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { Shipment, ShipmentStatus } from '@/lib/supply-chain/types'
 import { SHIPMENT_STATUSES, SHIPMENT_STATUS_LABELS, SHIPMENT_STATUS_COLORS } from '@/lib/supply-chain/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 export default function ShipmentsClient({ workspaceId, initialShipments }: { workspaceId: string; initialShipments: Shipment[] }) {
   const [shipments, setShipments] = useState(initialShipments)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
@@ -37,6 +34,8 @@ export default function ShipmentsClient({ workspaceId, initialShipments }: { wor
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, reference_number: referenceNumber || null, carrier: carrier || null, tracking_number: trackingNumber || null, status, ship_date: shipDate || null, estimated_delivery: estimatedDelivery || null, origin_address: origin || null, destination_address: destination || null, notes: notes || null }
     if (editingId) {
       const { shipment } = await apiFetch<{ shipment: Shipment }>(`/api/supply-chain/shipments/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -46,11 +45,22 @@ export default function ShipmentsClient({ workspaceId, initialShipments }: { wor
       setShipments((prev) => [shipment, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Shipment updated' : 'Shipment created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, referenceNumber, carrier, trackingNumber, status, shipDate, estimatedDelivery, origin, destination, notes])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/supply-chain/shipments/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setShipments((prev) => prev.filter((s) => s.id !== id))
+    try {
+      await apiFetch(`/api/supply-chain/shipments/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setShipments((prev) => prev.filter((s) => s.id !== id))
+      toast.success('Shipment deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = shipments.filter((s) => filterStatus === 'all' || s.status === filterStatus)

@@ -1,14 +1,11 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { FinancePurchaseOrder, POStatus, POLineItem } from '@/lib/finance/types'
 import { PO_STATUSES, PO_STATUS_LABELS } from '@/lib/finance/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type AccountOption = { id: string; name: string }
 
@@ -20,6 +17,7 @@ const statusColors: Record<POStatus, string> = {
 export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts }: { workspaceId: string; initialPOs: FinancePurchaseOrder[]; accounts: AccountOption[] }) {
   const [pos, setPOs] = useState(initialPOs)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
@@ -56,6 +54,8 @@ export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const subtotal = lineItems.reduce((s, i) => s + i.quantity * i.unit_cost, 0)
     const total = subtotal + (parseFloat(shippingCost) || 0)
     const payload = {
@@ -76,11 +76,22 @@ export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts
       setPOs((prev) => [purchase_order, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'PO updated' : 'PO created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, poNumber, vendorId, status, orderDate, expectedDate, shippingCost, notes, lineItems])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/finance/purchase-orders/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setPOs((prev) => prev.filter((p) => p.id !== id))
+    try {
+      await apiFetch(`/api/finance/purchase-orders/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setPOs((prev) => prev.filter((p) => p.id !== id))
+      toast.success('Purchase order deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = pos.filter((p) => filterStatus === 'all' || p.status === filterStatus)
@@ -151,7 +162,7 @@ export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts
             {filtered.length === 0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-500">No purchase orders found</td></tr> : filtered.map((po) => (
               <tr key={po.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                 <td className="px-4 py-3 font-medium">{po.po_number}</td>
-                <td className="px-4 py-3 text-slate-400">{po.vendor_account_id ? vendorMap.get(po.vendor_account_id) || '—' : '—'}</td>
+                <td className="px-4 py-3 text-slate-400">{po.vendor_account_id ? <Link href={`/workspace/${workspaceId}/accounts`} className="hover:text-white hover:underline">{vendorMap.get(po.vendor_account_id) || '—'}</Link> : '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{po.order_date}</td>
                 <td className="px-4 py-3 text-slate-400">{po.expected_delivery_date || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{po.line_items?.length || 0}</td>

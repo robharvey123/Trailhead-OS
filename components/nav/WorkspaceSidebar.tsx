@@ -90,6 +90,7 @@ const NAV_SECTIONS: NavSection[] = [
       { slug: 'tasks', label: 'Tasks' },
       { slug: 'imports', label: 'Imports' },
       { slug: 'settings', label: 'Settings' },
+      { slug: 'settings/integrations', label: 'Integrations' },
     ],
   },
 ]
@@ -102,7 +103,7 @@ export default function WorkspaceSidebar({
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const query = searchParams.toString()
-  const activeSlug = pathname.split('/').slice(3, 4)[0] ?? ''
+  const activeSlug = pathname.split('/').slice(3).join('/')
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
@@ -114,7 +115,7 @@ export default function WorkspaceSidebar({
     <aside className="flex w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-slate-800 bg-slate-950/60 pb-6 pr-4">
       {NAV_SECTIONS.map((section) => {
         const isCollapsed = collapsed[section.label]
-        const hasActive = section.items.some((i) => i.slug === activeSlug)
+        const hasActive = section.items.some((i) => i.slug === activeSlug || activeSlug.startsWith(i.slug + '/'))
 
         return (
           <div key={section.label}>

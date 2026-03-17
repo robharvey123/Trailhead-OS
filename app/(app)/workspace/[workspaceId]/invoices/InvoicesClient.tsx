@@ -1,20 +1,18 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { FinanceInvoice, InvoiceStatus, InvoiceDirection, InvoiceLineItem } from '@/lib/finance/types'
 import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, INVOICE_STATUS_COLORS } from '@/lib/finance/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type AccountOption = { id: string; name: string }
 
 export default function InvoicesClient({ workspaceId, initialInvoices, accounts }: { workspaceId: string; initialInvoices: FinanceInvoice[]; accounts: AccountOption[] }) {
   const [invoices, setInvoices] = useState(initialInvoices)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterDirection, setFilterDirection] = useState<string>('all')
@@ -54,6 +52,8 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts 
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = {
       workspace_id: workspaceId, invoice_number: invoiceNumber, account_id: accountId || null,
       direction, status, issue_date: issueDate, due_date: dueDate || null,
@@ -73,11 +73,22 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts 
       setInvoices((prev) => [invoice, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Invoice updated' : 'Invoice created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, invoiceNumber, accountId, direction, status, issueDate, dueDate, taxRate, currency, notes, lineItems])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/finance/invoices/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setInvoices((prev) => prev.filter((i) => i.id !== id))
+    try {
+      await apiFetch(`/api/finance/invoices/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setInvoices((prev) => prev.filter((i) => i.id !== id))
+      toast.success('Invoice deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = invoices.filter((i) => {
@@ -163,7 +174,7 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts 
             {filtered.length === 0 ? <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-500">No invoices found</td></tr> : filtered.map((inv) => (
               <tr key={inv.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                 <td className="px-4 py-3 font-medium">{inv.invoice_number}</td>
-                <td className="px-4 py-3 text-slate-400">{inv.account_id ? accountMap.get(inv.account_id) || '—' : '—'}</td>
+                <td className="px-4 py-3 text-slate-400">{inv.account_id ? <Link href={`/workspace/${workspaceId}/accounts`} className="hover:text-white hover:underline">{accountMap.get(inv.account_id) || '—'}</Link> : '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{inv.direction === 'incoming' ? '↓ In' : '↑ Out'}</td>
                 <td className="px-4 py-3 text-slate-400">{inv.issue_date}</td>
                 <td className="px-4 py-3 text-slate-400">{inv.due_date || '—'}</td>

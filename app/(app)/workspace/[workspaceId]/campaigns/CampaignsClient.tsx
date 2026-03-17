@@ -1,18 +1,15 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { MarketingCampaign, CampaignType, CampaignStatus, CampaignChannel } from '@/lib/marketing/types'
 import { CAMPAIGN_TYPES, CAMPAIGN_TYPE_LABELS, CAMPAIGN_STATUSES, CAMPAIGN_STATUS_LABELS, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_LABELS } from '@/lib/marketing/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 export default function CampaignsClient({ workspaceId, initialCampaigns }: { workspaceId: string; initialCampaigns: MarketingCampaign[] }) {
   const [campaigns, setCampaigns] = useState(initialCampaigns)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [search, setSearch] = useState('')
@@ -39,6 +36,8 @@ export default function CampaignsClient({ workspaceId, initialCampaigns }: { wor
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = {
       workspace_id: workspaceId, name, description: description || null, type, status,
       channel: channel || null, budget_allocated: budgetAllocated ? parseFloat(budgetAllocated) : 0,
@@ -53,11 +52,22 @@ export default function CampaignsClient({ workspaceId, initialCampaigns }: { wor
       setCampaigns((prev) => [campaign, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Campaign updated' : 'Campaign created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, name, description, type, status, channel, budgetAllocated, startDate, endDate, targetAudience, goals])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/marketing/campaigns/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setCampaigns((prev) => prev.filter((c) => c.id !== id))
+    try {
+      await apiFetch(`/api/marketing/campaigns/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setCampaigns((prev) => prev.filter((c) => c.id !== id))
+      toast.success('Campaign deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = campaigns.filter((c) => {

@@ -1,14 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { CommChannel, CommMessage, ChannelType } from '@/lib/comms/types'
 import { CHANNEL_TYPES, CHANNEL_TYPE_LABELS } from '@/lib/comms/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 export default function MessagesClient({ workspaceId, initialChannels }: { workspaceId: string; initialChannels: CommChannel[] }) {
   const [channels, setChannels] = useState(initialChannels)
@@ -34,24 +30,38 @@ export default function MessagesClient({ workspaceId, initialChannels }: { works
   const handleSend = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || !activeChannel) return
+    try {
     const { message } = await apiFetch<{ message: CommMessage }>(`/api/comms/channels/${activeChannel.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspace_id: workspaceId, body: newMessage.trim() }) })
     setMessages((prev) => [...prev, message])
     setNewMessage('')
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to send message')
+    }
   }, [workspaceId, activeChannel, newMessage])
 
   const handleCreateChannel = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    try {
     const { channel } = await apiFetch<{ channel: CommChannel }>('/api/comms/channels', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspace_id: workspaceId, name: channelName, type: channelType, description: channelDesc || null }) })
     setChannels((prev) => [...prev, channel].sort((a, b) => a.name.localeCompare(b.name)))
     setActiveChannel(channel)
     setShowNewChannel(false); setChannelName(''); setChannelType('general'); setChannelDesc('')
+    toast.success('Channel created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create channel')
+    }
   }, [workspaceId, channelName, channelType, channelDesc])
 
   const handleDeleteChannel = useCallback(async (id: string) => {
-    await apiFetch(`/api/comms/channels/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setChannels((prev) => prev.filter((c) => c.id !== id))
-    if (activeChannel?.id === id) { setActiveChannel(null); setMessages([]) }
+    try {
+      await apiFetch(`/api/comms/channels/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setChannels((prev) => prev.filter((c) => c.id !== id))
+      if (activeChannel?.id === id) { setActiveChannel(null); setMessages([]) }
+      toast.success('Channel deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete channel')
+    }
   }, [workspaceId, activeChannel])
 
   return (

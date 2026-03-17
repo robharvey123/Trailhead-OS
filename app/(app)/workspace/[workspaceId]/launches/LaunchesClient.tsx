@@ -1,20 +1,18 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { ProductLaunch, LaunchStatus, LaunchChecklistItem } from '@/lib/products/types'
 import { LAUNCH_STATUSES, LAUNCH_STATUS_LABELS, LAUNCH_STATUS_COLORS } from '@/lib/products/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type ProductOption = { id: string; name: string }
 
 export default function LaunchesClient({ workspaceId, initialLaunches, products }: { workspaceId: string; initialLaunches: ProductLaunch[]; products: ProductOption[] }) {
   const [launches, setLaunches] = useState(initialLaunches)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
@@ -41,6 +39,8 @@ export default function LaunchesClient({ workspaceId, initialLaunches, products 
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, title, product_id: productId || null, description: description || null, launch_date: launchDate || null, status, checklist }
     if (editingId) {
       const { launch } = await apiFetch<{ launch: ProductLaunch }>(`/api/products/launches/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -50,11 +50,22 @@ export default function LaunchesClient({ workspaceId, initialLaunches, products 
       setLaunches((prev) => [{ ...launch, product_name: products.find((p) => p.id === launch.product_id)?.name }, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Launch updated' : 'Launch created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, title, productId, description, launchDate, status, checklist, products])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/products/launches/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setLaunches((prev) => prev.filter((l) => l.id !== id))
+    try {
+      await apiFetch(`/api/products/launches/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setLaunches((prev) => prev.filter((l) => l.id !== id))
+      toast.success('Launch deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = launches.filter((l) => filterStatus === 'all' || l.status === filterStatus)
@@ -115,7 +126,7 @@ export default function LaunchesClient({ workspaceId, initialLaunches, products 
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-medium">{l.title}</h3>
-                  <p className="text-xs text-slate-400">{l.product_name || 'No product'} {l.launch_date ? `· ${l.launch_date}` : ''}</p>
+                  <p className="text-xs text-slate-400">{l.product_id ? <Link href={`/workspace/${workspaceId}/catalog`} className="hover:text-white hover:underline">{l.product_name || 'View product'}</Link> : 'No product'} {l.launch_date ? `· ${l.launch_date}` : ''}</p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => openEdit(l)} className="text-xs text-slate-400 hover:text-white">Edit</button>

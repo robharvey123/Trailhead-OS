@@ -1,14 +1,10 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { FinanceBudget, BudgetCategory } from '@/lib/finance/types'
 import { BUDGET_CATEGORIES, BUDGET_CATEGORY_LABELS } from '@/lib/finance/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 const catColors: Record<BudgetCategory, string> = {
   marketing: 'bg-purple-500', operations: 'bg-blue-500', staffing: 'bg-amber-500',
@@ -18,6 +14,7 @@ const catColors: Record<BudgetCategory, string> = {
 export default function BudgetsClient({ workspaceId, initialBudgets }: { workspaceId: string; initialBudgets: FinanceBudget[] }) {
   const [budgets, setBudgets] = useState(initialBudgets)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterCat, setFilterCat] = useState<string>('all')
 
@@ -39,6 +36,8 @@ export default function BudgetsClient({ workspaceId, initialBudgets }: { workspa
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, name, category, period_start: periodStart, period_end: periodEnd, allocated: parseFloat(allocated) || 0, spent: parseFloat(spent) || 0, notes: notes || null }
     if (editingId) {
       const { budget } = await apiFetch<{ budget: FinanceBudget }>(`/api/finance/budgets/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -48,11 +47,22 @@ export default function BudgetsClient({ workspaceId, initialBudgets }: { workspa
       setBudgets((prev) => [budget, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Budget updated' : 'Budget created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, name, category, periodStart, periodEnd, allocated, spent, notes])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/finance/budgets/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setBudgets((prev) => prev.filter((b) => b.id !== id))
+    try {
+      await apiFetch(`/api/finance/budgets/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setBudgets((prev) => prev.filter((b) => b.id !== id))
+      toast.success('Budget deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = budgets.filter((b) => filterCat === 'all' || b.category === filterCat)

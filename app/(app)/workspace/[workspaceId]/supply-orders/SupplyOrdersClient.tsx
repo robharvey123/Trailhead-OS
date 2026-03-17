@@ -1,14 +1,11 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { SupplyOrder, SupplyOrderStatus } from '@/lib/supply-chain/types'
 import { SUPPLY_ORDER_STATUSES, SUPPLY_ORDER_STATUS_LABELS } from '@/lib/supply-chain/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type AccountOption = { id: string; name: string }
 
@@ -20,6 +17,7 @@ const statusColors: Record<SupplyOrderStatus, string> = {
 export default function SupplyOrdersClient({ workspaceId, initialOrders, accounts }: { workspaceId: string; initialOrders: SupplyOrder[]; accounts: AccountOption[] }) {
   const [orders, setOrders] = useState(initialOrders)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
@@ -41,6 +39,8 @@ export default function SupplyOrdersClient({ workspaceId, initialOrders, account
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, order_number: orderNumber, supplier_account_id: supplierId || null, status, order_date: orderDate, expected_date: expectedDate || null, notes: notes || null }
     if (editingId) {
       const { supply_order } = await apiFetch<{ supply_order: SupplyOrder }>(`/api/supply-chain/orders/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -50,11 +50,22 @@ export default function SupplyOrdersClient({ workspaceId, initialOrders, account
       setOrders((prev) => [supply_order, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Order updated' : 'Order created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, orderNumber, supplierId, status, orderDate, expectedDate, notes])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/supply-chain/orders/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setOrders((prev) => prev.filter((o) => o.id !== id))
+    try {
+      await apiFetch(`/api/supply-chain/orders/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setOrders((prev) => prev.filter((o) => o.id !== id))
+      toast.success('Order deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = orders.filter((o) => filterStatus === 'all' || o.status === filterStatus)
@@ -104,7 +115,7 @@ export default function SupplyOrdersClient({ workspaceId, initialOrders, account
             {filtered.length === 0 ? <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-500">No supply orders found</td></tr> : filtered.map((o) => (
               <tr key={o.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                 <td className="px-4 py-3 font-medium">{o.order_number}</td>
-                <td className="px-4 py-3 text-slate-400">{o.supplier_account_id ? supplierMap.get(o.supplier_account_id) || '—' : '—'}</td>
+                <td className="px-4 py-3 text-slate-400">{o.supplier_account_id ? <Link href={`/workspace/${workspaceId}/accounts`} className="hover:text-white hover:underline">{supplierMap.get(o.supplier_account_id) || '—'}</Link> : '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{o.order_date}</td>
                 <td className="px-4 py-3 text-slate-400">{o.expected_date || '—'}</td>
                 <td className="px-4 py-3"><span className={`text-xs ${statusColors[o.status]}`}>{SUPPLY_ORDER_STATUS_LABELS[o.status]}</span></td>

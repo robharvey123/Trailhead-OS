@@ -1,19 +1,16 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { StaffTimeEntry } from '@/lib/staffing/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type StaffOption = { id: string; display_name: string }
 
 export default function TimeTrackingClient({ workspaceId, initialEntries, staffList }: { workspaceId: string; initialEntries: StaffTimeEntry[]; staffList: StaffOption[] }) {
   const [entries, setEntries] = useState(initialEntries)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStaff, setFilterStaff] = useState<string>('all')
 
@@ -32,6 +29,8 @@ export default function TimeTrackingClient({ workspaceId, initialEntries, staffL
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, staff_profile_id: staffId, date, hours: parseFloat(hours) || 0, description: description || null, billable }
     if (editingId) {
       const { time_entry } = await apiFetch<{ time_entry: StaffTimeEntry }>(`/api/staffing/time-entries/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -43,11 +42,22 @@ export default function TimeTrackingClient({ workspaceId, initialEntries, staffL
       setEntries((prev) => [{ ...time_entry, staff_name: staff?.display_name }, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Entry updated' : 'Entry logged')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, staffId, date, hours, description, billable, staffList])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/staffing/time-entries/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setEntries((prev) => prev.filter((e) => e.id !== id))
+    try {
+      await apiFetch(`/api/staffing/time-entries/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setEntries((prev) => prev.filter((e) => e.id !== id))
+      toast.success('Entry deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = entries.filter((e) => filterStaff === 'all' || e.staff_profile_id === filterStaff)
@@ -100,7 +110,7 @@ export default function TimeTrackingClient({ workspaceId, initialEntries, staffL
             {filtered.length === 0 ? <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">No time entries found</td></tr> : filtered.map((e) => (
               <tr key={e.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                 <td className="px-4 py-3 text-slate-400">{e.date}</td>
-                <td className="px-4 py-3 font-medium">{e.staff_name || '—'}</td>
+                <td className="px-4 py-3 font-medium">{e.staff_profile_id ? <Link href={`/workspace/${workspaceId}/staff`} className="hover:text-white hover:underline">{e.staff_name || '—'}</Link> : (e.staff_name || '—')}</td>
                 <td className="px-4 py-3 text-slate-400 max-w-[200px] truncate">{e.description || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{e.task_title || '—'}</td>
                 <td className="px-4 py-3 text-right font-medium">{e.hours}h</td>

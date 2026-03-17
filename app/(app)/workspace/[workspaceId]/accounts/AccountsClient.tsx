@@ -1,17 +1,10 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { CrmAccount, CrmAccountType } from '@/lib/crm/types'
 import { CRM_ACCOUNT_TYPES, CRM_ACCOUNT_TYPE_LABELS } from '@/lib/crm/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }))
-    throw new Error(body.error || res.statusText)
-  }
-  return res.json()
-}
 
 export default function AccountsClient({
   workspaceId,
@@ -22,6 +15,7 @@ export default function AccountsClient({
 }) {
   const [accounts, setAccounts] = useState(initialAccounts)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterType, setFilterType] = useState<string>('all')
   const [search, setSearch] = useState('')
@@ -67,6 +61,8 @@ export default function AccountsClient({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault()
+      setSaving(true)
+      try {
       const payload = {
         workspace_id: workspaceId,
         name,
@@ -97,14 +93,25 @@ export default function AccountsClient({
 
       resetForm()
       setShowForm(false)
+      toast.success(editingId ? 'Account updated' : 'Account created')
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Something went wrong')
+      } finally {
+        setSaving(false)
+      }
     },
     [workspaceId, editingId, name, type, industry, email, phone, website, city, country, notes]
   )
 
   const handleDelete = useCallback(
     async (id: string) => {
-      await apiFetch(`/api/crm/accounts/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-      setAccounts((prev) => prev.filter((a) => a.id !== id))
+      try {
+        await apiFetch(`/api/crm/accounts/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+        setAccounts((prev) => prev.filter((a) => a.id !== id))
+        toast.success('Account deleted')
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to delete')
+      }
     },
     [workspaceId]
   )

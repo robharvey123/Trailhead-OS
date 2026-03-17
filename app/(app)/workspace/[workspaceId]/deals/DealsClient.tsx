@@ -1,17 +1,10 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { CrmDeal, DealStage } from '@/lib/crm/types'
 import { DEAL_STAGES, DEAL_STAGE_LABELS } from '@/lib/crm/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }))
-    throw new Error(body.error || res.statusText)
-  }
-  return res.json()
-}
 
 type AccountOption = { id: string; name: string }
 
@@ -26,6 +19,7 @@ export default function DealsClient({
 }) {
   const [deals, setDeals] = useState(initialDeals)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'table' | 'pipeline'>('pipeline')
   const [filterStage, setFilterStage] = useState<string>('all')
@@ -54,6 +48,8 @@ export default function DealsClient({
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = {
       workspace_id: workspaceId, title, account_id: accountId || null,
       value: value ? parseFloat(value) : null, stage, probability: parseInt(probability) || 0,
@@ -72,19 +68,34 @@ export default function DealsClient({
       setDeals((prev) => [deal, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Deal updated' : 'Deal created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, title, accountId, value, stage, probability, expectedClose, notes])
 
   const handleStageChange = useCallback(async (dealId: string, newStage: DealStage) => {
-    const { deal } = await apiFetch<{ deal: CrmDeal }>(
-      `/api/crm/deals/${dealId}?workspace_id=${workspaceId}`,
-      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stage: newStage }) }
-    )
-    setDeals((prev) => prev.map((d) => (d.id === dealId ? deal : d)))
+    try {
+      const { deal } = await apiFetch<{ deal: CrmDeal }>(
+        `/api/crm/deals/${dealId}?workspace_id=${workspaceId}`,
+        { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stage: newStage }) }
+      )
+      setDeals((prev) => prev.map((d) => (d.id === dealId ? deal : d)))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update stage')
+    }
   }, [workspaceId])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/crm/deals/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setDeals((prev) => prev.filter((d) => d.id !== id))
+    try {
+      await apiFetch(`/api/crm/deals/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setDeals((prev) => prev.filter((d) => d.id !== id))
+      toast.success('Deal deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const totalPipeline = useMemo(() => {

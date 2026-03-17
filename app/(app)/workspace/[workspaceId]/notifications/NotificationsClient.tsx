@@ -1,14 +1,10 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { Notification } from '@/lib/comms/types'
 import { NOTIFICATION_TYPE_LABELS } from '@/lib/comms/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 export default function NotificationsClient({ workspaceId, initialNotifications }: { workspaceId: string; initialNotifications: Notification[] }) {
   const [notifications, setNotifications] = useState(initialNotifications)
@@ -17,13 +13,22 @@ export default function NotificationsClient({ workspaceId, initialNotifications 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.is_read).length, [notifications])
 
   const markRead = useCallback(async (id: string) => {
-    await apiFetch('/api/comms/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspace_id: workspaceId, id, is_read: true }) })
-    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n))
+    try {
+      await apiFetch('/api/comms/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspace_id: workspaceId, id, is_read: true }) })
+      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to mark as read')
+    }
   }, [workspaceId])
 
   const markAllRead = useCallback(async () => {
-    await apiFetch('/api/comms/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspace_id: workspaceId, mark_all_read: true }) })
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+    try {
+      await apiFetch('/api/comms/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workspace_id: workspaceId, mark_all_read: true }) })
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+      toast.success('All marked as read')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    }
   }, [workspaceId])
 
   const filtered = showUnreadOnly ? notifications.filter((n) => !n.is_read) : notifications

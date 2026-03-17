@@ -1,19 +1,16 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { InventoryRow } from '@/lib/supply-chain/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 type ProductOption = { id: string; name: string; sku: string }
 
 export default function InventoryClient({ workspaceId, initialInventory, products }: { workspaceId: string; initialInventory: InventoryRow[]; products: ProductOption[] }) {
   const [items, setItems] = useState(initialInventory)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [alertOnly, setAlertOnly] = useState(false)
@@ -37,6 +34,8 @@ export default function InventoryClient({ workspaceId, initialInventory, product
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, product_id: productId || null, warehouse: warehouse || 'default', qty_on_hand: parseInt(qtyOnHand) || 0, qty_reserved: parseInt(qtyReserved) || 0, reorder_point: parseInt(reorderPoint) || 0, reorder_qty: parseInt(reorderQty) || 0, unit_cost: unitCost ? parseFloat(unitCost) : null }
     if (editingId) {
       const { item } = await apiFetch<{ item: InventoryRow }>(`/api/supply-chain/inventory/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -48,11 +47,22 @@ export default function InventoryClient({ workspaceId, initialInventory, product
       setItems((prev) => [{ ...item, product_name: prod?.name, product_sku: prod?.sku }, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Inventory updated' : 'Inventory added')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, productId, warehouse, qtyOnHand, qtyReserved, reorderPoint, reorderQty, unitCost, products])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/supply-chain/inventory/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setItems((prev) => prev.filter((i) => i.id !== id))
+    try {
+      await apiFetch(`/api/supply-chain/inventory/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setItems((prev) => prev.filter((i) => i.id !== id))
+      toast.success('Inventory record deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = items.filter((i) => {
@@ -110,7 +120,7 @@ export default function InventoryClient({ workspaceId, initialInventory, product
               const low = r.qty_on_hand <= r.reorder_point
               return (
                 <tr key={r.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 font-medium">{r.product_name || '—'}</td>
+                  <td className="px-4 py-3 font-medium">{r.product_id ? <Link href={`/workspace/${workspaceId}/catalog`} className="hover:text-white hover:underline">{r.product_name || '—'}</Link> : (r.product_name || '—')}</td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-400">{r.product_sku || '—'}</td>
                   <td className="px-4 py-3 text-slate-400">{r.warehouse}</td>
                   <td className="px-4 py-3 text-right">{r.qty_on_hand.toLocaleString()}</td>

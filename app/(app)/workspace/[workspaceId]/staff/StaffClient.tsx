@@ -1,18 +1,15 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { StaffProfile, Department, EmploymentType } from '@/lib/staffing/types'
 import { DEPARTMENTS, DEPARTMENT_LABELS, EMPLOYMENT_TYPES, EMPLOYMENT_TYPE_LABELS } from '@/lib/staffing/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 export default function StaffClient({ workspaceId, initialStaff }: { workspaceId: string; initialStaff: StaffProfile[] }) {
   const [staff, setStaff] = useState(initialStaff)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterDept, setFilterDept] = useState<string>('all')
   const [search, setSearch] = useState('')
@@ -39,6 +36,8 @@ export default function StaffClient({ workspaceId, initialStaff }: { workspaceId
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = { workspace_id: workspaceId, display_name: displayName, email: email || null, phone: phone || null, department: department || null, role_title: roleTitle || null, employment_type: employmentType, hourly_rate: hourlyRate ? parseFloat(hourlyRate) : null, capacity_hours_per_week: parseInt(capacityHours) || 40, start_date: startDate || null }
     if (editingId) {
       const { profile } = await apiFetch<{ profile: StaffProfile }>(`/api/staffing/profiles/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -48,11 +47,22 @@ export default function StaffClient({ workspaceId, initialStaff }: { workspaceId
       setStaff((prev) => [profile, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Staff updated' : 'Staff added')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, displayName, email, phone, department, roleTitle, employmentType, hourlyRate, capacityHours, startDate])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/staffing/profiles/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setStaff((prev) => prev.filter((s) => s.id !== id))
+    try {
+      await apiFetch(`/api/staffing/profiles/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setStaff((prev) => prev.filter((s) => s.id !== id))
+      toast.success('Staff member removed')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = staff.filter((s) => {

@@ -1,16 +1,10 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { CrmContact } from '@/lib/crm/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }))
-    throw new Error(body.error || res.statusText)
-  }
-  return res.json()
-}
 
 type AccountOption = { id: string; name: string }
 
@@ -25,6 +19,7 @@ export default function ContactsClient({
 }) {
   const [contacts, setContacts] = useState(initialContacts)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [filterAccount, setFilterAccount] = useState('')
@@ -53,6 +48,8 @@ export default function ContactsClient({
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = {
       workspace_id: workspaceId, first_name: firstName, last_name: lastName,
       email: email || null, phone: phone || null, job_title: jobTitle || null,
@@ -71,11 +68,22 @@ export default function ContactsClient({
       setContacts((prev) => [...prev, contact])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Contact updated' : 'Contact created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, firstName, lastName, email, phone, jobTitle, accountId, notes])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/crm/contacts/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setContacts((prev) => prev.filter((c) => c.id !== id))
+    try {
+      await apiFetch(`/api/crm/contacts/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setContacts((prev) => prev.filter((c) => c.id !== id))
+      toast.success('Contact deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = contacts.filter((c) => {
@@ -173,7 +181,7 @@ export default function ContactsClient({
                 <td className="px-4 py-3 text-slate-400">{c.email || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{c.phone || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{c.job_title || '—'}</td>
-                <td className="px-4 py-3 text-slate-400">{c.account_id ? accountMap.get(c.account_id) || '—' : '—'}</td>
+                <td className="px-4 py-3 text-slate-400">{c.account_id ? <Link href={`/workspace/${workspaceId}/accounts`} className="hover:text-white hover:underline">{accountMap.get(c.account_id) || '—'}</Link> : '—'}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => openEdit(c)} className="text-xs text-slate-400 hover:text-white">Edit</button>

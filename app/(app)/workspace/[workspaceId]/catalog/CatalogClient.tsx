@@ -1,14 +1,10 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { apiFetch } from '@/lib/api-fetch'
 import type { Product, ProductStatus } from '@/lib/products/types'
 import { PRODUCT_STATUSES, PRODUCT_STATUS_LABELS } from '@/lib/products/types'
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
-  if (!res.ok) { const body = await res.json().catch(() => ({ error: res.statusText })); throw new Error(body.error || res.statusText) }
-  return res.json()
-}
 
 const statusColors: Record<ProductStatus, string> = {
   draft: 'text-slate-400', active: 'text-emerald-400', discontinued: 'text-amber-400', archived: 'text-slate-500',
@@ -17,6 +13,7 @@ const statusColors: Record<ProductStatus, string> = {
 export default function CatalogClient({ workspaceId, initialProducts }: { workspaceId: string; initialProducts: Product[] }) {
   const [products, setProducts] = useState(initialProducts)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [search, setSearch] = useState('')
@@ -43,6 +40,8 @@ export default function CatalogClient({ workspaceId, initialProducts }: { worksp
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
+    try {
     const payload = {
       workspace_id: workspaceId, name, sku, brand: brand || null, category: category || null,
       description: description || null, unit_cost: unitCost ? parseFloat(unitCost) : null,
@@ -57,11 +56,22 @@ export default function CatalogClient({ workspaceId, initialProducts }: { worksp
       setProducts((prev) => [product, ...prev])
     }
     resetForm(); setShowForm(false)
+    toast.success(editingId ? 'Product updated' : 'Product created')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
   }, [workspaceId, editingId, name, sku, brand, category, description, unitCost, unitPrice, status, barcode, tags])
 
   const handleDelete = useCallback(async (id: string) => {
-    await apiFetch(`/api/products/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
-    setProducts((prev) => prev.filter((p) => p.id !== id))
+    try {
+      await apiFetch(`/api/products/${id}?workspace_id=${workspaceId}`, { method: 'DELETE' })
+      setProducts((prev) => prev.filter((p) => p.id !== id))
+      toast.success('Product deleted')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete')
+    }
   }, [workspaceId])
 
   const filtered = products.filter((p) => {

@@ -7,6 +7,7 @@ import {
 } from '@/lib/route-params'
 import DashboardCharts from './DashboardCharts'
 import DashboardInsights from './DashboardInsights'
+import DashboardKPIs from './DashboardKPIs'
 import DashboardTable from './DashboardTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 
@@ -250,6 +251,47 @@ export default async function DashboardPage({
     sellOutCompanyQuery,
   ])
 
+  // Module KPI queries
+  const wid = resolvedParams.workspaceId
+  const { data: { user } } = await supabase.auth.getUser()
+  const [
+    { count: outstandingInvoiceCount },
+    { data: outstandingInvoices },
+    { count: activeDealCount },
+    { data: dealPipelineRows },
+    { count: activeCampaignCount },
+    { count: lowStockCount },
+    { count: inTransitCount },
+    { count: activeStaffCount },
+    { count: unreadNotifCount },
+  ] = await Promise.all([
+    supabase.from('finance_invoices').select('*', { count: 'exact', head: true }).eq('workspace_id', wid).not('status', 'in', '("paid","cancelled","refunded")'),
+    supabase.from('finance_invoices').select('total, amount_paid').eq('workspace_id', wid).not('status', 'in', '("paid","cancelled","refunded")'),
+    supabase.from('crm_deals').select('*', { count: 'exact', head: true }).eq('workspace_id', wid).not('stage', 'like', 'closed_%'),
+    supabase.from('crm_deals').select('value').eq('workspace_id', wid).not('stage', 'like', 'closed_%'),
+    supabase.from('marketing_campaigns').select('*', { count: 'exact', head: true }).eq('workspace_id', wid).in('status', ['active', 'scheduled']),
+    supabase.from('inventory').select('*', { count: 'exact', head: true }).eq('workspace_id', wid).filter('qty_on_hand', 'lte', 'reorder_point'),
+    supabase.from('shipments').select('*', { count: 'exact', head: true }).eq('workspace_id', wid).in('status', ['in_transit', 'shipped']),
+    supabase.from('staff_profiles').select('*', { count: 'exact', head: true }).eq('workspace_id', wid).eq('is_active', true),
+    supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('workspace_id', wid).eq('user_id', user?.id ?? '').eq('is_read', false),
+  ])
+
+  const outstandingTotal = (outstandingInvoices ?? []).reduce((s, i) => s + ((i.total ?? 0) - (i.amount_paid ?? 0)), 0)
+  const pipelineValue = (dealPipelineRows ?? []).reduce((s, d) => s + (d.value ?? 0), 0)
+
+  const moduleKpis = {
+    outstandingInvoices: outstandingInvoiceCount ?? 0,
+    outstandingTotal,
+    activeDealCount: activeDealCount ?? 0,
+    pipelineValue,
+    activeCampaignCount: activeCampaignCount ?? 0,
+    lowStockCount: lowStockCount ?? 0,
+    inTransitShipments: inTransitCount ?? 0,
+    activeStaffCount: activeStaffCount ?? 0,
+    unreadNotifications: unreadNotifCount ?? 0,
+    currencySymbol,
+  }
+
   const monthlySummary = buildMonthlyMap(
     (sellInMonthly ?? []) as SellInMonthlyRow[],
     (sellOutMonthly ?? []) as SellOutMonthlyRow[]
@@ -432,6 +474,8 @@ export default async function DashboardPage({
         end={end}
         availableMonths={monthlySummary.map((row) => row.month)}
       />
+
+      <DashboardKPIs kpis={moduleKpis} workspaceId={resolvedParams.workspaceId} />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
