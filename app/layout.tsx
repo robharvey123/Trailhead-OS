@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Rush Analytics',
+  title: 'Brand Opps',
   description: 'Multi-tenant sales analytics for consumer brands.',
 }
 

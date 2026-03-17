@@ -66,7 +66,7 @@ export async function POST(request: Request) {
 
   const resendKey = process.env.RESEND_API_KEY
   const fromAddress =
-    process.env.RESEND_FROM_EMAIL ?? 'Rush Analytics <reports@example.com>'
+    process.env.RESEND_FROM_EMAIL ?? 'Brand Opps <reports@example.com>'
 
   if (!resendKey) {
     return NextResponse.json(

@@ -22,7 +22,7 @@ export default async function AppLayout({
       <header className="border-b border-slate-800 bg-slate-950/70">
         <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
           <Link href="/workspaces" className="text-sm font-semibold">
-            Rush Analytics
+            Brand Opps
           </Link>
           <form action="/logout" method="post">
             <button
