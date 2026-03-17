@@ -1,0 +1,15 @@
+import { createClient } from '@/lib/supabase/server'
+import { resolveWorkspaceParams, type WorkspaceRouteParams } from '@/lib/route-params'
+import PurchaseOrdersClient from './PurchaseOrdersClient'
+
+export default async function PurchaseOrdersPage({ params }: { params: WorkspaceRouteParams | Promise<WorkspaceRouteParams> }) {
+  const { workspaceId } = await resolveWorkspaceParams(params)
+  const supabase = await createClient()
+
+  const [posRes, accountsRes] = await Promise.all([
+    supabase.from('finance_purchase_orders').select('*').eq('workspace_id', workspaceId).order('order_date', { ascending: false }),
+    supabase.from('crm_accounts').select('id, name').eq('workspace_id', workspaceId).order('name'),
+  ])
+
+  return <PurchaseOrdersClient workspaceId={workspaceId} initialPOs={posRes.data || []} accounts={accountsRes.data || []} />
+}

@@ -6,22 +6,7 @@ import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
 } from '@/lib/route-params'
-import WorkspaceNav from '@/components/nav/WorkspaceNav'
-
-const navItems = [
-  { slug: 'dashboard', label: 'Dashboard' },
-  { slug: 'insights', label: 'Insights' },
-  { slug: 'sell-in', label: 'Sell In' },
-  { slug: 'sell-out', label: 'Sell Out' },
-  { slug: 'promo', label: 'Promo' },
-  { slug: 'comparison', label: 'Compare' },
-  { slug: 'pnl', label: 'P&L' },
-  { slug: 'sku-summary', label: 'SKU Summary' },
-  { slug: 'company-summary', label: 'Company Summary' },
-  { slug: 'company-sku-detail', label: 'Company SKU' },
-  { slug: 'settings', label: 'Settings' },
-  { slug: 'imports', label: 'Imports' },
-]
+import WorkspaceSidebar from '@/components/nav/WorkspaceSidebar'
 
 export default async function WorkspaceLayout({
   children,
@@ -52,27 +37,23 @@ export default async function WorkspaceLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="border-b border-slate-800 bg-slate-950/80">
-        <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-6 py-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                Workspace
-              </p>
-              <h2 className="mt-1 text-lg font-semibold">{workspace.name}</h2>
-            </div>
-            <Link
-              href="/workspaces"
-              className="text-xs text-slate-400 hover:text-slate-200"
-            >
-              Switch workspace
-            </Link>
-          </div>
-          <WorkspaceNav items={navItems} workspaceId={workspaceId} />
+    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+      <div className="flex w-56 shrink-0 flex-col border-r border-slate-800 bg-slate-950/60 pt-6 pl-6">
+        <div className="mb-6 pr-4">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+            Workspace
+          </p>
+          <h2 className="mt-1 truncate text-sm font-semibold">{workspace.name}</h2>
+          <Link
+            href="/workspaces"
+            className="mt-1 block text-[11px] text-slate-500 hover:text-slate-300"
+          >
+            Switch workspace
+          </Link>
         </div>
+        <WorkspaceSidebar workspaceId={workspaceId} />
       </div>
-      <main className="mx-auto w-full max-w-screen-2xl px-6 py-8">
+      <main className="flex-1 overflow-x-hidden px-8 py-8">
         {children}
       </main>
     </div>
