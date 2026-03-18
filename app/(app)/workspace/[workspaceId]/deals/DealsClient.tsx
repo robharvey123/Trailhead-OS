@@ -1,21 +1,25 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
 import type { CrmDeal, DealStage } from '@/lib/crm/types'
 import { DEAL_STAGES, DEAL_STAGE_LABELS } from '@/lib/crm/types'
 
 type AccountOption = { id: string; name: string }
+type ContactOption = { id: string; first_name: string; last_name: string; account_id: string | null }
 
 export default function DealsClient({
   workspaceId,
   initialDeals,
   accounts,
+  contacts,
 }: {
   workspaceId: string
   initialDeals: CrmDeal[]
   accounts: AccountOption[]
+  contacts: ContactOption[]
 }) {
   const [deals, setDeals] = useState(initialDeals)
   const [showForm, setShowForm] = useState(false)
@@ -32,15 +36,23 @@ export default function DealsClient({
   const [expectedClose, setExpectedClose] = useState('')
   const [notes, setNotes] = useState('')
 
+  const [contactId, setContactId] = useState('')
+
   const accountMap = new Map(accounts.map((a) => [a.id, a.name]))
+  const contactMap = new Map(contacts.map((c) => [c.id, `${c.first_name} ${c.last_name}`]))
+
+  // Filter contacts by selected account
+  const filteredContacts = accountId
+    ? contacts.filter((c) => c.account_id === accountId)
+    : contacts
 
   const resetForm = () => {
-    setTitle(''); setAccountId(''); setValue(''); setStage('lead')
+    setTitle(''); setAccountId(''); setContactId(''); setValue(''); setStage('lead')
     setProbability('0'); setExpectedClose(''); setNotes(''); setEditingId(null)
   }
 
   const openEdit = (d: CrmDeal) => {
-    setTitle(d.title); setAccountId(d.account_id || '')
+    setTitle(d.title); setAccountId(d.account_id || ''); setContactId(d.contact_id || '')
     setValue(d.value?.toString() || ''); setStage(d.stage)
     setProbability(d.probability.toString()); setExpectedClose(d.expected_close_date || '')
     setNotes(d.notes || ''); setEditingId(d.id); setShowForm(true)
@@ -51,7 +63,7 @@ export default function DealsClient({
     setSaving(true)
     try {
     const payload = {
-      workspace_id: workspaceId, title, account_id: accountId || null,
+      workspace_id: workspaceId, title, account_id: accountId || null, contact_id: contactId || null,
       value: value ? parseFloat(value) : null, stage, probability: parseInt(probability) || 0,
       expected_close_date: expectedClose || null, notes: notes || null,
     }
@@ -74,7 +86,7 @@ export default function DealsClient({
     } finally {
       setSaving(false)
     }
-  }, [workspaceId, editingId, title, accountId, value, stage, probability, expectedClose, notes])
+  }, [workspaceId, editingId, title, accountId, contactId, value, stage, probability, expectedClose, notes])
 
   const handleStageChange = useCallback(async (dealId: string, newStage: DealStage) => {
     try {
@@ -102,6 +114,10 @@ export default function DealsClient({
     return deals.filter((d) => !d.stage.startsWith('closed_')).reduce((sum, d) => sum + (d.value || 0), 0)
   }, [deals])
 
+  const weightedPipeline = useMemo(() => {
+    return deals.filter((d) => !d.stage.startsWith('closed_')).reduce((sum, d) => sum + (d.value || 0) * (d.probability / 100), 0)
+  }, [deals])
+
   const wonTotal = useMemo(() => {
     return deals.filter((d) => d.stage === 'closed_won').reduce((sum, d) => sum + (d.value || 0), 0)
   }, [deals])
@@ -121,6 +137,17 @@ export default function DealsClient({
 
   const fmtCurrency = (v: number | null) => v != null ? `$${v.toLocaleString()}` : '—'
 
+  const onDragEnd = useCallback((result: DropResult) => {
+    const { draggableId, destination } = result
+    if (!destination) return
+    const newStage = destination.droppableId as DealStage
+    const deal = deals.find((d) => d.id === draggableId)
+    if (!deal || deal.stage === newStage) return
+    // Optimistic update
+    setDeals((prev) => prev.map((d) => (d.id === draggableId ? { ...d, stage: newStage } : d)))
+    handleStageChange(draggableId, newStage)
+  }, [deals, handleStageChange])
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -128,7 +155,7 @@ export default function DealsClient({
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">CRM</p>
           <h1 className="mt-1 text-2xl font-semibold">Deals</h1>
           <p className="mt-1 text-sm text-slate-400">
-            Pipeline: {fmtCurrency(totalPipeline)} &middot; Won: {fmtCurrency(wonTotal)}
+            Pipeline: {fmtCurrency(totalPipeline)} &middot; Weighted: {fmtCurrency(weightedPipeline)} &middot; Won: {fmtCurrency(wonTotal)}
           </p>
         </div>
         <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">
@@ -169,6 +196,13 @@ export default function DealsClient({
               </select>
             </div>
             <div>
+              <label className="mb-1 block text-xs text-slate-400">Contact</label>
+              <select value={contactId} onChange={(e) => setContactId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+                <option value="">No contact</option>
+                {filteredContacts.map((c) => <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="mb-1 block text-xs text-slate-400">Value ($)</label>
               <input type="number" step="0.01" value={value} onChange={(e) => setValue(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
@@ -200,41 +234,59 @@ export default function DealsClient({
 
       {/* Pipeline View */}
       {viewMode === 'pipeline' && (
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {DEAL_STAGES.map((stg) => {
-            const stageDeals = dealsByStage.get(stg) || []
-            const stageTotal = stageDeals.reduce((s, d) => s + (d.value || 0), 0)
-            return (
-              <div key={stg} className="w-64 shrink-0 rounded-2xl border border-slate-800 bg-slate-900/50">
-                <div className="border-b border-slate-800 px-4 py-3">
-                  <h3 className="text-sm font-semibold">{DEAL_STAGE_LABELS[stg]}</h3>
-                  <p className="text-xs text-slate-400">{stageDeals.length} deals &middot; {fmtCurrency(stageTotal)}</p>
-                </div>
-                <div className="flex flex-col gap-2 p-3">
-                  {stageDeals.map((d) => (
-                    <div key={d.id} className="rounded-xl border border-slate-800 bg-slate-900/80 p-3">
-                      <p className="text-sm font-medium">{d.title}</p>
-                      <p className="mt-1 text-xs text-slate-400">{d.account_id ? accountMap.get(d.account_id) : 'No account'}</p>
-                      <p className="mt-1 text-sm font-semibold text-emerald-400">{fmtCurrency(d.value)}</p>
-                      <div className="mt-2 flex gap-1">
-                        {DEAL_STAGES.filter((s) => s !== stg).slice(0, 3).map((s) => (
-                          <button key={s} onClick={() => handleStageChange(d.id, s)} className="rounded border border-slate-700 px-1.5 py-0.5 text-[10px] text-slate-400 hover:text-white">
-                            {DEAL_STAGE_LABELS[s].replace('Closed ', '')}
-                          </button>
-                        ))}
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {DEAL_STAGES.map((stg) => {
+              const stageDeals = dealsByStage.get(stg) || []
+              const stageTotal = stageDeals.reduce((s, d) => s + (d.value || 0), 0)
+              return (
+                <Droppable droppableId={stg} key={stg}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`w-64 shrink-0 rounded-2xl border bg-slate-900/50 transition-colors ${
+                        snapshot.isDraggingOver ? 'border-blue-500/50 bg-blue-950/20' : 'border-slate-800'
+                      }`}
+                    >
+                      <div className="border-b border-slate-800 px-4 py-3">
+                        <h3 className="text-sm font-semibold">{DEAL_STAGE_LABELS[stg]}</h3>
+                        <p className="text-xs text-slate-400">{stageDeals.length} deals &middot; {fmtCurrency(stageTotal)}</p>
                       </div>
-                      <div className="mt-2 flex gap-2">
-                        <button onClick={() => openEdit(d)} className="text-[10px] text-slate-400 hover:text-white">Edit</button>
-                        <button onClick={() => handleDelete(d.id)} className="text-[10px] text-rose-400 hover:text-rose-300">Del</button>
+                      <div className="flex flex-col gap-2 p-3" style={{ minHeight: 60 }}>
+                        {stageDeals.map((d, index) => (
+                          <Draggable draggableId={d.id} index={index} key={d.id}>
+                            {(dragProvided, dragSnapshot) => (
+                              <div
+                                ref={dragProvided.innerRef}
+                                {...dragProvided.draggableProps}
+                                {...dragProvided.dragHandleProps}
+                                className={`rounded-xl border bg-slate-900/80 p-3 transition-shadow ${
+                                  dragSnapshot.isDragging ? 'border-blue-500/50 shadow-lg shadow-blue-500/10' : 'border-slate-800'
+                                }`}
+                              >
+                                <p className="text-sm font-medium">{d.title}</p>
+                                <p className="mt-1 text-xs text-slate-400">{d.account_id ? accountMap.get(d.account_id) : 'No account'}</p>
+                                {d.contact_id && <p className="text-[10px] text-slate-500">{contactMap.get(d.contact_id)}</p>}
+                                <p className="mt-1 text-sm font-semibold text-emerald-400">{fmtCurrency(d.value)}</p>
+                                <div className="mt-2 flex gap-2">
+                                  <button onClick={() => openEdit(d)} className="text-[10px] text-slate-400 hover:text-white">Edit</button>
+                                  <button onClick={() => handleDelete(d.id)} className="text-[10px] text-rose-400 hover:text-rose-300">Del</button>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                        {stageDeals.length === 0 && <p className="py-4 text-center text-xs text-slate-600">No deals</p>}
                       </div>
                     </div>
-                  ))}
-                  {stageDeals.length === 0 && <p className="py-4 text-center text-xs text-slate-600">No deals</p>}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+                  )}
+                </Droppable>
+              )
+            })}
+          </div>
+        </DragDropContext>
       )}
 
       {/* Table View */}
@@ -245,6 +297,7 @@ export default function DealsClient({
               <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
                 <th className="px-4 py-3">Deal</th>
                 <th className="px-4 py-3">Account</th>
+                <th className="px-4 py-3">Contact</th>
                 <th className="px-4 py-3">Value</th>
                 <th className="px-4 py-3">Stage</th>
                 <th className="px-4 py-3">Prob.</th>
@@ -254,11 +307,12 @@ export default function DealsClient({
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">No deals found</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-slate-500">No deals found</td></tr>
               ) : filtered.map((d) => (
                 <tr key={d.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                   <td className="px-4 py-3 font-medium">{d.title}</td>
                   <td className="px-4 py-3 text-slate-400">{d.account_id ? accountMap.get(d.account_id) || '—' : '—'}</td>
+                  <td className="px-4 py-3 text-slate-400">{d.contact_id ? contactMap.get(d.contact_id) || '—' : '—'}</td>
                   <td className="px-4 py-3 text-emerald-400">{fmtCurrency(d.value)}</td>
                   <td className="px-4 py-3"><span className="rounded-full border border-slate-700 px-2 py-0.5 text-xs">{DEAL_STAGE_LABELS[d.stage]}</span></td>
                   <td className="px-4 py-3 text-slate-400">{d.probability}%</td>

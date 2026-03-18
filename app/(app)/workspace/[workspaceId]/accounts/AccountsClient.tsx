@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
 import type { CrmAccount, CrmAccountType } from '@/lib/crm/types'
@@ -9,9 +10,11 @@ import { CRM_ACCOUNT_TYPES, CRM_ACCOUNT_TYPE_LABELS } from '@/lib/crm/types'
 export default function AccountsClient({
   workspaceId,
   initialAccounts,
+  stats,
 }: {
   workspaceId: string
   initialAccounts: CrmAccount[]
+  stats: Record<string, { contacts: number; deals: number; pipeline: number }>
 }) {
   const [accounts, setAccounts] = useState(initialAccounts)
   const [showForm, setShowForm] = useState(false)
@@ -225,9 +228,9 @@ export default function AccountsClient({
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Industry</th>
+              <th className="px-4 py-3">Relationships</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Location</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -235,18 +238,35 @@ export default function AccountsClient({
             {filtered.length === 0 ? (
               <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">No accounts found</td></tr>
             ) : (
-              filtered.map((a) => (
+              filtered.map((a) => {
+                const s = stats[a.id] || { contacts: 0, deals: 0, pipeline: 0 }
+                return (
                 <tr key={a.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 font-medium">{a.name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link href={`/workspace/${workspaceId}/accounts/${a.id}`} className="hover:text-blue-400 transition">
+                      {a.name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3">
                     <span className="rounded-full border border-slate-700 px-2 py-0.5 text-xs">
                       {CRM_ACCOUNT_TYPE_LABELS[a.type]}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-slate-400">{a.industry || '—'}</td>
+                  <td className="px-4 py-3 text-xs text-slate-400">
+                    {s.contacts > 0 || s.deals > 0 ? (
+                      <span>
+                        {s.contacts} contact{s.contacts !== 1 ? 's' : ''}
+                        {' · '}
+                        {s.deals} deal{s.deals !== 1 ? 's' : ''}
+                        {s.pipeline > 0 && ` · $${(s.pipeline / 1000).toFixed(0)}k`}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-slate-400">{a.email || '—'}</td>
                   <td className="px-4 py-3 text-slate-400">{a.phone || '—'}</td>
-                  <td className="px-4 py-3 text-slate-400">{[a.city, a.country].filter(Boolean).join(', ') || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => openEdit(a)} className="text-xs text-slate-400 hover:text-white">Edit</button>
@@ -254,7 +274,8 @@ export default function AccountsClient({
                     </div>
                   </td>
                 </tr>
-              ))
+                )
+              })
             )}
           </tbody>
         </table>
