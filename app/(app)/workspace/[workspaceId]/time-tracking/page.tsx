@@ -15,7 +15,7 @@ export default async function TimeTrackingPage({ params }: { params: WorkspaceRo
     ...d,
     staff_name: (d.staff_profiles as { display_name: string } | null)?.display_name || null,
     task_title: (d.workspace_tasks as { title: string } | null)?.title || null,
-  }))
+  })) as unknown as import('@/lib/staffing/types').StaffTimeEntry[]
 
   return <TimeTrackingClient workspaceId={workspaceId} initialEntries={entries} staffList={staffRes.data || []} />
 }

@@ -11,7 +11,7 @@ export default async function LaunchesPage({ params }: { params: WorkspaceRouteP
     supabase.from('products').select('id, name').eq('workspace_id', workspaceId).order('name'),
   ])
 
-  const launches = (launchesRes.data || []).map((d: Record<string, unknown>) => ({ ...d, product_name: (d.products as { name: string } | null)?.name || null }))
+  const launches = (launchesRes.data || []).map((d: Record<string, unknown>) => ({ ...d, product_name: (d.products as { name: string } | null)?.name || null })) as unknown as import('@/lib/products/types').ProductLaunch[]
 
   return <LaunchesClient workspaceId={workspaceId} initialLaunches={launches} products={productsRes.data || []} />
 }

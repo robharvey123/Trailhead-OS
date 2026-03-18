@@ -17,7 +17,7 @@ export default async function SchedulePage({ params }: { params: WorkspaceRouteP
     supabase.from('staff_profiles').select('id, display_name').eq('workspace_id', workspaceId).order('display_name'),
   ])
 
-  const schedules = (schedulesRes.data || []).map((d: Record<string, unknown>) => ({ ...d, staff_name: (d.staff_profiles as { display_name: string } | null)?.display_name || null }))
+  const schedules = (schedulesRes.data || []).map((d: Record<string, unknown>) => ({ ...d, staff_name: (d.staff_profiles as { display_name: string } | null)?.display_name || null })) as unknown as import('@/lib/staffing/types').StaffSchedule[]
 
   return <ScheduleClient workspaceId={workspaceId} initialSchedules={schedules} staffList={staffRes.data || []} weekStart={weekStart.toISOString().slice(0, 10)} />
 }

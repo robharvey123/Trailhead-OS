@@ -14,7 +14,7 @@ export default async function InventoryPage({ params }: { params: WorkspaceRoute
   const inventory = (invRes.data || []).map((d: Record<string, unknown>) => {
     const prod = d.products as { name: string; sku: string } | null
     return { ...d, product_name: prod?.name || null, product_sku: prod?.sku || null }
-  })
+  }) as unknown as import('@/lib/supply-chain/types').InventoryRow[]
 
   return <InventoryClient workspaceId={workspaceId} initialInventory={inventory} products={productsRes.data || []} />
 }

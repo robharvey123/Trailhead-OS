@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
 import type { InventoryRow } from '@/lib/supply-chain/types'
