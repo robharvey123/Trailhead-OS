@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import SettingsForm from './SettingsForm'
+import CompanyDetailsForm from './CompanyDetailsForm'
 import FxRatesTable from './FxRatesTable'
 import MappingForm from './MappingForm'
 import MappingTable from './MappingTable'
@@ -43,7 +44,7 @@ export default async function SettingsPage({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('brand_filter, cogs_pct, promo_cost, base_currency, supported_currencies')
+    .select('brand_filter, cogs_pct, promo_cost, base_currency, supported_currencies, company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number')
     .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
@@ -68,6 +69,17 @@ export default async function SettingsPage({
     supported_currencies: ['GBP', 'EUR', 'USD', 'SEK', 'CHF', 'NOK', 'DKK'],
   }
 
+  const companyDetails = {
+    company_name: settings?.company_name ?? null,
+    company_address: settings?.company_address ?? null,
+    company_city: settings?.company_city ?? null,
+    company_postcode: settings?.company_postcode ?? null,
+    company_country: settings?.company_country ?? null,
+    company_email: settings?.company_email ?? null,
+    company_phone: settings?.company_phone ?? null,
+    company_vat_number: settings?.company_vat_number ?? null,
+  }
+
   return (
     <div className="space-y-8">
       <header>
@@ -87,6 +99,19 @@ export default async function SettingsPage({
         </div>
         <UserTable workspaceId={resolvedParams.workspaceId} />
       </section>
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <h2 className="text-lg font-semibold">Company details</h2>
+        <p className="mt-2 text-sm text-slate-300">
+          Your company name and address will appear on invoices and PDF exports.
+        </p>
+        <div className="mt-6">
+          <CompanyDetailsForm
+            workspaceId={resolvedParams.workspaceId}
+            company={companyDetails}
+          />
+        </div>
+      </section>
+
       <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Model settings</h2>
         <p className="mt-2 text-sm text-slate-300">

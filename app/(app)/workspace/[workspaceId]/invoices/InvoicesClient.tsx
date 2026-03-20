@@ -186,7 +186,7 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
                 <td className="px-4 py-3 font-medium">{fmtCurrency(inv.total, inv.currency)} <span className="text-[10px] text-slate-500">{inv.currency}</span></td>
                 <td className="px-4 py-3 text-slate-400">{fmtCurrency(inv.amount_paid, inv.currency)}</td>
                 <td className="px-4 py-3"><span className={`text-xs ${INVOICE_STATUS_COLORS[inv.status]}`}>{INVOICE_STATUS_LABELS[inv.status]}</span></td>
-                <td className="px-4 py-3"><div className="flex gap-2"><button onClick={() => openEdit(inv)} className="text-xs text-slate-400 hover:text-white">Edit</button><a href={`/api/finance/invoices/${inv.id}/pdf`} download className="text-xs text-blue-400 hover:text-blue-300">PDF</a><button onClick={() => handleDelete(inv.id)} className="text-xs text-rose-400 hover:text-rose-300">Delete</button></div></td>
+                <td className="px-4 py-3"><div className="flex gap-2"><Link href={`/workspace/${workspaceId}/invoices/${inv.id}`} className="text-xs text-blue-400 hover:text-blue-300">View</Link><button onClick={() => openEdit(inv)} className="text-xs text-slate-400 hover:text-white">Edit</button><a href={`/api/finance/invoices/${inv.id}/pdf`} download className="text-xs text-slate-400 hover:text-slate-200">PDF</a><button onClick={() => handleDelete(inv.id)} className="text-xs text-rose-400 hover:text-rose-300">Delete</button></div></td>
               </tr>
             ))}
           </tbody>

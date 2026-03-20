@@ -100,3 +100,30 @@ export async function deleteMapping(formData: FormData) {
 
   revalidatePath(`/workspace/${workspaceId}/settings`)
 }
+
+export async function updateCompanyDetails(
+  _prevState: SettingsState,
+  formData: FormData
+): Promise<SettingsState> {
+  const workspaceId = String(formData.get('workspaceId') ?? '').trim()
+  if (!workspaceId) return { error: 'Workspace id is required.' }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.from('workspace_settings').upsert({
+    workspace_id: workspaceId,
+    company_name: String(formData.get('company_name') ?? '').trim() || null,
+    company_address: String(formData.get('company_address') ?? '').trim() || null,
+    company_city: String(formData.get('company_city') ?? '').trim() || null,
+    company_postcode: String(formData.get('company_postcode') ?? '').trim() || null,
+    company_country: String(formData.get('company_country') ?? '').trim() || null,
+    company_email: String(formData.get('company_email') ?? '').trim() || null,
+    company_phone: String(formData.get('company_phone') ?? '').trim() || null,
+    company_vat_number: String(formData.get('company_vat_number') ?? '').trim() || null,
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/workspace/${workspaceId}/settings`)
+  return { success: true }
+}

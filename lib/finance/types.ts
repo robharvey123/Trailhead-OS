@@ -80,6 +80,8 @@ export type FinancePurchaseOrder = {
   vendor_name?: string
 }
 
+export type PaymentAccountType = 'cash' | 'bank'
+
 export type PaymentMethod = 'bank_transfer' | 'credit_card' | 'check' | 'cash' | 'paypal' | 'stripe' | 'other'
 
 export type FinancePayment = {
@@ -94,7 +96,19 @@ export type FinancePayment = {
   payment_date: string
   notes: string | null
   recorded_by: string | null
+  account_type: PaymentAccountType
   created_at?: string
+}
+
+export type CompanyDetails = {
+  company_name: string | null
+  company_address: string | null
+  company_city: string | null
+  company_postcode: string | null
+  company_country: string | null
+  company_email: string | null
+  company_phone: string | null
+  company_vat_number: string | null
 }
 
 export type BudgetCategory = 'marketing' | 'operations' | 'staffing' | 'product' | 'logistics' | 'general'
@@ -156,6 +170,13 @@ export const PO_STATUS_LABELS: Record<POStatus, string> = {
 }
 
 export const PAYMENT_METHODS = ['bank_transfer', 'credit_card', 'check', 'cash', 'paypal', 'stripe', 'other'] as const
+
+export const PAYMENT_ACCOUNT_TYPES = ['cash', 'bank'] as const
+
+export const PAYMENT_ACCOUNT_TYPE_LABELS: Record<PaymentAccountType, string> = {
+  cash: 'Cash Account',
+  bank: 'Bank Account',
+}
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   bank_transfer: 'Bank Transfer',

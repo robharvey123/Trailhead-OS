@@ -6,7 +6,7 @@ import {
   StyleSheet,
   renderToBuffer,
 } from '@react-pdf/renderer'
-import type { FinanceInvoice } from './types'
+import type { FinanceInvoice, CompanyDetails } from './types'
 import { currencySymbol } from '@/lib/format'
 
 const styles = StyleSheet.create({
@@ -145,9 +145,11 @@ function fmtCur(value: number, code: string) {
 function InvoicePDF({
   invoice,
   accountName,
+  companyDetails,
 }: {
   invoice: FinanceInvoice
   accountName: string | null
+  companyDetails?: CompanyDetails | null
 }) {
   const cur = invoice.currency || 'GBP'
 
@@ -169,9 +171,23 @@ function InvoicePDF({
 
         <View style={styles.metaRow}>
           <View style={styles.metaBlock}>
+            {companyDetails?.company_name && (
+              <>
+                <Text style={styles.metaLabel}>From</Text>
+                <Text style={styles.metaValue}>{companyDetails.company_name}</Text>
+                {companyDetails.company_address && <Text style={{ fontSize: 9, color: '#475569' }}>{companyDetails.company_address}</Text>}
+                {(companyDetails.company_city || companyDetails.company_postcode) && (
+                  <Text style={{ fontSize: 9, color: '#475569' }}>
+                    {[companyDetails.company_city, companyDetails.company_postcode].filter(Boolean).join(', ')}
+                  </Text>
+                )}
+                {companyDetails.company_country && <Text style={{ fontSize: 9, color: '#475569', marginBottom: 6 }}>{companyDetails.company_country}</Text>}
+                {companyDetails.company_vat_number && <Text style={{ fontSize: 8, color: '#94a3b8', marginBottom: 6 }}>VAT: {companyDetails.company_vat_number}</Text>}
+              </>
+            )}
             {accountName && (
               <>
-                <Text style={styles.metaLabel}>Account</Text>
+                <Text style={styles.metaLabel}>{invoice.direction === 'outgoing' ? 'Bill To' : 'Received From'}</Text>
                 <Text style={styles.metaValue}>{accountName}</Text>
               </>
             )}
@@ -267,9 +283,10 @@ function InvoicePDF({
 
 export async function renderInvoicePdf(
   invoice: FinanceInvoice,
-  accountName: string | null
+  accountName: string | null,
+  companyDetails?: CompanyDetails | null
 ): Promise<Buffer> {
   return renderToBuffer(
-    <InvoicePDF invoice={invoice} accountName={accountName} />
+    <InvoicePDF invoice={invoice} accountName={accountName} companyDetails={companyDetails} />
   )
 }

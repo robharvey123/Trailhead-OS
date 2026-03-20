@@ -49,7 +49,14 @@ export async function GET(
     accountName = account?.name ?? null
   }
 
-  const buffer = await renderInvoicePdf(invoice, accountName)
+  // Fetch company details
+  const { data: settings } = await supabase
+    .from('workspace_settings')
+    .select('company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number')
+    .eq('workspace_id', invoice.workspace_id)
+    .maybeSingle()
+
+  const buffer = await renderInvoicePdf(invoice, accountName, settings)
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
