@@ -12,10 +12,12 @@ export default function ContactsClient({
   workspaceId,
   initialContacts,
   accounts,
+  brandNames = [],
 }: {
   workspaceId: string
   initialContacts: CrmContact[]
   accounts: AccountOption[]
+  brandNames?: string[]
 }) {
   const [contacts, setContacts] = useState(initialContacts)
   const [showForm, setShowForm] = useState(false)
@@ -23,6 +25,7 @@ export default function ContactsClient({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [filterAccount, setFilterAccount] = useState('')
+  const [filterBrand, setFilterBrand] = useState('all')
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -31,19 +34,20 @@ export default function ContactsClient({
   const [jobTitle, setJobTitle] = useState('')
   const [accountId, setAccountId] = useState('')
   const [notes, setNotes] = useState('')
+  const [brands, setBrands] = useState<string[]>([])
 
   const accountMap = new Map(accounts.map((a) => [a.id, a.name]))
 
   const resetForm = () => {
     setFirstName(''); setLastName(''); setEmail(''); setPhone('')
-    setJobTitle(''); setAccountId(''); setNotes(''); setEditingId(null)
+    setJobTitle(''); setAccountId(''); setNotes(''); setBrands([]); setEditingId(null)
   }
 
   const openEdit = (c: CrmContact) => {
     setFirstName(c.first_name); setLastName(c.last_name)
     setEmail(c.email || ''); setPhone(c.phone || '')
     setJobTitle(c.job_title || ''); setAccountId(c.account_id || '')
-    setNotes(c.notes || ''); setEditingId(c.id); setShowForm(true)
+    setNotes(c.notes || ''); setBrands(c.brands || []); setEditingId(c.id); setShowForm(true)
   }
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -53,7 +57,7 @@ export default function ContactsClient({
     const payload = {
       workspace_id: workspaceId, first_name: firstName, last_name: lastName,
       email: email || null, phone: phone || null, job_title: jobTitle || null,
-      account_id: accountId || null, notes: notes || null,
+      account_id: accountId || null, notes: notes || null, brands,
     }
     if (editingId) {
       const { contact } = await apiFetch<{ contact: CrmContact }>(
@@ -74,7 +78,7 @@ export default function ContactsClient({
     } finally {
       setSaving(false)
     }
-  }, [workspaceId, editingId, firstName, lastName, email, phone, jobTitle, accountId, notes])
+  }, [workspaceId, editingId, firstName, lastName, email, phone, jobTitle, accountId, notes, brands])
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -86,8 +90,11 @@ export default function ContactsClient({
     }
   }, [workspaceId])
 
+  const toggleBrand = (b: string) => setBrands((prev) => prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b])
+
   const filtered = contacts.filter((c) => {
     if (filterAccount && c.account_id !== filterAccount) return false
+    if (filterBrand !== 'all' && !c.brands?.includes(filterBrand)) return false
     if (search) {
       const q = search.toLowerCase()
       const full = `${c.first_name} ${c.last_name}`.toLowerCase()
@@ -114,6 +121,12 @@ export default function ContactsClient({
           <option value="">All accounts</option>
           {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
+        {brandNames.length > 0 && (
+          <select value={filterBrand} onChange={(e) => setFilterBrand(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+            <option value="all">All brands</option>
+            {brandNames.map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+        )}
         <input type="text" placeholder="Search contacts..." value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500" />
       </div>
 
@@ -152,6 +165,19 @@ export default function ContactsClient({
               <label className="mb-1 block text-xs text-slate-400">Notes</label>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
+            {brandNames.length > 0 && (
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs text-slate-400">Brands</label>
+                <div className="flex flex-wrap gap-2">
+                  {brandNames.map((b) => (
+                    <label key={b} className="flex items-center gap-1.5 text-sm text-slate-300">
+                      <input type="checkbox" checked={brands.includes(b)} onChange={() => toggleBrand(b)} className="rounded border-slate-600 bg-slate-950" />
+                      {b}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex gap-2 sm:col-span-2">
               <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
               <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
@@ -169,12 +195,13 @@ export default function ContactsClient({
               <th className="px-4 py-3">Phone</th>
               <th className="px-4 py-3">Job Title</th>
               <th className="px-4 py-3">Account</th>
+              {brandNames.length > 0 && <th className="px-4 py-3">Brands</th>}
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-500">No contacts found</td></tr>
+              <tr><td colSpan={brandNames.length > 0 ? 7 : 6} className="px-4 py-8 text-center text-slate-500">No contacts found</td></tr>
             ) : filtered.map((c) => (
               <tr key={c.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                 <td className="px-4 py-3 font-medium">{c.first_name} {c.last_name}</td>
@@ -182,6 +209,15 @@ export default function ContactsClient({
                 <td className="px-4 py-3 text-slate-400">{c.phone || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{c.job_title || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{c.account_id ? <Link href={`/workspace/${workspaceId}/accounts`} className="hover:text-white hover:underline">{accountMap.get(c.account_id) || '—'}</Link> : '—'}</td>
+                {brandNames.length > 0 && (
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {(c.brands || []).map((b) => (
+                        <span key={b} className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>
+                      ))}
+                    </div>
+                  </td>
+                )}
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => openEdit(c)} className="text-xs text-slate-400 hover:text-white">Edit</button>

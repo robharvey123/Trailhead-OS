@@ -9,6 +9,10 @@ import {
   SELL_IN_TEMPLATE,
   SELL_OUT_HEADERS,
   SELL_OUT_TEMPLATE,
+  ACCOUNTS_HEADERS,
+  ACCOUNTS_TEMPLATE,
+  CONTACTS_HEADERS,
+  CONTACTS_TEMPLATE,
 } from '@/lib/import/templates'
 
 type ImportMode = 'append' | 'replace' | 'update'
@@ -24,7 +28,7 @@ type ImportSectionConfig = {
   endpoint: string
   expectedHeaders: string[]
   template: string
-  dateField: 'date' | 'month'
+  dateField?: 'date' | 'month'
 }
 
 type ManualFieldConfig = {
@@ -638,12 +642,13 @@ const ImportSection = ({
     const brands = Array.from(
       new Set(rows.map((row) => String(row.brand ?? '').trim()).filter(Boolean))
     )
-    return brands.length ? `Brands: ${brands.join(', ')}` : 'No brands detected.'
+    return brands.length ? `Brands: ${brands.join(', ')}` : null
   }, [rows])
 
   const dateSummary = useMemo(() => {
+    if (!config.dateField) return null
     const values = rows
-      .map((row) => String(row[config.dateField] ?? '').trim())
+      .map((row) => String(row[config.dateField!] ?? '').trim())
       .filter(Boolean)
     const label = config.dateField === 'date' ? 'Dates' : 'Months'
     return formatDateRange(values, label)
@@ -801,8 +806,8 @@ const ImportSection = ({
         </div>
 
         <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-400">
-          <div>{brandSummary}</div>
-          <div>{dateSummary}</div>
+          {brandSummary && <div>{brandSummary}</div>}
+          {dateSummary && <div>{dateSummary}</div>}
           <div>Rows detected: {rows.length}</div>
         </div>
 
@@ -895,6 +900,20 @@ export default function ImportClient({
       expectedHeaders: SELL_OUT_HEADERS,
       template: SELL_OUT_TEMPLATE,
       dateField: 'month',
+    },
+    {
+      title: 'CRM Accounts',
+      description: 'Import CRM accounts from CSV. Duplicates by name are skipped.',
+      endpoint: '/api/import/accounts',
+      expectedHeaders: ACCOUNTS_HEADERS,
+      template: ACCOUNTS_TEMPLATE,
+    },
+    {
+      title: 'CRM Contacts',
+      description: 'Import CRM contacts from CSV. Duplicates by name + email are skipped.',
+      endpoint: '/api/import/contacts',
+      expectedHeaders: CONTACTS_HEADERS,
+      template: CONTACTS_TEMPLATE,
     },
   ]
 

@@ -3,6 +3,7 @@ import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
 } from '@/lib/route-params'
+import { getCrmWorkspaceId, getLinkedBrandNames } from '@/lib/crm/workspace'
 import AccountsClient from './AccountsClient'
 
 export default async function AccountsPage({
@@ -13,10 +14,13 @@ export default async function AccountsPage({
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 
-  const [accountsRes, contactsRes, dealsRes] = await Promise.all([
-    supabase.from('crm_accounts').select('*').eq('workspace_id', workspaceId).order('name'),
-    supabase.from('crm_contacts').select('id, account_id').eq('workspace_id', workspaceId),
-    supabase.from('crm_deals').select('id, account_id, value, stage').eq('workspace_id', workspaceId),
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
+
+  const [accountsRes, contactsRes, dealsRes, brandNames] = await Promise.all([
+    supabase.from('crm_accounts').select('*').eq('workspace_id', crmWorkspaceId).order('name'),
+    supabase.from('crm_contacts').select('id, account_id').eq('workspace_id', crmWorkspaceId),
+    supabase.from('crm_deals').select('id, account_id, value, stage').eq('workspace_id', crmWorkspaceId),
+    getLinkedBrandNames(supabase, crmWorkspaceId),
   ])
 
   // Build relationship counts per account
@@ -55,6 +59,7 @@ export default async function AccountsPage({
       initialAccounts={accountsRes.data || []}
       stats={accountStats}
       baseCurrency={ws?.base_currency || 'GBP'}
+      brandNames={brandNames}
     />
   )
 }

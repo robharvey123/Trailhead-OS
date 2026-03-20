@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkspaceContext } from '@/lib/workspace/auth'
+import { getCrmWorkspaceId } from '@/lib/crm/workspace'
 
 export async function GET(request: NextRequest) {
   const workspaceId = request.nextUrl.searchParams.get('workspace_id') || ''
@@ -7,12 +8,13 @@ export async function GET(request: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const { supabase } = auth.ctx
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
   const accountId = request.nextUrl.searchParams.get('account_id')
 
   let query = supabase
     .from('crm_contacts')
     .select('*')
-    .eq('workspace_id', workspaceId)
+    .eq('workspace_id', crmWorkspaceId)
     .order('last_name')
 
   if (accountId) query = query.eq('account_id', accountId)
@@ -30,11 +32,12 @@ export async function POST(request: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const { supabase, userId } = auth.ctx
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
 
   const { data, error } = await supabase
     .from('crm_contacts')
     .insert({
-      workspace_id: workspaceId,
+      workspace_id: crmWorkspaceId,
       account_id: body.account_id || null,
       first_name: body.first_name,
       last_name: body.last_name,
@@ -45,6 +48,7 @@ export async function POST(request: NextRequest) {
       is_primary: body.is_primary || false,
       notes: body.notes || null,
       tags: body.tags || [],
+      brands: body.brands || [],
       created_by: userId,
     })
     .select()

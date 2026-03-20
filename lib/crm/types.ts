@@ -21,6 +21,7 @@ export type CrmAccount = {
   country: string | null
   notes: string | null
   tags: string[]
+  brands: string[]
   created_by: string | null
   created_at?: string
   updated_at?: string
@@ -39,6 +40,7 @@ export type CrmContact = {
   is_primary: boolean
   notes: string | null
   tags: string[]
+  brands: string[]
   created_by: string | null
   created_at?: string
   updated_at?: string

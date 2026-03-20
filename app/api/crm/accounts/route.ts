@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkspaceContext } from '@/lib/workspace/auth'
+import { getCrmWorkspaceId } from '@/lib/crm/workspace'
 
 export async function GET(request: NextRequest) {
   const workspaceId = request.nextUrl.searchParams.get('workspace_id') || ''
@@ -7,12 +8,13 @@ export async function GET(request: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const { supabase } = auth.ctx
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
   const type = request.nextUrl.searchParams.get('type')
 
   let query = supabase
     .from('crm_accounts')
     .select('*')
-    .eq('workspace_id', workspaceId)
+    .eq('workspace_id', crmWorkspaceId)
     .order('name')
 
   if (type) query = query.eq('type', type)
@@ -30,11 +32,12 @@ export async function POST(request: NextRequest) {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const { supabase, userId } = auth.ctx
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
 
   const { data, error } = await supabase
     .from('crm_accounts')
     .insert({
-      workspace_id: workspaceId,
+      workspace_id: crmWorkspaceId,
       name: body.name,
       type: body.type || 'customer',
       industry: body.industry || null,
@@ -49,6 +52,7 @@ export async function POST(request: NextRequest) {
       country: body.country || null,
       notes: body.notes || null,
       tags: body.tags || [],
+      brands: body.brands || [],
       created_by: userId,
     })
     .select()

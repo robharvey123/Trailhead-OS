@@ -13,17 +13,20 @@ export default function AccountsClient({
   initialAccounts,
   stats,
   baseCurrency,
+  brandNames,
 }: {
   workspaceId: string
   initialAccounts: CrmAccount[]
   stats: Record<string, { contacts: number; deals: number; pipeline: number }>
   baseCurrency: string
+  brandNames: string[]
 }) {
   const [accounts, setAccounts] = useState(initialAccounts)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [filterType, setFilterType] = useState<string>('all')
+  const [filterBrand, setFilterBrand] = useState<string>('all')
   const [search, setSearch] = useState('')
 
   // Form state
@@ -36,6 +39,7 @@ export default function AccountsClient({
   const [city, setCity] = useState('')
   const [country, setCountry] = useState('')
   const [notes, setNotes] = useState('')
+  const [brands, setBrands] = useState<string[]>([])
 
   const resetForm = () => {
     setName('')
@@ -47,6 +51,7 @@ export default function AccountsClient({
     setCity('')
     setCountry('')
     setNotes('')
+    setBrands([])
     setEditingId(null)
   }
 
@@ -60,6 +65,7 @@ export default function AccountsClient({
     setCity(a.city || '')
     setCountry(a.country || '')
     setNotes(a.notes || '')
+    setBrands(a.brands || [])
     setEditingId(a.id)
     setShowForm(true)
   }
@@ -80,6 +86,7 @@ export default function AccountsClient({
         city: city || null,
         country: country || null,
         notes: notes || null,
+        brands,
       }
 
       if (editingId) {
@@ -106,7 +113,7 @@ export default function AccountsClient({
         setSaving(false)
       }
     },
-    [workspaceId, editingId, name, type, industry, email, phone, website, city, country, notes]
+    [workspaceId, editingId, name, type, industry, email, phone, website, city, country, notes, brands]
   )
 
   const handleDelete = useCallback(
@@ -124,12 +131,17 @@ export default function AccountsClient({
 
   const filtered = accounts.filter((a) => {
     if (filterType !== 'all' && a.type !== filterType) return false
+    if (filterBrand !== 'all' && !a.brands?.includes(filterBrand)) return false
     if (search) {
       const q = search.toLowerCase()
       return a.name.toLowerCase().includes(q) || a.email?.toLowerCase().includes(q) || a.industry?.toLowerCase().includes(q)
     }
     return true
   })
+
+  const toggleBrand = (b: string) => {
+    setBrands((prev) => prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b])
+  }
 
   return (
     <div className="space-y-6">
@@ -159,6 +171,18 @@ export default function AccountsClient({
             <option key={t} value={t}>{CRM_ACCOUNT_TYPE_LABELS[t]}</option>
           ))}
         </select>
+        {brandNames.length > 0 && (
+          <select
+            value={filterBrand}
+            onChange={(e) => setFilterBrand(e.target.value)}
+            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
+          >
+            <option value="all">All brands</option>
+            {brandNames.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        )}
         <input
           type="text"
           placeholder="Search accounts..."
@@ -207,6 +231,24 @@ export default function AccountsClient({
               <label className="mb-1 block text-xs text-slate-400">Country</label>
               <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
+            {brandNames.length > 0 && (
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs text-slate-400">Brands</label>
+                <div className="flex flex-wrap gap-3">
+                  {brandNames.map((b) => (
+                    <label key={b} className="flex items-center gap-1.5 text-sm text-slate-200">
+                      <input
+                        type="checkbox"
+                        checked={brands.includes(b)}
+                        onChange={() => toggleBrand(b)}
+                        className="accent-white"
+                      />
+                      {b}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs text-slate-400">Notes</label>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
@@ -230,6 +272,7 @@ export default function AccountsClient({
             <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Type</th>
+              {brandNames.length > 0 && <th className="px-4 py-3">Brands</th>}
               <th className="px-4 py-3">Industry</th>
               <th className="px-4 py-3">Relationships</th>
               <th className="px-4 py-3">Email</th>
@@ -239,7 +282,7 @@ export default function AccountsClient({
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">No accounts found</td></tr>
+              <tr><td colSpan={brandNames.length > 0 ? 8 : 7} className="px-4 py-8 text-center text-slate-500">No accounts found</td></tr>
             ) : (
               filtered.map((a) => {
                 const s = stats[a.id] || { contacts: 0, deals: 0, pipeline: 0 }
@@ -255,6 +298,19 @@ export default function AccountsClient({
                       {CRM_ACCOUNT_TYPE_LABELS[a.type]}
                     </span>
                   </td>
+                  {brandNames.length > 0 && (
+                    <td className="px-4 py-3">
+                      {a.brands?.length ? (
+                        <div className="flex flex-wrap gap-1">
+                          {a.brands.map((b) => (
+                            <span key={b} className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-slate-500">—</span>
+                      )}
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-slate-400">{a.industry || '—'}</td>
                   <td className="px-4 py-3 text-xs text-slate-400">
                     {s.contacts > 0 || s.deals > 0 ? (

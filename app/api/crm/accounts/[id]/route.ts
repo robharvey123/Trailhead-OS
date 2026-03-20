@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkspaceContext } from '@/lib/workspace/auth'
+import { getCrmWorkspaceId } from '@/lib/crm/workspace'
 
 export async function GET(
   request: NextRequest,
@@ -11,12 +12,13 @@ export async function GET(
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const { supabase } = auth.ctx
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
 
   const { data, error } = await supabase
     .from('crm_accounts')
     .select('*')
     .eq('id', id)
-    .eq('workspace_id', workspaceId)
+    .eq('workspace_id', crmWorkspaceId)
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 })
@@ -34,9 +36,10 @@ export async function PATCH(
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const { supabase } = auth.ctx
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
 
   const updates: Record<string, unknown> = {}
-  const allowed = ['name', 'type', 'industry', 'website', 'phone', 'email', 'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country', 'notes', 'tags']
+  const allowed = ['name', 'type', 'industry', 'website', 'phone', 'email', 'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'country', 'notes', 'tags', 'brands']
   for (const key of allowed) {
     if (key in body) updates[key] = body[key]
   }
@@ -45,7 +48,7 @@ export async function PATCH(
     .from('crm_accounts')
     .update(updates)
     .eq('id', id)
-    .eq('workspace_id', workspaceId)
+    .eq('workspace_id', crmWorkspaceId)
     .select()
     .single()
 
@@ -64,11 +67,13 @@ export async function DELETE(
 
   const { supabase } = auth.ctx
 
+  const crmWorkspaceId = await getCrmWorkspaceId(supabase, workspaceId)
+
   const { error } = await supabase
     .from('crm_accounts')
     .delete()
     .eq('id', id)
-    .eq('workspace_id', workspaceId)
+    .eq('workspace_id', crmWorkspaceId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })

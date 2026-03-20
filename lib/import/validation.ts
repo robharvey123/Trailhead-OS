@@ -415,3 +415,153 @@ export const validateSellOutRows = (
 
   return { validRows, rejected }
 }
+
+// ============================================================
+// CRM Account Import
+// ============================================================
+
+export type AccountInsert = {
+  workspace_id: string
+  name: string
+  type: string
+  industry: string | null
+  email: string | null
+  phone: string | null
+  website: string | null
+  city: string | null
+  country: string | null
+  brands: string[]
+  created_by: string
+}
+
+const validAccountTypes = [
+  'customer',
+  'prospect',
+  'partner',
+  'vendor',
+  'distributor',
+  'retailer',
+]
+
+export const validateAccountRows = (
+  rows: Record<string, unknown>[],
+  workspaceId: string,
+  userId: string,
+  rowOffset = 1
+) => {
+  const validRows: ValidatedRow<AccountInsert>[] = []
+  const rejected: ImportRejectedRow[] = []
+
+  rows.forEach((row, index) => {
+    const rowNumber = rowOffset + index
+    const name = normalizeText(row.name)
+
+    if (!name) {
+      rejected.push({ row: rowNumber, reason: 'Missing name.' })
+      return
+    }
+
+    const rawType = normalizeText(row.type).toLowerCase()
+    const type = validAccountTypes.includes(rawType) ? rawType : 'customer'
+
+    const brandsRaw = normalizeText(row.brands)
+    const brands = brandsRaw
+      ? brandsRaw
+          .split(',')
+          .map((b) => b.trim())
+          .filter(Boolean)
+      : []
+
+    validRows.push({
+      row: rowNumber,
+      data: {
+        workspace_id: workspaceId,
+        name,
+        type,
+        industry: normalizeText(row.industry) || null,
+        email: normalizeText(row.email) || null,
+        phone: normalizeText(row.phone) || null,
+        website: normalizeText(row.website) || null,
+        city: normalizeText(row.city) || null,
+        country: normalizeText(row.country) || null,
+        brands,
+        created_by: userId,
+      },
+    })
+  })
+
+  return { validRows, rejected }
+}
+
+// ============================================================
+// CRM Contact Import
+// ============================================================
+
+export type ContactInsert = {
+  workspace_id: string
+  account_id: string | null
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null
+  job_title: string | null
+  brands: string[]
+  created_by: string
+}
+
+export const validateContactRows = (
+  rows: Record<string, unknown>[],
+  workspaceId: string,
+  userId: string,
+  accountNameMap: Map<string, string>,
+  rowOffset = 1
+) => {
+  const validRows: ValidatedRow<ContactInsert>[] = []
+  const rejected: ImportRejectedRow[] = []
+
+  rows.forEach((row, index) => {
+    const rowNumber = rowOffset + index
+    const firstName = normalizeText(row.first_name)
+    const lastName = normalizeText(row.last_name)
+
+    if (!firstName) {
+      rejected.push({ row: rowNumber, reason: 'Missing first_name.' })
+      return
+    }
+
+    if (!lastName) {
+      rejected.push({ row: rowNumber, reason: 'Missing last_name.' })
+      return
+    }
+
+    const accountName = normalizeText(row.account_name)
+    const accountId = accountName
+      ? accountNameMap.get(accountName.toLowerCase()) || null
+      : null
+
+    const brandsRaw = normalizeText(row.brands)
+    const brands = brandsRaw
+      ? brandsRaw
+          .split(',')
+          .map((b) => b.trim())
+          .filter(Boolean)
+      : []
+
+    validRows.push({
+      row: rowNumber,
+      data: {
+        workspace_id: workspaceId,
+        account_id: accountId,
+        first_name: firstName,
+        last_name: lastName,
+        email: normalizeText(row.email) || null,
+        phone: normalizeText(row.phone) || null,
+        job_title: normalizeText(row.job_title) || null,
+        brands,
+        created_by: userId,
+      },
+    })
+  })
+
+  return { validRows, rejected }
+}

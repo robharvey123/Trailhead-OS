@@ -116,7 +116,7 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
           <h1 className="mt-1 text-2xl font-semibold">Invoices</h1>
           <p className="mt-1 text-sm text-slate-400">Outstanding: {fmtCurrency(totals.outstanding)} &middot; Paid: {fmtCurrency(totals.paid)}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Invoice</button>
+        <button onClick={async () => { resetForm(); setShowForm(true); try { const { next_number } = await apiFetch<{ next_number: string }>(`/api/finance/invoices/next-number?workspace_id=${workspaceId}`); setInvoiceNumber(next_number) } catch { /* user can enter manually */ } }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Invoice</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
