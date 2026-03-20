@@ -18,14 +18,15 @@ export default function WorkspaceNav({
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const query = searchParams.toString()
-  const activeSlug = pathname.split('/').slice(3, 4)[0] ?? ''
+  const activeSlug = pathname.split('/').slice(3).join('/') || ''
 
   return (
     <nav className="flex flex-wrap gap-2 text-sm">
       {items.map((item) => {
         const href = `/workspace/${workspaceId}/${item.slug}`
-        const withQuery = query ? `${href}?${query}` : href
-        const isActive = activeSlug === item.slug
+        const analyticsPages = ['dashboard', 'insights', 'sell-in', 'sell-out', 'comparison', 'promo', 'pnl', 'sku-summary', 'company-summary', 'company-sku-detail']
+        const withQuery = query && analyticsPages.includes(item.slug) ? `${href}?${query}` : href
+        const isActive = activeSlug === item.slug || (item.slug === 'holding' && activeSlug === 'holding')
 
         return (
           <Link

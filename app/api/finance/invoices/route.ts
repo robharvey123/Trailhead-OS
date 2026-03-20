@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
     line_items: lineItems,
     notes: body.notes || null,
     payment_terms: body.payment_terms || null,
+    stream_id: body.stream_id || null,
     created_by: userId,
   }).select().single()
 

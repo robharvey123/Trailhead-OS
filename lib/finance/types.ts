@@ -33,12 +33,14 @@ export type FinanceInvoice = {
   line_items: InvoiceLineItem[]
   notes: string | null
   payment_terms: string | null
+  stream_id: string | null
   created_by: string | null
   created_at?: string
   updated_at?: string
   // joined
   account_name?: string
   contact_name?: string
+  stream_name?: string
 }
 
 export type POStatus = 'draft' | 'submitted' | 'approved' | 'ordered' | 'partial_received' | 'received' | 'cancelled'

@@ -6,7 +6,10 @@ import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
 } from '@/lib/route-params'
-import WorkspaceSidebar from '@/components/nav/WorkspaceSidebar'
+import WorkspaceSidebar, {
+  BRAND_NAV_SECTIONS,
+  HOLDING_NAV_SECTIONS,
+} from '@/components/nav/WorkspaceSidebar'
 
 export default async function WorkspaceLayout({
   children,
@@ -28,7 +31,7 @@ export default async function WorkspaceLayout({
 
   const { data: workspace } = await supabase
     .from('workspaces')
-    .select('id, name')
+    .select('id, name, type')
     .eq('id', workspaceId)
     .maybeSingle()
 
@@ -36,25 +39,35 @@ export default async function WorkspaceLayout({
     redirect('/workspaces')
   }
 
+  const sections =
+    workspace.type === 'holding' ? HOLDING_NAV_SECTIONS : BRAND_NAV_SECTIONS
+
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
-      <div className="flex w-56 shrink-0 flex-col border-r border-slate-800 bg-slate-950/60 pt-6 pl-6">
-        <div className="mb-6 pr-4">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
-            Workspace
-          </p>
-          <h2 className="mt-1 truncate text-sm font-semibold">{workspace.name}</h2>
+    <div className="flex h-screen bg-slate-950 text-slate-100">
+      {/* Sidebar */}
+      <div className="flex flex-col border-r border-slate-800">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-4">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+              Workspace
+            </p>
+            <h2 className="truncate text-sm font-semibold">
+              {workspace.name}
+            </h2>
+          </div>
           <Link
             href="/workspaces"
-            className="mt-1 block text-[11px] text-slate-500 hover:text-slate-300"
+            className="shrink-0 text-[10px] text-slate-500 hover:text-slate-300"
           >
-            Switch workspace
+            Switch
           </Link>
         </div>
-        <WorkspaceSidebar workspaceId={workspaceId} />
+        <WorkspaceSidebar workspaceId={workspaceId} sections={sections} />
       </div>
-      <main className="flex-1 overflow-x-hidden px-8 py-8">
-        {children}
+
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto px-6 py-8">
+        <div className="mx-auto w-full max-w-screen-2xl">{children}</div>
       </main>
     </div>
   )

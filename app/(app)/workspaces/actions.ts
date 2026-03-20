@@ -14,9 +14,14 @@ export async function createWorkspace(
   formData: FormData
 ): Promise<CreateWorkspaceState> {
   const name = String(formData.get('name') ?? '').trim()
+  const type = String(formData.get('type') ?? 'brand').trim()
 
   if (!name) {
     return { error: 'Workspace name is required.' }
+  }
+
+  if (type !== 'brand' && type !== 'holding') {
+    return { error: 'Invalid workspace type.' }
   }
 
   const supabase = await createClient()
@@ -31,7 +36,7 @@ export async function createWorkspace(
   const admin = createAdminClient()
   const { data: workspace, error: workspaceError } = await admin
     .from('workspaces')
-    .insert({ name, owner_user_id: user.id })
+    .insert({ name, owner_user_id: user.id, type })
     .select('id')
     .single()
 

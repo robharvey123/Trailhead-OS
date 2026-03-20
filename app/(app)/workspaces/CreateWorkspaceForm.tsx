@@ -38,6 +38,20 @@ export default function CreateWorkspaceForm() {
           placeholder="Acme Brands"
         />
       </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium" htmlFor="workspace-type">
+          Type
+        </label>
+        <select
+          id="workspace-type"
+          name="type"
+          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-slate-500 focus:outline-none"
+          defaultValue="brand"
+        >
+          <option value="brand">Brand</option>
+          <option value="holding">Holding Company</option>
+        </select>
+      </div>
       <SubmitButton />
       {state.error ? (
         <p className="text-sm text-rose-200">{state.error}</p>

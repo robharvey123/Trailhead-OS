@@ -9,7 +9,7 @@ export type NavSection = {
   items: { slug: string; label: string }[]
 }
 
-const NAV_SECTIONS: NavSection[] = [
+export const BRAND_NAV_SECTIONS: NavSection[] = [
   {
     label: 'Overview',
     items: [
@@ -95,15 +95,51 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ]
 
+export const HOLDING_NAV_SECTIONS: NavSection[] = [
+  {
+    label: 'Trailhead Hub',
+    items: [
+      { slug: 'holding', label: 'Dashboard' },
+      { slug: 'holding/streams', label: 'Income Streams' },
+      { slug: 'holding/commission', label: 'Commission' },
+      { slug: 'holding/payments', label: 'Stripe Payments' },
+      { slug: 'holding/bank', label: 'Bank Account' },
+      { slug: 'holding/invoicing', label: 'Invoicing' },
+      { slug: 'holding/expenses', label: 'Expenses' },
+    ],
+  },
+  {
+    label: 'CRM',
+    items: [
+      { slug: 'accounts', label: 'Accounts' },
+      { slug: 'contacts', label: 'Contacts' },
+      { slug: 'deals', label: 'Deals' },
+    ],
+  },
+  {
+    label: 'Manage',
+    items: [
+      { slug: 'tasks', label: 'Tasks' },
+      { slug: 'holding/settings', label: 'Hub Settings' },
+      { slug: 'settings', label: 'Settings' },
+      { slug: 'settings/integrations', label: 'Integrations' },
+    ],
+  },
+]
+
 export default function WorkspaceSidebar({
   workspaceId,
+  sections,
 }: {
   workspaceId: string
+  sections?: NavSection[]
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const query = searchParams.toString()
   const activeSlug = pathname.split('/').slice(3).join('/')
+
+  const navSections = sections ?? BRAND_NAV_SECTIONS
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
@@ -113,7 +149,7 @@ export default function WorkspaceSidebar({
 
   return (
     <aside className="flex w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-slate-800 bg-slate-950/60 pb-6 pr-4">
-      {NAV_SECTIONS.map((section) => {
+      {navSections.map((section) => {
         const isCollapsed = collapsed[section.label]
         const hasActive = section.items.some((i) => i.slug === activeSlug || activeSlug.startsWith(i.slug + '/'))
 
