@@ -3,10 +3,11 @@
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { MarketingCampaign, CampaignType, CampaignStatus, CampaignChannel } from '@/lib/marketing/types'
 import { CAMPAIGN_TYPES, CAMPAIGN_TYPE_LABELS, CAMPAIGN_STATUSES, CAMPAIGN_STATUS_LABELS, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_LABELS } from '@/lib/marketing/types'
 
-export default function CampaignsClient({ workspaceId, initialCampaigns }: { workspaceId: string; initialCampaigns: MarketingCampaign[] }) {
+export default function CampaignsClient({ workspaceId, initialCampaigns, baseCurrency }: { workspaceId: string; initialCampaigns: MarketingCampaign[]; baseCurrency: string }) {
   const [campaigns, setCampaigns] = useState(initialCampaigns)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -76,7 +77,7 @@ export default function CampaignsClient({ workspaceId, initialCampaigns }: { wor
     return true
   })
 
-  const fmtCurrency = (v: number) => v ? `$${v.toLocaleString()}` : '—'
+  const fmtCurrency = (v: number) => v ? `${currencySymbol(baseCurrency)}${v.toLocaleString()}` : '—'
 
   return (
     <div className="space-y-6">

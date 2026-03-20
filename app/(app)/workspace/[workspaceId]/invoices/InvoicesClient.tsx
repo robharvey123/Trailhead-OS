@@ -4,12 +4,13 @@ import { useCallback, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { FinanceInvoice, InvoiceStatus, InvoiceDirection, InvoiceLineItem } from '@/lib/finance/types'
 import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, INVOICE_STATUS_COLORS } from '@/lib/finance/types'
 
 type AccountOption = { id: string; name: string }
 
-export default function InvoicesClient({ workspaceId, initialInvoices, accounts }: { workspaceId: string; initialInvoices: FinanceInvoice[]; accounts: AccountOption[] }) {
+export default function InvoicesClient({ workspaceId, initialInvoices, accounts, baseCurrency, supportedCurrencies }: { workspaceId: string; initialInvoices: FinanceInvoice[]; accounts: AccountOption[]; baseCurrency: string; supportedCurrencies: string[] }) {
   const [invoices, setInvoices] = useState(initialInvoices)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -24,13 +25,13 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts 
   const [issueDate, setIssueDate] = useState(new Date().toISOString().slice(0, 10))
   const [dueDate, setDueDate] = useState('')
   const [taxRate, setTaxRate] = useState('0')
-  const [currency, setCurrency] = useState('USD')
+  const [currency, setCurrency] = useState(baseCurrency)
   const [notes, setNotes] = useState('')
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([])
 
   const accountMap = new Map(accounts.map((a) => [a.id, a.name]))
 
-  const resetForm = () => { setInvoiceNumber(''); setAccountId(''); setDirection('outgoing'); setStatus('draft'); setIssueDate(new Date().toISOString().slice(0, 10)); setDueDate(''); setTaxRate('0'); setCurrency('USD'); setNotes(''); setLineItems([]); setEditingId(null) }
+  const resetForm = () => { setInvoiceNumber(''); setAccountId(''); setDirection('outgoing'); setStatus('draft'); setIssueDate(new Date().toISOString().slice(0, 10)); setDueDate(''); setTaxRate('0'); setCurrency(baseCurrency); setNotes(''); setLineItems([]); setEditingId(null) }
 
   const addLineItem = () => setLineItems((prev) => [...prev, { id: crypto.randomUUID(), description: '', quantity: 1, unit_price: 0, total: 0 }])
   const removeLineItem = (id: string) => setLineItems((prev) => prev.filter((i) => i.id !== id))
@@ -102,7 +103,10 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts 
     paid: filtered.filter((i) => i.status === 'paid').reduce((s, i) => s + i.total, 0),
   }), [filtered])
 
-  const fmtCurrency = (v: number) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+  const fmtCurrency = (v: number, code?: string) => {
+    const sym = currencySymbol(code || baseCurrency)
+    return `${sym}${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+  }
 
   return (
     <div className="space-y-6">
@@ -138,6 +142,7 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts 
               <div><label className="mb-1 block text-xs text-slate-400">Issue Date</label><input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
               <div><label className="mb-1 block text-xs text-slate-400">Due Date</label><input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
               <div><label className="mb-1 block text-xs text-slate-400">Tax Rate (%)</label><input type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Currency</label><select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
             </div>
 
             <div>
@@ -178,10 +183,10 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts 
                 <td className="px-4 py-3 text-slate-400">{inv.direction === 'incoming' ? '↓ In' : '↑ Out'}</td>
                 <td className="px-4 py-3 text-slate-400">{inv.issue_date}</td>
                 <td className="px-4 py-3 text-slate-400">{inv.due_date || '—'}</td>
-                <td className="px-4 py-3 font-medium">{fmtCurrency(inv.total)}</td>
-                <td className="px-4 py-3 text-slate-400">{fmtCurrency(inv.amount_paid)}</td>
+                <td className="px-4 py-3 font-medium">{fmtCurrency(inv.total, inv.currency)} <span className="text-[10px] text-slate-500">{inv.currency}</span></td>
+                <td className="px-4 py-3 text-slate-400">{fmtCurrency(inv.amount_paid, inv.currency)}</td>
                 <td className="px-4 py-3"><span className={`text-xs ${INVOICE_STATUS_COLORS[inv.status]}`}>{INVOICE_STATUS_LABELS[inv.status]}</span></td>
-                <td className="px-4 py-3"><div className="flex gap-2"><button onClick={() => openEdit(inv)} className="text-xs text-slate-400 hover:text-white">Edit</button><button onClick={() => handleDelete(inv.id)} className="text-xs text-rose-400 hover:text-rose-300">Delete</button></div></td>
+                <td className="px-4 py-3"><div className="flex gap-2"><button onClick={() => openEdit(inv)} className="text-xs text-slate-400 hover:text-white">Edit</button><a href={`/api/finance/invoices/${inv.id}/pdf`} download className="text-xs text-blue-400 hover:text-blue-300">PDF</a><button onClick={() => handleDelete(inv.id)} className="text-xs text-rose-400 hover:text-rose-300">Delete</button></div></td>
               </tr>
             ))}
           </tbody>

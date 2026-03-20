@@ -7,6 +7,7 @@ export default async function CampaignsPage({ params }: { params: WorkspaceRoute
   const supabase = await createClient()
 
   const { data } = await supabase.from('marketing_campaigns').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false })
+  const { data: ws } = await supabase.from('workspace_settings').select('base_currency').eq('workspace_id', workspaceId).maybeSingle()
 
-  return <CampaignsClient workspaceId={workspaceId} initialCampaigns={data || []} />
+  return <CampaignsClient workspaceId={workspaceId} initialCampaigns={data || []} baseCurrency={ws?.base_currency || 'GBP'} />
 }

@@ -19,7 +19,8 @@ export async function updateSettings(
 ): Promise<SettingsState> {
   const workspaceId = String(formData.get('workspaceId') ?? '').trim()
   const brandFilter = String(formData.get('brand_filter') ?? '').trim()
-  const currencySymbol = String(formData.get('currency_symbol') ?? '$').trim()
+  const baseCurrency = String(formData.get('base_currency') ?? 'GBP').trim()
+  const supportedCurrencies = formData.getAll('supported_currencies').map(String).filter(Boolean)
   const cogsPct = Number(formData.get('cogs_pct'))
   const promoCost = Number(formData.get('promo_cost'))
 
@@ -32,12 +33,17 @@ export async function updateSettings(
   }
 
   const supabase = await createClient()
+  if (!supportedCurrencies.includes(baseCurrency)) {
+    supportedCurrencies.unshift(baseCurrency)
+  }
+
   const { error } = await supabase.from('workspace_settings').upsert({
     workspace_id: workspaceId,
     brand_filter: brandFilter,
     cogs_pct: cogsPct,
     promo_cost: promoCost,
-    currency_symbol: currencySymbol,
+    base_currency: baseCurrency,
+    supported_currencies: supportedCurrencies,
   })
 
   if (error) {

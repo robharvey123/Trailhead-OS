@@ -22,6 +22,7 @@ const buildSellOutKey = (row: SellOutInsert) =>
     normalizeKeyPart(row.units),
     normalizeKeyPart(row.platform),
     normalizeKeyPart(row.region),
+    normalizeKeyPart(row.currency),
   ].join('|')
 
 export async function POST(request: Request) {
@@ -64,10 +65,18 @@ export async function POST(request: Request) {
     )
   }
 
+  const { data: settingsRow } = await supabase
+    .from('workspace_settings')
+    .select('base_currency')
+    .eq('workspace_id', workspaceId)
+    .maybeSingle()
+  const baseCurrency = settingsRow?.base_currency || 'GBP'
+
   let { validRows, rejected } = validateSellOutRows(
     rows,
     workspaceId,
-    rowOffset
+    rowOffset,
+    baseCurrency
   )
 
   if (!validRows.length) {
@@ -96,7 +105,7 @@ export async function POST(request: Request) {
     if (brands.length && range) {
       const { data: existingRows, error } = await supabase
         .from('sell_out')
-        .select('workspace_id, company, brand, product, month, units, platform, region')
+        .select('workspace_id, company, brand, product, month, units, platform, region, currency')
         .eq('workspace_id', workspaceId)
         .in('brand', brands)
         .gte('month', range.min)

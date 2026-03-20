@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import SettingsForm from './SettingsForm'
+import FxRatesTable from './FxRatesTable'
 import MappingForm from './MappingForm'
 import MappingTable from './MappingTable'
 import InviteMemberForm from './InviteMemberForm'
@@ -42,9 +43,16 @@ export default async function SettingsPage({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('brand_filter, cogs_pct, promo_cost, currency_symbol')
+    .select('brand_filter, cogs_pct, promo_cost, base_currency, supported_currencies')
     .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
+
+  const { data: fxRates } = await supabase
+    .from('fx_rates')
+    .select('id, from_currency, to_currency, rate, effective_date')
+    .eq('workspace_id', resolvedParams.workspaceId)
+    .order('from_currency')
+    .order('effective_date', { ascending: false })
 
   const { data: mappings } = await supabase
     .from('customer_mappings')
@@ -56,7 +64,8 @@ export default async function SettingsPage({
     brand_filter: 'RUSH',
     cogs_pct: 0.55,
     promo_cost: 0.55,
-    currency_symbol: '$',
+    base_currency: 'GBP',
+    supported_currencies: ['GBP', 'EUR', 'USD', 'SEK', 'CHF', 'NOK', 'DKK'],
   }
 
   return (
@@ -87,6 +96,21 @@ export default async function SettingsPage({
           <SettingsForm
             workspaceId={resolvedParams.workspaceId}
             settings={currentSettings}
+          />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <h2 className="text-lg font-semibold">FX rates</h2>
+        <p className="mt-2 text-sm text-slate-300">
+          Manual exchange rates vs base currency ({currentSettings.base_currency}). Used for multi-currency reporting.
+        </p>
+        <div className="mt-6">
+          <FxRatesTable
+            workspaceId={resolvedParams.workspaceId}
+            baseCurrency={currentSettings.base_currency}
+            supportedCurrencies={currentSettings.supported_currencies}
+            initialRates={fxRates ?? []}
           />
         </div>
       </section>

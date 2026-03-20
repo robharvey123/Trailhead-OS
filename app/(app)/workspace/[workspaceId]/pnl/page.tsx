@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { formatCurrency } from '@/lib/format'
+import { currencySymbol as getCurrencySymbol, formatCurrency } from '@/lib/format'
 import PnlTable from './PnlTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
@@ -36,7 +36,7 @@ export default async function PnlPage({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('brand_filter, cogs_pct, promo_cost, currency_symbol')
+    .select('brand_filter, cogs_pct, promo_cost, base_currency')
     .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
@@ -68,28 +68,30 @@ export default async function PnlPage({
 
   const cogsPct = settings?.cogs_pct ?? 0.55
   const promoCost = 0
-  const currencySymbol = settings?.currency_symbol ?? '$'
+  const currencySymbol = getCurrencySymbol(settings?.base_currency ?? 'GBP')
 
-  const pnlRows: PnlRow[] = (rows ?? []).map((row) => {
-    const revenue = row.revenue ?? 0
-    const cogs = -revenue * cogsPct
-    const grossProfit = revenue + cogs
-    const focCost = -(row.promo_units ?? 0) * promoCost
-    const netContribution = grossProfit + focCost
+  // Aggregate across currencies per month
+  const monthMap = new Map<string, { revenue: number; promo_units: number }>()
+  for (const row of rows ?? []) {
+    const key = row.month.slice(0, 7)
+    const entry = monthMap.get(key) ?? { revenue: 0, promo_units: 0 }
+    entry.revenue += row.revenue ?? 0
+    entry.promo_units += row.promo_units ?? 0
+    monthMap.set(key, entry)
+  }
 
-    return {
-      month: row.month.slice(0, 7),
-      revenue,
-      cogs,
-      grossProfit,
-      focCost,
-      netContribution,
-    }
-  })
+  const pnlRows: PnlRow[] = Array.from(monthMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, agg]) => {
+      const revenue = agg.revenue
+      const cogs = -revenue * cogsPct
+      const grossProfit = revenue + cogs
+      const focCost = -agg.promo_units * promoCost
+      const netContribution = grossProfit + focCost
+      return { month, revenue, cogs, grossProfit, focCost, netContribution }
+    })
 
-  const availableMonths = (rows ?? [])
-    .map((row) => row.month?.slice(0, 7) ?? '')
-    .filter(Boolean)
+  const availableMonths = Array.from(monthMap.keys()).sort()
 
   const totals = pnlRows.reduce(
     (acc, row) => {

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { BankTransaction } from '@/lib/holding/types'
 
 type SuggestedMatch = {
@@ -14,10 +15,9 @@ type SuggestedMatch = {
   confidence: 'high' | 'medium' | 'low'
 }
 
-const fmtCurrency = (v: number) =>
-  `£${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-
-export default function BankClient({ workspaceId }: { workspaceId: string }) {
+export default function BankClient({ workspaceId, baseCurrency }: { workspaceId: string; baseCurrency: string }) {
+  const fmtCurrency = (v: number) =>
+    `${currencySymbol(baseCurrency)}${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   const [tab, setTab] = useState<'transactions' | 'import' | 'reconcile'>('transactions')
 
   // Transactions state

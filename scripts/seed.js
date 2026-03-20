@@ -75,7 +75,8 @@ const run = async () => {
     brand_filter: 'RUSH',
     cogs_pct: 0.55,
     promo_cost: 0.55,
-    currency_symbol: '$',
+    base_currency: 'GBP',
+    supported_currencies: ['GBP', 'EUR', 'USD', 'SEK', 'CHF', 'NOK', 'DKK'],
   })
 
   await supabase.from('customer_mappings').insert([

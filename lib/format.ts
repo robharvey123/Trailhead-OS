@@ -1,11 +1,34 @@
 export const formatNumber = (value: number) =>
   new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value)
 
-export const formatCurrency = (value: number, symbol: string) =>
-  `${symbol}${new Intl.NumberFormat('en-US', {
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  GBP: '£',
+  USD: '$',
+  EUR: '€',
+  SEK: 'kr',
+  CHF: 'CHF',
+  NOK: 'kr',
+  DKK: 'kr',
+}
+
+export const currencySymbol = (code: string) =>
+  CURRENCY_SYMBOLS[code.toUpperCase()] ?? code
+
+export const formatCurrency = (value: number, symbolOrCode: string) => {
+  const sym = symbolOrCode.length <= 3 && /^[A-Z]{3}$/i.test(symbolOrCode)
+    ? currencySymbol(symbolOrCode)
+    : symbolOrCode
+  return `${sym}${new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value)}`
+}
+
+export const formatCurrencyWithCode = (value: number, code: string) =>
+  `${currencySymbol(code)}${new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)} ${code}`
 
 export const formatPercent = (value: number) =>
   `${value.toFixed(1)}%`

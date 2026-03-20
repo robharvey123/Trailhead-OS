@@ -64,7 +64,7 @@ export default async function ImportsPage({
       .limit(5000),
     supabase
       .from('workspace_settings')
-      .select('brand_filter')
+      .select('brand_filter, base_currency, supported_currencies')
       .eq('workspace_id', workspaceId)
       .maybeSingle(),
   ])
@@ -86,6 +86,8 @@ export default async function ImportsPage({
     }[]) ?? []
 
   const defaultBrand = settingsResult.data?.brand_filter?.trim() ?? ''
+  const baseCurrency = settingsResult.data?.base_currency ?? 'GBP'
+  const supportedCurrencies: string[] = settingsResult.data?.supported_currencies ?? ['GBP', 'EUR', 'USD']
 
   const sellInBrands = uniqueValues(sellInRows, 'brand')
   const sellOutBrands = uniqueValues(sellOutRows, 'brand')
@@ -118,6 +120,8 @@ export default async function ImportsPage({
       workspaceId={workspaceId}
       manualOptions={manualOptions}
       defaultBrand={defaultBrand}
+      baseCurrency={baseCurrency}
+      supportedCurrencies={supportedCurrencies}
     />
   )
 }

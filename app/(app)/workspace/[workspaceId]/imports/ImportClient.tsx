@@ -854,10 +854,14 @@ export default function ImportClient({
   workspaceId,
   manualOptions,
   defaultBrand,
+  baseCurrency,
+  supportedCurrencies,
 }: {
   workspaceId: string
   manualOptions: ManualOptions
   defaultBrand?: string
+  baseCurrency: string
+  supportedCurrencies: string[]
 }) {
   const sellInOptions = manualOptions?.sellIn ?? {
     customers: [],
@@ -945,6 +949,14 @@ export default function ImportClient({
           type: 'number',
           optional: true,
         },
+        {
+          key: 'currency',
+          label: 'Currency',
+          type: 'text',
+          optional: true,
+          options: supportedCurrencies,
+          defaultValue: baseCurrency,
+        },
       ],
     },
     {
@@ -990,6 +1002,14 @@ export default function ImportClient({
           type: 'text',
           optional: true,
           options: sellOutOptions.regions,
+        },
+        {
+          key: 'currency',
+          label: 'Currency',
+          type: 'text',
+          optional: true,
+          options: supportedCurrencies,
+          defaultValue: baseCurrency,
         },
       ],
     },

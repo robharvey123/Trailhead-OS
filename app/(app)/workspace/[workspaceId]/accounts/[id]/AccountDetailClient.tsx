@@ -2,13 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { currencySymbol } from '@/lib/format'
 import type { CrmAccount, CrmContact, CrmDeal, CrmActivity } from '@/lib/crm/types'
 import { CRM_ACCOUNT_TYPE_LABELS, DEAL_STAGE_LABELS } from '@/lib/crm/types'
 import ActivityTimeline from '@/components/crm/ActivityTimeline'
 
 type Tab = 'overview' | 'contacts' | 'deals' | 'activity'
-
-const fmtCurrency = (v: number | null) => v != null ? `$${v.toLocaleString()}` : '—'
 
 export default function AccountDetailClient({
   workspaceId,
@@ -16,13 +15,16 @@ export default function AccountDetailClient({
   contacts,
   deals,
   activities,
+  baseCurrency,
 }: {
   workspaceId: string
   account: CrmAccount
   contacts: CrmContact[]
   deals: CrmDeal[]
   activities: CrmActivity[]
+  baseCurrency: string
 }) {
+  const fmtCurrency = (v: number | null) => v != null ? `${currencySymbol(baseCurrency)}${v.toLocaleString()}` : '—'
   const [tab, setTab] = useState<Tab>('overview')
 
   const pipelineValue = deals

@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { Product, ProductStatus } from '@/lib/products/types'
 import { PRODUCT_STATUSES, PRODUCT_STATUS_LABELS } from '@/lib/products/types'
 
@@ -10,7 +11,7 @@ const statusColors: Record<ProductStatus, string> = {
   draft: 'text-slate-400', active: 'text-emerald-400', discontinued: 'text-amber-400', archived: 'text-slate-500',
 }
 
-export default function CatalogClient({ workspaceId, initialProducts }: { workspaceId: string; initialProducts: Product[] }) {
+export default function CatalogClient({ workspaceId, initialProducts, baseCurrency }: { workspaceId: string; initialProducts: Product[]; baseCurrency: string }) {
   const [products, setProducts] = useState(initialProducts)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -80,7 +81,7 @@ export default function CatalogClient({ workspaceId, initialProducts }: { worksp
     return true
   })
 
-  const fmtCurrency = (v: number | null) => v != null ? `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'
+  const fmtCurrency = (v: number | null) => v != null ? `${currencySymbol(baseCurrency)}${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : '—'
 
   return (
     <div className="space-y-6">

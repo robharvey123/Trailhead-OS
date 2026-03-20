@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { currencySymbol as getCurrencySymbol } from '@/lib/format'
 import { pivotMonthly } from '@/lib/analytics/pivot'
 import PromoTable from './PromoTable'
 import FiltersBar from '@/components/filters/FiltersBar'
@@ -29,7 +30,7 @@ export default async function PromoSummaryPage({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('brand_filter, promo_cost, currency_symbol')
+    .select('brand_filter, promo_cost, base_currency')
     .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
@@ -67,7 +68,7 @@ export default async function PromoSummaryPage({
   })
 
   const promoCost = 0
-  const currencySymbol = settings?.currency_symbol ?? '$'
+  const currencySymbol = getCurrencySymbol(settings?.base_currency ?? 'GBP')
 
   const dataWithCost: PromoPivotRow[] = pivotData.map((row) => ({
     ...row,

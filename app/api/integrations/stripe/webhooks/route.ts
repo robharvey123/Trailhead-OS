@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   try {
     // Use Stripe SDK if available, otherwise manual HMAC verification
     const stripe = await import('stripe').then(m => new m.default(process.env.STRIPE_SECRET_KEY || ''))
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret) as typeof event
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret) as unknown as typeof event
   } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }

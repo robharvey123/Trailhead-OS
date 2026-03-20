@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { currencySymbol as getCurrencySymbol } from '@/lib/format'
 
 type SellInMonthlyRow = {
   month: string
@@ -144,10 +145,10 @@ const buildMonthlySummary = (
       sellThrough: 0,
     }
 
-    entry.sellIn = row.sell_in_units ?? 0
-    entry.promo = row.promo_units ?? 0
-    entry.totalShipped = row.total_shipped ?? 0
-    entry.revenue = row.revenue ?? 0
+    entry.sellIn += row.sell_in_units ?? 0
+    entry.promo += row.promo_units ?? 0
+    entry.totalShipped += row.total_shipped ?? 0
+    entry.revenue += row.revenue ?? 0
     map.set(monthKey, entry)
   })
 
@@ -165,7 +166,7 @@ const buildMonthlySummary = (
       sellThrough: 0,
     }
 
-    entry.sellOut = row.sell_out_units ?? 0
+    entry.sellOut += row.sell_out_units ?? 0
     map.set(monthKey, entry)
   })
 
@@ -238,11 +239,11 @@ export const getInsightsData = async ({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('currency_symbol, cogs_pct')
+    .select('base_currency, cogs_pct')
     .eq('workspace_id', workspaceId)
     .maybeSingle()
 
-  const currencySymbol = settings?.currency_symbol ?? '$'
+  const currencySymbol = getCurrencySymbol(settings?.base_currency ?? 'GBP')
   const cogsPct = settings?.cogs_pct ?? 0.55
   const promoCost = 0
 
@@ -354,15 +355,17 @@ export const getInsightsData = async ({
     })
   })
 
-  const aspData = sellInMonthly
-    .map((row) => {
-      const month = row.month.slice(0, 7)
-      const units = row.sell_in_units ?? 0
-      return {
-        month,
-        value: units > 0 ? (row.revenue ?? 0) / units : 0,
-      }
-    })
+  // Aggregate ASP per month across currencies
+  const aspMap = new Map<string, { revenue: number; units: number }>()
+  for (const row of sellInMonthly) {
+    const month = row.month.slice(0, 7)
+    const entry = aspMap.get(month) ?? { revenue: 0, units: 0 }
+    entry.revenue += row.revenue ?? 0
+    entry.units += row.sell_in_units ?? 0
+    aspMap.set(month, entry)
+  }
+  const aspData = Array.from(aspMap.entries())
+    .map(([month, agg]) => ({ month, value: agg.units > 0 ? agg.revenue / agg.units : 0 }))
     .sort((a, b) => a.month.localeCompare(b.month))
 
   const promoRateData = monthlySummary.map((row) => ({

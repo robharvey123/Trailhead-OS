@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { CrmAccount, CrmAccountType } from '@/lib/crm/types'
 import { CRM_ACCOUNT_TYPES, CRM_ACCOUNT_TYPE_LABELS } from '@/lib/crm/types'
 
@@ -11,10 +12,12 @@ export default function AccountsClient({
   workspaceId,
   initialAccounts,
   stats,
+  baseCurrency,
 }: {
   workspaceId: string
   initialAccounts: CrmAccount[]
   stats: Record<string, { contacts: number; deals: number; pipeline: number }>
+  baseCurrency: string
 }) {
   const [accounts, setAccounts] = useState(initialAccounts)
   const [showForm, setShowForm] = useState(false)
@@ -259,7 +262,7 @@ export default function AccountsClient({
                         {s.contacts} contact{s.contacts !== 1 ? 's' : ''}
                         {' · '}
                         {s.deals} deal{s.deals !== 1 ? 's' : ''}
-                        {s.pipeline > 0 && ` · $${(s.pipeline / 1000).toFixed(0)}k`}
+                        {s.pipeline > 0 && ` · ${currencySymbol(baseCurrency)}${(s.pipeline / 1000).toFixed(0)}k`}
                       </span>
                     ) : (
                       '—'

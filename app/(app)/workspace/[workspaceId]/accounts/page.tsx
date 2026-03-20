@@ -47,11 +47,14 @@ export default async function AccountsPage({
     ])
   )
 
+  const { data: ws } = await supabase.from('workspace_settings').select('base_currency').eq('workspace_id', workspaceId).maybeSingle()
+
   return (
     <AccountsClient
       workspaceId={workspaceId}
       initialAccounts={accountsRes.data || []}
       stats={accountStats}
+      baseCurrency={ws?.base_currency || 'GBP'}
     />
   )
 }

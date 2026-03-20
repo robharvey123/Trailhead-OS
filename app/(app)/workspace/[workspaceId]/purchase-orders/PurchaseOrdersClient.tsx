@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { FinancePurchaseOrder, POStatus, POLineItem } from '@/lib/finance/types'
 import { PO_STATUSES, PO_STATUS_LABELS } from '@/lib/finance/types'
 
@@ -14,7 +15,7 @@ const statusColors: Record<POStatus, string> = {
   ordered: 'text-indigo-400', partial_received: 'text-amber-400', received: 'text-emerald-400', cancelled: 'text-rose-400',
 }
 
-export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts }: { workspaceId: string; initialPOs: FinancePurchaseOrder[]; accounts: AccountOption[] }) {
+export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts, baseCurrency }: { workspaceId: string; initialPOs: FinancePurchaseOrder[]; accounts: AccountOption[]; baseCurrency: string }) {
   const [pos, setPOs] = useState(initialPOs)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -96,7 +97,7 @@ export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts
 
   const filtered = pos.filter((p) => filterStatus === 'all' || p.status === filterStatus)
   const totalValue = useMemo(() => filtered.reduce((s, p) => s + p.total, 0), [filtered])
-  const fmtCurrency = (v: number) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+  const fmtCurrency = (v: number) => `${currencySymbol(baseCurrency)}${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
 
   return (
     <div className="space-y-6">

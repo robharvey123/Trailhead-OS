@@ -6,10 +6,19 @@ export default async function InvoicesPage({ params }: { params: WorkspaceRouteP
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 
-  const [invoicesRes, accountsRes] = await Promise.all([
+  const [invoicesRes, accountsRes, settingsRes] = await Promise.all([
     supabase.from('finance_invoices').select('*').eq('workspace_id', workspaceId).order('issue_date', { ascending: false }),
     supabase.from('crm_accounts').select('id, name').eq('workspace_id', workspaceId).order('name'),
+    supabase.from('workspace_settings').select('base_currency, supported_currencies').eq('workspace_id', workspaceId).maybeSingle(),
   ])
 
-  return <InvoicesClient workspaceId={workspaceId} initialInvoices={invoicesRes.data || []} accounts={accountsRes.data || []} />
+  return (
+    <InvoicesClient
+      workspaceId={workspaceId}
+      initialInvoices={invoicesRes.data || []}
+      accounts={accountsRes.data || []}
+      baseCurrency={settingsRes.data?.base_currency || 'GBP'}
+      supportedCurrencies={settingsRes.data?.supported_currencies || ['GBP', 'EUR', 'USD']}
+    />
+  )
 }

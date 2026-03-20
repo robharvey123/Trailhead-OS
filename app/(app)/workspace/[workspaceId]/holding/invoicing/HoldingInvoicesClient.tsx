@@ -3,15 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { FinanceInvoice, InvoiceStatus, InvoiceDirection, InvoiceLineItem } from '@/lib/finance/types'
 import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, INVOICE_STATUS_COLORS } from '@/lib/finance/types'
 import type { IncomeStream } from '@/lib/holding/types'
 
 type AccountOption = { id: string; name: string }
 
-const fmtCurrency = (v: number) => `£${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-
-export default function HoldingInvoicesClient({ workspaceId }: { workspaceId: string }) {
+export default function HoldingInvoicesClient({ workspaceId, baseCurrency }: { workspaceId: string; baseCurrency: string }) {
+  const fmtCurrency = (v: number) => `${currencySymbol(baseCurrency)}${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
   const [invoices, setInvoices] = useState<FinanceInvoice[]>([])
   const [streams, setStreams] = useState<IncomeStream[]>([])
   const [accounts, setAccounts] = useState<AccountOption[]>([])

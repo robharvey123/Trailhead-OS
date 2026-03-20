@@ -22,7 +22,7 @@ export default async function InsightsPage({
   const { data: settings } = await supabase
     .from('workspace_settings')
     .select(
-      'brand_filter, currency_symbol, cogs_pct, promo_cost, insights_recipients'
+      'brand_filter, base_currency, cogs_pct, promo_cost, insights_recipients'
     )
     .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()

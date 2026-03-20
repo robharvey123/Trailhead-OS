@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { HoldingExpense, ExpenseCategory, IncomeStream } from '@/lib/holding/types'
 import { EXPENSE_CATEGORIES, EXPENSE_CATEGORY_LABELS, EXPENSE_CATEGORY_COLORS } from '@/lib/holding/types'
 
-const fmtCurrency = (v: number) => `£${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-
-export default function ExpensesClient({ workspaceId }: { workspaceId: string }) {
+export default function ExpensesClient({ workspaceId, baseCurrency }: { workspaceId: string; baseCurrency: string }) {
+  const fmtCurrency = (v: number) => `${currencySymbol(baseCurrency)}${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
   const [expenses, setExpenses] = useState<HoldingExpense[]>([])
   const [streams, setStreams] = useState<IncomeStream[]>([])
   const [loading, setLoading] = useState(true)

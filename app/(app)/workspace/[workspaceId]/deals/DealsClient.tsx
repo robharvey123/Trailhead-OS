@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { CrmDeal, DealStage } from '@/lib/crm/types'
 import { DEAL_STAGES, DEAL_STAGE_LABELS } from '@/lib/crm/types'
 
@@ -15,11 +16,15 @@ export default function DealsClient({
   initialDeals,
   accounts,
   contacts,
+  baseCurrency,
+  supportedCurrencies,
 }: {
   workspaceId: string
   initialDeals: CrmDeal[]
   accounts: AccountOption[]
   contacts: ContactOption[]
+  baseCurrency: string
+  supportedCurrencies: string[]
 }) {
   const [deals, setDeals] = useState(initialDeals)
   const [showForm, setShowForm] = useState(false)
@@ -37,6 +42,7 @@ export default function DealsClient({
   const [notes, setNotes] = useState('')
 
   const [contactId, setContactId] = useState('')
+  const [dealCurrency, setDealCurrency] = useState(baseCurrency)
 
   const accountMap = new Map(accounts.map((a) => [a.id, a.name]))
   const contactMap = new Map(contacts.map((c) => [c.id, `${c.first_name} ${c.last_name}`]))
@@ -48,14 +54,14 @@ export default function DealsClient({
 
   const resetForm = () => {
     setTitle(''); setAccountId(''); setContactId(''); setValue(''); setStage('lead')
-    setProbability('0'); setExpectedClose(''); setNotes(''); setEditingId(null)
+    setProbability('0'); setExpectedClose(''); setNotes(''); setEditingId(null); setDealCurrency(baseCurrency)
   }
 
   const openEdit = (d: CrmDeal) => {
     setTitle(d.title); setAccountId(d.account_id || ''); setContactId(d.contact_id || '')
     setValue(d.value?.toString() || ''); setStage(d.stage)
     setProbability(d.probability.toString()); setExpectedClose(d.expected_close_date || '')
-    setNotes(d.notes || ''); setEditingId(d.id); setShowForm(true)
+    setNotes(d.notes || ''); setEditingId(d.id); setShowForm(true); setDealCurrency(d.currency || baseCurrency)
   }
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -64,7 +70,7 @@ export default function DealsClient({
     try {
     const payload = {
       workspace_id: workspaceId, title, account_id: accountId || null, contact_id: contactId || null,
-      value: value ? parseFloat(value) : null, stage, probability: parseInt(probability) || 0,
+      value: value ? parseFloat(value) : null, currency: dealCurrency, stage, probability: parseInt(probability) || 0,
       expected_close_date: expectedClose || null, notes: notes || null,
     }
     if (editingId) {
@@ -86,7 +92,7 @@ export default function DealsClient({
     } finally {
       setSaving(false)
     }
-  }, [workspaceId, editingId, title, accountId, contactId, value, stage, probability, expectedClose, notes])
+  }, [workspaceId, editingId, title, accountId, contactId, value, dealCurrency, stage, probability, expectedClose, notes])
 
   const handleStageChange = useCallback(async (dealId: string, newStage: DealStage) => {
     try {
@@ -135,7 +141,16 @@ export default function DealsClient({
     return map
   }, [deals])
 
-  const fmtCurrency = (v: number | null) => v != null ? `$${v.toLocaleString()}` : '—'
+  const fmtCurrency = (v: number | null, code?: string) => {
+    if (v == null) return '—'
+    const sym = currencySymbol(code || baseCurrency)
+    return `${sym}${v.toLocaleString()}`
+  }
+
+  const fmtBase = (v: number) => {
+    const sym = currencySymbol(baseCurrency)
+    return `${sym}${v.toLocaleString()}`
+  }
 
   const onDragEnd = useCallback((result: DropResult) => {
     const { draggableId, destination } = result
@@ -155,7 +170,8 @@ export default function DealsClient({
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">CRM</p>
           <h1 className="mt-1 text-2xl font-semibold">Deals</h1>
           <p className="mt-1 text-sm text-slate-400">
-            Pipeline: {fmtCurrency(totalPipeline)} &middot; Weighted: {fmtCurrency(weightedPipeline)} &middot; Won: {fmtCurrency(wonTotal)}
+            Pipeline: {fmtBase(totalPipeline)} &middot; Weighted: {fmtBase(weightedPipeline)} &middot; Won: {fmtBase(wonTotal)}
+            <span className="ml-1 text-xs text-slate-500">(converted to {baseCurrency})</span>
           </p>
         </div>
         <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">
@@ -203,8 +219,14 @@ export default function DealsClient({
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-slate-400">Value ($)</label>
+              <label className="mb-1 block text-xs text-slate-400">Value</label>
               <input type="number" step="0.01" value={value} onChange={(e) => setValue(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-slate-400">Currency</label>
+              <select value={dealCurrency} onChange={(e) => setDealCurrency(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+                {supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Stage</label>
@@ -251,7 +273,7 @@ export default function DealsClient({
                     >
                       <div className="border-b border-slate-800 px-4 py-3">
                         <h3 className="text-sm font-semibold">{DEAL_STAGE_LABELS[stg]}</h3>
-                        <p className="text-xs text-slate-400">{stageDeals.length} deals &middot; {fmtCurrency(stageTotal)}</p>
+                        <p className="text-xs text-slate-400">{stageDeals.length} deals &middot; {fmtBase(stageTotal)}</p>
                       </div>
                       <div className="flex flex-col gap-2 p-3" style={{ minHeight: 60 }}>
                         {stageDeals.map((d, index) => (
@@ -268,7 +290,7 @@ export default function DealsClient({
                                 <p className="text-sm font-medium">{d.title}</p>
                                 <p className="mt-1 text-xs text-slate-400">{d.account_id ? accountMap.get(d.account_id) : 'No account'}</p>
                                 {d.contact_id && <p className="text-[10px] text-slate-500">{contactMap.get(d.contact_id)}</p>}
-                                <p className="mt-1 text-sm font-semibold text-emerald-400">{fmtCurrency(d.value)}</p>
+                                <p className="mt-1 text-sm font-semibold text-emerald-400">{fmtCurrency(d.value, d.currency)} <span className="text-[9px] text-slate-500">{d.currency}</span></p>
                                 <div className="mt-2 flex gap-2">
                                   <button onClick={() => openEdit(d)} className="text-[10px] text-slate-400 hover:text-white">Edit</button>
                                   <button onClick={() => handleDelete(d.id)} className="text-[10px] text-rose-400 hover:text-rose-300">Del</button>
@@ -313,7 +335,7 @@ export default function DealsClient({
                   <td className="px-4 py-3 font-medium">{d.title}</td>
                   <td className="px-4 py-3 text-slate-400">{d.account_id ? accountMap.get(d.account_id) || '—' : '—'}</td>
                   <td className="px-4 py-3 text-slate-400">{d.contact_id ? contactMap.get(d.contact_id) || '—' : '—'}</td>
-                  <td className="px-4 py-3 text-emerald-400">{fmtCurrency(d.value)}</td>
+                  <td className="px-4 py-3 text-emerald-400">{fmtCurrency(d.value, d.currency)} <span className="text-[10px] text-slate-500">{d.currency}</span></td>
                   <td className="px-4 py-3"><span className="rounded-full border border-slate-700 px-2 py-0.5 text-xs">{DEAL_STAGE_LABELS[d.stage]}</span></td>
                   <td className="px-4 py-3 text-slate-400">{d.probability}%</td>
                   <td className="px-4 py-3 text-slate-400">{d.expected_close_date || '—'}</td>

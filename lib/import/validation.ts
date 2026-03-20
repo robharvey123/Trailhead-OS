@@ -35,6 +35,7 @@ export type SellInInsert = {
   unit_price: number | null
   total: number | null
   promo_cans: number
+  currency: string
 }
 
 export type SellOutInsert = {
@@ -46,6 +47,7 @@ export type SellOutInsert = {
   units: number
   platform: string | null
   region: string | null
+  currency: string
 }
 
 const excelEpoch = new Date(Date.UTC(1899, 11, 30))
@@ -285,7 +287,8 @@ export const parseImportPayload = (
 export const validateSellInRows = (
   rows: Record<string, unknown>[],
   workspaceId: string,
-  rowOffset = 1
+  rowOffset = 1,
+  baseCurrency = 'GBP'
 ) => {
   const validRows: ValidatedRow<SellInInsert>[] = []
   const rejected: ImportRejectedRow[] = []
@@ -344,6 +347,7 @@ export const validateSellInRows = (
         unit_price: unitPrice,
         total,
         promo_cans: promoCans,
+        currency: normalizeText(row.currency).toUpperCase() || baseCurrency,
       },
     })
   })
@@ -354,7 +358,8 @@ export const validateSellInRows = (
 export const validateSellOutRows = (
   rows: Record<string, unknown>[],
   workspaceId: string,
-  rowOffset = 1
+  rowOffset = 1,
+  baseCurrency = 'GBP'
 ) => {
   const validRows: ValidatedRow<SellOutInsert>[] = []
   const rejected: ImportRejectedRow[] = []
@@ -403,6 +408,7 @@ export const validateSellOutRows = (
         units,
         platform: normalizeText(row.platform) || null,
         region: normalizeText(row.region) || null,
+        currency: normalizeText(row.currency).toUpperCase() || baseCurrency,
       },
     })
   })

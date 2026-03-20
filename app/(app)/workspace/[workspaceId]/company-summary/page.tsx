@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
+import { currencySymbol as getCurrencySymbol, formatCurrency, formatNumber, formatPercent } from '@/lib/format'
 import { pivotMonthly } from '@/lib/analytics/pivot'
 import CompanyCharts from './CompanyCharts'
 import CompanyMonthlyCharts from './CompanyMonthlyCharts'
@@ -56,7 +56,7 @@ export default async function CompanySummaryPage({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('brand_filter, currency_symbol')
+    .select('brand_filter, base_currency')
     .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
@@ -201,7 +201,7 @@ export default async function CompanySummaryPage({
     })
     .sort((a, b) => b.totalShipped - a.totalShipped)
 
-  const currencySymbol = settings?.currency_symbol ?? '$'
+  const currencySymbol = getCurrencySymbol(settings?.base_currency ?? 'GBP')
 
   const totals = summary.reduce(
     (acc, row) => {

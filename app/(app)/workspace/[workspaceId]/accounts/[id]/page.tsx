@@ -21,6 +21,8 @@ export default async function AccountDetailPage({
 
   if (!accountRes.data) return notFound()
 
+  const { data: ws } = await supabase.from('workspace_settings').select('base_currency').eq('workspace_id', workspaceId).maybeSingle()
+
   return (
     <AccountDetailClient
       workspaceId={workspaceId}
@@ -28,6 +30,7 @@ export default async function AccountDetailPage({
       contacts={contactsRes.data || []}
       deals={dealsRes.data || []}
       activities={activitiesRes.data || []}
+      baseCurrency={ws?.base_currency || 'GBP'}
     />
   )
 }

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
+import { currencySymbol } from '@/lib/format'
 import type { FinanceBudget, BudgetCategory } from '@/lib/finance/types'
 import { BUDGET_CATEGORIES, BUDGET_CATEGORY_LABELS } from '@/lib/finance/types'
 
@@ -11,7 +12,7 @@ const catColors: Record<BudgetCategory, string> = {
   product: 'bg-cyan-500', logistics: 'bg-emerald-500', general: 'bg-slate-500',
 }
 
-export default function BudgetsClient({ workspaceId, initialBudgets }: { workspaceId: string; initialBudgets: FinanceBudget[] }) {
+export default function BudgetsClient({ workspaceId, initialBudgets, baseCurrency }: { workspaceId: string; initialBudgets: FinanceBudget[]; baseCurrency: string }) {
   const [budgets, setBudgets] = useState(initialBudgets)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -67,7 +68,7 @@ export default function BudgetsClient({ workspaceId, initialBudgets }: { workspa
 
   const filtered = budgets.filter((b) => filterCat === 'all' || b.category === filterCat)
   const totals = useMemo(() => ({ allocated: filtered.reduce((s, b) => s + b.allocated, 0), spent: filtered.reduce((s, b) => s + b.spent, 0) }), [filtered])
-  const fmtCurrency = (v: number) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+  const fmtCurrency = (v: number) => `${currencySymbol(baseCurrency)}${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
 
   return (
     <div className="space-y-6">
