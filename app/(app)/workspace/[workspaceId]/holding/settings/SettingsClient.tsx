@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
 import type { WorkspaceLink } from '@/lib/holding/types'
 
-export default function SettingsClient({ workspaceId }: { workspaceId: string }) {
+export default function HoldingSettingsClient({ workspaceId }: { workspaceId: string }) {
   const [links, setLinks] = useState<WorkspaceLink[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)

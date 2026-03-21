@@ -204,7 +204,7 @@ export default function ContactsClient({
               <tr><td colSpan={brandNames.length > 0 ? 7 : 6} className="px-4 py-8 text-center text-slate-500">No contacts found</td></tr>
             ) : filtered.map((c) => (
               <tr key={c.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
-                <td className="px-4 py-3 font-medium">{c.first_name} {c.last_name}</td>
+                <td className="px-4 py-3 font-medium"><Link href={`/workspace/${workspaceId}/contacts/${c.id}`} className="hover:text-blue-400 hover:underline">{c.first_name} {c.last_name}</Link></td>
                 <td className="px-4 py-3 text-slate-400">{c.email || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{c.phone || '—'}</td>
                 <td className="px-4 py-3 text-slate-400">{c.job_title || '—'}</td>

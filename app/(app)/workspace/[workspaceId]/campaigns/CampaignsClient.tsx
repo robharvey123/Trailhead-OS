@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { apiFetch } from '@/lib/api-fetch'
 import { currencySymbol } from '@/lib/format'
-import type { MarketingCampaign, CampaignType, CampaignStatus, CampaignChannel } from '@/lib/marketing/types'
+import type { MarketingCampaign, CampaignType, CampaignStatus, CampaignChannel, CampaignResults } from '@/lib/marketing/types'
 import { CAMPAIGN_TYPES, CAMPAIGN_TYPE_LABELS, CAMPAIGN_STATUSES, CAMPAIGN_STATUS_LABELS, CAMPAIGN_CHANNELS, CAMPAIGN_CHANNEL_LABELS } from '@/lib/marketing/types'
 
 export default function CampaignsClient({ workspaceId, initialCampaigns, baseCurrency }: { workspaceId: string; initialCampaigns: MarketingCampaign[]; baseCurrency: string }) {
@@ -25,13 +25,19 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
   const [endDate, setEndDate] = useState('')
   const [targetAudience, setTargetAudience] = useState('')
   const [goals, setGoals] = useState('')
+  const [impressions, setImpressions] = useState('')
+  const [clicks, setClicks] = useState('')
+  const [conversions, setConversions] = useState('')
+  const [revenueAttributed, setRevenueAttributed] = useState('')
 
-  const resetForm = () => { setName(''); setDescription(''); setType('promotion'); setStatus('draft'); setChannel(''); setBudgetAllocated(''); setStartDate(''); setEndDate(''); setTargetAudience(''); setGoals(''); setEditingId(null) }
+  const resetForm = () => { setName(''); setDescription(''); setType('promotion'); setStatus('draft'); setChannel(''); setBudgetAllocated(''); setStartDate(''); setEndDate(''); setTargetAudience(''); setGoals(''); setImpressions(''); setClicks(''); setConversions(''); setRevenueAttributed(''); setEditingId(null) }
 
   const openEdit = (c: MarketingCampaign) => {
     setName(c.name); setDescription(c.description || ''); setType(c.type); setStatus(c.status)
     setChannel(c.channel || ''); setBudgetAllocated(c.budget_allocated?.toString() || ''); setStartDate(c.start_date || '')
     setEndDate(c.end_date || ''); setTargetAudience(c.target_audience || ''); setGoals(c.goals || '')
+    setImpressions(c.results?.impressions?.toString() || ''); setClicks(c.results?.clicks?.toString() || '')
+    setConversions(c.results?.conversions?.toString() || ''); setRevenueAttributed(c.results?.revenue_attributed?.toString() || '')
     setEditingId(c.id); setShowForm(true)
   }
 
@@ -44,6 +50,12 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
       channel: channel || null, budget_allocated: budgetAllocated ? parseFloat(budgetAllocated) : 0,
       start_date: startDate || null, end_date: endDate || null,
       target_audience: targetAudience || null, goals: goals || null,
+      results: (impressions || clicks || conversions || revenueAttributed) ? {
+        impressions: impressions ? parseInt(impressions) : undefined,
+        clicks: clicks ? parseInt(clicks) : undefined,
+        conversions: conversions ? parseInt(conversions) : undefined,
+        revenue_attributed: revenueAttributed ? parseFloat(revenueAttributed) : undefined,
+      } : null,
     }
     if (editingId) {
       const { campaign } = await apiFetch<{ campaign: MarketingCampaign }>(`/api/marketing/campaigns/${editingId}?workspace_id=${workspaceId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
@@ -59,7 +71,7 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
     } finally {
       setSaving(false)
     }
-  }, [workspaceId, editingId, name, description, type, status, channel, budgetAllocated, startDate, endDate, targetAudience, goals])
+  }, [workspaceId, editingId, name, description, type, status, channel, budgetAllocated, startDate, endDate, targetAudience, goals, impressions, clicks, conversions, revenueAttributed])
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -112,6 +124,11 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
             <div><label className="mb-1 block text-xs text-slate-400">Target Audience</label><input value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="sm:col-span-2"><label className="mb-1 block text-xs text-slate-400">Description</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="sm:col-span-2"><label className="mb-1 block text-xs text-slate-400">Goals</label><textarea value={goals} onChange={(e) => setGoals(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div className="sm:col-span-2"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Performance Results</p></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Impressions</label><input type="number" value={impressions} onChange={(e) => setImpressions(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Clicks</label><input type="number" value={clicks} onChange={(e) => setClicks(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Conversions</label><input type="number" value={conversions} onChange={(e) => setConversions(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Revenue Attributed</label><input type="number" step="0.01" value={revenueAttributed} onChange={(e) => setRevenueAttributed(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="flex gap-2 sm:col-span-2">
               <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
               <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
@@ -135,6 +152,14 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
             </div>
             {(c.start_date || c.end_date) && (
               <p className="mt-2 text-xs text-slate-500">{c.start_date || '?'} → {c.end_date || '?'}</p>
+            )}
+            {c.results && (c.results.impressions || c.results.clicks || c.results.conversions || c.results.revenue_attributed) && (
+              <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-slate-800/50 p-2 text-xs">
+                {c.results.impressions != null && <div><span className="text-slate-500">Impressions</span><p className="font-medium">{c.results.impressions.toLocaleString()}</p></div>}
+                {c.results.clicks != null && <div><span className="text-slate-500">Clicks</span><p className="font-medium">{c.results.clicks.toLocaleString()}{c.results.impressions ? ` (${((c.results.clicks / c.results.impressions) * 100).toFixed(1)}% CTR)` : ''}</p></div>}
+                {c.results.conversions != null && <div><span className="text-slate-500">Conversions</span><p className="font-medium">{c.results.conversions.toLocaleString()}</p></div>}
+                {c.results.revenue_attributed != null && <div><span className="text-slate-500">Revenue</span><p className="font-medium">{fmtCurrency(c.results.revenue_attributed)}{c.budget_allocated > 0 ? ` (${((c.results.revenue_attributed / c.budget_allocated)).toFixed(1)}x ROI)` : ''}</p></div>}
+              </div>
             )}
             <div className="mt-3 flex gap-2">
               <button onClick={() => openEdit(c)} className="text-xs text-slate-400 hover:text-white">Edit</button>

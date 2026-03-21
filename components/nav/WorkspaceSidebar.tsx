@@ -36,6 +36,7 @@ export const BRAND_NAV_SECTIONS: NavSection[] = [
       { slug: 'accounts', label: 'Accounts' },
       { slug: 'contacts', label: 'Contacts' },
       { slug: 'deals', label: 'Deals' },
+      { slug: 'activities', label: 'Activities' },
     ],
   },
   {
@@ -50,7 +51,10 @@ export const BRAND_NAV_SECTIONS: NavSection[] = [
     label: 'Finance',
     items: [
       { slug: 'invoices', label: 'Invoices' },
+      { slug: 'credit-notes', label: 'Credit Notes' },
+      { slug: 'payments', label: 'Payments' },
       { slug: 'purchase-orders', label: 'Purchase Orders' },
+      { slug: 'expenses', label: 'Expenses' },
       { slug: 'budgets', label: 'Budgets' },
     ],
   },

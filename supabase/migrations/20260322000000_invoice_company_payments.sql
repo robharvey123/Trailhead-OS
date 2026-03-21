@@ -7,7 +7,14 @@ ALTER TABLE workspace_settings
   ADD COLUMN IF NOT EXISTS company_country text,
   ADD COLUMN IF NOT EXISTS company_email text,
   ADD COLUMN IF NOT EXISTS company_phone text,
-  ADD COLUMN IF NOT EXISTS company_vat_number text;
+  ADD COLUMN IF NOT EXISTS company_vat_number text,
+  ADD COLUMN IF NOT EXISTS company_number text,
+  ADD COLUMN IF NOT EXISTS bank_name text,
+  ADD COLUMN IF NOT EXISTS bank_account_name text,
+  ADD COLUMN IF NOT EXISTS bank_sort_code text,
+  ADD COLUMN IF NOT EXISTS bank_account_number text,
+  ADD COLUMN IF NOT EXISTS bank_iban text,
+  ADD COLUMN IF NOT EXISTS bank_swift text;
 
 -- Add account_type to finance_payments (cash vs bank)
 ALTER TABLE finance_payments

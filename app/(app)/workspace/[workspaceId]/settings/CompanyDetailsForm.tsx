@@ -14,6 +14,13 @@ type CompanyFields = {
   company_email: string | null
   company_phone: string | null
   company_vat_number: string | null
+  company_number: string | null
+  bank_name: string | null
+  bank_account_name: string | null
+  bank_sort_code: string | null
+  bank_account_number: string | null
+  bank_iban: string | null
+  bank_swift: string | null
 }
 
 const initialState: SettingsState = {}
@@ -42,6 +49,10 @@ export default function CompanyDetailsForm({ workspaceId, company }: { workspace
           <span className="font-medium text-slate-200">VAT / Tax Number</span>
           <input name="company_vat_number" defaultValue={company.company_vat_number || ''} placeholder="e.g. GB123456789" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
+        <label className="space-y-2 text-sm">
+          <span className="font-medium text-slate-200">Company Number</span>
+          <input name="company_number" defaultValue={company.company_number || ''} placeholder="e.g. 12345678" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+        </label>
         <label className="space-y-2 text-sm md:col-span-2">
           <span className="font-medium text-slate-200">Address</span>
           <input name="company_address" defaultValue={company.company_address || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
@@ -66,6 +77,36 @@ export default function CompanyDetailsForm({ workspaceId, company }: { workspace
           <span className="font-medium text-slate-200">Phone</span>
           <input name="company_phone" defaultValue={company.company_phone || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
+      </div>
+
+      <div className="mt-6 border-t border-slate-800 pt-6">
+        <h3 className="text-sm font-semibold text-slate-200 mb-4">Bank Account Details</h3>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-2 text-sm">
+            <span className="font-medium text-slate-200">Bank Name</span>
+            <input name="bank_name" defaultValue={company.bank_name || ''} placeholder="e.g. Barclays" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="font-medium text-slate-200">Account Name</span>
+            <input name="bank_account_name" defaultValue={company.bank_account_name || ''} placeholder="e.g. Trailhead Holdings Ltd" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="font-medium text-slate-200">Sort Code</span>
+            <input name="bank_sort_code" defaultValue={company.bank_sort_code || ''} placeholder="e.g. 20-00-00" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="font-medium text-slate-200">Account Number</span>
+            <input name="bank_account_number" defaultValue={company.bank_account_number || ''} placeholder="e.g. 12345678" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="font-medium text-slate-200">IBAN</span>
+            <input name="bank_iban" defaultValue={company.bank_iban || ''} placeholder="e.g. GB00BARC20000012345678" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="font-medium text-slate-200">BIC / SWIFT</span>
+            <input name="bank_swift" defaultValue={company.bank_swift || ''} placeholder="e.g. BARCGB22" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          </label>
+        </div>
       </div>
       <SubmitButton />
       {state.error && <p className="text-sm text-rose-200">{state.error}</p>}

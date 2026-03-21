@@ -120,6 +120,13 @@ export async function updateCompanyDetails(
     company_email: String(formData.get('company_email') ?? '').trim() || null,
     company_phone: String(formData.get('company_phone') ?? '').trim() || null,
     company_vat_number: String(formData.get('company_vat_number') ?? '').trim() || null,
+    company_number: String(formData.get('company_number') ?? '').trim() || null,
+    bank_name: String(formData.get('bank_name') ?? '').trim() || null,
+    bank_account_name: String(formData.get('bank_account_name') ?? '').trim() || null,
+    bank_sort_code: String(formData.get('bank_sort_code') ?? '').trim() || null,
+    bank_account_number: String(formData.get('bank_account_number') ?? '').trim() || null,
+    bank_iban: String(formData.get('bank_iban') ?? '').trim() || null,
+    bank_swift: String(formData.get('bank_swift') ?? '').trim() || null,
   })
 
   if (error) return { error: error.message }

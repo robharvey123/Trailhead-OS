@@ -52,11 +52,29 @@ export async function GET(
   // Fetch company details
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number')
+    .select('company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number, company_number, bank_name, bank_account_name, bank_sort_code, bank_account_number, bank_iban, bank_swift')
     .eq('workspace_id', invoice.workspace_id)
     .maybeSingle()
 
-  const buffer = await renderInvoicePdf(invoice, accountName, settings)
+  const companyDetails = settings ? {
+    company_name: settings.company_name,
+    company_address: settings.company_address,
+    company_city: settings.company_city,
+    company_postcode: settings.company_postcode,
+    company_country: settings.company_country,
+    company_email: settings.company_email,
+    company_phone: settings.company_phone,
+    company_vat_number: settings.company_vat_number,
+    company_number: settings.company_number,
+    bank_name: settings.bank_name,
+    bank_account_name: settings.bank_account_name,
+    bank_sort_code: settings.bank_sort_code,
+    bank_account_number: settings.bank_account_number,
+    bank_iban: settings.bank_iban,
+    bank_swift: settings.bank_swift,
+  } : null
+
+  const buffer = await renderInvoicePdf(invoice, accountName, companyDetails)
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

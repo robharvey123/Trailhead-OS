@@ -21,11 +21,20 @@ export type MarketingCampaign = {
   target_audience: string | null
   goals: string | null
   kpi_target: Record<string, unknown>
+  results: CampaignResults | null
+  budget_id: string | null
   tags: string[]
   owner_user_id: string | null
   created_by: string | null
   created_at?: string
   updated_at?: string
+}
+
+export type CampaignResults = {
+  impressions?: number
+  clicks?: number
+  conversions?: number
+  revenue_attributed?: number
 }
 
 export type ContentType = 'post' | 'story' | 'reel' | 'blog' | 'email' | 'ad' | 'press_release' | 'landing_page' | 'other'

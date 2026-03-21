@@ -9,7 +9,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const updates: Record<string, unknown> = {}
-  const allowed = ['name', 'description', 'type', 'status', 'channel', 'budget_allocated', 'budget_spent', 'start_date', 'end_date', 'target_audience', 'goals', 'tags']
+  const allowed = ['name', 'description', 'type', 'status', 'channel', 'budget_allocated', 'budget_spent', 'start_date', 'end_date', 'target_audience', 'goals', 'results', 'budget_id', 'tags']
   for (const key of allowed) { if (key in body) updates[key] = body[key] }
 
   const { data, error } = await auth.ctx.supabase.from('marketing_campaigns').update(updates).eq('id', id).eq('workspace_id', workspaceId).select().single()

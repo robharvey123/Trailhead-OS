@@ -182,7 +182,8 @@ function InvoicePDF({
                   </Text>
                 )}
                 {companyDetails.company_country && <Text style={{ fontSize: 9, color: '#475569', marginBottom: 6 }}>{companyDetails.company_country}</Text>}
-                {companyDetails.company_vat_number && <Text style={{ fontSize: 8, color: '#94a3b8', marginBottom: 6 }}>VAT: {companyDetails.company_vat_number}</Text>}
+                {companyDetails.company_vat_number && <Text style={{ fontSize: 8, color: '#94a3b8' }}>VAT: {companyDetails.company_vat_number}</Text>}
+                {companyDetails.company_number && <Text style={{ fontSize: 8, color: '#94a3b8', marginBottom: 6 }}>Company No: {companyDetails.company_number}</Text>}
               </>
             )}
             {accountName && (
@@ -270,6 +271,18 @@ function InvoicePDF({
           <View style={styles.notes}>
             <Text style={styles.notesLabel}>Notes</Text>
             <Text>{invoice.notes}</Text>
+          </View>
+        )}
+
+        {(companyDetails?.bank_name || companyDetails?.bank_account_number || companyDetails?.bank_iban) && (
+          <View style={{ marginTop: 24, padding: 12, backgroundColor: '#f8fafc', borderRadius: 4 }}>
+            <Text style={{ fontSize: 8, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Bank Details</Text>
+            {companyDetails.bank_name && <Text style={{ fontSize: 9, color: '#475569' }}>{companyDetails.bank_name}</Text>}
+            {companyDetails.bank_account_name && <Text style={{ fontSize: 9, color: '#475569' }}>{companyDetails.bank_account_name}</Text>}
+            {companyDetails.bank_sort_code && <Text style={{ fontSize: 9, color: '#475569' }}>Sort Code: {companyDetails.bank_sort_code}</Text>}
+            {companyDetails.bank_account_number && <Text style={{ fontSize: 9, color: '#475569' }}>Account: {companyDetails.bank_account_number}</Text>}
+            {companyDetails.bank_iban && <Text style={{ fontSize: 9, color: '#475569' }}>IBAN: {companyDetails.bank_iban}</Text>}
+            {companyDetails.bank_swift && <Text style={{ fontSize: 9, color: '#475569' }}>BIC/SWIFT: {companyDetails.bank_swift}</Text>}
           </View>
         )}
 

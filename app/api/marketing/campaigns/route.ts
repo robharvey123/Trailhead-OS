@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     end_date: body.end_date || null,
     target_audience: body.target_audience || null,
     goals: body.goals || null,
+    results: body.results || null,
     tags: body.tags || [],
     owner_user_id: userId,
     created_by: userId,

@@ -5,9 +5,23 @@ import Link from 'next/link'
 import { currencySymbol } from '@/lib/format'
 import type { CrmAccount, CrmContact, CrmDeal, CrmActivity } from '@/lib/crm/types'
 import { CRM_ACCOUNT_TYPE_LABELS, DEAL_STAGE_LABELS } from '@/lib/crm/types'
+import type { InvoiceStatus } from '@/lib/finance/types'
+import { INVOICE_STATUS_LABELS, INVOICE_STATUS_COLORS } from '@/lib/finance/types'
 import ActivityTimeline from '@/components/crm/ActivityTimeline'
 
-type Tab = 'overview' | 'contacts' | 'deals' | 'activity'
+type AccountInvoice = {
+  id: string
+  invoice_number: string
+  status: InvoiceStatus
+  total: number
+  amount_paid: number
+  currency: string
+  issue_date: string
+  due_date: string | null
+  direction: string
+}
+
+type Tab = 'overview' | 'contacts' | 'deals' | 'activity' | 'finance'
 
 export default function AccountDetailClient({
   workspaceId,
@@ -15,6 +29,7 @@ export default function AccountDetailClient({
   contacts,
   deals,
   activities,
+  invoices,
   baseCurrency,
 }: {
   workspaceId: string
@@ -22,6 +37,7 @@ export default function AccountDetailClient({
   contacts: CrmContact[]
   deals: CrmDeal[]
   activities: CrmActivity[]
+  invoices: AccountInvoice[]
   baseCurrency: string
 }) {
   const fmtCurrency = (v: number | null) => v != null ? `${currencySymbol(baseCurrency)}${v.toLocaleString()}` : '—'
@@ -40,6 +56,7 @@ export default function AccountDetailClient({
     { key: 'contacts', label: 'Contacts', count: contacts.length },
     { key: 'deals', label: 'Deals', count: deals.length },
     { key: 'activity', label: 'Activity', count: activities.length },
+    { key: 'finance', label: 'Finance', count: invoices.length },
   ]
 
   return (
@@ -250,6 +267,69 @@ export default function AccountDetailClient({
           initialActivities={activities}
           accountId={account.id}
         />
+      )}
+
+      {tab === 'finance' && (
+        <div className="space-y-6">
+          {/* Finance KPIs */}
+          {(() => {
+            const outgoing = invoices.filter((i) => i.direction === 'outgoing')
+            const totalRevenue = outgoing.reduce((s, i) => s + (i.total || 0), 0)
+            const totalPaid = outgoing.reduce((s, i) => s + (i.amount_paid || 0), 0)
+            const outstanding = totalRevenue - totalPaid
+            const overdue = outgoing.filter((i) => i.status === 'overdue' || (i.due_date && i.due_date < new Date().toISOString().slice(0, 10) && i.status !== 'paid')).length
+            return (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-500">Total Revenue</p>
+                  <p className="mt-1 text-lg font-semibold">{fmtCurrency(totalRevenue)}</p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-500">Paid</p>
+                  <p className="mt-1 text-lg font-semibold text-emerald-400">{fmtCurrency(totalPaid)}</p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-500">Outstanding</p>
+                  <p className="mt-1 text-lg font-semibold text-amber-400">{fmtCurrency(outstanding)}</p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-500">Overdue</p>
+                  <p className="mt-1 text-lg font-semibold text-rose-400">{overdue}</p>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Invoice table */}
+          <div className="overflow-x-auto rounded-2xl border border-slate-800">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
+                  <th className="px-4 py-3">#</th>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Due</th>
+                  <th className="px-4 py-3">Total</th>
+                  <th className="px-4 py-3">Paid</th>
+                  <th className="px-4 py-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.length === 0 ? (
+                  <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-500">No invoices for this account</td></tr>
+                ) : invoices.map((inv) => (
+                  <tr key={inv.id} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
+                    <td className="px-4 py-3"><Link href={`/workspace/${workspaceId}/invoices/${inv.id}`} className="text-blue-400 hover:underline">{inv.invoice_number}</Link></td>
+                    <td className="px-4 py-3 text-slate-400">{inv.issue_date}</td>
+                    <td className="px-4 py-3 text-slate-400">{inv.due_date || '—'}</td>
+                    <td className="px-4 py-3 font-medium">{fmtCurrency(inv.total)}</td>
+                    <td className="px-4 py-3 text-emerald-400">{fmtCurrency(inv.amount_paid)}</td>
+                    <td className="px-4 py-3"><span className={`text-xs font-semibold uppercase ${INVOICE_STATUS_COLORS[inv.status]}`}>{INVOICE_STATUS_LABELS[inv.status]}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   )

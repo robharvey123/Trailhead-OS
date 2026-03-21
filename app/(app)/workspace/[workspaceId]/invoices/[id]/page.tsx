@@ -24,7 +24,7 @@ export default async function InvoiceDetailPage({ params }: { params: Params | P
     supabase.from('finance_payments').select('*').eq('invoice_id', id).order('payment_date', { ascending: false }),
     supabase
       .from('workspace_settings')
-      .select('base_currency, supported_currencies, company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number')
+      .select('base_currency, supported_currencies, company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number, company_number, bank_name, bank_account_name, bank_sort_code, bank_account_number, bank_iban, bank_swift')
       .eq('workspace_id', workspaceId)
       .maybeSingle(),
     supabase.from('crm_accounts').select('id, name').eq('workspace_id', workspaceId).order('name'),
@@ -48,6 +48,13 @@ export default async function InvoiceDetailPage({ params }: { params: Params | P
     company_email: settingsRes.data?.company_email ?? null,
     company_phone: settingsRes.data?.company_phone ?? null,
     company_vat_number: settingsRes.data?.company_vat_number ?? null,
+    company_number: settingsRes.data?.company_number ?? null,
+    bank_name: settingsRes.data?.bank_name ?? null,
+    bank_account_name: settingsRes.data?.bank_account_name ?? null,
+    bank_sort_code: settingsRes.data?.bank_sort_code ?? null,
+    bank_account_number: settingsRes.data?.bank_account_number ?? null,
+    bank_iban: settingsRes.data?.bank_iban ?? null,
+    bank_swift: settingsRes.data?.bank_swift ?? null,
   }
 
   return (

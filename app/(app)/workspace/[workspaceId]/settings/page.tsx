@@ -44,7 +44,7 @@ export default async function SettingsPage({
 
   const { data: settings } = await supabase
     .from('workspace_settings')
-    .select('brand_filter, cogs_pct, promo_cost, base_currency, supported_currencies, company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number')
+    .select('brand_filter, cogs_pct, promo_cost, base_currency, supported_currencies, company_name, company_address, company_city, company_postcode, company_country, company_email, company_phone, company_vat_number, company_number, bank_name, bank_account_name, bank_sort_code, bank_account_number, bank_iban, bank_swift')
     .eq('workspace_id', resolvedParams.workspaceId)
     .maybeSingle()
 
@@ -78,6 +78,13 @@ export default async function SettingsPage({
     company_email: settings?.company_email ?? null,
     company_phone: settings?.company_phone ?? null,
     company_vat_number: settings?.company_vat_number ?? null,
+    company_number: settings?.company_number ?? null,
+    bank_name: settings?.bank_name ?? null,
+    bank_account_name: settings?.bank_account_name ?? null,
+    bank_sort_code: settings?.bank_sort_code ?? null,
+    bank_account_number: settings?.bank_account_number ?? null,
+    bank_iban: settings?.bank_iban ?? null,
+    bank_swift: settings?.bank_swift ?? null,
   }
 
   return (

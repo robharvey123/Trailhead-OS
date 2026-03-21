@@ -109,6 +109,7 @@ export default function InvoiceDetailClient({
   }, [workspaceId, invoice.id, invoice.total, invoice.amount_paid, payAmount, payDate, payMethod, payAccountType, payReference, payNotes, cur])
 
   const hasCompany = companyDetails.company_name || companyDetails.company_address
+  const hasBankDetails = companyDetails.bank_name || companyDetails.bank_account_number || companyDetails.bank_iban
 
   return (
     <div className="space-y-6">
@@ -159,12 +160,24 @@ export default function InvoiceDetailClient({
               {companyDetails.company_email && <p className="mt-1 text-sm text-slate-400">{companyDetails.company_email}</p>}
               {companyDetails.company_phone && <p className="text-sm text-slate-400">{companyDetails.company_phone}</p>}
               {companyDetails.company_vat_number && <p className="text-sm text-slate-400">VAT: {companyDetails.company_vat_number}</p>}
+              {companyDetails.company_number && <p className="text-sm text-slate-400">Company No: {companyDetails.company_number}</p>}
             </div>
           )}
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">{invoice.direction === 'outgoing' ? 'Bill To' : 'Received From'}</p>
             <p className="font-semibold">{accountName || '—'}</p>
           </div>
+          {hasBankDetails && (
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Bank Details</p>
+              {companyDetails.bank_name && <p className="text-sm text-slate-300">{companyDetails.bank_name}</p>}
+              {companyDetails.bank_account_name && <p className="text-sm text-slate-300">{companyDetails.bank_account_name}</p>}
+              {companyDetails.bank_sort_code && <p className="text-sm text-slate-400">Sort Code: {companyDetails.bank_sort_code}</p>}
+              {companyDetails.bank_account_number && <p className="text-sm text-slate-400">Account: {companyDetails.bank_account_number}</p>}
+              {companyDetails.bank_iban && <p className="text-sm text-slate-400">IBAN: {companyDetails.bank_iban}</p>}
+              {companyDetails.bank_swift && <p className="text-sm text-slate-400">BIC/SWIFT: {companyDetails.bank_swift}</p>}
+            </div>
+          )}
         </div>
 
         {/* Right: Meta */}

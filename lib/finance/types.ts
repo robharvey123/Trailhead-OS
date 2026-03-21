@@ -34,6 +34,12 @@ export type FinanceInvoice = {
   notes: string | null
   payment_terms: string | null
   stream_id: string | null
+  purchase_order_id: string | null
+  deal_id: string | null
+  recurrence_cadence: 'weekly' | 'monthly' | 'quarterly' | 'yearly' | null
+  recurrence_interval: number
+  next_recurrence_date: string | null
+  recurrence_parent_id: string | null
   created_by: string | null
   created_at?: string
   updated_at?: string
@@ -109,6 +115,13 @@ export type CompanyDetails = {
   company_email: string | null
   company_phone: string | null
   company_vat_number: string | null
+  company_number: string | null
+  bank_name: string | null
+  bank_account_name: string | null
+  bank_sort_code: string | null
+  bank_account_number: string | null
+  bank_iban: string | null
+  bank_swift: string | null
 }
 
 export type BudgetCategory = 'marketing' | 'operations' | 'staffing' | 'product' | 'logistics' | 'general'
@@ -197,4 +210,106 @@ export const BUDGET_CATEGORY_LABELS: Record<BudgetCategory, string> = {
   product: 'Product',
   logistics: 'Logistics',
   general: 'General',
+}
+
+// ============================================================
+// Credit Notes
+// ============================================================
+
+export type CreditNoteStatus = 'draft' | 'issued' | 'applied' | 'void'
+
+export type FinanceCreditNote = {
+  id: string
+  workspace_id: string
+  credit_note_number: string
+  invoice_id: string | null
+  account_id: string | null
+  direction: InvoiceDirection
+  status: CreditNoteStatus
+  issue_date: string
+  subtotal: number
+  tax_rate: number
+  tax_amount: number
+  total: number
+  currency: string
+  reason: string | null
+  line_items: InvoiceLineItem[]
+  notes: string | null
+  created_by: string | null
+  created_at?: string
+  updated_at?: string
+  // joined
+  account_name?: string
+  invoice_number?: string
+}
+
+export const CREDIT_NOTE_STATUSES = ['draft', 'issued', 'applied', 'void'] as const
+export const CREDIT_NOTE_STATUS_LABELS: Record<CreditNoteStatus, string> = {
+  draft: 'Draft',
+  issued: 'Issued',
+  applied: 'Applied',
+  void: 'Void',
+}
+export const CREDIT_NOTE_STATUS_COLORS: Record<CreditNoteStatus, string> = {
+  draft: 'text-slate-400',
+  issued: 'text-blue-400',
+  applied: 'text-emerald-400',
+  void: 'text-rose-400',
+}
+
+// ============================================================
+// Expense Claims
+// ============================================================
+
+export type ExpenseCategory = 'travel' | 'meals' | 'office' | 'software' | 'marketing' | 'operations' | 'general' | 'other'
+export type ExpenseClaimStatus = 'draft' | 'submitted' | 'approved' | 'rejected' | 'paid'
+
+export type FinanceExpenseClaim = {
+  id: string
+  workspace_id: string
+  claimant_user_id: string
+  title: string
+  category: ExpenseCategory
+  amount: number
+  currency: string
+  expense_date: string
+  receipt_url: string | null
+  status: ExpenseClaimStatus
+  approver_user_id: string | null
+  approved_at: string | null
+  rejection_reason: string | null
+  notes: string | null
+  created_at?: string
+  updated_at?: string
+  // joined
+  claimant_name?: string
+  approver_name?: string
+}
+
+export const EXPENSE_CATEGORIES = ['travel', 'meals', 'office', 'software', 'marketing', 'operations', 'general', 'other'] as const
+export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
+  travel: 'Travel',
+  meals: 'Meals & Entertainment',
+  office: 'Office Supplies',
+  software: 'Software & Tools',
+  marketing: 'Marketing',
+  operations: 'Operations',
+  general: 'General',
+  other: 'Other',
+}
+
+export const EXPENSE_CLAIM_STATUSES = ['draft', 'submitted', 'approved', 'rejected', 'paid'] as const
+export const EXPENSE_CLAIM_STATUS_LABELS: Record<ExpenseClaimStatus, string> = {
+  draft: 'Draft',
+  submitted: 'Submitted',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  paid: 'Paid',
+}
+export const EXPENSE_CLAIM_STATUS_COLORS: Record<ExpenseClaimStatus, string> = {
+  draft: 'text-slate-400',
+  submitted: 'text-blue-400',
+  approved: 'text-emerald-400',
+  rejected: 'text-rose-400',
+  paid: 'text-cyan-400',
 }
