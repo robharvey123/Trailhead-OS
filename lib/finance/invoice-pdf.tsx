@@ -189,7 +189,18 @@ function InvoicePDF({
             {accountName && (
               <>
                 <Text style={styles.metaLabel}>{invoice.direction === 'outgoing' ? 'Bill To' : 'Received From'}</Text>
-                <Text style={styles.metaValue}>{accountName}</Text>
+                <Text style={styles.metaValue}>{invoice.bill_to_name || accountName}</Text>
+                {invoice.bill_to_address && <Text style={{ fontSize: 9, color: '#475569' }}>{invoice.bill_to_address}</Text>}
+                {(invoice.bill_to_city || invoice.bill_to_postcode) && (
+                  <Text style={{ fontSize: 9, color: '#475569' }}>
+                    {[invoice.bill_to_city, invoice.bill_to_postcode].filter(Boolean).join(', ')}
+                  </Text>
+                )}
+                {invoice.bill_to_country && <Text style={{ fontSize: 9, color: '#475569', marginBottom: 6 }}>{invoice.bill_to_country}</Text>}
+                {invoice.bill_to_email && <Text style={{ fontSize: 8, color: '#94a3b8' }}>{invoice.bill_to_email}</Text>}
+                {invoice.bill_to_phone && <Text style={{ fontSize: 8, color: '#94a3b8' }}>{invoice.bill_to_phone}</Text>}
+                {invoice.bill_to_vat_number && <Text style={{ fontSize: 8, color: '#94a3b8' }}>VAT: {invoice.bill_to_vat_number}</Text>}
+                {invoice.bill_to_company_number && <Text style={{ fontSize: 8, color: '#94a3b8', marginBottom: 6 }}>Company No: {invoice.bill_to_company_number}</Text>}
               </>
             )}
             <Text style={styles.metaLabel}>Currency</Text>

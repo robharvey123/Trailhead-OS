@@ -8,7 +8,7 @@ import { currencySymbol } from '@/lib/format'
 import type { FinanceInvoice, InvoiceStatus, InvoiceDirection, InvoiceLineItem } from '@/lib/finance/types'
 import { INVOICE_STATUSES, INVOICE_STATUS_LABELS, INVOICE_STATUS_COLORS } from '@/lib/finance/types'
 
-type AccountOption = { id: string; name: string }
+type AccountOption = { id: string; name: string; address_line1: string | null; address_line2: string | null; city: string | null; state: string | null; postal_code: string | null; country: string | null; email: string | null; phone: string | null }
 
 export default function InvoicesClient({ workspaceId, initialInvoices, accounts, baseCurrency, supportedCurrencies }: { workspaceId: string; initialInvoices: FinanceInvoice[]; accounts: AccountOption[]; baseCurrency: string; supportedCurrencies: string[] }) {
   const [invoices, setInvoices] = useState(initialInvoices)
@@ -29,9 +29,36 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
   const [notes, setNotes] = useState('')
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([])
 
+  // Bill-to fields
+  const [billToName, setBillToName] = useState('')
+  const [billToAddress, setBillToAddress] = useState('')
+  const [billToCity, setBillToCity] = useState('')
+  const [billToPostcode, setBillToPostcode] = useState('')
+  const [billToCountry, setBillToCountry] = useState('')
+  const [billToEmail, setBillToEmail] = useState('')
+  const [billToPhone, setBillToPhone] = useState('')
+  const [billToVat, setBillToVat] = useState('')
+  const [billToCompanyNumber, setBillToCompanyNumber] = useState('')
+
   const accountMap = new Map(accounts.map((a) => [a.id, a.name]))
 
-  const resetForm = () => { setInvoiceNumber(''); setAccountId(''); setDirection('outgoing'); setStatus('draft'); setIssueDate(new Date().toISOString().slice(0, 10)); setDueDate(''); setTaxRate('0'); setCurrency(baseCurrency); setNotes(''); setLineItems([]); setEditingId(null) }
+  const resetBillTo = () => { setBillToName(''); setBillToAddress(''); setBillToCity(''); setBillToPostcode(''); setBillToCountry(''); setBillToEmail(''); setBillToPhone(''); setBillToVat(''); setBillToCompanyNumber('') }
+
+  const handleAccountChange = (id: string) => {
+    setAccountId(id)
+    if (!id) { resetBillTo(); return }
+    const acct = accounts.find((a) => a.id === id)
+    if (!acct) return
+    setBillToName(acct.name || '')
+    setBillToAddress([acct.address_line1, acct.address_line2].filter(Boolean).join(', '))
+    setBillToCity(acct.city || acct.state || '')
+    setBillToPostcode(acct.postal_code || '')
+    setBillToCountry(acct.country || '')
+    setBillToEmail(acct.email || '')
+    setBillToPhone(acct.phone || '')
+  }
+
+  const resetForm = () => { setInvoiceNumber(''); setAccountId(''); setDirection('outgoing'); setStatus('draft'); setIssueDate(new Date().toISOString().slice(0, 10)); setDueDate(''); setTaxRate('0'); setCurrency(baseCurrency); setNotes(''); setLineItems([]); setEditingId(null); resetBillTo() }
 
   const addLineItem = () => setLineItems((prev) => [...prev, { id: crypto.randomUUID(), description: '', quantity: 1, unit_price: 0, total: 0 }])
   const removeLineItem = (id: string) => setLineItems((prev) => prev.filter((i) => i.id !== id))
@@ -49,6 +76,9 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
     setStatus(inv.status); setIssueDate(inv.issue_date); setDueDate(inv.due_date || '')
     setTaxRate(inv.tax_rate.toString()); setCurrency(inv.currency); setNotes(inv.notes || '')
     setLineItems(inv.line_items || []); setEditingId(inv.id); setShowForm(true)
+    setBillToName(inv.bill_to_name || ''); setBillToAddress(inv.bill_to_address || ''); setBillToCity(inv.bill_to_city || '')
+    setBillToPostcode(inv.bill_to_postcode || ''); setBillToCountry(inv.bill_to_country || ''); setBillToEmail(inv.bill_to_email || '')
+    setBillToPhone(inv.bill_to_phone || ''); setBillToVat(inv.bill_to_vat_number || ''); setBillToCompanyNumber(inv.bill_to_company_number || '')
   }
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
@@ -59,6 +89,9 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
       workspace_id: workspaceId, invoice_number: invoiceNumber, account_id: accountId || null,
       direction, status, issue_date: issueDate, due_date: dueDate || null,
       tax_rate: parseFloat(taxRate) || 0, currency, notes: notes || null, line_items: lineItems,
+      bill_to_name: billToName || null, bill_to_address: billToAddress || null, bill_to_city: billToCity || null,
+      bill_to_postcode: billToPostcode || null, bill_to_country: billToCountry || null, bill_to_email: billToEmail || null,
+      bill_to_phone: billToPhone || null, bill_to_vat_number: billToVat || null, bill_to_company_number: billToCompanyNumber || null,
     }
     if (editingId) {
       const subtotal = lineItems.reduce((s, i) => s + i.quantity * i.unit_price, 0)
@@ -80,7 +113,7 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
     } finally {
       setSaving(false)
     }
-  }, [workspaceId, editingId, invoiceNumber, accountId, direction, status, issueDate, dueDate, taxRate, currency, notes, lineItems])
+  }, [workspaceId, editingId, invoiceNumber, accountId, direction, status, issueDate, dueDate, taxRate, currency, notes, lineItems, billToName, billToAddress, billToCity, billToPostcode, billToCountry, billToEmail, billToPhone, billToVat, billToCompanyNumber])
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -137,12 +170,28 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div><label className="mb-1 block text-xs text-slate-400">Invoice # *</label><input required value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Account</label><select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Account</label><select value={accountId} onChange={(e) => handleAccountChange(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
               <div><label className="mb-1 block text-xs text-slate-400">Direction</label><select value={direction} onChange={(e) => setDirection(e.target.value as InvoiceDirection)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option></select></div>
               <div><label className="mb-1 block text-xs text-slate-400">Issue Date</label><input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
               <div><label className="mb-1 block text-xs text-slate-400">Due Date</label><input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
               <div><label className="mb-1 block text-xs text-slate-400">Tax Rate (%)</label><input type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
               <div><label className="mb-1 block text-xs text-slate-400">Currency</label><select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}</select></div>
+            </div>
+
+            {/* Bill To */}
+            <div>
+              <p className="text-xs uppercase tracking-[0.15em] text-slate-400 mb-2">{direction === 'outgoing' ? 'Bill To' : 'Received From'}</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div><label className="mb-1 block text-xs text-slate-400">Name</label><input value={billToName} onChange={(e) => setBillToName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div><label className="mb-1 block text-xs text-slate-400">Email</label><input value={billToEmail} onChange={(e) => setBillToEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div><label className="mb-1 block text-xs text-slate-400">Phone</label><input value={billToPhone} onChange={(e) => setBillToPhone(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div className="sm:col-span-3"><label className="mb-1 block text-xs text-slate-400">Address</label><input value={billToAddress} onChange={(e) => setBillToAddress(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div><label className="mb-1 block text-xs text-slate-400">City / State</label><input value={billToCity} onChange={(e) => setBillToCity(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div><label className="mb-1 block text-xs text-slate-400">Postcode</label><input value={billToPostcode} onChange={(e) => setBillToPostcode(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div><label className="mb-1 block text-xs text-slate-400">Country</label><input value={billToCountry} onChange={(e) => setBillToCountry(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div><label className="mb-1 block text-xs text-slate-400">VAT Number</label><input value={billToVat} onChange={(e) => setBillToVat(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+                <div><label className="mb-1 block text-xs text-slate-400">Company Number</label><input value={billToCompanyNumber} onChange={(e) => setBillToCompanyNumber(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              </div>
             </div>
 
             <div>

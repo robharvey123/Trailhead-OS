@@ -165,7 +165,16 @@ export default function InvoiceDetailClient({
           )}
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">{invoice.direction === 'outgoing' ? 'Bill To' : 'Received From'}</p>
-            <p className="font-semibold">{accountName || '—'}</p>
+            <p className="font-semibold">{invoice.bill_to_name || accountName || '—'}</p>
+            {invoice.bill_to_address && <p className="text-sm text-slate-300">{invoice.bill_to_address}</p>}
+            {(invoice.bill_to_city || invoice.bill_to_postcode) && (
+              <p className="text-sm text-slate-300">{[invoice.bill_to_city, invoice.bill_to_postcode].filter(Boolean).join(', ')}</p>
+            )}
+            {invoice.bill_to_country && <p className="text-sm text-slate-300">{invoice.bill_to_country}</p>}
+            {invoice.bill_to_email && <p className="mt-1 text-sm text-slate-400">{invoice.bill_to_email}</p>}
+            {invoice.bill_to_phone && <p className="text-sm text-slate-400">{invoice.bill_to_phone}</p>}
+            {invoice.bill_to_vat_number && <p className="text-sm text-slate-400">VAT: {invoice.bill_to_vat_number}</p>}
+            {invoice.bill_to_company_number && <p className="text-sm text-slate-400">Company No: {invoice.bill_to_company_number}</p>}
           </div>
           {hasBankDetails && (
             <div>

@@ -40,6 +40,15 @@ export type FinanceInvoice = {
   recurrence_interval: number
   next_recurrence_date: string | null
   recurrence_parent_id: string | null
+  bill_to_name: string | null
+  bill_to_address: string | null
+  bill_to_city: string | null
+  bill_to_postcode: string | null
+  bill_to_country: string | null
+  bill_to_email: string | null
+  bill_to_phone: string | null
+  bill_to_vat_number: string | null
+  bill_to_company_number: string | null
   created_by: string | null
   created_at?: string
   updated_at?: string

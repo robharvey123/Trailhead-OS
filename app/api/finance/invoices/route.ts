@@ -60,6 +60,15 @@ export async function POST(request: NextRequest) {
     notes: body.notes || null,
     payment_terms: body.payment_terms || null,
     stream_id: body.stream_id || null,
+    bill_to_name: body.bill_to_name || null,
+    bill_to_address: body.bill_to_address || null,
+    bill_to_city: body.bill_to_city || null,
+    bill_to_postcode: body.bill_to_postcode || null,
+    bill_to_country: body.bill_to_country || null,
+    bill_to_email: body.bill_to_email || null,
+    bill_to_phone: body.bill_to_phone || null,
+    bill_to_vat_number: body.bill_to_vat_number || null,
+    bill_to_company_number: body.bill_to_company_number || null,
     created_by: userId,
   }).select().single()
 
