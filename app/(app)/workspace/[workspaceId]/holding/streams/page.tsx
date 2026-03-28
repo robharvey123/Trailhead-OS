@@ -4,7 +4,7 @@ import StreamsClient from './StreamsClient'
 export default async function StreamsPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
 

@@ -2,27 +2,46 @@
 
 import { useEffect, useState } from "react"
 
+type WorkspaceUser = {
+  id: string
+  email: string
+  role: string
+  lastSignIn: string | null
+}
+
 export default function UserTable({ workspaceId }: { workspaceId: string }) {
-  const [users, setUsers] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
+  const [users, setUsers] = useState<WorkspaceUser[]>([])
+  const [loading, setLoading] = useState(true)
   const [editId, setEditId] = useState<string | null>(null)
   const [newPassword, setNewPassword] = useState("")
   const [message, setMessage] = useState<string | null>(null)
 
   useEffect(() => {
-    setLoading(true)
-    fetch(`/api/workspace/users?workspaceId=${workspaceId}`)
+    let cancelled = false
+
+    fetch(`/api/analytics/users?workspaceId=${workspaceId}`)
       .then((res) => res.json())
       .then((data) => {
+        if (cancelled) {
+          return
+        }
         setUsers(data.users || [])
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [workspaceId])
 
   const handleChangePassword = async (userId: string) => {
     setMessage(null)
-    const res = await fetch(`/api/workspace/users`, {
+    const res = await fetch(`/api/analytics/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, password: newPassword }),

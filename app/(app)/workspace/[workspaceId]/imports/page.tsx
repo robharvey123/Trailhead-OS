@@ -23,7 +23,7 @@ const uniqueValues = <T extends Record<string, unknown>>(
 export default async function ImportsPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()

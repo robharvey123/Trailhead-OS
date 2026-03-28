@@ -14,7 +14,7 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
     setLoading(true)
     setMessage(null)
     try {
-      const res = await fetch(`/api/workspace/invite`, {
+      const res = await fetch(`/api/analytics/invite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ workspaceId, email, password, role }),
@@ -25,8 +25,8 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
       setEmail("")
       setPassword("")
       setRole("viewer")
-    } catch (err: any) {
-      setMessage(err.message)
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Failed to invite user.')
     } finally {
       setLoading(false)
     }

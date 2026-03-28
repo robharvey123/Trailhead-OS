@@ -40,7 +40,7 @@ export default function FxRatesTable({
       setSaving(true)
       try {
         const { rate: created } = await apiFetch<{ rate: FxRate }>(
-          '/api/workspace/fx-rates',
+          '/api/analytics/fx-rates',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -72,7 +72,7 @@ export default function FxRatesTable({
     async (id: string) => {
       try {
         await apiFetch(
-          `/api/workspace/fx-rates/${id}?workspace_id=${workspaceId}`,
+          `/api/analytics/fx-rates/${id}?workspace_id=${workspaceId}`,
           { method: 'DELETE' }
         )
         setRates((prev) => prev.filter((r) => r.id !== id))

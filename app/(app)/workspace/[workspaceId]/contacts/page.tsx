@@ -9,7 +9,7 @@ import ContactsClient from './ContactsClient'
 export default async function ContactsPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()

@@ -4,7 +4,7 @@ import InvoiceDetailClient from './InvoiceDetailClient'
 
 type Params = { workspaceId: string; id: string }
 
-export default async function InvoiceDetailPage({ params }: { params: Params | Promise<Params> }) {
+export default async function InvoiceDetailPage({ params }: { params: Promise<Params> }) {
   const { workspaceId, id } = await Promise.resolve(params)
   const supabase = await createClient()
 

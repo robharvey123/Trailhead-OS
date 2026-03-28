@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     .maybeSingle()
   const baseCurrency = settingsRow?.base_currency || 'GBP'
 
-  let { validRows, rejected } = validateSellInRows(
+  const { validRows, rejected } = validateSellInRows(
     rows,
     workspaceId,
     rowOffset,

@@ -7,7 +7,7 @@ type Params = { workspaceId: string; id: string }
 export default async function ContactDetailPage({
   params,
 }: {
-  params: Params | Promise<Params>
+  params: Promise<Params>
 }) {
   const { workspaceId, id } = await Promise.resolve(params)
   const supabase = await createClient()

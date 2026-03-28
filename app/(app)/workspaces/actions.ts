@@ -64,6 +64,7 @@ export async function createWorkspace(
     return { error: settingsError.message }
   }
 
+  revalidatePath('/analytics')
   revalidatePath('/workspaces')
   return { success: true }
 }

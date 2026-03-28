@@ -4,7 +4,7 @@ import PaymentsClient from './PaymentsClient'
 export default async function PaymentsPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
 

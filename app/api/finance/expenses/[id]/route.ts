@@ -3,7 +3,7 @@ import { getWorkspaceContext } from '@/lib/workspace/auth'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } | Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await Promise.resolve(params)
   const body = await request.json()
@@ -48,7 +48,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } | Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await Promise.resolve(params)
   const workspaceId = request.nextUrl.searchParams.get('workspace_id') || ''

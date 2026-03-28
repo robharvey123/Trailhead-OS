@@ -11,9 +11,11 @@ type NavItem = {
 export default function WorkspaceNav({
   items,
   workspaceId,
+  basePath = '/workspace',
 }: {
   items: NavItem[]
   workspaceId: string
+  basePath?: string
 }) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -23,10 +25,16 @@ export default function WorkspaceNav({
   return (
     <nav className="flex flex-wrap gap-2 text-sm">
       {items.map((item) => {
-        const href = `/workspace/${workspaceId}/${item.slug}`
+        const href =
+          item.slug === 'dashboard'
+            ? `${basePath}/${workspaceId}`
+            : `${basePath}/${workspaceId}/${item.slug}`
         const analyticsPages = ['dashboard', 'insights', 'sell-in', 'sell-out', 'comparison', 'promo', 'pnl', 'sku-summary', 'company-summary', 'company-sku-detail']
         const withQuery = query && analyticsPages.includes(item.slug) ? `${href}?${query}` : href
-        const isActive = activeSlug === item.slug || (item.slug === 'holding' && activeSlug === 'holding')
+        const isActive =
+          (item.slug === 'dashboard' && activeSlug === '') ||
+          activeSlug === item.slug ||
+          (item.slug === 'holding' && activeSlug === 'holding')
 
         return (
           <Link

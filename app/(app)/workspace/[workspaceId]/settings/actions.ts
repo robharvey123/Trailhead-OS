@@ -13,6 +13,11 @@ export type MappingState = {
   success?: boolean
 }
 
+function revalidateSettingsPaths(workspaceId: string) {
+  revalidatePath(`/analytics/${workspaceId}/settings`)
+  revalidatePath(`/workspace/${workspaceId}/settings`)
+}
+
 export async function updateSettings(
   _prevState: SettingsState,
   formData: FormData
@@ -50,7 +55,7 @@ export async function updateSettings(
     return { error: error.message }
   }
 
-  revalidatePath(`/workspace/${workspaceId}/settings`)
+  revalidateSettingsPaths(workspaceId)
   return { success: true }
 }
 
@@ -79,7 +84,7 @@ export async function addMapping(
     return { error: error.message }
   }
 
-  revalidatePath(`/workspace/${workspaceId}/settings`)
+  revalidateSettingsPaths(workspaceId)
   return { success: true }
 }
 
@@ -98,7 +103,7 @@ export async function deleteMapping(formData: FormData) {
     .eq('id', mappingId)
     .eq('workspace_id', workspaceId)
 
-  revalidatePath(`/workspace/${workspaceId}/settings`)
+  revalidateSettingsPaths(workspaceId)
 }
 
 export async function updateCompanyDetails(
@@ -131,6 +136,6 @@ export async function updateCompanyDetails(
 
   if (error) return { error: error.message }
 
-  revalidatePath(`/workspace/${workspaceId}/settings`)
+  revalidateSettingsPaths(workspaceId)
   return { success: true }
 }

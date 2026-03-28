@@ -5,7 +5,7 @@ import HoldingInvoicesClient from './HoldingInvoicesClient'
 export default async function HoldingInvoicingPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()

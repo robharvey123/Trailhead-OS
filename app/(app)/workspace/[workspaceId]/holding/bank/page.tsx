@@ -5,7 +5,7 @@ import BankClient from './BankClient'
 export default async function BankPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()

@@ -5,7 +5,7 @@ import ExpensesClient from './ExpensesClient'
 export default async function ExpensesPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()

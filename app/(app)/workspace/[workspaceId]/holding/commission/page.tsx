@@ -4,7 +4,7 @@ import CommissionClient from './CommissionClient'
 export default async function CommissionPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
 

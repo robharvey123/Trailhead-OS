@@ -3,7 +3,7 @@ import { resolveWorkspaceParams, type WorkspaceRouteParams } from '@/lib/route-p
 import type { FinanceCreditNote } from '@/lib/finance/types'
 import CreditNotesClient from './CreditNotesClient'
 
-export default async function CreditNotesPage({ params }: { params: WorkspaceRouteParams | Promise<WorkspaceRouteParams> }) {
+export default async function CreditNotesPage({ params }: { params: Promise<WorkspaceRouteParams> }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 

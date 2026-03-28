@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspaceParams, type WorkspaceRouteParams } from '@/lib/route-params'
 import DealDetailClient from './DealDetailClient'
 
-export default async function DealDetailPage({ params }: { params: (WorkspaceRouteParams & { id: string }) | Promise<WorkspaceRouteParams & { id: string }> }) {
+export default async function DealDetailPage({ params }: { params: Promise<WorkspaceRouteParams & { id: string }> }) {
   const resolved = await Promise.resolve(params)
   const workspaceId = resolved.workspaceId
   const dealId = resolved.id

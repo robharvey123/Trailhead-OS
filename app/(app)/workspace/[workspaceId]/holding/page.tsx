@@ -4,7 +4,7 @@ import HoldingDashboard from './HoldingDashboard'
 export default async function HoldingPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
 

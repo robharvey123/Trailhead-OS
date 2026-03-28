@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspaceParams, type WorkspaceRouteParams } from '@/lib/route-params'
 
-export default async function AssetsPage({ params }: { params: WorkspaceRouteParams | Promise<WorkspaceRouteParams> }) {
+export default async function AssetsPage({ params }: { params: Promise<WorkspaceRouteParams> }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 

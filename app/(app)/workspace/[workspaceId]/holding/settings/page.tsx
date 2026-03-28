@@ -6,7 +6,7 @@ import CompanyDetailsForm from '../../settings/CompanyDetailsForm'
 export default async function SettingsPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()

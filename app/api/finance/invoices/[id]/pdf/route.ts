@@ -4,7 +4,7 @@ import { renderInvoicePdf } from '@/lib/finance/invoice-pdf'
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } | Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await Promise.resolve(params)
   const supabase = await createClient()

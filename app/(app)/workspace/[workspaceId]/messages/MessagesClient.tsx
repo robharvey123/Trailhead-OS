@@ -17,15 +17,37 @@ export default function MessagesClient({ workspaceId, initialChannels }: { works
   const [channelDesc, setChannelDesc] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const loadMessages = useCallback(async (channel: CommChannel) => {
-    const { messages: msgs } = await apiFetch<{ messages: CommMessage[] }>(`/api/comms/channels/${channel.id}?workspace_id=${workspaceId}`)
-    setMessages(msgs)
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-  }, [workspaceId])
-
   useEffect(() => {
-    if (activeChannel) loadMessages(activeChannel)
-  }, [activeChannel, loadMessages])
+    if (!activeChannel) {
+      return
+    }
+
+    let cancelled = false
+    const channel = activeChannel
+
+    async function loadMessages() {
+      try {
+        const { messages: msgs } = await apiFetch<{ messages: CommMessage[] }>(
+          `/api/comms/channels/${channel.id}?workspace_id=${workspaceId}`
+        )
+        if (cancelled) {
+          return
+        }
+        setMessages(msgs)
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+      } catch (err) {
+        if (!cancelled) {
+          toast.error(err instanceof Error ? err.message : 'Failed to load messages')
+        }
+      }
+    }
+
+    loadMessages()
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeChannel, workspaceId])
 
   const handleSend = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()

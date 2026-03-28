@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code')
   const tokenHash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type')
-  const next = requestUrl.searchParams.get('next') ?? '/workspaces'
+  const next = requestUrl.searchParams.get('next') ?? '/analytics'
   const emailOtpTypes = ['magiclink', 'recovery', 'invite', 'email'] as const
   const otpType = emailOtpTypes.includes(type as typeof emailOtpTypes[number])
     ? (type as (typeof emailOtpTypes)[number])

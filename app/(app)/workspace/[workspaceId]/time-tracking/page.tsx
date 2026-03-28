@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resolveWorkspaceParams, type WorkspaceRouteParams } from '@/lib/route-params'
 import TimeTrackingClient from './TimeTrackingClient'
 
-export default async function TimeTrackingPage({ params }: { params: WorkspaceRouteParams | Promise<WorkspaceRouteParams> }) {
+export default async function TimeTrackingPage({ params }: { params: Promise<WorkspaceRouteParams> }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
   const supabase = await createClient()
 

@@ -6,17 +6,30 @@ import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
 } from '@/lib/route-params'
-import WorkspaceSidebar, {
-  BRAND_NAV_SECTIONS,
-  HOLDING_NAV_SECTIONS,
-} from '@/components/nav/WorkspaceSidebar'
+import WorkspaceNav from '@/components/nav/WorkspaceNav'
+
+const navItems = [
+  { slug: 'dashboard', label: 'Dashboard' },
+  { slug: 'insights', label: 'Insights' },
+  { slug: 'sell-in', label: 'Sell In' },
+  { slug: 'sell-out', label: 'Sell Out' },
+  { slug: 'promo', label: 'Promo' },
+  { slug: 'comparison', label: 'Compare' },
+  { slug: 'pnl', label: 'P&L' },
+  { slug: 'sku-summary', label: 'SKU Summary' },
+  { slug: 'company-summary', label: 'Company Summary' },
+  { slug: 'company-sku-detail', label: 'Company SKU' },
+  { slug: 'tasks', label: 'Tasks' },
+  { slug: 'settings', label: 'Settings' },
+  { slug: 'imports', label: 'Imports' },
+]
 
 export default async function WorkspaceLayout({
   children,
   params,
 }: {
   children: ReactNode
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const resolvedParams = await resolveWorkspaceParams(params)
   const { workspaceId } = resolvedParams
@@ -31,43 +44,37 @@ export default async function WorkspaceLayout({
 
   const { data: workspace } = await supabase
     .from('workspaces')
-    .select('id, name, type')
+    .select('id, name')
     .eq('id', workspaceId)
     .maybeSingle()
 
   if (!workspace) {
-    redirect('/workspaces')
+    redirect('/analytics')
   }
 
-  const sections =
-    workspace.type === 'holding' ? HOLDING_NAV_SECTIONS : BRAND_NAV_SECTIONS
-
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100">
-      {/* Sidebar */}
-      <div className="flex flex-col border-r border-slate-800">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-4">
-          <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
-              Workspace
-            </p>
-            <h2 className="truncate text-sm font-semibold">
-              {workspace.name}
-            </h2>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="border-b border-slate-800 bg-slate-950/80">
+        <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-6 py-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                Workspace
+              </p>
+              <h2 className="mt-1 text-lg font-semibold">{workspace.name}</h2>
+            </div>
+            <Link
+              href="/analytics"
+              className="text-xs text-slate-400 hover:text-slate-200"
+            >
+              Switch workspace
+            </Link>
           </div>
-          <Link
-            href="/workspaces"
-            className="shrink-0 text-[10px] text-slate-500 hover:text-slate-300"
-          >
-            Switch
-          </Link>
+          <WorkspaceNav items={navItems} workspaceId={workspaceId} />
         </div>
-        <WorkspaceSidebar workspaceId={workspaceId} sections={sections} />
       </div>
-
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto px-6 py-8">
-        <div className="mx-auto w-full max-w-screen-2xl">{children}</div>
+      <main className="mx-auto w-full max-w-screen-2xl px-6 py-8">
+        {children}
       </main>
     </div>
   )

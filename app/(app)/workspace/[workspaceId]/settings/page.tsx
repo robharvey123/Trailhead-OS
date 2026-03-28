@@ -14,7 +14,7 @@ import {
 export default async function SettingsPage({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const resolvedParams = await resolveWorkspaceParams(params)
   const supabase = await createClient()

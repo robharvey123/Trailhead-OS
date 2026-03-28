@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
+import type { User } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const QuerySchema = z.object({ workspaceId: z.string().uuid() })
 const ChangePasswordSchema = z.object({ userId: z.string(), password: z.string().min(6) })
+
+type WorkspaceMemberRow = {
+  user_id: string
+  role: string
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -20,17 +26,16 @@ export async function GET(request: Request) {
   if (memberError) {
     return NextResponse.json({ error: memberError.message }, { status: 500 })
   }
-  const userIds = members.map((m: any) => m.user_id)
   const { data: users, error: userError } = await admin.auth.admin.listUsers()
   if (userError) {
     return NextResponse.json({ error: userError.message }, { status: 500 })
   }
-  const userMap = Object.fromEntries(users.users.map((u: any) => [u.id, u]))
-  const result = members.map((m: any) => ({
-    id: m.user_id,
-    email: userMap[m.user_id]?.email || '',
-    role: m.role,
-    lastSignIn: userMap[m.user_id]?.last_sign_in_at || null,
+  const userMap = Object.fromEntries(users.users.map((user: User) => [user.id, user]))
+  const result = (members as WorkspaceMemberRow[]).map((member) => ({
+    id: member.user_id,
+    email: userMap[member.user_id]?.email || '',
+    role: member.role,
+    lastSignIn: userMap[member.user_id]?.last_sign_in_at || null,
   }))
   return NextResponse.json({ users: result })
 }

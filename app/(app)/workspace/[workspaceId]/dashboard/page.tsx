@@ -148,8 +148,8 @@ export default async function DashboardPage({
   params,
   searchParams,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
-  searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
+  params: Promise<WorkspaceRouteParams>
+  searchParams: Promise<WorkspaceSearchParams>
 }) {
   const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)
@@ -334,18 +334,21 @@ export default async function DashboardPage({
     return ((current.sellOut - previous.sellOut) / previous.sellOut) * 100
   })()
 
-  const chartData = (() => {
-    let cumulative = 0
-    return monthlySummary.map((row) => {
-      cumulative += row.totalShipped - row.sellOut
-      return {
-        month: row.month,
-        totalShipped: row.totalShipped,
-        sellOut: row.sellOut,
-        cumulativeStock: cumulative,
-      }
+  const chartData = monthlySummary.reduce<Array<{
+    month: string
+    totalShipped: number
+    sellOut: number
+    cumulativeStock: number
+  }>>((rows, row) => {
+    const previousCumulative = rows[rows.length - 1]?.cumulativeStock ?? 0
+    rows.push({
+      month: row.month,
+      totalShipped: row.totalShipped,
+      sellOut: row.sellOut,
+      cumulativeStock: previousCumulative + row.totalShipped - row.sellOut,
     })
-  })()
+    return rows
+  }, [])
 
   // Aggregate ASP per month across currencies
   const aspMap = new Map<string, { revenue: number; units: number }>()
@@ -470,7 +473,7 @@ export default async function DashboardPage({
       </header>
 
       <FiltersBar
-        basePath={`/workspace/${resolvedParams.workspaceId}/dashboard`}
+        basePath={`/analytics/${resolvedParams.workspaceId}`}
         brand={brandFilter}
         start={start}
         end={end}

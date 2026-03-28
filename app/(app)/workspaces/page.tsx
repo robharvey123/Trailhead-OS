@@ -32,7 +32,7 @@ export default async function WorkspacesPage() {
               {workspaces?.map((workspace) => (
                 <Link
                   key={workspace.id}
-                  href={`/workspace/${workspace.id}/dashboard`}
+                  href={`/analytics/${workspace.id}`}
                   className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm transition hover:border-slate-700"
                 >
                   <span>{workspace.name}</span>

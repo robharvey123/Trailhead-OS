@@ -1,3 +1,7 @@
+import { createClient } from '@/lib/supabase/server'
+
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>
+
 type DependencyPreview = {
   id: string
   title: string
@@ -84,9 +88,8 @@ export async function loadTaskDependencyMaps(supabase: any, workspaceId: string,
   return { blockedByByTask, blockingByTask, error: null }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function insertTaskActivity(
-  supabase: any,
+  supabase: SupabaseClient,
   args: {
     workspaceId: string
     taskId: string

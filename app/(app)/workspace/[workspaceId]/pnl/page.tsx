@@ -27,8 +27,8 @@ export default async function PnlPage({
   params,
   searchParams,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
-  searchParams: WorkspaceSearchParams | Promise<WorkspaceSearchParams>
+  params: Promise<WorkspaceRouteParams>
+  searchParams: Promise<WorkspaceSearchParams>
 }) {
   const resolvedParams = await resolveWorkspaceParams(params)
   const resolvedSearchParams = await resolveSearchParams(searchParams)

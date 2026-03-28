@@ -7,8 +7,8 @@ import {
 export default async function WorkspaceIndex({
   params,
 }: {
-  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
+  params: Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
-  redirect(`/workspace/${workspaceId}/dashboard`)
+  redirect(`/analytics/${workspaceId}`)
 }
