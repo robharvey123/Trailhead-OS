@@ -128,7 +128,7 @@ export async function POST(request: Request) {
 
   try {
     const notificationEmail = process.env.NOTIFICATION_EMAIL
-    if (notificationEmail && process.env.RESEND_API_KEY) {
+    if (notificationEmail && resend) {
       const email = newEnquiryEmail(data as Enquiry)
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL ?? 'Trailhead OS <onboarding@resend.dev>',
