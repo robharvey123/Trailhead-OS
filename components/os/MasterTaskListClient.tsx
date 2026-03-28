@@ -175,7 +175,7 @@ export default function MasterTaskListClient({
         <button
           type="button"
           onClick={() => setCreatingTask(true)}
-          className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white"
+          className="relative z-10 rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white"
         >
           New task
         </button>

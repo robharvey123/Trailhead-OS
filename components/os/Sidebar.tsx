@@ -86,103 +86,107 @@ export default function Sidebar({
   }
 
   const panel = (
-    <aside className="flex h-full w-72 flex-col border-r border-slate-800 bg-slate-950 px-4 py-5">
-      <Link
-        href="/dashboard"
-        onClick={() => setMobileOpen(false)}
-        className="rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-4"
-      >
-        <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Trailhead</p>
-        <h1 className="mt-2 text-xl font-semibold text-slate-100">OS</h1>
-      </Link>
+    <aside className="flex h-screen w-72 flex-col overflow-hidden border-r border-slate-800 bg-slate-950 pointer-events-auto">
+      <div className="flex-shrink-0 p-4">
+        <Link
+          href="/dashboard"
+          onClick={() => setMobileOpen(false)}
+          className="block rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-4"
+        >
+          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Trailhead</p>
+          <h1 className="mt-2 text-xl font-semibold text-slate-100">OS</h1>
+        </Link>
+      </div>
 
-      <nav className="mt-8 space-y-6">
-        <div className="space-y-1.5">
-          <NavLink
-            href="/dashboard"
-            label="Dashboard"
-            active={pathname === '/dashboard'}
-            onClick={() => setMobileOpen(false)}
-          />
-          <NavLink
-            href="/tasks"
-            label="Tasks"
-            active={pathname === '/tasks'}
-            onClick={() => setMobileOpen(false)}
-          />
-        </div>
+      <nav className="flex-1 overflow-y-auto px-4 py-2">
+        <div className="space-y-6 pb-6">
+          <div className="space-y-1.5">
+            <NavLink
+              href="/dashboard"
+              label="Dashboard"
+              active={pathname === '/dashboard'}
+              onClick={() => setMobileOpen(false)}
+            />
+            <NavLink
+              href="/tasks"
+              label="Tasks"
+              active={pathname === '/tasks'}
+              onClick={() => setMobileOpen(false)}
+            />
+          </div>
 
-        <div>
-          <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Workstreams</p>
-          <div className="mt-2 space-y-1.5">
-            {REQUIRED_WORKSTREAMS.map((item) => {
-              const workstream = workstreamsBySlug.get(item.slug)
-              const label = workstream?.label ?? item.label
-              const colour = workstream?.colour ?? item.colour
+          <div>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Workstreams</p>
+            <div className="mt-2 space-y-1.5">
+              {REQUIRED_WORKSTREAMS.map((item) => {
+                const workstream = workstreamsBySlug.get(item.slug)
+                const label = workstream?.label ?? item.label
+                const colour = workstream?.colour ?? item.colour
 
-              return (
+                return (
+                  <NavLink
+                    key={item.slug}
+                    href={`/projects/${item.slug}`}
+                    label={label}
+                    active={pathname === `/projects/${item.slug}`}
+                    onClick={() => setMobileOpen(false)}
+                    dotColour={getWorkstreamColourClasses(colour).dot}
+                  />
+                )
+              })}
+            </div>
+          </div>
+
+          <div>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Clients</p>
+            <div className="mt-2 space-y-1.5">
               <NavLink
-                key={item.slug}
-                href={`/projects/${item.slug}`}
-                label={label}
-                active={pathname === `/projects/${item.slug}`}
+                href="/enquiries"
+                label="Enquiries"
+                active={pathname.startsWith('/enquiries')}
                 onClick={() => setMobileOpen(false)}
-                dotColour={getWorkstreamColourClasses(colour).dot}
+                badge={newEnquiryCount}
               />
-              )
-            })}
+              <NavLink
+                href="/crm/contacts"
+                label="Contacts"
+                active={pathname.startsWith('/crm')}
+                onClick={() => setMobileOpen(false)}
+              />
+            </div>
           </div>
-        </div>
 
-        <div>
-          <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Clients</p>
-          <div className="mt-2 space-y-1.5">
-            <NavLink
-              href="/enquiries"
-              label="Enquiries"
-              active={pathname.startsWith('/enquiries')}
-              onClick={() => setMobileOpen(false)}
-              badge={newEnquiryCount}
-            />
-            <NavLink
-              href="/crm/contacts"
-              label="Contacts"
-              active={pathname.startsWith('/crm')}
-              onClick={() => setMobileOpen(false)}
-            />
+          <div>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Finance</p>
+            <div className="mt-2 space-y-1.5">
+              <NavLink
+                href="/invoicing"
+                label="Invoicing"
+                active={pathname.startsWith('/invoicing')}
+                onClick={() => setMobileOpen(false)}
+              />
+            </div>
           </div>
-        </div>
 
-        <div>
-          <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Finance</p>
-          <div className="mt-2 space-y-1.5">
-            <NavLink
-              href="/invoicing"
-              label="Invoicing"
-              active={pathname.startsWith('/invoicing')}
-              onClick={() => setMobileOpen(false)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Analytics</p>
-          <div className="mt-2 space-y-1.5">
-            <NavLink
-              href="/analytics"
-              label="Analytics"
-              active={
-                pathname.startsWith('/analytics') ||
-                pathname.startsWith('/workspaces') ||
-                pathname.startsWith('/workspace')
-              }
-              onClick={() => setMobileOpen(false)}
-            />
+          <div>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Analytics</p>
+            <div className="mt-2 space-y-1.5">
+              <NavLink
+                href="/analytics"
+                label="Analytics"
+                active={
+                  pathname.startsWith('/analytics') ||
+                  pathname.startsWith('/workspaces') ||
+                  pathname.startsWith('/workspace')
+                }
+                onClick={() => setMobileOpen(false)}
+              />
+            </div>
           </div>
         </div>
       </nav>
 
-      <div className="mt-auto space-y-2 pt-6">
+      <div className="flex-shrink-0 space-y-2 border-t border-slate-800 p-4">
         <NavLink
           href="/settings"
           label="Settings"
@@ -211,7 +215,7 @@ export default function Sidebar({
         Menu
       </button>
 
-      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-30 md:block">
+      <div className="hidden md:fixed md:inset-y-0 md:left-0 md:z-30 md:block md:w-72 md:overflow-hidden">
         {panel}
       </div>
 

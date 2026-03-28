@@ -60,7 +60,10 @@ export default function QuickAddTask({
   }
 
   return (
-    <form className={`space-y-2 ${className}`.trim()} onSubmit={handleSubmit}>
+    <form
+      className={`relative z-10 space-y-2 pointer-events-auto ${className}`.trim()}
+      onSubmit={handleSubmit}
+    >
       <div className="flex items-center gap-2">
         <input
           value={title}
@@ -71,7 +74,7 @@ export default function QuickAddTask({
         <button
           type="submit"
           disabled={submitting || !title.trim()}
-          className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="pointer-events-auto rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Adding...' : buttonLabel}
         </button>

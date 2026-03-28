@@ -53,11 +53,17 @@ function SortableTask({
         transition,
         opacity: isDragging ? 0.6 : 1,
       }}
-      {...attributes}
-      {...listeners}
       className="touch-none"
     >
-      <TaskCard task={task} onClick={() => onSelect(task)} />
+      <TaskCard
+        task={task}
+        onClick={() => onSelect(task)}
+        buttonProps={{
+          ...attributes,
+          ...listeners,
+          className: 'touch-none cursor-grab active:cursor-grabbing',
+        }}
+      />
     </div>
   )
 }
@@ -331,7 +337,7 @@ export default function WorkstreamBoardClient({
                         <button
                           type="button"
                           onClick={() => setAddingColumnId(column.id)}
-                          className="w-full rounded-2xl border border-dashed border-slate-700 px-4 py-3 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
+                          className="relative z-10 w-full rounded-2xl border border-dashed border-slate-700 px-4 py-3 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
                         >
                           Add card
                         </button>

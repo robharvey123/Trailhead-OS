@@ -1,3 +1,4 @@
+import type { ButtonHTMLAttributes } from 'react'
 import { formatTaskDate } from '@/lib/os'
 import type { TaskWithWorkstream } from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
@@ -7,12 +8,14 @@ interface TaskCardProps {
   task: TaskWithWorkstream
   onClick?: () => void
   showWorkstream?: boolean
+  buttonProps?: ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 export default function TaskCard({
   task,
   onClick,
   showWorkstream = false,
+  buttonProps,
 }: TaskCardProps) {
   const content = (
     <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-4 text-left shadow-sm transition hover:border-slate-700 hover:bg-slate-900">
@@ -53,7 +56,12 @@ export default function TaskCard({
   }
 
   return (
-    <button type="button" onClick={onClick} className="w-full text-left">
+    <button
+      type="button"
+      onClick={onClick}
+      {...buttonProps}
+      className={`w-full text-left ${buttonProps?.className ?? ''}`.trim()}
+    >
       {content}
     </button>
   )
