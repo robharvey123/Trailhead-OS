@@ -134,6 +134,57 @@ export interface EnquiryFormState {
   extra: string
 }
 
+export interface GoogleTokens {
+  id: string
+  access_token: string
+  refresh_token: string
+  token_type: string
+  expiry_date: number
+  scope: string
+  email: string
+  created_at: string
+  updated_at: string
+}
+
+export interface EmailLog {
+  id: string
+  gmail_message_id?: string
+  gmail_thread_id?: string
+  account_id?: string
+  contact_id?: string
+  enquiry_id?: string
+  quote_id?: string
+  direction: 'inbound' | 'outbound'
+  from_address: string
+  to_addresses: string[]
+  subject: string
+  snippet?: string
+  body_html?: string
+  received_at?: string
+  sent_at?: string
+  created_at: string
+}
+
+export interface GcalSync {
+  id: string
+  calendar_event_id: string
+  gcal_event_id: string
+  gcal_calendar_id: string
+  last_synced_at: string
+  sync_direction: 'push' | 'pull' | 'both'
+}
+
+export interface StripeCustomer {
+  id: string
+  account_id: string
+  contact_id?: string
+  stripe_customer_id: string
+  stripe_subscription_id?: string
+  subscription_status?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface LineItem {
   id: string
   description: string
@@ -187,6 +238,13 @@ export interface Invoice {
   due_date: string | null
   line_items: LineItem[]
   vat_rate: number
+  stripe_payment_link?: string
+  stripe_payment_intent_id?: string
+  stripe_session_id?: string
+  stripe_subscription_id?: string
+  paid_at?: string
+  is_recurring?: boolean
+  recurring_interval?: 'month' | 'year'
   notes: string | null
   created_at: string
   updated_at: string

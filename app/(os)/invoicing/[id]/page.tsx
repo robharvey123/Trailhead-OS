@@ -25,6 +25,15 @@ export default async function InvoiceDetailPage({
     invoice.contact_id ? getContactById(invoice.contact_id, supabase).catch(() => null) : null,
     getWorkstreams(supabase).catch(() => []),
   ])
+  const stripeCustomerResult = invoice.account_id
+    ? await supabase
+        .from('stripe_customers')
+        .select('subscription_status')
+        .eq('account_id', invoice.account_id)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    : { data: null }
   const workstream =
     workstreams.find((item) => item.id === invoice.workstream_id) ?? null
 
@@ -33,6 +42,7 @@ export default async function InvoiceDetailPage({
       invoice={invoice}
       contact={contact}
       workstream={workstream}
+      subscriptionStatus={stripeCustomerResult.data?.subscription_status ?? null}
       warning={resolvedSearchParams?.warning ?? null}
     />
   )

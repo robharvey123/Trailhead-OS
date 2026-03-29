@@ -20,6 +20,34 @@ function formatMoney(value: number) {
   return `£${value.toFixed(2)}`
 }
 
+function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]) {
+  if (invoice.paid_at || invoice.status === 'paid') {
+    return (
+      <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-100">
+        Paid
+      </span>
+    )
+  }
+
+  if (invoice.is_recurring) {
+    return (
+      <span className="rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-medium text-fuchsia-100">
+        Recurring
+      </span>
+    )
+  }
+
+  if (invoice.stripe_payment_link) {
+    return (
+      <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100">
+        Link sent
+      </span>
+    )
+  }
+
+  return <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-600" />
+}
+
 export default async function InvoicingPage({
   searchParams,
 }: {
@@ -107,6 +135,7 @@ export default async function InvoicingPage({
                   <th className="pb-3">Due date</th>
                   <th className="pb-3 text-right">Total</th>
                   <th className="pb-3">Status</th>
+                  <th className="pb-3">Stripe</th>
                   <th className="pb-3">Actions</th>
                 </tr>
               </thead>
@@ -152,6 +181,7 @@ export default async function InvoicingPage({
                       <td className="py-4">
                         <StatusBadge status={invoice.status} kind="invoice" />
                       </td>
+                      <td className="py-4">{getStripeState(invoice)}</td>
                       <td className="py-4">
                         <div className="flex flex-wrap gap-3">
                           <Link

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import EmailThread from './EmailThread'
 import EnquiryDetailActions from './EnquiryDetailActions'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
@@ -428,6 +429,21 @@ export default function EnquiryDetailClient({
               ))}
             </div>
           </section>
+
+          <details className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+            <summary className="cursor-pointer list-none text-lg font-semibold text-slate-100">
+              Email thread
+            </summary>
+            <div className="mt-4">
+              <EmailThread
+                contact_id={enquiry.converted_contact_id}
+                contact_email={enquiry.contact_email}
+                account_id={enquiry.account_id}
+                enquiry_id={enquiry.id}
+                embedded
+              />
+            </div>
+          </details>
         </div>
 
         <div className="xl:sticky xl:top-8 xl:self-start">

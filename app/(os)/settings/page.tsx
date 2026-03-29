@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import PricingTierSettings from '@/components/os/PricingTierSettings'
 import { getPricingTiers } from '@/lib/db/pricing-tiers'
 import { createClient } from '@/lib/supabase/server'
@@ -13,8 +14,10 @@ export default async function SettingsPage() {
   let contactsCount = 0
   let newEnquiryCount = 0
   let draftInvoiceCount = 0
+  let paidInvoicesThisMonth = 0
   let workspaces: Array<{ id: string; name: string }> = []
   let pricingTiers: PricingTier[] = []
+  let googleEmail: string | null = null
 
   try {
     const { count } = await supabase.from('contacts').select('id', { count: 'exact', head: true })
@@ -38,6 +41,18 @@ export default async function SettingsPage() {
   } catch {}
 
   try {
+    const startOfMonth = new Date()
+    startOfMonth.setUTCDate(1)
+    startOfMonth.setUTCHours(0, 0, 0, 0)
+
+    const { count } = await supabase
+      .from('invoices')
+      .select('id', { count: 'exact', head: true })
+      .gte('paid_at', startOfMonth.toISOString())
+    paidInvoicesThisMonth = count ?? 0
+  } catch {}
+
+  try {
     const { data } = await supabase
       .from('workspaces')
       .select('id, name')
@@ -49,6 +64,16 @@ export default async function SettingsPage() {
     pricingTiers = await getPricingTiers(supabase)
   } catch {}
 
+  try {
+    const { data } = await supabase
+      .from('google_tokens')
+      .select('email')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    googleEmail = data?.email ?? null
+  } catch {}
+
   return (
     <div className="space-y-6">
       <div>
@@ -58,6 +83,11 @@ export default async function SettingsPage() {
           A control panel for the core OS surfaces, live workspace settings, and the current signed-in account.
         </p>
       </div>
+
+      <SettingsIntegrations
+        initialGoogleEmail={googleEmail}
+        paidInvoicesThisMonth={paidInvoicesThisMonth}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
         <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">

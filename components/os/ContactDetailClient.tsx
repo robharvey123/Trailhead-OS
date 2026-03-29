@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import EmailThread from './EmailThread'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
@@ -389,6 +390,13 @@ export default function ContactDetailClient({
         contactId={contact.id}
         title="Touchpoints"
         description="Log calls, emails, messages, meetings, and notes for this contact."
+      />
+
+      <EmailThread
+        title="Emails"
+        contact_id={contact.id}
+        contact_email={contact.email}
+        account_id={contact.account_id}
       />
 
       <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">

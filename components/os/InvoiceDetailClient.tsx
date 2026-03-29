@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { calculateTotals, type Contact, type Invoice, type InvoiceStatus, type Workstream } from '@/lib/types'
 import WorkstreamBadge from './WorkstreamBadge'
 import StatusBadge from './StatusBadge'
@@ -15,17 +16,44 @@ export default function InvoiceDetailClient({
   invoice,
   contact,
   workstream,
+  subscriptionStatus,
   warning,
 }: {
   invoice: Invoice
   contact: Contact | null
   workstream: Workstream | null
+  subscriptionStatus: string | null
   warning?: string | null
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [updatingStatus, setUpdatingStatus] = useState<InvoiceStatus | 'cancelled' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [paymentLink, setPaymentLink] = useState(invoice.stripe_payment_link ?? '')
+  const [subscriptionState, setSubscriptionState] = useState({
+    isRecurring: invoice.is_recurring ?? false,
+    interval: invoice.recurring_interval ?? null,
+    status: subscriptionStatus,
+  })
+  const [paymentLoading, setPaymentLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [showRecurringModal, setShowRecurringModal] = useState(false)
+  const [recurringInterval, setRecurringInterval] = useState<'month' | 'year'>(
+    invoice.recurring_interval ?? 'month'
+  )
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
+  const paidToastShownRef = useRef(false)
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
+  const truncatedPaymentLink =
+    paymentLink.length > 52 ? `${paymentLink.slice(0, 49)}...` : paymentLink
+  const isPaid = Boolean(invoice.paid_at)
+
+  useEffect(() => {
+    if (searchParams.get('paid') === 'true' && !paidToastShownRef.current) {
+      paidToastShownRef.current = true
+      toast.success('Payment confirmed by Stripe')
+    }
+  }, [searchParams])
 
   async function updateStatus(nextStatus: InvoiceStatus) {
     setUpdatingStatus(nextStatus)
@@ -59,8 +87,97 @@ export default function InvoiceDetailClient({
     await updateStatus('cancelled')
   }
 
+  async function handleCopyLink() {
+    if (!paymentLink) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(paymentLink)
+      setCopied(true)
+      toast.success('Payment link copied')
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch {
+      toast.error('Failed to copy payment link')
+    }
+  }
+
+  async function generatePaymentLink() {
+    setPaymentLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/stripe/payment-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoice_id: invoice.id }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create Stripe payment link')
+      }
+
+      setPaymentLink(data.payment_link)
+      toast.success(paymentLink ? 'Payment link refreshed' : 'Payment link created')
+      router.refresh()
+    } catch (paymentError) {
+      const message =
+        paymentError instanceof Error ? paymentError.message : 'Failed to create payment link'
+      setError(message)
+      toast.error(message)
+    } finally {
+      setPaymentLoading(false)
+    }
+  }
+
+  async function createRecurringSubscription() {
+    setSubscriptionLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/stripe/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoice_id: invoice.id,
+          interval: recurringInterval,
+        }),
+      })
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create recurring payment')
+      }
+
+      setSubscriptionState({
+        isRecurring: true,
+        interval: recurringInterval,
+        status: 'incomplete',
+      })
+      setShowRecurringModal(false)
+      toast.success('Recurring payment set up in Stripe')
+      router.refresh()
+    } catch (subscriptionError) {
+      const message =
+        subscriptionError instanceof Error
+          ? subscriptionError.message
+          : 'Failed to create recurring payment'
+      setError(message)
+      toast.error(message)
+    } finally {
+      setSubscriptionLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {isPaid ? (
+        <div className="rounded-[1.75rem] border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-sm text-emerald-100">
+          Paid on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('en-GB') : '—'}
+        </div>
+      ) : null}
+
       {warning === 'edit-blocked' ? (
         <div className="rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm text-amber-100">
           Only draft invoices can be edited. You were redirected back to the detail view.
@@ -175,89 +292,216 @@ export default function InvoiceDetailClient({
           <div />
         )}
 
-        <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-          <h2 className="text-lg font-semibold text-slate-100">Summary</h2>
-          <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-slate-400">Subtotal</dt>
-              <dd className="font-medium text-slate-100">{formatMoney(totals.subtotal)}</dd>
+        <div className="space-y-6">
+          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+            <h2 className="text-lg font-semibold text-slate-100">Summary</h2>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-slate-400">Subtotal</dt>
+                <dd className="font-medium text-slate-100">{formatMoney(totals.subtotal)}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-slate-400">VAT ({invoice.vat_rate}%)</dt>
+                <dd className="font-medium text-slate-100">{formatMoney(totals.vat_amount)}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-t border-slate-800 pt-3">
+                <dt className="text-base font-semibold text-slate-100">Total</dt>
+                <dd className="text-lg font-semibold text-white">{formatMoney(totals.total)}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-slate-100">Payment</h2>
+              {subscriptionState.isRecurring && subscriptionState.interval ? (
+                <span className="rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-medium text-fuchsia-100">
+                  Recurring: {formatMoney(totals.total)}/{subscriptionState.interval}
+                </span>
+              ) : null}
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-slate-400">VAT ({invoice.vat_rate}%)</dt>
-              <dd className="font-medium text-slate-100">{formatMoney(totals.vat_amount)}</dd>
+
+            {subscriptionState.isRecurring && subscriptionState.status ? (
+              <div className="mt-4">
+                <span className="rounded-full border border-slate-700 px-3 py-1 text-xs font-medium text-slate-200">
+                  {subscriptionState.status}
+                </span>
+              </div>
+            ) : null}
+
+            {isPaid ? (
+              <p className="mt-4 text-sm text-emerald-200">
+                This invoice has been paid. Stripe payment actions are no longer needed.
+              </p>
+            ) : paymentLink ? (
+              <div className="mt-4 space-y-4">
+                <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Payment link</p>
+                  <p className="mt-2 break-all text-sm text-slate-200">{truncatedPaymentLink}</p>
+                  <p className="mt-2 text-xs text-slate-500">Client can pay online at this link.</p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyLink()}
+                    className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                  >
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void generatePaymentLink()}
+                    disabled={paymentLoading}
+                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                  >
+                    {paymentLoading ? 'Generating...' : 'Resend link'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                <button
+                  type="button"
+                  onClick={() => void generatePaymentLink()}
+                  disabled={paymentLoading}
+                  className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                >
+                  {paymentLoading ? 'Generating...' : 'Send payment link'}
+                </button>
+                <p className="text-sm text-slate-400">Client can pay online at this link.</p>
+              </div>
+            )}
+
+            {!isPaid && !subscriptionState.isRecurring ? (
+              <div className="mt-6 border-t border-slate-800 pt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowRecurringModal(true)}
+                  className="rounded-2xl border border-fuchsia-500/30 px-4 py-2.5 text-sm font-medium text-fuchsia-100 transition hover:border-fuchsia-400"
+                >
+                  Set up recurring payment
+                </button>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+            <h2 className="text-lg font-semibold text-slate-100">Actions</h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {invoice.status === 'draft' ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => updateStatus('sent')}
+                    disabled={updatingStatus !== null}
+                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                  >
+                    {updatingStatus === 'sent' ? 'Updating...' : 'Mark as sent'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelInvoice}
+                    disabled={updatingStatus !== null}
+                    className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+                  >
+                    Cancel invoice
+                  </button>
+                </>
+              ) : null}
+              {invoice.status === 'sent' ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => updateStatus('paid')}
+                    disabled={updatingStatus !== null}
+                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                  >
+                    {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateStatus('overdue')}
+                    disabled={updatingStatus !== null}
+                    className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
+                  >
+                    {updatingStatus === 'overdue' ? 'Updating...' : 'Mark as overdue'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancelInvoice}
+                    disabled={updatingStatus !== null}
+                    className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+                  >
+                    Cancel invoice
+                  </button>
+                </>
+              ) : null}
+              {invoice.status === 'overdue' ? (
+                <button
+                  type="button"
+                  onClick={() => updateStatus('paid')}
+                  disabled={updatingStatus !== null}
+                  className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                >
+                  {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
+                </button>
+              ) : null}
             </div>
-            <div className="flex items-center justify-between gap-4 border-t border-slate-800 pt-3">
-              <dt className="text-base font-semibold text-slate-100">Total</dt>
-              <dd className="text-lg font-semibold text-white">{formatMoney(totals.total)}</dd>
-            </div>
-          </dl>
+            {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+          </div>
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-        <h2 className="text-lg font-semibold text-slate-100">Actions</h2>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {invoice.status === 'draft' ? (
-            <>
+      {showRecurringModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4">
+          <div className="w-full max-w-md rounded-[2rem] border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+            <h2 className="text-lg font-semibold text-slate-100">Set up recurring payment</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Confirm the recurring amount and billing interval for this invoice.
+            </p>
+
+            <div className="mt-6 rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Amount</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{formatMoney(totals.total)}</p>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              {(['month', 'year'] as const).map(interval => (
+                <button
+                  key={interval}
+                  type="button"
+                  onClick={() => setRecurringInterval(interval)}
+                  className={`flex-1 rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+                    recurringInterval === interval
+                      ? 'border-white/60 bg-white/10 text-white'
+                      : 'border-slate-700 text-slate-300 hover:border-slate-500'
+                  }`}
+                >
+                  {interval === 'month' ? 'Monthly' : 'Yearly'}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => updateStatus('sent')}
-                disabled={updatingStatus !== null}
+                onClick={() => setShowRecurringModal(false)}
+                className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void createRecurringSubscription()}
+                disabled={subscriptionLoading}
                 className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
               >
-                {updatingStatus === 'sent' ? 'Updating...' : 'Mark as sent'}
+                {subscriptionLoading ? 'Setting up...' : 'Confirm recurring payment'}
               </button>
-              <button
-                type="button"
-                onClick={cancelInvoice}
-                disabled={updatingStatus !== null}
-                className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
-              >
-                Cancel invoice
-              </button>
-            </>
-          ) : null}
-          {invoice.status === 'sent' ? (
-            <>
-              <button
-                type="button"
-                onClick={() => updateStatus('paid')}
-                disabled={updatingStatus !== null}
-                className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
-              >
-                {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
-              </button>
-              <button
-                type="button"
-                onClick={() => updateStatus('overdue')}
-                disabled={updatingStatus !== null}
-                className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
-              >
-                {updatingStatus === 'overdue' ? 'Updating...' : 'Mark as overdue'}
-              </button>
-              <button
-                type="button"
-                onClick={cancelInvoice}
-                disabled={updatingStatus !== null}
-                className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
-              >
-                Cancel invoice
-              </button>
-            </>
-          ) : null}
-          {invoice.status === 'overdue' ? (
-            <button
-              type="button"
-              onClick={() => updateStatus('paid')}
-              disabled={updatingStatus !== null}
-              className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
-            >
-              {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
-            </button>
-          ) : null}
+            </div>
+          </div>
         </div>
-        {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
-      </div>
+      ) : null}
     </div>
   )
 }

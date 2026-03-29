@@ -4,6 +4,7 @@ import {
   getCalendarEvents,
   type CreateCalendarEventInput,
 } from '@/lib/db/calendar-events'
+import { pushEventToGoogle } from '@/lib/google/calendar'
 import { getTasks } from '@/lib/db/tasks'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 
@@ -136,6 +137,20 @@ export async function POST(request: NextRequest) {
     }
 
     const event = await createCalendarEvent(input, auth.supabase)
+
+    void (async () => {
+      const { data: googleTokens } = await auth.supabase
+        .from('google_tokens')
+        .select('id')
+        .limit(1)
+
+      if (!googleTokens?.length) {
+        return
+      }
+
+      await pushEventToGoogle(event)
+    })().catch(() => {})
+
     return NextResponse.json({ event }, { status: 201 })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create calendar event'

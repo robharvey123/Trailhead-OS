@@ -5,6 +5,7 @@ import {
   updateCalendarEvent,
   type UpdateCalendarEventInput,
 } from '@/lib/db/calendar-events'
+import { deleteGcalEvent, pushEventToGoogle } from '@/lib/google/calendar'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 
 async function getAuthenticatedSupabase() {
@@ -160,6 +161,21 @@ export async function PATCH(
     }
 
     const event = await updateCalendarEvent(id, patch, auth.supabase)
+
+    void (async () => {
+      const { data: syncRow } = await auth.supabase
+        .from('gcal_sync')
+        .select('id')
+        .eq('calendar_event_id', id)
+        .limit(1)
+
+      if (!syncRow?.length) {
+        return
+      }
+
+      await pushEventToGoogle(event)
+    })().catch(() => {})
+
     return NextResponse.json({ event })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update calendar event'
@@ -187,6 +203,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Calendar event not found' }, { status: 404 })
     }
 
+    await deleteGcalEvent(id)
     await deleteCalendarEvent(id, auth.supabase)
     return NextResponse.json({ deleted: true })
   } catch (error) {

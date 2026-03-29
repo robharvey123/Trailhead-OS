@@ -2,7 +2,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { isLocalDevelopmentHost } from '@/lib/site'
 
-const publicRoutes = ['/login', '/auth/callback', '/discovery']
+const publicRoutes = [
+  '/login',
+  '/auth/callback',
+  '/discovery',
+  '/api/auth/google',
+  '/api/auth/google/callback',
+]
 const publicRoutePrefixes = ['/report']
 const publicApiPrefixes = ['/api/enquiries', '/api/contact']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
@@ -126,5 +132,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|sw.js).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|sw.js|api/webhooks/stripe).*)'],
 }

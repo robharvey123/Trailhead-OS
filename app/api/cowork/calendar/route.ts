@@ -13,6 +13,7 @@ import {
   startOfDayIso,
   todayDate,
 } from '@/lib/cowork-api'
+import { pushEventToGoogle } from '@/lib/google/calendar'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -88,6 +89,20 @@ export async function POST(request: NextRequest) {
     if (error) {
       throw error
     }
+
+    void (async () => {
+      const { data: tokenRow } = await supabaseService
+        .from('google_tokens')
+        .select('id')
+        .limit(1)
+        .maybeSingle()
+
+      if (!tokenRow) {
+        return
+      }
+
+      await pushEventToGoogle(data)
+    })().catch(() => {})
 
     return NextResponse.json(mapCalendarEvent(data), { status: 201 })
   } catch (error) {

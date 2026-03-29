@@ -15,7 +15,7 @@ import type {
   EventDropArg,
   EventInput,
 } from '@fullcalendar/core'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatDateTime, formatTaskDate } from '@/lib/os'
 import type { CalendarEvent, Contact, TaskWithWorkstream, Workstream } from '@/lib/types'
@@ -351,9 +351,11 @@ function buildEventPatchFromCalendarApi(event: {
 export default function CalendarClient({
   workstreams,
   contacts,
+  googleConnected,
 }: {
   workstreams: Workstream[]
   contacts: Contact[]
+  googleConnected: boolean
 }) {
   const calendarRef = useRef<FullCalendar | null>(null)
 
@@ -368,6 +370,8 @@ export default function CalendarClient({
   const [formError, setFormError] = useState<string | null>(null)
   const [formSaving, setFormSaving] = useState(false)
   const [contactSearch, setContactSearch] = useState('')
+  const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>('idle')
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
 
   const fullCalendarEvents = toEventInput(events, tasks, workstreams)
   const selectedEvent = selectedItem?.type === 'event' ? selectedItem.data : null
@@ -384,6 +388,12 @@ export default function CalendarClient({
       .toLowerCase()
       .includes(query)
   })
+
+  useEffect(() => {
+    try {
+      setLastSyncedAt(window.localStorage.getItem('calendar:last-google-sync'))
+    } catch {}
+  }, [])
 
   async function loadCalendarRange(start: string, end: string) {
     setLoading(true)
@@ -568,6 +578,39 @@ export default function CalendarClient({
     }
   }
 
+  async function handleGoogleSync() {
+    setSyncState('syncing')
+    setError(null)
+
+    try {
+      await apiFetch<{ pushed: number; pulled: number }>('/api/calendar/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ direction: 'both', days: 30 }),
+      })
+
+      const calendarApi = calendarRef.current?.getApi()
+      if (calendarApi) {
+        await loadCalendarRange(
+          calendarApi.view.activeStart.toISOString(),
+          calendarApi.view.activeEnd.toISOString()
+        )
+      }
+
+      const syncedAt = new Date().toISOString()
+      setLastSyncedAt(syncedAt)
+      try {
+        window.localStorage.setItem('calendar:last-google-sync', syncedAt)
+      } catch {}
+
+      setSyncState('synced')
+      window.setTimeout(() => setSyncState('idle'), 2000)
+    } catch (syncError) {
+      setSyncState('idle')
+      setError(syncError instanceof Error ? syncError.message : 'Failed to sync with Google')
+    }
+  }
+
   return (
     <>
       <div className="space-y-6">
@@ -578,20 +621,48 @@ export default function CalendarClient({
             <p className="mt-2 max-w-2xl text-sm text-slate-400">
               Tasks with due dates and standalone events, together in one calendar.
             </p>
+            {googleConnected && lastSyncedAt ? (
+              <p className="mt-3 text-xs text-slate-500">
+                Last synced {new Date(lastSyncedAt).toLocaleString('en-GB')}
+              </p>
+            ) : null}
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              openCreateForm({
-                start: new Date(),
-                end: addHours(new Date(), 1),
-                allDay: false,
-              })
-            }
-            className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
-          >
-            New event
-          </button>
+          <div className="flex flex-wrap gap-3">
+            {googleConnected ? (
+              <button
+                type="button"
+                onClick={() => void handleGoogleSync()}
+                disabled={syncState === 'syncing'}
+                className="rounded-2xl border border-sky-500/30 px-4 py-2.5 text-sm font-medium text-sky-100 transition hover:border-sky-400 hover:bg-slate-900 disabled:opacity-60"
+              >
+                {syncState === 'syncing'
+                  ? 'Syncing...'
+                  : syncState === 'synced'
+                    ? 'Synced'
+                    : 'Sync with Google'}
+              </button>
+            ) : (
+              <Link
+                href="/settings"
+                className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
+              >
+                Connect Google Calendar
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={() =>
+                openCreateForm({
+                  start: new Date(),
+                  end: addHours(new Date(), 1),
+                  allDay: false,
+                })
+              }
+              className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
+            >
+              New event
+            </button>
+          </div>
         </div>
 
         {error ? (

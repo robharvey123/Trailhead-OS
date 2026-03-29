@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import EmailThread from './EmailThread'
 import StatusBadge from './StatusBadge'
 import WorkstreamBadge from './WorkstreamBadge'
 import { calculateTotals, type QuoteListItem } from '@/lib/types'
@@ -290,6 +291,22 @@ export default function QuoteDetailClient({
                   <p className="mt-4 whitespace-pre-wrap text-sm text-slate-300">{quote.notes}</p>
                 </div>
               ) : null}
+
+              <details className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+                <summary className="cursor-pointer list-none text-lg font-semibold text-slate-100">
+                  Email thread
+                </summary>
+                <div className="mt-4">
+                  <EmailThread
+                    contact_id={quote.contact_id}
+                    contact_email={quote.contact?.email}
+                    account_id={quote.account_id}
+                    enquiry_id={quote.enquiry_id}
+                    quote_id={quote.id}
+                    embedded
+                  />
+                </div>
+              </details>
             </div>
 
             <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
