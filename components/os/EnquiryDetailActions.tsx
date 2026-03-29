@@ -246,7 +246,7 @@ export default function EnquiryDetailActions({
                 {loadingAction === 'generate' ? (
                   <div className="flex items-center gap-3 text-sm text-sky-100">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-sky-100/30 border-t-sky-100" />
-                    Claude is analysing the enquiry and building your quote...
+                    ChatGPT is analysing the enquiry and building your quote...
                   </div>
                 ) : null}
                 {generateError ? (

@@ -1,3 +1,4 @@
+import OpenAI from 'openai'
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEnquiryById } from '@/lib/db/enquiries'
@@ -13,7 +14,7 @@ import type {
   QuoteScope,
 } from '@/lib/types'
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514'
+const OPENAI_DEFAULT_MODEL = 'gpt-4.1'
 const QUOTE_VALIDITY_DAYS = 30
 
 type EnquiryPrompt = Pick<
@@ -388,72 +389,37 @@ function enforceHostingLineItem(
   ]
 }
 
-async function callAnthropic(system: string, user: string) {
-  // Note for Rob: add ANTHROPIC_API_KEY to .env.local and Netlify environment variables.
-  const apiKey = process.env.ANTHROPIC_API_KEY
+async function callOpenAI(system: string, user: string) {
+  // Note for Rob: add OPENAI_API_KEY to .env.local and Netlify environment variables.
+  const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not configured')
+    throw new Error('OPENAI_API_KEY is not configured')
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: ANTHROPIC_MODEL,
-      max_tokens: 4000,
-      system,
-      messages: [
-        {
-          role: 'user',
-          content: user,
-        },
-      ],
-    }),
+  const openai = new OpenAI({ apiKey })
+  const model = process.env.OPENAI_MODEL ?? OPENAI_DEFAULT_MODEL
+
+  const response = await openai.chat.completions.create({
+    model,
+    temperature: 0.2,
+    max_tokens: 4000,
+    response_format: { type: 'json_object' },
+    messages: [
+      {
+        role: 'system',
+        content: system,
+      },
+      {
+        role: 'user',
+        content: user,
+      },
+    ],
   })
 
-  const payload = await response.json().catch(() => ({}))
-
-  if (!response.ok) {
-    const message =
-      payload &&
-      typeof payload === 'object' &&
-      'error' in payload &&
-      payload.error &&
-      typeof payload.error === 'object' &&
-      'message' in payload.error &&
-      typeof payload.error.message === 'string'
-        ? payload.error.message
-        : 'Anthropic API request failed'
-
-    throw new Error(message)
-  }
-
-  const text =
-    payload &&
-    typeof payload === 'object' &&
-    'content' in payload &&
-    Array.isArray(payload.content)
-      ? payload.content
-          .filter(
-            (entry: unknown): entry is { type: string; text: string } =>
-              !!entry &&
-              typeof entry === 'object' &&
-              'type' in entry &&
-              entry.type === 'text' &&
-              'text' in entry &&
-              typeof entry.text === 'string'
-          )
-          .map((entry: { type: string; text: string }) => entry.text)
-          .join('\n')
-          .trim()
-      : ''
+  const text = response.choices[0]?.message?.content?.trim() ?? ''
 
   if (!text) {
-    throw new Error('Anthropic returned an empty response')
+    throw new Error('OpenAI returned an empty response')
   }
 
   return text
@@ -505,7 +471,7 @@ function parseAiResponse(text: string, tier?: PricingTier | null): AiQuoteRespon
       complexity_breakdown: complexityBreakdown,
     }
   } catch {
-    throw new Error('Failed to parse Anthropic JSON response')
+    throw new Error('Failed to parse OpenAI JSON response')
   }
 }
 
@@ -585,7 +551,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'App development workstream not found' }, { status: 500 })
     }
 
-    const rawText = await callAnthropic(
+    const rawText = await callOpenAI(
       `${BASE_SYSTEM_PROMPT}${pricingTier ? buildTierPrompt(pricingTier) : ''}`,
       buildUserPrompt({
         enquiry: {
