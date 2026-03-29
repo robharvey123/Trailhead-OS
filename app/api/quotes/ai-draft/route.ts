@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getPricingTierById } from '@/lib/db/pricing-tiers'
-import { createQuote, getQuoteById } from '@/lib/db/quotes'
+import { createQuote, getQuoteById, updateQuote } from '@/lib/db/quotes'
 import { getWorkstreamBySlug } from '@/lib/db/workstreams'
 import type {
   Enquiry,
@@ -517,10 +517,15 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => ({}))
   const enquiryId = typeof body.enquiry_id === 'string' ? body.enquiry_id : ''
+  const quoteId =
+    typeof body.quote_id === 'string' && body.quote_id.trim()
+      ? body.quote_id
+      : undefined
   const pricingTierId =
     typeof body.pricing_tier_id === 'string' && body.pricing_tier_id.trim()
       ? body.pricing_tier_id
       : undefined
+  const forceRegenerate = body.force_regenerate === true
 
   if (!enquiryId) {
     return NextResponse.json({ error: 'enquiry_id is required' }, { status: 400 })
@@ -535,7 +540,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .maybeSingle()
 
-    if (existingQuote?.id) {
+    if (existingQuote?.id && !quoteId && !forceRegenerate) {
       const quote = await getQuoteById(existingQuote.id, auth.supabase)
 
       if (!quote) {
@@ -550,12 +555,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Enquiry not found' }, { status: 404 })
     }
 
+    const targetQuoteId = quoteId ?? (forceRegenerate ? existingQuote?.id : undefined)
+    const existingQuoteRecord = targetQuoteId
+      ? await getQuoteById(targetQuoteId, auth.supabase)
+      : null
+
+    if (targetQuoteId && !existingQuoteRecord) {
+      return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
+    }
+
+    if (existingQuoteRecord?.enquiry_id && existingQuoteRecord.enquiry_id !== enquiry.id) {
+      return NextResponse.json(
+        { error: 'Quote does not belong to the supplied enquiry' },
+        { status: 400 }
+      )
+    }
+
+    const tierIdToUse = pricingTierId ?? existingQuoteRecord?.pricing_tier_id ?? undefined
     const [pricingTier, appDevWorkstream] = await Promise.all([
-      pricingTierId ? getPricingTierById(pricingTierId, auth.supabase) : Promise.resolve(null),
+      tierIdToUse ? getPricingTierById(tierIdToUse, auth.supabase) : Promise.resolve(null),
       getWorkstreamBySlug('app-dev', auth.supabase),
     ])
 
-    if (pricingTierId && !pricingTier) {
+    if (tierIdToUse && !pricingTier) {
       return NextResponse.json({ error: 'Pricing tier not found' }, { status: 404 })
     }
 
@@ -596,36 +618,40 @@ export async function POST(request: NextRequest) {
 
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + QUOTE_VALIDITY_DAYS)
+    const generatedAt = new Date().toISOString()
+    const quotePayload = {
+      account_id: existingQuoteRecord?.account_id ?? enquiry.account_id ?? undefined,
+      contact_id: existingQuoteRecord?.contact_id ?? undefined,
+      workstream_id: existingQuoteRecord?.workstream_id ?? appDevWorkstream.id,
+      enquiry_id: enquiry.id,
+      pricing_tier_id: pricingTier?.id ?? existingQuoteRecord?.pricing_tier_id ?? undefined,
+      status: existingQuoteRecord?.status ?? 'draft',
+      pricing_type: aiResponse.pricing_type,
+      title: aiResponse.title,
+      summary: aiResponse.summary,
+      estimated_hours: aiResponse.estimated_hours,
+      estimated_timeline: aiResponse.estimated_timeline,
+      scope: aiResponse.scope,
+      line_items: aiResponse.line_items,
+      vat_rate: aiResponse.vat_rate,
+      valid_until: validUntil.toISOString().slice(0, 10),
+      payment_terms: aiResponse.payment_terms,
+      notes: aiResponse.notes,
+      complexity_breakdown: aiResponse.complexity_breakdown,
+      converted_invoice_id: existingQuoteRecord?.converted_invoice_id ?? undefined,
+      ai_generated: true,
+      ai_generated_at: generatedAt,
+      issue_date: new Date().toISOString().slice(0, 10),
+    } satisfies Omit<Quote, 'id' | 'quote_number' | 'created_at' | 'updated_at'>
 
-    const quote = await createQuote(
-      {
-        account_id: enquiry.account_id ?? undefined,
-        contact_id: undefined,
-        workstream_id: appDevWorkstream.id,
-        enquiry_id: enquiry.id,
-        pricing_tier_id: pricingTier?.id ?? undefined,
-        status: 'draft',
-        pricing_type: aiResponse.pricing_type,
-        title: aiResponse.title,
-        summary: aiResponse.summary,
-        estimated_hours: aiResponse.estimated_hours,
-        estimated_timeline: aiResponse.estimated_timeline,
-        scope: aiResponse.scope,
-        line_items: aiResponse.line_items,
-        vat_rate: aiResponse.vat_rate,
-        valid_until: validUntil.toISOString().slice(0, 10),
-        payment_terms: aiResponse.payment_terms,
-        notes: aiResponse.notes,
-        complexity_breakdown: aiResponse.complexity_breakdown,
-        converted_invoice_id: undefined,
-        ai_generated: true,
-        ai_generated_at: new Date().toISOString(),
-        issue_date: new Date().toISOString().slice(0, 10),
-      } satisfies Omit<Quote, 'id' | 'quote_number' | 'created_at' | 'updated_at'>,
-      auth.supabase
+    const quote = existingQuoteRecord
+      ? await updateQuote(existingQuoteRecord.id, quotePayload, auth.supabase)
+      : await createQuote(quotePayload, auth.supabase)
+
+    return NextResponse.json(
+      { quote_id: quote.id, quote },
+      { status: existingQuoteRecord ? 200 : 201 }
     )
-
-    return NextResponse.json({ quote_id: quote.id, quote }, { status: 201 })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to generate AI quote' },

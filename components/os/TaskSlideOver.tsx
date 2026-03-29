@@ -26,6 +26,8 @@ interface TaskSlideOverProps {
   workstreams: Workstream[]
   defaultWorkstreamId?: string | null
   defaultColumnId?: string | null
+  accounts?: Account[]
+  contacts?: Contact[]
   onSaved?: (task: TaskWithWorkstream) => void
   onDeleted?: (taskId: string) => void
 }
@@ -37,6 +39,8 @@ export default function TaskSlideOver({
   workstreams,
   defaultWorkstreamId = null,
   defaultColumnId = null,
+  accounts = [],
+  contacts = [],
   onSaved,
   onDeleted,
 }: TaskSlideOverProps) {
@@ -59,9 +63,6 @@ export default function TaskSlideOver({
   const [notesLoading, setNotesLoading] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
   const [noteError, setNoteError] = useState<string | null>(null)
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [relationsLoading, setRelationsLoading] = useState(false)
 
   useEffect(() => {
     if (!open) {
@@ -81,33 +82,6 @@ export default function TaskSlideOver({
     setNoteDraft('')
     setNoteError(null)
   }, [defaultWorkstreamId, open, task])
-
-  useEffect(() => {
-    async function loadRelations() {
-      if (!open) {
-        return
-      }
-
-      setRelationsLoading(true)
-
-      try {
-        const [accountsResponse, contactsResponse] = await Promise.all([
-          apiFetch<{ accounts: Account[] }>('/api/accounts'),
-          apiFetch<{ contacts: Contact[] }>('/api/contacts'),
-        ])
-
-        setAccounts(accountsResponse.accounts)
-        setContacts(contactsResponse.contacts)
-      } catch {
-        setAccounts([])
-        setContacts([])
-      } finally {
-        setRelationsLoading(false)
-      }
-    }
-
-    loadRelations()
-  }, [open])
 
   useEffect(() => {
     async function loadNotes() {
@@ -254,7 +228,9 @@ export default function TaskSlideOver({
     setNoteDraft('')
   }
 
-  const currentWorkstream = workstreams.find((entry) => entry.id === (workstreamId || task?.workstream_id))
+  const currentWorkstream = workstreams.find(
+    (entry) => entry.id === (workstreamId || task?.workstream_id)
+  )
   const accountOptions: SearchSelectOption[] = accounts.map((account) => ({
     value: account.id,
     label: account.name,
@@ -382,8 +358,8 @@ export default function TaskSlideOver({
               options={accountOptions}
               onChange={setAccountId}
               placeholder="Search accounts"
-              emptyLabel={relationsLoading ? 'Loading accounts...' : 'No account'}
-              disabled={relationsLoading}
+              emptyLabel="No account"
+              maxVisibleOptions={100}
             />
             <SearchSelect
               label="Contact"
@@ -391,8 +367,8 @@ export default function TaskSlideOver({
               options={contactOptions}
               onChange={setContactId}
               placeholder="Search contacts"
-              emptyLabel={relationsLoading ? 'Loading contacts...' : 'No contact'}
-              disabled={relationsLoading}
+              emptyLabel="No contact"
+              maxVisibleOptions={100}
             />
           </div>
 

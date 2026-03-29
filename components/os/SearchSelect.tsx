@@ -16,6 +16,7 @@ interface SearchSelectProps {
   placeholder?: string
   emptyLabel?: string
   disabled?: boolean
+  maxVisibleOptions?: number
 }
 
 export default function SearchSelect({
@@ -26,20 +27,23 @@ export default function SearchSelect({
   placeholder = 'Search...',
   emptyLabel = 'None',
   disabled = false,
+  maxVisibleOptions,
 }: SearchSelectProps) {
   const [query, setQuery] = useState('')
 
   const filteredOptions = useMemo(() => {
     const search = query.trim().toLowerCase()
-    if (!search) {
-      return options
-    }
-
-    return options.filter((option) => {
+    const matches = !search
+      ? options
+      : options.filter((option) => {
       const haystack = `${option.label} ${option.meta ?? ''}`.toLowerCase()
       return haystack.includes(search)
-    })
-  }, [options, query])
+        })
+
+    return typeof maxVisibleOptions === 'number' && maxVisibleOptions > 0
+      ? matches.slice(0, maxVisibleOptions)
+      : matches
+  }, [maxVisibleOptions, options, query])
 
   return (
     <label className="space-y-2">

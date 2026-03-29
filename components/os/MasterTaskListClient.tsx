@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   createColumnHelper,
   flexRender,
@@ -47,27 +47,43 @@ export default function MasterTaskListClient({
   const [bulkPriority, setBulkPriority] = useState<TaskPriority>('medium')
   const [bulkLoading, setBulkLoading] = useState(false)
 
-  const filteredTasks = tasks.filter((task) => {
-    if (workstreamFilter.length > 0 && (!task.workstream_id || !workstreamFilter.includes(task.workstream_id))) {
-      return false
-    }
-    if (accountFilter && task.account_id !== accountFilter) {
-      return false
-    }
-    if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) {
-      return false
-    }
-    if (masterOnly && !task.is_master_todo) {
-      return false
-    }
-    if (dueFrom && (!task.due_date || task.due_date < dueFrom)) {
-      return false
-    }
-    if (dueTo && (!task.due_date || task.due_date > dueTo)) {
-      return false
-    }
-    return true
-  })
+  const accountsById = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account])),
+    [accounts]
+  )
+  const contactsById = useMemo(
+    () => new Map(contacts.map((contact) => [contact.id, contact])),
+    [contacts]
+  )
+
+  const filteredTasks = useMemo(
+    () =>
+      tasks.filter((task) => {
+        if (
+          workstreamFilter.length > 0 &&
+          (!task.workstream_id || !workstreamFilter.includes(task.workstream_id))
+        ) {
+          return false
+        }
+        if (accountFilter && task.account_id !== accountFilter) {
+          return false
+        }
+        if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) {
+          return false
+        }
+        if (masterOnly && !task.is_master_todo) {
+          return false
+        }
+        if (dueFrom && (!task.due_date || task.due_date < dueFrom)) {
+          return false
+        }
+        if (dueTo && (!task.due_date || task.due_date > dueTo)) {
+          return false
+        }
+        return true
+      }),
+    [accountFilter, dueFrom, dueTo, masterOnly, priorityFilter, tasks, workstreamFilter]
+  )
 
   const table = useReactTable({
     data: filteredTasks,
@@ -118,7 +134,9 @@ export default function MasterTaskListClient({
         id: 'account',
         header: 'Account',
         cell: (info) => {
-          const account = accounts.find((account) => account.id === info.row.original.account_id)
+          const account = info.row.original.account_id
+            ? accountsById.get(info.row.original.account_id)
+            : undefined
           return <span className="text-slate-300">{account?.name ?? '—'}</span>
         },
       }),
@@ -126,7 +144,9 @@ export default function MasterTaskListClient({
         id: 'contact',
         header: 'Contact',
         cell: (info) => {
-          const contact = contacts.find((contact) => contact.id === info.row.original.contact_id)
+          const contact = info.row.original.contact_id
+            ? contactsById.get(info.row.original.contact_id)
+            : undefined
           if (!contact) {
             return <span className="text-slate-400">—</span>
           }
@@ -428,6 +448,8 @@ export default function MasterTaskListClient({
         onClose={() => setSelectedTask(null)}
         task={selectedTask}
         workstreams={workstreams}
+        accounts={accounts}
+        contacts={contacts}
         onSaved={(task) => {
           setTasks((current) => {
             const next = current.filter((entry) => entry.id !== task.id)
@@ -445,6 +467,8 @@ export default function MasterTaskListClient({
         open={creatingTask}
         onClose={() => setCreatingTask(false)}
         workstreams={workstreams}
+        accounts={accounts}
+        contacts={contacts}
         onSaved={(task) => {
           setTasks((current) => [task, ...current])
           setCreatingTask(false)

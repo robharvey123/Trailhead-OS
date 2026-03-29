@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import PricingTierSelector from './PricingTierSelector'
 import SearchSelect from './SearchSelect'
+import { apiFetch } from '@/lib/api-fetch'
 import { calculateTotals } from '@/lib/types'
 import type {
   Account,
@@ -179,9 +180,11 @@ export default function QuoteForm({
   )
   const [notes, setNotes] = useState(initialQuote?.notes ?? '')
   const [savingAs, setSavingAs] = useState<QuoteStatus | 'edit' | null>(null)
+  const [regeneratingAi, setRegeneratingAi] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deliverableDrafts, setDeliverableDrafts] = useState<Record<number, string>>({})
   const [draggingPhaseIndex, setDraggingPhaseIndex] = useState<number | null>(null)
+  const [quoteRecord, setQuoteRecord] = useState<Quote | null>(initialQuote)
   const [pricingTierId, setPricingTierId] = useState<string | null>(
     initialQuote?.pricing_tier_id ?? initialPricingTierId ?? null
   )
@@ -236,6 +239,67 @@ export default function QuoteForm({
     setShowTierNotice(false)
   }
 
+  function applyQuoteToForm(nextQuote: Quote) {
+    setQuoteRecord(nextQuote)
+    setTitle(nextQuote.title)
+    setAccountId(nextQuote.account_id ?? '')
+    setContactId(nextQuote.contact_id ?? '')
+    setWorkstreamId(nextQuote.workstream_id ?? '')
+    setPricingType(nextQuote.pricing_type)
+    setValidUntil(nextQuote.valid_until ?? addDays(new Date(), 30))
+    setIssueDate(nextQuote.issue_date ?? new Date().toISOString().slice(0, 10))
+    setSummary(nextQuote.summary ?? '')
+    setScope(nextQuote.scope.length ? nextQuote.scope : [createEmptyPhase()])
+    setLineItems(nextQuote.line_items.length ? nextQuote.line_items : [])
+    setVatRate(String(nextQuote.vat_rate ?? 20))
+    setPaymentTerms(
+      nextQuote.payment_terms ??
+        'Payment terms: 50% deposit on acceptance, 50% on completion.'
+    )
+    setNotes(nextQuote.notes ?? '')
+    setPricingTierId(nextQuote.pricing_tier_id ?? null)
+    setPricingTier(nextQuote.pricing_tier ?? null)
+    setLineItemsMode(nextQuote.line_items.length ? 'manual' : 'empty')
+    setShowTierNotice(false)
+    setError(null)
+  }
+
+  async function regenerateAiDraft() {
+    if (!quoteRecord?.id || !quoteRecord.enquiry_id || regeneratingAi) {
+      return
+    }
+
+    setRegeneratingAi(true)
+    setError(null)
+
+    try {
+      const response = await apiFetch<{ quote: Quote }>(
+        '/api/quotes/ai-draft',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            enquiry_id: quoteRecord.enquiry_id,
+            quote_id: quoteRecord.id,
+            pricing_tier_id: pricingTierId ?? undefined,
+            force_regenerate: true,
+          }),
+        }
+      )
+
+      applyQuoteToForm(response.quote)
+      router.refresh()
+    } catch (regenerateError) {
+      setError(
+        regenerateError instanceof Error
+          ? regenerateError.message
+          : 'Failed to regenerate AI draft'
+      )
+    } finally {
+      setRegeneratingAi(false)
+    }
+  }
+
   async function submitQuote(nextStatus: QuoteStatus | 'edit') {
     setSavingAs(nextStatus)
     setError(null)
@@ -276,7 +340,7 @@ export default function QuoteForm({
         account_id: accountId || null,
         contact_id: contactId || null,
         workstream_id: workstreamId || null,
-        enquiry_id: initialQuote?.enquiry_id ?? (initialEnquiryId || null),
+        enquiry_id: quoteRecord?.enquiry_id ?? initialEnquiryId ?? null,
         pricing_tier_id: pricingTierId,
         pricing_type: pricingType,
         valid_until: validUntil || null,
@@ -287,13 +351,13 @@ export default function QuoteForm({
         vat_rate: Number(vatRate) || 0,
         payment_terms: paymentTerms,
         notes,
-        status: nextStatus === 'edit' ? initialQuote?.status ?? 'draft' : nextStatus,
-        ai_generated: initialQuote?.ai_generated ?? false,
-        ai_generated_at: initialQuote?.ai_generated_at ?? null,
+        status: nextStatus === 'edit' ? quoteRecord?.status ?? 'draft' : nextStatus,
+        ai_generated: quoteRecord?.ai_generated ?? false,
+        ai_generated_at: quoteRecord?.ai_generated_at ?? null,
       }
 
-      const response = initialQuote
-        ? await fetch(`/api/quotes/${initialQuote.id}`, {
+      const response = quoteRecord
+        ? await fetch(`/api/quotes/${quoteRecord.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -751,10 +815,20 @@ export default function QuoteForm({
       <div className="flex flex-wrap gap-3">
         {initialQuote ? (
           <>
+            {quoteRecord?.enquiry_id ? (
+              <button
+                type="button"
+                onClick={regenerateAiDraft}
+                disabled={savingAs !== null || regeneratingAi}
+                className="rounded-2xl border border-sky-500/30 bg-sky-500/10 px-5 py-3 text-sm font-medium text-sky-100 transition hover:border-sky-400 disabled:opacity-60"
+              >
+                {regeneratingAi ? 'Regenerating AI draft...' : 'Redo AI draft'}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => submitQuote('edit')}
-              disabled={savingAs !== null}
+              disabled={savingAs !== null || regeneratingAi}
               className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
             >
               {savingAs === 'edit' ? 'Saving...' : 'Save'}
