@@ -154,6 +154,12 @@ export default function Sidebar({
                 badge={newEnquiryCount}
               />
               <NavLink
+                href="/discovery"
+                label="Discovery form"
+                active={pathname.startsWith('/discovery')}
+                onClick={() => setMobileOpen(false)}
+              />
+              <NavLink
                 href="/crm/contacts"
                 label="Contacts"
                 active={pathname.startsWith('/crm')}
