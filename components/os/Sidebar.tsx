@@ -174,9 +174,15 @@ export default function Sidebar({
                 onClick={() => setMobileOpen(false)}
               />
               <NavLink
+                href="/crm/accounts"
+                label="Accounts"
+                active={pathname.startsWith('/crm/accounts')}
+                onClick={() => setMobileOpen(false)}
+              />
+              <NavLink
                 href="/crm/contacts"
                 label="Contacts"
-                active={pathname.startsWith('/crm')}
+                active={pathname.startsWith('/crm/contacts')}
                 onClick={() => setMobileOpen(false)}
               />
             </div>
@@ -184,9 +190,15 @@ export default function Sidebar({
 
           <div>
             <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">
-              Finance
+              Commercial
             </p>
             <div className="mt-2 space-y-1.5">
+              <NavLink
+                href="/quotes"
+                label="Quotes"
+                active={pathname.startsWith('/quotes')}
+                onClick={() => setMobileOpen(false)}
+              />
               <NavLink
                 href="/invoicing"
                 label="Invoicing"

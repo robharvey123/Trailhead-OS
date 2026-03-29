@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import ContactDetailClient from '@/components/os/ContactDetailClient'
+import { getAccounts } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { getTasks } from '@/lib/db/tasks'
 import { getWorkstreams } from '@/lib/db/workstreams'
@@ -19,9 +20,10 @@ export default async function ContactDetailPage({
     .eq('converted_contact_id', id)
     .maybeSingle()
 
-  const [contact, workstreams, linkedTasks, enquiryResult] = await Promise.all([
+  const [contact, workstreams, accounts, linkedTasks, enquiryResult] = await Promise.all([
     getContactById(id, supabase).catch(() => null),
     getWorkstreams(supabase).catch(() => []),
+    getAccounts({}, supabase).catch(() => []),
     getTasks({ contact_id: id }, supabase).catch(() => []),
     enquiryPromise,
   ])
@@ -32,11 +34,13 @@ export default async function ContactDetailPage({
 
   const workstream =
     workstreams.find((item: Workstream) => item.id === contact.workstream_id) ?? null
+  const account = accounts.find((item) => item.id === contact.account_id) ?? null
 
   return (
     <ContactDetailClient
-      initialContact={{ ...contact, workstream }}
+      initialContact={{ ...contact, workstream, account }}
       workstreams={workstreams}
+      accounts={accounts}
       linkedTasks={linkedTasks}
       sourceEnquiryId={enquiryResult.data?.id ?? null}
     />

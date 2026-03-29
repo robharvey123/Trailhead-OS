@@ -97,6 +97,13 @@ export async function PATCH(
     patch.workstream_id = body.workstream_id
   }
 
+  if (body.account_id !== undefined) {
+    if (body.account_id !== null && typeof body.account_id !== 'string') {
+      return NextResponse.json({ error: 'account_id must be a string or null' }, { status: 400 })
+    }
+    patch.account_id = body.account_id
+  }
+
   if (body.status !== undefined) {
     if (typeof body.status !== 'string' || !CONTACT_STATUSES.has(body.status as ContactStatus)) {
       return NextResponse.json(

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import InvoiceForm from '@/components/os/InvoiceForm'
+import { getAccounts } from '@/lib/db/accounts'
 import { getContacts } from '@/lib/db/contacts'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getWorkstreams } from '@/lib/db/workstreams'
@@ -22,13 +23,15 @@ export default async function EditInvoicePage({
     redirect(`/invoicing/${invoice.id}?warning=edit-blocked`)
   }
 
-  const [contacts, workstreams] = await Promise.all([
+  const [accounts, contacts, workstreams] = await Promise.all([
+    getAccounts({}, supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getWorkstreams(supabase).catch(() => []),
   ])
 
   return (
     <InvoiceForm
+      accounts={accounts}
       contacts={contacts}
       workstreams={workstreams}
       initialInvoice={invoice}

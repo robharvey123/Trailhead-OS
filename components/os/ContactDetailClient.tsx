@@ -3,30 +3,35 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import WorkstreamBadge from './WorkstreamBadge'
+import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
-import type { Contact, ContactStatus, TaskWithWorkstream, Workstream } from '@/lib/types'
+import WorkstreamBadge from './WorkstreamBadge'
+import type { Account, Contact, ContactStatus, TaskWithWorkstream, Workstream } from '@/lib/types'
 
 const CONTACT_STATUSES: ContactStatus[] = ['lead', 'active', 'inactive', 'archived']
 
-type ContactWithWorkstream = Contact & {
+type ContactWithRelations = Contact & {
   workstream?: Workstream | null
+  account?: Account | null
 }
 
 export default function ContactDetailClient({
   initialContact,
   workstreams,
+  accounts,
   linkedTasks,
   sourceEnquiryId,
 }: {
-  initialContact: ContactWithWorkstream
+  initialContact: ContactWithRelations
   workstreams: Workstream[]
+  accounts: Account[]
   linkedTasks: TaskWithWorkstream[]
   sourceEnquiryId: string | null
 }) {
   const router = useRouter()
   const [contact, setContact] = useState(initialContact)
   const [editing, setEditing] = useState(false)
+  const [linkingAccount, setLinkingAccount] = useState(false)
   const [form, setForm] = useState({
     name: initialContact.name,
     company: initialContact.company ?? '',
@@ -34,6 +39,7 @@ export default function ContactDetailClient({
     phone: initialContact.phone ?? '',
     role: initialContact.role ?? '',
     workstream_id: initialContact.workstream_id ?? '',
+    account_id: initialContact.account_id ?? '',
     status: initialContact.status,
   })
   const [notes, setNotes] = useState(initialContact.notes ?? '')
@@ -57,6 +63,7 @@ export default function ContactDetailClient({
           phone: form.phone,
           role: form.role,
           workstream_id: form.workstream_id || null,
+          account_id: form.account_id || null,
           status: form.status,
         }),
       })
@@ -67,17 +74,16 @@ export default function ContactDetailClient({
       }
 
       const updatedContact = data.contact as Contact
-      const selectedWorkstream =
-        workstreams.find((item) => item.id === updatedContact.workstream_id) ?? null
-
       setContact({
         ...updatedContact,
-        workstream: selectedWorkstream,
+        workstream: workstreams.find((item) => item.id === updatedContact.workstream_id) ?? null,
+        account: accounts.find((item) => item.id === updatedContact.account_id) ?? null,
       })
       setEditing(false)
+      setLinkingAccount(false)
       router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save contact')
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'Failed to save contact')
     } finally {
       setSaving(false)
     }
@@ -107,8 +113,8 @@ export default function ContactDetailClient({
         ...current,
         notes: data.contact.notes,
       }))
-    } catch (err) {
-      setNotesError(err instanceof Error ? err.message : 'Failed to save notes')
+    } catch (saveError) {
+      setNotesError(saveError instanceof Error ? saveError.message : 'Failed to save notes')
     } finally {
       setNotesSaving(false)
     }
@@ -140,6 +146,7 @@ export default function ContactDetailClient({
                   type="button"
                   onClick={() => {
                     setEditing(false)
+                    setLinkingAccount(false)
                     setForm({
                       name: contact.name,
                       company: contact.company ?? '',
@@ -147,6 +154,7 @@ export default function ContactDetailClient({
                       phone: contact.phone ?? '',
                       role: contact.role ?? '',
                       workstream_id: contact.workstream_id ?? '',
+                      account_id: contact.account_id ?? '',
                       status: contact.status,
                     })
                     setError(null)
@@ -217,9 +225,7 @@ export default function ContactDetailClient({
                 <span className="text-sm text-slate-300">Workstream</span>
                 <select
                   value={form.workstream_id}
-                  onChange={(event) =>
-                    setForm({ ...form, workstream_id: event.target.value })
-                  }
+                  onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
                   className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
                 >
                   <option value="">None</option>
@@ -230,16 +236,23 @@ export default function ContactDetailClient({
                   ))}
                 </select>
               </label>
+              <SearchSelect
+                label="Account"
+                value={form.account_id}
+                options={accounts.map((account) => ({
+                  value: account.id,
+                  label: account.name,
+                  meta: account.website ?? account.industry ?? null,
+                }))}
+                onChange={(value) => setForm({ ...form, account_id: value })}
+                placeholder="Search accounts"
+                emptyLabel="No account"
+              />
               <label className="space-y-2 md:col-span-2">
                 <span className="text-sm text-slate-300">Status</span>
                 <select
                   value={form.status}
-                  onChange={(event) =>
-                    setForm({
-                      ...form,
-                      status: event.target.value as ContactStatus,
-                    })
-                  }
+                  onChange={(event) => setForm({ ...form, status: event.target.value as ContactStatus })}
                   className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
                 >
                   {CONTACT_STATUSES.map((status) => (
@@ -263,6 +276,53 @@ export default function ContactDetailClient({
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Role</p>
                 <p className="mt-2 text-sm text-slate-200">{contact.role ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Account</p>
+                <div className="mt-2">
+                  {contact.account ? (
+                    <Link
+                      href={`/crm/accounts/${contact.account.id}`}
+                      className="text-sm text-sky-300 transition hover:text-sky-200"
+                    >
+                      {contact.account.name}
+                    </Link>
+                  ) : linkingAccount ? (
+                    <div className="space-y-3">
+                      <SearchSelect
+                        label=""
+                        value={form.account_id}
+                        options={accounts.map((account) => ({
+                          value: account.id,
+                          label: account.name,
+                          meta: account.website ?? account.industry ?? null,
+                        }))}
+                        onChange={(value) => setForm({ ...form, account_id: value })}
+                        placeholder="Search accounts"
+                        emptyLabel="No account"
+                      />
+                      <button
+                        type="button"
+                        onClick={saveChanges}
+                        disabled={saving || !form.account_id}
+                        className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-100 transition hover:border-slate-500 disabled:opacity-60"
+                      >
+                        Link account
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm text-slate-200">No account</p>
+                      <button
+                        type="button"
+                        onClick={() => setLinkingAccount(true)}
+                        className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+                      >
+                        Link to account
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Workstream</p>
@@ -317,14 +377,9 @@ export default function ContactDetailClient({
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-100">Linked tasks</h2>
-            <p className="text-sm text-slate-400">
-              Tasks currently tied to this contact.
-            </p>
+            <p className="text-sm text-slate-400">Tasks currently tied to this contact.</p>
           </div>
-          <Link
-            href="/tasks"
-            className="text-sm text-slate-400 transition hover:text-slate-200"
-          >
+          <Link href="/tasks" className="text-sm text-slate-400 transition hover:text-slate-200">
             Open master tasks
           </Link>
         </div>
@@ -336,16 +391,11 @@ export default function ContactDetailClient({
         ) : (
           <div className="mt-4 space-y-3">
             {linkedTasks.map((task) => (
-              <div
-                key={task.id}
-                className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4"
-              >
+              <div key={task.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-medium text-slate-100">{task.title}</p>
-                    <p className="mt-1 text-sm text-slate-400">
-                      Due: {task.due_date ?? 'No due date'}
-                    </p>
+                    <p className="mt-1 text-sm text-slate-400">Due: {task.due_date ?? 'No due date'}</p>
                   </div>
                   {task.workstream_label ? (
                     <WorkstreamBadge

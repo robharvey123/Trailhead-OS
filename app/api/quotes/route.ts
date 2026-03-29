@@ -1,0 +1,234 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedSupabase } from '@/lib/api/auth'
+import { createQuote, getQuotes } from '@/lib/db/quotes'
+import type {
+  PricingType,
+  Quote,
+  QuoteLineItem,
+  QuoteScope,
+  QuoteStatus,
+} from '@/lib/types'
+
+const QUOTE_STATUSES = new Set<QuoteStatus>([
+  'draft',
+  'sent',
+  'accepted',
+  'declined',
+  'expired',
+  'converted',
+])
+
+const PRICING_TYPES = new Set<PricingType>([
+  'fixed',
+  'time_and_materials',
+  'milestone',
+])
+
+function sanitizeText(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
+}
+
+function sanitizeScope(value: unknown): QuoteScope[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null
+      }
+
+      const record = item as Record<string, unknown>
+      const phase = sanitizeText(record.phase)
+      const description = sanitizeText(record.description)
+      const duration = sanitizeText(record.duration)
+      const deliverables = Array.isArray(record.deliverables)
+        ? record.deliverables
+            .filter((entry): entry is string => typeof entry === 'string')
+            .map((entry) => entry.trim())
+            .filter(Boolean)
+        : []
+
+      if (!phase || !description || !duration) {
+        return null
+      }
+
+      return {
+        phase,
+        description,
+        deliverables,
+        duration,
+      }
+    })
+    .filter((item): item is QuoteScope => item !== null)
+}
+
+function sanitizeLineItems(value: unknown): QuoteLineItem[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') {
+        return null
+      }
+
+      const record = item as Record<string, unknown>
+      const description = sanitizeText(record.description) ?? ''
+      const qty = Number(record.qty)
+      const unitPrice = Number(record.unit_price)
+      const type =
+        typeof record.type === 'string' &&
+        (record.type === 'fixed' || record.type === 'hourly' || record.type === 'milestone')
+          ? record.type
+          : 'fixed'
+
+      if (!description || !Number.isFinite(qty) || qty < 0 || !Number.isFinite(unitPrice) || unitPrice < 0) {
+        return null
+      }
+
+      return {
+        id:
+          typeof record.id === 'string' && record.id.trim()
+            ? record.id
+            : crypto.randomUUID(),
+        description,
+        qty,
+        unit_price: unitPrice,
+        type,
+      }
+    })
+    .filter((item): item is QuoteLineItem => item !== null)
+}
+
+export async function GET(request: NextRequest) {
+  const auth = await getAuthenticatedSupabase()
+  if (!auth.ok) {
+    return auth.response
+  }
+
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const status = searchParams.get('status')
+    const quotes = await getQuotes(
+      {
+        status:
+          status && QUOTE_STATUSES.has(status as QuoteStatus)
+            ? (status as QuoteStatus)
+            : undefined,
+        workstream_id: searchParams.get('workstream_id') ?? undefined,
+        account_id: searchParams.get('account_id') ?? undefined,
+      },
+      auth.supabase
+    )
+
+    return NextResponse.json({ quotes })
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to load quotes' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await getAuthenticatedSupabase()
+  if (!auth.ok) {
+    return auth.response
+  }
+
+  const body = await request.json().catch(() => ({}))
+  const title = sanitizeText(body.title) ?? ''
+
+  if (!title) {
+    return NextResponse.json({ error: 'title is required' }, { status: 400 })
+  }
+
+  const status =
+    typeof body.status === 'string' && QUOTE_STATUSES.has(body.status as QuoteStatus)
+      ? (body.status as QuoteStatus)
+      : 'draft'
+
+  const pricingType =
+    typeof body.pricing_type === 'string' && PRICING_TYPES.has(body.pricing_type as PricingType)
+      ? (body.pricing_type as PricingType)
+      : 'fixed'
+
+  try {
+    const quote = await createQuote(
+      {
+        account_id:
+          body.account_id === null || body.account_id === undefined
+            ? undefined
+            : typeof body.account_id === 'string'
+              ? body.account_id
+              : undefined,
+        contact_id:
+          body.contact_id === null || body.contact_id === undefined
+            ? undefined
+            : typeof body.contact_id === 'string'
+              ? body.contact_id
+              : undefined,
+        workstream_id:
+          body.workstream_id === null || body.workstream_id === undefined
+            ? undefined
+            : typeof body.workstream_id === 'string'
+              ? body.workstream_id
+              : undefined,
+        enquiry_id:
+          body.enquiry_id === null || body.enquiry_id === undefined
+            ? undefined
+            : typeof body.enquiry_id === 'string'
+              ? body.enquiry_id
+              : undefined,
+        status,
+        pricing_type: pricingType,
+        title,
+        summary: sanitizeText(body.summary) ?? undefined,
+        scope: sanitizeScope(body.scope),
+        line_items: sanitizeLineItems(body.line_items),
+        vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : 20,
+        valid_until:
+          typeof body.valid_until === 'string' && body.valid_until.trim()
+            ? body.valid_until
+            : undefined,
+        payment_terms:
+          sanitizeText(body.payment_terms) ??
+          'Payment terms: 50% deposit on acceptance, 50% on completion.',
+        notes: sanitizeText(body.notes) ?? undefined,
+        converted_invoice_id:
+          body.converted_invoice_id === null || body.converted_invoice_id === undefined
+            ? undefined
+            : typeof body.converted_invoice_id === 'string'
+              ? body.converted_invoice_id
+              : undefined,
+        ai_generated: body.ai_generated === true,
+        ai_generated_at:
+          typeof body.ai_generated_at === 'string' && body.ai_generated_at.trim()
+            ? body.ai_generated_at
+            : body.ai_generated === true
+              ? new Date().toISOString()
+              : undefined,
+        issue_date:
+          typeof body.issue_date === 'string' && body.issue_date.trim()
+            ? body.issue_date
+            : new Date().toISOString().slice(0, 10),
+      } satisfies Omit<Quote, 'id' | 'quote_number' | 'created_at' | 'updated_at'>,
+      auth.supabase
+    )
+
+    return NextResponse.json({ quote }, { status: 201 })
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to create quote' },
+      { status: 500 }
+    )
+  }
+}

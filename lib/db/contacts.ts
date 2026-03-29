@@ -10,6 +10,7 @@ async function getSupabase(client?: SupabaseClient) {
 export async function getContacts(
   filters: {
     workstream_id?: string
+    account_id?: string
     status?: ContactStatus
     search?: string
   } = {},
@@ -23,6 +24,10 @@ export async function getContacts(
 
   if (filters.workstream_id) {
     query = query.eq('workstream_id', filters.workstream_id)
+  }
+
+  if (filters.account_id) {
+    query = query.eq('account_id', filters.account_id)
   }
 
   if (filters.status) {

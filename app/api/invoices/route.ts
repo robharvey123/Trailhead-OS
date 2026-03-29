@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
             ? (status as InvoiceStatus)
             : undefined,
         workstream_id: searchParams.get('workstream_id') ?? undefined,
+        account_id: searchParams.get('account_id') ?? undefined,
       },
       auth.supabase
     )
@@ -120,6 +121,12 @@ export async function POST(request: NextRequest) {
       : 'draft'
 
   const payload: Omit<Invoice, 'id' | 'invoice_number' | 'created_at' | 'updated_at'> = {
+    account_id:
+      body.account_id === null || body.account_id === undefined
+        ? null
+        : typeof body.account_id === 'string'
+          ? body.account_id
+          : null,
     contact_id:
       body.contact_id === null || body.contact_id === undefined
         ? null

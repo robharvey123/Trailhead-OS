@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
     const contacts = await getContacts(
       {
         workstream_id: searchParams.get('workstream_id') ?? undefined,
+        account_id: searchParams.get('account_id') ?? undefined,
         status:
           status && CONTACT_STATUSES.has(status as ContactStatus)
             ? status as ContactStatus
@@ -96,6 +97,12 @@ export async function POST(request: NextRequest) {
         ? null
         : typeof body.workstream_id === 'string'
           ? body.workstream_id
+          : null,
+    account_id:
+      body.account_id === null || body.account_id === undefined
+        ? null
+        : typeof body.account_id === 'string'
+          ? body.account_id
           : null,
     company: sanitizeText(body.company),
     email: sanitizeText(body.email),

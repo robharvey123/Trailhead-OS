@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import StatusBadge from '@/components/os/StatusBadge'
 import WorkstreamBadge from '@/components/os/WorkstreamBadge'
+import { getAccounts } from '@/lib/db/accounts'
 import { getContacts } from '@/lib/db/contacts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
@@ -16,13 +17,14 @@ const CONTACT_TABS = [
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string; search?: string }>
+  searchParams?: Promise<{ status?: string; search?: string; account_id?: string }>
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const activeStatus = resolvedSearchParams?.status ?? 'all'
   const search = resolvedSearchParams?.search ?? ''
+  const accountId = resolvedSearchParams?.account_id ?? ''
   const supabase = await createClient()
-  const [contacts, workstreams] = await Promise.all([
+  const [contacts, workstreams, accounts] = await Promise.all([
     getContacts(
       {
         status:
@@ -33,10 +35,12 @@ export default async function ContactsPage({
             ? activeStatus
             : undefined,
         search: search || undefined,
+        account_id: accountId || undefined,
       },
       supabase
     ).catch(() => []),
     getWorkstreams(supabase).catch(() => []),
+    getAccounts({}, supabase).catch(() => []),
   ])
 
   return (
@@ -57,14 +61,26 @@ export default async function ContactsPage({
         </Link>
       </div>
 
-      <form className="flex flex-wrap gap-3 rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4">
+      <form className="grid gap-3 rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
         <input
           type="text"
           name="search"
           defaultValue={search}
           placeholder="Search contacts"
-          className="min-w-[240px] flex-1 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
         />
+        <select
+          name="account_id"
+          defaultValue={accountId}
+          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+        >
+          <option value="">All accounts</option>
+          {accounts.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.name}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
@@ -81,6 +97,9 @@ export default async function ContactsPage({
           }
           if (search) {
             params.set('search', search)
+          }
+          if (accountId) {
+            params.set('account_id', accountId)
           }
 
           const href = params.toString() ? `/crm/contacts?${params}` : '/crm/contacts'
@@ -107,41 +126,58 @@ export default async function ContactsPage({
             No contacts match this view yet.
           </div>
         ) : (
-          <div className="space-y-3">
-            {contacts.map((contact) => {
-              const workstream =
-                workstreams.find((item) => item.id === contact.workstream_id) ?? null
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+                <tr>
+                  <th className="pb-3">Name</th>
+                  <th className="pb-3">Account</th>
+                  <th className="pb-3">Workstream</th>
+                  <th className="pb-3">Role</th>
+                  <th className="pb-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contacts.map((contact) => {
+                  const workstream =
+                    workstreams.find((item) => item.id === contact.workstream_id) ?? null
+                  const account =
+                    accounts.find((item) => item.id === contact.account_id) ?? null
 
-              return (
-                <Link
-                  key={contact.id}
-                  href={`/crm/contacts/${contact.id}`}
-                  className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-5 transition hover:border-slate-600"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium text-slate-100">{contact.name}</p>
-                      <p className="mt-1 text-sm text-slate-400">
-                        {contact.company ?? 'No company'} {contact.email ? `· ${contact.email}` : ''}
-                      </p>
-                    </div>
-                    <StatusBadge status={contact.status} kind="contact" />
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    {workstream ? (
-                      <WorkstreamBadge
-                        label={workstream.label}
-                        slug={workstream.slug}
-                        colour={workstream.colour}
-                      />
-                    ) : null}
-                    {contact.role ? (
-                      <span className="text-sm text-slate-400">{contact.role}</span>
-                    ) : null}
-                  </div>
-                </Link>
-              )
-            })}
+                  return (
+                    <tr key={contact.id} className="border-t border-slate-800">
+                      <td className="py-4">
+                        <Link
+                          href={`/crm/contacts/${contact.id}`}
+                          className="font-medium text-slate-100 hover:text-white hover:underline"
+                        >
+                          {contact.name}
+                        </Link>
+                        <p className="mt-1 text-xs text-slate-500">
+                          {contact.email ?? contact.phone ?? 'No email or phone'}
+                        </p>
+                      </td>
+                      <td className="py-4 text-slate-300">{account?.name ?? '—'}</td>
+                      <td className="py-4">
+                        {workstream ? (
+                          <WorkstreamBadge
+                            label={workstream.label}
+                            slug={workstream.slug}
+                            colour={workstream.colour}
+                          />
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="py-4 text-slate-300">{contact.role ?? '—'}</td>
+                      <td className="py-4">
+                        <StatusBadge status={contact.status} kind="contact" />
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

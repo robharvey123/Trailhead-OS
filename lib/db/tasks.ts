@@ -25,6 +25,7 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     id: row.id,
     workstream_id: row.workstream_id,
     column_id: row.column_id,
+    account_id: row.account_id,
     contact_id: row.contact_id,
     title: row.title,
     description: row.description,
@@ -89,6 +90,10 @@ export async function getTasks(
     query = query.eq('contact_id', filters.contact_id)
   }
 
+  if (filters.account_id) {
+    query = query.eq('account_id', filters.account_id)
+  }
+
   if (typeof filters.is_master_todo === 'boolean') {
     query = query.eq('is_master_todo', filters.is_master_todo)
   }
@@ -147,6 +152,7 @@ export async function createTask(
     .insert({
       workstream_id: input.workstream_id ?? null,
       column_id: columnId,
+      account_id: input.account_id ?? null,
       contact_id: input.contact_id ?? null,
       title,
       description: input.description?.trim() || null,
@@ -187,6 +193,10 @@ export async function updateTask(
 
   if (input.contact_id !== undefined) {
     patch.contact_id = input.contact_id
+  }
+
+  if (input.account_id !== undefined) {
+    patch.account_id = input.account_id
   }
 
   if (input.title !== undefined) {

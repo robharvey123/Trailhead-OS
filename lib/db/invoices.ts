@@ -8,7 +8,7 @@ async function getSupabase(client?: SupabaseClient) {
 }
 
 export async function getInvoices(
-  filters: { status?: InvoiceStatus; workstream_id?: string } = {},
+  filters: { status?: InvoiceStatus; workstream_id?: string; account_id?: string } = {},
   client?: SupabaseClient
 ): Promise<Invoice[]> {
   const supabase = await getSupabase(client)
@@ -24,6 +24,10 @@ export async function getInvoices(
 
   if (filters.workstream_id) {
     query = query.eq('workstream_id', filters.workstream_id)
+  }
+
+  if (filters.account_id) {
+    query = query.eq('account_id', filters.account_id)
   }
 
   const { data, error } = await query

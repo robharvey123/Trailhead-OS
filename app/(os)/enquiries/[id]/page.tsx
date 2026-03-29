@@ -86,7 +86,16 @@ export default async function EnquiryDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
-  const enquiry = await getEnquiryById(id, supabase).catch(() => null)
+  const [enquiry, quoteResult] = await Promise.all([
+    getEnquiryById(id, supabase).catch(() => null),
+    supabase
+      .from('quotes')
+      .select('id')
+      .eq('enquiry_id', id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ])
 
   if (!enquiry) {
     notFound()
@@ -121,7 +130,10 @@ export default async function EnquiryDetailPage({
         </div>
 
         <div className="xl:sticky xl:top-8 xl:self-start">
-          <EnquiryDetailActions enquiry={enquiry} />
+          <EnquiryDetailActions
+            enquiry={enquiry}
+            generatedQuoteId={quoteResult.data?.id ?? null}
+          />
         </div>
       </div>
     </div>

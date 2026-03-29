@@ -49,6 +49,8 @@ async function handleOsGet(request: NextRequest) {
       {
         workstream_id: searchParams.get('workstream_id'),
         column_id: searchParams.get('column_id'),
+        account_id: searchParams.get('account_id'),
+        contact_id: searchParams.get('contact_id'),
         is_master_todo: parseBoolean(searchParams.get('is_master_todo')),
         due_date_from: searchParams.get('due_date_from') ?? searchParams.get('date_from'),
         due_date_to: searchParams.get('due_date_to') ?? searchParams.get('date_to'),
@@ -194,6 +196,12 @@ export async function POST(request: NextRequest) {
       : typeof body.contact_id === 'string'
         ? body.contact_id
         : null
+  const accountId =
+    body.account_id === null || body.account_id === undefined
+      ? null
+      : typeof body.account_id === 'string'
+        ? body.account_id
+        : null
   const priority = typeof body.priority === 'string' ? body.priority.toLowerCase() as TaskPriority : 'medium'
   const tags = Array.isArray(body.tags) ? body.tags.filter((tag: unknown): tag is string => typeof tag === 'string') : []
 
@@ -216,6 +224,7 @@ export async function POST(request: NextRequest) {
     title,
     workstream_id: workstreamId,
     column_id: typeof body.column_id === 'string' ? body.column_id : null,
+    account_id: accountId,
     contact_id: contactId,
     description: typeof body.description === 'string' ? body.description : null,
     priority,

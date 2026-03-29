@@ -3,14 +3,19 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
-import type { Contact, ContactStatus, Workstream } from '@/lib/types'
+import SearchSelect from './SearchSelect'
+import type { Account, Contact, ContactStatus, Workstream } from '@/lib/types'
 
 const CONTACT_STATUSES: ContactStatus[] = ['lead', 'active', 'inactive', 'archived']
 
 export default function NewContactForm({
   workstreams,
+  accounts,
+  initialAccountId = '',
 }: {
   workstreams: Workstream[]
+  accounts: Account[]
+  initialAccountId?: string
 }) {
   const router = useRouter()
   const [name, setName] = useState('')
@@ -19,6 +24,7 @@ export default function NewContactForm({
   const [phone, setPhone] = useState('')
   const [role, setRole] = useState('')
   const [workstreamId, setWorkstreamId] = useState('')
+  const [accountId, setAccountId] = useState(initialAccountId)
   const [status, setStatus] = useState<ContactStatus>('lead')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -39,6 +45,7 @@ export default function NewContactForm({
           phone,
           role,
           workstream_id: workstreamId || null,
+          account_id: accountId || null,
           status,
           notes,
         }),
@@ -102,6 +109,21 @@ export default function NewContactForm({
             className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
           />
         </label>
+        <div className="space-y-2">
+          <span className="text-sm text-slate-300">Account</span>
+          <SearchSelect
+            label=""
+            value={accountId}
+            options={accounts.map((account) => ({
+              value: account.id,
+              label: account.name,
+              meta: account.website ?? account.industry ?? null,
+            }))}
+            onChange={setAccountId}
+            placeholder="Search accounts"
+            emptyLabel="No account"
+          />
+        </div>
         <label className="space-y-2">
           <span className="text-sm text-slate-300">Workstream</span>
           <select

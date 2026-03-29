@@ -72,6 +72,13 @@ async function patchOsTask(request: NextRequest, id: string) {
     patch.column_id = body.column_id
   }
 
+  if (body.account_id !== undefined) {
+    if (body.account_id !== null && typeof body.account_id !== 'string') {
+      return NextResponse.json({ error: 'account_id must be a string or null' }, { status: 400 })
+    }
+    patch.account_id = body.account_id
+  }
+
   if (body.contact_id !== undefined) {
     if (body.contact_id !== null && typeof body.contact_id !== 'string') {
       return NextResponse.json({ error: 'contact_id must be a string or null' }, { status: 400 })

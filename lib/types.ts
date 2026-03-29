@@ -12,9 +12,37 @@ export type EnquiryStatus = 'new' | 'reviewed' | 'converted'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 export type BlogPostStatus = 'draft' | 'published'
 
+export interface Account {
+  id: string
+  name: string
+  website?: string
+  industry?: string
+  size?: '1-10' | '11-50' | '51-200' | '201-500' | '500+'
+  workstream_id?: string
+  status: 'prospect' | 'active' | 'inactive' | 'archived'
+  address_line1?: string
+  address_line2?: string
+  city?: string
+  postcode?: string
+  country?: string
+  notes?: string
+  tags: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface AccountWithRelations extends Account {
+  workstream?: { label: string; colour: string }
+  contacts?: Contact[]
+  quotes?: Quote[]
+}
+
+export type AccountStatus = Account['status']
+
 export interface Contact {
   id: string
   workstream_id: string | null
+  account_id: string | null
   name: string
   company: string | null
   email: string | null
@@ -50,6 +78,7 @@ export interface Enquiry {
   budget: string | null
   extra: string | null
   status: EnquiryStatus
+  account_id: string | null
   converted_contact_id: string | null
 }
 
@@ -82,9 +111,34 @@ export interface LineItem {
   unit_price: number
 }
 
+export interface QuoteScope {
+  phase: string
+  description: string
+  deliverables: string[]
+  duration: string
+}
+
+export interface QuoteLineItem {
+  id: string
+  description: string
+  qty: number
+  unit_price: number
+  type: 'fixed' | 'hourly' | 'milestone'
+}
+
+export type PricingType = 'fixed' | 'time_and_materials' | 'milestone'
+export type QuoteStatus =
+  | 'draft'
+  | 'sent'
+  | 'accepted'
+  | 'declined'
+  | 'expired'
+  | 'converted'
+
 export interface Invoice {
   id: string
   invoice_number: string
+  account_id: string | null
   contact_id: string | null
   workstream_id: string | null
   status: InvoiceStatus
@@ -122,6 +176,46 @@ export function calculateTotals(
   }
 }
 
+export interface Quote {
+  id: string
+  quote_number: string
+  account_id?: string
+  contact_id?: string
+  workstream_id?: string
+  enquiry_id?: string
+  status: QuoteStatus
+  pricing_type: PricingType
+  title: string
+  summary?: string
+  scope: QuoteScope[]
+  line_items: QuoteLineItem[]
+  vat_rate: number
+  valid_until?: string
+  payment_terms?: string
+  notes?: string
+  converted_invoice_id?: string
+  ai_generated: boolean
+  ai_generated_at?: string
+  issue_date: string
+  created_at: string
+  updated_at: string
+}
+
+export interface QuoteWithRelations extends Quote {
+  account?: Account
+  contact?: Contact
+  workstream?: { label: string; colour: string }
+  totals: InvoiceTotals
+}
+
+export interface QuoteListItem extends QuoteWithRelations {
+  account_name: string | null
+  contact_name: string | null
+  contact_company: string | null
+  enquiry?: Enquiry
+  invoice?: Invoice | null
+}
+
 export interface Workstream {
   id: string
   slug: string
@@ -142,6 +236,7 @@ export interface Task {
   id: string
   workstream_id: string | null
   column_id: string | null
+  account_id: string | null
   contact_id: string | null
   title: string
   description: string | null
@@ -227,6 +322,7 @@ export interface TaskFilters {
   workstream_id?: string | null
   workstream_ids?: string[]
   column_id?: string | null
+  account_id?: string | null
   contact_id?: string | null
   is_master_todo?: boolean
   due_date_from?: string | null
@@ -239,6 +335,7 @@ export interface TaskFilters {
 export interface CreateTaskInput {
   workstream_id?: string | null
   column_id?: string | null
+  account_id?: string | null
   contact_id?: string | null
   title: string
   description?: string | null
@@ -252,6 +349,7 @@ export interface CreateTaskInput {
 export interface UpdateTaskInput {
   workstream_id?: string | null
   column_id?: string | null
+  account_id?: string | null
   contact_id?: string | null
   title?: string
   description?: string | null

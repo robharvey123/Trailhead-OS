@@ -5,8 +5,16 @@ import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatDateTime } from '@/lib/os'
 import { createClient } from '@/lib/supabase/client'
-import type { Note, TaskPriority, TaskWithWorkstream, Workstream } from '@/lib/types'
+import type {
+  Account,
+  Contact,
+  Note,
+  TaskPriority,
+  TaskWithWorkstream,
+  Workstream,
+} from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
+import SearchSelect, { type SearchSelectOption } from './SearchSelect'
 import WorkstreamBadge from './WorkstreamBadge'
 
 const PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
@@ -40,6 +48,8 @@ export default function TaskSlideOver({
   const [priority, setPriority] = useState<TaskPriority>('medium')
   const [dueDate, setDueDate] = useState('')
   const [workstreamId, setWorkstreamId] = useState<string>('')
+  const [accountId, setAccountId] = useState<string>('')
+  const [contactId, setContactId] = useState<string>('')
   const [isMasterTodo, setIsMasterTodo] = useState(true)
   const [tags, setTags] = useState('')
   const [saving, setSaving] = useState(false)
@@ -49,6 +59,9 @@ export default function TaskSlideOver({
   const [notesLoading, setNotesLoading] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
   const [noteError, setNoteError] = useState<string | null>(null)
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [relationsLoading, setRelationsLoading] = useState(false)
 
   useEffect(() => {
     if (!open) {
@@ -60,12 +73,41 @@ export default function TaskSlideOver({
     setPriority(task?.priority ?? 'medium')
     setDueDate(task?.due_date ?? '')
     setWorkstreamId(task?.workstream_id ?? defaultWorkstreamId ?? '')
+    setAccountId(task?.account_id ?? '')
+    setContactId(task?.contact_id ?? '')
     setIsMasterTodo(task?.is_master_todo ?? !defaultWorkstreamId)
     setTags(task?.tags.join(', ') ?? '')
     setError(null)
     setNoteDraft('')
     setNoteError(null)
   }, [defaultWorkstreamId, open, task])
+
+  useEffect(() => {
+    async function loadRelations() {
+      if (!open) {
+        return
+      }
+
+      setRelationsLoading(true)
+
+      try {
+        const [accountsResponse, contactsResponse] = await Promise.all([
+          apiFetch<{ accounts: Account[] }>('/api/accounts'),
+          apiFetch<{ contacts: Contact[] }>('/api/contacts'),
+        ])
+
+        setAccounts(accountsResponse.accounts)
+        setContacts(contactsResponse.contacts)
+      } catch {
+        setAccounts([])
+        setContacts([])
+      } finally {
+        setRelationsLoading(false)
+      }
+    }
+
+    loadRelations()
+  }, [open])
 
   useEffect(() => {
     async function loadNotes() {
@@ -95,6 +137,20 @@ export default function TaskSlideOver({
     loadNotes()
   }, [open, supabase, task?.id])
 
+  useEffect(() => {
+    if (!accountId || !contactId) {
+      return
+    }
+
+    const contactMatchesAccount = contacts.some(
+      (contact) => contact.id === contactId && contact.account_id === accountId
+    )
+
+    if (!contactMatchesAccount) {
+      setContactId('')
+    }
+  }, [accountId, contactId, contacts])
+
   if (!open) {
     return null
   }
@@ -116,6 +172,8 @@ export default function TaskSlideOver({
         due_date: dueDate || null,
         workstream_id: workstreamId || null,
         column_id: task?.column_id ?? defaultColumnId ?? null,
+        account_id: accountId || null,
+        contact_id: contactId || null,
         is_master_todo: isMasterTodo,
         tags: tags
           .split(',')
@@ -197,6 +255,21 @@ export default function TaskSlideOver({
   }
 
   const currentWorkstream = workstreams.find((entry) => entry.id === (workstreamId || task?.workstream_id))
+  const accountOptions: SearchSelectOption[] = accounts.map((account) => ({
+    value: account.id,
+    label: account.name,
+    meta:
+      workstreams.find((workstream) => workstream.id === account.workstream_id)?.label ??
+      account.industry ??
+      null,
+  }))
+  const contactOptions: SearchSelectOption[] = contacts
+    .filter((contact) => !accountId || contact.account_id === accountId)
+    .map((contact) => ({
+      value: contact.id,
+      label: contact.name,
+      meta: contact.company ?? contact.email ?? null,
+    }))
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/65">
@@ -300,6 +373,27 @@ export default function TaskSlideOver({
               />
               <span className="text-sm text-slate-200">Show on master to-do</span>
             </label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <SearchSelect
+              label="Account"
+              value={accountId}
+              options={accountOptions}
+              onChange={setAccountId}
+              placeholder="Search accounts"
+              emptyLabel={relationsLoading ? 'Loading accounts...' : 'No account'}
+              disabled={relationsLoading}
+            />
+            <SearchSelect
+              label="Contact"
+              value={contactId}
+              options={contactOptions}
+              onChange={setContactId}
+              placeholder="Search contacts"
+              emptyLabel={relationsLoading ? 'Loading contacts...' : 'No contact'}
+              disabled={relationsLoading}
+            />
           </div>
 
           <label className="block">

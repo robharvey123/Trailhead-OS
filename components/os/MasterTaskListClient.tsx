@@ -12,7 +12,7 @@ import {
 } from '@tanstack/react-table'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatTaskDate } from '@/lib/os'
-import type { TaskPriority, TaskWithWorkstream, Workstream } from '@/lib/types'
+import type { Account, Contact, TaskPriority, TaskWithWorkstream, Workstream } from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
 import TaskSlideOver from './TaskSlideOver'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -20,6 +20,8 @@ import WorkstreamBadge from './WorkstreamBadge'
 interface MasterTaskListClientProps {
   initialTasks: TaskWithWorkstream[]
   workstreams: Workstream[]
+  accounts: Account[]
+  contacts: Contact[]
 }
 
 const PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
@@ -28,6 +30,8 @@ const columnHelper = createColumnHelper<TaskWithWorkstream>()
 export default function MasterTaskListClient({
   initialTasks,
   workstreams,
+  accounts,
+  contacts,
 }: MasterTaskListClientProps) {
   const [tasks, setTasks] = useState(initialTasks)
   const [sorting, setSorting] = useState<SortingState>([])
@@ -35,6 +39,7 @@ export default function MasterTaskListClient({
   const [selectedTask, setSelectedTask] = useState<TaskWithWorkstream | null>(null)
   const [creatingTask, setCreatingTask] = useState(false)
   const [workstreamFilter, setWorkstreamFilter] = useState<string[]>([])
+  const [accountFilter, setAccountFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string[]>([])
   const [dueFrom, setDueFrom] = useState('')
   const [dueTo, setDueTo] = useState('')
@@ -44,6 +49,9 @@ export default function MasterTaskListClient({
 
   const filteredTasks = tasks.filter((task) => {
     if (workstreamFilter.length > 0 && (!task.workstream_id || !workstreamFilter.includes(task.workstream_id))) {
+      return false
+    }
+    if (accountFilter && task.account_id !== accountFilter) {
       return false
     }
     if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) {
@@ -105,6 +113,33 @@ export default function MasterTaskListClient({
             colour={info.row.original.workstream_colour}
           />
         ),
+      }),
+      columnHelper.display({
+        id: 'account',
+        header: 'Account',
+        cell: (info) => {
+          const account = accounts.find((account) => account.id === info.row.original.account_id)
+          return <span className="text-slate-300">{account?.name ?? '—'}</span>
+        },
+      }),
+      columnHelper.display({
+        id: 'contact',
+        header: 'Contact',
+        cell: (info) => {
+          const contact = contacts.find((contact) => contact.id === info.row.original.contact_id)
+          if (!contact) {
+            return <span className="text-slate-400">—</span>
+          }
+
+          return (
+            <div>
+              <p className="text-slate-200">{contact.name}</p>
+              {contact.company ? (
+                <p className="text-xs text-slate-500">{contact.company}</p>
+              ) : null}
+            </div>
+          )
+        },
       }),
       columnHelper.accessor('priority', {
         header: 'Priority',
@@ -181,7 +216,7 @@ export default function MasterTaskListClient({
         </button>
       </div>
 
-      <div className="grid gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-5 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-5 md:grid-cols-2 xl:grid-cols-6">
         <label className="block">
           <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">Workstreams</span>
           <select
@@ -195,6 +230,22 @@ export default function MasterTaskListClient({
             {workstreams.map((workstream) => (
               <option key={workstream.id} value={workstream.id}>
                 {workstream.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">Account</span>
+          <select
+            value={accountFilter}
+            onChange={(event) => setAccountFilter(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          >
+            <option value="">All accounts</option>
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name}
               </option>
             ))}
           </select>

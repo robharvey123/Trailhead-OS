@@ -161,3 +161,62 @@ body {
 .animate-os-shake {
   animation: os-shake 380ms ease-in-out;
 }
+
+.fc {
+  --fc-border-color: rgba(51, 65, 85, 0.7);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(15, 23, 42, 0.65);
+  --fc-list-event-hover-bg-color: rgba(30, 41, 59, 0.75);
+  --fc-today-bg-color: rgba(14, 165, 233, 0.14);
+  color: #e2e8f0;
+}
+
+.fc .fc-toolbar-title {
+  color: #f8fafc;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.fc .fc-col-header-cell-cushion {
+  padding: 0.85rem 0.25rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+}
+
+.fc .fc-daygrid-day-number {
+  padding: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.fc .fc-button-primary {
+  border-color: rgba(71, 85, 105, 0.9);
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+}
+
+.fc .fc-button-primary:hover,
+.fc .fc-button-primary:focus {
+  border-color: rgba(125, 211, 252, 0.7);
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  border-color: rgba(56, 189, 248, 0.85);
+  background: rgba(14, 116, 144, 0.9);
+}
+
+.fc .fc-scrollgrid,
+.fc .fc-theme-standard td,
+.fc .fc-theme-standard th {
+  border-color: rgba(51, 65, 85, 0.7);
+}

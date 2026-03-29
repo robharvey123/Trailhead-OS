@@ -2,7 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { calculateTotals, type Contact, type Invoice, type LineItem, type Workstream } from '@/lib/types'
+import {
+  calculateTotals,
+  type Account,
+  type Contact,
+  type Invoice,
+  type LineItem,
+  type Workstream,
+} from '@/lib/types'
 
 function createEmptyLineItem(): LineItem {
   return {
@@ -22,21 +29,27 @@ function getContactLabel(contact: Contact) {
 }
 
 export default function InvoiceForm({
+  accounts,
   contacts,
   workstreams,
   initialInvoice,
+  initialAccountId = '',
 }: {
+  accounts: Account[]
   contacts: Contact[]
   workstreams: Workstream[]
   initialInvoice?: Invoice
+  initialAccountId?: string
 }) {
   const router = useRouter()
+  const [accountId, setAccountId] = useState(initialInvoice?.account_id ?? initialAccountId)
   const [contactSearch, setContactSearch] = useState(
     initialInvoice?.contact_id
       ? getContactLabel(
           contacts.find((contact) => contact.id === initialInvoice.contact_id) ?? {
             id: '',
             workstream_id: null,
+            account_id: null,
             name: '',
             company: null,
             email: null,
@@ -68,6 +81,9 @@ export default function InvoiceForm({
   const [error, setError] = useState<string | null>(null)
 
   const filteredContacts = contacts.filter((contact) => {
+    if (accountId && contact.account_id !== accountId) {
+      return false
+    }
     const query = contactSearch.trim().toLowerCase()
     if (!query) {
       return true
@@ -125,6 +141,7 @@ export default function InvoiceForm({
 
     try {
       const payload = {
+        account_id: accountId || null,
         contact_id: contactId || null,
         workstream_id: workstreamId || null,
         issue_date: issueDate,
@@ -181,6 +198,21 @@ export default function InvoiceForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-sm text-slate-300">Account</span>
+          <select
+            value={accountId}
+            onChange={(event) => setAccountId(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          >
+            <option value="">No account selected</option>
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="space-y-2 md:col-span-2">
           <span className="text-sm text-slate-300">Client selector</span>
           <input

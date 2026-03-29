@@ -21,11 +21,13 @@ function buildContactNotes(enquiry: Enquiry) {
 
 export default function EnquiryDetailActions({
   enquiry,
+  generatedQuoteId,
 }: {
   enquiry: Enquiry
+  generatedQuoteId: string | null
 }) {
   const router = useRouter()
-  const [loadingAction, setLoadingAction] = useState<'review' | 'convert' | null>(null)
+  const [loadingAction, setLoadingAction] = useState<'review' | 'convert' | 'generate' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function handleMarkReviewed() {
@@ -84,6 +86,28 @@ export default function EnquiryDetailActions({
     }
   }
 
+  async function handleGenerateQuote() {
+    setLoadingAction('generate')
+    setError(null)
+
+    try {
+      const response = await apiFetch<{ quote_id: string }>(
+        '/api/quotes/ai-draft',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enquiry_id: enquiry.id }),
+        }
+      )
+
+      router.push(`/quotes/${response.quote_id}`)
+      router.refresh()
+    } catch (generateError) {
+      setError(generateError instanceof Error ? generateError.message : 'Failed to generate quote')
+      setLoadingAction(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
@@ -94,6 +118,48 @@ export default function EnquiryDetailActions({
           className="mt-4"
         />
         <div className="mt-6 space-y-3">
+          {generatedQuoteId ? (
+            <Link
+              href={`/quotes/${generatedQuoteId}`}
+              className="block rounded-2xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-center text-sm font-semibold text-sky-100 transition hover:border-sky-400"
+            >
+              View generated quote →
+            </Link>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleGenerateQuote}
+                disabled={loadingAction !== null}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-100 transition hover:border-sky-400 disabled:opacity-60"
+              >
+                {loadingAction === 'generate' ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-sky-100/30 border-t-sky-100" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                    >
+                      <path d="M12 3l1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z" />
+                    </svg>
+                    Generate scope & quote with AI
+                  </>
+                )}
+              </button>
+              {loadingAction === 'generate' ? (
+                <p className="text-sm text-sky-200">Claude is analysing your enquiry...</p>
+              ) : null}
+            </>
+          )}
+
           {enquiry.status === 'new' ? (
             <button
               type="button"

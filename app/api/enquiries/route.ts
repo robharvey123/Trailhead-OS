@@ -59,6 +59,12 @@ function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 
     budget: sanitizeText(body.budget),
     extra: sanitizeText(body.extra),
     status,
+    account_id:
+      body.account_id === null || body.account_id === undefined
+        ? null
+        : typeof body.account_id === 'string'
+          ? body.account_id
+          : null,
     converted_contact_id:
       body.converted_contact_id === null || body.converted_contact_id === undefined
         ? null

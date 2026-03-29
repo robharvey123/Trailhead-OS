@@ -5,6 +5,7 @@ import { isLocalDevelopmentHost } from '@/lib/site'
 const publicRoutes = ['/login', '/auth/callback', '/discovery']
 const publicRoutePrefixes = ['/report']
 const publicApiPrefixes = ['/api/enquiries', '/api/contact']
+const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
 function getMarketingRewritePath(pathname: string) {
   if (pathname === '/') {
@@ -47,6 +48,11 @@ export async function middleware(request: NextRequest) {
     : !isAppSubdomain
   const pathname = request.nextUrl.pathname
   const isApiRequest = pathname.startsWith('/api/')
+  const isPublicAsset = PUBLIC_ASSET_PATTERN.test(pathname)
+
+  if (isPublicAsset) {
+    return NextResponse.next()
+  }
 
   if (isMarketingSite && !isApiRequest) {
     const marketingRewritePath = getMarketingRewritePath(pathname)

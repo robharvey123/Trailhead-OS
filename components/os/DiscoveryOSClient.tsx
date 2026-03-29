@@ -40,7 +40,11 @@ export default function DiscoveryOSClient({
 }) {
   const [copied, setCopied] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const publicUrl = 'https://app.trailheadholdings.uk/discovery'
+  const [publicUrl] = useState(() =>
+    typeof window === 'undefined'
+      ? '/discovery'
+      : new URL('/discovery', window.location.origin).toString()
+  )
 
   async function handleCopyLink() {
     try {
@@ -53,7 +57,7 @@ export default function DiscoveryOSClient({
   }
 
   function handleOpenForm() {
-    window.open(publicUrl, '_blank', 'noopener,noreferrer')
+    window.open('/discovery', '_blank', 'noopener,noreferrer')
   }
 
   return (

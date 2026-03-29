@@ -120,6 +120,16 @@ export async function PATCH(
     patch.contact_id = body.contact_id
   }
 
+  if (body.account_id !== undefined) {
+    if (body.account_id !== null && typeof body.account_id !== 'string') {
+      return NextResponse.json(
+        { error: 'account_id must be a string or null' },
+        { status: 400 }
+      )
+    }
+    patch.account_id = body.account_id
+  }
+
   if (body.workstream_id !== undefined) {
     if (body.workstream_id !== null && typeof body.workstream_id !== 'string') {
       return NextResponse.json(

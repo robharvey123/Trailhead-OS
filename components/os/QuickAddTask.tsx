@@ -6,7 +6,10 @@ import type { TaskWithWorkstream } from '@/lib/types'
 
 interface QuickAddTaskProps {
   workstreamId?: string | null
+  workstream_id?: string | null
   columnId?: string | null
+  account_id?: string | null
+  contact_id?: string | null
   isMasterTodo?: boolean
   placeholder?: string
   buttonLabel?: string
@@ -16,7 +19,10 @@ interface QuickAddTaskProps {
 
 export default function QuickAddTask({
   workstreamId = null,
+  workstream_id = null,
   columnId = null,
+  account_id = null,
+  contact_id = null,
   isMasterTodo,
   placeholder = 'Add a task...',
   buttonLabel = 'Add',
@@ -39,14 +45,17 @@ export default function QuickAddTask({
     setError(null)
 
     try {
+      const resolvedWorkstreamId = workstream_id ?? workstreamId
       const response = await apiFetch<{ task: TaskWithWorkstream }>('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: nextTitle,
-          workstream_id: workstreamId,
+          workstream_id: resolvedWorkstreamId,
           column_id: columnId,
-          is_master_todo: isMasterTodo ?? !workstreamId,
+          account_id,
+          contact_id,
+          is_master_todo: isMasterTodo ?? !resolvedWorkstreamId,
         }),
       })
 
