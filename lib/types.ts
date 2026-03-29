@@ -1,9 +1,16 @@
-export type WorkstreamColour = 'teal' | 'amber' | 'purple' | 'green' | 'coral' | string
+export type WorkstreamColour =
+  | 'teal'
+  | 'amber'
+  | 'purple'
+  | 'green'
+  | 'coral'
+  | string
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type ContactStatus = 'lead' | 'active' | 'inactive' | 'archived'
 export type EnquiryStatus = 'new' | 'reviewed' | 'converted'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+export type BlogPostStatus = 'draft' | 'published'
 
 export interface Contact {
   id: string
@@ -252,4 +259,27 @@ export interface ReorderTaskUpdate {
   id: string
   sort_order: number
   column_id?: string | null
+}
+
+export interface BlogPost {
+  id: string
+  slug: string
+  title: string
+  excerpt: string | null
+  body: string
+  published: boolean
+  published_at: string | null
+  tags: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface BlogPostInput {
+  title: string
+  slug: string
+  excerpt?: string | null
+  body: string
+  published?: boolean
+  published_at?: string | null
+  tags?: string[]
 }

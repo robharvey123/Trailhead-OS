@@ -46,7 +46,9 @@ function NavLink({
       }`}
     >
       <span className="flex min-w-0 items-center gap-3">
-        {dotColour ? <span className={`h-2.5 w-2.5 rounded-full ${dotColour}`} /> : null}
+        {dotColour ? (
+          <span className={`h-2.5 w-2.5 rounded-full ${dotColour}`} />
+        ) : null}
         <span>{label}</span>
       </span>
       {typeof badge === 'number' && badge > 0 ? (
@@ -93,7 +95,9 @@ export default function Sidebar({
           onClick={() => setMobileOpen(false)}
           className="block rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-4"
         >
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Trailhead</p>
+          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">
+            Trailhead
+          </p>
           <h1 className="mt-2 text-xl font-semibold text-slate-100">OS</h1>
         </Link>
       </div>
@@ -122,7 +126,9 @@ export default function Sidebar({
           </div>
 
           <div>
-            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Workstreams</p>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">
+              Workstreams
+            </p>
             <div className="mt-2 space-y-1.5">
               {REQUIRED_WORKSTREAMS.map((item) => {
                 const workstream = workstreamsBySlug.get(item.slug)
@@ -144,7 +150,9 @@ export default function Sidebar({
           </div>
 
           <div>
-            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Clients</p>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">
+              Clients
+            </p>
             <div className="mt-2 space-y-1.5">
               <NavLink
                 href="/enquiries"
@@ -169,7 +177,9 @@ export default function Sidebar({
           </div>
 
           <div>
-            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Finance</p>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">
+              Finance
+            </p>
             <div className="mt-2 space-y-1.5">
               <NavLink
                 href="/invoicing"
@@ -181,7 +191,27 @@ export default function Sidebar({
           </div>
 
           <div>
-            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">Analytics</p>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">
+              Content
+            </p>
+            <div className="mt-2 space-y-1.5">
+              <NavLink
+                href="/blog"
+                label="Blog"
+                active={
+                  pathname === '/blog' ||
+                  pathname.startsWith('/blog/') ||
+                  pathname.startsWith('/os/blog')
+                }
+                onClick={() => setMobileOpen(false)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <p className="px-3 text-xs uppercase tracking-[0.28em] text-slate-500">
+              Analytics
+            </p>
             <div className="mt-2 space-y-1.5">
               <NavLink
                 href="/analytics"
