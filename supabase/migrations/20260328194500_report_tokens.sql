@@ -1,7 +1,9 @@
+create extension if not exists "pgcrypto";
+
 create table report_tokens (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid references workspaces(id) on delete cascade,
-  token text unique not null default encode(gen_random_bytes(24), 'base64url'),
+  token text unique not null default replace(gen_random_uuid()::text, '-', ''),
   label text,
   expires_at timestamptz not null default (now() + interval '30 days'),
   created_at timestamptz default now()

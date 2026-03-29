@@ -3,21 +3,37 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatDateTime, formatTaskDate, getWorkstreamColourClasses } from '@/lib/os'
-import type { NoteWithWorkstream, TaskWithWorkstream, WorkstreamSummary } from '@/lib/types'
+import type {
+  DashboardUpcomingItem,
+  NoteWithWorkstream,
+  TaskWithWorkstream,
+  WorkstreamSummary,
+} from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
 import QuickAddTask from './QuickAddTask'
 import WorkstreamBadge from './WorkstreamBadge'
 
+function formatEventTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'short',
+  }).format(date)
+}
+
 interface DashboardClientProps {
   todaysTasks: TaskWithWorkstream[]
-  upcomingTasks: TaskWithWorkstream[]
+  upcomingItems: DashboardUpcomingItem[]
   workstreamSummaries: WorkstreamSummary[]
   recentNotes: NoteWithWorkstream[]
 }
 
 export default function DashboardClient({
   todaysTasks,
-  upcomingTasks,
+  upcomingItems,
   workstreamSummaries,
   recentNotes,
 }: DashboardClientProps) {
@@ -29,9 +45,9 @@ export default function DashboardClient({
     return groups
   }, {})
 
-  const groupedUpcoming = upcomingTasks.reduce<Record<string, TaskWithWorkstream[]>>((groups, task) => {
-    const key = task.due_date ?? 'No date'
-    groups[key] = [...(groups[key] ?? []), task]
+  const groupedUpcoming = upcomingItems.reduce<Record<string, DashboardUpcomingItem[]>>((groups, item) => {
+    const key = item.date
+    groups[key] = [...(groups[key] ?? []), item]
     return groups
   }, {})
 
@@ -152,33 +168,65 @@ export default function DashboardClient({
             </div>
 
             <div className="mt-5 space-y-4">
-              {upcomingTasks.length === 0 ? (
+              {upcomingItems.length === 0 ? (
                 <p className="rounded-3xl border border-dashed border-slate-700 px-4 py-6 text-sm text-slate-500">
                   Nothing due in the next seven days.
                 </p>
               ) : (
-                Object.entries(groupedUpcoming).map(([date, tasks]) => (
+                Object.entries(groupedUpcoming).map(([date, items]) => (
                   <div key={date}>
                     <h3 className="mb-2 text-xs uppercase tracking-[0.24em] text-slate-500">
                       {formatTaskDate(date)}
                     </h3>
                     <div className="space-y-2">
-                      {tasks.map((task) => (
-                        <div key={task.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <p className="text-sm font-medium text-slate-100">{task.title}</p>
-                            <PriorityBadge priority={task.priority} />
+                      {items.map((item) => {
+                        if (item.type === 'task') {
+                          const task = item.data
+                          return (
+                            <div key={`task-${task.id}`} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <p className="text-sm font-medium text-slate-100">{task.title}</p>
+                                <PriorityBadge priority={task.priority} />
+                              </div>
+                              {task.workstream_label ? (
+                                <WorkstreamBadge
+                                  className="mt-3"
+                                  label={task.workstream_label}
+                                  slug={task.workstream_slug}
+                                  colour={task.workstream_colour}
+                                />
+                              ) : null}
+                            </div>
+                          )
+                        }
+
+                        const event = item.data
+                        const workstream = workstreamSummaries.find(
+                          (summary) => summary.id === event.workstream_id
+                        )
+
+                        return (
+                          <div
+                            key={`event-${event.id}`}
+                            className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4"
+                            style={{ borderLeftColor: event.colour || '#3B82F6', borderLeftWidth: '4px' }}
+                          >
+                            <p className="text-sm font-medium text-slate-100">{event.title}</p>
+                            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                              {!event.all_day ? <span>{formatEventTime(event.start_at)}</span> : null}
+                              {event.location ? <span>{event.location}</span> : null}
+                            </div>
+                            {workstream ? (
+                              <WorkstreamBadge
+                                className="mt-3"
+                                label={workstream.label}
+                                slug={workstream.slug}
+                                colour={workstream.colour}
+                              />
+                            ) : null}
                           </div>
-                          {task.workstream_label ? (
-                            <WorkstreamBadge
-                              className="mt-3"
-                              label={task.workstream_label}
-                              slug={task.workstream_slug}
-                              colour={task.workstream_colour}
-                            />
-                          ) : null}
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 ))

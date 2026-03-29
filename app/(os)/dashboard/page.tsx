@@ -1,27 +1,36 @@
 import DashboardClient from '@/components/os/DashboardClient'
+import { getCalendarEvents } from '@/lib/db/calendar-events'
 import { getColumnsByWorkstream } from '@/lib/db/columns'
 import { getRecentNotes } from '@/lib/db/notes'
 import { getTasks } from '@/lib/db/tasks'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
-import type { WorkstreamSummary } from '@/lib/types'
+import type { DashboardUpcomingItem, WorkstreamSummary } from '@/lib/types'
 
 function formatDate(value: Date) {
-  return value.toISOString().slice(0, 10)
+  const year = value.getFullYear()
+  const month = String(value.getMonth() + 1).padStart(2, '0')
+  const day = String(value.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const todayLabel = formatDate(today)
   const weekAhead = new Date(today)
   weekAhead.setDate(weekAhead.getDate() + 7)
+  weekAhead.setHours(23, 59, 59, 999)
+  const weekAheadIso = weekAhead.toISOString()
+  const todayIso = today.toISOString()
 
-  const [workstreams, dueToday, masterTodos, upcomingTasks, recentNotes] = await Promise.all([
+  const [workstreams, dueToday, masterTodos, upcomingTasks, upcomingEvents, recentNotes] = await Promise.all([
     getWorkstreams(supabase).catch(() => []),
     getTasks({ due_date_from: todayLabel, due_date_to: todayLabel }, supabase).catch(() => []),
     getTasks({ is_master_todo: true }, supabase).catch(() => []),
     getTasks({ due_date_from: todayLabel, due_date_to: formatDate(weekAhead) }, supabase).catch(() => []),
+    getCalendarEvents({ start_at_gte: todayIso, start_at_lte: weekAheadIso }, supabase).catch(() => []),
     getRecentNotes(3, supabase).catch(() => []),
   ])
 
@@ -34,7 +43,22 @@ export default async function DashboardPage() {
     return true
   })
 
-  const upcoming = upcomingTasks.filter((task) => task.due_date !== todayLabel)
+  const upcomingItems: DashboardUpcomingItem[] = [
+    ...upcomingTasks
+      .filter((task) => task.due_date)
+      .map((task) => ({
+        type: 'task' as const,
+        date: task.due_date!,
+        sort_at: `${task.due_date}T00:00:00`,
+        data: task,
+      })),
+    ...upcomingEvents.map((event) => ({
+      type: 'event' as const,
+      date: formatDate(new Date(event.start_at)),
+      sort_at: event.start_at,
+      data: event,
+    })),
+  ].sort((left, right) => new Date(left.sort_at).getTime() - new Date(right.sort_at).getTime())
 
   const workstreamSummaries: WorkstreamSummary[] = await Promise.all(
     workstreams.map(async (workstream) => {
@@ -71,7 +95,7 @@ export default async function DashboardPage() {
   return (
     <DashboardClient
       todaysTasks={todaysTasks}
-      upcomingTasks={upcoming}
+      upcomingItems={upcomingItems}
       workstreamSummaries={workstreamSummaries}
       recentNotes={recentNotes}
     />

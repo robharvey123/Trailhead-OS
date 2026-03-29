@@ -108,6 +108,12 @@ export default function Sidebar({
               onClick={() => setMobileOpen(false)}
             />
             <NavLink
+              href="/calendar"
+              label="Calendar"
+              active={pathname === '/calendar'}
+              onClick={() => setMobileOpen(false)}
+            />
+            <NavLink
               href="/tasks"
               label="Tasks"
               active={pathname === '/tasks'}

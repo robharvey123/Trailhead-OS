@@ -140,6 +140,25 @@ export interface Task {
   updated_at: string
 }
 
+export interface CalendarEvent {
+  id: string
+  title: string
+  description: string | null
+  start_at: string
+  end_at: string
+  all_day: boolean
+  workstream_id: string | null
+  contact_id: string | null
+  location: string | null
+  colour: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CalendarItem =
+  | { type: 'task'; data: Task }
+  | { type: 'event'; data: CalendarEvent }
+
 export interface Note {
   id: string
   workstream_id: string | null
@@ -155,6 +174,20 @@ export interface TaskWithWorkstream extends Task {
   workstream_label: string | null
   workstream_colour: string | null
 }
+
+export type DashboardUpcomingItem =
+  | {
+      type: 'task'
+      date: string
+      sort_at: string
+      data: TaskWithWorkstream
+    }
+  | {
+      type: 'event'
+      date: string
+      sort_at: string
+      data: CalendarEvent
+    }
 
 export interface NoteWithWorkstream extends Note {
   workstream_slug: string | null
