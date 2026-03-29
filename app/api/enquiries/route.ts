@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
-import { resend } from '@/lib/email/resend'
+import { DEFAULT_RESEND_FROM, resend } from '@/lib/email/resend'
 import { newEnquiryEmail } from '@/lib/email/templates/new-enquiry'
 import type { Enquiry, EnquiryFormState, EnquiryStatus } from '@/lib/types'
 import { getEnquiries } from '@/lib/db/enquiries'
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
     if (notificationEmail && resend) {
       const email = newEnquiryEmail(data as Enquiry)
       await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL ?? 'Trailhead OS <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM_EMAIL ?? DEFAULT_RESEND_FROM,
         to: [notificationEmail],
         subject: email.subject,
         html: email.html,
