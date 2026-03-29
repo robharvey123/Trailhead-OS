@@ -1,83 +1,8 @@
 import { notFound } from 'next/navigation'
-import EnquiryDetailActions from '@/components/os/EnquiryDetailActions'
+import EnquiryDetailClient from '@/components/os/EnquiryDetailClient'
+import { getAccounts } from '@/lib/db/accounts'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { createClient } from '@/lib/supabase/server'
-
-const QUESTION_LABELS: Array<{ key: string; label: string }> = [
-  { key: 'biz_name', label: 'Business name' },
-  { key: 'contact_name', label: 'Contact name' },
-  { key: 'contact_email', label: 'Contact email' },
-  { key: 'contact_phone', label: 'Contact phone' },
-  { key: 'biz_type', label: 'Business type' },
-  { key: 'project_type', label: 'Project type' },
-  { key: 'team_size', label: 'Team size' },
-  { key: 'team_split', label: 'Team split' },
-  { key: 'top_features', label: 'Top features' },
-  { key: 'calendar_detail', label: 'Calendar detail' },
-  { key: 'forms_detail', label: 'Forms detail' },
-  { key: 'devices', label: 'Devices' },
-  { key: 'offline_capability', label: 'Offline capability' },
-  { key: 'existing_tools', label: 'Existing tools' },
-  { key: 'pain_points', label: 'Pain points' },
-  { key: 'timeline', label: 'Timeline' },
-  { key: 'referral_source', label: 'Referral source' },
-  { key: 'budget', label: 'Budget' },
-  { key: 'extra', label: 'Extra context' },
-]
-
-function formatAnswer(value: unknown) {
-  if (Array.isArray(value)) {
-    return value.length ? value.join(', ') : '—'
-  }
-
-  if (typeof value === 'string') {
-    return value.trim() || '—'
-  }
-
-  if (value === null || value === undefined) {
-    return '—'
-  }
-
-  return String(value)
-}
-
-function renderAnswer(key: string, value: unknown) {
-  const textValue = typeof value === 'string' ? value.trim() : ''
-
-  if (key === 'contact_email') {
-    return textValue ? (
-      <a
-        href={`mailto:${textValue}`}
-        className="mt-3 inline-flex text-sm text-sky-300 transition hover:text-sky-200"
-      >
-        {textValue}
-      </a>
-    ) : (
-      <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">—</p>
-    )
-  }
-
-  if (key === 'contact_phone') {
-    const telHref = textValue.replace(/\s+/g, '')
-
-    return textValue ? (
-      <a
-        href={`tel:${telHref}`}
-        className="mt-3 inline-flex text-sm text-sky-300 transition hover:text-sky-200"
-      >
-        {textValue}
-      </a>
-    ) : (
-      <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">—</p>
-    )
-  }
-
-  return (
-    <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
-      {formatAnswer(value)}
-    </p>
-  )
-}
 
 export default async function EnquiryDetailPage({
   params,
@@ -86,7 +11,7 @@ export default async function EnquiryDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
-  const [enquiry, quoteResult] = await Promise.all([
+  const [enquiry, quoteResult, accounts] = await Promise.all([
     getEnquiryById(id, supabase).catch(() => null),
     supabase
       .from('quotes')
@@ -95,6 +20,7 @@ export default async function EnquiryDetailPage({
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    getAccounts({}, supabase).catch(() => []),
   ])
 
   if (!enquiry) {
@@ -102,40 +28,10 @@ export default async function EnquiryDetailPage({
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Enquiries</p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-50">{enquiry.biz_name}</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Discovery submission from {enquiry.contact_name}
-        </p>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_380px]">
-        <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-          <h2 className="text-lg font-semibold text-slate-100">Submission details</h2>
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            {QUESTION_LABELS.map((item) => (
-              <div key={item.key} className="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                  {item.label}
-                </p>
-                {renderAnswer(
-                  item.key,
-                  enquiry[item.key as keyof typeof enquiry]
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="xl:sticky xl:top-8 xl:self-start">
-          <EnquiryDetailActions
-            enquiry={enquiry}
-            generatedQuoteId={quoteResult.data?.id ?? null}
-          />
-        </div>
-      </div>
-    </div>
+    <EnquiryDetailClient
+      initialEnquiry={enquiry}
+      generatedQuoteId={quoteResult.data?.id ?? null}
+      accounts={accounts}
+    />
   )
 }

@@ -19,13 +19,20 @@ export default async function ContactDetailPage({
     .select('id')
     .eq('converted_contact_id', id)
     .maybeSingle()
+  const touchpointsPromise = supabase
+    .from('touchpoints')
+    .select('*')
+    .eq('contact_id', id)
+    .order('occurred_at', { ascending: false })
+    .order('created_at', { ascending: false })
 
-  const [contact, workstreams, accounts, linkedTasks, enquiryResult] = await Promise.all([
+  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult] = await Promise.all([
     getContactById(id, supabase).catch(() => null),
     getWorkstreams(supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
     getTasks({ contact_id: id }, supabase).catch(() => []),
     enquiryPromise,
+    touchpointsPromise,
   ])
 
   if (!contact) {
@@ -43,6 +50,7 @@ export default async function ContactDetailPage({
       accounts={accounts}
       linkedTasks={linkedTasks}
       sourceEnquiryId={enquiryResult.data?.id ?? null}
+      initialTouchpoints={touchpointsResult.data ?? []}
     />
   )
 }

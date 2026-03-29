@@ -28,6 +28,20 @@ export interface PricingTier {
   updated_at: string
 }
 
+export type TouchpointType = 'call' | 'email' | 'message' | 'meeting' | 'note'
+
+export interface Touchpoint {
+  id: string
+  account_id?: string | null
+  contact_id?: string | null
+  type: TouchpointType
+  subject: string
+  body?: string | null
+  occurred_at: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Account {
   id: string
   name: string

@@ -5,8 +5,16 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
+import TouchpointTimeline from './TouchpointTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
-import type { Account, Contact, ContactStatus, TaskWithWorkstream, Workstream } from '@/lib/types'
+import type {
+  Account,
+  Contact,
+  ContactStatus,
+  TaskWithWorkstream,
+  Touchpoint,
+  Workstream,
+} from '@/lib/types'
 
 const CONTACT_STATUSES: ContactStatus[] = ['lead', 'active', 'inactive', 'archived']
 
@@ -21,12 +29,14 @@ export default function ContactDetailClient({
   accounts,
   linkedTasks,
   sourceEnquiryId,
+  initialTouchpoints,
 }: {
   initialContact: ContactWithRelations
   workstreams: Workstream[]
   accounts: Account[]
   linkedTasks: TaskWithWorkstream[]
   sourceEnquiryId: string | null
+  initialTouchpoints: Touchpoint[]
 }) {
   const router = useRouter()
   const [contact, setContact] = useState(initialContact)
@@ -372,6 +382,14 @@ export default function ContactDetailClient({
         />
         {notesError ? <p className="mt-3 text-sm text-rose-300">{notesError}</p> : null}
       </div>
+
+      <TouchpointTimeline
+        initialTouchpoints={initialTouchpoints}
+        accountId={contact.account_id}
+        contactId={contact.id}
+        title="Touchpoints"
+        description="Log calls, emails, messages, meetings, and notes for this contact."
+      />
 
       <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
         <div className="flex items-center justify-between gap-3">

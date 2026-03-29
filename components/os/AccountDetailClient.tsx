@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import AccountForm from './AccountForm'
 import QuickAddTask from './QuickAddTask'
 import StatusBadge from './StatusBadge'
+import TouchpointTimeline from './TouchpointTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
 import { calculateTotals } from '@/lib/types'
 import type { Workstream } from '@/lib/types'
@@ -289,6 +290,13 @@ export default function AccountDetailClient({
             />
             {notesError ? <p className="mt-3 text-sm text-rose-300">{notesError}</p> : null}
           </div>
+
+          <TouchpointTimeline
+            initialTouchpoints={account.touchpoints}
+            accountId={account.id}
+            title="Touchpoints"
+            description="Log calls, emails, messages, meetings, and notes for this account."
+          />
         </section>
 
         <section className="space-y-6">

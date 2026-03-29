@@ -9,6 +9,7 @@ import type {
   QuoteStatus,
   QuoteWithRelations,
   TaskWithWorkstream,
+  Touchpoint,
 } from '@/lib/types'
 import type { QuoteListItem } from '@/lib/types'
 import { getQuoteById } from './quotes'
@@ -31,6 +32,7 @@ export interface AccountDetail extends AccountWithRelations {
   recent_tasks: TaskWithWorkstream[]
   invoices: Invoice[]
   source_enquiry: Enquiry | null
+  touchpoints: Touchpoint[]
 }
 
 async function getSupabase(client?: SupabaseClient) {
@@ -147,7 +149,7 @@ export async function getAccountById(
     return null
   }
 
-  const [contactsResult, tasksResult, quotesResult, invoicesResult, enquiryResult] = await Promise.all([
+  const [contactsResult, tasksResult, quotesResult, invoicesResult, enquiryResult, touchpointsResult] = await Promise.all([
     supabase
       .from('contacts')
       .select('*')
@@ -179,6 +181,12 @@ export async function getAccountById(
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('touchpoints')
+      .select('*')
+      .eq('account_id', id)
+      .order('occurred_at', { ascending: false })
+      .order('created_at', { ascending: false }),
   ])
 
   if (contactsResult.error) {
@@ -201,6 +209,10 @@ export async function getAccountById(
     throw new Error(enquiryResult.error.message || 'Failed to load linked enquiry')
   }
 
+  if (touchpointsResult.error) {
+    throw new Error(touchpointsResult.error.message || 'Failed to load account touchpoints')
+  }
+
   const recentQuotes = await Promise.all(
     (quotesResult.data ?? []).map(async (quote) => getQuoteById(quote.id, supabase))
   )
@@ -216,6 +228,7 @@ export async function getAccountById(
     recent_tasks: (tasksResult.data ?? []) as TaskWithWorkstream[],
     invoices: (invoicesResult.data ?? []) as Invoice[],
     source_enquiry: (enquiryResult.data as Enquiry | null) ?? null,
+    touchpoints: (touchpointsResult.data ?? []) as Touchpoint[],
   }
 }
 

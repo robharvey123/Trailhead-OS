@@ -41,7 +41,7 @@ export default function TaskSlideOver({
   onDeleted,
 }: TaskSlideOverProps) {
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
