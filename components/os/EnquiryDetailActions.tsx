@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import PricingTierSelector from './PricingTierSelector'
 import StatusBadge from './StatusBadge'
-import type { Enquiry } from '@/lib/types'
+import type { Enquiry, PricingTier } from '@/lib/types'
 
 function buildContactNotes(enquiry: Enquiry) {
   const sections = [
@@ -29,6 +30,9 @@ export default function EnquiryDetailActions({
   const router = useRouter()
   const [loadingAction, setLoadingAction] = useState<'review' | 'convert' | 'generate' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showGenerateModal, setShowGenerateModal] = useState(false)
+  const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null)
+  const [generateError, setGenerateError] = useState<string | null>(null)
 
   async function handleMarkReviewed() {
     setLoadingAction('review')
@@ -88,7 +92,7 @@ export default function EnquiryDetailActions({
 
   async function handleGenerateQuote() {
     setLoadingAction('generate')
-    setError(null)
+    setGenerateError(null)
 
     try {
       const response = await apiFetch<{ quote_id: string }>(
@@ -96,14 +100,20 @@ export default function EnquiryDetailActions({
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enquiry_id: enquiry.id }),
+          body: JSON.stringify({
+            enquiry_id: enquiry.id,
+            pricing_tier_id: selectedTier?.id,
+          }),
         }
       )
 
+      setShowGenerateModal(false)
       router.push(`/quotes/${response.quote_id}`)
       router.refresh()
     } catch (generateError) {
-      setError(generateError instanceof Error ? generateError.message : 'Failed to generate quote')
+      setGenerateError(
+        generateError instanceof Error ? generateError.message : 'Failed to generate quote'
+      )
       setLoadingAction(null)
     }
   }
@@ -129,34 +139,25 @@ export default function EnquiryDetailActions({
             <>
               <button
                 type="button"
-                onClick={handleGenerateQuote}
+                onClick={() => {
+                  setGenerateError(null)
+                  setShowGenerateModal(true)
+                }}
                 disabled={loadingAction !== null}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm font-semibold text-sky-100 transition hover:border-sky-400 disabled:opacity-60"
               >
-                {loadingAction === 'generate' ? (
-                  <>
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-sky-100/30 border-t-sky-100" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                    >
-                      <path d="M12 3l1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z" />
-                    </svg>
-                    Generate scope & quote with AI
-                  </>
-                )}
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path d="M12 3l1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z" />
+                </svg>
+                Generate scope & quote with AI
               </button>
-              {loadingAction === 'generate' ? (
-                <p className="text-sm text-sky-200">Claude is analysing your enquiry...</p>
-              ) : null}
             </>
           )}
 
@@ -207,6 +208,64 @@ export default function EnquiryDetailActions({
           </div>
         </dl>
       </section>
+
+      {showGenerateModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-8">
+          <div className="w-full max-w-5xl rounded-[2rem] border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-semibold text-slate-50">Select pricing tier</h2>
+                <p className="mt-2 text-sm text-slate-400">
+                  Choose the rate structure for this quote.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (loadingAction === 'generate') {
+                    return
+                  }
+                  setShowGenerateModal(false)
+                }}
+                className="rounded-full border border-slate-700 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
+                disabled={loadingAction === 'generate'}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-6">
+              <PricingTierSelector
+                value={selectedTier?.id ?? null}
+                onChange={setSelectedTier}
+              />
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+              <div className="min-h-6">
+                {loadingAction === 'generate' ? (
+                  <div className="flex items-center gap-3 text-sm text-sky-100">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-sky-100/30 border-t-sky-100" />
+                    Claude is analysing the enquiry and building your quote...
+                  </div>
+                ) : null}
+                {generateError ? (
+                  <p className="text-sm text-rose-300">{generateError}</p>
+                ) : null}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGenerateQuote}
+                disabled={!selectedTier || loadingAction === 'generate'}
+                className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+              >
+                {loadingAction === 'generate' ? 'Generating quote...' : 'Generate quote'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

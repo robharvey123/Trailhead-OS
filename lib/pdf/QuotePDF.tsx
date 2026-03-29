@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
   page: {
     paddingTop: 34,
     paddingRight: 36,
-    paddingBottom: 56,
+    paddingBottom: 60,
     paddingLeft: 36,
     fontFamily: 'Helvetica',
     fontSize: 10,
@@ -23,49 +23,32 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 22,
   },
   brand: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    maxWidth: '58%',
+    maxWidth: '56%',
   },
   brandMark: {
     marginRight: 10,
   },
   companyName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 700,
     marginBottom: 4,
   },
-  companyMeta: {
+  muted: {
     color: '#475569',
     marginBottom: 2,
   },
-  quoteDetails: {
+  rightMeta: {
     width: '38%',
     alignItems: 'flex-end',
   },
   quoteNumber: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 700,
     marginBottom: 6,
-  },
-  detailLine: {
-    color: '#334155',
-    marginBottom: 3,
-  },
-  badge: {
-    marginTop: 6,
-    border: '1 solid #bae6fd',
-    backgroundColor: '#f0f9ff',
-    borderRadius: 999,
-    paddingTop: 3,
-    paddingRight: 8,
-    paddingBottom: 3,
-    paddingLeft: 8,
-    fontSize: 8,
-    color: '#0369a1',
   },
   section: {
     marginTop: 18,
@@ -77,7 +60,7 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginBottom: 8,
   },
-  preparedForCard: {
+  card: {
     border: '1 solid #e2e8f0',
     borderRadius: 14,
     padding: 12,
@@ -87,14 +70,25 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     marginBottom: 3,
   },
-  projectTitle: {
-    fontSize: 21,
-    fontWeight: 700,
-    lineHeight: 1.25,
+  italicMuted: {
+    marginTop: 6,
+    color: '#64748b',
+    fontStyle: 'italic',
   },
-  summaryText: {
+  title: {
+    fontSize: 22,
+    fontWeight: 700,
+    lineHeight: 1.2,
+  },
+  body: {
     color: '#334155',
     lineHeight: 1.45,
+  },
+  estimateBanner: {
+    border: '1 solid #bae6fd',
+    backgroundColor: '#f0f9ff',
+    borderRadius: 14,
+    padding: 10,
   },
   phaseCard: {
     border: '1 solid #e2e8f0',
@@ -105,46 +99,65 @@ const styles = StyleSheet.create({
   phaseHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 6,
   },
   phaseTitle: {
-    width: '78%',
+    width: '72%',
     fontSize: 12,
     fontWeight: 700,
   },
-  durationBadge: {
-    border: '1 solid #cbd5e1',
-    backgroundColor: '#f8fafc',
-    borderRadius: 999,
-    paddingTop: 3,
-    paddingRight: 8,
-    paddingBottom: 3,
-    paddingLeft: 8,
-    fontSize: 8,
-    color: '#334155',
+  phaseMeta: {
+    width: '26%',
+    textAlign: 'right',
+    color: '#64748b',
+    fontSize: 9,
   },
-  phaseDescription: {
-    color: '#334155',
-    marginBottom: 6,
-    lineHeight: 1.4,
-  },
-  deliverable: {
-    color: '#334155',
-    marginBottom: 3,
+  bullet: {
+    marginTop: 3,
     marginLeft: 8,
+    color: '#334155',
+  },
+  table: {
+    marginTop: 8,
+    border: '1 solid #e2e8f0',
+    borderRadius: 14,
+    overflow: 'hidden',
   },
   tableHeader: {
     flexDirection: 'row',
-    borderBottom: '1 solid #cbd5e1',
-    paddingBottom: 6,
-    marginBottom: 6,
+    backgroundColor: '#f8fafc',
+    paddingTop: 8,
+    paddingRight: 10,
+    paddingBottom: 8,
+    paddingLeft: 10,
+    borderBottom: '1 solid #e2e8f0',
   },
   tableRow: {
     flexDirection: 'row',
+    paddingTop: 8,
+    paddingRight: 10,
+    paddingBottom: 8,
+    paddingLeft: 10,
     borderBottom: '0.5 solid #e2e8f0',
-    paddingTop: 7,
-    paddingBottom: 7,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    paddingRight: 10,
+    paddingBottom: 8,
+    paddingLeft: 10,
+    borderBottom: '0.5 solid #e2e8f0',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
+    backgroundColor: '#e2f4ff',
   },
   colDescription: {
     width: '38%',
@@ -168,45 +181,10 @@ const styles = StyleSheet.create({
     width: '20%',
     textAlign: 'right',
   },
-  totalsCard: {
-    marginTop: 14,
-    marginLeft: 'auto',
-    width: 250,
+  appendixCard: {
     border: '1 solid #e2e8f0',
     borderRadius: 14,
-    overflow: 'hidden',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 8,
-    paddingRight: 12,
-    paddingBottom: 8,
-    paddingLeft: 12,
-    borderBottom: '1 solid #e2e8f0',
-  },
-  grandTotalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 10,
-    paddingRight: 12,
-    paddingBottom: 10,
-    paddingLeft: 12,
-    backgroundColor: '#e0f2fe',
-  },
-  grandTotalLabel: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: '#0c4a6e',
-  },
-  grandTotalValue: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: '#0c4a6e',
-  },
-  bodyText: {
-    color: '#334155',
-    lineHeight: 1.45,
+    padding: 12,
   },
   footer: {
     position: 'absolute',
@@ -216,6 +194,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: '#64748b',
     textAlign: 'center',
+    lineHeight: 1.4,
   },
 })
 
@@ -232,7 +211,7 @@ function QuoteDocument({ quote }: { quote: QuoteWithRelations }) {
         <View style={styles.header}>
           <View style={styles.brand}>
             <View style={styles.brandMark}>
-              <Svg width="34" height="34" viewBox="0 0 52 52">
+              <Svg width="32" height="32" viewBox="0 0 52 52">
                 <Rect x="2" y="38" width="10" height="10" rx="2" fill="#0F172A" />
                 <Rect x="14" y="28" width="10" height="20" rx="2" fill="#0F172A" />
                 <Rect x="26" y="18" width="10" height="30" rx="2" fill="#0F172A" />
@@ -241,104 +220,145 @@ function QuoteDocument({ quote }: { quote: QuoteWithRelations }) {
             </View>
             <View>
               <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
-              <Text style={styles.companyMeta}>Brentwood, Essex, UK</Text>
-              <Text style={styles.companyMeta}>rob@trailheadholdings.uk</Text>
+              <Text style={styles.muted}>Brentwood, Essex, UK</Text>
+              <Text style={styles.muted}>rob@trailheadholdings.uk</Text>
             </View>
           </View>
 
-          <View style={styles.quoteDetails}>
+          <View style={styles.rightMeta}>
             <Text style={styles.quoteNumber}>{quote.quote_number}</Text>
-            <Text style={styles.detailLine}>Issue date: {quote.issue_date}</Text>
-            <Text style={styles.detailLine}>Valid until: {quote.valid_until ?? 'Not set'}</Text>
-            <Text style={styles.detailLine}>
-              Prepared for: {quote.account?.name ?? 'No account selected'}
-              {quote.contact?.name ? ` · ${quote.contact.name}` : ''}
-            </Text>
-            {quote.ai_generated ? <Text style={styles.badge}>AI-assisted draft</Text> : null}
+            <Text style={styles.muted}>Issue date: {quote.issue_date}</Text>
+            <Text style={styles.muted}>Valid until: {quote.valid_until ?? 'Not set'}</Text>
           </View>
         </View>
 
-        <View style={styles.preparedForCard}>
-          <Text style={styles.sectionTitle}>Prepared For</Text>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Prepared for:</Text>
           <Text style={styles.preparedForName}>{quote.account?.name ?? 'No account selected'}</Text>
-          <Text style={styles.bodyText}>{quote.contact?.name ?? 'No contact selected'}</Text>
+          <Text style={styles.body}>{quote.contact?.name ?? 'No contact selected'}</Text>
+          {quote.ai_generated ? (
+            <Text style={styles.italicMuted}>AI-assisted estimate</Text>
+          ) : null}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.projectTitle}>{quote.title}</Text>
+          <Text style={styles.title}>{quote.title}</Text>
         </View>
 
         {quote.summary ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Executive Summary</Text>
-            <Text style={styles.summaryText}>{quote.summary}</Text>
+            <Text style={styles.body}>{quote.summary}</Text>
+          </View>
+        ) : null}
+
+        {quote.ai_generated && (quote.estimated_hours || quote.estimated_timeline) ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Estimated Hours & Timeline</Text>
+            <View style={styles.estimateBanner}>
+              <Text style={styles.body}>
+                Estimated: {quote.estimated_hours ?? '—'} hours
+                {quote.estimated_timeline ? ` · ${quote.estimated_timeline}` : ''}
+              </Text>
+            </View>
           </View>
         ) : null}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Scope Of Work</Text>
-          {quote.scope.map((phase, index) => (
-            <View key={`${phase.phase}-${index}`} style={styles.phaseCard}>
-              <View style={styles.phaseHeader}>
-                <Text style={styles.phaseTitle}>
-                  {index + 1}. {phase.phase}
-                </Text>
-                <Text style={styles.durationBadge}>{phase.duration}</Text>
+          {quote.scope.length ? (
+            quote.scope.map((phase, index) => (
+              <View key={`${phase.phase}-${index}`} style={styles.phaseCard}>
+                <View style={styles.phaseHeader}>
+                  <Text style={styles.phaseTitle}>
+                    {index + 1}. {phase.phase}
+                  </Text>
+                  <Text style={styles.phaseMeta}>
+                    {phase.duration}
+                    {phase.estimated_hours ? `\n${phase.estimated_hours} hrs` : ''}
+                  </Text>
+                </View>
+                <Text style={styles.body}>{phase.description}</Text>
+                {phase.deliverables.map((deliverable, deliverableIndex) => (
+                  <Text key={`${phase.phase}-${deliverableIndex}`} style={styles.bullet}>
+                    • {deliverable}
+                  </Text>
+                ))}
               </View>
-              <Text style={styles.phaseDescription}>{phase.description}</Text>
-              {phase.deliverables.map((deliverable, deliverableIndex) => (
-                <Text key={`${phase.phase}-${deliverableIndex}`} style={styles.deliverable}>
-                  • {deliverable}
-                </Text>
-              ))}
+            ))
+          ) : (
+            <View style={styles.card}>
+              <Text style={styles.body}>No scope phases added.</Text>
             </View>
-          ))}
+          )}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Line Items</Text>
-          <View style={styles.tableHeader}>
-            <Text style={styles.colDescription}>Description</Text>
-            <Text style={styles.colType}>Type</Text>
-            <Text style={styles.colQty}>Qty</Text>
-            <Text style={styles.colUnitPrice}>Unit price</Text>
-            <Text style={styles.colAmount}>Amount</Text>
-          </View>
-          {quote.line_items.map((item) => (
-            <View key={item.id} style={styles.tableRow}>
-              <Text style={styles.colDescription}>{item.description}</Text>
-              <Text style={styles.colType}>{item.type}</Text>
-              <Text style={styles.colQty}>{item.qty}</Text>
-              <Text style={styles.colUnitPrice}>{formatMoney(item.unit_price)}</Text>
-              <Text style={styles.colAmount}>{formatMoney(item.qty * item.unit_price)}</Text>
+          <View style={styles.table}>
+            <View style={styles.tableHeader}>
+              <Text style={styles.colDescription}>Description</Text>
+              <Text style={styles.colType}>Type</Text>
+              <Text style={styles.colQty}>Qty</Text>
+              <Text style={styles.colUnitPrice}>Unit price</Text>
+              <Text style={styles.colAmount}>Amount</Text>
             </View>
-          ))}
 
-          <View style={styles.totalsCard}>
-            <View style={styles.totalRow}>
+            {quote.line_items.map((item) => (
+              <View key={item.id} style={styles.tableRow}>
+                <Text style={styles.colDescription}>{item.description}</Text>
+                <Text style={styles.colType}>{item.type}</Text>
+                <Text style={styles.colQty}>{item.qty}</Text>
+                <Text style={styles.colUnitPrice}>{formatMoney(item.unit_price)}</Text>
+                <Text style={styles.colAmount}>{formatMoney(item.qty * item.unit_price)}</Text>
+              </View>
+            ))}
+
+            <View style={styles.summaryRow}>
               <Text>Subtotal</Text>
               <Text>{formatMoney(totals.subtotal)}</Text>
             </View>
-            <View style={styles.totalRow}>
+            <View style={styles.summaryRow}>
               <Text>VAT ({quote.vat_rate}%)</Text>
               <Text>{formatMoney(totals.vat_amount)}</Text>
             </View>
-            <View style={styles.grandTotalRow}>
-              <Text style={styles.grandTotalLabel}>Total</Text>
-              <Text style={styles.grandTotalValue}>{formatMoney(totals.total)}</Text>
+            <View style={styles.totalRow}>
+              <Text style={{ fontWeight: 700 }}>Total</Text>
+              <Text style={{ fontSize: 12, fontWeight: 700 }}>{formatMoney(totals.total)}</Text>
             </View>
           </View>
         </View>
 
+        {quote.ai_generated && quote.complexity_breakdown ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Complexity Breakdown</Text>
+            <View style={styles.appendixCard}>
+              <Text style={styles.body}>How this estimate was calculated:</Text>
+              {quote.complexity_breakdown.features_scored.map((feature, index) => (
+                <Text key={`${feature}-${index}`} style={styles.bullet}>
+                  • {feature}
+                </Text>
+              ))}
+              <Text style={[styles.body, { marginTop: 8 }]}>
+                Before buffer: {quote.complexity_breakdown.total_hours_before_buffer} hrs
+              </Text>
+              <Text style={styles.body}>
+                Final after {quote.complexity_breakdown.buffer_applied}:{' '}
+                {quote.complexity_breakdown.total_hours_final} hrs
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment Terms</Text>
-          <Text style={styles.bodyText}>{quote.payment_terms ?? '—'}</Text>
+          <Text style={styles.body}>{quote.payment_terms ?? '—'}</Text>
         </View>
 
         {quote.notes ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Notes / Assumptions</Text>
-            <Text style={styles.bodyText}>{quote.notes}</Text>
+            <Text style={styles.sectionTitle}>Assumptions & Notes</Text>
+            <Text style={styles.body}>{quote.notes}</Text>
           </View>
         ) : null}
 
@@ -346,6 +366,8 @@ function QuoteDocument({ quote }: { quote: QuoteWithRelations }) {
           This quote is valid until {quote.valid_until ?? 'the stated expiry date'}
           {'\n'}
           Trailhead Holdings Ltd · Registered in England & Wales
+          {'\n'}
+          {quote.quote_number}
         </Text>
       </Page>
     </Document>

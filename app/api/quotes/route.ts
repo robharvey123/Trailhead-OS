@@ -4,6 +4,7 @@ import { createQuote, getQuotes } from '@/lib/db/quotes'
 import type {
   PricingType,
   Quote,
+  QuoteComplexityBreakdown,
   QuoteLineItem,
   QuoteScope,
   QuoteStatus,
@@ -59,14 +60,56 @@ function sanitizeScope(value: unknown): QuoteScope[] {
         return null
       }
 
-      return {
+      const scopeItem: QuoteScope = {
         phase,
         description,
         deliverables,
         duration,
+        estimated_hours: Number.isFinite(Number(record.estimated_hours))
+          ? Number(record.estimated_hours)
+          : undefined,
       }
+
+      return scopeItem
     })
     .filter((item): item is QuoteScope => item !== null)
+}
+
+function sanitizeComplexityBreakdown(value: unknown): QuoteComplexityBreakdown | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined
+  }
+
+  const record = value as Record<string, unknown>
+  const featuresScored = Array.isArray(record.features_scored)
+    ? record.features_scored
+        .filter((entry): entry is string => typeof entry === 'string')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    : []
+  const overheadHours = Number(record.overhead_hours)
+  const totalHoursBeforeBuffer = Number(record.total_hours_before_buffer)
+  const totalHoursFinal = Number(record.total_hours_final)
+  const bufferApplied =
+    typeof record.buffer_applied === 'string' && record.buffer_applied.trim()
+      ? record.buffer_applied.trim()
+      : '15%'
+
+  if (
+    !Number.isFinite(overheadHours) ||
+    !Number.isFinite(totalHoursBeforeBuffer) ||
+    !Number.isFinite(totalHoursFinal)
+  ) {
+    return undefined
+  }
+
+  return {
+    features_scored: featuresScored,
+    overhead_hours: overheadHours,
+    total_hours_before_buffer: totalHoursBeforeBuffer,
+    buffer_applied: bufferApplied,
+    total_hours_final: totalHoursFinal,
+  }
 }
 
 function sanitizeLineItems(value: unknown): QuoteLineItem[] {
@@ -188,10 +231,20 @@ export async function POST(request: NextRequest) {
             : typeof body.enquiry_id === 'string'
               ? body.enquiry_id
               : undefined,
+        pricing_tier_id:
+          body.pricing_tier_id === null || body.pricing_tier_id === undefined
+            ? undefined
+            : typeof body.pricing_tier_id === 'string'
+              ? body.pricing_tier_id
+              : undefined,
         status,
         pricing_type: pricingType,
         title,
         summary: sanitizeText(body.summary) ?? undefined,
+        estimated_hours: Number.isFinite(Number(body.estimated_hours))
+          ? Number(body.estimated_hours)
+          : undefined,
+        estimated_timeline: sanitizeText(body.estimated_timeline) ?? undefined,
         scope: sanitizeScope(body.scope),
         line_items: sanitizeLineItems(body.line_items),
         vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : 20,
@@ -203,6 +256,7 @@ export async function POST(request: NextRequest) {
           sanitizeText(body.payment_terms) ??
           'Payment terms: 50% deposit on acceptance, 50% on completion.',
         notes: sanitizeText(body.notes) ?? undefined,
+        complexity_breakdown: sanitizeComplexityBreakdown(body.complexity_breakdown),
         converted_invoice_id:
           body.converted_invoice_id === null || body.converted_invoice_id === undefined
             ? undefined

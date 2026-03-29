@@ -14,6 +14,8 @@ import {
 } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
 
+const PRICING_TIER_SLUGS = new Set(['mates', 'budget', 'standard'])
+
 export async function GET(request: NextRequest) {
   const unauthorised = requireCoworkAuth(request)
   if (unauthorised) {
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}))
     const workstreamSlug = optionalString(body.workstream)
     const contactName = optionalString(body.contact_name)
+    const tierSlug = optionalString(body.tier)
     const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
     const lineItems = parseLineItems(body.line_items)
     const status = body.status === undefined ? 'draft' : optionalString(body.status)
@@ -70,7 +73,12 @@ export async function POST(request: NextRequest) {
       throw new CoworkApiError('status must be draft or sent', 400)
     }
 
+    if (tierSlug && !PRICING_TIER_SLUGS.has(tierSlug)) {
+      throw new CoworkApiError('tier must be mates, budget, or standard', 400)
+    }
+
     let contactId: string | null = null
+    let pricingTierId: string | null = null
     if (contactName) {
       const { data, error } = await supabaseService
         .from('contacts')
@@ -89,11 +97,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (tierSlug) {
+      const { data, error } = await supabaseService
+        .from('pricing_tiers')
+        .select('id')
+        .eq('slug', tierSlug)
+        .maybeSingle()
+
+      if (error) {
+        throw error
+      }
+
+      if (!data?.id) {
+        throw new CoworkApiError(`Pricing tier not found: ${tierSlug}`, 400)
+      }
+
+      pricingTierId = data.id
+    }
+
     const { data, error } = await supabaseService
       .from('invoices')
       .insert({
         contact_id: contactId,
         workstream_id: workstream?.id ?? null,
+        pricing_tier_id: pricingTierId,
         issue_date: todayDate(),
         due_date: optionalDate(body.due_date, 'due_date'),
         vat_rate: parseVatRate(body.vat_rate),

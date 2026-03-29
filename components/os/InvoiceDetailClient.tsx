@@ -71,9 +71,16 @@ export default function InvoiceDetailClient({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Invoice</p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-50">
-              {invoice.invoice_number}
-            </h1>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-semibold text-slate-50">
+                {invoice.invoice_number}
+              </h1>
+              {invoice.pricing_tier ? (
+                <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100">
+                  {invoice.pricing_tier.name} tier
+                </span>
+              ) : null}
+            </div>
             <div className="mt-4">
               <StatusBadge status={invoice.status} kind="invoice" />
             </div>

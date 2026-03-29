@@ -2,12 +2,14 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import PricingTierSelector from './PricingTierSelector'
 import {
   calculateTotals,
   type Account,
   type Contact,
   type Invoice,
   type LineItem,
+  type PricingTier,
   type Workstream,
 } from '@/lib/types'
 
@@ -24,6 +26,29 @@ function formatMoney(value: number) {
   return `£${value.toFixed(2)}`
 }
 
+function buildStarterLineItems(tier: PricingTier): LineItem[] {
+  return [
+    {
+      id: crypto.randomUUID(),
+      description: 'Development (hourly)',
+      qty: 1,
+      unit_price: tier.hourly_rate,
+    },
+    {
+      id: crypto.randomUUID(),
+      description: 'Project management',
+      qty: 1,
+      unit_price: Math.round(tier.hourly_rate * 0.1),
+    },
+    {
+      id: crypto.randomUUID(),
+      description: 'Hosting & maintenance (monthly)',
+      qty: 1,
+      unit_price: tier.hosting_maintenance,
+    },
+  ]
+}
+
 function getContactLabel(contact: Contact) {
   return contact.company ? `${contact.name} — ${contact.company}` : contact.name
 }
@@ -34,12 +59,14 @@ export default function InvoiceForm({
   workstreams,
   initialInvoice,
   initialAccountId = '',
+  initialPricingTierId = '',
 }: {
   accounts: Account[]
   contacts: Contact[]
   workstreams: Workstream[]
   initialInvoice?: Invoice
   initialAccountId?: string
+  initialPricingTierId?: string
 }) {
   const router = useRouter()
   const [accountId, setAccountId] = useState(initialInvoice?.account_id ?? initialAccountId)
@@ -75,10 +102,14 @@ export default function InvoiceForm({
   const [lineItems, setLineItems] = useState<LineItem[]>(
     initialInvoice?.line_items.length
       ? initialInvoice.line_items
-      : [createEmptyLineItem()]
+      : []
   )
   const [savingAs, setSavingAs] = useState<'draft' | 'sent' | 'edit' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [pricingTierId, setPricingTierId] = useState<string | null>(
+    initialInvoice?.pricing_tier_id ?? initialPricingTierId ?? null
+  )
+  const [showTierNotice, setShowTierNotice] = useState(false)
 
   const filteredContacts = contacts.filter((contact) => {
     if (accountId && contact.account_id !== accountId) {
@@ -104,6 +135,11 @@ export default function InvoiceForm({
     setLineItems((current) =>
       current.length === 1 ? current : current.filter((item) => item.id !== id)
     )
+  }
+
+  function applyStarterItemsForTier(tier: PricingTier) {
+    setLineItems(buildStarterLineItems(tier))
+    setShowTierNotice(false)
   }
 
   async function submitInvoice(nextStatus: 'draft' | 'sent' | 'edit') {
@@ -144,6 +180,7 @@ export default function InvoiceForm({
         account_id: accountId || null,
         contact_id: contactId || null,
         workstream_id: workstreamId || null,
+        pricing_tier_id: pricingTierId,
         issue_date: issueDate,
         due_date: dueDate || null,
         vat_rate: Number(vatRate) || 0,
@@ -283,6 +320,35 @@ export default function InvoiceForm({
       </div>
 
       <div className="rounded-[1.75rem] border border-slate-800 bg-slate-950/50 p-4">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-100">Pricing tier</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Pick a rate structure before adding invoice line items.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <PricingTierSelector
+            value={pricingTierId}
+            autoApplyInitialSelection={!initialInvoice}
+            onChange={(tier) => {
+              setPricingTierId(tier?.id ?? null)
+            }}
+            onRatesApplied={(tier) => {
+              setPricingTierId(tier.id)
+
+              if (lineItems.length === 0) {
+                applyStarterItemsForTier(tier)
+                return
+              }
+
+              setShowTierNotice(true)
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-slate-800 bg-slate-950/50 p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-100">Line items</h2>
@@ -290,14 +356,34 @@ export default function InvoiceForm({
           </div>
           <button
             type="button"
-            onClick={() => setLineItems((current) => [...current, createEmptyLineItem()])}
+            onClick={() => {
+              setLineItems((current) => [...current, createEmptyLineItem()])
+            }}
             className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500"
           >
             Add line item
           </button>
         </div>
 
+        {showTierNotice ? (
+          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100">
+            <p>Tier updated - adjust line item rates manually if needed.</p>
+            <button
+              type="button"
+              onClick={() => setShowTierNotice(false)}
+              className="rounded-full border border-sky-400/30 px-2 py-1 text-xs font-medium text-sky-100 transition hover:border-sky-300"
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
+
         <div className="mt-4 space-y-3">
+          {lineItems.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-dashed border-slate-800 bg-slate-950/60 px-4 py-6 text-center text-sm text-slate-500">
+              Select a pricing tier to pre-fill starter line items, or add your own manually.
+            </div>
+          ) : null}
           {lineItems.map((item) => (
             <div
               key={item.id}

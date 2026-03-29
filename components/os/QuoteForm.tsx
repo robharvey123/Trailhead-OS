@@ -2,12 +2,14 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import PricingTierSelector from './PricingTierSelector'
 import SearchSelect from './SearchSelect'
 import { calculateTotals } from '@/lib/types'
 import type {
   Account,
   Contact,
+  PricingTier,
   PricingType,
   Quote,
   QuoteLineItem,
@@ -45,6 +47,94 @@ function formatMoney(value: number) {
   return `£${value.toFixed(2)}`
 }
 
+function buildStarterLineItems(
+  pricingType: PricingType,
+  tier: PricingTier
+): QuoteLineItem[] {
+  if (pricingType === 'time_and_materials') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        description: 'Development (hourly)',
+        qty: 1,
+        unit_price: tier.hourly_rate,
+        type: 'hourly',
+      },
+      {
+        id: crypto.randomUUID(),
+        description: 'Project management',
+        qty: 1,
+        unit_price: Math.round(tier.hourly_rate * 0.1),
+        type: 'hourly',
+      },
+      {
+        id: crypto.randomUUID(),
+        description: 'Hosting & maintenance (monthly)',
+        qty: 1,
+        unit_price: tier.hosting_maintenance,
+        type: 'fixed',
+      },
+    ]
+  }
+
+  if (pricingType === 'milestone') {
+    return [
+      {
+        id: crypto.randomUUID(),
+        description: 'Milestone 1 - Discovery & Design',
+        qty: 1,
+        unit_price: 0,
+        type: 'milestone',
+      },
+      {
+        id: crypto.randomUUID(),
+        description: 'Milestone 2 - Development',
+        qty: 1,
+        unit_price: 0,
+        type: 'milestone',
+      },
+      {
+        id: crypto.randomUUID(),
+        description: 'Milestone 3 - Testing & Launch',
+        qty: 1,
+        unit_price: 0,
+        type: 'milestone',
+      },
+      {
+        id: crypto.randomUUID(),
+        description: 'Hosting & maintenance (monthly)',
+        qty: 1,
+        unit_price: tier.hosting_maintenance,
+        type: 'fixed',
+      },
+    ]
+  }
+
+  return [
+    {
+      id: crypto.randomUUID(),
+      description: 'Project development',
+      qty: 1,
+      unit_price: 0,
+      type: 'fixed',
+    },
+    {
+      id: crypto.randomUUID(),
+      description: 'Project management',
+      qty: 1,
+      unit_price: 0,
+      type: 'fixed',
+    },
+    {
+      id: crypto.randomUUID(),
+      description: 'Hosting & maintenance (monthly)',
+      qty: 1,
+      unit_price: tier.hosting_maintenance,
+      type: 'fixed',
+    },
+  ]
+}
+
 interface QuoteFormProps {
   accounts: Account[]
   contacts: Contact[]
@@ -52,6 +142,7 @@ interface QuoteFormProps {
   initialQuote?: Quote | null
   initialAccountId?: string
   initialEnquiryId?: string
+  initialPricingTierId?: string
 }
 
 export default function QuoteForm({
@@ -61,6 +152,7 @@ export default function QuoteForm({
   initialQuote = null,
   initialAccountId = '',
   initialEnquiryId = '',
+  initialPricingTierId = '',
 }: QuoteFormProps) {
   const router = useRouter()
   const [title, setTitle] = useState(initialQuote?.title ?? '')
@@ -79,7 +171,7 @@ export default function QuoteForm({
     initialQuote?.scope.length ? initialQuote.scope : [createEmptyPhase()]
   )
   const [lineItems, setLineItems] = useState<QuoteLineItem[]>(
-    initialQuote?.line_items.length ? initialQuote.line_items : [createEmptyLineItem()]
+    initialQuote?.line_items.length ? initialQuote.line_items : []
   )
   const [vatRate, setVatRate] = useState(String(initialQuote?.vat_rate ?? 20))
   const [paymentTerms, setPaymentTerms] = useState(
@@ -90,12 +182,30 @@ export default function QuoteForm({
   const [error, setError] = useState<string | null>(null)
   const [deliverableDrafts, setDeliverableDrafts] = useState<Record<number, string>>({})
   const [draggingPhaseIndex, setDraggingPhaseIndex] = useState<number | null>(null)
+  const [pricingTierId, setPricingTierId] = useState<string | null>(
+    initialQuote?.pricing_tier_id ?? initialPricingTierId ?? null
+  )
+  const [pricingTier, setPricingTier] = useState<PricingTier | null>(
+    initialQuote?.pricing_tier ?? null
+  )
+  const [lineItemsMode, setLineItemsMode] = useState<'empty' | 'auto' | 'manual'>(
+    initialQuote?.line_items.length ? 'manual' : 'empty'
+  )
+  const [showTierNotice, setShowTierNotice] = useState(false)
 
   const filteredContacts = useMemo(
     () => contacts.filter((contact) => !accountId || contact.account_id === accountId),
     [accountId, contacts]
   )
   const totals = calculateTotals(lineItems, Number(vatRate) || 0)
+
+  useEffect(() => {
+    if (!pricingTier || lineItemsMode !== 'auto') {
+      return
+    }
+
+    setLineItems(buildStarterLineItems(pricingType, pricingTier))
+  }, [lineItemsMode, pricingTier, pricingType])
 
   function updatePhase(index: number, patch: Partial<QuoteScope>) {
     setScope((current) => current.map((phase, phaseIndex) => (phaseIndex === index ? { ...phase, ...patch } : phase)))
@@ -111,11 +221,19 @@ export default function QuoteForm({
   }
 
   function updateLineItem(id: string, patch: Partial<QuoteLineItem>) {
+    setLineItemsMode('manual')
     setLineItems((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)))
   }
 
   function removeLineItem(id: string) {
+    setLineItemsMode('manual')
     setLineItems((current) => (current.length === 1 ? current : current.filter((item) => item.id !== id)))
+  }
+
+  function applyStarterItemsForTier(tier: PricingTier) {
+    setLineItems(buildStarterLineItems(pricingType, tier))
+    setLineItemsMode('auto')
+    setShowTierNotice(false)
   }
 
   async function submitQuote(nextStatus: QuoteStatus | 'edit') {
@@ -159,6 +277,7 @@ export default function QuoteForm({
         contact_id: contactId || null,
         workstream_id: workstreamId || null,
         enquiry_id: initialQuote?.enquiry_id ?? (initialEnquiryId || null),
+        pricing_tier_id: pricingTierId,
         pricing_type: pricingType,
         valid_until: validUntil || null,
         issue_date: issueDate,
@@ -430,6 +549,38 @@ export default function QuoteForm({
       </section>
 
       <section className="rounded-[1.75rem] border border-slate-800 bg-slate-950/40 p-5">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-100">Pricing tier</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Choose the rate structure for this quote before building line items.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <PricingTierSelector
+            value={pricingTierId}
+            autoApplyInitialSelection={!initialQuote}
+            onChange={(tier) => {
+              setPricingTierId(tier?.id ?? null)
+              setPricingTier(tier)
+            }}
+            onRatesApplied={(tier) => {
+              setPricingTierId(tier.id)
+              setPricingTier(tier)
+
+              if (lineItems.length === 0) {
+                applyStarterItemsForTier(tier)
+                return
+              }
+
+              setLineItemsMode('manual')
+              setShowTierNotice(true)
+            }}
+          />
+        </div>
+      </section>
+
+      <section className="rounded-[1.75rem] border border-slate-800 bg-slate-950/40 p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-slate-100">Line items</h2>
@@ -437,12 +588,37 @@ export default function QuoteForm({
           </div>
           <button
             type="button"
-            onClick={() => setLineItems((current) => [...current, createEmptyLineItem()])}
+            onClick={() => {
+              setLineItemsMode('manual')
+              setLineItems((current) => [
+                ...current,
+                createEmptyLineItem(
+                  pricingType === 'milestone'
+                    ? 'milestone'
+                    : pricingType === 'time_and_materials'
+                      ? 'hourly'
+                      : 'fixed'
+                ),
+              ])
+            }}
             className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-100 transition hover:border-slate-500"
           >
             Add line item
           </button>
         </div>
+
+        {showTierNotice ? (
+          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100">
+            <p>Tier updated - adjust line item rates manually if needed.</p>
+            <button
+              type="button"
+              onClick={() => setShowTierNotice(false)}
+              className="rounded-full border border-sky-400/30 px-2 py-1 text-xs font-medium text-sky-100 transition hover:border-sky-300"
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
 
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -457,6 +633,13 @@ export default function QuoteForm({
               </tr>
             </thead>
             <tbody>
+              {lineItems.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-sm text-slate-500">
+                    Select a pricing tier to pre-fill starter line items, or add your own manually.
+                  </td>
+                </tr>
+              ) : null}
               {lineItems.map((item) => (
                 <tr key={item.id} className="border-t border-slate-800">
                   <td className="py-3">

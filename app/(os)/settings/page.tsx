@@ -1,5 +1,8 @@
 import Link from 'next/link'
+import PricingTierSettings from '@/components/os/PricingTierSettings'
+import { getPricingTiers } from '@/lib/db/pricing-tiers'
 import { createClient } from '@/lib/supabase/server'
+import type { PricingTier } from '@/lib/types'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -11,6 +14,7 @@ export default async function SettingsPage() {
   let newEnquiryCount = 0
   let draftInvoiceCount = 0
   let workspaces: Array<{ id: string; name: string }> = []
+  let pricingTiers: PricingTier[] = []
 
   try {
     const { count } = await supabase.from('contacts').select('id', { count: 'exact', head: true })
@@ -39,6 +43,10 @@ export default async function SettingsPage() {
       .select('id, name')
       .order('created_at', { ascending: false })
     workspaces = data ?? []
+  } catch {}
+
+  try {
+    pricingTiers = await getPricingTiers(supabase)
   } catch {}
 
   return (
@@ -133,6 +141,8 @@ export default async function SettingsPage() {
           </div>
         )}
       </section>
+
+      <PricingTierSettings pricingTiers={pricingTiers} />
     </div>
   )
 }

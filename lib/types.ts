@@ -12,6 +12,22 @@ export type EnquiryStatus = 'new' | 'reviewed' | 'converted'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 export type BlogPostStatus = 'draft' | 'published'
 
+export interface PricingTier {
+  id: string
+  name: string
+  slug: 'mates' | 'budget' | 'standard'
+  description?: string
+  hourly_rate: number
+  day_rate: number
+  monthly_retainer: number
+  hosting_maintenance: number
+  fixed_fee_margin: number
+  sort_order: number
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Account {
   id: string
   name: string
@@ -116,6 +132,15 @@ export interface QuoteScope {
   description: string
   deliverables: string[]
   duration: string
+  estimated_hours?: number
+}
+
+export interface QuoteComplexityBreakdown {
+  features_scored: string[]
+  overhead_hours: number
+  total_hours_before_buffer: number
+  buffer_applied: string
+  total_hours_final: number
 }
 
 export interface QuoteLineItem {
@@ -141,6 +166,8 @@ export interface Invoice {
   account_id: string | null
   contact_id: string | null
   workstream_id: string | null
+  pricing_tier_id?: string
+  pricing_tier?: PricingTier
   status: InvoiceStatus
   issue_date: string
   due_date: string | null
@@ -183,16 +210,21 @@ export interface Quote {
   contact_id?: string
   workstream_id?: string
   enquiry_id?: string
+  pricing_tier_id?: string
+  pricing_tier?: PricingTier
   status: QuoteStatus
   pricing_type: PricingType
   title: string
   summary?: string
+  estimated_hours?: number
+  estimated_timeline?: string
   scope: QuoteScope[]
   line_items: QuoteLineItem[]
   vat_rate: number
   valid_until?: string
   payment_terms?: string
   notes?: string
+  complexity_breakdown?: QuoteComplexityBreakdown
   converted_invoice_id?: string
   ai_generated: boolean
   ai_generated_at?: string

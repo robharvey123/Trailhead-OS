@@ -139,6 +139,12 @@ export async function POST(request: NextRequest) {
         : typeof body.workstream_id === 'string'
           ? body.workstream_id
           : null,
+    pricing_tier_id:
+      body.pricing_tier_id === null || body.pricing_tier_id === undefined
+        ? null
+        : typeof body.pricing_tier_id === 'string'
+          ? body.pricing_tier_id
+          : null,
     status,
     issue_date:
       typeof body.issue_date === 'string' && body.issue_date.trim()

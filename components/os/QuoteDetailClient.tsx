@@ -121,7 +121,14 @@ export default function QuoteDetailClient({
                     </span>
                   ) : null}
                 </div>
-                <h1 className="mt-3 text-3xl font-semibold text-slate-50">{quote.quote_number}</h1>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <h1 className="text-3xl font-semibold text-slate-50">{quote.quote_number}</h1>
+                  {quote.pricing_tier ? (
+                    <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100">
+                      {quote.pricing_tier.name} tier
+                    </span>
+                  ) : null}
+                </div>
                 <p className="mt-2 text-lg text-slate-200">{quote.title}</p>
               </div>
               {quote.workstream ? (
@@ -160,6 +167,16 @@ export default function QuoteDetailClient({
             </div>
           ) : null}
 
+          {quote.ai_generated && (quote.estimated_hours || quote.estimated_timeline) ? (
+            <div className="rounded-[2rem] border border-sky-500/20 bg-sky-500/5 p-6">
+              <h2 className="text-lg font-semibold text-slate-100">Estimated hours & timeline</h2>
+              <p className="mt-4 text-sm text-sky-100">
+                Estimated: {quote.estimated_hours ?? '—'} hours
+                {quote.estimated_timeline ? ` · ${quote.estimated_timeline}` : ''}
+              </p>
+            </div>
+          ) : null}
+
           <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
             <h2 className="text-lg font-semibold text-slate-100">Scope of work</h2>
             {quote.scope.length ? (
@@ -172,6 +189,7 @@ export default function QuoteDetailClient({
                       </p>
                       <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
                         {phase.duration}
+                        {phase.estimated_hours ? ` · ${phase.estimated_hours} hrs` : ''}
                       </span>
                     </div>
                     <p className="mt-3 whitespace-pre-wrap text-sm text-slate-300">{phase.description}</p>
@@ -217,6 +235,47 @@ export default function QuoteDetailClient({
               </table>
             </div>
           </div>
+
+          {quote.ai_generated && quote.complexity_breakdown ? (
+            <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+              <h2 className="text-lg font-semibold text-slate-100">Complexity breakdown</h2>
+              <p className="mt-2 text-sm text-slate-400">How this estimate was calculated.</p>
+              <div className="mt-4 space-y-4">
+                {quote.complexity_breakdown.features_scored.length ? (
+                  <ul className="list-disc space-y-2 pl-5 text-sm text-slate-300">
+                    {quote.complexity_breakdown.features_scored.map((feature, index) => (
+                      <li key={`${feature}-${index}`}>{feature}</li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                <dl className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                    <dt className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                      Before buffer
+                    </dt>
+                    <dd className="mt-2 text-base font-medium text-slate-100">
+                      {quote.complexity_breakdown.total_hours_before_buffer} hrs
+                    </dd>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                    <dt className="text-xs uppercase tracking-[0.18em] text-slate-500">Overhead</dt>
+                    <dd className="mt-2 text-base font-medium text-slate-100">
+                      {quote.complexity_breakdown.overhead_hours} hrs
+                    </dd>
+                  </div>
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                    <dt className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                      Final with {quote.complexity_breakdown.buffer_applied}
+                    </dt>
+                    <dd className="mt-2 text-base font-medium text-slate-100">
+                      {quote.complexity_breakdown.total_hours_final} hrs
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          ) : null}
 
           <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
             <div className="space-y-6">

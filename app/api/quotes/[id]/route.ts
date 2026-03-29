@@ -3,6 +3,7 @@ import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getQuoteById, updateQuote } from '@/lib/db/quotes'
 import type {
   PricingType,
+  QuoteComplexityBreakdown,
   QuoteLineItem,
   QuoteScope,
   QuoteStatus,
@@ -58,9 +59,56 @@ function sanitizeScope(value: unknown): QuoteScope[] | null {
         return null
       }
 
-      return { phase, description, deliverables, duration }
+      const scopeItem: QuoteScope = {
+        phase,
+        description,
+        deliverables,
+        duration,
+        estimated_hours: Number.isFinite(Number(record.estimated_hours))
+          ? Number(record.estimated_hours)
+          : undefined,
+      }
+
+      return scopeItem
     })
     .filter((item): item is QuoteScope => item !== null)
+}
+
+function sanitizeComplexityBreakdown(value: unknown): QuoteComplexityBreakdown | null {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const record = value as Record<string, unknown>
+  const featuresScored = Array.isArray(record.features_scored)
+    ? record.features_scored
+        .filter((entry): entry is string => typeof entry === 'string')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    : []
+  const overheadHours = Number(record.overhead_hours)
+  const totalHoursBeforeBuffer = Number(record.total_hours_before_buffer)
+  const totalHoursFinal = Number(record.total_hours_final)
+  const bufferApplied =
+    typeof record.buffer_applied === 'string' && record.buffer_applied.trim()
+      ? record.buffer_applied.trim()
+      : '15%'
+
+  if (
+    !Number.isFinite(overheadHours) ||
+    !Number.isFinite(totalHoursBeforeBuffer) ||
+    !Number.isFinite(totalHoursFinal)
+  ) {
+    return null
+  }
+
+  return {
+    features_scored: featuresScored,
+    overhead_hours: overheadHours,
+    total_hours_before_buffer: totalHoursBeforeBuffer,
+    buffer_applied: bufferApplied,
+    total_hours_final: totalHoursFinal,
+  }
 }
 
 function sanitizeLineItems(value: unknown): QuoteLineItem[] | null {
@@ -169,7 +217,14 @@ export async function PATCH(
     patch.pricing_type = body.pricing_type
   }
 
-  for (const key of ['account_id', 'contact_id', 'workstream_id', 'enquiry_id', 'converted_invoice_id'] as const) {
+  for (const key of [
+    'account_id',
+    'contact_id',
+    'workstream_id',
+    'enquiry_id',
+    'pricing_tier_id',
+    'converted_invoice_id',
+  ] as const) {
     if (body[key] !== undefined) {
       if (body[key] !== null && typeof body[key] !== 'string') {
         return NextResponse.json({ error: `${key} must be a string or null` }, { status: 400 })
@@ -179,6 +234,16 @@ export async function PATCH(
   }
 
   if (body.summary !== undefined) patch.summary = sanitizeText(body.summary)
+  if (body.estimated_hours !== undefined) {
+    const estimatedHours = Number(body.estimated_hours)
+    if (!Number.isFinite(estimatedHours)) {
+      return NextResponse.json({ error: 'estimated_hours must be numeric' }, { status: 400 })
+    }
+    patch.estimated_hours = estimatedHours
+  }
+  if (body.estimated_timeline !== undefined) {
+    patch.estimated_timeline = sanitizeText(body.estimated_timeline)
+  }
   if (body.valid_until !== undefined) patch.valid_until = typeof body.valid_until === 'string' ? body.valid_until : null
   if (body.payment_terms !== undefined) patch.payment_terms = sanitizeText(body.payment_terms)
   if (body.notes !== undefined) patch.notes = sanitizeText(body.notes)
@@ -200,6 +265,17 @@ export async function PATCH(
       return NextResponse.json({ error: 'scope must be an array' }, { status: 400 })
     }
     patch.scope = scope
+  }
+
+  if (body.complexity_breakdown !== undefined) {
+    const complexityBreakdown = sanitizeComplexityBreakdown(body.complexity_breakdown)
+    if (!complexityBreakdown) {
+      return NextResponse.json(
+        { error: 'complexity_breakdown must be a valid object' },
+        { status: 400 }
+      )
+    }
+    patch.complexity_breakdown = complexityBreakdown
   }
 
   if (body.line_items !== undefined) {

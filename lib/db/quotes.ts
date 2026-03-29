@@ -5,6 +5,7 @@ import {
   type Contact,
   type Enquiry,
   type Invoice,
+  type PricingTier,
   type InvoiceTotals,
   type Quote,
   type QuoteListItem,
@@ -18,6 +19,7 @@ type QuoteRow = Quote & {
   accounts: Account | null
   contacts: Contact | null
   enquiries: Enquiry | null
+  pricing_tiers: PricingTier | null
   workstreams: { label: string; colour: string } | null
 }
 
@@ -33,6 +35,7 @@ function mapQuote(row: QuoteRow): QuoteListItem {
     contact: row.contacts ?? undefined,
     contact_name: row.contacts?.name ?? null,
     contact_company: row.contacts?.company ?? null,
+    pricing_tier: row.pricing_tiers ?? undefined,
     workstream: row.workstreams ?? undefined,
     enquiry: row.enquiries ?? undefined,
     invoice: null,
@@ -58,7 +61,7 @@ export async function getQuotes(
   const supabase = await getSupabase(client)
   let query = supabase
     .from('quotes')
-    .select('*, accounts(*), contacts(*), enquiries(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
     .order('issue_date', { ascending: false })
     .order('created_at', { ascending: false })
 
@@ -115,7 +118,7 @@ export async function getQuoteById(
   const supabase = await getSupabase(client)
   const { data, error } = await supabase
     .from('quotes')
-    .select('*, accounts(*), contacts(*), enquiries(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
     .eq('id', id)
     .maybeSingle()
 
@@ -161,10 +164,13 @@ function sanitizeQuotePayload(data: QuoteMutationInput) {
   if ('contact_id' in data) payload.contact_id = data.contact_id ?? null
   if ('workstream_id' in data) payload.workstream_id = data.workstream_id ?? null
   if ('enquiry_id' in data) payload.enquiry_id = data.enquiry_id ?? null
+  if ('pricing_tier_id' in data) payload.pricing_tier_id = data.pricing_tier_id ?? null
   if ('status' in data) payload.status = data.status
   if ('pricing_type' in data) payload.pricing_type = data.pricing_type
   if ('title' in data) payload.title = typeof data.title === 'string' ? data.title.trim() : data.title
   if ('summary' in data) payload.summary = sanitizeText(data.summary)
+  if ('estimated_hours' in data) payload.estimated_hours = data.estimated_hours ?? null
+  if ('estimated_timeline' in data) payload.estimated_timeline = sanitizeText(data.estimated_timeline)
   if ('scope' in data) payload.scope = data.scope ?? []
   if ('line_items' in data) payload.line_items = data.line_items ?? []
   if ('vat_rate' in data) payload.vat_rate = data.vat_rate ?? 20
@@ -175,6 +181,9 @@ function sanitizeQuotePayload(data: QuoteMutationInput) {
       'Payment terms: 50% deposit on acceptance, 50% on completion.'
   }
   if ('notes' in data) payload.notes = sanitizeText(data.notes)
+  if ('complexity_breakdown' in data) {
+    payload.complexity_breakdown = data.complexity_breakdown ?? null
+  }
   if ('converted_invoice_id' in data) payload.converted_invoice_id = data.converted_invoice_id ?? null
   if ('ai_generated' in data) payload.ai_generated = data.ai_generated ?? false
   if ('ai_generated_at' in data) payload.ai_generated_at = data.ai_generated_at ?? null
@@ -197,7 +206,7 @@ export async function createQuote(
   const { data: quote, error } = await supabase
     .from('quotes')
     .insert(payload)
-    .select('*, accounts(*), contacts(*), enquiries(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
     .single()
 
   if (error) {
@@ -223,7 +232,7 @@ export async function updateQuote(
     .from('quotes')
     .update(patch)
     .eq('id', id)
-    .select('*, accounts(*), contacts(*), enquiries(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
     .single()
 
   if (error) {

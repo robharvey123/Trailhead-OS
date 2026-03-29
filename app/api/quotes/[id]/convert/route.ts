@@ -37,6 +37,7 @@ export async function POST(
         account_id: quote.account_id ?? null,
         contact_id: quote.contact_id ?? null,
         workstream_id: quote.workstream_id ?? null,
+        pricing_tier_id: quote.pricing_tier_id ?? undefined,
         status: 'draft',
         issue_date: new Date().toISOString().slice(0, 10),
         due_date: null,

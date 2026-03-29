@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 export default async function NewQuotePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ account_id?: string; enquiry_id?: string }>
+  searchParams?: Promise<{ account_id?: string; enquiry_id?: string; pricing_tier_id?: string }>
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const supabase = await createClient()
@@ -24,6 +24,7 @@ export default async function NewQuotePage({
       workstreams={workstreams}
       initialAccountId={resolvedSearchParams?.account_id ?? ''}
       initialEnquiryId={resolvedSearchParams?.enquiry_id ?? ''}
+      initialPricingTierId={resolvedSearchParams?.pricing_tier_id ?? ''}
     />
   )
 }

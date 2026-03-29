@@ -140,6 +140,16 @@ export async function PATCH(
     patch.workstream_id = body.workstream_id
   }
 
+  if (body.pricing_tier_id !== undefined) {
+    if (body.pricing_tier_id !== null && typeof body.pricing_tier_id !== 'string') {
+      return NextResponse.json(
+        { error: 'pricing_tier_id must be a string or null' },
+        { status: 400 }
+      )
+    }
+    patch.pricing_tier_id = body.pricing_tier_id
+  }
+
   if (body.status !== undefined) {
     if (typeof body.status !== 'string' || !INVOICE_STATUSES.has(body.status as InvoiceStatus)) {
       return NextResponse.json(
