@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import OpenAI from 'openai'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { createQuote, getQuoteById } from '@/lib/db/quotes'
 import type { Contact, Quote, QuoteLineItem, QuoteScope } from '@/lib/types'
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514'
+const OPENAI_MODEL = process.env.OPENAI_MODEL ?? 'gpt-4.1'
 
 type AiQuoteResponse = {
   title: string
@@ -193,39 +194,24 @@ function sanitizeLineItems(value: unknown): QuoteLineItem[] {
     .filter((item): item is QuoteLineItem => item !== null)
 }
 
-async function callAnthropic(system: string, user: string) {
-  const apiKey = process.env.ANTHROPIC_API_KEY
+async function callOpenAI(system: string, user: string) {
+  const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is not configured')
+    throw new Error('OPENAI_API_KEY is not configured')
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: ANTHROPIC_MODEL,
-      max_tokens: 2400,
-      system,
-      messages: [{ role: 'user', content: user }],
-    }),
+  const openai = new OpenAI({ apiKey })
+  const response = await openai.chat.completions.create({
+    model: OPENAI_MODEL,
+    temperature: 0.2,
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
   })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Anthropic API error: ${response.status} ${errorText}`)
-  }
-
-  const data = await response.json()
-  const text = Array.isArray(data.content)
-    ? data.content
-        .filter((item: { type?: string; text?: string }) => item.type === 'text' && typeof item.text === 'string')
-        .map((item: { text: string }) => item.text)
-        .join('\n')
-    : ''
+  const text = response.choices[0]?.message?.content ?? ''
 
   if (!text.trim()) {
     throw new Error('AI generation failed')
@@ -325,7 +311,7 @@ export async function POST(request: NextRequest) {
     }
 
     const convertedContact = (convertedContactResult.data as Contact | null) ?? null
-    const rawText = await callAnthropic(
+    const rawText = await callOpenAI(
       SYSTEM_PROMPT,
       buildUserPrompt({
         enquiry: {
