@@ -5,6 +5,8 @@ import type { EnquiryFormState } from '@/lib/types'
 
 type StepKind = 'text' | 'textarea' | 'radio' | 'chips'
 
+const OTHER_BIZ_TYPE_OPTION = 'Other — please describe'
+
 type StepDefinition = {
   field: keyof EnquiryFormState
   title: string
@@ -13,7 +15,19 @@ type StepDefinition = {
   placeholder?: string
   hint?: string
   options?: readonly string[]
+  inputType?: 'text' | 'email' | 'tel'
 }
+
+const BUDGET_OPTIONS = [
+  'Under £2,000',
+  '£2,000–£5,000',
+  '£5,000–£15,000',
+  '£15,000–£30,000',
+  '£30,000–£50,000',
+  '£50,000+',
+  'Not sure yet',
+  'Prefer to discuss',
+] as const
 
 const STEPS: StepDefinition[] = [
   {
@@ -25,10 +39,27 @@ const STEPS: StepDefinition[] = [
   },
   {
     field: 'contact_name',
-    title: 'Who should we speak to about this?',
+    title: 'Full name',
     kind: 'text',
     required: true,
-    placeholder: 'e.g. James Turner, Operations Manager',
+    placeholder: 'e.g. James Turner',
+  },
+  {
+    field: 'contact_email',
+    title: 'Email address',
+    kind: 'text',
+    required: true,
+    inputType: 'email',
+    placeholder: 'e.g. james@apexbuilding.co.uk',
+    hint: "We'll use this to reply with next steps.",
+  },
+  {
+    field: 'contact_phone',
+    title: 'Phone number',
+    kind: 'text',
+    required: true,
+    inputType: 'tel',
+    placeholder: 'e.g. 07700 900123',
   },
   {
     field: 'biz_type',
@@ -36,12 +67,48 @@ const STEPS: StepDefinition[] = [
     kind: 'radio',
     required: true,
     options: [
-      'Construction/Building',
-      'Electrical/Plumbing/HVAC',
-      'Facilities Management',
-      'Fire & Security',
-      'Cleaning & Maintenance',
-      'Other trade/field services',
+      'Construction & building',
+      'Electrical, plumbing & HVAC',
+      'Facilities management',
+      'Fire & security',
+      'Cleaning & maintenance',
+      'Retail & e-commerce',
+      'Hospitality & food service',
+      'Healthcare & wellbeing',
+      'Professional services (legal, finance, HR)',
+      'Technology & software',
+      'Education & training',
+      'Logistics & transport',
+      'Manufacturing',
+      'Charity & non-profit',
+      OTHER_BIZ_TYPE_OPTION,
+    ],
+  },
+  {
+    field: 'project_type',
+    title: 'What are you looking to build?',
+    kind: 'radio',
+    required: true,
+    options: [
+      'A website (marketing, brochure or e-commerce)',
+      'A web application (internal tool or client-facing)',
+      'A mobile app',
+      'An integration or automation',
+      'Not sure — I need advice',
+      'Something else',
+    ],
+  },
+  {
+    field: 'timeline',
+    title: 'When do you need this live?',
+    kind: 'radio',
+    required: true,
+    options: [
+      'As soon as possible (within 4 weeks)',
+      '1–3 months',
+      '3–6 months',
+      '6–12 months',
+      "No fixed deadline — let's get it right",
     ],
   },
   {
@@ -139,44 +206,30 @@ const STEPS: StepDefinition[] = [
     hint: 'Be as specific as you like — the more detail the better',
   },
   {
-    field: 'timeline',
-    title: 'What does your ideal timeline look like?',
+    field: 'referral_source',
+    title: 'How did you find us?',
     kind: 'radio',
     required: true,
     options: [
-      'As soon as possible',
-      'Within 1–2 months',
-      '3–6 months',
-      'No fixed deadline',
+      'Google search',
+      'LinkedIn',
+      'Referral from someone I know',
+      'MVP Cricket',
+      "I've worked with Rob before",
+      'Other',
     ],
-  },
-  {
-    field: 'budget',
-    title: 'Do you have a rough budget in mind?',
-    kind: 'radio',
-    required: false,
-    options: [
-      'Under £5,000',
-      '£5,000–£15,000',
-      '£15,000–£30,000',
-      '£30,000+',
-      'Not sure yet',
-      'Prefer to discuss',
-    ],
-  },
-  {
-    field: 'extra',
-    title: 'Anything else we should know before we speak?',
-    kind: 'textarea',
-    required: false,
-    hint: "Extra context, must-haves, or things that haven't worked before",
   },
 ]
+
+const PROGRESS_STEP_COUNT = STEPS.length
 
 const INITIAL_FORM: EnquiryFormState = {
   biz_name: '',
   contact_name: '',
+  contact_email: '',
+  contact_phone: '',
   biz_type: '',
+  project_type: '',
   team_size: '',
   team_split: '',
   top_features: [],
@@ -187,8 +240,13 @@ const INITIAL_FORM: EnquiryFormState = {
   existing_tools: '',
   pain_points: '',
   timeline: '',
+  referral_source: '',
   budget: '',
   extra: '',
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 }
 
 function isStepValid(step: StepDefinition, form: EnquiryFormState): boolean {
@@ -202,11 +260,20 @@ function isStepValid(step: StepDefinition, form: EnquiryFormState): boolean {
     return Array.isArray(value) && value.length > 0
   }
 
+  if (step.field === 'contact_email') {
+    return typeof value === 'string' && isValidEmail(value)
+  }
+
   return typeof value === 'string' && value.trim().length > 0
 }
 
+function getProgressPosition(currentStep: number) {
+  return Math.min(currentStep + 1, PROGRESS_STEP_COUNT)
+}
+
 function ProgressBar({ currentStep }: { currentStep: number }) {
-  const progress = ((currentStep + 1) / STEPS.length) * 100
+  const progressStep = getProgressPosition(currentStep)
+  const progress = (progressStep / PROGRESS_STEP_COUNT) * 100
 
   return (
     <div className="space-y-3">
@@ -217,7 +284,7 @@ function ProgressBar({ currentStep }: { currentStep: number }) {
         />
       </div>
       <p className="text-sm tracking-[0.2em] text-[#8b7357]">
-        {currentStep + 1} / {STEPS.length}
+        {progressStep} / {PROGRESS_STEP_COUNT}
       </p>
     </div>
   )
@@ -230,6 +297,7 @@ export default function PublicDiscoveryForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [isComplete, setIsComplete] = useState(false)
+  const [bizTypeSelection, setBizTypeSelection] = useState('')
 
   const step = STEPS[currentStep]
   const isLastStep = currentStep === STEPS.length - 1
@@ -327,7 +395,7 @@ export default function PublicDiscoveryForm() {
       return (
         <input
           autoFocus
-          type="text"
+          type={step.inputType ?? 'text'}
           value={typeof value === 'string' ? value : ''}
           onChange={(event) => updateField(step.field, event.target.value)}
           onKeyDown={onAdvanceKeyDown}
@@ -352,16 +420,39 @@ export default function PublicDiscoveryForm() {
     }
 
     if (step.kind === 'radio') {
+      const selectedBizType =
+        bizTypeSelection ||
+        (typeof value === 'string' && value && !step.options?.includes(value)
+          ? OTHER_BIZ_TYPE_OPTION
+          : '')
+
       return (
         <div className="space-y-3">
           {step.options?.map((option) => {
-            const selected = value === option
+            const selected =
+              step.field === 'biz_type'
+                ? option === OTHER_BIZ_TYPE_OPTION
+                  ? selectedBizType === OTHER_BIZ_TYPE_OPTION
+                  : value === option
+                : value === option
 
             return (
               <button
                 key={option}
                 type="button"
-                onClick={() => updateField(step.field, option)}
+                onClick={() => {
+                  if (step.field === 'biz_type') {
+                    if (option === OTHER_BIZ_TYPE_OPTION) {
+                      setBizTypeSelection(OTHER_BIZ_TYPE_OPTION)
+                      updateField(step.field, '')
+                      return
+                    }
+
+                    setBizTypeSelection(option)
+                  }
+
+                  updateField(step.field, option)
+                }}
                 className={`flex min-h-12 w-full items-center justify-between rounded-[1.4rem] border px-4 py-4 text-left text-base transition sm:text-lg ${
                   selected
                     ? 'border-[#b76e42] bg-[#fff7ef] text-[#6f3f1f] shadow-[0_18px_45px_rgba(183,110,66,0.15)]'
@@ -379,6 +470,68 @@ export default function PublicDiscoveryForm() {
               </button>
             )
           })}
+
+          {step.field === 'biz_type' && selectedBizType === OTHER_BIZ_TYPE_OPTION ? (
+            <input
+              autoFocus
+              type="text"
+              value={typeof value === 'string' ? value : ''}
+              onChange={(event) => updateField(step.field, event.target.value)}
+              onKeyDown={onAdvanceKeyDown}
+              placeholder="Please describe your business"
+              className="w-full rounded-[1.4rem] border border-[#d9ccb9] bg-white px-5 py-4 text-base text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf] sm:text-lg"
+            />
+          ) : null}
+
+          {step.field === 'referral_source' ? (
+            <div className="space-y-6 border-t border-[#eee3d4] pt-6">
+              <div className="space-y-3">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8b7357]">
+                  Optional: budget
+                </p>
+                <div className="space-y-3">
+                  {BUDGET_OPTIONS.map((option) => {
+                    const selectedBudget = form.budget === option
+
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => updateField('budget', selectedBudget ? '' : option)}
+                        className={`flex min-h-12 w-full items-center justify-between rounded-[1.4rem] border px-4 py-4 text-left text-base transition sm:text-lg ${
+                          selectedBudget
+                            ? 'border-[#b76e42] bg-[#fff7ef] text-[#6f3f1f] shadow-[0_18px_45px_rgba(183,110,66,0.15)]'
+                            : 'border-[#dbcdbb] bg-white text-[#334155] hover:border-[#c99a77] hover:bg-[#fffaf4]'
+                        }`}
+                      >
+                        <span>{option}</span>
+                        <span
+                          className={`h-5 w-5 rounded-full border ${
+                            selectedBudget
+                              ? 'border-[#b76e42] bg-[#b76e42] ring-4 ring-[#f3dec8]'
+                              : 'border-[#cbb8a1] bg-white'
+                          }`}
+                        />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8b7357]">
+                  Optional: anything else we should know?
+                </p>
+                <textarea
+                  rows={5}
+                  value={form.extra}
+                  onChange={(event) => updateField('extra', event.target.value)}
+                  placeholder="Extra context, must-haves, or things that haven't worked before"
+                  className="min-h-32 w-full rounded-[1.4rem] border border-[#d9ccb9] bg-white px-5 py-4 text-base text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf] sm:text-lg"
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
       )
     }

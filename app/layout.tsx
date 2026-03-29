@@ -2,8 +2,13 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Brand Opps',
-  description: 'Multi-tenant sales analytics for consumer brands.',
+  title: 'Trailhead Holdings',
+  description: 'Commercial strategy. Digital products. Built to last.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

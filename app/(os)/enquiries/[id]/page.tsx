@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/server'
 const QUESTION_LABELS: Array<{ key: string; label: string }> = [
   { key: 'biz_name', label: 'Business name' },
   { key: 'contact_name', label: 'Contact name' },
+  { key: 'contact_email', label: 'Contact email' },
+  { key: 'contact_phone', label: 'Contact phone' },
   { key: 'biz_type', label: 'Business type' },
+  { key: 'project_type', label: 'Project type' },
   { key: 'team_size', label: 'Team size' },
   { key: 'team_split', label: 'Team split' },
   { key: 'top_features', label: 'Top features' },
@@ -17,6 +20,7 @@ const QUESTION_LABELS: Array<{ key: string; label: string }> = [
   { key: 'existing_tools', label: 'Existing tools' },
   { key: 'pain_points', label: 'Pain points' },
   { key: 'timeline', label: 'Timeline' },
+  { key: 'referral_source', label: 'Referral source' },
   { key: 'budget', label: 'Budget' },
   { key: 'extra', label: 'Extra context' },
 ]
@@ -35,6 +39,44 @@ function formatAnswer(value: unknown) {
   }
 
   return String(value)
+}
+
+function renderAnswer(key: string, value: unknown) {
+  const textValue = typeof value === 'string' ? value.trim() : ''
+
+  if (key === 'contact_email') {
+    return textValue ? (
+      <a
+        href={`mailto:${textValue}`}
+        className="mt-3 inline-flex text-sm text-sky-300 transition hover:text-sky-200"
+      >
+        {textValue}
+      </a>
+    ) : (
+      <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">—</p>
+    )
+  }
+
+  if (key === 'contact_phone') {
+    const telHref = textValue.replace(/\s+/g, '')
+
+    return textValue ? (
+      <a
+        href={`tel:${telHref}`}
+        className="mt-3 inline-flex text-sm text-sky-300 transition hover:text-sky-200"
+      >
+        {textValue}
+      </a>
+    ) : (
+      <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">—</p>
+    )
+  }
+
+  return (
+    <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
+      {formatAnswer(value)}
+    </p>
+  )
 }
 
 export default async function EnquiryDetailPage({
@@ -69,9 +111,10 @@ export default async function EnquiryDetailPage({
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
                   {item.label}
                 </p>
-                <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
-                  {formatAnswer(enquiry[item.key as keyof typeof enquiry])}
-                </p>
+                {renderAnswer(
+                  item.key,
+                  enquiry[item.key as keyof typeof enquiry]
+                )}
               </div>
             ))}
           </div>

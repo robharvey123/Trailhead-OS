@@ -28,6 +28,10 @@ function sanitizeStringArray(value: unknown): string[] {
     .filter(Boolean)
 }
 
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
 function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 'created_at'> {
   const statusValue = typeof body.status === 'string' ? body.status : 'new'
   const status = ENQUIRY_STATUSES.has(statusValue as EnquiryStatus)
@@ -37,7 +41,10 @@ function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 
   return {
     biz_name: sanitizeText(body.biz_name) ?? '',
     contact_name: sanitizeText(body.contact_name) ?? '',
+    contact_email: sanitizeText(body.contact_email),
+    contact_phone: sanitizeText(body.contact_phone),
     biz_type: sanitizeText(body.biz_type),
+    project_type: sanitizeText(body.project_type),
     team_size: sanitizeText(body.team_size),
     team_split: sanitizeText(body.team_split),
     top_features: sanitizeStringArray(body.top_features),
@@ -48,6 +55,7 @@ function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 
     existing_tools: sanitizeText(body.existing_tools),
     pain_points: sanitizeText(body.pain_points),
     timeline: sanitizeText(body.timeline),
+    referral_source: sanitizeText(body.referral_source),
     budget: sanitizeText(body.budget),
     extra: sanitizeText(body.extra),
     status,
@@ -106,9 +114,16 @@ export async function POST(request: Request) {
   const admin = createAdminClient()
   const payload = mapEnquiryPayload(body as Record<string, unknown>)
 
-  if (!payload.biz_name || !payload.contact_name) {
+  if (!payload.biz_name || !payload.contact_name || !payload.contact_email || !payload.contact_phone) {
     return NextResponse.json(
-      { error: 'biz_name and contact_name are required' },
+      { error: 'biz_name, contact_name, contact_email, and contact_phone are required' },
+      { status: 400 }
+    )
+  }
+
+  if (!isValidEmail(payload.contact_email)) {
+    return NextResponse.json(
+      { error: 'contact_email must be a valid email address' },
       { status: 400 }
     )
   }

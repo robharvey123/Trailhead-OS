@@ -358,10 +358,21 @@ export default async function MarketingHomePage() {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                  Contact number
+                </p>
+                <a
+                  href="tel:+447346808412"
+                  className="mt-2 block text-lg font-semibold text-[var(--marketing-text)]"
+                >
+                  +44 7346 808412
+                </a>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                   Based in
                 </p>
                 <p className="mt-2 text-lg text-slate-700">
-                  Belper, Derbyshire, UK
+                  Brentwood, Essex, UK
                 </p>
               </div>
               <div>
@@ -377,7 +388,7 @@ export default async function MarketingHomePage() {
                   Registration
                 </p>
                 <p className="mt-2 text-lg text-slate-700">
-                  Registered in England & Wales
+                  Registered in England &amp; Wales 16910286
                 </p>
               </div>
             </div>

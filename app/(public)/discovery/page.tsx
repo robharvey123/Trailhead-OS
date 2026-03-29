@@ -44,7 +44,9 @@ export default async function DiscoveryPage() {
   try {
     const { data } = await supabase
       .from('enquiries')
-      .select('id, biz_name, contact_name, created_at, status')
+      .select(
+        'id, biz_name, contact_name, contact_email, contact_phone, created_at, status'
+      )
       .order('created_at', { ascending: false })
       .limit(10)
 

@@ -56,9 +56,18 @@ export default function MarketingShell({
         <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-6 px-6 py-4 md:px-8">
           <Link
             href={buildMarketingHref('/', isLocalhost)}
-            className="text-[1.05rem] font-semibold tracking-[-0.03em] text-[var(--marketing-text)]"
+            className="flex items-center"
           >
-            Trailhead Holdings
+            <img
+              src="/logo.svg"
+              alt="Trailhead Holdings"
+              className="h-8 w-auto dark:hidden"
+            />
+            <img
+              src="/logo-dark.svg"
+              alt="Trailhead Holdings"
+              className="hidden h-8 w-auto dark:block"
+            />
           </Link>
 
           <div className="hidden items-center gap-8 md:flex">
@@ -88,7 +97,10 @@ export default function MarketingShell({
 
       <footer className="border-t border-[var(--marketing-border)] bg-white">
         <div className="mx-auto flex max-w-[1100px] flex-col gap-4 px-6 py-8 text-sm text-slate-600 md:flex-row md:items-center md:justify-between md:px-8">
-          <p>© 2026 Trailhead Holdings Ltd · Registered in England & Wales</p>
+          <p>
+            © 2026 Trailhead Holdings Ltd · Brentwood, Essex · Registered in
+            England &amp; Wales 16910286
+          </p>
           <div className="flex items-center gap-5">
             <Link
               href={buildMarketingHref('/privacy', isLocalhost)}

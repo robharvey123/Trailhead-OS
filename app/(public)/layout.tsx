@@ -8,9 +8,7 @@ export default function PublicLayout({
   return (
     <div className="min-h-screen bg-white">
       <div className="fixed top-4 left-4 z-10">
-        <span className="text-sm font-medium text-gray-500">
-          Trailhead Holdings
-        </span>
+        <img src="/logo.svg" alt="Trailhead Holdings" className="h-7 w-auto" />
       </div>
       {children}
     </div>

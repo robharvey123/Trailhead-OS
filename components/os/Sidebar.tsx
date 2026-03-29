@@ -93,12 +93,18 @@ export default function Sidebar({
         <Link
           href="/dashboard"
           onClick={() => setMobileOpen(false)}
-          className="block rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-4"
+          className="block rounded-3xl border border-slate-200 bg-white px-4 py-4 shadow-sm"
         >
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">
-            Trailhead
-          </p>
-          <h1 className="mt-2 text-xl font-semibold text-slate-100">OS</h1>
+          <img
+            src="/logo.svg"
+            alt="Trailhead Holdings"
+            className="h-8 w-auto dark:hidden"
+          />
+          <img
+            src="/logo-dark.svg"
+            alt="Trailhead Holdings"
+            className="hidden h-8 w-auto dark:block"
+          />
         </Link>
       </div>
 

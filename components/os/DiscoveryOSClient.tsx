@@ -7,6 +7,8 @@ export type DiscoveryEnquiryRow = {
   id: string
   biz_name: string
   contact_name: string
+  contact_email: string | null
+  contact_phone: string | null
   created_at: string
   status: 'new' | 'reviewed' | 'converted'
 }
@@ -128,6 +130,8 @@ export default function DiscoveryOSClient({
                 <tr>
                   <th className="px-4 py-3 font-medium">Business</th>
                   <th className="px-4 py-3 font-medium">Contact</th>
+                  <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">Phone</th>
                   <th className="px-4 py-3 font-medium">Submitted</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">View</th>
@@ -138,6 +142,12 @@ export default function DiscoveryOSClient({
                   <tr key={enquiry.id}>
                     <td className="px-4 py-4 font-medium text-slate-50">{enquiry.biz_name}</td>
                     <td className="px-4 py-4">{enquiry.contact_name}</td>
+                    <td className="px-4 py-4 text-slate-300">
+                      {enquiry.contact_email ?? '—'}
+                    </td>
+                    <td className="px-4 py-4 text-slate-300">
+                      {enquiry.contact_phone ?? '—'}
+                    </td>
                     <td className="px-4 py-4 text-slate-400">
                       {formatSubmittedDate(enquiry.created_at)}
                     </td>

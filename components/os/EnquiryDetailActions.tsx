@@ -59,6 +59,8 @@ export default function EnquiryDetailActions({
           body: JSON.stringify({
             name: enquiry.contact_name,
             company: enquiry.biz_name,
+            email: enquiry.contact_email,
+            phone: enquiry.contact_phone,
             notes: buildContactNotes(enquiry),
             status: 'lead',
           }),

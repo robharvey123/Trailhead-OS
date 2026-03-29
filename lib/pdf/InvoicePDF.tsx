@@ -1,6 +1,8 @@
 import {
   Document,
   Page,
+  Rect,
+  Svg,
   StyleSheet,
   Text,
   View,
@@ -19,6 +21,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 24,
+  },
+  brandLockup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  brandMark: {
+    marginRight: 10,
   },
   companyName: {
     fontSize: 16,
@@ -128,10 +137,20 @@ function InvoiceDocument({
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <View>
-            <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
-            <Text style={styles.muted}>Registered in England &amp; Wales</Text>
-            <Text style={styles.muted}>rob@trailheadholdings.com</Text>
+          <View style={styles.brandLockup}>
+            <View style={styles.brandMark}>
+              <Svg width="32" height="32" viewBox="0 0 52 52">
+                <Rect x="2" y="38" width="10" height="10" rx="2" fill="#0F172A" />
+                <Rect x="14" y="28" width="10" height="20" rx="2" fill="#0F172A" />
+                <Rect x="26" y="18" width="10" height="30" rx="2" fill="#0F172A" />
+                <Rect x="38" y="4" width="10" height="44" rx="2" fill="#0EA5E9" />
+              </Svg>
+            </View>
+            <View>
+              <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
+              <Text style={styles.muted}>Registered in England &amp; Wales</Text>
+              <Text style={styles.muted}>rob@trailheadholdings.com</Text>
+            </View>
           </View>
           <View>
             <Text style={styles.invoiceNumber}>{invoice.invoice_number}</Text>

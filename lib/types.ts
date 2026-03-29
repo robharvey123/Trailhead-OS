@@ -32,7 +32,10 @@ export interface Enquiry {
   created_at: string
   biz_name: string
   contact_name: string
+  contact_email: string | null
+  contact_phone: string | null
   biz_type: string | null
+  project_type: string | null
   team_size: string | null
   team_split: string | null
   top_features: string[]
@@ -43,6 +46,7 @@ export interface Enquiry {
   existing_tools: string | null
   pain_points: string | null
   timeline: string | null
+  referral_source: string | null
   budget: string | null
   extra: string | null
   status: EnquiryStatus
@@ -52,7 +56,10 @@ export interface Enquiry {
 export interface EnquiryFormState {
   biz_name: string
   contact_name: string
+  contact_email: string
+  contact_phone: string
   biz_type: string
+  project_type: string
   team_size: string
   team_split: string
   top_features: string[]
@@ -63,6 +70,7 @@ export interface EnquiryFormState {
   existing_tools: string
   pain_points: string
   timeline: string
+  referral_source: string
   budget: string
   extra: string
 }
