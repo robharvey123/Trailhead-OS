@@ -3,6 +3,14 @@ import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEmailsForContact, parseGmailMessage } from '@/lib/google/gmail'
 
 export async function GET(request: NextRequest) {
+  const gmailIntegrationPaused = true
+  if (gmailIntegrationPaused) {
+    return NextResponse.json(
+      { error: 'Gmail integration is temporarily paused' },
+      { status: 410 }
+    )
+  }
+
   const auth = await getAuthenticatedSupabase()
   if (!auth.ok) {
     return auth.response

@@ -1,8 +1,9 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { EmailLog } from '@/lib/types'
+
+const EMAIL_INTEGRATION_PAUSED = true
 
 type EmailThreadProps = {
   contact_id?: string | null
@@ -55,10 +56,13 @@ export default function EmailThread({
   title = 'Email thread',
   embedded = false,
 }: EmailThreadProps) {
+  const emailFeaturePaused = EMAIL_INTEGRATION_PAUSED
   const [messages, setMessages] = useState<ThreadMessage[]>([])
-  const [loading, setLoading] = useState(Boolean(contact_email))
+  const [loading, setLoading] = useState<boolean>(
+    Boolean(contact_email) && !emailFeaturePaused
+  )
   const [error, setError] = useState<string | null>(null)
-  const [googleDisconnected, setGoogleDisconnected] = useState(false)
+  const [googleDisconnected, setGoogleDisconnected] = useState<boolean>(false)
   const [expandedThreadId, setExpandedThreadId] = useState<string | null>(null)
   const [composing, setComposing] = useState(false)
   const [subject, setSubject] = useState('')
@@ -67,6 +71,14 @@ export default function EmailThread({
   const [sendError, setSendError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (emailFeaturePaused) {
+      setLoading(false)
+      setMessages([])
+      setError(null)
+      setGoogleDisconnected(false)
+      return
+    }
+
     if (!contact_email) {
       setLoading(false)
       setMessages([])
@@ -123,7 +135,7 @@ export default function EmailThread({
     return () => {
       cancelled = true
     }
-  }, [contact_email])
+  }, [contact_email, emailFeaturePaused])
 
   const threads = useMemo(() => {
     const groups = new Map<
@@ -160,6 +172,11 @@ export default function EmailThread({
   }, [messages])
 
   async function handleSend() {
+    if (emailFeaturePaused) {
+      setSendError('Email integration is temporarily paused.')
+      return
+    }
+
     if (!contact_email || !subject.trim() || !body.trim()) {
       setSendError('Subject and body are required.')
       return
@@ -229,17 +246,19 @@ export default function EmailThread({
             </p>
           ) : null}
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setComposing(current => !current)
-            setSendError(null)
-          }}
-          disabled={!contact_email}
-          className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-50"
-        >
-          {composing ? 'Close compose' : 'Compose'}
-        </button>
+        {!emailFeaturePaused ? (
+          <button
+            type="button"
+            onClick={() => {
+              setComposing(current => !current)
+              setSendError(null)
+            }}
+            disabled={!contact_email}
+            className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-50"
+          >
+            {composing ? 'Close compose' : 'Compose'}
+          </button>
+        ) : null}
       </div>
 
       {!contact_email ? (
@@ -248,19 +267,22 @@ export default function EmailThread({
         </div>
       ) : null}
 
-      {contact_email && googleDisconnected ? (
-        <div className="mt-6 rounded-3xl border border-sky-500/30 bg-sky-500/10 px-4 py-8 text-center">
-          <p className="text-sm text-sky-100">Connect Google to see emails.</p>
-          <Link
-            href="/api/auth/google"
-            className="mt-4 inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
-          >
-            Connect Google
-          </Link>
+      {contact_email && emailFeaturePaused ? (
+        <div className="mt-6 rounded-3xl border border-slate-700 bg-slate-950/70 px-4 py-8 text-center">
+          <p className="text-sm text-slate-200">Email integration is temporarily paused.</p>
+          <p className="mt-2 text-sm text-slate-400">
+            Gmail access has been removed for now while Google verification is being simplified.
+          </p>
         </div>
       ) : null}
 
-      {contact_email && loading ? (
+      {contact_email && googleDisconnected ? (
+        <div className="mt-6 rounded-3xl border border-sky-500/30 bg-sky-500/10 px-4 py-8 text-center">
+          <p className="text-sm text-sky-100">Connect Google to see emails.</p>
+        </div>
+      ) : null}
+
+      {contact_email && !emailFeaturePaused && loading ? (
         <div className="mt-6 space-y-3">
           {[0, 1, 2].map(item => (
             <div
@@ -275,13 +297,14 @@ export default function EmailThread({
         </div>
       ) : null}
 
-      {contact_email && !loading && !googleDisconnected && error ? (
+      {contact_email && !emailFeaturePaused && !loading && !googleDisconnected && error ? (
         <div className="mt-6 rounded-3xl border border-rose-500/30 bg-rose-500/10 px-4 py-8 text-center text-sm text-rose-200">
           {error}
         </div>
       ) : null}
 
       {contact_email &&
+      !emailFeaturePaused &&
       !loading &&
       !googleDisconnected &&
       !error &&
@@ -291,7 +314,7 @@ export default function EmailThread({
         </div>
       ) : null}
 
-      {contact_email && !loading && !googleDisconnected && !error && threads.length > 0 ? (
+      {contact_email && !emailFeaturePaused && !loading && !googleDisconnected && !error && threads.length > 0 ? (
         <div className="mt-6 space-y-3">
           {threads.map(thread => {
             const latestMessage = thread.messages[0]
@@ -369,7 +392,7 @@ export default function EmailThread({
         </div>
       ) : null}
 
-      {contact_email && composing ? (
+      {contact_email && !emailFeaturePaused && composing ? (
         <div className="mt-6 rounded-[1.75rem] border border-slate-800 bg-slate-950/70 p-5">
           <div className="space-y-4">
             <label className="block space-y-2">

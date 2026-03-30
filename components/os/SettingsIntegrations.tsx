@@ -79,13 +79,13 @@ export default function SettingsIntegrations({
   useEffect(() => {
     const googleState = searchParams.get('google')
     if (googleState === 'connected') {
-      toast.success('Google Workspace connected')
+      toast.success('Google Calendar connected')
     }
     if (googleState === 'disconnected') {
-      toast.success('Google Workspace disconnected')
+      toast.success('Google Calendar disconnected')
     }
     if (googleState === 'error') {
-      toast.error('Google Workspace connection failed')
+      toast.error('Google Calendar connection failed')
     }
   }, [searchParams])
 
@@ -143,35 +143,19 @@ export default function SettingsIntegrations({
     }
   }
 
-  async function syncEmails() {
-    setLoadingAction('emails')
-    try {
-      const response = await fetch('/api/gmail/sync', { method: 'POST' })
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Email sync failed')
-      }
-      toast.success(`Email sync complete: ${data.synced ?? 0} messages processed`)
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Email sync failed')
-    } finally {
-      setLoadingAction(null)
-    }
-  }
-
   async function disconnectGoogle() {
     setLoadingAction('disconnect')
     try {
       const response = await fetch('/api/auth/google/disconnect', { method: 'POST' })
       if (!response.ok) {
-        throw new Error('Failed to disconnect Google Workspace')
+        throw new Error('Failed to disconnect Google Calendar')
       }
       setGoogleEmail(null)
-      toast.success('Google Workspace disconnected')
+      toast.success('Google Calendar disconnected')
       router.refresh()
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to disconnect Google Workspace'
+        error instanceof Error ? error.message : 'Failed to disconnect Google Calendar'
       )
     } finally {
       setLoadingAction(null)
@@ -184,7 +168,7 @@ export default function SettingsIntegrations({
         <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Integrations</p>
         <h2 className="mt-2 text-xl font-semibold text-slate-100">External services</h2>
         <p className="mt-2 text-sm text-slate-400">
-          Connect Google Workspace and Stripe to sync communication, calendars, and payments.
+          Connect Google Calendar and Stripe to keep scheduling and payments in sync.
         </p>
       </div>
 
@@ -194,9 +178,9 @@ export default function SettingsIntegrations({
             <div className="flex items-center gap-4">
               <GoogleIcon />
               <div>
-                <h3 className="text-base font-semibold text-slate-100">Google Workspace</h3>
+                <h3 className="text-base font-semibold text-slate-100">Google Calendar</h3>
                 <p className="mt-1 text-sm text-slate-400">
-                  Sync Gmail and Google Calendar
+                  Sync your Trailhead OS calendar with Google Calendar
                 </p>
               </div>
             </div>
@@ -221,14 +205,6 @@ export default function SettingsIntegrations({
                   </button>
                   <button
                     type="button"
-                    onClick={() => void syncEmails()}
-                    disabled={loadingAction !== null}
-                    className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
-                  >
-                    {loadingAction === 'emails' ? 'Syncing...' : 'Sync emails now'}
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => void disconnectGoogle()}
                     disabled={loadingAction !== null}
                     className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
@@ -242,7 +218,7 @@ export default function SettingsIntegrations({
                 href="/api/auth/google"
                 className="inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
               >
-                Connect Google
+                Connect Google Calendar
               </Link>
             )}
           </div>

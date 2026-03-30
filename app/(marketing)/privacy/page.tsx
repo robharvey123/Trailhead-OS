@@ -92,14 +92,13 @@ export default async function PrivacyPage() {
       </p>
 
       <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
-        1.5 Google Workspace (Gmail and Calendar)
+        1.5 Google Calendar
       </h3>
       <p className="mt-4">
-        If we connect our Google account to manage client communications,
-        emails between us are processed through the Gmail API. This means
-        Google may process the content of those emails. We do not share your
-        email data with any third parties. You can read Google&apos;s privacy
-        policy at{' '}
+        If we connect our Google account to manage calendar scheduling,
+        event data may be processed through the Google Calendar API. We do not
+        share your calendar data with any third parties beyond what is required
+        to provide this functionality. You can read Google&apos;s privacy policy at{' '}
         <a
           href="https://policies.google.com/privacy"
           target="_blank"
@@ -347,7 +346,7 @@ export default async function PrivacyPage() {
               <td className="px-0 py-4 font-medium text-[var(--marketing-text)]">
                 Google
               </td>
-              <td className="px-4 py-4">Gmail and Calendar API</td>
+              <td className="px-4 py-4">Google Calendar API</td>
               <td className="px-4 py-4">
                 <a
                   href="https://policies.google.com/privacy"

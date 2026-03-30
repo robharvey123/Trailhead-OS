@@ -47,12 +47,12 @@ export const providerRegistry: Record<IntegrationProvider, ProviderConfig> = {
     envKeys: ['SLACK_CLIENT_ID', 'SLACK_CLIENT_SECRET', 'SLACK_SIGNING_SECRET'],
   },
   google: {
-    name: 'Google Workspace',
-    description: 'Calendar sync for schedules & Drive for marketing assets',
+    name: 'Google Calendar',
+    description: 'Calendar sync for schedules and deadlines',
     icon: '🔵',
     authType: 'oauth2',
-    oauthScopes: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/drive.file'],
-    capabilities: ['calendar_sync', 'drive_files'],
+    oauthScopes: ['https://www.googleapis.com/auth/calendar'],
+    capabilities: ['calendar_sync'],
     envKeys: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
   },
   shopify: {

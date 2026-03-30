@@ -1,0 +1,9 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Trailhead OS logo</title>
+  <desc id="desc">Rounded square logo with four ascending bars for Trailhead OS.</desc>
+  <rect width="512" height="512" rx="80" fill="#0F172A"/>
+  <rect x="62" y="372" width="88" height="88" rx="14" fill="#F1F5F9"/>
+  <rect x="170" y="274" width="88" height="186" rx="14" fill="#F1F5F9"/>
+  <rect x="278" y="176" width="88" height="284" rx="14" fill="#F1F5F9"/>
+  <rect x="386" y="58" width="88" height="402" rx="14" fill="#0EA5E9"/>
+</svg>

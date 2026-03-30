@@ -48,6 +48,14 @@ function toEmailLogRow(
 }
 
 export async function POST() {
+  const gmailIntegrationPaused = true
+  if (gmailIntegrationPaused) {
+    return NextResponse.json(
+      { error: 'Gmail integration is temporarily paused' },
+      { status: 410 }
+    )
+  }
+
   const auth = await getAuthenticatedSupabase()
   if (!auth.ok) {
     return auth.response
