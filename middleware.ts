@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { isLocalDevelopmentHost } from '@/lib/site'
 
 const publicRoutes = [
+  '/',
   '/login',
   '/auth/callback',
   '/discovery',

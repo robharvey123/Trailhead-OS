@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import type { FormEvent } from 'react'
 import { useState } from 'react'
@@ -56,9 +56,10 @@ export default function LoginForm({ nextPath }: { nextPath: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
-        <h1 className="text-2xl font-semibold">Sign in to Brand Opps</h1>
+        <h1 className="text-2xl font-semibold">Sign in to Trailhead OS</h1>
         <p className="mt-2 text-sm text-slate-300">
-          Use your email and password to access your workspace.
+          Use your email and password to access the Trailhead Holdings
+          workspace.
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-2 text-sm">
