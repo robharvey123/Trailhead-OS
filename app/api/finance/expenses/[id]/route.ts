@@ -11,14 +11,7 @@ export async function PATCH(
   const auth = await getWorkspaceContext(workspaceId)
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
-  const { supabase, userId, role } = auth.ctx
-
-  // Approval workflow: only admin/owner can approve or reject
-  if (body.status === 'approved' || body.status === 'rejected') {
-    if (role !== 'admin' && role !== 'owner') {
-      return NextResponse.json({ error: 'Only admins can approve or reject expense claims' }, { status: 403 })
-    }
-  }
+  const { supabase, userId } = auth.ctx
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   const allowedFields = ['title', 'category', 'amount', 'currency', 'expense_date', 'receipt_url', 'status', 'notes', 'rejection_reason']
