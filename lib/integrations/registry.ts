@@ -51,7 +51,7 @@ export const providerRegistry: Record<IntegrationProvider, ProviderConfig> = {
     description: 'Calendar sync for schedules and deadlines',
     icon: '🔵',
     authType: 'oauth2',
-    oauthScopes: ['https://www.googleapis.com/auth/calendar'],
+    oauthScopes: ['https://www.googleapis.com/auth/calendar.events'],
     capabilities: ['calendar_sync'],
     envKeys: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
   },

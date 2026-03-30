@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import PricingTierSettings from '@/components/os/PricingTierSettings'
+import WorkstreamSettings from '@/components/os/WorkstreamSettings'
+import { getWorkstreams } from '@/lib/db/workstreams'
 import { getPricingTiers } from '@/lib/db/pricing-tiers'
 import { createClient } from '@/lib/supabase/server'
-import type { PricingTier } from '@/lib/types'
+import type { PricingTier, Workstream } from '@/lib/types'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -16,6 +18,7 @@ export default async function SettingsPage() {
   let draftInvoiceCount = 0
   let paidInvoicesThisMonth = 0
   let workspaces: Array<{ id: string; name: string }> = []
+  let workstreams: Workstream[] = []
   let pricingTiers: PricingTier[] = []
   let googleEmail: string | null = null
 
@@ -65,6 +68,10 @@ export default async function SettingsPage() {
   } catch {}
 
   try {
+    workstreams = await getWorkstreams(supabase)
+  } catch {}
+
+  try {
     const { data } = await supabase
       .from('google_tokens')
       .select('email')
@@ -88,6 +95,8 @@ export default async function SettingsPage() {
         initialGoogleEmail={googleEmail}
         paidInvoicesThisMonth={paidInvoicesThisMonth}
       />
+
+      <WorkstreamSettings initialWorkstreams={workstreams} />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
         <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">

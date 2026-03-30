@@ -4,6 +4,7 @@ export type WorkstreamColour =
   | 'purple'
   | 'green'
   | 'coral'
+  | 'blue'
   | string
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
