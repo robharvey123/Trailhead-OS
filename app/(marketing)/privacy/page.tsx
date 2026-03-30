@@ -40,7 +40,7 @@ export default async function PrivacyPage() {
         <br />
         Brentwood, Essex, United Kingdom
         <br />
-        rob@trailheadholdings.uk
+        info@trailheadholdings.uk
       </p>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
@@ -254,8 +254,8 @@ export default async function PrivacyPage() {
         </li>
       </ul>
       <p className="mt-4">
-        To exercise any of these rights, contact us at
-        {' '}rob@trailheadholdings.uk. We will respond within 30 days.
+        To exercise any of these rights, contact us at{' '}
+        info@trailheadholdings.uk. We will respond within 30 days.
       </p>
       <p className="mt-4">
         You also have the right to lodge a complaint with the Information
@@ -397,7 +397,7 @@ export default async function PrivacyPage() {
         <br />
         Brentwood, Essex, United Kingdom
         <br />
-        rob@trailheadholdings.uk
+        info@trailheadholdings.uk
       </p>
     </LegalPageShell>
   )

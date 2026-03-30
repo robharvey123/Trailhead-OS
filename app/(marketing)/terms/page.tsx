@@ -36,7 +36,7 @@ export default async function TermsPage() {
         <br />
         Brentwood, Essex, United Kingdom
         <br />
-        rob@trailheadholdings.uk
+        info@trailheadholdings.uk
       </p>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
@@ -260,7 +260,7 @@ export default async function TermsPage() {
         <br />
         Brentwood, Essex, United Kingdom
         <br />
-        rob@trailheadholdings.uk
+        info@trailheadholdings.uk
       </p>
     </LegalPageShell>
   )

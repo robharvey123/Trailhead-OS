@@ -18,10 +18,10 @@ export default function ContactDetailsCard({
             Email
           </p>
           <a
-            href="mailto:rob@trailheadholdings.uk"
+            href="mailto:info@trailheadholdings.uk"
             className="mt-2 block text-lg font-semibold text-[var(--marketing-text)]"
           >
-            rob@trailheadholdings.uk
+            info@trailheadholdings.uk
           </a>
         </div>
         <div>

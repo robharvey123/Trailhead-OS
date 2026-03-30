@@ -221,7 +221,7 @@ function QuoteDocument({ quote }: { quote: QuoteWithRelations }) {
             <View>
               <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
               <Text style={styles.muted}>Brentwood, Essex, UK</Text>
-              <Text style={styles.muted}>rob@trailheadholdings.uk</Text>
+              <Text style={styles.muted}>info@trailheadholdings.uk</Text>
             </View>
           </View>
 
