@@ -12,7 +12,13 @@ import {
 } from '@tanstack/react-table'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatTaskDate } from '@/lib/os'
-import type { Account, Contact, TaskPriority, TaskWithWorkstream, Workstream } from '@/lib/types'
+import type {
+  Account,
+  Contact,
+  TaskPriority,
+  TaskWithWorkstream,
+  Workstream,
+} from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
 import TaskSlideOver from './TaskSlideOver'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -27,6 +33,12 @@ interface MasterTaskListClientProps {
 const PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
 const columnHelper = createColumnHelper<TaskWithWorkstream>()
 
+function toggleFilterValue(values: string[], value: string) {
+  return values.includes(value)
+    ? values.filter((entry) => entry !== value)
+    : [...values, value]
+}
+
 export default function MasterTaskListClient({
   initialTasks,
   workstreams,
@@ -36,7 +48,9 @@ export default function MasterTaskListClient({
   const [tasks, setTasks] = useState(initialTasks)
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [selectedTask, setSelectedTask] = useState<TaskWithWorkstream | null>(null)
+  const [selectedTask, setSelectedTask] = useState<TaskWithWorkstream | null>(
+    null
+  )
   const [creatingTask, setCreatingTask] = useState(false)
   const [workstreamFilter, setWorkstreamFilter] = useState<string[]>([])
   const [accountFilter, setAccountFilter] = useState('')
@@ -55,20 +69,28 @@ export default function MasterTaskListClient({
     () => new Map(contacts.map((contact) => [contact.id, contact])),
     [contacts]
   )
+  const workstreamsById = useMemo(
+    () => new Map(workstreams.map((workstream) => [workstream.id, workstream])),
+    [workstreams]
+  )
 
   const filteredTasks = useMemo(
     () =>
       tasks.filter((task) => {
         if (
           workstreamFilter.length > 0 &&
-          (!task.workstream_id || !workstreamFilter.includes(task.workstream_id))
+          (!task.workstream_id ||
+            !workstreamFilter.includes(task.workstream_id))
         ) {
           return false
         }
         if (accountFilter && task.account_id !== accountFilter) {
           return false
         }
-        if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) {
+        if (
+          priorityFilter.length > 0 &&
+          !priorityFilter.includes(task.priority)
+        ) {
           return false
         }
         if (masterOnly && !task.is_master_todo) {
@@ -82,8 +104,33 @@ export default function MasterTaskListClient({
         }
         return true
       }),
-    [accountFilter, dueFrom, dueTo, masterOnly, priorityFilter, tasks, workstreamFilter]
+    [
+      accountFilter,
+      dueFrom,
+      dueTo,
+      masterOnly,
+      priorityFilter,
+      tasks,
+      workstreamFilter,
+    ]
   )
+
+  const hasActiveFilters =
+    workstreamFilter.length > 0 ||
+    Boolean(accountFilter) ||
+    priorityFilter.length > 0 ||
+    Boolean(dueFrom) ||
+    Boolean(dueTo) ||
+    masterOnly
+
+  function clearAllFilters() {
+    setWorkstreamFilter([])
+    setAccountFilter('')
+    setPriorityFilter([])
+    setDueFrom('')
+    setDueTo('')
+    setMasterOnly(false)
+  }
 
   const table = useReactTable({
     data: filteredTasks,
@@ -197,7 +244,9 @@ export default function MasterTaskListClient({
     getSortedRowModel: getSortedRowModel(),
   })
 
-  const selectedTasks = table.getSelectedRowModel().rows.map((row) => row.original)
+  const selectedTasks = table
+    .getSelectedRowModel()
+    .rows.map((row) => row.original)
 
   async function runBulkUpdate(
     updater: (task: TaskWithWorkstream) => Promise<void>,
@@ -220,7 +269,9 @@ export default function MasterTaskListClient({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Master list</p>
+          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">
+            Master list
+          </p>
           <h1 className="mt-2 text-3xl font-semibold text-slate-50">Tasks</h1>
           <p className="mt-2 text-sm text-slate-400">
             One table for every active task across the OS.
@@ -237,26 +288,41 @@ export default function MasterTaskListClient({
       </div>
 
       <div className="grid gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-5 md:grid-cols-2 xl:grid-cols-6">
-        <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">Workstreams</span>
-          <select
-            multiple
-            value={workstreamFilter}
-            onChange={(event) =>
-              setWorkstreamFilter(Array.from(event.target.selectedOptions).map((option) => option.value))
-            }
-            className="min-h-32 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
-          >
+        <div className="block md:col-span-2 xl:col-span-2">
+          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+            Workstreams
+          </span>
+          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-950 p-3">
             {workstreams.map((workstream) => (
-              <option key={workstream.id} value={workstream.id}>
+              <button
+                key={workstream.id}
+                type="button"
+                onClick={() =>
+                  setWorkstreamFilter((current) =>
+                    toggleFilterValue(current, workstream.id)
+                  )
+                }
+                className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                  workstreamFilter.includes(workstream.id)
+                    ? 'border-sky-500/40 bg-sky-500/15 text-sky-100'
+                    : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+                }`}
+              >
                 {workstream.label}
-              </option>
+              </button>
             ))}
-          </select>
-        </label>
+            {workstreams.length === 0 ? (
+              <span className="text-sm text-slate-500">
+                No workstreams found
+              </span>
+            ) : null}
+          </div>
+        </div>
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">Account</span>
+          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+            Account
+          </span>
           <select
             value={accountFilter}
             onChange={(event) => setAccountFilter(event.target.value)}
@@ -271,26 +337,36 @@ export default function MasterTaskListClient({
           </select>
         </label>
 
-        <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">Priority</span>
-          <select
-            multiple
-            value={priorityFilter}
-            onChange={(event) =>
-              setPriorityFilter(Array.from(event.target.selectedOptions).map((option) => option.value))
-            }
-            className="min-h-32 w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
-          >
+        <div className="block md:col-span-2 xl:col-span-1">
+          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+            Priority
+          </span>
+          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-950 p-3">
             {PRIORITIES.map((priority) => (
-              <option key={priority} value={priority}>
+              <button
+                key={priority}
+                type="button"
+                onClick={() =>
+                  setPriorityFilter((current) =>
+                    toggleFilterValue(current, priority)
+                  )
+                }
+                className={`rounded-full border px-3 py-1.5 text-sm capitalize transition ${
+                  priorityFilter.includes(priority)
+                    ? 'border-sky-500/40 bg-sky-500/15 text-sky-100'
+                    : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+                }`}
+              >
                 {priority}
-              </option>
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">Due from</span>
+          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+            Due from
+          </span>
           <input
             type="date"
             value={dueFrom}
@@ -300,7 +376,9 @@ export default function MasterTaskListClient({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">Due to</span>
+          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+            Due to
+          </span>
           <input
             type="date"
             value={dueTo}
@@ -316,13 +394,103 @@ export default function MasterTaskListClient({
             onChange={(event) => setMasterOnly(event.target.checked)}
             className="h-4 w-4 rounded border-slate-600 bg-slate-950"
           />
-          <span className="text-sm text-slate-200">Show only master to-do tasks</span>
+          <span className="text-sm text-slate-200">
+            Show only master to-do tasks
+          </span>
         </label>
       </div>
 
+      {hasActiveFilters ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-[2rem] border border-slate-800 bg-slate-900/40 px-4 py-3">
+          <span className="text-xs uppercase tracking-[0.22em] text-slate-500">
+            Active filters
+          </span>
+
+          {workstreamFilter.map((workstreamId) => (
+            <button
+              key={workstreamId}
+              type="button"
+              onClick={() =>
+                setWorkstreamFilter((current) =>
+                  current.filter((entry) => entry !== workstreamId)
+                )
+              }
+              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+            >
+              {workstreamsById.get(workstreamId)?.label ?? 'Workstream'} ×
+            </button>
+          ))}
+
+          {accountFilter ? (
+            <button
+              type="button"
+              onClick={() => setAccountFilter('')}
+              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+            >
+              {accountsById.get(accountFilter)?.name ?? 'Account'} ×
+            </button>
+          ) : null}
+
+          {priorityFilter.map((priority) => (
+            <button
+              key={priority}
+              type="button"
+              onClick={() =>
+                setPriorityFilter((current) =>
+                  current.filter((entry) => entry !== priority)
+                )
+              }
+              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm capitalize text-sky-100"
+            >
+              {priority} ×
+            </button>
+          ))}
+
+          {dueFrom ? (
+            <button
+              type="button"
+              onClick={() => setDueFrom('')}
+              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+            >
+              From {dueFrom} ×
+            </button>
+          ) : null}
+
+          {dueTo ? (
+            <button
+              type="button"
+              onClick={() => setDueTo('')}
+              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+            >
+              To {dueTo} ×
+            </button>
+          ) : null}
+
+          {masterOnly ? (
+            <button
+              type="button"
+              onClick={() => setMasterOnly(false)}
+              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+            >
+              Master to-do only ×
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="ml-auto rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
+          >
+            Clear all
+          </button>
+        </div>
+      ) : null}
+
       {selectedTasks.length > 0 ? (
         <div className="flex flex-wrap items-center gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-4">
-          <p className="text-sm text-slate-300">{selectedTasks.length} selected</p>
+          <p className="text-sm text-slate-300">
+            {selectedTasks.length} selected
+          </p>
           <button
             type="button"
             disabled={bulkLoading}
@@ -332,7 +500,9 @@ export default function MasterTaskListClient({
                   await apiFetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
                 },
                 (task) => {
-                  setTasks((current) => current.filter((entry) => entry.id !== task.id))
+                  setTasks((current) =>
+                    current.filter((entry) => entry.id !== task.id)
+                  )
                 }
               )
             }
@@ -343,7 +513,9 @@ export default function MasterTaskListClient({
 
           <select
             value={bulkPriority}
-            onChange={(event) => setBulkPriority(event.target.value as TaskPriority)}
+            onChange={(event) =>
+              setBulkPriority(event.target.value as TaskPriority)
+            }
             className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100"
           >
             {PRIORITIES.map((priority) => (
@@ -368,7 +540,9 @@ export default function MasterTaskListClient({
                 (task) => {
                   setTasks((current) =>
                     current.map((entry) =>
-                      entry.id === task.id ? { ...entry, priority: bulkPriority } : entry
+                      entry.id === task.id
+                        ? { ...entry, priority: bulkPriority }
+                        : entry
                     )
                   )
                 }
@@ -383,7 +557,9 @@ export default function MasterTaskListClient({
             type="button"
             disabled={bulkLoading}
             onClick={() => {
-              const shouldAdd = selectedTasks.some((task) => !task.is_master_todo)
+              const shouldAdd = selectedTasks.some(
+                (task) => !task.is_master_todo
+              )
               runBulkUpdate(
                 async (task) => {
                   await apiFetch(`/api/tasks/${task.id}`, {
@@ -395,7 +571,9 @@ export default function MasterTaskListClient({
                 (task) => {
                   setTasks((current) =>
                     current.map((entry) =>
-                      entry.id === task.id ? { ...entry, is_master_todo: shouldAdd } : entry
+                      entry.id === task.id
+                        ? { ...entry, is_master_todo: shouldAdd }
+                        : entry
                     )
                   )
                 }
@@ -421,7 +599,10 @@ export default function MasterTaskListClient({
                         onClick={header.column.getToggleSortingHandler()}
                         className="inline-flex items-center gap-2"
                       >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                       </button>
                     )}
                   </th>

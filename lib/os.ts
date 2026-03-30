@@ -4,9 +4,13 @@ const WORKSTREAM_SLUG_COLOURS: Record<string, string> = {
   'app-dev': 'purple',
   'mvp-cricket': 'green',
   consulting: 'coral',
+  personal: 'blue',
 }
 
-const WORKSTREAM_COLOUR_TOKENS: Record<string, { dot: string; badge: string; card: string }> = {
+const WORKSTREAM_COLOUR_TOKENS: Record<
+  string,
+  { dot: string; badge: string; card: string }
+> = {
   teal: {
     dot: 'bg-teal-400',
     badge: 'border-teal-500/30 bg-teal-500/10 text-teal-200',
@@ -32,11 +36,26 @@ const WORKSTREAM_COLOUR_TOKENS: Record<string, { dot: string; badge: string; car
     badge: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
     card: 'border-rose-500/20 bg-gradient-to-br from-rose-500/10 via-slate-900 to-slate-950',
   },
+  blue: {
+    dot: 'bg-sky-400',
+    badge: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
+    card: 'border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-slate-900 to-slate-950',
+  },
   slate: {
     dot: 'bg-slate-400',
     badge: 'border-slate-600/50 bg-slate-800/80 text-slate-200',
     card: 'border-slate-700 bg-slate-900/80',
   },
+}
+
+const WORKSTREAM_ACCENT_HEX: Record<string, string> = {
+  teal: '#1D9E75',
+  amber: '#BA7517',
+  purple: '#534AB7',
+  green: '#639922',
+  coral: '#D85A30',
+  blue: '#2563EB',
+  slate: '#888780',
 }
 
 const PRIORITY_TOKENS: Record<string, string> = {
@@ -57,6 +76,11 @@ export function resolveWorkstreamColour(value?: string | null) {
 export function getWorkstreamColourClasses(value?: string | null) {
   const colour = resolveWorkstreamColour(value)
   return WORKSTREAM_COLOUR_TOKENS[colour] ?? WORKSTREAM_COLOUR_TOKENS.slate
+}
+
+export function getWorkstreamAccentHex(value?: string | null) {
+  const colour = resolveWorkstreamColour(value)
+  return WORKSTREAM_ACCENT_HEX[colour] ?? WORKSTREAM_ACCENT_HEX.slate
 }
 
 export function getPriorityClasses(priority?: string | null) {

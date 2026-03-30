@@ -17,8 +17,14 @@ import type {
 } from '@fullcalendar/core'
 import { useEffect, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import { getWorkstreamAccentHex } from '@/lib/os'
 import { formatDateTime, formatTaskDate } from '@/lib/os'
-import type { CalendarEvent, Contact, TaskWithWorkstream, Workstream } from '@/lib/types'
+import type {
+  CalendarEvent,
+  Contact,
+  TaskWithWorkstream,
+  Workstream,
+} from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
 import WorkstreamBadge from './WorkstreamBadge'
 
@@ -30,14 +36,6 @@ const EVENT_COLOURS = [
   { label: 'Purple', value: '#8B5CF6' },
   { label: 'Coral', value: '#D85A30' },
 ] as const
-
-const TASK_COLOURS_BY_SLUG: Record<string, string> = {
-  'brand-sales': '#1D9E75',
-  ecommerce: '#BA7517',
-  'app-dev': '#534AB7',
-  'mvp-cricket': '#639922',
-  consulting: '#D85A30',
-}
 
 type CalendarFeedResponse = {
   events: CalendarEvent[]
@@ -152,7 +150,11 @@ function createDefaultFormState() {
   }
 }
 
-function createFormStateFromSelection(selection: { start: Date; end: Date; allDay: boolean }): EventFormState {
+function createFormStateFromSelection(selection: {
+  start: Date
+  end: Date
+  allDay: boolean
+}): EventFormState {
   const { start, end, allDay } = selection
 
   if (allDay) {
@@ -262,12 +264,14 @@ function buildPayloadFromForm(form: EventFormState) {
 }
 
 function getTaskColour(task: TaskWithWorkstream, workstreams: Workstream[]) {
-  const workstream = workstreams.find((entry) => entry.id === task.workstream_id)
+  const workstream = workstreams.find(
+    (entry) => entry.id === task.workstream_id
+  )
   if (!workstream) {
-    return '#888780'
+    return getWorkstreamAccentHex()
   }
 
-  return TASK_COLOURS_BY_SLUG[workstream.slug] ?? '#888780'
+  return getWorkstreamAccentHex(workstream.colour || workstream.slug)
 }
 
 function getWorkstreamById(workstreams: Workstream[], id?: string | null) {
@@ -310,7 +314,9 @@ function toEventInput(
   const eventInputs = events.map((event) => ({
     id: `event-${event.id}`,
     title: event.title,
-    start: event.all_day ? formatLocalDate(new Date(event.start_at)) : event.start_at,
+    start: event.all_day
+      ? formatLocalDate(new Date(event.start_at))
+      : event.start_at,
     end: event.all_day ? formatLocalDate(new Date(event.end_at)) : event.end_at,
     allDay: event.all_day,
     backgroundColor: event.colour || '#3B82F6',
@@ -370,11 +376,14 @@ export default function CalendarClient({
   const [formError, setFormError] = useState<string | null>(null)
   const [formSaving, setFormSaving] = useState(false)
   const [contactSearch, setContactSearch] = useState('')
-  const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>('idle')
+  const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>(
+    'idle'
+  )
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
 
   const fullCalendarEvents = toEventInput(events, tasks, workstreams)
-  const selectedEvent = selectedItem?.type === 'event' ? selectedItem.data : null
+  const selectedEvent =
+    selectedItem?.type === 'event' ? selectedItem.data : null
   const selectedTask = selectedItem?.type === 'task' ? selectedItem.data : null
 
   const filteredContacts = contacts.filter((contact) => {
@@ -406,7 +415,11 @@ export default function CalendarClient({
       setEvents(response.events)
       setTasks(response.tasks)
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Failed to load calendar')
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Failed to load calendar'
+      )
     } finally {
       setLoading(false)
     }
@@ -421,7 +434,11 @@ export default function CalendarClient({
     calendarRef.current?.getApi().unselect()
   }
 
-  function openCreateForm(selection: { start: Date; end: Date; allDay: boolean }) {
+  function openCreateForm(selection: {
+    start: Date
+    end: Date
+    allDay: boolean
+  }) {
     setSelectedItem(null)
     setEditingEventId(null)
     setForm(createFormStateFromSelection(selection))
@@ -485,11 +502,14 @@ export default function CalendarClient({
         }
 
         const dueDate = formatLocalDate(arg.event.start)
-        const response = await apiFetch<{ task: TaskWithWorkstream }>(`/api/tasks/${task.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ due_date: dueDate }),
-        })
+        const response = await apiFetch<{ task: TaskWithWorkstream }>(
+          `/api/tasks/${task.id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ due_date: dueDate }),
+          }
+        )
 
         setTasks((current) =>
           current.map((entry) => (entry.id === task.id ? response.task : entry))
@@ -504,11 +524,14 @@ export default function CalendarClient({
 
       const event = arg.event.extendedProps.data as CalendarEvent
       const payload = buildEventPatchFromCalendarApi(arg.event)
-      const response = await apiFetch<{ event: CalendarEvent }>(`/api/calendar/${event.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
+      const response = await apiFetch<{ event: CalendarEvent }>(
+        `/api/calendar/${event.id}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      )
 
       setEvents((current) =>
         current.map((entry) => (entry.id === event.id ? response.event : entry))
@@ -519,7 +542,11 @@ export default function CalendarClient({
       }
     } catch (saveError) {
       arg.revert()
-      setError(saveError instanceof Error ? saveError.message : 'Failed to reschedule item')
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : 'Failed to reschedule item'
+      )
     }
   }
 
@@ -531,26 +558,36 @@ export default function CalendarClient({
       const payload = buildPayloadFromForm(form)
 
       if (editingEventId) {
-        const response = await apiFetch<{ event: CalendarEvent }>(`/api/calendar/${editingEventId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
+        const response = await apiFetch<{ event: CalendarEvent }>(
+          `/api/calendar/${editingEventId}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }
+        )
 
         setEvents((current) =>
-          current.map((entry) => (entry.id === editingEventId ? response.event : entry))
+          current.map((entry) =>
+            entry.id === editingEventId ? response.event : entry
+          )
         )
         setSelectedItem({ type: 'event', data: response.event })
       } else {
-        const response = await apiFetch<{ event: CalendarEvent }>('/api/calendar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
+        const response = await apiFetch<{ event: CalendarEvent }>(
+          '/api/calendar',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }
+        )
 
         setEvents((current) =>
           [...current, response.event].sort(
-            (left, right) => new Date(left.start_at).getTime() - new Date(right.start_at).getTime()
+            (left, right) =>
+              new Date(left.start_at).getTime() -
+              new Date(right.start_at).getTime()
           )
         )
         setSelectedItem({ type: 'event', data: response.event })
@@ -558,7 +595,9 @@ export default function CalendarClient({
 
       closeForm()
     } catch (saveError) {
-      setFormError(saveError instanceof Error ? saveError.message : 'Failed to save event')
+      setFormError(
+        saveError instanceof Error ? saveError.message : 'Failed to save event'
+      )
     } finally {
       setFormSaving(false)
     }
@@ -574,7 +613,11 @@ export default function CalendarClient({
       setEvents((current) => current.filter((entry) => entry.id !== event.id))
       setSelectedItem(null)
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete event')
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'Failed to delete event'
+      )
     }
   }
 
@@ -607,7 +650,11 @@ export default function CalendarClient({
       window.setTimeout(() => setSyncState('idle'), 2000)
     } catch (syncError) {
       setSyncState('idle')
-      setError(syncError instanceof Error ? syncError.message : 'Failed to sync with Google')
+      setError(
+        syncError instanceof Error
+          ? syncError.message
+          : 'Failed to sync with Google'
+      )
     }
   }
 
@@ -616,10 +663,15 @@ export default function CalendarClient({
       <div className="space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Planning</p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-50">Calendar</h1>
+            <p className="text-xs uppercase tracking-[0.32em] text-slate-500">
+              Planning
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-50">
+              Calendar
+            </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-400">
-              Tasks with due dates and standalone events, together in one calendar.
+              Tasks with due dates and standalone events, together in one
+              calendar.
             </p>
             {googleConnected && lastSyncedAt ? (
               <p className="mt-3 text-xs text-slate-500">
@@ -746,7 +798,9 @@ export default function CalendarClient({
                 <dl className="space-y-4 text-sm">
                   <div>
                     <dt className="text-slate-500">Due date</dt>
-                    <dd className="mt-1 text-slate-200">{formatTaskDate(selectedTask.due_date)}</dd>
+                    <dd className="mt-1 text-slate-200">
+                      {formatTaskDate(selectedTask.due_date)}
+                    </dd>
                   </div>
                   <div>
                     <dt className="text-slate-500">Description</dt>
@@ -769,7 +823,10 @@ export default function CalendarClient({
               <div className="mt-8 space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
                   {(() => {
-                    const workstream = getWorkstreamById(workstreams, selectedEvent.workstream_id)
+                    const workstream = getWorkstreamById(
+                      workstreams,
+                      selectedEvent.workstream_id
+                    )
                     return workstream ? (
                       <WorkstreamBadge
                         label={workstream.label}
@@ -779,9 +836,7 @@ export default function CalendarClient({
                     ) : null
                   })()}
                   {selectedEvent.colour ? (
-                    <span
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-200"
-                    >
+                    <span className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-200">
                       <span
                         className="h-2.5 w-2.5 rounded-full"
                         style={{ backgroundColor: selectedEvent.colour }}
@@ -795,20 +850,27 @@ export default function CalendarClient({
                   <div>
                     <dt className="text-slate-500">Date & time</dt>
                     <dd className="mt-1 text-slate-200">
-                      {formatDateRange(selectedEvent.start_at, selectedEvent.end_at, selectedEvent.all_day)}
+                      {formatDateRange(
+                        selectedEvent.start_at,
+                        selectedEvent.end_at,
+                        selectedEvent.all_day
+                      )}
                     </dd>
                   </div>
                   {selectedEvent.location ? (
                     <div>
                       <dt className="text-slate-500">Location</dt>
-                      <dd className="mt-1 text-slate-200">{selectedEvent.location}</dd>
+                      <dd className="mt-1 text-slate-200">
+                        {selectedEvent.location}
+                      </dd>
                     </div>
                   ) : null}
                   {selectedEvent.contact_id ? (
                     <div>
                       <dt className="text-slate-500">Contact</dt>
                       <dd className="mt-1 text-slate-200">
-                        {getContactById(contacts, selectedEvent.contact_id)?.name ?? 'Unknown contact'}
+                        {getContactById(contacts, selectedEvent.contact_id)
+                          ?.name ?? 'Unknown contact'}
                       </dd>
                     </div>
                   ) : null}
@@ -857,7 +919,9 @@ export default function CalendarClient({
                   {editingEventId ? 'Edit event' : 'New event'}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-100">
-                  {editingEventId ? 'Update calendar event' : 'Create calendar event'}
+                  {editingEventId
+                    ? 'Update calendar event'
+                    : 'Create calendar event'}
                 </h2>
               </div>
               <button
@@ -877,11 +941,18 @@ export default function CalendarClient({
               ) : null}
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-300">Title</span>
+                <span className="mb-2 block text-sm font-medium text-slate-300">
+                  Title
+                </span>
                 <input
                   autoFocus
                   value={form.title}
-                  onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      title: event.target.value,
+                    }))
+                  }
                   className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
                 />
               </label>
@@ -891,7 +962,10 @@ export default function CalendarClient({
                   type="checkbox"
                   checked={form.all_day}
                   onChange={(event) =>
-                    setForm((current) => ({ ...current, all_day: event.target.checked }))
+                    setForm((current) => ({
+                      ...current,
+                      all_day: event.target.checked,
+                    }))
                   }
                   className="h-4 w-4 rounded border-slate-600 bg-slate-900"
                 />
@@ -900,48 +974,68 @@ export default function CalendarClient({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">Start date</span>
+                  <span className="mb-2 block text-sm font-medium text-slate-300">
+                    Start date
+                  </span>
                   <input
                     type="date"
                     value={form.start_date}
                     onChange={(event) =>
-                      setForm((current) => ({ ...current, start_date: event.target.value }))
+                      setForm((current) => ({
+                        ...current,
+                        start_date: event.target.value,
+                      }))
                     }
                     className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
                   />
                 </label>
                 {!form.all_day ? (
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-300">Start time</span>
+                    <span className="mb-2 block text-sm font-medium text-slate-300">
+                      Start time
+                    </span>
                     <input
                       type="time"
                       value={form.start_time}
                       onChange={(event) =>
-                        setForm((current) => ({ ...current, start_time: event.target.value }))
+                        setForm((current) => ({
+                          ...current,
+                          start_time: event.target.value,
+                        }))
                       }
                       className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
                     />
                   </label>
                 ) : null}
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">End date</span>
+                  <span className="mb-2 block text-sm font-medium text-slate-300">
+                    End date
+                  </span>
                   <input
                     type="date"
                     value={form.end_date}
                     onChange={(event) =>
-                      setForm((current) => ({ ...current, end_date: event.target.value }))
+                      setForm((current) => ({
+                        ...current,
+                        end_date: event.target.value,
+                      }))
                     }
                     className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
                   />
                 </label>
                 {!form.all_day ? (
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-slate-300">End time</span>
+                    <span className="mb-2 block text-sm font-medium text-slate-300">
+                      End time
+                    </span>
                     <input
                       type="time"
                       value={form.end_time}
                       onChange={(event) =>
-                        setForm((current) => ({ ...current, end_time: event.target.value }))
+                        setForm((current) => ({
+                          ...current,
+                          end_time: event.target.value,
+                        }))
                       }
                       className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
                     />
@@ -951,22 +1045,32 @@ export default function CalendarClient({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">Location</span>
+                  <span className="mb-2 block text-sm font-medium text-slate-300">
+                    Location
+                  </span>
                   <input
                     value={form.location}
                     onChange={(event) =>
-                      setForm((current) => ({ ...current, location: event.target.value }))
+                      setForm((current) => ({
+                        ...current,
+                        location: event.target.value,
+                      }))
                     }
                     className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-300">Workstream</span>
+                  <span className="mb-2 block text-sm font-medium text-slate-300">
+                    Workstream
+                  </span>
                   <select
                     value={form.workstream_id}
                     onChange={(event) =>
-                      setForm((current) => ({ ...current, workstream_id: event.target.value }))
+                      setForm((current) => ({
+                        ...current,
+                        workstream_id: event.target.value,
+                      }))
                     }
                     className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
                   >
@@ -981,7 +1085,9 @@ export default function CalendarClient({
               </div>
 
               <div className="space-y-2">
-                <span className="block text-sm font-medium text-slate-300">Contact</span>
+                <span className="block text-sm font-medium text-slate-300">
+                  Contact
+                </span>
                 <input
                   value={contactSearch}
                   onChange={(event) => setContactSearch(event.target.value)}
@@ -992,8 +1098,13 @@ export default function CalendarClient({
                   value={form.contact_id}
                   onChange={(event) => {
                     const nextContactId = event.target.value
-                    const nextContact = contacts.find((contact) => contact.id === nextContactId)
-                    setForm((current) => ({ ...current, contact_id: nextContactId }))
+                    const nextContact = contacts.find(
+                      (contact) => contact.id === nextContactId
+                    )
+                    setForm((current) => ({
+                      ...current,
+                      contact_id: nextContactId,
+                    }))
                     setContactSearch(nextContact?.name ?? '')
                   }}
                   className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
@@ -1001,20 +1112,29 @@ export default function CalendarClient({
                   <option value="">No contact selected</option>
                   {filteredContacts.map((contact) => (
                     <option key={contact.id} value={contact.id}>
-                      {contact.company ? `${contact.name} — ${contact.company}` : contact.name}
+                      {contact.company
+                        ? `${contact.name} — ${contact.company}`
+                        : contact.name}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <span className="block text-sm font-medium text-slate-300">Colour</span>
+                <span className="block text-sm font-medium text-slate-300">
+                  Colour
+                </span>
                 <div className="flex flex-wrap gap-3">
                   {EVENT_COLOURS.map((colour) => (
                     <button
                       key={colour.value}
                       type="button"
-                      onClick={() => setForm((current) => ({ ...current, colour: colour.value }))}
+                      onClick={() =>
+                        setForm((current) => ({
+                          ...current,
+                          colour: colour.value,
+                        }))
+                      }
                       className={`rounded-2xl border px-3 py-2 text-sm transition ${
                         form.colour === colour.value
                           ? 'border-slate-200 text-slate-100'
@@ -1034,11 +1154,16 @@ export default function CalendarClient({
               </div>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-300">Description</span>
+                <span className="mb-2 block text-sm font-medium text-slate-300">
+                  Description
+                </span>
                 <textarea
                   value={form.description}
                   onChange={(event) =>
-                    setForm((current) => ({ ...current, description: event.target.value }))
+                    setForm((current) => ({
+                      ...current,
+                      description: event.target.value,
+                    }))
                   }
                   rows={5}
                   className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"

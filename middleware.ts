@@ -6,6 +6,9 @@ const publicRoutes = [
   '/login',
   '/auth/callback',
   '/discovery',
+  '/privacy',
+  '/terms',
+  '/contact',
   '/api/auth/google',
   '/api/auth/google/callback',
 ]
@@ -18,13 +21,15 @@ function getMarketingRewritePath(pathname: string) {
     return '/marketing'
   }
 
+  if (pathname === '/privacy' || pathname === '/terms' || pathname === '/contact') {
+    return pathname
+  }
+
   if (
     pathname === '/blog' ||
     pathname.startsWith('/blog/') ||
     pathname === '/mvp-cricket' ||
-    pathname.startsWith('/mvp-cricket/') ||
-    pathname === '/privacy' ||
-    pathname.startsWith('/privacy/')
+    pathname.startsWith('/mvp-cricket/')
   ) {
     return `/marketing${pathname}`
   }

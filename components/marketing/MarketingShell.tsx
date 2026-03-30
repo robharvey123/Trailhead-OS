@@ -99,17 +99,23 @@ export default function MarketingShell({
         <div className="mx-auto flex max-w-[1100px] flex-col gap-4 px-6 py-8 text-sm text-slate-600 md:flex-row md:items-center md:justify-between md:px-8">
           <p>
             © 2026 Trailhead Holdings Ltd · Brentwood, Essex · Registered in
-            England &amp; Wales 16910286
+            England &amp; Wales
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link
               href={buildMarketingHref('/privacy', isLocalhost)}
               className="transition hover:text-[var(--marketing-text)]"
             >
-              Privacy
+              Privacy Policy
             </Link>
             <Link
-              href={buildMarketingHref('/#contact', isLocalhost)}
+              href={buildMarketingHref('/terms', isLocalhost)}
+              className="transition hover:text-[var(--marketing-text)]"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              href={buildMarketingHref('/contact', isLocalhost)}
               className="transition hover:text-[var(--marketing-text)]"
             >
               Contact

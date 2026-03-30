@@ -12,14 +12,6 @@ interface SidebarProps {
   newEnquiryCount: number
 }
 
-const REQUIRED_WORKSTREAMS = [
-  { slug: 'brand-sales', label: 'Brand sales', colour: 'teal' },
-  { slug: 'ecommerce', label: 'eBay & Amazon', colour: 'amber' },
-  { slug: 'app-dev', label: 'App development', colour: 'purple' },
-  { slug: 'mvp-cricket', label: 'MVP Cricket', colour: 'green' },
-  { slug: 'consulting', label: 'Consulting', colour: 'coral' },
-] as const
-
 function NavLink({
   href,
   label,
@@ -75,10 +67,6 @@ export default function Sidebar({
   const supabase = createClient()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-
-  const workstreamsBySlug = new Map(
-    workstreams.map((workstream) => [workstream.slug, workstream])
-  )
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -136,22 +124,16 @@ export default function Sidebar({
               Workstreams
             </p>
             <div className="mt-2 space-y-1.5">
-              {REQUIRED_WORKSTREAMS.map((item) => {
-                const workstream = workstreamsBySlug.get(item.slug)
-                const label = workstream?.label ?? item.label
-                const colour = workstream?.colour ?? item.colour
-
-                return (
-                  <NavLink
-                    key={item.slug}
-                    href={`/projects/${item.slug}`}
-                    label={label}
-                    active={pathname === `/projects/${item.slug}`}
-                    onClick={() => setMobileOpen(false)}
-                    dotColour={getWorkstreamColourClasses(colour).dot}
-                  />
-                )
-              })}
+              {workstreams.map((workstream) => (
+                <NavLink
+                  key={workstream.id}
+                  href={`/projects/${workstream.slug}`}
+                  label={workstream.label}
+                  active={pathname === `/projects/${workstream.slug}`}
+                  onClick={() => setMobileOpen(false)}
+                  dotColour={getWorkstreamColourClasses(workstream.colour).dot}
+                />
+              ))}
             </div>
           </div>
 
