@@ -106,6 +106,22 @@ async function patchOsTask(request: NextRequest, id: string) {
     patch.due_date = body.due_date
   }
 
+  if (body.due_time !== undefined) {
+    if (body.due_time === null || body.due_time === '') {
+      patch.due_time = null
+    } else {
+      const parsedTime = parseTime(body.due_time)
+      if (!parsedTime) {
+        return NextResponse.json({ error: 'due_time must be HH:MM or HH:MM:SS' }, { status: 400 })
+      }
+      patch.due_time = parsedTime
+    }
+  }
+
+  if ((patch.due_date === null || body.due_date === null || body.due_date === '') && body.due_time === undefined) {
+    patch.due_time = null
+  }
+
   if (body.is_master_todo !== undefined) {
     if (typeof body.is_master_todo !== 'boolean') {
       return NextResponse.json({ error: 'is_master_todo must be a boolean' }, { status: 400 })

@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
-import { formatTaskDate } from '@/lib/os'
+import { formatTaskSchedule } from '@/lib/os'
 import type { TaskWithWorkstream } from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -22,7 +22,9 @@ export default function TaskCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-100">{task.title}</h3>
-          <p className="mt-1 text-xs text-slate-400">{formatTaskDate(task.due_date)}</p>
+          <p className="mt-1 text-xs text-slate-400">
+            {formatTaskSchedule(task.due_date, task.due_time)}
+          </p>
         </div>
         <PriorityBadge priority={task.priority} />
       </div>

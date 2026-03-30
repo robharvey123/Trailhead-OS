@@ -11,7 +11,7 @@ import {
   type SortingState,
 } from '@tanstack/react-table'
 import { apiFetch } from '@/lib/api-fetch'
-import { formatTaskDate } from '@/lib/os'
+import { formatTaskDate, formatTaskSchedule } from '@/lib/os'
 import type {
   Account,
   Contact,
@@ -19,6 +19,7 @@ import type {
   TaskWithWorkstream,
   Workstream,
 } from '@/lib/types'
+import MasterTaskKanban from './MasterTaskKanban'
 import PriorityBadge from './PriorityBadge'
 import TaskSlideOver from './TaskSlideOver'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -46,6 +47,7 @@ export default function MasterTaskListClient({
   contacts,
 }: MasterTaskListClientProps) {
   const [tasks, setTasks] = useState(initialTasks)
+  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table')
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [selectedTask, setSelectedTask] = useState<TaskWithWorkstream | null>(
@@ -132,6 +134,18 @@ export default function MasterTaskListClient({
     setMasterOnly(false)
   }
 
+  function mergeTask(nextTask: TaskWithWorkstream) {
+    setTasks((current) => {
+      const existingIndex = current.findIndex((task) => task.id === nextTask.id)
+
+      if (existingIndex === -1) {
+        return [nextTask, ...current]
+      }
+
+      return current.map((task) => (task.id === nextTask.id ? nextTask : task))
+    })
+  }
+
   const table = useReactTable({
     data: filteredTasks,
     columns: [
@@ -214,7 +228,8 @@ export default function MasterTaskListClient({
       }),
       columnHelper.accessor('due_date', {
         header: 'Due date',
-        cell: (info) => formatTaskDate(info.getValue()),
+        cell: (info) =>
+          formatTaskSchedule(info.getValue(), info.row.original.due_time),
       }),
       columnHelper.accessor('tags', {
         header: 'Tags',
@@ -278,13 +293,32 @@ export default function MasterTaskListClient({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setCreatingTask(true)}
-          className="relative z-10 rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white"
-        >
-          New task
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex rounded-2xl border border-slate-800 bg-slate-900/70 p-1">
+            {(['table', 'kanban'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setViewMode(mode)}
+                className={`rounded-xl px-4 py-2 text-sm font-medium capitalize transition ${
+                  viewMode === mode
+                    ? 'bg-slate-100 text-slate-950'
+                    : 'text-slate-300 hover:text-slate-100'
+                }`}
+              >
+                {mode}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCreatingTask(true)}
+            className="relative z-10 rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white"
+          >
+            New task
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-5 md:grid-cols-2 xl:grid-cols-6">
@@ -486,7 +520,7 @@ export default function MasterTaskListClient({
         </div>
       ) : null}
 
-      {selectedTasks.length > 0 ? (
+      {viewMode === 'table' && selectedTasks.length > 0 ? (
         <div className="flex flex-wrap items-center gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-4">
           <p className="text-sm text-slate-300">
             {selectedTasks.length} selected
@@ -586,43 +620,57 @@ export default function MasterTaskListClient({
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-[2rem] border border-slate-800 bg-slate-900/70">
-        <table className="min-w-full divide-y divide-slate-800 text-sm">
-          <thead className="bg-slate-950/80 text-xs uppercase tracking-[0.2em] text-slate-500">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="px-4 py-3 text-left">
-                    {header.isPlaceholder ? null : (
-                      <button
-                        type="button"
-                        onClick={header.column.getToggleSortingHandler()}
-                        className="inline-flex items-center gap-2"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </button>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody className="divide-y divide-slate-800">
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="text-slate-200">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 align-top">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {viewMode === 'kanban' ? (
+        <MasterTaskKanban
+          tasks={filteredTasks}
+          workstreams={workstreams}
+          onSelectTask={setSelectedTask}
+          onTaskSaved={(task) => {
+            mergeTask(task)
+            if (selectedTask?.id === task.id) {
+              setSelectedTask(task)
+            }
+          }}
+        />
+      ) : (
+        <div className="overflow-x-auto rounded-[2rem] border border-slate-800 bg-slate-900/70">
+          <table className="min-w-full divide-y divide-slate-800 text-sm">
+            <thead className="bg-slate-950/80 text-xs uppercase tracking-[0.2em] text-slate-500">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th key={header.id} className="px-4 py-3 text-left">
+                      {header.isPlaceholder ? null : (
+                        <button
+                          type="button"
+                          onClick={header.column.getToggleSortingHandler()}
+                          className="inline-flex items-center gap-2"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </button>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="text-slate-200">
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-4 py-3 align-top">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <TaskSlideOver
         open={Boolean(selectedTask)}
@@ -632,10 +680,7 @@ export default function MasterTaskListClient({
         accounts={accounts}
         contacts={contacts}
         onSaved={(task) => {
-          setTasks((current) => {
-            const next = current.filter((entry) => entry.id !== task.id)
-            return [...next, task]
-          })
+          mergeTask(task)
           setSelectedTask(task)
         }}
         onDeleted={(taskId) => {
@@ -651,7 +696,7 @@ export default function MasterTaskListClient({
         accounts={accounts}
         contacts={contacts}
         onSaved={(task) => {
-          setTasks((current) => [task, ...current])
+          mergeTask(task)
           setCreatingTask(false)
         }}
       />

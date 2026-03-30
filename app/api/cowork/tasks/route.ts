@@ -6,6 +6,7 @@ import {
   jsonError,
   mapTask,
   optionalDate,
+  optionalTime,
   optionalString,
   parseBooleanParam,
   parsePriority,
@@ -35,8 +36,9 @@ export async function GET(request: NextRequest) {
 
     let query = supabaseService
       .from('tasks')
-      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
       .order('due_date', { ascending: true, nullsFirst: false })
+      .order('due_time', { ascending: true, nullsFirst: false })
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true })
 
@@ -89,8 +91,13 @@ export async function POST(request: NextRequest) {
     const backlogColumnId = await getColumnIdForWorkstream(workstream.id, 'backlog')
     const priority = parsePriority(body.priority)
     const dueDate = optionalDate(body.due_date, 'due_date')
+    const dueTime = optionalTime(body.due_time, 'due_time')
     const description = optionalString(body.description)
     const isMasterTodo = body.is_master_todo === true
+
+    if (dueTime && !dueDate) {
+      return NextResponse.json({ error: 'due_date is required when due_time is supplied' }, { status: 400 })
+    }
 
     const { data, error } = await supabaseService
       .from('tasks')
@@ -100,10 +107,11 @@ export async function POST(request: NextRequest) {
         column_id: backlogColumnId,
         priority,
         due_date: dueDate,
+        due_time: dueDate ? dueTime : null,
         description,
         is_master_todo: isMasterTodo,
       })
-      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
       .single()
 
     if (error) {

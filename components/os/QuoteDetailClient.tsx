@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import EmailThread from './EmailThread'
+import RecordEmailDialog from './RecordEmailDialog'
 import StatusBadge from './StatusBadge'
 import WorkstreamBadge from './WorkstreamBadge'
 import { calculateTotals, type QuoteListItem } from '@/lib/types'
@@ -404,6 +405,18 @@ export default function QuoteDetailClient({
               >
                 Download PDF
               </a>
+
+              <RecordEmailDialog
+                kind="quote"
+                recordId={quote.id}
+                buttonLabel="Email quote"
+                dialogTitle="Email quote"
+                defaultRecipient={quote.contact?.email ?? quote.enquiry?.contact_email ?? null}
+                defaultSubject={`Quote ${quote.quote_number} - ${quote.title}`}
+                defaultMessage={`Hi,\n\nPlease find the attached quote for ${quote.title}.\n\nLet me know if you have any questions.`}
+                buttonClassName="w-full rounded-2xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                fullWidth
+              />
 
               <button
                 type="button"

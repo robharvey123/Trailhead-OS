@@ -49,7 +49,7 @@ export default async function DashboardPage() {
       .map((task) => ({
         type: 'task' as const,
         date: task.due_date!,
-        sort_at: `${task.due_date}T00:00:00`,
+        sort_at: `${task.due_date}T${task.due_time ?? '00:00:00'}`,
         data: task,
       })),
     ...upcomingEvents.map((event) => ({

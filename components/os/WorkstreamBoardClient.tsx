@@ -5,7 +5,7 @@ import { DndContext, PointerSensor, closestCorners, useDroppable, useSensor, use
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from '@tanstack/react-table'
-import { formatTaskDate, getWorkstreamColourClasses } from '@/lib/os'
+import { formatTaskSchedule, getWorkstreamColourClasses } from '@/lib/os'
 import type { BoardColumn, TaskWithWorkstream, Workstream } from '@/lib/types'
 import { apiFetch } from '@/lib/api-fetch'
 import PriorityBadge from './PriorityBadge'
@@ -230,7 +230,8 @@ export default function WorkstreamBoardClient({
       }),
       columnHelper.accessor('due_date', {
         header: 'Due',
-        cell: (info) => formatTaskDate(info.getValue()),
+        cell: (info) =>
+          formatTaskSchedule(info.getValue(), info.row.original.due_time),
       }),
       columnHelper.accessor('tags', {
         header: 'Tags',

@@ -347,6 +347,7 @@ export interface Task {
   description: string | null
   priority: TaskPriority
   due_date: string | null
+  due_time: string | null
   is_master_todo: boolean
   tags: string[]
   sort_order: number
@@ -446,6 +447,7 @@ export interface CreateTaskInput {
   description?: string | null
   priority?: TaskPriority
   due_date?: string | null
+  due_time?: string | null
   is_master_todo?: boolean
   tags?: string[]
   sort_order?: number
@@ -460,6 +462,7 @@ export interface UpdateTaskInput {
   description?: string | null
   priority?: TaskPriority
   due_date?: string | null
+  due_time?: string | null
   is_master_todo?: boolean
   tags?: string[]
   sort_order?: number

@@ -6,6 +6,7 @@ import {
   mapTask,
   optionalDate,
   optionalIsoDatetime,
+  optionalTime,
   optionalString,
   parseColumnKey,
   parsePriority,
@@ -44,6 +45,10 @@ export async function PATCH(
       patch.due_date = optionalDate(body.due_date, 'due_date')
     }
 
+    if (body.due_time !== undefined) {
+      patch.due_time = optionalTime(body.due_time, 'due_time')
+    }
+
     if (body.description !== undefined) {
       if (body.description !== null && typeof body.description !== 'string') {
         return NextResponse.json({ error: 'description must be a string or null' }, { status: 400 })
@@ -77,7 +82,7 @@ export async function PATCH(
       .from('tasks')
       .update(patch)
       .eq('id', id)
-      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
       .single()
 
     if (error) {

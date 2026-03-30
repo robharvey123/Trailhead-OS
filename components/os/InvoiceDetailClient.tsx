@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { calculateTotals, type Contact, type Invoice, type InvoiceStatus, type Workstream } from '@/lib/types'
+import RecordEmailDialog from './RecordEmailDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import StatusBadge from './StatusBadge'
 
@@ -210,6 +211,16 @@ export default function InvoiceDetailClient({
             >
               Download PDF
             </a>
+            <RecordEmailDialog
+              kind="invoice"
+              recordId={invoice.id}
+              buttonLabel="Email invoice"
+              dialogTitle="Email invoice"
+              defaultRecipient={contact?.email ?? null}
+              defaultSubject={`Invoice ${invoice.invoice_number}`}
+              defaultMessage={`Hi,\n\nPlease find the attached invoice ${invoice.invoice_number}.\n\nThank you.`}
+              buttonClassName="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+            />
             {invoice.status === 'draft' ? (
               <Link
                 href={`/invoicing/${invoice.id}/edit`}

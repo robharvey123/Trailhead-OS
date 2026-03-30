@@ -267,6 +267,10 @@ function isStepValid(step: StepDefinition, form: EnquiryFormState): boolean {
   return typeof value === 'string' && value.trim().length > 0
 }
 
+function getFirstInvalidStepIndex(form: EnquiryFormState): number {
+  return STEPS.findIndex((step) => !isStepValid(step, form))
+}
+
 function getProgressPosition(currentStep: number) {
   return Math.min(currentStep + 1, PROGRESS_STEP_COUNT)
 }
@@ -343,18 +347,22 @@ export default function PublicDiscoveryForm() {
   }
 
   async function advance() {
-    if (!isStepValid(step, form)) {
+    if (!isLastStep) {
+      setSubmitError('')
+      setCurrentStep((index) => Math.min(STEPS.length - 1, index + 1))
+      return
+    }
+
+    const firstInvalidStepIndex = getFirstInvalidStepIndex(form)
+
+    if (firstInvalidStepIndex >= 0) {
+      setSubmitError('Please complete the required questions before submitting.')
       setShakeNonce((value) => value + 1)
+      setCurrentStep(firstInvalidStepIndex)
       return
     }
 
-    if (isLastStep) {
-      await submitForm(form)
-      return
-    }
-
-    setSubmitError('')
-    setCurrentStep((index) => Math.min(STEPS.length - 1, index + 1))
+    await submitForm(form)
   }
 
   async function skipOptionalStep() {

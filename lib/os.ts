@@ -107,6 +107,36 @@ export function formatTaskDate(value?: string | null) {
   }).format(date)
 }
 
+export function formatTaskTime(value?: string | null) {
+  if (!value) {
+    return ''
+  }
+
+  const date = new Date(`1970-01-01T${value}`)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'short',
+  }).format(date)
+}
+
+export function formatTaskSchedule(date?: string | null, time?: string | null) {
+  if (!date) {
+    return 'No due date'
+  }
+
+  const formattedDate = formatTaskDate(date)
+  const formattedTime = formatTaskTime(time)
+
+  if (!formattedTime) {
+    return formattedDate
+  }
+
+  return `${formattedDate} at ${formattedTime}`
+}
+
 export function formatDateTime(value?: string | null) {
   if (!value) {
     return 'Unknown'

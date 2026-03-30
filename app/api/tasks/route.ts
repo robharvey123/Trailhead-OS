@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkspaceContext } from '@/lib/workspace/auth'
 import { loadTaskDependencyMaps } from '@/lib/workspace/task-relations'
+import { parseTime } from '@/lib/workspace/task-payload'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { createTask, getTasks } from '@/lib/db/tasks'
 import type { CreateTaskInput, TaskPriority } from '@/lib/types'
@@ -190,6 +191,7 @@ export async function POST(request: NextRequest) {
       : typeof body.due_date === 'string'
         ? body.due_date
         : null
+  const dueTime = body.due_time === undefined ? null : parseTime(body.due_time)
   const contactId =
     body.contact_id === null || body.contact_id === undefined
       ? null
@@ -220,6 +222,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'priority must be low, medium, high, or urgent' }, { status: 400 })
   }
 
+  if (body.due_time !== undefined && body.due_time !== null && body.due_time !== '' && !dueTime) {
+    return NextResponse.json({ error: 'due_time must be HH:MM or HH:MM:SS' }, { status: 400 })
+  }
+
+  if (dueTime && !dueDate) {
+    return NextResponse.json({ error: 'due_date is required when due_time is supplied' }, { status: 400 })
+  }
+
   const input: CreateTaskInput = {
     title,
     workstream_id: workstreamId,
@@ -229,6 +239,7 @@ export async function POST(request: NextRequest) {
     description: typeof body.description === 'string' ? body.description : null,
     priority,
     due_date: dueDate,
+    due_time: dueDate ? dueTime : null,
     is_master_todo: isMasterTodo,
     tags,
     sort_order: typeof body.sort_order === 'number' ? body.sort_order : 0,

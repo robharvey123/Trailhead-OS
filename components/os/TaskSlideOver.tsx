@@ -51,6 +51,7 @@ export default function TaskSlideOver({
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<TaskPriority>('medium')
   const [dueDate, setDueDate] = useState('')
+  const [dueTime, setDueTime] = useState('')
   const [workstreamId, setWorkstreamId] = useState<string>('')
   const [accountId, setAccountId] = useState<string>('')
   const [contactId, setContactId] = useState<string>('')
@@ -73,6 +74,7 @@ export default function TaskSlideOver({
     setDescription(task?.description ?? '')
     setPriority(task?.priority ?? 'medium')
     setDueDate(task?.due_date ?? '')
+    setDueTime(task?.due_time?.slice(0, 5) ?? '')
     setWorkstreamId(task?.workstream_id ?? defaultWorkstreamId ?? '')
     setAccountId(task?.account_id ?? '')
     setContactId(task?.contact_id ?? '')
@@ -144,6 +146,7 @@ export default function TaskSlideOver({
         description: description.trim() || null,
         priority,
         due_date: dueDate || null,
+        due_time: dueDate && dueTime ? dueTime : null,
         workstream_id: workstreamId || null,
         column_id: task?.column_id ?? defaultColumnId ?? null,
         account_id: accountId || null,
@@ -335,8 +338,25 @@ export default function TaskSlideOver({
               <input
                 type="date"
                 value={dueDate}
-                onChange={(event) => setDueDate(event.target.value)}
+                onChange={(event) => {
+                  const nextDate = event.target.value
+                  setDueDate(nextDate)
+                  if (!nextDate) {
+                    setDueTime('')
+                  }
+                }}
                 className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-slate-300">Due time</span>
+              <input
+                type="time"
+                value={dueTime}
+                onChange={(event) => setDueTime(event.target.value)}
+                disabled={!dueDate}
+                className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
 

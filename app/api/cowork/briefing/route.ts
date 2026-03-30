@@ -47,23 +47,26 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       supabaseService
         .from('tasks')
-        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
         .eq('due_date', today)
         .order('priority', { ascending: false })
+        .order('due_time', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true }),
       supabaseService
         .from('tasks')
-        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
         .lt('due_date', today)
         .is('completed_at', null)
         .order('due_date', { ascending: true })
+        .order('due_time', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true }),
       supabaseService
         .from('tasks')
-        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
         .gte('due_date', tomorrow)
         .lte('due_date', weekEnd)
         .order('due_date', { ascending: true })
+        .order('due_time', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true }),
       supabaseService
         .from('calendar_events')

@@ -35,6 +35,7 @@ type TaskRow = {
   description: string | null
   priority: TaskPriority
   due_date: string | null
+  due_time: string | null
   is_master_todo: boolean
   tags: string[] | null
   sort_order: number
@@ -186,6 +187,16 @@ export function optionalIsoDatetime(value: unknown, field: string) {
     throw new CoworkApiError(`${field} must be an ISO datetime`, 400)
   }
   return parsed.toISOString()
+}
+
+export function optionalTime(value: unknown, field: string) {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value !== 'string' || !/^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.test(value)) {
+    throw new CoworkApiError(`${field} must be HH:MM or HH:MM:SS`, 400)
+  }
+
+  const [hours, minutes, seconds = '00'] = value.split(':')
+  return `${hours}:${minutes}:${seconds}`
 }
 
 export function parsePriority(value: unknown, fallback: TaskPriority = 'medium') {
@@ -340,6 +351,7 @@ export function mapTask(row: TaskRow) {
     workstream_id: row.workstream_id,
     priority: row.priority,
     due_date: row.due_date,
+    due_time: row.due_time,
     description: row.description,
     is_master_todo: row.is_master_todo,
     completed_at: row.completed_at,

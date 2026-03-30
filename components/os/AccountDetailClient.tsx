@@ -8,6 +8,7 @@ import QuickAddTask from './QuickAddTask'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
+import { formatTaskSchedule } from '@/lib/os'
 import { calculateTotals } from '@/lib/types'
 import type { Workstream } from '@/lib/types'
 import type { AccountDetail } from '@/lib/db/accounts'
@@ -243,7 +244,7 @@ export default function AccountDetailClient({
                       <div key={task.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
                         <p className="font-medium text-slate-100">{task.title}</p>
                         <p className="mt-1 text-sm text-slate-400">
-                          Due: {task.due_date ?? 'No due date'}
+                          Due: {formatTaskSchedule(task.due_date, task.due_time)}
                         </p>
                       </div>
                     ))}

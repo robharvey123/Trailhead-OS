@@ -8,6 +8,7 @@ import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
+import { formatTaskSchedule } from '@/lib/os'
 import type {
   Account,
   Contact,
@@ -421,7 +422,9 @@ export default function ContactDetailClient({
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-medium text-slate-100">{task.title}</p>
-                    <p className="mt-1 text-sm text-slate-400">Due: {task.due_date ?? 'No due date'}</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Due: {formatTaskSchedule(task.due_date, task.due_time)}
+                    </p>
                   </div>
                   {task.workstream_label ? (
                     <WorkstreamBadge

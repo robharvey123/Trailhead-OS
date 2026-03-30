@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { formatDateTime, formatTaskDate, getWorkstreamColourClasses } from '@/lib/os'
+import { formatDateTime, formatTaskDate, formatTaskSchedule, getWorkstreamColourClasses } from '@/lib/os'
 import type {
   DashboardUpcomingItem,
   NoteWithWorkstream,
@@ -95,7 +95,9 @@ export default function DashboardClient({
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-medium text-slate-100">{task.title}</p>
-                            <p className="mt-1 text-sm text-slate-400">{formatTaskDate(task.due_date)}</p>
+                            <p className="mt-1 text-sm text-slate-400">
+                              {formatTaskSchedule(task.due_date, task.due_time)}
+                            </p>
                           </div>
                           <PriorityBadge priority={task.priority} />
                         </div>
@@ -185,7 +187,12 @@ export default function DashboardClient({
                           return (
                             <div key={`task-${task.id}`} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
                               <div className="flex items-start justify-between gap-3">
-                                <p className="text-sm font-medium text-slate-100">{task.title}</p>
+                                <div>
+                                  <p className="text-sm font-medium text-slate-100">{task.title}</p>
+                                  <p className="mt-1 text-xs text-slate-500">
+                                    {formatTaskSchedule(task.due_date, task.due_time)}
+                                  </p>
+                                </div>
                                 <PriorityBadge priority={task.priority} />
                               </div>
                               {task.workstream_label ? (

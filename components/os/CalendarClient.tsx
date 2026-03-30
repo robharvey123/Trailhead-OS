@@ -18,7 +18,7 @@ import type {
 import { useEffect, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import { getWorkstreamAccentHex } from '@/lib/os'
-import { formatDateTime, formatTaskDate } from '@/lib/os'
+import { formatDateTime, formatTaskSchedule } from '@/lib/os'
 import type {
   CalendarEvent,
   Contact,
@@ -297,19 +297,24 @@ function toEventInput(
 ): EventInput[] {
   const taskInputs = tasks
     .filter((task) => task.due_date)
-    .map((task) => ({
-      id: `task-${task.id}`,
-      title: task.title,
-      date: task.due_date!,
-      allDay: true,
-      backgroundColor: getTaskColour(task, workstreams),
-      borderColor: getTaskColour(task, workstreams),
-      durationEditable: false,
-      extendedProps: {
-        type: 'task',
-        data: task,
-      },
-    }))
+    .map((task) => {
+      const hasTime = Boolean(task.due_time)
+
+      return {
+        id: `task-${task.id}`,
+        title: task.title,
+        date: hasTime ? undefined : task.due_date!,
+        start: hasTime ? `${task.due_date}T${task.due_time}` : undefined,
+        allDay: !hasTime,
+        backgroundColor: getTaskColour(task, workstreams),
+        borderColor: getTaskColour(task, workstreams),
+        durationEditable: false,
+        extendedProps: {
+          type: 'task',
+          data: task,
+        },
+      }
+    })
 
   const eventInputs = events.map((event) => ({
     id: `event-${event.id}`,
@@ -507,7 +512,10 @@ export default function CalendarClient({
           {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ due_date: dueDate }),
+            body: JSON.stringify({
+              due_date: dueDate,
+              due_time: arg.event.allDay ? null : formatLocalTime(arg.event.start),
+            }),
           }
         )
 
@@ -797,9 +805,12 @@ export default function CalendarClient({
 
                 <dl className="space-y-4 text-sm">
                   <div>
-                    <dt className="text-slate-500">Due date</dt>
+                    <dt className="text-slate-500">Due</dt>
                     <dd className="mt-1 text-slate-200">
-                      {formatTaskDate(selectedTask.due_date)}
+                      {formatTaskSchedule(
+                        selectedTask.due_date,
+                        selectedTask.due_time
+                      )}
                     </dd>
                   </div>
                   <div>

@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import EmailThread from './EmailThread'
 import EnquiryDetailActions from './EnquiryDetailActions'
+import RecordEmailDialog from './RecordEmailDialog'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
 import type { Account, Enquiry, EnquiryStatus } from '@/lib/types'
@@ -294,7 +295,17 @@ export default function EnquiryDetailClient({
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <RecordEmailDialog
+            kind="enquiry"
+            recordId={enquiry.id}
+            buttonLabel="Email discovery"
+            dialogTitle="Email discovery summary"
+            defaultRecipient={enquiry.contact_email}
+            defaultSubject={`Discovery summary - ${enquiry.biz_name}`}
+            defaultMessage={`Hi,\n\nPlease find the discovery summary for ${enquiry.biz_name} below.\n\nBest,\nRob`}
+            buttonClassName="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+          />
           {editing ? (
             <>
               <button
@@ -450,6 +461,7 @@ export default function EnquiryDetailClient({
           <EnquiryDetailActions
             enquiry={enquiry}
             generatedQuoteId={generatedQuoteId}
+            generatedQuoteEmail={enquiry.contact_email}
           />
         </div>
       </div>

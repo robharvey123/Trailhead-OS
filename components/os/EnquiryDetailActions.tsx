@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import PricingTierSelector from './PricingTierSelector'
+import RecordEmailDialog from './RecordEmailDialog'
 import StatusBadge from './StatusBadge'
 import type { Enquiry, PricingTier } from '@/lib/types'
 
@@ -23,9 +24,11 @@ function buildContactNotes(enquiry: Enquiry) {
 export default function EnquiryDetailActions({
   enquiry,
   generatedQuoteId,
+  generatedQuoteEmail,
 }: {
   enquiry: Enquiry
   generatedQuoteId: string | null
+  generatedQuoteEmail: string | null
 }) {
   const router = useRouter()
   const [loadingAction, setLoadingAction] = useState<'review' | 'convert' | 'generate' | null>(null)
@@ -129,12 +132,25 @@ export default function EnquiryDetailActions({
         />
         <div className="mt-6 space-y-3">
           {generatedQuoteId ? (
-            <Link
-              href={`/quotes/${generatedQuoteId}`}
-              className="block rounded-2xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-center text-sm font-semibold text-sky-100 transition hover:border-sky-400"
-            >
-              View generated quote →
-            </Link>
+            <>
+              <Link
+                href={`/quotes/${generatedQuoteId}`}
+                className="block rounded-2xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-center text-sm font-semibold text-sky-100 transition hover:border-sky-400"
+              >
+                View generated quote →
+              </Link>
+              <RecordEmailDialog
+                kind="quote"
+                recordId={generatedQuoteId}
+                buttonLabel="Email generated quote"
+                dialogTitle="Email generated quote"
+                defaultRecipient={generatedQuoteEmail}
+                defaultSubject={`Quote for ${enquiry.biz_name}`}
+                defaultMessage={`Hi,\n\nPlease find the attached quote for ${enquiry.biz_name}.\n\nBest,\nRob`}
+                buttonClassName="w-full rounded-2xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                fullWidth
+              />
+            </>
           ) : (
             <>
               <button

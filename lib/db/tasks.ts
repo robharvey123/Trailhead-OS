@@ -31,6 +31,7 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     description: row.description,
     priority: row.priority,
     due_date: row.due_date,
+    due_time: row.due_time ?? null,
     is_master_todo: row.is_master_todo,
     tags: row.tags ?? [],
     sort_order: row.sort_order,
@@ -71,6 +72,7 @@ export async function getTasks(
     .from('tasks')
     .select('*, workstreams(slug, label, colour)')
     .order('due_date', { ascending: true, nullsFirst: false })
+    .order('due_time', { ascending: true, nullsFirst: false })
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
 
@@ -158,6 +160,7 @@ export async function createTask(
       description: input.description?.trim() || null,
       priority: input.priority ?? 'medium',
       due_date: input.due_date ?? null,
+      due_time: input.due_time ?? null,
       is_master_todo: input.is_master_todo ?? false,
       tags: input.tags ?? [],
       sort_order: input.sort_order ?? 0,
@@ -217,6 +220,10 @@ export async function updateTask(
 
   if (input.due_date !== undefined) {
     patch.due_date = input.due_date
+  }
+
+  if (input.due_time !== undefined) {
+    patch.due_time = input.due_time
   }
 
   if (input.is_master_todo !== undefined) {
