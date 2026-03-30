@@ -46,7 +46,7 @@ export default function QuickAddTask({
 
     try {
       const resolvedWorkstreamId = workstream_id ?? workstreamId
-      const response = await apiFetch<{ task: TaskWithWorkstream }>('/api/tasks', {
+      const response = await apiFetch<{ task: TaskWithWorkstream }>('/api/os/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

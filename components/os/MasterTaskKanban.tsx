@@ -125,7 +125,7 @@ export default function MasterTaskKanban({
     })
 
     try {
-      const response = await apiFetch<{ task: TaskWithWorkstream }>(`/api/tasks/${taskId}`, {
+      const response = await apiFetch<{ task: TaskWithWorkstream }>(`/api/os/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(

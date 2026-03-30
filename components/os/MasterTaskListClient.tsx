@@ -531,7 +531,7 @@ export default function MasterTaskListClient({
             onClick={() =>
               runBulkUpdate(
                 async (task) => {
-                  await apiFetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
+                  await apiFetch(`/api/os/tasks/${task.id}`, { method: 'DELETE' })
                 },
                 (task) => {
                   setTasks((current) =>
@@ -565,7 +565,7 @@ export default function MasterTaskListClient({
             onClick={() =>
               runBulkUpdate(
                 async (task) => {
-                  await apiFetch(`/api/tasks/${task.id}`, {
+                  await apiFetch(`/api/os/tasks/${task.id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ priority: bulkPriority }),
@@ -596,7 +596,7 @@ export default function MasterTaskListClient({
               )
               runBulkUpdate(
                 async (task) => {
-                  await apiFetch(`/api/tasks/${task.id}`, {
+                  await apiFetch(`/api/os/tasks/${task.id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ is_master_todo: shouldAdd }),

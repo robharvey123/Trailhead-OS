@@ -159,14 +159,14 @@ export default function TaskSlideOver({
       }
 
       if (task?.id) {
-        const response = await apiFetch<{ task: TaskWithWorkstream }>(`/api/tasks/${task.id}`, {
+        const response = await apiFetch<{ task: TaskWithWorkstream }>(`/api/os/tasks/${task.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
         onSaved?.(response.task)
       } else {
-        const response = await apiFetch<{ task: TaskWithWorkstream }>('/api/tasks', {
+        const response = await apiFetch<{ task: TaskWithWorkstream }>('/api/os/tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -192,7 +192,7 @@ export default function TaskSlideOver({
     setError(null)
 
     try {
-      await apiFetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
+      await apiFetch(`/api/os/tasks/${task.id}`, { method: 'DELETE' })
       onDeleted?.(task.id)
       router.refresh()
       onClose()
