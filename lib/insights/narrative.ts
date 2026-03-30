@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import { anthropic, ANTHROPIC_MODELS } from '@/lib/anthropic/client'
 import type { InsightsData } from './data'
 
 export type InsightsNarrative = {
@@ -77,14 +77,6 @@ export const generateInsightsNarrative = async ({
   reportType: 'exec' | 'detailed'
   includeFinancials: boolean
 }): Promise<InsightsNarrative> => {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not configured.')
-  }
-
-  const openai = new OpenAI({ apiKey })
-  const model = process.env.OPENAI_MODEL ?? 'gpt-4.1'
-
   const payload = buildPayload(data, includeFinancials)
 
   const instructions = `
@@ -100,24 +92,42 @@ call out that it may be incomplete and avoid negative conclusions based solely o
 Promo stock is valued at zero; do not treat promo units as a cost line item.
 `
 
-  const response = await openai.chat.completions.create({
-    model,
-    temperature: 0.2,
-    response_format: { type: 'json_object' },
-    messages: [
-      { role: 'system', content: instructions.trim() },
-      {
-        role: 'user',
-        content: JSON.stringify({
-          reportType,
-          data: payload,
-        }),
-      },
-    ],
-  })
+  let text: string
+  try {
+    const response = await anthropic.messages.create({
+      model: ANTHROPIC_MODELS.SONNET,
+      max_tokens: 1500,
+      system: instructions.trim(),
+      messages: [
+        {
+          role: 'user',
+          content: JSON.stringify({
+            reportType,
+            data: payload,
+          }),
+        },
+      ],
+    })
 
-  const content = response.choices[0]?.message?.content ?? '{}'
-  const parsed = JSON.parse(content) as InsightsNarrative
+    const textBlock = response.content.find((item) => item.type === 'text')
+    text = textBlock?.text ?? ''
+  } catch (error) {
+    console.error('Anthropic API error:', error instanceof Error ? error.message : error)
+    throw new Error('AI service unavailable - please try again')
+  }
+
+  let parsed: InsightsNarrative
+  try {
+    const clean = text
+      .replace(/^```json\n?/i, '')
+      .replace(/^```\n?/, '')
+      .replace(/\n?```$/, '')
+      .trim()
+    parsed = JSON.parse(clean) as InsightsNarrative
+  } catch {
+    console.error('Failed to parse AI response:', text)
+    throw new Error('AI generation failed - invalid JSON response')
+  }
 
   return {
     title: parsed.title || 'Monthly S&OP summary',

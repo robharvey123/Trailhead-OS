@@ -1,5 +1,5 @@
-import OpenAI from 'openai'
 import { NextRequest, NextResponse } from 'next/server'
+import { anthropic, ANTHROPIC_MODELS } from '@/lib/anthropic/client'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getPricingTierById } from '@/lib/db/pricing-tiers'
@@ -14,7 +14,6 @@ import type {
   QuoteScope,
 } from '@/lib/types'
 
-const OPENAI_DEFAULT_MODEL = 'gpt-4.1'
 const QUOTE_VALIDITY_DAYS = 30
 
 type EnquiryPrompt = Pick<
@@ -242,14 +241,6 @@ Please analyse this and generate a detailed scope of work
 and accurate quote using your estimation methodology.`
 }
 
-function stripCodeFences(value: string) {
-  return value
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/i, '')
-    .trim()
-}
-
 function sanitizeScope(value: unknown): QuoteScope[] {
   if (!Array.isArray(value)) {
     return []
@@ -389,26 +380,12 @@ function enforceHostingLineItem(
   ]
 }
 
-async function callOpenAI(system: string, user: string) {
-  // Note for Rob: add OPENAI_API_KEY to .env.local and Netlify environment variables.
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not configured')
-  }
-
-  const openai = new OpenAI({ apiKey })
-  const model = process.env.OPENAI_MODEL ?? OPENAI_DEFAULT_MODEL
-
-  const response = await openai.chat.completions.create({
-    model,
-    temperature: 0.2,
-    max_completion_tokens: 4000,
-    response_format: { type: 'json_object' },
+async function callAnthropic(system: string, user: string) {
+  const response = await anthropic.messages.create({
+    model: ANTHROPIC_MODELS.OPUS,
+    max_tokens: 4000,
+    system,
     messages: [
-      {
-        role: 'system',
-        content: system,
-      },
       {
         role: 'user',
         content: user,
@@ -416,10 +393,11 @@ async function callOpenAI(system: string, user: string) {
     ],
   })
 
-  const text = response.choices[0]?.message?.content?.trim() ?? ''
+  const textBlock = response.content.find((item) => item.type === 'text')
+  const text = textBlock?.text.trim() ?? ''
 
   if (!text) {
-    throw new Error('OpenAI returned an empty response')
+    throw new Error('Anthropic returned an empty response')
   }
 
   return text
@@ -427,7 +405,12 @@ async function callOpenAI(system: string, user: string) {
 
 function parseAiResponse(text: string, tier?: PricingTier | null): AiQuoteResponse {
   try {
-    const parsed = JSON.parse(stripCodeFences(text)) as Record<string, unknown>
+    const clean = text
+      .replace(/^```json\n?/i, '')
+      .replace(/^```\n?/, '')
+      .replace(/\n?```$/, '')
+      .trim()
+    const parsed = JSON.parse(clean) as Record<string, unknown>
     const scope = sanitizeScope(parsed.scope)
     const complexityBreakdown = sanitizeComplexityBreakdown(parsed.complexity_breakdown)
     const estimatedHours = Number(parsed.estimated_hours)
@@ -471,7 +454,8 @@ function parseAiResponse(text: string, tier?: PricingTier | null): AiQuoteRespon
       complexity_breakdown: complexityBreakdown,
     }
   } catch {
-    throw new Error('Failed to parse OpenAI JSON response')
+    console.error('Failed to parse AI response:', text)
+    throw new Error('AI generation failed - invalid JSON response')
   }
 }
 
@@ -551,26 +535,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'App development workstream not found' }, { status: 500 })
     }
 
-    const rawText = await callOpenAI(
-      `${BASE_SYSTEM_PROMPT}${pricingTier ? buildTierPrompt(pricingTier) : ''}`,
-      buildUserPrompt({
-        enquiry: {
-          ...enquiry,
-          contact_email: enquiry.contact_email ?? 'Not specified',
-          biz_type: enquiry.biz_type ?? 'Not specified',
-          project_type: enquiry.project_type ?? 'Not specified',
-          team_size: enquiry.team_size ?? 'Not specified',
-          team_split: enquiry.team_split ?? 'Not specified',
-          calendar_detail: enquiry.calendar_detail ?? 'Not specified',
-          forms_detail: enquiry.forms_detail ?? 'Not specified',
-          devices: enquiry.devices?.length ? enquiry.devices : ['Not specified'],
-          offline_capability: enquiry.offline_capability ?? 'Not specified',
-          existing_tools: enquiry.existing_tools ?? 'Not specified',
-          pain_points: enquiry.pain_points ?? 'Not specified',
-          timeline: enquiry.timeline ?? 'Not specified',
-        },
-      })
-    )
+    let rawText: string
+    try {
+      rawText = await callAnthropic(
+        `${BASE_SYSTEM_PROMPT}${pricingTier ? buildTierPrompt(pricingTier) : ''}`,
+        buildUserPrompt({
+          enquiry: {
+            ...enquiry,
+            contact_email: enquiry.contact_email ?? 'Not specified',
+            biz_type: enquiry.biz_type ?? 'Not specified',
+            project_type: enquiry.project_type ?? 'Not specified',
+            team_size: enquiry.team_size ?? 'Not specified',
+            team_split: enquiry.team_split ?? 'Not specified',
+            calendar_detail: enquiry.calendar_detail ?? 'Not specified',
+            forms_detail: enquiry.forms_detail ?? 'Not specified',
+            devices: enquiry.devices?.length ? enquiry.devices : ['Not specified'],
+            offline_capability: enquiry.offline_capability ?? 'Not specified',
+            existing_tools: enquiry.existing_tools ?? 'Not specified',
+            pain_points: enquiry.pain_points ?? 'Not specified',
+            timeline: enquiry.timeline ?? 'Not specified',
+          },
+        })
+      )
+    } catch (error) {
+      console.error('Anthropic API error:', error instanceof Error ? error.message : error)
+      return NextResponse.json(
+        { error: 'AI service unavailable - please try again' },
+        { status: 503 }
+      )
+    }
 
     let aiResponse: AiQuoteResponse
     try {
@@ -620,7 +613,7 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate AI quote' },
+      { error: error instanceof Error ? error.message : 'Failed to generate quote' },
       { status: 500 }
     )
   }

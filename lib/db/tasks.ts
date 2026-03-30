@@ -16,6 +16,11 @@ type TaskRowWithJoin = Task & {
   workstreams: Pick<Workstream, 'slug' | 'label' | 'colour'> | null
 }
 
+function isMissingDueTimeColumnError(error: { message?: string } | null | undefined) {
+  const message = error?.message?.toLowerCase() ?? ''
+  return message.includes('due_time') && message.includes('does not exist')
+}
+
 async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
 }
@@ -63,18 +68,21 @@ async function resolveDefaultColumnId(
   return (data as Pick<BoardColumn, 'id'> | null)?.id ?? null
 }
 
-export async function getTasks(
-  filters: TaskFilters = {},
-  client?: SupabaseClient
-): Promise<TaskWithWorkstream[]> {
-  const supabase = await getSupabase(client)
+async function runTasksQuery(
+  supabase: SupabaseClient,
+  filters: TaskFilters,
+  options: { includeDueTimeOrder: boolean }
+) {
   let query = supabase
     .from('tasks')
     .select('*, workstreams(slug, label, colour)')
     .order('due_date', { ascending: true, nullsFirst: false })
-    .order('due_time', { ascending: true, nullsFirst: false })
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
+
+  if (options.includeDueTimeOrder) {
+    query = query.order('due_time', { ascending: true, nullsFirst: false })
+  }
 
   if (filters.workstream_id) {
     query = query.eq('workstream_id', filters.workstream_id)
@@ -120,7 +128,23 @@ export async function getTasks(
     query = query.limit(filters.limit)
   }
 
-  const { data, error } = await query
+  return query
+}
+
+export async function getTasks(
+  filters: TaskFilters = {},
+  client?: SupabaseClient
+): Promise<TaskWithWorkstream[]> {
+  const supabase = await getSupabase(client)
+  let { data, error } = await runTasksQuery(supabase, filters, {
+    includeDueTimeOrder: true,
+  })
+
+  if (isMissingDueTimeColumnError(error)) {
+    ;({ data, error } = await runTasksQuery(supabase, filters, {
+      includeDueTimeOrder: false,
+    }))
+  }
 
   if (error) {
     throw new Error(error.message || 'Failed to load tasks')
@@ -149,24 +173,36 @@ export async function createTask(
     columnId = await resolveDefaultColumnId(input.workstream_id, supabase)
   }
 
-  const { data, error } = await supabase
+  const payload = {
+    workstream_id: input.workstream_id ?? null,
+    column_id: columnId,
+    account_id: input.account_id ?? null,
+    contact_id: input.contact_id ?? null,
+    title,
+    description: input.description?.trim() || null,
+    priority: input.priority ?? 'medium',
+    due_date: input.due_date ?? null,
+    due_time: input.due_time ?? null,
+    is_master_todo: input.is_master_todo ?? false,
+    tags: input.tags ?? [],
+    sort_order: input.sort_order ?? 0,
+  }
+
+  let { data, error } = await supabase
     .from('tasks')
-    .insert({
-      workstream_id: input.workstream_id ?? null,
-      column_id: columnId,
-      account_id: input.account_id ?? null,
-      contact_id: input.contact_id ?? null,
-      title,
-      description: input.description?.trim() || null,
-      priority: input.priority ?? 'medium',
-      due_date: input.due_date ?? null,
-      due_time: input.due_time ?? null,
-      is_master_todo: input.is_master_todo ?? false,
-      tags: input.tags ?? [],
-      sort_order: input.sort_order ?? 0,
-    })
+    .insert(payload)
     .select('*, workstreams(slug, label, colour)')
     .single()
+
+  if (isMissingDueTimeColumnError(error)) {
+    const fallbackPayload = { ...payload }
+    delete fallbackPayload.due_time
+    ;({ data, error } = await supabase
+      .from('tasks')
+      .insert(fallbackPayload)
+      .select('*, workstreams(slug, label, colour)')
+      .single())
+  }
 
   if (error) {
     throw new Error(error.message || 'Failed to create task')
@@ -242,12 +278,23 @@ export async function updateTask(
     patch.completed_at = input.completed_at
   }
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('tasks')
     .update(patch)
     .eq('id', id)
     .select('*, workstreams(slug, label, colour)')
     .single()
+
+  if (isMissingDueTimeColumnError(error) && 'due_time' in patch) {
+    const fallbackPatch = { ...patch }
+    delete fallbackPatch.due_time
+    ;({ data, error } = await supabase
+      .from('tasks')
+      .update(fallbackPatch)
+      .eq('id', id)
+      .select('*, workstreams(slug, label, colour)')
+      .single())
+  }
 
   if (error) {
     throw new Error(error.message || 'Failed to update task')
