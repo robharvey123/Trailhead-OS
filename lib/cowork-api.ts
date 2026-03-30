@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { validateCoworkToken } from '@/lib/cowork-auth'
+import { NextResponse } from 'next/server'
+import { sendInvoicePaidNotification } from '@/lib/stripe/notifications'
 import { supabaseService } from '@/lib/supabase/service'
 import { calculateTotals, type InvoiceStatus, type LineItem, type TaskPriority } from '@/lib/types'
 
@@ -7,6 +7,7 @@ const TASK_PRIORITIES = new Set<TaskPriority>(['low', 'medium', 'high', 'urgent'
 const CONTACT_STATUSES = new Set(['lead', 'active', 'inactive', 'archived'])
 const ENQUIRY_STATUSES = new Set(['new', 'reviewed', 'converted'])
 const INVOICE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'paid', 'overdue', 'cancelled'])
+const PROJECT_STATUSES = new Set(['planning', 'active', 'on_hold', 'completed', 'cancelled'])
 const COWORK_COLUMNS = {
   backlog: 'Backlog',
   'in-progress': 'In progress',
@@ -17,88 +18,104 @@ const COWORK_COLUMNS = {
 type CoworkColumnKey = keyof typeof COWORK_COLUMNS
 type RelationValue<T> = T | T[] | null
 
-type WorkstreamRow = {
+type WorkstreamShape = {
   id: string
   slug: string
   label: string
-  colour: string
-  sort_order: number
-  created_at: string
+}
+
+type NamedRelation = {
+  id: string
+  name: string
 }
 
 type TaskRow = {
   id: string
-  workstream_id: string | null
-  column_id: string | null
-  contact_id: string | null
   title: string
   description: string | null
   priority: TaskPriority
   due_date: string | null
-  due_time: string | null
-  is_master_todo: boolean
-  tags: string[] | null
-  sort_order: number
+  start_date: string | null
   completed_at: string | null
-  created_at: string
-  updated_at: string
-  workstreams?: RelationValue<Pick<WorkstreamRow, 'slug' | 'label' | 'colour'>>
-}
-
-type ContactRow = {
-  id: string
+  is_master_todo: boolean
   workstream_id: string | null
-  name: string
-  company: string | null
-  email: string | null
-  phone: string | null
-  role: string | null
-  status: string
-  notes: string | null
-  tags: string[] | null
-  created_at: string
-  updated_at: string
-  workstreams?: RelationValue<Pick<WorkstreamRow, 'slug' | 'label' | 'colour'>>
-}
-
-type InvoiceRow = {
-  id: string
-  invoice_number: string
+  project_id: string | null
+  column_id: string | null
   contact_id: string | null
-  workstream_id: string | null
-  status: InvoiceStatus
-  issue_date: string
-  due_date: string | null
-  line_items: LineItem[]
-  vat_rate: number
-  notes: string | null
+  account_id: string | null
   created_at: string
   updated_at: string
-  contacts?: RelationValue<{ name: string | null }>
-  workstreams?: RelationValue<Pick<WorkstreamRow, 'slug' | 'label'>>
+  workstreams?: RelationValue<WorkstreamShape>
+  projects?: RelationValue<NamedRelation>
+  board_columns?: RelationValue<{ label: string }>
+  contacts?: RelationValue<NamedRelation>
+  accounts?: RelationValue<NamedRelation>
 }
 
 type CalendarEventRow = {
   id: string
   title: string
-  description: string | null
   start_at: string
   end_at: string
   all_day: boolean
-  workstream_id: string | null
-  contact_id: string | null
   location: string | null
+  description: string | null
   colour: string | null
+  workstream_id: string | null
   created_at: string
   updated_at: string
+  workstreams?: RelationValue<WorkstreamShape>
+  gcal_sync?: RelationValue<{ id: string }>
+}
+
+type ContactRow = {
+  id: string
+  name: string
+  company: string | null
+  email: string | null
+  phone: string | null
+  role: string | null
+  workstream_id: string | null
+  account_id: string | null
+  status: string
+  notes: string | null
+  created_at: string
+  updated_at: string
+  workstreams?: RelationValue<WorkstreamShape>
+  accounts?: RelationValue<NamedRelation>
+}
+
+type InvoiceRow = {
+  id: string
+  invoice_number: string
+  account_id: string | null
+  contact_id: string | null
+  workstream_id: string | null
+  pricing_tier_id: string | null
+  status: InvoiceStatus
+  issue_date: string
+  due_date: string | null
+  line_items: LineItem[] | null
+  vat_rate: number | string | null
+  notes: string | null
+  stripe_payment_link: string | null
+  paid_at: string | null
+  created_at: string
+  updated_at: string
+  accounts?: RelationValue<NamedRelation>
+  contacts?: RelationValue<NamedRelation>
+  workstreams?: RelationValue<WorkstreamShape>
+  pricing_tiers?: RelationValue<{ id: string; slug: string; name: string }>
 }
 
 type EnquiryRow = {
   id: string
   biz_name: string
   contact_name: string
+  contact_email: string | null
+  contact_phone: string | null
   biz_type: string | null
-  team_size: string | null
+  project_type: string | null
   top_features: string[] | null
   pain_points: string | null
   timeline: string | null
@@ -107,6 +124,125 @@ type EnquiryRow = {
   created_at: string
 }
 
+type ProjectRow = {
+  id: string
+  name: string
+  description: string | null
+  brief: string | null
+  status: string
+  workstream_id: string
+  account_id: string | null
+  pricing_tier_id: string | null
+  start_date: string | null
+  end_date: string | null
+  estimated_end_date: string | null
+  ai_planned: boolean
+  created_at: string
+  updated_at: string
+  workstreams?: RelationValue<WorkstreamShape>
+  accounts?: RelationValue<NamedRelation>
+  pricing_tiers?: RelationValue<{ id: string; slug: string; name: string }>
+}
+
+export const TASK_SELECT = `
+  id,
+  title,
+  description,
+  priority,
+  due_date,
+  start_date,
+  completed_at,
+  is_master_todo,
+  workstream_id,
+  project_id,
+  column_id,
+  contact_id,
+  account_id,
+  created_at,
+  updated_at,
+  workstreams(id, slug, label),
+  projects(id, name),
+  board_columns(label),
+  contacts(id, name),
+  accounts(id, name)
+`
+
+export const CALENDAR_EVENT_SELECT = `
+  id,
+  title,
+  start_at,
+  end_at,
+  all_day,
+  location,
+  description,
+  colour,
+  workstream_id,
+  created_at,
+  updated_at,
+  workstreams(id, slug, label),
+  gcal_sync(id)
+`
+
+export const CONTACT_SELECT = `
+  id,
+  name,
+  company,
+  email,
+  phone,
+  role,
+  workstream_id,
+  account_id,
+  status,
+  notes,
+  created_at,
+  updated_at,
+  workstreams(id, slug, label),
+  accounts(id, name)
+`
+
+export const INVOICE_SELECT = `
+  id,
+  invoice_number,
+  account_id,
+  contact_id,
+  workstream_id,
+  pricing_tier_id,
+  status,
+  issue_date,
+  due_date,
+  line_items,
+  vat_rate,
+  notes,
+  stripe_payment_link,
+  paid_at,
+  created_at,
+  updated_at,
+  accounts(id, name),
+  contacts(id, name),
+  workstreams(id, slug, label),
+  pricing_tiers(id, slug, name)
+`
+
+export const PROJECT_SELECT = `
+  id,
+  name,
+  description,
+  brief,
+  status,
+  workstream_id,
+  account_id,
+  pricing_tier_id,
+  start_date,
+  end_date,
+  estimated_end_date,
+  ai_planned,
+  created_at,
+  updated_at,
+  workstreams(id, slug, label),
+  accounts(id, name),
+  pricing_tiers(id, slug, name)
+`
+
 export class CoworkApiError extends Error {
   status: number
 
@@ -114,14 +250,6 @@ export class CoworkApiError extends Error {
     super(message)
     this.status = status
   }
-}
-
-export function requireCoworkAuth(request: NextRequest) {
-  if (!validateCoworkToken(request)) {
-    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
-  }
-
-  return null
 }
 
 export function jsonError(error: unknown, fallbackMessage: string) {
@@ -133,12 +261,6 @@ export function jsonError(error: unknown, fallbackMessage: string) {
     { error: error instanceof Error ? error.message : fallbackMessage },
     { status: 500 }
   )
-}
-
-export function parseBooleanParam(value: string | null) {
-  if (value === 'true') return true
-  if (value === 'false') return false
-  return undefined
 }
 
 function firstRelation<T>(value: RelationValue<T> | undefined) {
@@ -165,7 +287,7 @@ export function requiredString(value: unknown, field: string) {
 }
 
 export function optionalDate(value: unknown, field: string) {
-  if (value === null || value === undefined) return null
+  if (value === null || value === undefined || value === '') return null
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     throw new CoworkApiError(`${field} must be YYYY-MM-DD`, 400)
   }
@@ -178,25 +300,17 @@ export function parseDateParam(value: string | null, field: string) {
 }
 
 export function optionalIsoDatetime(value: unknown, field: string) {
-  if (value === null || value === undefined) return null
+  if (value === null || value === undefined || value === '') return null
   if (typeof value !== 'string') {
     throw new CoworkApiError(`${field} must be an ISO datetime`, 400)
   }
+
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) {
     throw new CoworkApiError(`${field} must be an ISO datetime`, 400)
   }
+
   return parsed.toISOString()
-}
-
-export function optionalTime(value: unknown, field: string) {
-  if (value === null || value === undefined || value === '') return null
-  if (typeof value !== 'string' || !/^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.test(value)) {
-    throw new CoworkApiError(`${field} must be HH:MM or HH:MM:SS`, 400)
-  }
-
-  const [hours, minutes, seconds = '00'] = value.split(':')
-  return `${hours}:${minutes}:${seconds}`
 }
 
 export function parsePriority(value: unknown, fallback: TaskPriority = 'medium') {
@@ -264,6 +378,42 @@ export function parseColumnKey(value: unknown) {
   return value as CoworkColumnKey
 }
 
+export function parseProjectStatus(value: unknown, fallback = 'planning') {
+  if (value === null || value === undefined || value === '') {
+    return fallback
+  }
+  if (typeof value !== 'string' || !PROJECT_STATUSES.has(value)) {
+    throw new CoworkApiError(
+      'status must be planning, active, on_hold, completed, or cancelled',
+      400
+    )
+  }
+  return value
+}
+
+export function parseBooleanParam(value: string | null) {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return undefined
+}
+
+export function parseLimit(
+  value: string | null,
+  fallback: number,
+  max = 200
+) {
+  if (!value) {
+    return fallback
+  }
+
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > max) {
+    throw new CoworkApiError(`limit must be a positive integer up to ${max}`, 400)
+  }
+
+  return parsed
+}
+
 export function todayDate() {
   return new Date().toISOString().slice(0, 10)
 }
@@ -285,7 +435,7 @@ export function endOfDayIso(date: string) {
 export async function getWorkstreamBySlug(slug: string) {
   const { data, error } = await supabaseService
     .from('workstreams')
-    .select('id, slug, label, colour, sort_order, created_at')
+    .select('id, slug, label')
     .eq('slug', slug)
     .maybeSingle()
 
@@ -297,11 +447,14 @@ export async function getWorkstreamBySlug(slug: string) {
     throw new CoworkApiError(`Unknown workstream: ${slug}`, 400)
   }
 
-  return data as WorkstreamRow
+  return data as WorkstreamShape
 }
 
 export async function maybeGetWorkstreamBySlug(slug: string | null) {
-  if (!slug) return null
+  if (!slug) {
+    return null
+  }
+
   return getWorkstreamBySlug(slug)
 }
 
@@ -327,7 +480,7 @@ export async function getColumnIdForWorkstream(workstreamId: string, column: Cow
 export async function getTaskById(id: string) {
   const { data, error } = await supabaseService
     .from('tasks')
-    .select('*, workstreams(slug, label, colour)')
+    .select(TASK_SELECT)
     .eq('id', id)
     .maybeSingle()
 
@@ -342,46 +495,126 @@ export async function getTaskById(id: string) {
   return data as TaskRow
 }
 
-export function mapTask(row: TaskRow) {
-  const workstream = firstRelation(row.workstreams)
+export async function getCalendarEventById(id: string) {
+  const { data, error } = await supabaseService
+    .from('calendar_events')
+    .select(CALENDAR_EVENT_SELECT)
+    .eq('id', id)
+    .maybeSingle()
 
-  return {
-    id: row.id,
-    title: row.title,
-    workstream_id: row.workstream_id,
-    priority: row.priority,
-    due_date: row.due_date,
-    due_time: row.due_time,
-    description: row.description,
-    is_master_todo: row.is_master_todo,
-    completed_at: row.completed_at,
-    column_id: row.column_id,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    workstream_slug: workstream?.slug ?? null,
-    workstream_label: workstream?.label ?? null,
-    workstream_colour: workstream?.colour ?? null,
+  if (error) {
+    throw new CoworkApiError(error.message || 'Failed to load calendar event', 500)
   }
+
+  if (!data) {
+    throw new CoworkApiError('Calendar event not found', 404)
+  }
+
+  return data as CalendarEventRow
 }
 
-export function mapContact(row: ContactRow) {
-  const workstream = firstRelation(row.workstreams)
+export async function getContactById(id: string) {
+  const { data, error } = await supabaseService
+    .from('contacts')
+    .select(CONTACT_SELECT)
+    .eq('id', id)
+    .maybeSingle()
 
-  return {
-    id: row.id,
-    name: row.name,
-    company: row.company,
-    email: row.email,
-    phone: row.phone,
-    role: row.role,
-    status: row.status,
-    notes: row.notes,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    workstream_id: row.workstream_id,
-    workstream_slug: workstream?.slug ?? null,
-    workstream_label: workstream?.label ?? null,
+  if (error) {
+    throw new CoworkApiError(error.message || 'Failed to load contact', 500)
   }
+
+  if (!data) {
+    throw new CoworkApiError('Contact not found', 404)
+  }
+
+  return data as ContactRow
+}
+
+export async function getInvoiceById(id: string) {
+  const { data, error } = await supabaseService
+    .from('invoices')
+    .select(INVOICE_SELECT)
+    .eq('id', id)
+    .maybeSingle()
+
+  if (error) {
+    throw new CoworkApiError(error.message || 'Failed to load invoice', 500)
+  }
+
+  if (!data) {
+    throw new CoworkApiError('Invoice not found', 404)
+  }
+
+  return data as InvoiceRow
+}
+
+export async function getProjectById(id: string) {
+  const { data, error } = await supabaseService
+    .from('projects')
+    .select(PROJECT_SELECT)
+    .eq('id', id)
+    .maybeSingle()
+
+  if (error) {
+    throw new CoworkApiError(error.message || 'Failed to load project', 500)
+  }
+
+  if (!data) {
+    throw new CoworkApiError('Project not found', 404)
+  }
+
+  return data as ProjectRow
+}
+
+export async function findAccountByName(name: string) {
+  const { data, error } = await supabaseService
+    .from('accounts')
+    .select('id, name')
+    .ilike('name', name)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    throw new CoworkApiError(error.message || 'Failed to load account', 500)
+  }
+
+  return data as NamedRelation | null
+}
+
+export async function findContactByName(name: string) {
+  const { data, error } = await supabaseService
+    .from('contacts')
+    .select('id, name, account_id')
+    .ilike('name', name)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    throw new CoworkApiError(error.message || 'Failed to load contact', 500)
+  }
+
+  return data as { id: string; name: string; account_id: string | null } | null
+}
+
+export async function findPricingTierBySlug(slug: string) {
+  const { data, error } = await supabaseService
+    .from('pricing_tiers')
+    .select('id, slug, name')
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (error) {
+    throw new CoworkApiError(error.message || 'Failed to load pricing tier', 500)
+  }
+
+  if (!data) {
+    throw new CoworkApiError(`Pricing tier not found: ${slug}`, 400)
+  }
+
+  return data as { id: string; slug: string; name: string }
 }
 
 export function parseLineItems(value: unknown) {
@@ -434,34 +667,34 @@ export function parseVatRate(value: unknown, fallback = 20) {
   return vatRate
 }
 
-export function mapInvoice(row: InvoiceRow) {
-  const contact = firstRelation(row.contacts)
+export function formatTask(row: TaskRow) {
   const workstream = firstRelation(row.workstreams)
-  const totals = calculateTotals(row.line_items ?? [], Number(row.vat_rate ?? 0))
+  const project = firstRelation(row.projects)
+  const column = firstRelation(row.board_columns)
+  const contact = firstRelation(row.contacts)
+  const account = firstRelation(row.accounts)
 
   return {
     id: row.id,
-    invoice_number: row.invoice_number,
-    contact_id: row.contact_id,
-    contact_name: contact?.name ?? null,
-    workstream_id: row.workstream_id,
-    workstream_slug: workstream?.slug ?? null,
-    workstream_label: workstream?.label ?? null,
-    status: row.status,
-    issue_date: row.issue_date,
+    title: row.title,
+    description: row.description,
+    priority: row.priority,
     due_date: row.due_date,
-    line_items: row.line_items ?? [],
-    vat_rate: Number(row.vat_rate ?? 0),
-    notes: row.notes,
-    subtotal: totals.subtotal,
-    vat_amount: totals.vat_amount,
-    total: totals.total,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
+    start_date: row.start_date,
+    completed_at: row.completed_at,
+    is_master_todo: row.is_master_todo,
+    workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
+    project: project ? { id: project.id, name: project.name } : null,
+    column: column?.label ?? 'Unassigned',
+    contact: contact ? { id: contact.id, name: contact.name } : null,
+    account: account ? { id: account.id, name: account.name } : null,
   }
 }
 
-export function mapCalendarEvent(row: CalendarEventRow) {
+export function formatCalendarEvent(row: CalendarEventRow) {
+  const workstream = firstRelation(row.workstreams)
+  const googleSync = firstRelation(row.gcal_sync)
+
   return {
     id: row.id,
     title: row.title,
@@ -470,21 +703,89 @@ export function mapCalendarEvent(row: CalendarEventRow) {
     all_day: row.all_day,
     location: row.location,
     description: row.description,
-    workstream_id: row.workstream_id,
-    contact_id: row.contact_id,
     colour: row.colour,
+    workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
+    google_synced: Boolean(googleSync?.id),
+  }
+}
+
+export function formatContact(row: ContactRow) {
+  const account = firstRelation(row.accounts)
+  const workstream = firstRelation(row.workstreams)
+
+  return {
+    id: row.id,
+    name: row.name,
+    company: row.company,
+    email: row.email,
+    phone: row.phone,
+    role: row.role,
+    status: row.status,
+    notes: row.notes,
+    workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
+    account: account ? { id: account.id, name: account.name } : null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   }
 }
 
-export function mapEnquiry(row: EnquiryRow) {
+export function invoiceTitleFromLineItems(lineItems: LineItem[] | null | undefined) {
+  const items = lineItems ?? []
+  if (items.length === 0) {
+    return 'Untitled invoice'
+  }
+
+  if (items.length === 1) {
+    return items[0].description
+  }
+
+  return `${items[0].description} +${items.length - 1} more`
+}
+
+export function formatInvoice(row: InvoiceRow) {
+  const account = firstRelation(row.accounts)
+  const contact = firstRelation(row.contacts)
+  const workstream = firstRelation(row.workstreams)
+  const pricingTier = firstRelation(row.pricing_tiers)
+  const vatRate = Number(row.vat_rate ?? 0)
+  const lineItems = row.line_items ?? []
+  const totals = calculateTotals(lineItems, vatRate)
+
+  return {
+    id: row.id,
+    invoice_number: row.invoice_number,
+    title: invoiceTitleFromLineItems(lineItems),
+    account: account ? { id: account.id, name: account.name } : null,
+    contact: contact ? { id: contact.id, name: contact.name } : null,
+    workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
+    pricing_tier: pricingTier
+      ? { id: pricingTier.id, slug: pricingTier.slug, name: pricingTier.name }
+      : null,
+    status: row.status,
+    issue_date: row.issue_date,
+    due_date: row.due_date,
+    paid_at: row.paid_at,
+    line_items: lineItems,
+    vat_rate: vatRate,
+    notes: row.notes,
+    subtotal: totals.subtotal,
+    vat_amount: totals.vat_amount,
+    total: totals.total,
+    stripe_payment_link: row.stripe_payment_link,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  }
+}
+
+export function formatEnquiry(row: EnquiryRow) {
   return {
     id: row.id,
     biz_name: row.biz_name,
     contact_name: row.contact_name,
+    contact_email: row.contact_email,
+    contact_phone: row.contact_phone,
     biz_type: row.biz_type,
-    team_size: row.team_size,
+    project_type: row.project_type,
     top_features: row.top_features ?? [],
     pain_points: row.pain_points,
     timeline: row.timeline,
@@ -492,4 +793,32 @@ export function mapEnquiry(row: EnquiryRow) {
     status: row.status,
     created_at: row.created_at,
   }
+}
+
+export async function sendCoworkTaskNotification(task: { id: string; title: string }) {
+  const { data: members, error } = await supabaseService
+    .from('workspace_members')
+    .select('workspace_id, user_id')
+    .limit(20)
+
+  if (error || !members?.length) {
+    return
+  }
+
+  await supabaseService.from('notifications').insert(
+    members.map((member) => ({
+      workspace_id: member.workspace_id,
+      user_id: member.user_id,
+      type: 'system',
+      title: 'Task created via Cowork',
+      body: task.title,
+      link: `/tasks?task=${task.id}`,
+    }))
+  )
+}
+
+export async function sendCoworkInvoicePaidNotification(
+  invoice: Pick<InvoiceRow, 'id' | 'invoice_number'>
+) {
+  await sendInvoicePaidNotification(invoice.id, invoice.invoice_number)
 }

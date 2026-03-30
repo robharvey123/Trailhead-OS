@@ -195,8 +195,8 @@ export async function createTask(
     .single()
 
   if (isMissingDueTimeColumnError(error)) {
-    const fallbackPayload = { ...payload }
-    delete fallbackPayload.due_time
+    const { due_time: _dueTime, ...fallbackPayload } = payload
+    void _dueTime
     ;({ data, error } = await supabase
       .from('tasks')
       .insert(fallbackPayload)

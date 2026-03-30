@@ -1,38 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
-  CoworkApiError,
+  INVOICE_SELECT,
+  findAccountByName,
+  findContactByName,
+  findPricingTierBySlug,
+  formatInvoice,
   getWorkstreamBySlug,
   jsonError,
-  mapInvoice,
   optionalDate,
   optionalString,
   parseInvoiceListStatus,
   parseLineItems,
+  parseLimit,
   parseVatRate,
-  requireCoworkAuth,
   todayDate,
 } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
 
-const PRICING_TIER_SLUGS = new Set(['mates', 'budget', 'standard'])
-
 export async function GET(request: NextRequest) {
-  const unauthorised = requireCoworkAuth(request)
-  if (unauthorised) {
-    return unauthorised
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
   try {
     const searchParams = request.nextUrl.searchParams
     const workstreamSlug = searchParams.get('workstream')
     const status = parseInvoiceListStatus(searchParams.get('status'))
+    const limit = parseLimit(searchParams.get('limit'), 20, 100)
     const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
 
     let query = supabaseService
       .from('invoices')
-      .select('id, invoice_number, contact_id, workstream_id, status, issue_date, due_date, line_items, vat_rate, notes, created_at, updated_at, contacts(name), workstreams(slug, label)')
+      .select(INVOICE_SELECT)
       .order('issue_date', { ascending: false })
       .order('created_at', { ascending: false })
+      .limit(limit)
 
     if (status) {
       query = query.eq('status', status)
@@ -48,79 +51,54 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
-    return NextResponse.json((data ?? []).map((row) => mapInvoice(row)))
+    return Response.json((data ?? []).map((row) => formatInvoice(row as never)))
   } catch (error) {
     return jsonError(error, 'Failed to load invoices')
   }
 }
 
 export async function POST(request: NextRequest) {
-  const unauthorised = requireCoworkAuth(request)
-  if (unauthorised) {
-    return unauthorised
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
   try {
     const body = await request.json().catch(() => ({}))
     const workstreamSlug = optionalString(body.workstream)
     const contactName = optionalString(body.contact_name)
+    const accountName = optionalString(body.account_name)
     const tierSlug = optionalString(body.tier)
     const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
     const lineItems = parseLineItems(body.line_items)
     const status = body.status === undefined ? 'draft' : optionalString(body.status)
 
     if (status !== 'draft' && status !== 'sent') {
-      throw new CoworkApiError('status must be draft or sent', 400)
+      return Response.json({ error: 'status must be draft or sent' }, { status: 400 })
     }
 
-    if (tierSlug && !PRICING_TIER_SLUGS.has(tierSlug)) {
-      throw new CoworkApiError('tier must be mates, budget, or standard', 400)
+    const contact = contactName ? await findContactByName(contactName) : null
+    const account = accountName
+      ? await findAccountByName(accountName)
+      : contact?.account_id
+        ? { id: contact.account_id, name: '' }
+        : null
+    const pricingTier = tierSlug ? await findPricingTierBySlug(tierSlug) : null
+
+    if (contactName && !contact) {
+      return Response.json({ error: `Contact not found: ${contactName}` }, { status: 400 })
     }
 
-    let contactId: string | null = null
-    let pricingTierId: string | null = null
-    if (contactName) {
-      const { data, error } = await supabaseService
-        .from('contacts')
-        .select('id')
-        .ilike('name', contactName)
-        .order('created_at', { ascending: false })
-        .limit(1)
-
-      if (error) {
-        throw error
-      }
-
-      contactId = data?.[0]?.id ?? null
-      if (!contactId) {
-        throw new CoworkApiError(`Contact not found: ${contactName}`, 400)
-      }
-    }
-
-    if (tierSlug) {
-      const { data, error } = await supabaseService
-        .from('pricing_tiers')
-        .select('id')
-        .eq('slug', tierSlug)
-        .maybeSingle()
-
-      if (error) {
-        throw error
-      }
-
-      if (!data?.id) {
-        throw new CoworkApiError(`Pricing tier not found: ${tierSlug}`, 400)
-      }
-
-      pricingTierId = data.id
+    if (accountName && !account) {
+      return Response.json({ error: `Account not found: ${accountName}` }, { status: 400 })
     }
 
     const { data, error } = await supabaseService
       .from('invoices')
       .insert({
-        contact_id: contactId,
+        contact_id: contact?.id ?? null,
+        account_id: account?.id ?? null,
         workstream_id: workstream?.id ?? null,
-        pricing_tier_id: pricingTierId,
+        pricing_tier_id: pricingTier?.id ?? null,
         issue_date: todayDate(),
         due_date: optionalDate(body.due_date, 'due_date'),
         vat_rate: parseVatRate(body.vat_rate),
@@ -128,14 +106,14 @@ export async function POST(request: NextRequest) {
         notes: optionalString(body.notes),
         status,
       })
-      .select('id, invoice_number, contact_id, workstream_id, status, issue_date, due_date, line_items, vat_rate, notes, created_at, updated_at, contacts(name), workstreams(slug, label)')
+      .select(INVOICE_SELECT)
       .single()
 
     if (error) {
       throw error
     }
 
-    return NextResponse.json(mapInvoice(data), { status: 201 })
+    return Response.json(formatInvoice(data as never), { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create invoice')
   }

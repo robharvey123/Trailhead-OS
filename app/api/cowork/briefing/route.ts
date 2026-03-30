@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
+  TASK_SELECT,
   addDays,
-  endOfDayIso,
+  formatTask,
   jsonError,
-  mapTask,
-  requireCoworkAuth,
   startOfDayIso,
   todayDate,
 } from '@/lib/cowork-api'
@@ -24,9 +24,8 @@ function sumInvoiceTotals(rows: InvoiceSummaryRow[]) {
 }
 
 export async function GET(request: NextRequest) {
-  const unauthorised = requireCoworkAuth(request)
-  if (unauthorised) {
-    return unauthorised
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
   const today = todayDate()
@@ -47,38 +46,37 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       supabaseService
         .from('tasks')
-        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+        .select(TASK_SELECT)
         .eq('due_date', today)
+        .is('completed_at', null)
         .order('priority', { ascending: false })
-        .order('due_time', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true }),
       supabaseService
         .from('tasks')
-        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+        .select(TASK_SELECT)
         .lt('due_date', today)
         .is('completed_at', null)
         .order('due_date', { ascending: true })
-        .order('due_time', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true }),
       supabaseService
         .from('tasks')
-        .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+        .select(TASK_SELECT)
         .gte('due_date', tomorrow)
         .lte('due_date', weekEnd)
+        .is('completed_at', null)
         .order('due_date', { ascending: true })
-        .order('due_time', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true }),
       supabaseService
         .from('calendar_events')
         .select('id, title, start_at, end_at, all_day, location, description')
         .gte('start_at', startOfDayIso(today))
-        .lte('start_at', endOfDayIso(today))
+        .lt('start_at', startOfDayIso(tomorrow))
         .order('start_at', { ascending: true }),
       supabaseService
         .from('calendar_events')
         .select('id, title, start_at, end_at, all_day, location, description')
         .gte('start_at', startOfDayIso(tomorrow))
-        .lte('start_at', endOfDayIso(weekEnd))
+        .lt('start_at', `${weekEnd}T23:59:59.999Z`)
         .order('start_at', { ascending: true }),
       supabaseService
         .from('enquiries')
@@ -116,12 +114,12 @@ export async function GET(request: NextRequest) {
       throw firstError
     }
 
-    return NextResponse.json({
+    return Response.json({
       date: today,
       tasks: {
-        due_today: (dueTodayResult.data ?? []).map((row) => mapTask(row)),
-        overdue: (overdueResult.data ?? []).map((row) => mapTask(row)),
-        due_this_week: (dueThisWeekResult.data ?? []).map((row) => mapTask(row)),
+        due_today: (dueTodayResult.data ?? []).map((row) => formatTask(row as never)),
+        overdue: (overdueResult.data ?? []).map((row) => formatTask(row as never)),
+        due_this_week: (dueThisWeekResult.data ?? []).map((row) => formatTask(row as never)),
       },
       calendar: {
         today: calendarTodayResult.data ?? [],

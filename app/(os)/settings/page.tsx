@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import SettingsIntegrations from '@/components/os/SettingsIntegrations'
+import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
 import PricingTierSettings from '@/components/os/PricingTierSettings'
 import WorkstreamSettings from '@/components/os/WorkstreamSettings'
 import { getWorkstreams } from '@/lib/db/workstreams'
@@ -21,6 +22,8 @@ export default async function SettingsPage() {
   let workstreams: Workstream[] = []
   let pricingTiers: PricingTier[] = []
   let googleEmail: string | null = null
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk').replace(/\/$/, '')
+  const icalSecret = process.env.ICAL_SECRET ?? ''
 
   try {
     const { count } = await supabase.from('contacts').select('id', { count: 'exact', head: true })
@@ -94,6 +97,12 @@ export default async function SettingsPage() {
       <SettingsIntegrations
         initialGoogleEmail={googleEmail}
         paidInvoicesThisMonth={paidInvoicesThisMonth}
+      />
+
+      <CalendarSubscriptionSection
+        appUrl={appUrl}
+        icalSecret={icalSecret}
+        workstreams={workstreams}
       />
 
       <WorkstreamSettings initialWorkstreams={workstreams} />

@@ -1,19 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
+  CONTACT_SELECT,
+  formatContact,
   getWorkstreamBySlug,
   jsonError,
-  mapContact,
   optionalString,
   parseContactStatus,
+  parseLimit,
   requiredString,
-  requireCoworkAuth,
 } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
-  const unauthorised = requireCoworkAuth(request)
-  if (unauthorised) {
-    return unauthorised
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
   try {
@@ -21,12 +22,15 @@ export async function GET(request: NextRequest) {
     const workstreamSlug = searchParams.get('workstream')
     const statusParam = searchParams.get('status')
     const search = searchParams.get('search')?.trim() ?? ''
+    const accountId = searchParams.get('account_id')
+    const limit = parseLimit(searchParams.get('limit'), 50, 200)
     const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
 
     let query = supabaseService
       .from('contacts')
-      .select('id, workstream_id, name, company, email, phone, role, status, notes, tags, created_at, updated_at, workstreams(slug, label, colour)')
+      .select(CONTACT_SELECT)
       .order('created_at', { ascending: false })
+      .limit(limit)
 
     if (workstream) {
       query = query.eq('workstream_id', workstream.id)
@@ -34,6 +38,10 @@ export async function GET(request: NextRequest) {
 
     if (statusParam) {
       query = query.eq('status', parseContactStatus(statusParam, statusParam))
+    }
+
+    if (accountId) {
+      query = query.eq('account_id', accountId)
     }
 
     if (search) {
@@ -46,16 +54,15 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
-    return NextResponse.json((data ?? []).map((row) => mapContact(row)))
+    return Response.json((data ?? []).map((row) => formatContact(row as never)))
   } catch (error) {
     return jsonError(error, 'Failed to load contacts')
   }
 }
 
 export async function POST(request: NextRequest) {
-  const unauthorised = requireCoworkAuth(request)
-  if (unauthorised) {
-    return unauthorised
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
   try {
@@ -72,17 +79,18 @@ export async function POST(request: NextRequest) {
         phone: optionalString(body.phone),
         role: optionalString(body.role),
         workstream_id: workstream?.id ?? null,
+        account_id: optionalString(body.account_id),
         status: parseContactStatus(body.status),
         notes: optionalString(body.notes),
       })
-      .select('id, workstream_id, name, company, email, phone, role, status, notes, tags, created_at, updated_at, workstreams(slug, label, colour)')
+      .select(CONTACT_SELECT)
       .single()
 
     if (error) {
       throw error
     }
 
-    return NextResponse.json(mapContact(data), { status: 201 })
+    return Response.json(formatContact(data as never), { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create contact')
   }

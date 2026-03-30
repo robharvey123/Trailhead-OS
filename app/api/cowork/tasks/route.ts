@@ -1,49 +1,55 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
+  TASK_SELECT,
   addDays,
+  formatTask,
   getColumnIdForWorkstream,
   getWorkstreamBySlug,
   jsonError,
-  mapTask,
   optionalDate,
-  optionalTime,
   optionalString,
   parseBooleanParam,
+  parseLimit,
   parsePriority,
   parseTaskDueFilter,
   requiredString,
-  requireCoworkAuth,
+  sendCoworkTaskNotification,
   todayDate,
 } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
-  const unauthorised = requireCoworkAuth(request)
-  if (unauthorised) {
-    return unauthorised
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
   try {
     const searchParams = request.nextUrl.searchParams
     const workstreamSlug = searchParams.get('workstream')
+    const projectId = searchParams.get('project_id')
     const priorityParam = searchParams.get('priority')
     const due = parseTaskDueFilter(searchParams.get('due'))
     const master = parseBooleanParam(searchParams.get('master'))
+    const limit = parseLimit(searchParams.get('limit'), 50, 200)
     const today = todayDate()
-    const tomorrow = addDays(today, 1)
     const weekEnd = addDays(today, 7)
     const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
 
     let query = supabaseService
       .from('tasks')
-      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+      .select(TASK_SELECT)
       .order('due_date', { ascending: true, nullsFirst: false })
-      .order('due_time', { ascending: true, nullsFirst: false })
-      .order('sort_order', { ascending: true })
+      .order('start_date', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true })
+      .limit(limit)
 
     if (workstream) {
       query = query.eq('workstream_id', workstream.id)
+    }
+
+    if (projectId) {
+      query = query.eq('project_id', projectId)
     }
 
     if (priorityParam) {
@@ -55,7 +61,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (due === 'today') {
-      query = query.eq('due_date', today)
+      query = query.eq('due_date', today).is('completed_at', null)
     }
 
     if (due === 'overdue') {
@@ -63,7 +69,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (due === 'this_week') {
-      query = query.gte('due_date', tomorrow).lte('due_date', weekEnd)
+      query = query.gte('due_date', today).lte('due_date', weekEnd).is('completed_at', null)
     }
 
     const { data, error } = await query
@@ -72,16 +78,15 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
-    return NextResponse.json((data ?? []).map((row) => mapTask(row)))
+    return Response.json((data ?? []).map((row) => formatTask(row as never)))
   } catch (error) {
     return jsonError(error, 'Failed to load tasks')
   }
 }
 
 export async function POST(request: NextRequest) {
-  const unauthorised = requireCoworkAuth(request)
-  if (unauthorised) {
-    return unauthorised
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
 
   try {
@@ -91,34 +96,38 @@ export async function POST(request: NextRequest) {
     const backlogColumnId = await getColumnIdForWorkstream(workstream.id, 'backlog')
     const priority = parsePriority(body.priority)
     const dueDate = optionalDate(body.due_date, 'due_date')
-    const dueTime = optionalTime(body.due_time, 'due_time')
+    const startDate = optionalDate(body.start_date, 'start_date')
     const description = optionalString(body.description)
     const isMasterTodo = body.is_master_todo === true
-
-    if (dueTime && !dueDate) {
-      return NextResponse.json({ error: 'due_date is required when due_time is supplied' }, { status: 400 })
-    }
 
     const { data, error } = await supabaseService
       .from('tasks')
       .insert({
         title,
         workstream_id: workstream.id,
+        project_id: optionalString(body.project_id),
         column_id: backlogColumnId,
         priority,
         due_date: dueDate,
-        due_time: dueDate ? dueTime : null,
+        start_date: startDate,
         description,
         is_master_todo: isMasterTodo,
+        contact_id: optionalString(body.contact_id),
+        account_id: optionalString(body.account_id),
       })
-      .select('id, workstream_id, column_id, contact_id, title, description, priority, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour)')
+      .select(TASK_SELECT)
       .single()
 
     if (error) {
       throw error
     }
 
-    return NextResponse.json(mapTask(data), { status: 201 })
+    void sendCoworkTaskNotification({
+      id: String(data.id),
+      title: String(data.title),
+    }).catch(() => {})
+
+    return Response.json(formatTask(data as never), { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create task')
   }

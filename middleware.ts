@@ -14,7 +14,7 @@ const publicRoutes = [
   '/api/auth/google/callback',
 ]
 const publicRoutePrefixes = ['/report']
-const publicApiPrefixes = ['/api/enquiries', '/api/contact']
+const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
 function getMarketingRewritePath(pathname: string) {
