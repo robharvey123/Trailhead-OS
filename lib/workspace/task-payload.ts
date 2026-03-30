@@ -1,7 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
-
-type SupabaseClient = Awaited<ReturnType<typeof createClient>>
-
 type ChecklistItem = {
   id: string
   title: string
@@ -108,8 +104,9 @@ export function nextRecurringDate(dateString: string, cadence: 'weekly' | 'month
   return dt.toISOString().slice(0, 10)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createRecurringTaskCopies(args: {
-  supabase: SupabaseClient
+  supabase: any
   workspaceId: string
   userId: string
   seedTask: WorkspaceTaskSeed

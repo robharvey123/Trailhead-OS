@@ -21,8 +21,8 @@ export default async function AppLayout({
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800 bg-slate-950/70">
         <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
-          <Link href="/analytics" className="text-sm font-semibold">
-            Trailhead OS
+          <Link href="/workspaces" className="text-sm font-semibold">
+            Brand Opps
           </Link>
           <form action="/logout" method="post">
             <button

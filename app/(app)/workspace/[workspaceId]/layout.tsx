@@ -29,7 +29,7 @@ export default async function WorkspaceLayout({
   params,
 }: {
   children: ReactNode
-  params: Promise<WorkspaceRouteParams>
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
 }) {
   const resolvedParams = await resolveWorkspaceParams(params)
   const { workspaceId } = resolvedParams
@@ -49,7 +49,7 @@ export default async function WorkspaceLayout({
     .maybeSingle()
 
   if (!workspace) {
-    redirect('/analytics')
+    redirect('/workspaces')
   }
 
   return (
@@ -64,7 +64,7 @@ export default async function WorkspaceLayout({
               <h2 className="mt-1 text-lg font-semibold">{workspace.name}</h2>
             </div>
             <Link
-              href="/analytics"
+              href="/workspaces"
               className="text-xs text-slate-400 hover:text-slate-200"
             >
               Switch workspace

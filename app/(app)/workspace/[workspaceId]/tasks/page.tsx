@@ -7,7 +7,7 @@ import WorkspacePage from '@/components/workspace/workspace-page'
 export default async function TasksPage({
   params,
 }: {
-  params: Promise<WorkspaceRouteParams>
+  params: WorkspaceRouteParams | Promise<WorkspaceRouteParams>
 }) {
   const { workspaceId } = await resolveWorkspaceParams(params)
 

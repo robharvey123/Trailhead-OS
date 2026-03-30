@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkspaceContext } from '@/lib/workspace/auth'
-import { createClient as createSupabaseClient } from '@/lib/supabase/server'
-import { deleteTask as deleteOsTask, updateTask as updateOsTask } from '@/lib/db/tasks'
-import type { TaskPriority, UpdateTaskInput } from '@/lib/types'
 import { normalizeWorkspaceTaskCategory } from '@/lib/workspace/constants'
 import {
   createRecurringTaskCopies,
@@ -16,183 +13,10 @@ import { insertTaskActivity } from '@/lib/workspace/task-relations'
 
 const TASK_STATUSES = new Set(['open', 'assigned', 'in_progress', 'done', 'cancelled'])
 const PRIORITIES = new Set(['low', 'medium', 'high'])
-const OS_PRIORITIES = new Set<TaskPriority>(['low', 'medium', 'high', 'urgent'])
 const SERIES_SHARED_FIELDS = new Set([
   'title', 'description', 'category', 'planned_start_time', 'task_color',
   'duration_minutes', 'required_people', 'priority', 'checklist_items',
 ])
-
-async function getAuthenticatedSupabase() {
-  const supabase = await createSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { supabase, user: null, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
-  }
-
-  return { supabase, user, response: null }
-}
-
-async function patchOsTask(request: NextRequest, id: string) {
-  const auth = await getAuthenticatedSupabase()
-  if (auth.response) {
-    return auth.response
-  }
-
-  const body = await request.json().catch(() => ({}))
-  const patch: UpdateTaskInput = {}
-
-  if (body.title !== undefined) {
-    if (typeof body.title !== 'string' || !body.title.trim()) {
-      return NextResponse.json({ error: 'title cannot be empty' }, { status: 400 })
-    }
-    patch.title = body.title
-  }
-
-  if (body.description !== undefined) {
-    if (body.description !== null && typeof body.description !== 'string') {
-      return NextResponse.json({ error: 'description must be a string or null' }, { status: 400 })
-    }
-    patch.description = body.description
-  }
-
-  if (body.workstream_id !== undefined) {
-    if (body.workstream_id !== null && typeof body.workstream_id !== 'string') {
-      return NextResponse.json({ error: 'workstream_id must be a string or null' }, { status: 400 })
-    }
-    patch.workstream_id = body.workstream_id
-  }
-
-  if (body.column_id !== undefined) {
-    if (body.column_id !== null && typeof body.column_id !== 'string') {
-      return NextResponse.json({ error: 'column_id must be a string or null' }, { status: 400 })
-    }
-    patch.column_id = body.column_id
-  }
-
-  if (body.account_id !== undefined) {
-    if (body.account_id !== null && typeof body.account_id !== 'string') {
-      return NextResponse.json({ error: 'account_id must be a string or null' }, { status: 400 })
-    }
-    patch.account_id = body.account_id
-  }
-
-  if (body.contact_id !== undefined) {
-    if (body.contact_id !== null && typeof body.contact_id !== 'string') {
-      return NextResponse.json({ error: 'contact_id must be a string or null' }, { status: 400 })
-    }
-    patch.contact_id = body.contact_id
-  }
-
-  if (body.priority !== undefined) {
-    if (typeof body.priority !== 'string') {
-      return NextResponse.json({ error: 'priority must be a string' }, { status: 400 })
-    }
-
-    const priority = body.priority.toLowerCase() as TaskPriority
-    if (!OS_PRIORITIES.has(priority)) {
-      return NextResponse.json({ error: 'priority must be low, medium, high, or urgent' }, { status: 400 })
-    }
-
-    patch.priority = priority
-  }
-
-  if (body.due_date !== undefined) {
-    if (body.due_date !== null && typeof body.due_date !== 'string') {
-      return NextResponse.json({ error: 'due_date must be a string or null' }, { status: 400 })
-    }
-    patch.due_date = body.due_date
-  }
-
-  if (body.due_time !== undefined) {
-    if (body.due_time === null || body.due_time === '') {
-      patch.due_time = null
-    } else {
-      const parsedTime = parseTime(body.due_time)
-      if (!parsedTime) {
-        return NextResponse.json({ error: 'due_time must be HH:MM or HH:MM:SS' }, { status: 400 })
-      }
-      patch.due_time = parsedTime
-    }
-  }
-
-  if ((patch.due_date === null || body.due_date === null || body.due_date === '') && body.due_time === undefined) {
-    patch.due_time = null
-  }
-
-  if (body.is_master_todo !== undefined) {
-    if (typeof body.is_master_todo !== 'boolean') {
-      return NextResponse.json({ error: 'is_master_todo must be a boolean' }, { status: 400 })
-    }
-    patch.is_master_todo = body.is_master_todo
-  }
-
-  if (body.tags !== undefined) {
-    if (!Array.isArray(body.tags) || body.tags.some((tag: unknown) => typeof tag !== 'string')) {
-      return NextResponse.json({ error: 'tags must be an array of strings' }, { status: 400 })
-    }
-    patch.tags = body.tags
-  }
-
-  if (body.sort_order !== undefined) {
-    if (typeof body.sort_order !== 'number') {
-      return NextResponse.json({ error: 'sort_order must be a number' }, { status: 400 })
-    }
-    patch.sort_order = body.sort_order
-  }
-
-  if (body.completed_at !== undefined) {
-    if (body.completed_at !== null && typeof body.completed_at !== 'string') {
-      return NextResponse.json({ error: 'completed_at must be a string or null' }, { status: 400 })
-    }
-    patch.completed_at = body.completed_at
-  } else if (body.completed !== undefined) {
-    if (typeof body.completed !== 'boolean') {
-      return NextResponse.json({ error: 'completed must be a boolean' }, { status: 400 })
-    }
-    patch.completed_at = body.completed ? new Date().toISOString() : null
-  }
-
-  if (Object.keys(patch).length === 0) {
-    return NextResponse.json({ error: 'No changes supplied' }, { status: 400 })
-  }
-
-  try {
-    const task = await updateOsTask(id, patch, auth.supabase)
-    return NextResponse.json({ task })
-  } catch (error) {
-    if (error instanceof Error && error.message === 'JSON object requested, multiple (or no) rows returned') {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
-    }
-
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to update task' },
-      { status: 500 }
-    )
-  }
-}
-
-async function deleteOsTaskRoute(request: NextRequest, id: string) {
-  const auth = await getAuthenticatedSupabase()
-  if (auth.response) {
-    return auth.response
-  }
-
-  const body = await request.json().catch(() => ({}))
-  const hardDelete = body.hard_delete === true || body.hardDelete === true
-
-  try {
-    await deleteOsTask(id, { hardDelete }, auth.supabase)
-    return NextResponse.json({ deletedTaskIds: [id], hardDelete })
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to delete task' },
-      { status: 500 }
-    )
-  }
-}
 
 export async function PATCH(
   request: NextRequest,
@@ -200,9 +24,6 @@ export async function PATCH(
 ) {
   const { id } = await params
   const workspaceId = request.nextUrl.searchParams.get('workspace_id') || ''
-  if (!workspaceId) {
-    return patchOsTask(request, id)
-  }
   const auth = await getWorkspaceContext(workspaceId)
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
@@ -221,7 +42,8 @@ export async function PATCH(
   }
 
   const body = await request.json().catch(() => ({}))
-  const patch: Record<string, unknown> = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const patch: Record<string, any> = {}
   const recurrence = parseRecurrencePayload(body)
 
   if (typeof body.title === 'string') {
@@ -316,10 +138,12 @@ export async function PATCH(
     const seriesTaskIds = [seriesRootId]
     const children = await supabase.from('workspace_tasks').select('id').eq('workspace_id', workspaceId).eq('recurrence_parent_task_id', seriesRootId)
     if (children.error) return NextResponse.json({ error: children.error.message }, { status: 500 })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const row of children.data || []) { if (row.id !== seriesRootId) seriesTaskIds.push(row.id) }
 
     const sharedPatch = Object.fromEntries(Object.entries(patch).filter(([key]) => SERIES_SHARED_FIELDS.has(key)))
-    const rootPatch: Record<string, unknown> = {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rootPatch: Record<string, any> = {}
     if (patch.recurrence_cadence !== undefined) rootPatch.recurrence_cadence = patch.recurrence_cadence
     if (patch.recurrence_interval !== undefined) rootPatch.recurrence_interval = patch.recurrence_interval
     if (patch.recurrence_end_date !== undefined) rootPatch.recurrence_end_date = patch.recurrence_end_date
@@ -391,9 +215,6 @@ export async function DELETE(
 ) {
   const { id } = await params
   const workspaceId = request.nextUrl.searchParams.get('workspace_id') || ''
-  if (!workspaceId) {
-    return deleteOsTaskRoute(request, id)
-  }
   const auth = await getWorkspaceContext(workspaceId)
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
@@ -407,12 +228,8 @@ export async function DELETE(
     const rootId = existing.data.recurrence_parent_task_id || existing.data.id
     const children = await supabase.from('workspace_tasks').select('id').eq('workspace_id', workspaceId).eq('recurrence_parent_task_id', rootId)
     if (children.error) return NextResponse.json({ error: children.error.message }, { status: 500 })
-    const taskIds = [
-      rootId,
-      ...(children.data || [])
-        .map((row) => row.id)
-        .filter((taskId: string) => taskId !== rootId),
-    ]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const taskIds = [rootId, ...(children.data || []).map((r: any) => r.id).filter((tid: string) => tid !== rootId)]
 
     await supabase.from('workspace_assignments').delete().in('task_id', taskIds)
     const del = await supabase.from('workspace_tasks').delete().eq('workspace_id', workspaceId).in('id', taskIds)

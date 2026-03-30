@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { Resend } from 'resend'
 import { createClient } from '@/lib/supabase/server'
-import { DEFAULT_RESEND_FROM } from '@/lib/email/resend'
 import { getInsightsData } from '@/lib/insights/data'
 import { generateInsightsNarrative } from '@/lib/insights/narrative'
 import { renderInsightsPdf } from '@/lib/insights/pdf'
@@ -66,7 +65,8 @@ export async function POST(request: Request) {
   }
 
   const resendKey = process.env.RESEND_API_KEY
-  const fromAddress = process.env.RESEND_FROM_EMAIL ?? DEFAULT_RESEND_FROM
+  const fromAddress =
+    process.env.RESEND_FROM_EMAIL ?? 'Brand Opps <reports@example.com>'
 
   if (!resendKey) {
     return NextResponse.json(

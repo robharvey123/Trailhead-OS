@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
-import Sidebar from '@/components/os/Sidebar'
+import OsShell from '@/components/os/OsShell'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import type { Workstream } from '@/lib/types'
@@ -40,13 +40,8 @@ export default async function OsLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <Sidebar workstreams={workstreams} newEnquiryCount={newEnquiryCount} />
-      <main className="min-h-screen md:pl-72">
-        <div className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-8 pt-20 md:px-8 md:pt-8">
-          {children}
-        </div>
-      </main>
-    </div>
+    <OsShell workstreams={workstreams} newEnquiryCount={newEnquiryCount}>
+      {children}
+    </OsShell>
   )
 }

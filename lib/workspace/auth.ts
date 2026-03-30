@@ -4,7 +4,6 @@ export type WorkspaceContext = {
   supabase: Awaited<ReturnType<typeof createClient>>
   userId: string
   workspaceId: string
-  role: string
 }
 
 export async function getWorkspaceContext(
@@ -44,7 +43,6 @@ export async function getWorkspaceContext(
       supabase,
       userId: user.id,
       workspaceId,
-      role: member.role,
     },
   }
 }
