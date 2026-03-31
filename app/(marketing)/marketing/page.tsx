@@ -138,9 +138,20 @@ const categoryTags = [
 ]
 
 const appDevelopmentStats = [
-  ['4+', 'Products currently in active development or deployment'],
-  ['3', 'Core technologies used across every build. Next.js, Supabase, Tailwind'],
-  ['1', 'Development partner throughout. Not handed off mid-project'],
+  {
+    value: '4+',
+    label: 'Products currently in active development or deployment',
+  },
+  {
+    value: '3',
+    label: 'Core technologies used across every build',
+    detail: 'Next.js, Supabase, Tailwind',
+  },
+  {
+    value: '1',
+    label: 'Development partner throughout',
+    detail: 'Not handed off mid-project',
+  },
 ]
 
 const appDevelopmentBuilds = [
@@ -420,17 +431,22 @@ export default async function MarketingHomePage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            {appDevelopmentStats.map(([value, label]) => (
+            {appDevelopmentStats.map((stat) => (
               <div
-                key={label}
+                key={stat.label}
                 className="rounded-[1.75rem] border border-[var(--marketing-border)] bg-white p-7"
               >
                 <p className="text-4xl font-bold tracking-[-0.05em] text-[var(--marketing-text)]">
-                  {value}
+                  {stat.value}
                 </p>
                 <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
-                  {label}
+                  {stat.label}
                 </p>
+                {stat.detail ? (
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {stat.detail}
+                  </p>
+                ) : null}
               </div>
             ))}
           </div>
