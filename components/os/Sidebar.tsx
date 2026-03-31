@@ -204,6 +204,13 @@ export default function Sidebar({
               onClick={() => setMobileOpen(false)}
               collapsed={collapsed}
             />
+            <NavLink
+              href="/projects"
+              label="Projects"
+              active={pathname === '/projects' || pathname.startsWith('/projects/records') || pathname === '/projects/new'}
+              onClick={() => setMobileOpen(false)}
+              collapsed={collapsed}
+            />
           </div>
 
           <div className={collapsed ? 'flex flex-col items-center' : ''}>

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import ContactDetailClient from '@/components/os/ContactDetailClient'
 import { getAccounts } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
+import { listProjectsByContact } from '@/lib/db/projects'
 import { getTasks } from '@/lib/db/tasks'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
@@ -26,13 +27,14 @@ export default async function ContactDetailPage({
     .order('occurred_at', { ascending: false })
     .order('created_at', { ascending: false })
 
-  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult] = await Promise.all([
+  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult, projects] = await Promise.all([
     getContactById(id, supabase).catch(() => null),
     getWorkstreams(supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
     getTasks({ contact_id: id }, supabase).catch(() => []),
     enquiryPromise,
     touchpointsPromise,
+    listProjectsByContact(id, supabase).catch(() => []),
   ])
 
   if (!contact) {
@@ -51,6 +53,7 @@ export default async function ContactDetailPage({
       linkedTasks={linkedTasks}
       sourceEnquiryId={enquiryResult.data?.id ?? null}
       initialTouchpoints={touchpointsResult.data ?? []}
+      projects={projects}
     />
   )
 }

@@ -182,6 +182,20 @@ export async function PATCH(
         : body.account_id
   }
 
+  if (body.project_id !== undefined) {
+    if (body.project_id !== null && typeof body.project_id !== 'string') {
+      return NextResponse.json(
+        { error: 'project_id must be a string or null' },
+        { status: 400 }
+      )
+    }
+
+    patch.project_id =
+      typeof body.project_id === 'string' && !body.project_id.trim()
+        ? null
+        : body.project_id
+  }
+
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: 'No changes supplied' }, { status: 400 })
   }

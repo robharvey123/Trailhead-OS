@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import QuoteForm from '@/components/os/QuoteForm'
 import { getAccounts } from '@/lib/db/accounts'
 import { getContacts } from '@/lib/db/contacts'
+import { getProjects } from '@/lib/db/projects'
 import { getQuoteById } from '@/lib/db/quotes'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
@@ -23,10 +24,11 @@ export default async function EditQuotePage({
     redirect(`/quotes/${quote.id}?warning=edit-blocked`)
   }
 
-  const [accounts, contacts, workstreams] = await Promise.all([
+  const [accounts, contacts, workstreams, projects] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getWorkstreams(supabase).catch(() => []),
+    getProjects({}, supabase).catch(() => []),
   ])
 
   return (
@@ -34,6 +36,7 @@ export default async function EditQuotePage({
       accounts={accounts}
       contacts={contacts}
       workstreams={workstreams}
+      projects={projects}
       initialQuote={quote}
     />
   )

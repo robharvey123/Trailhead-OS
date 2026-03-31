@@ -12,6 +12,7 @@ export type ContactStatus = 'lead' | 'active' | 'inactive' | 'archived'
 export type EnquiryStatus = 'new' | 'reviewed' | 'converted'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 export type BlogPostStatus = 'draft' | 'published'
+export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 
 export interface PricingTier {
   id: string
@@ -110,6 +111,7 @@ export interface Enquiry {
   extra: string | null
   status: EnquiryStatus
   account_id: string | null
+  project_id: string | null
   converted_contact_id: string | null
 }
 
@@ -283,6 +285,7 @@ export interface Quote {
   contact_id?: string
   workstream_id?: string
   enquiry_id?: string
+  project_id?: string
   pricing_tier_id?: string
   pricing_tier?: PricingTier
   status: QuoteStatus
@@ -310,6 +313,7 @@ export interface QuoteWithRelations extends Quote {
   account?: Account
   contact?: Contact
   workstream?: { label: string; colour: string }
+  project?: { id: string; name: string; status: ProjectStatus }
   totals: InvoiceTotals
 }
 
@@ -337,15 +341,87 @@ export interface BoardColumn {
   sort_order: number
 }
 
+export interface ProjectContact {
+  project_id: string
+  contact_id: string
+  relationship_role: string | null
+  created_at: string
+  contact?: Contact | null
+}
+
+export interface ProjectPhase {
+  id: string
+  project_id: string
+  name: string
+  description: string | null
+  sort_order: number
+  start_date: string | null
+  end_date: string | null
+  created_at: string
+  updated_at: string
+  task_count?: number
+}
+
+export interface ProjectMilestone {
+  id: string
+  project_id: string
+  name: string
+  description: string | null
+  date: string
+  completed: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface Project {
+  id: string
+  workstream_id: string
+  account_id: string | null
+  owner_id: string | null
+  pricing_tier_id: string | null
+  name: string
+  description: string | null
+  brief: string | null
+  status: ProjectStatus
+  start_date: string | null
+  end_date: string | null
+  estimated_end_date: string | null
+  ai_planned: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface ProjectListItem extends Project {
+  workstream?: Workstream | null
+  account?: Account | null
+  task_count: number
+  completed_task_count: number
+  contact_count: number
+  next_milestone: ProjectMilestone | null
+}
+
+export interface ProjectDetail extends Project {
+  workstream?: Workstream | null
+  account?: Account | null
+  phases: ProjectPhase[]
+  milestones: ProjectMilestone[]
+  tasks: TaskWithWorkstream[]
+  contacts: Contact[]
+  enquiries: Enquiry[]
+}
+
 export interface Task {
   id: string
   workstream_id: string | null
   column_id: string | null
   account_id: string | null
   contact_id: string | null
+  project_id: string | null
+  phase_id: string | null
   title: string
   description: string | null
   priority: TaskPriority
+  start_date: string | null
   due_date: string | null
   due_time: string | null
   is_master_todo: boolean
@@ -365,6 +441,7 @@ export interface CalendarEvent {
   all_day: boolean
   workstream_id: string | null
   contact_id: string | null
+  project_id: string | null
   location: string | null
   colour: string | null
   created_at: string
@@ -389,6 +466,8 @@ export interface TaskWithWorkstream extends Task {
   workstream_slug: string | null
   workstream_label: string | null
   workstream_colour: string | null
+  project_name: string | null
+  phase_name: string | null
 }
 
 export type DashboardUpcomingItem =
@@ -430,6 +509,7 @@ export interface TaskFilters {
   column_id?: string | null
   account_id?: string | null
   contact_id?: string | null
+  project_id?: string | null
   is_master_todo?: boolean
   due_date_from?: string | null
   due_date_to?: string | null
@@ -443,9 +523,11 @@ export interface CreateTaskInput {
   column_id?: string | null
   account_id?: string | null
   contact_id?: string | null
+  project_id?: string | null
   title: string
   description?: string | null
   priority?: TaskPriority
+  start_date?: string | null
   due_date?: string | null
   due_time?: string | null
   is_master_todo?: boolean
@@ -458,9 +540,11 @@ export interface UpdateTaskInput {
   column_id?: string | null
   account_id?: string | null
   contact_id?: string | null
+  project_id?: string | null
   title?: string
   description?: string | null
   priority?: TaskPriority
+  start_date?: string | null
   due_date?: string | null
   due_time?: string | null
   is_master_todo?: boolean

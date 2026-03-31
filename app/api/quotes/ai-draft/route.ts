@@ -3,11 +3,13 @@ import { anthropic, ANTHROPIC_MODELS } from '@/lib/anthropic/client'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getPricingTierById } from '@/lib/db/pricing-tiers'
+import { getProjectById, syncProjectScope } from '@/lib/db/projects'
 import { createQuote, getQuoteById, updateQuote } from '@/lib/db/quotes'
 import { getWorkstreamBySlug } from '@/lib/db/workstreams'
 import type {
   Enquiry,
   PricingTier,
+  ProjectDetail,
   Quote,
   QuoteComplexityBreakdown,
   QuoteLineItem,
@@ -36,6 +38,21 @@ type EnquiryPrompt = Pick<
   existing_tools: string
   pain_points: string
   timeline: string
+}
+
+type ProjectPrompt = {
+  name: string
+  brief: string
+  phases: QuoteScope[]
+}
+
+type QuoteGuidance = {
+  pricing_posture: 'conservative' | 'balanced' | 'assertive'
+  budget_alignment: 'respect' | 'flexible' | 'value'
+  delivery_bias: 'best_fit' | 'fixed' | 'milestone' | 'time_and_materials'
+  must_include: string
+  must_avoid: string
+  notes: string
 }
 
 type AiQuoteResponse = {
@@ -214,8 +231,81 @@ Use these exact rates for this quote. Do not deviate from them:
   margin on top of your estimated base cost`
 }
 
-function buildUserPrompt(args: { enquiry: EnquiryPrompt }) {
-  const { enquiry } = args
+function sanitizeText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function sanitizeGuidance(value: unknown): QuoteGuidance {
+  const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
+  const pricingPosture =
+    record.pricing_posture === 'conservative' ||
+    record.pricing_posture === 'balanced' ||
+    record.pricing_posture === 'assertive'
+      ? record.pricing_posture
+      : 'balanced'
+  const budgetAlignment =
+    record.budget_alignment === 'respect' ||
+    record.budget_alignment === 'flexible' ||
+    record.budget_alignment === 'value'
+      ? record.budget_alignment
+      : 'respect'
+  const deliveryBias =
+    record.delivery_bias === 'fixed' ||
+    record.delivery_bias === 'milestone' ||
+    record.delivery_bias === 'time_and_materials' ||
+    record.delivery_bias === 'best_fit'
+      ? record.delivery_bias
+      : 'best_fit'
+
+  return {
+    pricing_posture: pricingPosture,
+    budget_alignment: budgetAlignment,
+    delivery_bias: deliveryBias,
+    must_include: sanitizeText(record.must_include),
+    must_avoid: sanitizeText(record.must_avoid),
+    notes: sanitizeText(record.notes),
+  }
+}
+
+function buildGuidancePrompt(guidance: QuoteGuidance) {
+  const postureMap = {
+    conservative: 'Price cautiously and keep the quote commercially competitive.',
+    balanced: 'Balance competitiveness with margin protection.',
+    assertive: 'Price confidently and protect margin strongly.',
+  } as const
+
+  const budgetMap = {
+    respect: 'Try to stay close to the stated budget where realistic.',
+    flexible: 'Treat the stated budget as soft guidance rather than a hard ceiling.',
+    value: 'Optimise for the best delivery approach even if it exceeds the stated budget.',
+  } as const
+
+  const deliveryMap = {
+    best_fit: 'Choose the pricing structure that best fits the project.',
+    fixed: 'Bias the quote toward a fixed-price structure unless clearly unsuitable.',
+    milestone: 'Bias the quote toward milestone-based pricing unless clearly unsuitable.',
+    time_and_materials: 'Bias the quote toward time-and-materials unless clearly unsuitable.',
+  } as const
+
+  const sections = [
+    'Commercial steering:',
+    `- ${postureMap[guidance.pricing_posture]}`,
+    `- ${budgetMap[guidance.budget_alignment]}`,
+    `- ${deliveryMap[guidance.delivery_bias]}`,
+    guidance.must_include ? `- Must include: ${guidance.must_include}` : null,
+    guidance.must_avoid ? `- Must avoid: ${guidance.must_avoid}` : null,
+    guidance.notes ? `- Additional notes: ${guidance.notes}` : null,
+  ].filter(Boolean)
+
+  return sections.join('\n')
+}
+
+function buildUserPrompt(args: {
+  enquiry: EnquiryPrompt
+  project?: ProjectPrompt | null
+  guidance: QuoteGuidance
+}) {
+  const { enquiry, project, guidance } = args
 
   return `Client discovery form submission:
 
@@ -237,8 +327,50 @@ Desired timeline: ${enquiry.timeline}
 Budget indication: ${enquiry.budget || 'Not specified'}
 Additional information: ${enquiry.extra || 'None'}
 
+${project ? `Linked project context:
+Project: ${project.name}
+Project brief: ${project.brief || 'Not specified'}
+Required delivery stages (keep these phase names and order in the quote scope):
+${project.phases.map((phase, index) => `${index + 1}. ${phase.phase} | Duration: ${phase.duration} | Description: ${phase.description} | Deliverables: ${phase.deliverables.join(', ') || 'None specified'}`).join('\n')}
+` : ''}
+
+${buildGuidancePrompt(guidance)}
+
 Please analyse this and generate a detailed scope of work
 and accurate quote using your estimation methodology.`
+}
+
+function mapProjectToScope(project: ProjectDetail): QuoteScope[] {
+  return project.phases.map((phase) => ({
+    phase: phase.name,
+    description: phase.description ?? 'Details to be confirmed.',
+    deliverables: [],
+    duration:
+      phase.start_date && phase.end_date
+        ? `${phase.start_date} to ${phase.end_date}`
+        : 'TBC',
+  }))
+}
+
+function mergeScopeTemplate(template: QuoteScope[], generated: QuoteScope[]): QuoteScope[] {
+  if (template.length === 0) {
+    return generated
+  }
+
+  return template.map((phase, index) => {
+    const generatedMatch =
+      generated[index] ??
+      generated.find((item) => item.phase.toLowerCase() === phase.phase.toLowerCase())
+
+    return {
+      phase: phase.phase,
+      description: generatedMatch?.description ?? phase.description,
+      deliverables:
+        generatedMatch?.deliverables.length ? generatedMatch.deliverables : phase.deliverables,
+      duration: phase.duration || generatedMatch?.duration || 'TBC',
+      estimated_hours: generatedMatch?.estimated_hours,
+    }
+  })
 }
 
 function sanitizeScope(value: unknown): QuoteScope[] {
@@ -475,7 +607,15 @@ export async function POST(request: NextRequest) {
     typeof body.pricing_tier_id === 'string' && body.pricing_tier_id.trim()
       ? body.pricing_tier_id
       : undefined
+  const projectId =
+    typeof body.project_id === 'string' && body.project_id.trim()
+      ? body.project_id
+      : undefined
+  const scopeOverride = sanitizeScope(body.scope_override)
+  const guidance = sanitizeGuidance(body.guidance)
   const forceRegenerate = body.force_regenerate === true
+  const syncProjectStages = body.sync_project_scope === true
+  const createNewVersion = body.create_new_version === true
 
   if (!enquiryId) {
     return NextResponse.json({ error: 'enquiry_id is required' }, { status: 400 })
@@ -490,7 +630,7 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .maybeSingle()
 
-    if (existingQuote?.id && !quoteId && !forceRegenerate) {
+    if (existingQuote?.id && !quoteId && !forceRegenerate && !createNewVersion) {
       const quote = await getQuoteById(existingQuote.id, auth.supabase)
 
       if (!quote) {
@@ -505,7 +645,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Enquiry not found' }, { status: 404 })
     }
 
-    const targetQuoteId = quoteId ?? (forceRegenerate ? existingQuote?.id : undefined)
+    const targetQuoteId = quoteId ?? (!createNewVersion && forceRegenerate ? existingQuote?.id : undefined)
     const existingQuoteRecord = targetQuoteId
       ? await getQuoteById(targetQuoteId, auth.supabase)
       : null
@@ -521,10 +661,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const projectIdToUse = projectId ?? existingQuoteRecord?.project_id ?? enquiry.project_id ?? undefined
+
     const tierIdToUse = pricingTierId ?? existingQuoteRecord?.pricing_tier_id ?? undefined
-    const [pricingTier, appDevWorkstream] = await Promise.all([
+    const [pricingTier, appDevWorkstream, linkedProject] = await Promise.all([
       tierIdToUse ? getPricingTierById(tierIdToUse, auth.supabase) : Promise.resolve(null),
       getWorkstreamBySlug('app-dev', auth.supabase),
+      projectIdToUse ? getProjectById(projectIdToUse, auth.supabase) : Promise.resolve(null),
     ])
 
     if (tierIdToUse && !pricingTier) {
@@ -534,6 +677,16 @@ export async function POST(request: NextRequest) {
     if (!appDevWorkstream) {
       return NextResponse.json({ error: 'App development workstream not found' }, { status: 500 })
     }
+
+    if (projectIdToUse && !linkedProject) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+
+    const projectScope = scopeOverride.length
+      ? scopeOverride
+      : linkedProject
+        ? mapProjectToScope(linkedProject)
+        : []
 
     let rawText: string
     try {
@@ -555,6 +708,14 @@ export async function POST(request: NextRequest) {
             pain_points: enquiry.pain_points ?? 'Not specified',
             timeline: enquiry.timeline ?? 'Not specified',
           },
+          project: linkedProject
+            ? {
+                name: linkedProject.name,
+                brief: linkedProject.brief ?? linkedProject.description ?? '',
+                phases: projectScope,
+              }
+            : null,
+          guidance,
         })
       )
     } catch (error) {
@@ -575,14 +736,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (projectScope.length > 0) {
+      aiResponse.scope = mergeScopeTemplate(projectScope, aiResponse.scope)
+    }
+
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + QUOTE_VALIDITY_DAYS)
     const generatedAt = new Date().toISOString()
     const quotePayload = {
-      account_id: existingQuoteRecord?.account_id ?? enquiry.account_id ?? undefined,
+      account_id:
+        existingQuoteRecord?.account_id ?? enquiry.account_id ?? linkedProject?.account_id ?? undefined,
       contact_id: existingQuoteRecord?.contact_id ?? undefined,
-      workstream_id: existingQuoteRecord?.workstream_id ?? appDevWorkstream.id,
+      workstream_id:
+        existingQuoteRecord?.workstream_id ?? linkedProject?.workstream_id ?? appDevWorkstream.id,
       enquiry_id: enquiry.id,
+      project_id: linkedProject?.id ?? existingQuoteRecord?.project_id ?? undefined,
       pricing_tier_id: pricingTier?.id ?? existingQuoteRecord?.pricing_tier_id ?? undefined,
       status: existingQuoteRecord?.status ?? 'draft',
       pricing_type: aiResponse.pricing_type,
@@ -602,6 +770,10 @@ export async function POST(request: NextRequest) {
       ai_generated_at: generatedAt,
       issue_date: new Date().toISOString().slice(0, 10),
     } satisfies Omit<Quote, 'id' | 'quote_number' | 'created_at' | 'updated_at'>
+
+    if (syncProjectStages && linkedProject && aiResponse.scope.length > 0) {
+      await syncProjectScope(linkedProject.id, aiResponse.scope, auth.supabase)
+    }
 
     const quote = existingQuoteRecord
       ? await updateQuote(existingQuoteRecord.id, quotePayload, auth.supabase)

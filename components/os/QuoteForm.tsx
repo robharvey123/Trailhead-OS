@@ -12,6 +12,7 @@ import type {
   Contact,
   PricingTier,
   PricingType,
+  ProjectListItem,
   Quote,
   QuoteLineItem,
   QuoteScope,
@@ -140,26 +141,33 @@ interface QuoteFormProps {
   accounts: Account[]
   contacts: Contact[]
   workstreams: Workstream[]
+  projects: ProjectListItem[]
   initialQuote?: Quote | null
   initialAccountId?: string
   initialEnquiryId?: string
   initialPricingTierId?: string
+  initialProjectId?: string
+  initialProjectScope?: QuoteScope[]
 }
 
 export default function QuoteForm({
   accounts,
   contacts,
   workstreams,
+  projects,
   initialQuote = null,
   initialAccountId = '',
   initialEnquiryId = '',
   initialPricingTierId = '',
+  initialProjectId = '',
+  initialProjectScope = [],
 }: QuoteFormProps) {
   const router = useRouter()
   const [title, setTitle] = useState(initialQuote?.title ?? '')
   const [accountId, setAccountId] = useState(initialQuote?.account_id ?? initialAccountId)
   const [contactId, setContactId] = useState(initialQuote?.contact_id ?? '')
   const [workstreamId, setWorkstreamId] = useState(initialQuote?.workstream_id ?? '')
+  const [projectId, setProjectId] = useState(initialQuote?.project_id ?? initialProjectId)
   const [pricingType, setPricingType] = useState<PricingType>(initialQuote?.pricing_type ?? 'fixed')
   const [validUntil, setValidUntil] = useState(
     initialQuote?.valid_until ?? addDays(new Date(), 30)
@@ -169,7 +177,11 @@ export default function QuoteForm({
   )
   const [summary, setSummary] = useState(initialQuote?.summary ?? '')
   const [scope, setScope] = useState<QuoteScope[]>(
-    initialQuote?.scope.length ? initialQuote.scope : [createEmptyPhase()]
+    initialQuote?.scope.length
+      ? initialQuote.scope
+      : initialProjectScope.length
+        ? initialProjectScope
+        : [createEmptyPhase()]
   )
   const [lineItems, setLineItems] = useState<QuoteLineItem[]>(
     initialQuote?.line_items.length ? initialQuote.line_items : []
@@ -180,7 +192,7 @@ export default function QuoteForm({
   )
   const [notes, setNotes] = useState(initialQuote?.notes ?? '')
   const [savingAs, setSavingAs] = useState<QuoteStatus | 'edit' | null>(null)
-  const [regeneratingAi, setRegeneratingAi] = useState(false)
+  const [refreshingFromEnquiry, setRefreshingFromEnquiry] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deliverableDrafts, setDeliverableDrafts] = useState<Record<number, string>>({})
   const [draggingPhaseIndex, setDraggingPhaseIndex] = useState<number | null>(null)
@@ -199,6 +211,10 @@ export default function QuoteForm({
   const filteredContacts = useMemo(
     () => contacts.filter((contact) => !accountId || contact.account_id === accountId),
     [accountId, contacts]
+  )
+  const projectsById = useMemo(
+    () => new Map(projects.map((project) => [project.id, project])),
+    [projects]
   )
   const totals = calculateTotals(lineItems, Number(vatRate) || 0)
 
@@ -245,6 +261,7 @@ export default function QuoteForm({
     setAccountId(nextQuote.account_id ?? '')
     setContactId(nextQuote.contact_id ?? '')
     setWorkstreamId(nextQuote.workstream_id ?? '')
+    setProjectId(nextQuote.project_id ?? '')
     setPricingType(nextQuote.pricing_type)
     setValidUntil(nextQuote.valid_until ?? addDays(new Date(), 30))
     setIssueDate(nextQuote.issue_date ?? new Date().toISOString().slice(0, 10))
@@ -264,12 +281,12 @@ export default function QuoteForm({
     setError(null)
   }
 
-  async function regenerateAiDraft() {
-    if (!quoteRecord?.id || !quoteRecord.enquiry_id || regeneratingAi) {
+  async function refreshFromEnquiry() {
+    if (!quoteRecord?.id || !quoteRecord.enquiry_id || refreshingFromEnquiry) {
       return
     }
 
-    setRegeneratingAi(true)
+    setRefreshingFromEnquiry(true)
     setError(null)
 
     try {
@@ -293,10 +310,10 @@ export default function QuoteForm({
       setError(
         regenerateError instanceof Error
           ? regenerateError.message
-          : 'Failed to regenerate AI draft'
+          : 'Failed to refresh quote from enquiry'
       )
     } finally {
-      setRegeneratingAi(false)
+      setRefreshingFromEnquiry(false)
     }
   }
 
@@ -340,6 +357,7 @@ export default function QuoteForm({
         account_id: accountId || null,
         contact_id: contactId || null,
         workstream_id: workstreamId || null,
+        project_id: projectId || null,
         enquiry_id: quoteRecord?.enquiry_id ?? initialEnquiryId ?? null,
         pricing_tier_id: pricingTierId,
         pricing_type: pricingType,
@@ -429,6 +447,28 @@ export default function QuoteForm({
           onChange={setContactId}
           placeholder="Search contacts"
           emptyLabel="No contact"
+        />
+
+        <SearchSelect
+          label="Project"
+          value={projectId}
+          options={projects.map((project) => ({
+            value: project.id,
+            label: project.name,
+            meta: project.account?.name ?? project.workstream?.label ?? null,
+          }))}
+          onChange={(value) => {
+            setProjectId(value)
+            const project = projectsById.get(value)
+            if (project?.account_id && !accountId) {
+              setAccountId(project.account_id)
+            }
+            if (project?.workstream_id && !workstreamId) {
+              setWorkstreamId(project.workstream_id)
+            }
+          }}
+          placeholder="Search projects"
+          emptyLabel="No project"
         />
 
         <label className="space-y-2">
@@ -818,17 +858,17 @@ export default function QuoteForm({
             {quoteRecord?.enquiry_id ? (
               <button
                 type="button"
-                onClick={regenerateAiDraft}
-                disabled={savingAs !== null || regeneratingAi}
+                onClick={refreshFromEnquiry}
+                disabled={savingAs !== null || refreshingFromEnquiry}
                 className="rounded-2xl border border-sky-500/30 bg-sky-500/10 px-5 py-3 text-sm font-medium text-sky-100 transition hover:border-sky-400 disabled:opacity-60"
               >
-                {regeneratingAi ? 'Regenerating AI draft...' : 'Redo AI draft'}
+                {refreshingFromEnquiry ? 'Refreshing from enquiry...' : 'Refresh from enquiry'}
               </button>
             ) : null}
             <button
               type="button"
               onClick={() => submitQuote('edit')}
-              disabled={savingAs !== null || regeneratingAi}
+              disabled={savingAs !== null || refreshingFromEnquiry}
               className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
             >
               {savingAs === 'edit' ? 'Saving...' : 'Save'}

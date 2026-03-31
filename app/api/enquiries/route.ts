@@ -65,6 +65,12 @@ function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 
         : typeof body.account_id === 'string'
           ? body.account_id
           : null,
+    project_id:
+      body.project_id === null || body.project_id === undefined
+        ? null
+        : typeof body.project_id === 'string'
+          ? body.project_id
+          : null,
     converted_contact_id:
       body.converted_contact_id === null || body.converted_contact_id === undefined
         ? null
@@ -102,6 +108,8 @@ export async function GET(request: Request) {
           status && ENQUIRY_STATUSES.has(status as EnquiryStatus)
             ? status as EnquiryStatus
             : undefined,
+        account_id: searchParams.get('account_id') ?? undefined,
+        project_id: searchParams.get('project_id') ?? undefined,
       },
       auth.supabase
     )

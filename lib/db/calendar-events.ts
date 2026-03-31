@@ -12,6 +12,7 @@ export interface CalendarEventFilters {
   start_at_lte?: string
   workstream_id?: string | null
   contact_id?: string | null
+  project_id?: string | null
 }
 
 export interface CreateCalendarEventInput {
@@ -22,6 +23,7 @@ export interface CreateCalendarEventInput {
   all_day?: boolean
   workstream_id?: string | null
   contact_id?: string | null
+  project_id?: string | null
   location?: string | null
   colour?: string | null
 }
@@ -53,6 +55,10 @@ export async function getCalendarEvents(
 
   if (filters.contact_id) {
     query = query.eq('contact_id', filters.contact_id)
+  }
+
+  if (filters.project_id) {
+    query = query.eq('project_id', filters.project_id)
   }
 
   const { data, error } = await query
@@ -103,6 +109,7 @@ export async function createCalendarEvent(
       all_day: input.all_day ?? false,
       workstream_id: input.workstream_id ?? null,
       contact_id: input.contact_id ?? null,
+      project_id: input.project_id ?? null,
       location: input.location?.trim() || null,
       colour: input.colour?.trim() || null,
       updated_at: new Date().toISOString(),
@@ -157,6 +164,10 @@ export async function updateCalendarEvent(
 
   if (input.contact_id !== undefined) {
     patch.contact_id = input.contact_id
+  }
+
+  if (input.project_id !== undefined) {
+    patch.project_id = input.project_id
   }
 
   if (input.location !== undefined) {

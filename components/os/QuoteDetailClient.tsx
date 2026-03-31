@@ -117,11 +117,6 @@ export default function QuoteDetailClient({
                 <div className="flex flex-wrap items-center gap-3">
                   <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Quote</p>
                   <StatusBadge status={quote.status} kind="quote" />
-                  {quote.ai_generated ? (
-                    <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-200">
-                      AI draft
-                    </span>
-                  ) : null}
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <h1 className="text-3xl font-semibold text-slate-50">{quote.quote_number}</h1>
@@ -150,6 +145,30 @@ export default function QuoteDetailClient({
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Contact</p>
                 <p className="mt-2 text-sm text-slate-200">{quote.contact?.name ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Project</p>
+                <p className="mt-2 text-sm text-slate-200">
+                  {quote.project ? (
+                    <Link href={`/projects/records/${quote.project.id}`} className="text-sky-300 transition hover:text-sky-200">
+                      {quote.project.name}
+                    </Link>
+                  ) : (
+                    '—'
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Enquiry</p>
+                <p className="mt-2 text-sm text-slate-200">
+                  {quote.enquiry ? (
+                    <Link href={`/enquiries/${quote.enquiry.id}`} className="text-sky-300 transition hover:text-sky-200">
+                      {quote.enquiry.biz_name}
+                    </Link>
+                  ) : (
+                    '—'
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Issue date</p>

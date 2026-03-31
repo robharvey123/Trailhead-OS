@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import EmailThread from './EmailThread'
+import ProjectsSection from './ProjectsSection'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
@@ -13,6 +14,7 @@ import type {
   Account,
   Contact,
   ContactStatus,
+  ProjectListItem,
   TaskWithWorkstream,
   Touchpoint,
   Workstream,
@@ -32,6 +34,7 @@ export default function ContactDetailClient({
   linkedTasks,
   sourceEnquiryId,
   initialTouchpoints,
+  projects,
 }: {
   initialContact: ContactWithRelations
   workstreams: Workstream[]
@@ -39,6 +42,7 @@ export default function ContactDetailClient({
   linkedTasks: TaskWithWorkstream[]
   sourceEnquiryId: string | null
   initialTouchpoints: Touchpoint[]
+  projects: ProjectListItem[]
 }) {
   const router = useRouter()
   const [contact, setContact] = useState(initialContact)
@@ -366,6 +370,13 @@ export default function ContactDetailClient({
           </Link>
         </div>
       ) : null}
+
+      <ProjectsSection
+        title="Projects"
+        description="Projects this contact is actively involved in."
+        projects={projects}
+        emptyMessage="No projects linked to this contact yet."
+      />
 
       <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
         <div className="flex items-center justify-between gap-3">

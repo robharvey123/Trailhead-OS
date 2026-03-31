@@ -132,6 +132,7 @@ export async function POST(request: NextRequest) {
       all_day: body.all_day === true,
       workstream_id: sanitizeOptionalId(body.workstream_id),
       contact_id: sanitizeOptionalId(body.contact_id),
+      project_id: sanitizeOptionalId(body.project_id),
       location: sanitizeOptionalText(body.location),
       colour: sanitizeOptionalText(body.colour),
     }

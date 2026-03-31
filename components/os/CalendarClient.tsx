@@ -22,6 +22,7 @@ import { formatDateTime, formatTaskSchedule } from '@/lib/os'
 import type {
   CalendarEvent,
   Contact,
+  ProjectListItem,
   TaskWithWorkstream,
   Workstream,
 } from '@/lib/types'
@@ -58,6 +59,7 @@ interface EventFormState {
   location: string
   workstream_id: string
   contact_id: string
+  project_id: string
   colour: string
 }
 
@@ -146,6 +148,7 @@ function createDefaultFormState() {
     location: '',
     workstream_id: '',
     contact_id: '',
+    project_id: '',
     colour: EVENT_COLOURS[0].value,
   }
 }
@@ -170,6 +173,7 @@ function createFormStateFromSelection(selection: {
       location: '',
       workstream_id: '',
       contact_id: '',
+      project_id: '',
       colour: EVENT_COLOURS[0].value,
     }
   }
@@ -185,6 +189,7 @@ function createFormStateFromSelection(selection: {
     location: '',
     workstream_id: '',
     contact_id: '',
+    project_id: '',
     colour: EVENT_COLOURS[0].value,
   }
 }
@@ -205,6 +210,7 @@ function createFormStateFromEvent(event: CalendarEvent): EventFormState {
     location: event.location ?? '',
     workstream_id: event.workstream_id ?? '',
     contact_id: event.contact_id ?? '',
+    project_id: event.project_id ?? '',
     colour: event.colour ?? EVENT_COLOURS[0].value,
   }
 }
@@ -235,6 +241,7 @@ function buildPayloadFromForm(form: EventFormState) {
       location: form.location.trim() || null,
       workstream_id: form.workstream_id || null,
       contact_id: form.contact_id || null,
+      project_id: form.project_id || null,
       colour: form.colour,
     }
   }
@@ -259,6 +266,7 @@ function buildPayloadFromForm(form: EventFormState) {
     location: form.location.trim() || null,
     workstream_id: form.workstream_id || null,
     contact_id: form.contact_id || null,
+    project_id: form.project_id || null,
     colour: form.colour,
   }
 }
@@ -362,10 +370,12 @@ function buildEventPatchFromCalendarApi(event: {
 export default function CalendarClient({
   workstreams,
   contacts,
+  projects,
   googleConnected,
 }: {
   workstreams: Workstream[]
   contacts: Contact[]
+  projects: ProjectListItem[]
   googleConnected: boolean
 }) {
   const calendarRef = useRef<FullCalendar | null>(null)
@@ -381,12 +391,19 @@ export default function CalendarClient({
   const [formError, setFormError] = useState<string | null>(null)
   const [formSaving, setFormSaving] = useState(false)
   const [contactSearch, setContactSearch] = useState('')
+  const [projectFilter, setProjectFilter] = useState('')
   const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>(
     'idle'
   )
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
 
-  const fullCalendarEvents = toEventInput(events, tasks, workstreams)
+  const filteredEvents = projectFilter
+    ? events.filter((event) => event.project_id === projectFilter)
+    : events
+  const filteredTasksForCalendar = projectFilter
+    ? tasks.filter((task) => task.project_id === projectFilter)
+    : tasks
+  const fullCalendarEvents = toEventInput(filteredEvents, filteredTasksForCalendar, workstreams)
   const selectedEvent =
     selectedItem?.type === 'event' ? selectedItem.data : null
   const selectedTask = selectedItem?.type === 'task' ? selectedItem.data : null
@@ -402,6 +419,9 @@ export default function CalendarClient({
       .toLowerCase()
       .includes(query)
   })
+  const filteredProjects = projects.filter(
+    (project) => !form.workstream_id || project.workstream_id === form.workstream_id
+  )
 
   useEffect(() => {
     try {
@@ -688,6 +708,18 @@ export default function CalendarClient({
             ) : null}
           </div>
           <div className="flex flex-wrap gap-3">
+            <select
+              value={projectFilter}
+              onChange={(event) => setProjectFilter(event.target.value)}
+              className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm font-medium text-slate-100"
+            >
+              <option value="">All projects</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
             {googleConnected ? (
               <button
                 type="button"
@@ -882,6 +914,14 @@ export default function CalendarClient({
                       <dd className="mt-1 text-slate-200">
                         {getContactById(contacts, selectedEvent.contact_id)
                           ?.name ?? 'Unknown contact'}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {selectedEvent.project_id ? (
+                    <div>
+                      <dt className="text-slate-500">Project</dt>
+                      <dd className="mt-1 text-slate-200">
+                        {projects.find((project) => project.id === selectedEvent.project_id)?.name ?? 'Unknown project'}
                       </dd>
                     </div>
                   ) : null}
@@ -1094,6 +1134,29 @@ export default function CalendarClient({
                   </select>
                 </label>
               </div>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-slate-300">
+                  Project
+                </span>
+                <select
+                  value={form.project_id}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      project_id: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                >
+                  <option value="">No project</option>
+                  {filteredProjects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
               <div className="space-y-2">
                 <span className="block text-sm font-medium text-slate-300">

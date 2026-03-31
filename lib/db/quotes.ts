@@ -7,6 +7,7 @@ import {
   type Invoice,
   type PricingTier,
   type InvoiceTotals,
+  type ProjectStatus,
   type Quote,
   type QuoteListItem,
   type QuoteLineItem,
@@ -20,6 +21,7 @@ type QuoteRow = Quote & {
   contacts: Contact | null
   enquiries: Enquiry | null
   pricing_tiers: PricingTier | null
+  projects: { id: string; name: string; status: ProjectStatus } | null
   workstreams: { label: string; colour: string } | null
 }
 
@@ -36,6 +38,7 @@ function mapQuote(row: QuoteRow): QuoteListItem {
     contact_name: row.contacts?.name ?? null,
     contact_company: row.contacts?.company ?? null,
     pricing_tier: row.pricing_tiers ?? undefined,
+    project: row.projects ?? undefined,
     workstream: row.workstreams ?? undefined,
     enquiry: row.enquiries ?? undefined,
     invoice: null,
@@ -55,13 +58,14 @@ export async function getQuotes(
     status?: QuoteStatus
     workstream_id?: string
     account_id?: string
+    project_id?: string
   } = {},
   client?: SupabaseClient
 ): Promise<QuoteListItem[]> {
   const supabase = await getSupabase(client)
   let query = supabase
     .from('quotes')
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
     .order('issue_date', { ascending: false })
     .order('created_at', { ascending: false })
 
@@ -75,6 +79,10 @@ export async function getQuotes(
 
   if (filters.account_id) {
     query = query.eq('account_id', filters.account_id)
+  }
+
+  if (filters.project_id) {
+    query = query.eq('project_id', filters.project_id)
   }
 
   const { data, error } = await query
@@ -118,7 +126,7 @@ export async function getQuoteById(
   const supabase = await getSupabase(client)
   const { data, error } = await supabase
     .from('quotes')
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
     .eq('id', id)
     .maybeSingle()
 
@@ -164,6 +172,7 @@ function sanitizeQuotePayload(data: QuoteMutationInput) {
   if ('contact_id' in data) payload.contact_id = data.contact_id ?? null
   if ('workstream_id' in data) payload.workstream_id = data.workstream_id ?? null
   if ('enquiry_id' in data) payload.enquiry_id = data.enquiry_id ?? null
+  if ('project_id' in data) payload.project_id = data.project_id ?? null
   if ('pricing_tier_id' in data) payload.pricing_tier_id = data.pricing_tier_id ?? null
   if ('status' in data) payload.status = data.status
   if ('pricing_type' in data) payload.pricing_type = data.pricing_type
@@ -206,7 +215,7 @@ export async function createQuote(
   const { data: quote, error } = await supabase
     .from('quotes')
     .insert(payload)
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
     .single()
 
   if (error) {
@@ -232,7 +241,7 @@ export async function updateQuote(
     .from('quotes')
     .update(patch)
     .eq('id', id)
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
     .single()
 
   if (error) {

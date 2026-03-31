@@ -141,6 +141,10 @@ export async function PATCH(
       patch.contact_id = sanitizeOptionalId(body.contact_id, 'contact_id')
     }
 
+    if (body.project_id !== undefined) {
+      patch.project_id = sanitizeOptionalId(body.project_id, 'project_id')
+    }
+
     if (body.location !== undefined) {
       patch.location = sanitizeOptionalText(body.location)
     }

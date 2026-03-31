@@ -168,6 +168,7 @@ export async function GET(request: NextRequest) {
             : undefined,
         workstream_id: searchParams.get('workstream_id') ?? undefined,
         account_id: searchParams.get('account_id') ?? undefined,
+        project_id: searchParams.get('project_id') ?? undefined,
       },
       auth.supabase
     )
@@ -224,6 +225,12 @@ export async function POST(request: NextRequest) {
             ? undefined
             : typeof body.workstream_id === 'string'
               ? body.workstream_id
+              : undefined,
+        project_id:
+          body.project_id === null || body.project_id === undefined
+            ? undefined
+            : typeof body.project_id === 'string'
+              ? body.project_id
               : undefined,
         enquiry_id:
           body.enquiry_id === null || body.enquiry_id === undefined

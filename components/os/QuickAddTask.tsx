@@ -10,6 +10,7 @@ interface QuickAddTaskProps {
   columnId?: string | null
   account_id?: string | null
   contact_id?: string | null
+  project_id?: string | null
   isMasterTodo?: boolean
   placeholder?: string
   buttonLabel?: string
@@ -23,6 +24,7 @@ export default function QuickAddTask({
   columnId = null,
   account_id = null,
   contact_id = null,
+  project_id = null,
   isMasterTodo,
   placeholder = 'Add a task...',
   buttonLabel = 'Add',
@@ -55,6 +57,7 @@ export default function QuickAddTask({
           column_id: columnId,
           account_id,
           contact_id,
+          project_id,
           is_master_todo: isMasterTodo ?? !resolvedWorkstreamId,
         }),
       })

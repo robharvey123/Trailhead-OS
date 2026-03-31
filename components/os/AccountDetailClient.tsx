@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import AccountForm from './AccountForm'
+import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
 import { formatTaskSchedule } from '@/lib/os'
 import { calculateTotals } from '@/lib/types'
-import type { Workstream } from '@/lib/types'
+import type { ProjectListItem, Workstream } from '@/lib/types'
 import type { AccountDetail } from '@/lib/db/accounts'
 
 function formatMoney(value: number) {
@@ -20,9 +21,11 @@ function formatMoney(value: number) {
 export default function AccountDetailClient({
   initialAccount,
   workstreams,
+  projects,
 }: {
   initialAccount: AccountDetail
   workstreams: Workstream[]
+  projects: ProjectListItem[]
 }) {
   const router = useRouter()
   const [account, setAccount] = useState(initialAccount)
@@ -214,6 +217,15 @@ export default function AccountDetailClient({
               </div>
             )}
           </div>
+
+          <ProjectsSection
+            title="Projects"
+            description="Delivery work linked to this account."
+            projects={projects}
+            emptyMessage="No projects linked to this account yet."
+            actionHref={`/projects/new?account_id=${account.id}`}
+            actionLabel="New project"
+          />
 
           <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
             <div className="flex items-center justify-between gap-3">

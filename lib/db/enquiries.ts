@@ -8,7 +8,7 @@ async function getSupabase(client?: SupabaseClient) {
 }
 
 export async function getEnquiries(
-  filters: { status?: EnquiryStatus } = {},
+  filters: { status?: EnquiryStatus; account_id?: string; project_id?: string } = {},
   client?: SupabaseClient
 ): Promise<Enquiry[]> {
   const supabase = await getSupabase(client)
@@ -19,6 +19,14 @@ export async function getEnquiries(
 
   if (filters.status) {
     query = query.eq('status', filters.status)
+  }
+
+  if (filters.account_id) {
+    query = query.eq('account_id', filters.account_id)
+  }
+
+  if (filters.project_id) {
+    query = query.eq('project_id', filters.project_id)
   }
 
   const { data, error } = await query

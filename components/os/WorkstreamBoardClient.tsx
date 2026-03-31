@@ -6,9 +6,10 @@ import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } 
 import { CSS } from '@dnd-kit/utilities'
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from '@tanstack/react-table'
 import { formatTaskSchedule, getWorkstreamColourClasses } from '@/lib/os'
-import type { BoardColumn, TaskWithWorkstream, Workstream } from '@/lib/types'
+import type { BoardColumn, ProjectListItem, TaskWithWorkstream, Workstream } from '@/lib/types'
 import { apiFetch } from '@/lib/api-fetch'
 import PriorityBadge from './PriorityBadge'
+import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TaskCard from './TaskCard'
 import TaskSlideOver from './TaskSlideOver'
@@ -18,6 +19,7 @@ interface WorkstreamBoardClientProps {
   workstreams: Workstream[]
   columns: BoardColumn[]
   initialTasks: TaskWithWorkstream[]
+  projects: ProjectListItem[]
 }
 
 const columnHelper = createColumnHelper<TaskWithWorkstream>()
@@ -99,6 +101,7 @@ export default function WorkstreamBoardClient({
   workstreams,
   columns,
   initialTasks,
+  projects,
 }: WorkstreamBoardClientProps) {
   const [tasks, setTasks] = useState(initialTasks)
   const [selectedTask, setSelectedTask] = useState<TaskWithWorkstream | null>(null)
@@ -287,6 +290,15 @@ export default function WorkstreamBoardClient({
         </div>
       </div>
 
+      <ProjectsSection
+        title="Projects"
+        description="Delivery work currently running inside this workstream."
+        projects={projects}
+        emptyMessage="No projects linked to this workstream yet."
+        actionHref={`/projects/new?workstream_id=${workstream.id}`}
+        actionLabel="New project"
+      />
+
       {viewMode === 'board' ? (
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
           <div className="flex gap-4 overflow-x-auto pb-4">
@@ -392,6 +404,7 @@ export default function WorkstreamBoardClient({
         onClose={() => setSelectedTask(null)}
         task={selectedTask}
         workstreams={workstreams}
+        projects={projects}
         onSaved={(task) => {
           setTasks((current) => {
             const next = current.filter((entry) => entry.id !== task.id)

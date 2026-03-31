@@ -70,11 +70,6 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     marginBottom: 3,
   },
-  italicMuted: {
-    marginTop: 6,
-    color: '#64748b',
-    fontStyle: 'italic',
-  },
   title: {
     fontSize: 22,
     fontWeight: 700,
@@ -236,9 +231,6 @@ function QuoteDocument({ quote }: { quote: QuoteWithRelations }) {
           <Text style={styles.sectionTitle}>Prepared for:</Text>
           <Text style={styles.preparedForName}>{quote.account?.name ?? 'No account selected'}</Text>
           <Text style={styles.body}>{quote.contact?.name ?? 'No contact selected'}</Text>
-          {quote.ai_generated ? (
-            <Text style={styles.italicMuted}>AI-assisted estimate</Text>
-          ) : null}
         </View>
 
         <View style={styles.section}>

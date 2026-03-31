@@ -14,6 +14,8 @@ type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 type TaskRowWithJoin = Task & {
   workstreams: Pick<Workstream, 'slug' | 'label' | 'colour'> | null
+  projects: { name: string } | null
+  project_phases: { name: string } | null
 }
 
 function isMissingDueTimeColumnError(error: { message?: string } | null | undefined) {
@@ -32,9 +34,12 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     column_id: row.column_id,
     account_id: row.account_id,
     contact_id: row.contact_id,
+    project_id: row.project_id,
+    phase_id: row.phase_id,
     title: row.title,
     description: row.description,
     priority: row.priority,
+    start_date: row.start_date,
     due_date: row.due_date,
     due_time: row.due_time ?? null,
     is_master_todo: row.is_master_todo,
@@ -46,6 +51,8 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     workstream_slug: row.workstreams?.slug ?? null,
     workstream_label: row.workstreams?.label ?? null,
     workstream_colour: row.workstreams?.colour ?? null,
+    project_name: row.projects?.name ?? null,
+    phase_name: row.project_phases?.name ?? null,
   }
 }
 
@@ -75,7 +82,7 @@ async function runTasksQuery(
 ) {
   let query = supabase
     .from('tasks')
-    .select('*, workstreams(slug, label, colour)')
+    .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
     .order('due_date', { ascending: true, nullsFirst: false })
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
@@ -102,6 +109,10 @@ async function runTasksQuery(
 
   if (filters.account_id) {
     query = query.eq('account_id', filters.account_id)
+  }
+
+  if (filters.project_id) {
+    query = query.eq('project_id', filters.project_id)
   }
 
   if (typeof filters.is_master_todo === 'boolean') {
@@ -178,9 +189,11 @@ export async function createTask(
     column_id: columnId,
     account_id: input.account_id ?? null,
     contact_id: input.contact_id ?? null,
+    project_id: input.project_id ?? null,
     title,
     description: input.description?.trim() || null,
     priority: input.priority ?? 'medium',
+    start_date: input.start_date ?? null,
     due_date: input.due_date ?? null,
     due_time: input.due_time ?? null,
     is_master_todo: input.is_master_todo ?? false,
@@ -191,7 +204,7 @@ export async function createTask(
   let { data, error } = await supabase
     .from('tasks')
     .insert(payload)
-    .select('*, workstreams(slug, label, colour)')
+    .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
     .single()
 
   if (isMissingDueTimeColumnError(error)) {
@@ -200,7 +213,7 @@ export async function createTask(
     ;({ data, error } = await supabase
       .from('tasks')
       .insert(fallbackPayload)
-      .select('*, workstreams(slug, label, colour)')
+      .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
       .single())
   }
 
@@ -238,6 +251,10 @@ export async function updateTask(
     patch.account_id = input.account_id
   }
 
+  if (input.project_id !== undefined) {
+    patch.project_id = input.project_id
+  }
+
   if (input.title !== undefined) {
     const title = input.title.trim()
     if (!title) {
@@ -252,6 +269,10 @@ export async function updateTask(
 
   if (input.priority !== undefined) {
     patch.priority = input.priority
+  }
+
+  if (input.start_date !== undefined) {
+    patch.start_date = input.start_date
   }
 
   if (input.due_date !== undefined) {
@@ -282,7 +303,7 @@ export async function updateTask(
     .from('tasks')
     .update(patch)
     .eq('id', id)
-    .select('*, workstreams(slug, label, colour)')
+    .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
     .single()
 
   if (isMissingDueTimeColumnError(error) && 'due_time' in patch) {
@@ -292,7 +313,7 @@ export async function updateTask(
       .from('tasks')
       .update(fallbackPatch)
       .eq('id', id)
-      .select('*, workstreams(slug, label, colour)')
+      .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
       .single())
   }
 

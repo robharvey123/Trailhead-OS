@@ -15,6 +15,7 @@ import { formatTaskDate, formatTaskSchedule } from '@/lib/os'
 import type {
   Account,
   Contact,
+  ProjectListItem,
   TaskPriority,
   TaskWithWorkstream,
   Workstream,
@@ -29,6 +30,7 @@ interface MasterTaskListClientProps {
   workstreams: Workstream[]
   accounts: Account[]
   contacts: Contact[]
+  projects: ProjectListItem[]
 }
 
 const PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
@@ -45,6 +47,7 @@ export default function MasterTaskListClient({
   workstreams,
   accounts,
   contacts,
+  projects,
 }: MasterTaskListClientProps) {
   const [tasks, setTasks] = useState(initialTasks)
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table')
@@ -57,6 +60,7 @@ export default function MasterTaskListClient({
   const [workstreamFilter, setWorkstreamFilter] = useState<string[]>([])
   const [accountFilter, setAccountFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string[]>([])
+  const [projectFilter, setProjectFilter] = useState('')
   const [dueFrom, setDueFrom] = useState('')
   const [dueTo, setDueTo] = useState('')
   const [masterOnly, setMasterOnly] = useState(false)
@@ -70,6 +74,10 @@ export default function MasterTaskListClient({
   const contactsById = useMemo(
     () => new Map(contacts.map((contact) => [contact.id, contact])),
     [contacts]
+  )
+  const projectsById = useMemo(
+    () => new Map(projects.map((project) => [project.id, project])),
+    [projects]
   )
   const workstreamsById = useMemo(
     () => new Map(workstreams.map((workstream) => [workstream.id, workstream])),
@@ -87,6 +95,9 @@ export default function MasterTaskListClient({
           return false
         }
         if (accountFilter && task.account_id !== accountFilter) {
+          return false
+        }
+        if (projectFilter && task.project_id !== projectFilter) {
           return false
         }
         if (
@@ -111,6 +122,7 @@ export default function MasterTaskListClient({
       dueFrom,
       dueTo,
       masterOnly,
+      projectFilter,
       priorityFilter,
       tasks,
       workstreamFilter,
@@ -120,6 +132,7 @@ export default function MasterTaskListClient({
   const hasActiveFilters =
     workstreamFilter.length > 0 ||
     Boolean(accountFilter) ||
+    Boolean(projectFilter) ||
     priorityFilter.length > 0 ||
     Boolean(dueFrom) ||
     Boolean(dueTo) ||
@@ -128,6 +141,7 @@ export default function MasterTaskListClient({
   function clearAllFilters() {
     setWorkstreamFilter([])
     setAccountFilter('')
+    setProjectFilter('')
     setPriorityFilter([])
     setDueFrom('')
     setDueTo('')
@@ -190,6 +204,16 @@ export default function MasterTaskListClient({
             colour={info.row.original.workstream_colour}
           />
         ),
+      }),
+      columnHelper.display({
+        id: 'project',
+        header: 'Project',
+        cell: (info) => {
+          const project = info.row.original.project_id
+            ? projectsById.get(info.row.original.project_id)
+            : undefined
+          return <span className="text-slate-300">{project?.name ?? info.row.original.project_name ?? '—'}</span>
+        },
       }),
       columnHelper.display({
         id: 'account',
@@ -366,6 +390,24 @@ export default function MasterTaskListClient({
             {accounts.map((account) => (
               <option key={account.id} value={account.id}>
                 {account.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+            Project
+          </span>
+          <select
+            value={projectFilter}
+            onChange={(event) => setProjectFilter(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          >
+            <option value="">All projects</option>
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
               </option>
             ))}
           </select>
@@ -679,6 +721,7 @@ export default function MasterTaskListClient({
         workstreams={workstreams}
         accounts={accounts}
         contacts={contacts}
+        projects={projects}
         onSaved={(task) => {
           mergeTask(task)
           setSelectedTask(task)

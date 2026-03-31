@@ -221,6 +221,7 @@ export async function PATCH(
     'account_id',
     'contact_id',
     'workstream_id',
+    'project_id',
     'enquiry_id',
     'pricing_tier_id',
     'converted_invoice_id',

@@ -9,11 +9,13 @@ import type {
   Account,
   Contact,
   Note,
+  ProjectListItem,
   TaskPriority,
   TaskWithWorkstream,
   Workstream,
 } from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
+import ProjectSelector from './ProjectSelector'
 import SearchSelect, { type SearchSelectOption } from './SearchSelect'
 import WorkstreamBadge from './WorkstreamBadge'
 
@@ -28,6 +30,7 @@ interface TaskSlideOverProps {
   defaultColumnId?: string | null
   accounts?: Account[]
   contacts?: Contact[]
+  projects?: ProjectListItem[]
   onSaved?: (task: TaskWithWorkstream) => void
   onDeleted?: (taskId: string) => void
 }
@@ -41,6 +44,7 @@ export default function TaskSlideOver({
   defaultColumnId = null,
   accounts = [],
   contacts = [],
+  projects = [],
   onSaved,
   onDeleted,
 }: TaskSlideOverProps) {
@@ -55,6 +59,7 @@ export default function TaskSlideOver({
   const [workstreamId, setWorkstreamId] = useState<string>('')
   const [accountId, setAccountId] = useState<string>('')
   const [contactId, setContactId] = useState<string>('')
+  const [projectId, setProjectId] = useState<string>('')
   const [isMasterTodo, setIsMasterTodo] = useState(true)
   const [tags, setTags] = useState('')
   const [saving, setSaving] = useState(false)
@@ -78,6 +83,7 @@ export default function TaskSlideOver({
     setWorkstreamId(task?.workstream_id ?? defaultWorkstreamId ?? '')
     setAccountId(task?.account_id ?? '')
     setContactId(task?.contact_id ?? '')
+    setProjectId(task?.project_id ?? '')
     setIsMasterTodo(task?.is_master_todo ?? !defaultWorkstreamId)
     setTags(task?.tags.join(', ') ?? '')
     setError(null)
@@ -127,6 +133,20 @@ export default function TaskSlideOver({
     }
   }, [accountId, contactId, contacts])
 
+  useEffect(() => {
+    if (!projectId) {
+      return
+    }
+
+    const projectMatchesWorkstream = projects.some(
+      (project) => project.id === projectId && (!workstreamId || project.workstream_id === workstreamId)
+    )
+
+    if (!projectMatchesWorkstream) {
+      setProjectId('')
+    }
+  }, [projectId, projects, workstreamId])
+
   if (!open) {
     return null
   }
@@ -151,6 +171,7 @@ export default function TaskSlideOver({
         column_id: task?.column_id ?? defaultColumnId ?? null,
         account_id: accountId || null,
         contact_id: contactId || null,
+        project_id: projectId || null,
         is_master_todo: isMasterTodo,
         tags: tags
           .split(',')
@@ -249,6 +270,9 @@ export default function TaskSlideOver({
       label: contact.name,
       meta: contact.company ?? contact.email ?? null,
     }))
+  const projectOptions = projects.filter(
+    (project) => !workstreamId || project.workstream_id === workstreamId
+  )
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/65">
@@ -391,6 +415,13 @@ export default function TaskSlideOver({
               maxVisibleOptions={100}
             />
           </div>
+
+          <ProjectSelector
+            label="Project"
+            value={projectId}
+            projects={projectOptions}
+            onChange={setProjectId}
+          />
 
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-slate-300">Tags</span>

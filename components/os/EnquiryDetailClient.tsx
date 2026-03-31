@@ -9,7 +9,7 @@ import EnquiryDetailActions from './EnquiryDetailActions'
 import RecordEmailDialog from './RecordEmailDialog'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
-import type { Account, Enquiry, EnquiryStatus } from '@/lib/types'
+import type { Account, Enquiry, EnquiryStatus, ProjectDetail, ProjectListItem } from '@/lib/types'
 
 type EnquiryFieldKey =
   | 'biz_name'
@@ -37,6 +37,7 @@ type FieldKind = 'text' | 'email' | 'tel' | 'textarea' | 'list'
 type EnquiryFormState = Record<EnquiryFieldKey, string> & {
   status: EnquiryStatus
   account_id: string
+  project_id: string
 }
 
 const ENQUIRY_STATUSES: EnquiryStatus[] = ['new', 'reviewed', 'converted']
@@ -95,6 +96,7 @@ function buildFormState(enquiry: Enquiry): EnquiryFormState {
     extra: enquiry.extra ?? '',
     status: enquiry.status,
     account_id: enquiry.account_id ?? '',
+    project_id: enquiry.project_id ?? '',
   }
 }
 
@@ -194,10 +196,14 @@ export default function EnquiryDetailClient({
   initialEnquiry,
   generatedQuoteId,
   accounts,
+  projects,
+  linkedProject,
 }: {
   initialEnquiry: Enquiry
   generatedQuoteId: string | null
   accounts: Account[]
+  projects: ProjectListItem[]
+  linkedProject: ProjectDetail | null
 }) {
   const router = useRouter()
   const [enquiry, setEnquiry] = useState(initialEnquiry)
@@ -210,6 +216,31 @@ export default function EnquiryDetailClient({
     () => accounts.find((account) => account.id === enquiry.account_id) ?? null,
     [accounts, enquiry.account_id]
   )
+  const linkedProjectSummary = useMemo(
+    () => projects.find((project) => project.id === enquiry.project_id) ?? null,
+    [projects, enquiry.project_id]
+  )
+  const createProjectHref = useMemo(() => {
+    const searchParams = new URLSearchParams()
+
+    if (enquiry.account_id) {
+      searchParams.set('account_id', enquiry.account_id)
+    }
+
+    searchParams.set('name', `${enquiry.biz_name} project`)
+
+    const briefParts = [
+      enquiry.project_type ? `Project type: ${enquiry.project_type}` : null,
+      enquiry.pain_points ? `Pain points: ${enquiry.pain_points}` : null,
+      enquiry.extra ? `Extra context: ${enquiry.extra}` : null,
+    ].filter(Boolean)
+
+    if (briefParts.length > 0) {
+      searchParams.set('brief', briefParts.join('\n'))
+    }
+
+    return `/projects/new?${searchParams.toString()}`
+  }, [enquiry.account_id, enquiry.biz_name, enquiry.extra, enquiry.pain_points, enquiry.project_type])
 
   function resetForm() {
     setForm(buildFormState(enquiry))
@@ -258,6 +289,7 @@ export default function EnquiryDetailClient({
             extra: form.extra,
             status: form.status,
             account_id: form.account_id || null,
+            project_id: form.project_id || null,
           }),
         }
       )
@@ -290,6 +322,14 @@ export default function EnquiryDetailClient({
                 className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 transition hover:border-slate-500"
               >
                 {linkedAccount.name}
+              </Link>
+            ) : null}
+            {linkedProjectSummary ? (
+              <Link
+                href={`/projects/records/${linkedProjectSummary.id}`}
+                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 transition hover:border-slate-500"
+              >
+                {linkedProjectSummary.name}
               </Link>
             ) : null}
           </div>
@@ -355,7 +395,7 @@ export default function EnquiryDetailClient({
             </div>
 
             {editing ? (
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
                 <label className="space-y-2">
                   <span className="text-sm text-slate-300">Status</span>
                   <select
@@ -393,9 +433,27 @@ export default function EnquiryDetailClient({
                   placeholder="Search accounts"
                   emptyLabel="No account"
                 />
+
+                <SearchSelect
+                  label="Linked project"
+                  value={form.project_id}
+                  options={projects.map((project) => ({
+                    value: project.id,
+                    label: project.name,
+                    meta: project.account?.name ?? project.workstream?.label ?? null,
+                  }))}
+                  onChange={(value) =>
+                    setForm((current) => ({
+                      ...current,
+                      project_id: value,
+                    }))
+                  }
+                  placeholder="Search projects"
+                  emptyLabel="No project"
+                />
               </div>
             ) : (
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
                 <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Status</p>
                   <div className="mt-3">
@@ -414,6 +472,29 @@ export default function EnquiryDetailClient({
                       </Link>
                     ) : (
                       <p className="text-sm text-slate-200">—</p>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Linked project</p>
+                  <div className="mt-3">
+                    {linkedProjectSummary ? (
+                      <Link
+                        href={`/projects/records/${linkedProjectSummary.id}`}
+                        className="text-sm text-sky-300 transition hover:text-sky-200"
+                      >
+                        {linkedProjectSummary.name}
+                      </Link>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-slate-200">—</p>
+                        <Link
+                          href={createProjectHref}
+                          className="inline-flex rounded-2xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-slate-500"
+                        >
+                          Create linked project
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -462,6 +543,8 @@ export default function EnquiryDetailClient({
             enquiry={enquiry}
             generatedQuoteId={generatedQuoteId}
             generatedQuoteEmail={enquiry.contact_email}
+            linkedProject={linkedProject}
+            createProjectHref={createProjectHref}
           />
         </div>
       </div>
