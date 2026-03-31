@@ -28,10 +28,12 @@ export async function POST(request: NextRequest) {
       typeof entry !== 'object' ||
       typeof entry.id !== 'string' ||
       typeof entry.sort_order !== 'number' ||
-      (entry.column_id !== undefined && entry.column_id !== null && typeof entry.column_id !== 'string')
+      (entry.order_index !== undefined && typeof entry.order_index !== 'number') ||
+      (entry.column_id !== undefined && entry.column_id !== null && typeof entry.column_id !== 'string') ||
+      (entry.status !== undefined && typeof entry.status !== 'string')
     ) {
       return NextResponse.json(
-        { error: 'Each update must include id, sort_order, and an optional column_id' },
+        { error: 'Each update must include id, sort_order, and optional order_index, column_id, and status fields' },
         { status: 400 }
       )
     }
@@ -39,7 +41,9 @@ export async function POST(request: NextRequest) {
     updates.push({
       id: entry.id,
       sort_order: entry.sort_order,
+      order_index: entry.order_index ?? entry.sort_order,
       column_id: entry.column_id ?? null,
+      status: entry.status ?? undefined,
     })
   }
 

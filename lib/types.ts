@@ -7,7 +7,9 @@ export type WorkstreamColour =
   | 'blue'
   | string
 
-export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent' | 'critical'
+export type ProjectTaskStatus = 'todo' | 'in_progress' | 'blocked' | 'done' | 'cancelled'
+export type ProjectMilestoneStatus = 'pending' | 'achieved' | 'missed'
 export type ContactStatus = 'lead' | 'active' | 'inactive' | 'archived'
 export type EnquiryStatus =
   | 'new'
@@ -408,8 +410,13 @@ export interface ProjectMilestone {
   id: string
   project_id: string
   name: string
+  title: string
   description: string | null
   date: string
+  due_date: string
+  status: ProjectMilestoneStatus
+  colour: string
+  order_index: number
   completed: boolean
   created_at: string
   updated_at: string
@@ -422,12 +429,15 @@ export interface Project {
   owner_id: string | null
   pricing_tier_id: string | null
   name: string
+  title: string
   description: string | null
   brief: string | null
   status: ProjectStatus
   start_date: string | null
   end_date: string | null
   estimated_end_date: string | null
+  colour: string | null
+  owner: string | null
   ai_planned: boolean
   created_at: string
   updated_at: string
@@ -448,6 +458,11 @@ export interface ProjectDetail extends Project {
   phases: ProjectPhase[]
   milestones: ProjectMilestone[]
   tasks: TaskWithWorkstream[]
+  task_checklists: TaskChecklistItem[]
+  task_attachments: TaskAttachment[]
+  task_time_logs: TaskTimeLog[]
+  task_activity: TaskActivityEntry[]
+  task_dependencies: TaskDependency[]
   contacts: Contact[]
   enquiries: Enquiry[]
 }
@@ -460,16 +475,75 @@ export interface Task {
   contact_id: string | null
   project_id: string | null
   phase_id: string | null
+  parent_task_id: string | null
   title: string
   description: string | null
+  status: ProjectTaskStatus
   priority: TaskPriority
+  owner: string | null
   start_date: string | null
   due_date: string | null
   due_time: string | null
+  estimated_hours: number | null
+  actual_hours: number | null
   is_master_todo: boolean
   tags: string[]
   sort_order: number
+  order_index: number
+  custom_fields: Record<string, string | number | boolean | null>
   completed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskChecklistItem {
+  id: string
+  task_id: string
+  title: string
+  is_complete: boolean
+  order_index: number
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskAttachment {
+  id: string
+  task_id: string
+  filename: string
+  storage_path: string
+  file_size: number | null
+  mime_type: string | null
+  uploaded_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskTimeLog {
+  id: string
+  task_id: string
+  description: string | null
+  hours: number
+  logged_date: string
+  logged_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskActivityEntry {
+  id: string
+  task_id: string
+  type: 'comment' | 'status_change' | 'assignment' | 'priority_change' | 'field_update'
+  content: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TaskDependency {
+  id: string
+  task_id: string
+  depends_on_task_id: string
+  type: 'blocks' | 'blocked_by'
   created_at: string
   updated_at: string
 }
@@ -509,6 +583,7 @@ export interface TaskWithWorkstream extends Task {
   workstream_label: string | null
   workstream_colour: string | null
   project_name: string | null
+  project_title: string | null
   phase_name: string | null
 }
 
@@ -566,15 +641,22 @@ export interface CreateTaskInput {
   account_id?: string | null
   contact_id?: string | null
   project_id?: string | null
+  parent_task_id?: string | null
   title: string
   description?: string | null
+  status?: ProjectTaskStatus
   priority?: TaskPriority
+  owner?: string | null
   start_date?: string | null
   due_date?: string | null
   due_time?: string | null
+  estimated_hours?: number | null
+  actual_hours?: number | null
   is_master_todo?: boolean
   tags?: string[]
   sort_order?: number
+  order_index?: number
+  custom_fields?: Record<string, string | number | boolean | null>
 }
 
 export interface UpdateTaskInput {
@@ -583,22 +665,31 @@ export interface UpdateTaskInput {
   account_id?: string | null
   contact_id?: string | null
   project_id?: string | null
+  parent_task_id?: string | null
   title?: string
   description?: string | null
+  status?: ProjectTaskStatus
   priority?: TaskPriority
+  owner?: string | null
   start_date?: string | null
   due_date?: string | null
   due_time?: string | null
+  estimated_hours?: number | null
+  actual_hours?: number | null
   is_master_todo?: boolean
   tags?: string[]
   sort_order?: number
+  order_index?: number
+  custom_fields?: Record<string, string | number | boolean | null>
   completed_at?: string | null
 }
 
 export interface ReorderTaskUpdate {
   id: string
   sort_order: number
+  order_index?: number
   column_id?: string | null
+  status?: ProjectTaskStatus
 }
 
 export interface BlogPost {

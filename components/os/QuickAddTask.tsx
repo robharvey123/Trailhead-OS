@@ -11,6 +11,9 @@ interface QuickAddTaskProps {
   account_id?: string | null
   contact_id?: string | null
   project_id?: string | null
+  parent_task_id?: string | null
+  status?: string | null
+  order_index?: number
   isMasterTodo?: boolean
   placeholder?: string
   buttonLabel?: string
@@ -25,6 +28,9 @@ export default function QuickAddTask({
   account_id = null,
   contact_id = null,
   project_id = null,
+  parent_task_id = null,
+  status = null,
+  order_index = 0,
   isMasterTodo,
   placeholder = 'Add a task...',
   buttonLabel = 'Add',
@@ -58,6 +64,9 @@ export default function QuickAddTask({
           account_id,
           contact_id,
           project_id,
+          parent_task_id,
+          status,
+          order_index,
           is_master_todo: isMasterTodo ?? !resolvedWorkstreamId,
         }),
       })

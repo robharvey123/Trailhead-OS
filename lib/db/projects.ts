@@ -3,12 +3,17 @@ import type {
   Account,
   Contact,
   Project,
+  TaskActivityEntry,
+  TaskAttachment,
+  TaskChecklistItem,
+  TaskDependency,
   ProjectDetail,
   ProjectListItem,
   ProjectMilestone,
   ProjectPhase,
   ProjectStatus,
   QuoteScope,
+  TaskTimeLog,
   TaskWithWorkstream,
   Workstream,
 } from '@/lib/types'
@@ -32,20 +37,27 @@ type TaskProjectRow = {
   contact_id: string | null
   project_id: string | null
   phase_id: string | null
+  parent_task_id: string | null
   title: string
   description: string | null
+  status: TaskWithWorkstream['status']
   priority: TaskWithWorkstream['priority']
+  owner: string | null
   start_date: string | null
   due_date: string | null
   due_time: string | null
+  estimated_hours: number | null
+  actual_hours: number | null
   is_master_todo: boolean
   tags: string[] | null
   sort_order: number
+  order_index: number
+  custom_fields: TaskWithWorkstream['custom_fields'] | null
   completed_at: string | null
   created_at: string
   updated_at: string
   workstreams: RelationValue<Pick<Workstream, 'slug' | 'label' | 'colour'>>
-  projects: RelationValue<{ name: string }>
+  projects: RelationValue<{ name: string; title: string | null }>
   project_phases: RelationValue<{ name: string }>
 }
 
@@ -101,12 +113,15 @@ function mapProjectRow(row: ProjectRow): Project {
     owner_id: row.owner_id,
     pricing_tier_id: row.pricing_tier_id,
     name: row.name,
+    title: row.title ?? row.name,
     description: row.description,
     brief: row.brief,
     status: row.status,
     start_date: row.start_date,
     end_date: row.end_date,
     estimated_end_date: row.estimated_end_date,
+    colour: row.colour ?? null,
+    owner: row.owner ?? null,
     ai_planned: row.ai_planned,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -149,15 +164,22 @@ function mapTaskRow(row: TaskProjectRow): TaskWithWorkstream {
     contact_id: row.contact_id,
     project_id: row.project_id,
     phase_id: row.phase_id,
+    parent_task_id: row.parent_task_id,
     title: row.title,
     description: row.description,
+    status: row.status,
     priority: row.priority,
+    owner: row.owner,
     start_date: row.start_date,
     due_date: row.due_date,
     due_time: row.due_time,
+    estimated_hours: row.estimated_hours,
+    actual_hours: row.actual_hours,
     is_master_todo: row.is_master_todo,
     tags: row.tags ?? [],
     sort_order: row.sort_order,
+    order_index: row.order_index,
+    custom_fields: row.custom_fields ?? {},
     completed_at: row.completed_at,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -165,6 +187,7 @@ function mapTaskRow(row: TaskProjectRow): TaskWithWorkstream {
     workstream_label: workstream?.label ?? null,
     workstream_colour: workstream?.colour ?? null,
     project_name: project?.name ?? null,
+    project_title: project?.title ?? project?.name ?? null,
     phase_name: phase?.name ?? null,
   }
 }
@@ -231,7 +254,7 @@ export async function getProjects(
   const [tasksResult, contactsResult, milestonesResult] = await Promise.all([
     supabase
       .from('tasks')
-      .select('id, workstream_id, column_id, account_id, contact_id, project_id, phase_id, title, description, priority, start_date, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour), projects(name), project_phases(name)')
+      .select('id, workstream_id, column_id, account_id, contact_id, project_id, phase_id, parent_task_id, title, description, status, priority, owner, start_date, due_date, due_time, estimated_hours, actual_hours, is_master_todo, tags, sort_order, order_index, custom_fields, completed_at, created_at, updated_at, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
       .in('project_id', projectIds),
     supabase
       .from('project_contacts')
@@ -310,7 +333,8 @@ export async function getProjectById(
       .from('project_milestones')
       .select('*')
       .eq('project_id', id)
-      .order('date', { ascending: true }),
+      .order('order_index', { ascending: true })
+      .order('due_date', { ascending: true }),
     getTasks({ project_id: id, include_completed: true }, supabase),
     supabase
       .from('project_contacts')
@@ -319,6 +343,45 @@ export async function getProjectById(
       .order('created_at', { ascending: false }),
     getEnquiries({ project_id: id }, supabase),
   ])
+
+  const taskIds = tasks.map((task) => task.id)
+
+  const [checklistsResult, attachmentsResult, timeLogsResult, activityResult, dependenciesResult] =
+    taskIds.length > 0
+      ? await Promise.all([
+          supabase
+            .from('task_checklists')
+            .select('*')
+            .in('task_id', taskIds)
+            .order('order_index', { ascending: true }),
+          supabase
+            .from('task_attachments')
+            .select('*')
+            .in('task_id', taskIds)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('task_time_logs')
+            .select('*')
+            .in('task_id', taskIds)
+            .order('logged_date', { ascending: false }),
+          supabase
+            .from('task_activity')
+            .select('*')
+            .in('task_id', taskIds)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('task_dependencies')
+            .select('*')
+            .in('task_id', taskIds)
+            .order('created_at', { ascending: false }),
+        ])
+      : [
+          { data: [], error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+        ]
 
   if (phasesResult.error) {
     throw new Error(phasesResult.error.message || 'Failed to load project phases')
@@ -332,6 +395,26 @@ export async function getProjectById(
     throw new Error(contactsResult.error.message || 'Failed to load project contacts')
   }
 
+  if (checklistsResult.error) {
+    throw new Error(checklistsResult.error.message || 'Failed to load task checklists')
+  }
+
+  if (attachmentsResult.error) {
+    throw new Error(attachmentsResult.error.message || 'Failed to load task attachments')
+  }
+
+  if (timeLogsResult.error) {
+    throw new Error(timeLogsResult.error.message || 'Failed to load task time logs')
+  }
+
+  if (activityResult.error) {
+    throw new Error(activityResult.error.message || 'Failed to load task activity')
+  }
+
+  if (dependenciesResult.error) {
+    throw new Error(dependenciesResult.error.message || 'Failed to load task dependencies')
+  }
+
   return {
     ...mapProjectRow(data as ProjectRow),
     workstream: (data as ProjectRow).workstreams,
@@ -339,6 +422,11 @@ export async function getProjectById(
     phases: (phasesResult.data ?? []) as ProjectPhase[],
     milestones: (milestonesResult.data ?? []) as ProjectMilestone[],
     tasks,
+    task_checklists: (checklistsResult.data ?? []) as TaskChecklistItem[],
+    task_attachments: (attachmentsResult.data ?? []) as TaskAttachment[],
+    task_time_logs: (timeLogsResult.data ?? []) as TaskTimeLog[],
+    task_activity: (activityResult.data ?? []) as TaskActivityEntry[],
+    task_dependencies: (dependenciesResult.data ?? []) as TaskDependency[],
     contacts: ((contactsResult.data ?? []) as ProjectContactRow[]).flatMap((item) =>
       firstRelation(item.contacts) ? [firstRelation(item.contacts) as Contact] : []
     ),

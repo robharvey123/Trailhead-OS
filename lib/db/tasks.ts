@@ -14,7 +14,7 @@ type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 type TaskRowWithJoin = Task & {
   workstreams: Pick<Workstream, 'slug' | 'label' | 'colour'> | null
-  projects: { name: string } | null
+  projects: { name: string; title: string | null } | null
   project_phases: { name: string } | null
 }
 
@@ -36,15 +36,22 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     contact_id: row.contact_id,
     project_id: row.project_id,
     phase_id: row.phase_id,
+    parent_task_id: row.parent_task_id,
     title: row.title,
     description: row.description,
+    status: row.status,
     priority: row.priority,
+    owner: row.owner,
     start_date: row.start_date,
     due_date: row.due_date,
     due_time: row.due_time ?? null,
+    estimated_hours: row.estimated_hours,
+    actual_hours: row.actual_hours,
     is_master_todo: row.is_master_todo,
     tags: row.tags ?? [],
     sort_order: row.sort_order,
+    order_index: row.order_index,
+    custom_fields: row.custom_fields ?? {},
     completed_at: row.completed_at,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -52,6 +59,7 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     workstream_label: row.workstreams?.label ?? null,
     workstream_colour: row.workstreams?.colour ?? null,
     project_name: row.projects?.name ?? null,
+    project_title: row.projects?.title ?? row.projects?.name ?? null,
     phase_name: row.project_phases?.name ?? null,
   }
 }
@@ -82,8 +90,9 @@ async function runTasksQuery(
 ) {
   let query = supabase
     .from('tasks')
-    .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
+    .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
     .order('due_date', { ascending: true, nullsFirst: false })
+    .order('order_index', { ascending: true })
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
 
@@ -190,21 +199,28 @@ export async function createTask(
     account_id: input.account_id ?? null,
     contact_id: input.contact_id ?? null,
     project_id: input.project_id ?? null,
+    parent_task_id: input.parent_task_id ?? null,
     title,
     description: input.description?.trim() || null,
+    status: input.status ?? 'todo',
     priority: input.priority ?? 'medium',
+    owner: input.owner?.trim() || null,
     start_date: input.start_date ?? null,
     due_date: input.due_date ?? null,
     due_time: input.due_time ?? null,
+    estimated_hours: input.estimated_hours ?? null,
+    actual_hours: input.actual_hours ?? null,
     is_master_todo: input.is_master_todo ?? false,
     tags: input.tags ?? [],
     sort_order: input.sort_order ?? 0,
+    order_index: input.order_index ?? input.sort_order ?? 0,
+    custom_fields: input.custom_fields ?? {},
   }
 
   let { data, error } = await supabase
     .from('tasks')
     .insert(payload)
-    .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
+    .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
     .single()
 
   if (isMissingDueTimeColumnError(error)) {
@@ -213,7 +229,7 @@ export async function createTask(
     ;({ data, error } = await supabase
       .from('tasks')
       .insert(fallbackPayload)
-      .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
+      .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
       .single())
   }
 
@@ -255,6 +271,10 @@ export async function updateTask(
     patch.project_id = input.project_id
   }
 
+  if (input.parent_task_id !== undefined) {
+    patch.parent_task_id = input.parent_task_id
+  }
+
   if (input.title !== undefined) {
     const title = input.title.trim()
     if (!title) {
@@ -271,6 +291,14 @@ export async function updateTask(
     patch.priority = input.priority
   }
 
+  if (input.status !== undefined) {
+    patch.status = input.status
+  }
+
+  if (input.owner !== undefined) {
+    patch.owner = input.owner?.trim() || null
+  }
+
   if (input.start_date !== undefined) {
     patch.start_date = input.start_date
   }
@@ -281,6 +309,14 @@ export async function updateTask(
 
   if (input.due_time !== undefined) {
     patch.due_time = input.due_time
+  }
+
+  if (input.estimated_hours !== undefined) {
+    patch.estimated_hours = input.estimated_hours
+  }
+
+  if (input.actual_hours !== undefined) {
+    patch.actual_hours = input.actual_hours
   }
 
   if (input.is_master_todo !== undefined) {
@@ -295,6 +331,14 @@ export async function updateTask(
     patch.sort_order = input.sort_order
   }
 
+  if (input.order_index !== undefined) {
+    patch.order_index = input.order_index
+  }
+
+  if (input.custom_fields !== undefined) {
+    patch.custom_fields = input.custom_fields
+  }
+
   if (input.completed_at !== undefined) {
     patch.completed_at = input.completed_at
   }
@@ -303,7 +347,7 @@ export async function updateTask(
     .from('tasks')
     .update(patch)
     .eq('id', id)
-    .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
+    .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
     .single()
 
   if (isMissingDueTimeColumnError(error) && 'due_time' in patch) {
@@ -313,7 +357,7 @@ export async function updateTask(
       .from('tasks')
       .update(fallbackPatch)
       .eq('id', id)
-      .select('*, workstreams(slug, label, colour), projects(name), project_phases(name)')
+      .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
       .single())
   }
 
@@ -361,7 +405,9 @@ export async function reorderTasks(
         .from('tasks')
         .update({
           sort_order: update.sort_order,
+          order_index: update.order_index ?? update.sort_order,
           column_id: update.column_id ?? null,
+          ...(update.status ? { status: update.status } : {}),
         })
         .eq('id', update.id)
 

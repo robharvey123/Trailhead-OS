@@ -60,9 +60,18 @@ const WORKSTREAM_ACCENT_HEX: Record<string, string> = {
 
 const PRIORITY_TOKENS: Record<string, string> = {
   low: 'border-slate-600/60 bg-slate-800/80 text-slate-200',
-  medium: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-  high: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-  urgent: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
+  medium: 'border-amber-300/40 bg-amber-300/10 text-amber-100',
+  high: 'border-orange-400/40 bg-orange-400/10 text-orange-100',
+  urgent: 'border-rose-500/40 bg-rose-500/10 text-rose-100',
+  critical: 'border-red-500/40 bg-red-500/10 text-red-100',
+}
+
+const TASK_STATUS_TOKENS: Record<string, string> = {
+  todo: 'border-slate-500/40 bg-slate-500/10 text-slate-200',
+  in_progress: 'border-blue-500/40 bg-blue-500/10 text-blue-100',
+  blocked: 'border-red-400/40 bg-red-400/10 text-red-100',
+  done: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100',
+  cancelled: 'border-slate-300/30 bg-slate-300/10 text-slate-300 line-through',
 }
 
 export function resolveWorkstreamColour(value?: string | null) {
@@ -89,6 +98,14 @@ export function getPriorityClasses(priority?: string | null) {
   }
 
   return PRIORITY_TOKENS[priority] ?? PRIORITY_TOKENS.medium
+}
+
+export function getTaskStatusClasses(status?: string | null) {
+  if (!status) {
+    return TASK_STATUS_TOKENS.todo
+  }
+
+  return TASK_STATUS_TOKENS[status] ?? TASK_STATUS_TOKENS.todo
 }
 
 export function formatTaskDate(value?: string | null) {

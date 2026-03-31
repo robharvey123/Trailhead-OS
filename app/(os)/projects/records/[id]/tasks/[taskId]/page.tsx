@@ -3,12 +3,12 @@ import ProjectWorkspaceClient from '@/components/os/ProjectWorkspaceClient'
 import { getProjectById } from '@/lib/db/projects'
 import { createClient } from '@/lib/supabase/server'
 
-export default async function ProjectDetailPage({
+export default async function ProjectTaskDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string; taskId: string }>
 }) {
-  const { id } = await params
+  const { id, taskId } = await params
   const supabase = await createClient()
   const project = await getProjectById(id, supabase).catch(() => null)
 
@@ -16,5 +16,5 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
-  return <ProjectWorkspaceClient project={project} />
+  return <ProjectWorkspaceClient project={project} initialTaskId={taskId} />
 }
