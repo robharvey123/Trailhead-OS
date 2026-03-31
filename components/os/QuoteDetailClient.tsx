@@ -225,6 +225,25 @@ export default function QuoteDetailClient({
     }
   }
 
+  async function createProjectFromQuote(aiPlan: boolean) {
+    setLoadingAction(aiPlan ? 'create-project-ai' : 'create-project')
+    setError(null)
+
+    try {
+      const data = await apiFetch<{ project_id: string }>(`/api/quotes/${quoteState.id}/project`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ai_plan: aiPlan }),
+      })
+
+      router.push(`/projects/records/${data.project_id}`)
+      router.refresh()
+    } catch (projectError) {
+      setError(projectError instanceof Error ? projectError.message : 'Failed to create project from quote')
+      setLoadingAction(null)
+    }
+  }
+
   async function markReadyToSend() {
     await patchQuote({
       status: 'review',
@@ -687,14 +706,45 @@ export default function QuoteDetailClient({
               ) : null}
 
               {quoteState.status === 'accepted' ? (
-                <button
-                  type="button"
-                  onClick={convertToInvoice}
-                  disabled={loadingAction !== null}
-                  className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
-                >
-                  Convert to invoice
-                </button>
+                <>
+                  {!quoteState.project ? (
+                    <button
+                      type="button"
+                      onClick={() => void createProjectFromQuote(true)}
+                      disabled={loadingAction !== null}
+                      className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                    >
+                      {loadingAction === 'create-project-ai' ? 'Creating AI project...' : 'Create project with AI plan'}
+                    </button>
+                  ) : null}
+
+                  {!quoteState.project ? (
+                    <button
+                      type="button"
+                      onClick={() => void createProjectFromQuote(false)}
+                      disabled={loadingAction !== null}
+                      className="w-full rounded-2xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
+                    >
+                      {loadingAction === 'create-project' ? 'Creating project...' : 'Create project only'}
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/projects/records/${quoteState.project.id}`}
+                      className="block rounded-2xl border border-slate-700 px-4 py-3 text-center text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                    >
+                      View linked project
+                    </Link>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={convertToInvoice}
+                    disabled={loadingAction !== null}
+                    className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                  >
+                    Convert to invoice
+                  </button>
+                </>
               ) : null}
 
               {quoteState.status === 'converted' && quoteState.invoice ? (

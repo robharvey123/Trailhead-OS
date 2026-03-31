@@ -51,6 +51,38 @@ export default function DashboardClient({
     return groups
   }, {})
 
+  function getTaskHref(task: TaskWithWorkstream) {
+    if (task.project_id) {
+      return `/projects/records/${task.project_id}/tasks/${task.id}`
+    }
+
+    if (task.workstream_slug) {
+      return `/projects/${task.workstream_slug}`
+    }
+
+    return '/tasks'
+  }
+
+  function getUpcomingHref(item: DashboardUpcomingItem) {
+    if (item.type === 'task') {
+      return getTaskHref(item.data)
+    }
+
+    if (item.data.project_id) {
+      return `/projects/records/${item.data.project_id}`
+    }
+
+    return '/calendar'
+  }
+
+  function getNoteHref(note: NoteWithWorkstream) {
+    if (note.workstream_slug) {
+      return `/projects/${note.workstream_slug}`
+    }
+
+    return '/tasks'
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -91,7 +123,11 @@ export default function DashboardClient({
                   <h3 className="mb-3 text-xs uppercase tracking-[0.24em] text-slate-500">{group}</h3>
                   <div className="space-y-3">
                     {tasks.map((task) => (
-                      <div key={task.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
+                      <Link
+                        key={task.id}
+                        href={getTaskHref(task)}
+                        className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
+                      >
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-medium text-slate-100">{task.title}</p>
@@ -109,7 +145,7 @@ export default function DashboardClient({
                             colour={task.workstream_colour}
                           />
                         ) : null}
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -185,7 +221,11 @@ export default function DashboardClient({
                         if (item.type === 'task') {
                           const task = item.data
                           return (
-                            <div key={`task-${task.id}`} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
+                            <Link
+                              key={`task-${task.id}`}
+                              href={getTaskHref(task)}
+                              className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
+                            >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
                                   <p className="text-sm font-medium text-slate-100">{task.title}</p>
@@ -203,7 +243,7 @@ export default function DashboardClient({
                                   colour={task.workstream_colour}
                                 />
                               ) : null}
-                            </div>
+                            </Link>
                           )
                         }
 
@@ -213,9 +253,10 @@ export default function DashboardClient({
                         )
 
                         return (
-                          <div
+                          <Link
                             key={`event-${event.id}`}
-                            className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4"
+                            href={getUpcomingHref(item)}
+                            className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
                             style={{ borderLeftColor: event.colour || '#3B82F6', borderLeftWidth: '4px' }}
                           >
                             <p className="text-sm font-medium text-slate-100">{event.title}</p>
@@ -231,7 +272,7 @@ export default function DashboardClient({
                                 colour={workstream.colour}
                               />
                             ) : null}
-                          </div>
+                          </Link>
                         )
                       })}
                     </div>
@@ -254,7 +295,11 @@ export default function DashboardClient({
                 </p>
               ) : (
                 recentNotes.map((note) => (
-                  <article key={note.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
+                  <Link
+                    key={note.id}
+                    href={getNoteHref(note)}
+                    className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-700 hover:bg-slate-950"
+                  >
                     {note.workstream_label ? (
                       <WorkstreamBadge
                         label={note.workstream_label}
@@ -264,7 +309,7 @@ export default function DashboardClient({
                     ) : null}
                     <p className="mt-3 whitespace-pre-wrap text-sm text-slate-300">{note.body}</p>
                     <p className="mt-3 text-xs text-slate-500">{formatDateTime(note.updated_at)}</p>
-                  </article>
+                  </Link>
                 ))
               )}
             </div>

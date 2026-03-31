@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
-import { archiveProject, getProjectById, updateProject } from '@/lib/db/projects'
+import { archiveProject, deleteProject, getProjectById, updateProject } from '@/lib/db/projects'
 import type { ProjectStatus } from '@/lib/types'
 
 const PROJECT_STATUSES = new Set<ProjectStatus>([
@@ -115,7 +115,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await getAuthenticatedSupabase()
@@ -124,13 +124,19 @@ export async function DELETE(
   }
 
   const { id } = await params
+  const hardDelete = request.nextUrl.searchParams.get('hard') === 'true'
 
   try {
+    if (hardDelete) {
+      await deleteProject(id, auth.supabase)
+      return NextResponse.json({ deleted: true })
+    }
+
     const project = await archiveProject(id, auth.supabase)
     return NextResponse.json({ project })
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to archive project' },
+      { error: error instanceof Error ? error.message : hardDelete ? 'Failed to delete project' : 'Failed to archive project' },
       { status: 500 }
     )
   }

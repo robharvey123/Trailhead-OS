@@ -46,6 +46,8 @@ export default function ProjectForm({
     brief: initialProject?.brief ?? initialValues?.brief ?? '',
   })
   const [saving, setSaving] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const accountOptions = useMemo(
@@ -89,6 +91,60 @@ export default function ProjectForm({
       setError(saveError instanceof Error ? saveError.message : 'Failed to save project')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleArchive() {
+    if (!initialProject?.id || archiving || deleting) {
+      return
+    }
+
+    const confirmed = window.confirm('Archive this project? It will be moved to cancelled status but kept in the database.')
+    if (!confirmed) {
+      return
+    }
+
+    setArchiving(true)
+    setError(null)
+
+    try {
+      await apiFetch<{ project: Project }>(`/api/projects/${initialProject.id}`, {
+        method: 'DELETE',
+      })
+      router.push('/projects')
+      router.refresh()
+    } catch (archiveError) {
+      setError(archiveError instanceof Error ? archiveError.message : 'Failed to archive project')
+    } finally {
+      setArchiving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!initialProject?.id || archiving || deleting) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Permanently delete this project? Linked phases, milestones, and project contacts will be removed. Tasks will remain but will be detached from the project.'
+    )
+    if (!confirmed) {
+      return
+    }
+
+    setDeleting(true)
+    setError(null)
+
+    try {
+      await apiFetch<{ deleted: boolean }>(`/api/projects/${initialProject.id}?hard=true`, {
+        method: 'DELETE',
+      })
+      router.push('/projects')
+      router.refresh()
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete project')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -208,7 +264,7 @@ export default function ProjectForm({
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving || !form.name.trim() || !form.workstream_id}
+          disabled={saving || archiving || deleting || !form.name.trim() || !form.workstream_id}
           className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
         >
           {saving ? 'Saving...' : 'Save'}
@@ -220,6 +276,26 @@ export default function ProjectForm({
         >
           Cancel
         </button>
+        {initialProject ? (
+          <button
+            type="button"
+            onClick={() => void handleArchive()}
+            disabled={saving || archiving || deleting}
+            className="rounded-2xl border border-amber-500/30 px-5 py-3 text-sm font-medium text-amber-100 transition hover:border-amber-400 disabled:opacity-60"
+          >
+            {archiving ? 'Archiving...' : 'Archive project'}
+          </button>
+        ) : null}
+        {initialProject ? (
+          <button
+            type="button"
+            onClick={() => void handleDelete()}
+            disabled={saving || archiving || deleting}
+            className="rounded-2xl border border-rose-500/30 px-5 py-3 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+          >
+            {deleting ? 'Deleting...' : 'Delete permanently'}
+          </button>
+        ) : null}
       </div>
     </div>
   )

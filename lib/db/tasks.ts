@@ -14,7 +14,7 @@ type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 type TaskRowWithJoin = Task & {
   workstreams: Pick<Workstream, 'slug' | 'label' | 'colour'> | null
-  projects: { name: string; title: string | null } | null
+  projects: { name: string; title?: string | null } | null
   project_phases: { name: string } | null
 }
 
@@ -22,6 +22,30 @@ function isMissingDueTimeColumnError(error: { message?: string } | null | undefi
   const message = error?.message?.toLowerCase() ?? ''
   return message.includes('due_time') && message.includes('does not exist')
 }
+
+function isMissingTaskProjectManagementColumnError(error: { message?: string } | null | undefined) {
+  const message = error?.message?.toLowerCase() ?? ''
+
+  return (
+    (message.includes('does not exist') || message.includes('could not find')) &&
+    [
+      'title',
+      'status',
+      'owner',
+      'parent_task_id',
+      'estimated_hours',
+      'actual_hours',
+      'order_index',
+      'custom_fields',
+    ].some((column) => message.includes(column))
+  )
+}
+
+const TASK_SELECT_FULL =
+  '*, workstreams(slug, label, colour), projects(name, title), project_phases(name)'
+
+const TASK_SELECT_LEGACY =
+  'id, workstream_id, column_id, account_id, contact_id, project_id, phase_id, title, description, priority, start_date, due_date, due_time, is_master_todo, tags, sort_order, completed_at, created_at, updated_at, workstreams(slug, label, colour), projects(name), project_phases(name)'
 
 async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
@@ -35,22 +59,22 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     account_id: row.account_id,
     contact_id: row.contact_id,
     project_id: row.project_id,
-    phase_id: row.phase_id,
-    parent_task_id: row.parent_task_id,
+    phase_id: row.phase_id ?? null,
+    parent_task_id: row.parent_task_id ?? null,
     title: row.title,
     description: row.description,
-    status: row.status,
+    status: row.status ?? (row.completed_at ? 'done' : 'todo'),
     priority: row.priority,
-    owner: row.owner,
-    start_date: row.start_date,
+    owner: row.owner ?? null,
+    start_date: row.start_date ?? null,
     due_date: row.due_date,
     due_time: row.due_time ?? null,
-    estimated_hours: row.estimated_hours,
-    actual_hours: row.actual_hours,
+    estimated_hours: row.estimated_hours ?? null,
+    actual_hours: row.actual_hours ?? null,
     is_master_todo: row.is_master_todo,
     tags: row.tags ?? [],
     sort_order: row.sort_order,
-    order_index: row.order_index,
+    order_index: row.order_index ?? row.sort_order,
     custom_fields: row.custom_fields ?? {},
     completed_at: row.completed_at,
     created_at: row.created_at,
@@ -86,15 +110,18 @@ async function resolveDefaultColumnId(
 async function runTasksQuery(
   supabase: SupabaseClient,
   filters: TaskFilters,
-  options: { includeDueTimeOrder: boolean }
+  options: { includeDueTimeOrder: boolean; legacySchema?: boolean }
 ) {
   let query = supabase
     .from('tasks')
-    .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
+    .select(options.legacySchema ? TASK_SELECT_LEGACY : TASK_SELECT_FULL)
     .order('due_date', { ascending: true, nullsFirst: false })
-    .order('order_index', { ascending: true })
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
+
+  if (!options.legacySchema) {
+    query = query.order('order_index', { ascending: true })
+  }
 
   if (options.includeDueTimeOrder) {
     query = query.order('due_time', { ascending: true, nullsFirst: false })
@@ -166,11 +193,18 @@ export async function getTasks(
     }))
   }
 
+  if (isMissingTaskProjectManagementColumnError(error)) {
+    ;({ data, error } = await runTasksQuery(supabase, filters, {
+      includeDueTimeOrder: false,
+      legacySchema: true,
+    }))
+  }
+
   if (error) {
     throw new Error(error.message || 'Failed to load tasks')
   }
 
-  return ((data ?? []) as TaskRowWithJoin[]).map(mapTaskWithWorkstream)
+  return ((data ?? []) as unknown as TaskRowWithJoin[]).map(mapTaskWithWorkstream)
 }
 
 export async function createTask(
@@ -220,16 +254,31 @@ export async function createTask(
   let { data, error } = await supabase
     .from('tasks')
     .insert(payload)
-    .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
+    .select(TASK_SELECT_FULL)
     .single()
 
-  if (isMissingDueTimeColumnError(error)) {
-    const { due_time: _dueTime, ...fallbackPayload } = payload
-    void _dueTime
+  if (isMissingDueTimeColumnError(error) || isMissingTaskProjectManagementColumnError(error)) {
+    const fallbackPayload = {
+      workstream_id: payload.workstream_id,
+      column_id: payload.column_id,
+      account_id: payload.account_id,
+      contact_id: payload.contact_id,
+      project_id: payload.project_id,
+      title: payload.title,
+      description: payload.description,
+      priority: payload.priority,
+      start_date: payload.start_date,
+      due_date: payload.due_date,
+      is_master_todo: payload.is_master_todo,
+      tags: payload.tags,
+      sort_order: payload.sort_order,
+      completed_at: payload.status === 'done' ? new Date().toISOString() : null,
+    }
+
     ;({ data, error } = await supabase
       .from('tasks')
       .insert(fallbackPayload)
-      .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
+      .select(TASK_SELECT_LEGACY)
       .single())
   }
 
@@ -347,17 +396,37 @@ export async function updateTask(
     .from('tasks')
     .update(patch)
     .eq('id', id)
-    .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
+    .select(TASK_SELECT_FULL)
     .single()
 
-  if (isMissingDueTimeColumnError(error) && 'due_time' in patch) {
-    const fallbackPatch = { ...patch }
-    delete fallbackPatch.due_time
+  if (isMissingDueTimeColumnError(error) || isMissingTaskProjectManagementColumnError(error)) {
+    const fallbackPatch: Partial<Task> = {
+      workstream_id: patch.workstream_id,
+      column_id: patch.column_id,
+      contact_id: patch.contact_id,
+      account_id: patch.account_id,
+      project_id: patch.project_id,
+      title: patch.title,
+      description: patch.description,
+      priority: patch.priority,
+      start_date: patch.start_date,
+      due_date: patch.due_date,
+      is_master_todo: patch.is_master_todo,
+      tags: patch.tags,
+      sort_order: patch.sort_order,
+      completed_at:
+        input.status !== undefined
+          ? input.status === 'done'
+            ? patch.completed_at ?? new Date().toISOString()
+            : null
+          : patch.completed_at,
+    }
+
     ;({ data, error } = await supabase
       .from('tasks')
       .update(fallbackPatch)
       .eq('id', id)
-      .select('*, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
+      .select(TASK_SELECT_LEGACY)
       .single())
   }
 
@@ -399,21 +468,47 @@ export async function reorderTasks(
 ): Promise<void> {
   const supabase = await getSupabase(client)
 
-  await Promise.all(
-    updates.map(async (update) => {
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          sort_order: update.sort_order,
-          order_index: update.order_index ?? update.sort_order,
-          column_id: update.column_id ?? null,
-          ...(update.status ? { status: update.status } : {}),
-        })
-        .eq('id', update.id)
+  try {
+    await Promise.all(
+      updates.map(async (update) => {
+        const { error } = await supabase
+          .from('tasks')
+          .update({
+            sort_order: update.sort_order,
+            order_index: update.order_index ?? update.sort_order,
+            column_id: update.column_id ?? null,
+            ...(update.status ? { status: update.status } : {}),
+          })
+          .eq('id', update.id)
 
-      if (error) {
-        throw new Error(error.message || `Failed to reorder task ${update.id}`)
-      }
-    })
-  )
+        if (error) {
+          throw new Error(error.message || `Failed to reorder task ${update.id}`)
+        }
+      })
+    )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to reorder tasks'
+    if (!isMissingTaskProjectManagementColumnError({ message })) {
+      throw error
+    }
+
+    await Promise.all(
+      updates.map(async (update) => {
+        const { error: fallbackError } = await supabase
+          .from('tasks')
+          .update({
+            sort_order: update.sort_order,
+            column_id: update.column_id ?? null,
+            ...(update.status
+              ? { completed_at: update.status === 'done' ? new Date().toISOString() : null }
+              : {}),
+          })
+          .eq('id', update.id)
+
+        if (fallbackError) {
+          throw new Error(fallbackError.message || `Failed to reorder task ${update.id}`)
+        }
+      })
+    )
+  }
 }

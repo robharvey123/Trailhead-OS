@@ -567,6 +567,18 @@ export async function archiveProject(
   return updateProject(id, { status: 'cancelled' }, client)
 }
 
+export async function deleteProject(
+  id: string,
+  client?: SupabaseClient
+): Promise<void> {
+  const supabase = await getSupabase(client)
+  const { error } = await supabase.from('projects').delete().eq('id', id)
+
+  if (error) {
+    throw new Error(error.message || 'Failed to delete project')
+  }
+}
+
 export async function listProjectsByWorkstream(
   workstreamId: string,
   client?: SupabaseClient

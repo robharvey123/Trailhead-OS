@@ -1307,7 +1307,7 @@ export default function ProjectWorkspaceClient({
           <div className="overflow-x-auto">
             <div className="min-w-max space-y-3">
               <div className="flex items-stretch gap-3">
-                <div className="sticky left-0 z-10 flex w-72 items-end bg-slate-900/70 pb-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+                <div className="sticky left-0 z-10 flex w-80 items-end bg-slate-900/70 pb-2 pr-2 text-xs uppercase tracking-[0.18em] text-slate-500">
                   Tasks and milestones
                 </div>
                 <div className="flex gap-1">
@@ -1321,7 +1321,7 @@ export default function ProjectWorkspaceClient({
 
               {filteredMilestones.length > 0 ? (
                 <div className="flex items-stretch gap-3">
-                  <div className="sticky left-0 z-10 flex w-72 items-center rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm font-medium text-slate-100">
+                  <div className="sticky left-0 z-10 flex w-80 items-center rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm font-medium text-slate-100">
                     Milestones
                   </div>
                   <div className="flex gap-1">
@@ -1339,10 +1339,11 @@ export default function ProjectWorkspaceClient({
                               key={milestone.id}
                               type="button"
                               onClick={() => openMilestone(milestone.id)}
-                              className="mx-1 flex flex-col items-center gap-1 text-[10px] text-slate-200"
+                              className="mx-1 flex max-w-full flex-col items-center gap-1 overflow-hidden text-[10px] text-slate-200"
+                              title={milestone.title}
                             >
                               <span className="block h-3 w-3 rotate-45 rounded-sm border border-white/20" style={{ backgroundColor: milestone.colour }} />
-                              <span>{milestone.title}</span>
+                              <span className="max-w-full truncate">{milestone.title}</span>
                             </button>
                           ))}
                         </div>
@@ -1361,13 +1362,14 @@ export default function ProjectWorkspaceClient({
 
                 return (
                   <div key={task.id} className="flex items-stretch gap-3">
-                    <div className="sticky left-0 z-10 flex w-72 items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3 text-sm text-slate-100">
+                    <div className="sticky left-0 z-10 flex w-80 items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3 text-sm text-slate-100">
                       <div className={`h-2 w-2 rounded-full ${task.status === 'blocked' ? 'bg-red-400' : task.status === 'done' ? 'bg-emerald-400' : 'bg-sky-400'}`} />
-                      <div className={`min-w-0 flex-1 ${depth === 1 ? 'pl-4' : depth >= 2 ? 'pl-8' : ''}`}>
+                      <div className={`min-w-0 flex-1 overflow-hidden ${depth === 1 ? 'pl-4' : depth >= 2 ? 'pl-8' : ''}`}>
                         <button
                           type="button"
                           onClick={() => openTask(task.id)}
-                          className={`truncate text-left font-medium ${isSubtask ? 'text-slate-300' : 'text-slate-100'}`}
+                          className={`block w-full truncate text-left font-medium ${isSubtask ? 'text-slate-300' : 'text-slate-100'}`}
+                          title={task.title}
                         >
                           {task.title}
                         </button>
