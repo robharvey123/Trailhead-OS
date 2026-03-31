@@ -102,6 +102,18 @@ export default function MarketingShell({
             England &amp; Wales
           </p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <a
+              href="mailto:info@trailheadholdings.uk"
+              className="transition hover:text-[var(--marketing-text)]"
+            >
+              info@trailheadholdings.uk
+            </a>
+            <a
+              href="tel:+447346808412"
+              className="transition hover:text-[var(--marketing-text)]"
+            >
+              +44 7346 808412
+            </a>
             <Link
               href={buildMarketingHref('/privacy', isLocalhost)}
               className="transition hover:text-[var(--marketing-text)]"

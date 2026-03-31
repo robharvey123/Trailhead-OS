@@ -13,7 +13,7 @@ const services = [
     title: 'NGP & FMCG Consulting',
     description:
       'One of a handful of UK operators with hands-on experience across both nicotine pouches and vaping. 13+ years navigating category complexity, building distributor networks, and taking brands to market across the UK and Europe.',
-    cta: 'Talk to us →',
+    cta: 'Talk to us',
     href: '#contact',
     icon: (
       <svg
@@ -33,8 +33,8 @@ const services = [
   {
     title: 'Bespoke App Development',
     description:
-      'We build internal tools, client portals, and SaaS products that actually get used. From discovery to deployment — working closely with you throughout.',
-    cta: 'Start a project →',
+      'Most businesses outgrow off-the-shelf tools before they realise it. The gaps between platforms, the manual bridging, the context-switching. We build internal tools, client portals, and SaaS products that fit the specific shape of your operation. From the first discovery conversation through to deployment and beyond.',
+    cta: 'Start a project',
     href: '#contact',
     icon: (
       <svg
@@ -52,8 +52,8 @@ const services = [
   {
     title: 'MVP Cricket',
     description:
-      'A SaaS platform purpose-built for grassroots cricket clubs. Automated MVP scoring, Play-Cricket integration, leaderboards, and club management — all in one place.',
-    cta: 'Learn more →',
+      'MVP Cricket is a SaaS platform built specifically for grassroots cricket clubs. Automated MVP scoring after every match, live Play-Cricket integration, player leaderboards, and club management tools. Everything a club needs to run more professionally and keep players more engaged, in one place.',
+    cta: 'Learn more',
     href: '/mvp-cricket',
     icon: (
       <svg
@@ -137,6 +137,72 @@ const categoryTags = [
   'UK and Europe',
 ]
 
+const appDevelopmentStats = [
+  ['4+', 'Products currently in active development or deployment'],
+  ['3', 'Core technologies used across every build. Next.js, Supabase, Tailwind'],
+  ['1', 'Development partner throughout. Not handed off mid-project'],
+]
+
+const appDevelopmentBuilds = [
+  'Internal business operating systems',
+  'Client portals and account management platforms',
+  'SaaS products with subscription and billing infrastructure',
+  'CRM and pipeline tooling',
+  'Invoicing and document generation',
+  'AI-powered modules and quoting tools',
+  'Third-party API integrations',
+  'Web push notification systems',
+]
+
+const appDevelopmentExamples = [
+  {
+    title: 'Trailhead OS',
+    summary:
+      'Our own internal operating system, built to run a multi-workstream business from a single platform. Covers a command centre dashboard, Kanban boards per workstream, CRM, invoicing with PDF generation, an AI quoting module, and a client discovery flow. Built on Next.js, TypeScript, Tailwind, and Supabase. The same stack we use for clients.',
+  },
+  {
+    title: 'Current client engagement',
+    summary:
+      'We are in early-stage development with a consumer brand building a client-facing portal to centralise order management, account reporting, and brand asset distribution. Replacing a fragmented mix of emails, spreadsheets, and shared drives with one login.',
+  },
+]
+
+const appDevelopmentTags = [
+  'Next.js',
+  'TypeScript',
+  'Tailwind CSS',
+  'Supabase',
+  'SaaS',
+  'Internal Tools',
+  'Client Portals',
+  'API Integration',
+  'AI Modules',
+]
+
+const mvpStats = [
+  ['Automated', 'MVP scoring calculated without manual input'],
+  ['Live', 'Play-Cricket sync pulling match data directly'],
+  ['1', 'Platform for scoring, leaderboards, and club management'],
+]
+
+const mvpFeatures = [
+  'Automated MVP scoring engine, configurable per club',
+  'Play-Cricket API integration, live match data sync',
+  'Player leaderboards, updated after every game',
+  'Club and squad management',
+  'Season-long performance tracking',
+  'Designed for club committees, not just tech-savvy admins',
+]
+
+const mvpTags = [
+  'Grassroots Cricket',
+  'SaaS',
+  'Play-Cricket Integration',
+  'MVP Scoring',
+  'Club Management',
+  'Player Leaderboards',
+]
+
 const leaderboardRows = [
   ['1', 'A. Turner', '128'],
   ['2', 'L. Briggs', '117'],
@@ -165,7 +231,7 @@ export default async function MarketingHomePage() {
               Commercial strategy. Digital products. Built to last.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 md:text-xl">
-              We help brands grow in competitive markets — from NGP and FMCG
+              We help brands grow in competitive markets, from NGP and FMCG
               consulting to bespoke software development and SaaS products.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -339,63 +405,228 @@ export default async function MarketingHomePage() {
         </div>
       </Reveal>
 
-      <Reveal className="bg-slate-950 px-6 py-20 text-slate-50 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-[1100px] gap-10 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+      <Reveal className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
+        <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
-              Our SaaS product
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+              Bespoke App Development
             </p>
             <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-              MVP Cricket
+              Built for how you actually work. Not how a SaaS template assumes you do.
             </h2>
-            <p className="mt-6 text-lg leading-8 text-slate-300">
-              Designed for grassroots clubs who deserve better than
-              spreadsheets. Automated scoring, Play-Cricket sync, and a
-              leaderboard your players will actually check.
+            <p className="mt-6 text-lg leading-8 text-slate-600">
+              Most businesses outgrow off-the-shelf tools before they realise it. The gaps between platforms, the manual bridging, the context-switching. We build internal tools, client portals, and SaaS products that fit the specific shape of your operation. From the first discovery conversation through to deployment and beyond.
             </p>
-            <Link
-              href="https://mvpcricket.app"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-400"
-            >
-              Visit mvpcricket.app →
-            </Link>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-[0_35px_80px_-45px_rgba(14,165,233,0.55)] backdrop-blur">
-            <div className="rounded-[1.5rem] border border-white/10 bg-slate-900 p-5">
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-sky-300">
-                    Leaderboard
-                  </p>
-                  <h3 className="mt-2 text-xl font-semibold">
-                    Saturday 1st XI
-                  </h3>
-                </div>
-                <span className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-200">
-                  Live sync
-                </span>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {appDevelopmentStats.map(([value, label]) => (
+              <div
+                key={label}
+                className="rounded-[1.75rem] border border-[var(--marketing-border)] bg-white p-7"
+              >
+                <p className="text-4xl font-bold tracking-[-0.05em] text-[var(--marketing-text)]">
+                  {value}
+                </p>
+                <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
+                  {label}
+                </p>
               </div>
+            ))}
+          </div>
+        </div>
 
-              <div className="mt-4 space-y-2">
-                {leaderboardRows.map(([position, name, score]) => (
+        <div className="mx-auto mt-12 grid max-w-[1100px] gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+              What we build
+            </p>
+            <ul className="mt-6 space-y-4">
+              {appDevelopmentBuilds.map((item) => (
+                <li
+                  key={item}
+                  className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-4 text-sm font-medium leading-6 text-slate-700"
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+              Examples
+            </p>
+            <div className="mt-6 space-y-4">
+              {appDevelopmentExamples.map((example) => (
+                <div
+                  key={example.title}
+                  className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-5"
+                >
+                  <h3 className="text-xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+                    {example.title}
+                  </h3>
+                  <p className="mt-3 text-[0.98rem] leading-7 text-slate-600">
+                    {example.summary}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
+
+        <div className="mx-auto mt-6 max-w-[1100px] rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+          <div className="flex flex-wrap gap-2">
+            {appDevelopmentTags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
+            We work with a small number of clients at any one time. If you have a tool you need built properly, get in touch early.
+          </p>
+
+          <Link
+            href={buildMarketingHref('/#contact', isLocalhost)}
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
+          >
+            Start a project
+          </Link>
+        </div>
+      </Reveal>
+
+      <Reveal className="bg-slate-950 px-6 py-20 text-slate-50 md:px-8 md:py-24">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="grid gap-10 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
+                MVP Cricket
+              </p>
+              <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
+                Your club deserves better than a spreadsheet and a WhatsApp group.
+              </h2>
+              <p className="mt-6 text-lg leading-8 text-slate-300">
+                MVP Cricket is a SaaS platform built specifically for grassroots cricket clubs. Automated MVP scoring after every match, live Play-Cricket integration, player leaderboards, and club management tools. Everything a club needs to run more professionally and keep players more engaged, in one place.
+              </p>
+              <Link
+                href={buildMarketingHref('/mvp-cricket', isLocalhost)}
+                className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-400"
+              >
+                Learn more
+              </Link>
+            </div>
+
+            <div className="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-[0_35px_80px_-45px_rgba(14,165,233,0.55)] backdrop-blur">
+              <div className="rounded-[1.5rem] border border-white/10 bg-slate-900 p-5">
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.28em] text-sky-300">
+                      Leaderboard
+                    </p>
+                    <h3 className="mt-2 text-xl font-semibold">
+                      Saturday 1st XI
+                    </h3>
+                  </div>
+                  <span className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-200">
+                    Live sync
+                  </span>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  {leaderboardRows.map(([position, name, score]) => (
+                    <div
+                      key={name}
+                      className="grid grid-cols-[56px_1fr_72px] items-center rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm"
+                    >
+                      <span className="font-semibold text-sky-300">
+                        #{position}
+                      </span>
+                      <span>{name}</span>
+                      <span className="text-right font-semibold text-white">
+                        {score}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <article className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
+                Stats
+              </p>
+              <div className="mt-6 space-y-4">
+                {mvpStats.map(([value, label]) => (
                   <div
-                    key={name}
-                    className="grid grid-cols-[56px_1fr_72px] items-center rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm"
+                    key={label}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4"
                   >
-                    <span className="font-semibold text-sky-300">
-                      #{position}
-                    </span>
-                    <span>{name}</span>
-                    <span className="text-right font-semibold text-white">
-                      {score}
-                    </span>
+                    <p className="text-3xl font-bold tracking-[-0.05em] text-white">
+                      {value}
+                    </p>
+                    <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-300">
+                      {label}
+                    </p>
                   </div>
                 ))}
               </div>
+            </article>
+
+            <article className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
+                Features
+              </p>
+              <ul className="mt-6 space-y-4">
+                {mvpFeatures.map((feature) => (
+                  <li
+                    key={feature}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm font-medium leading-6 text-slate-200"
+                  >
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </div>
+
+          <div className="mt-6 rounded-[2rem] border border-white/10 bg-white/5 p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
+              Who it is for
+            </p>
+            <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
+              Any grassroots cricket club running on a mix of WhatsApp messages, shared spreadsheets, and manual scoresheets. Clubs that want to reward performance, track form across a season, and give players something to check between matches. Committee members who want to spend less time on admin and more time on cricket.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              {mvpTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-300">
+              Currently available at{' '}
+              <a
+                href="https://mvpcricket.app"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-sky-300 transition hover:text-sky-200"
+              >
+                mvpcricket.app
+              </a>
+              . Built by someone who plays the game and sits on a club committee.
+            </p>
           </div>
         </div>
       </Reveal>
@@ -470,7 +701,7 @@ export default async function MarketingHomePage() {
             </h2>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
               Whether you&apos;re looking for commercial consultancy, a
-              development partner, or just want to find out more — we&apos;d
+              development partner, or just want to find out more, we&apos;d
               love to hear from you.
             </p>
             <div className="mt-10">

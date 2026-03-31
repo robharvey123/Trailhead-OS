@@ -34,7 +34,7 @@ export default async function ContactPage() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
               Whether you&apos;re looking for commercial consultancy, a
-              development partner, or just want to find out more &mdash;
+              development partner, or just want to find out more, 
               we&apos;d love to hear from you.
             </p>
             <div className="mt-10">

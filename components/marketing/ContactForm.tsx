@@ -58,7 +58,7 @@ export default function ContactForm() {
     return (
       <div className="rounded-[2rem] border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-8">
         <h3 className="text-2xl font-bold tracking-[-0.03em]">
-          Thanks — we&apos;ll be in touch shortly.
+          Thanks, we&apos;ll be in touch shortly.
         </h3>
         <p className="mt-3 text-slate-600">
           Your message is with us. We&apos;ll come back to you as soon as we

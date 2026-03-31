@@ -66,7 +66,7 @@ export default async function TermsPage() {
         2.3 Quotes prepared with AI assistance are clearly marked as such. All
         AI-generated estimates are reviewed by Rob Harvey before issue. We take
         reasonable care to ensure accuracy but estimates are based on
-        information provided at the time of enquiry &mdash; scope changes may
+        information provided at the time of enquiry. Scope changes may
         affect the final price.
       </p>
       <p className="mt-4">

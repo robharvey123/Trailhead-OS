@@ -83,7 +83,7 @@ export default async function PrivacyPage() {
       <p className="mt-4">
         We use Stripe to process payments. When you pay an invoice online, your
         payment details are entered directly into Stripe&apos;s secure platform
-        &mdash; we never see or store your card details. Stripe is PCI DSS
+        . We never see or store your card details. Stripe is PCI DSS
         compliant. You can read Stripe&apos;s privacy policy at{' '}
         <a href="https://stripe.com/gb/privacy" target="_blank" rel="noreferrer">
           stripe.com/gb/privacy
@@ -237,7 +237,7 @@ export default async function PrivacyPage() {
           <strong className="font-semibold text-[var(--marketing-text)]">
             Data portability
           </strong>{' '}
-          &mdash; receive your data in a machine-readable format
+          , receive your data in a machine-readable format
         </li>
         <li>
           <strong className="font-semibold text-[var(--marketing-text)]">
