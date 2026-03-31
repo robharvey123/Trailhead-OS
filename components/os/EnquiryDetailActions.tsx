@@ -9,6 +9,14 @@ import RecordEmailDialog from './RecordEmailDialog'
 import StatusBadge from './StatusBadge'
 import type { Enquiry, PricingTier, ProjectDetail, QuoteScope } from '@/lib/types'
 
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(value))
+}
+
 type QuoteGuidanceState = {
   pricingPosture: 'conservative' | 'balanced' | 'assertive'
   budgetAlignment: 'respect' | 'flexible' | 'value'
@@ -368,7 +376,7 @@ export default function EnquiryDetailActions({
           <div>
             <dt className="text-slate-500">Submitted</dt>
             <dd className="mt-1 text-slate-200">
-              {new Date(enquiry.created_at).toLocaleString('en-GB')}
+              {formatDateTime(enquiry.created_at)}
             </dd>
           </div>
         </dl>

@@ -607,6 +607,7 @@ async function callAnthropic(system: string, user: string) {
   const response = await anthropic.messages.create({
     model: ANTHROPIC_MODELS.SONNET,
     max_tokens: 4000,
+    temperature: 0,
     system,
     messages: [
       {
@@ -616,8 +617,11 @@ async function callAnthropic(system: string, user: string) {
     ],
   })
 
-  const textBlock = response.content.find((item) => item.type === 'text')
-  const text = textBlock?.text.trim() ?? ''
+  const text = response.content
+    .filter((item): item is Extract<(typeof response.content)[number], { type: 'text' }> => item.type === 'text')
+    .map((item) => item.text)
+    .join('\n')
+    .trim()
 
   if (!text) {
     throw new Error('Anthropic returned an empty response')
@@ -626,14 +630,78 @@ async function callAnthropic(system: string, user: string) {
   return text
 }
 
+function stripCodeFences(value: string) {
+  return value
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim()
+}
+
+function extractJsonObject(value: string) {
+  const stripped = stripCodeFences(value)
+  const firstBrace = stripped.indexOf('{')
+
+  if (firstBrace === -1) {
+    return stripped
+  }
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let index = firstBrace; index < stripped.length; index += 1) {
+    const char = stripped[index]
+
+    if (escaped) {
+      escaped = false
+      continue
+    }
+
+    if (char === '\\') {
+      escaped = true
+      continue
+    }
+
+    if (char === '"') {
+      inString = !inString
+      continue
+    }
+
+    if (inString) {
+      continue
+    }
+
+    if (char === '{') {
+      depth += 1
+    } else if (char === '}') {
+      depth -= 1
+      if (depth === 0) {
+        return stripped.slice(firstBrace, index + 1)
+      }
+    }
+  }
+
+  return stripped.slice(firstBrace)
+}
+
+function removeTrailingCommas(value: string) {
+  return value.replace(/,\s*([}\]])/g, '$1')
+}
+
+function parseJsonRecord(text: string): Record<string, unknown> {
+  const extracted = extractJsonObject(text)
+
+  try {
+    return JSON.parse(extracted) as Record<string, unknown>
+  } catch {
+    return JSON.parse(removeTrailingCommas(extracted)) as Record<string, unknown>
+  }
+}
+
 function parseAiResponse(text: string, tier?: PricingTier | null): AiQuoteResponse {
   try {
-    const clean = text
-      .replace(/^```json\n?/i, '')
-      .replace(/^```\n?/, '')
-      .replace(/\n?```$/, '')
-      .trim()
-    const parsed = JSON.parse(clean) as Record<string, unknown>
+    const parsed = parseJsonRecord(text)
     const scope = sanitizeScope(parsed.scope)
     const complexityBreakdown = sanitizeComplexityBreakdown(parsed.complexity_breakdown)
     const draftContent = sanitizeDraftContent(parsed.draft_content)

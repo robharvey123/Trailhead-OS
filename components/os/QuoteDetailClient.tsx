@@ -59,13 +59,14 @@ function parseList(value: string) {
 }
 
 function formatVersionTimestamp(value: string) {
-  return new Date(value).toLocaleString('en-GB', {
+  return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  })
+    timeZone: 'UTC',
+  }).format(new Date(value))
 }
 
 export default function QuoteDetailClient({

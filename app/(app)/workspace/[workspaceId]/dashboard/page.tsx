@@ -8,6 +8,7 @@ import {
 import DashboardCharts from './DashboardCharts'
 import DashboardInsights from './DashboardInsights'
 import DashboardKPIs from './DashboardKPIs'
+import DashboardSkuInsights from './DashboardSkuInsights'
 import DashboardTable from './DashboardTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 
@@ -45,6 +46,19 @@ type SellInCustomerMonthlyRow = {
 
 type SellOutCompanyMonthlyRow = {
   company: string
+  month: string
+  sell_out_units: number
+}
+
+type SellInSkuMonthlyRow = {
+  product: string
+  month: string
+  total_shipped: number
+  revenue: number
+}
+
+type SellOutSkuMonthlyRow = {
+  product: string
   month: string
   sell_out_units: number
 }
@@ -214,11 +228,23 @@ export default async function DashboardPage({
     .select('company, month, sell_out_units')
     .eq('workspace_id', resolvedParams.workspaceId)
 
+  let sellInSkuQuery = supabase
+    .from('vw_sell_in_sku_monthly')
+    .select('product, month, total_shipped, revenue')
+    .eq('workspace_id', resolvedParams.workspaceId)
+
+  let sellOutSkuQuery = supabase
+    .from('vw_sell_out_sku_monthly')
+    .select('product, month, sell_out_units')
+    .eq('workspace_id', resolvedParams.workspaceId)
+
   if (brandFilter) {
     sellOutPlatformQuery = sellOutPlatformQuery.eq('brand', brandFilter)
     sellOutRegionQuery = sellOutRegionQuery.eq('brand', brandFilter)
     sellInCustomerQuery = sellInCustomerQuery.eq('brand', brandFilter)
     sellOutCompanyQuery = sellOutCompanyQuery.eq('brand', brandFilter)
+    sellInSkuQuery = sellInSkuQuery.eq('brand', brandFilter)
+    sellOutSkuQuery = sellOutSkuQuery.eq('brand', brandFilter)
   }
 
   if (startDate) {
@@ -226,6 +252,8 @@ export default async function DashboardPage({
     sellOutRegionQuery = sellOutRegionQuery.gte('month', startDate)
     sellInCustomerQuery = sellInCustomerQuery.gte('month', startDate)
     sellOutCompanyQuery = sellOutCompanyQuery.gte('month', startDate)
+    sellInSkuQuery = sellInSkuQuery.gte('month', startDate)
+    sellOutSkuQuery = sellOutSkuQuery.gte('month', startDate)
   }
 
   if (endDate) {
@@ -233,6 +261,8 @@ export default async function DashboardPage({
     sellOutRegionQuery = sellOutRegionQuery.lte('month', endDate)
     sellInCustomerQuery = sellInCustomerQuery.lte('month', endDate)
     sellOutCompanyQuery = sellOutCompanyQuery.lte('month', endDate)
+    sellInSkuQuery = sellInSkuQuery.lte('month', endDate)
+    sellOutSkuQuery = sellOutSkuQuery.lte('month', endDate)
   }
 
   const [
@@ -242,6 +272,8 @@ export default async function DashboardPage({
     { data: sellOutRegionMonthly },
     { data: sellInCustomerMonthly },
     { data: sellOutCompanyMonthly },
+    { data: sellInSkuMonthly },
+    { data: sellOutSkuMonthly },
   ] = await Promise.all([
     sellInQuery,
     sellOutQuery,
@@ -249,6 +281,8 @@ export default async function DashboardPage({
     sellOutRegionQuery,
     sellInCustomerQuery,
     sellOutCompanyQuery,
+    sellInSkuQuery,
+    sellOutSkuQuery,
   ])
 
   // Module KPI queries
@@ -408,6 +442,88 @@ export default async function DashboardPage({
     'Other'
   )
 
+  const skuMap = new Map<
+    string,
+    { sku: string; totalShipped: number; sellOut: number; revenue: number; sellThrough: number }
+  >()
+
+  for (const row of (sellInSkuMonthly ?? []) as SellInSkuMonthlyRow[]) {
+    const sku = row.product?.trim() || 'Unknown'
+    const entry = skuMap.get(sku) ?? {
+      sku,
+      totalShipped: 0,
+      sellOut: 0,
+      revenue: 0,
+      sellThrough: 0,
+    }
+    entry.totalShipped += row.total_shipped ?? 0
+    entry.revenue += row.revenue ?? 0
+    skuMap.set(sku, entry)
+  }
+
+  for (const row of (sellOutSkuMonthly ?? []) as SellOutSkuMonthlyRow[]) {
+    const sku = row.product?.trim() || 'Unknown'
+    const entry = skuMap.get(sku) ?? {
+      sku,
+      totalShipped: 0,
+      sellOut: 0,
+      revenue: 0,
+      sellThrough: 0,
+    }
+    entry.sellOut += row.sell_out_units ?? 0
+    skuMap.set(sku, entry)
+  }
+
+  const topSkuData = Array.from(skuMap.values())
+    .map((row) => ({
+      ...row,
+      sellThrough: row.totalShipped > 0 ? (row.sellOut / row.totalShipped) * 100 : 0,
+    }))
+    .sort((left, right) => {
+      if (right.sellOut !== left.sellOut) {
+        return right.sellOut - left.sellOut
+      }
+      return right.totalShipped - left.totalShipped
+    })
+    .slice(0, 10)
+
+  const shippedLeaderByMonth = new Map<string, { sku: string; units: number }>()
+  for (const row of (sellInSkuMonthly ?? []) as SellInSkuMonthlyRow[]) {
+    const month = row.month.slice(0, 7)
+    const current = shippedLeaderByMonth.get(month)
+    const units = row.total_shipped ?? 0
+    if (!current || units > current.units) {
+      shippedLeaderByMonth.set(month, {
+        sku: row.product?.trim() || 'Unknown',
+        units,
+      })
+    }
+  }
+
+  const sellOutLeaderByMonth = new Map<string, { sku: string; units: number }>()
+  for (const row of (sellOutSkuMonthly ?? []) as SellOutSkuMonthlyRow[]) {
+    const month = row.month.slice(0, 7)
+    const current = sellOutLeaderByMonth.get(month)
+    const units = row.sell_out_units ?? 0
+    if (!current || units > current.units) {
+      sellOutLeaderByMonth.set(month, {
+        sku: row.product?.trim() || 'Unknown',
+        units,
+      })
+    }
+  }
+
+  const monthlyLeaderMonths = Array.from(
+    new Set([...shippedLeaderByMonth.keys(), ...sellOutLeaderByMonth.keys()])
+  ).sort()
+  const monthlySkuLeaders = monthlyLeaderMonths.map((month) => ({
+    month,
+    topShippedSku: shippedLeaderByMonth.get(month)?.sku ?? '',
+    topShippedUnits: shippedLeaderByMonth.get(month)?.units ?? 0,
+    topSellOutSku: sellOutLeaderByMonth.get(month)?.sku ?? '',
+    topSellOutUnits: sellOutLeaderByMonth.get(month)?.units ?? 0,
+  }))
+
   const totalsRow = {
     month: 'Total',
     sellIn: formatNumber(totalSellIn),
@@ -508,6 +624,13 @@ export default async function DashboardPage({
         topCustomerRevenue={topCustomerRevenue}
         topCompanySellOut={topCompanySellOut}
         currencySymbol={currencySymbol}
+      />
+
+      <DashboardSkuInsights
+        workspaceId={resolvedParams.workspaceId}
+        currencySymbol={currencySymbol}
+        topSkus={topSkuData}
+        monthlyLeaders={monthlySkuLeaders}
       />
 
       <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">

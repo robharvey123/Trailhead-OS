@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import type { Workstream } from '@/lib/types'
 
@@ -17,13 +17,21 @@ export default function OsShell({
   activeQuoteCount,
   children,
 }: OsShellProps) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') {
-      return false
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem('sidebar-collapsed')
+
+    if (saved !== 'true') {
+      return
     }
 
-    return window.localStorage.getItem('sidebar-collapsed') === 'true'
-  })
+    const frame = window.requestAnimationFrame(() => {
+      setCollapsed(true)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
 
   function toggle() {
     setCollapsed((prev) => {
