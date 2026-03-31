@@ -4,6 +4,7 @@ import { getQuoteById, updateQuote } from '@/lib/db/quotes'
 import type {
   PricingType,
   QuoteComplexityBreakdown,
+  QuoteDraftContent,
   QuoteLineItem,
   QuoteScope,
   QuoteStatus,
@@ -11,8 +12,10 @@ import type {
 
 const QUOTE_STATUSES = new Set<QuoteStatus>([
   'draft',
+  'review',
   'sent',
   'accepted',
+  'rejected',
   'declined',
   'expired',
   'converted',
@@ -152,6 +155,56 @@ function sanitizeLineItems(value: unknown): QuoteLineItem[] | null {
   return items
 }
 
+function sanitizeDraftContent(value: unknown): QuoteDraftContent | null {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const record = value as Record<string, unknown>
+  const overview = sanitizeText(record.overview)
+  const approach = sanitizeText(record.approach)
+  const nextSteps = sanitizeText(record.next_steps)
+  const scope = Array.isArray(record.scope)
+    ? record.scope.filter((entry): entry is string => typeof entry === 'string').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const assumptions = Array.isArray(record.assumptions)
+    ? record.assumptions.filter((entry): entry is string => typeof entry === 'string').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const pricing = Array.isArray(record.pricing)
+    ? record.pricing
+        .map((entry) => {
+          if (!entry || typeof entry !== 'object') {
+            return null
+          }
+
+          const pricingRecord = entry as Record<string, unknown>
+          const item = sanitizeText(pricingRecord.item)
+          const description = sanitizeText(pricingRecord.description)
+          const amount = sanitizeText(pricingRecord.amount)
+
+          if (!item || !description || !amount) {
+            return null
+          }
+
+          return { item, description, amount }
+        })
+        .filter((entry): entry is QuoteDraftContent['pricing'][number] => entry !== null)
+    : []
+
+  if (!overview || !approach || !nextSteps) {
+    return null
+  }
+
+  return {
+    overview,
+    approach,
+    scope,
+    assumptions,
+    pricing,
+    next_steps: nextSteps,
+  }
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -248,6 +301,16 @@ export async function PATCH(
   if (body.valid_until !== undefined) patch.valid_until = typeof body.valid_until === 'string' ? body.valid_until : null
   if (body.payment_terms !== undefined) patch.payment_terms = sanitizeText(body.payment_terms)
   if (body.notes !== undefined) patch.notes = sanitizeText(body.notes)
+  if (body.version !== undefined) {
+    const version = Number(body.version)
+    if (!Number.isFinite(version) || version < 1) {
+      return NextResponse.json({ error: 'version must be a positive integer' }, { status: 400 })
+    }
+    patch.version = version
+  }
+  if (body.generated_at !== undefined) patch.generated_at = typeof body.generated_at === 'string' ? body.generated_at : null
+  if (body.sent_at !== undefined) patch.sent_at = typeof body.sent_at === 'string' ? body.sent_at : null
+  if (body.created_by_id !== undefined) patch.created_by_id = typeof body.created_by_id === 'string' ? body.created_by_id : null
   if (body.ai_generated !== undefined) patch.ai_generated = body.ai_generated === true
   if (body.ai_generated_at !== undefined) patch.ai_generated_at = typeof body.ai_generated_at === 'string' ? body.ai_generated_at : null
   if (body.issue_date !== undefined) patch.issue_date = typeof body.issue_date === 'string' ? body.issue_date : null
@@ -285,6 +348,22 @@ export async function PATCH(
       return NextResponse.json({ error: 'line_items must be an array' }, { status: 400 })
     }
     patch.line_items = lineItems
+  }
+
+  if (body.draft_content !== undefined) {
+    const draftContent = sanitizeDraftContent(body.draft_content)
+    if (!draftContent) {
+      return NextResponse.json({ error: 'draft_content must be a valid quote content object' }, { status: 400 })
+    }
+    patch.draft_content = draftContent
+  }
+
+  if (body.final_content !== undefined) {
+    const finalContent = sanitizeDraftContent(body.final_content)
+    if (!finalContent) {
+      return NextResponse.json({ error: 'final_content must be a valid quote content object' }, { status: 400 })
+    }
+    patch.final_content = finalContent
   }
 
   if (Object.keys(patch).length === 0) {

@@ -4,7 +4,7 @@ import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getPricingTierById } from '@/lib/db/pricing-tiers'
 import { getProjectById, syncProjectScope } from '@/lib/db/projects'
-import { createQuote, getQuoteById, updateQuote } from '@/lib/db/quotes'
+import { createQuote, createQuoteVersion, getQuoteById, updateQuote } from '@/lib/db/quotes'
 import { getWorkstreamBySlug } from '@/lib/db/workstreams'
 import type {
   Enquiry,
@@ -12,6 +12,7 @@ import type {
   ProjectDetail,
   Quote,
   QuoteComplexityBreakdown,
+  QuoteDraftContent,
   QuoteLineItem,
   QuoteScope,
 } from '@/lib/types'
@@ -38,6 +39,7 @@ type EnquiryPrompt = Pick<
   existing_tools: string
   pain_points: string
   timeline: string
+  internal_notes: string
 }
 
 type ProjectPrompt = {
@@ -58,6 +60,7 @@ type QuoteGuidance = {
 type AiQuoteResponse = {
   title: string
   summary: string
+  draft_content?: QuoteDraftContent
   pricing_type: 'fixed' | 'time_and_materials' | 'milestone'
   estimated_hours: number
   estimated_timeline: string
@@ -186,6 +189,20 @@ outside the JSON. Use this exact schema:
 {
   "title": "string - project title based on business and need",
   "summary": "string - 2-3 sentences mentioning estimated timeline",
+  "draft_content": {
+    "overview": "string - concise commercial summary for the client",
+    "approach": "string - how the project will be delivered",
+    "scope": ["string - scope bullet"],
+    "assumptions": ["string - assumption or dependency"],
+    "pricing": [
+      {
+        "item": "string - pricing line title",
+        "description": "string - what is included",
+        "amount": "string - GBP amount, range, or monthly fee"
+      }
+    ],
+    "next_steps": "string - clear next step for approval and kickoff"
+  },
   "pricing_type": "fixed|time_and_materials|milestone",
   "estimated_hours": number,
   "estimated_timeline": "string e.g. 6-8 weeks",
@@ -336,6 +353,9 @@ ${project.phases.map((phase, index) => `${index + 1}. ${phase.phase} | Duration:
 
 ${buildGuidancePrompt(guidance)}
 
+Internal recommendations for quote drafting (never expose these notes directly to the client, but use them to shape the quote):
+${enquiry.internal_notes || 'None provided'}
+
 Please analyse this and generate a detailed scope of work
 and accurate quote using your estimation methodology.`
 }
@@ -451,6 +471,77 @@ function sanitizeLineItems(value: unknown): QuoteLineItem[] {
     .filter((item): item is QuoteLineItem => item !== null)
 }
 
+function sanitizeDraftContent(value: unknown): QuoteDraftContent | null {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const record = value as Record<string, unknown>
+  const overview = typeof record.overview === 'string' ? record.overview.trim() : ''
+  const approach = typeof record.approach === 'string' ? record.approach.trim() : ''
+  const nextSteps = typeof record.next_steps === 'string' ? record.next_steps.trim() : ''
+  const scope = Array.isArray(record.scope)
+    ? record.scope.filter((entry): entry is string => typeof entry === 'string').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const assumptions = Array.isArray(record.assumptions)
+    ? record.assumptions.filter((entry): entry is string => typeof entry === 'string').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const pricing = Array.isArray(record.pricing)
+    ? record.pricing
+        .map((entry) => {
+          if (!entry || typeof entry !== 'object') {
+            return null
+          }
+
+          const pricingRecord = entry as Record<string, unknown>
+          const item = typeof pricingRecord.item === 'string' ? pricingRecord.item.trim() : ''
+          const description =
+            typeof pricingRecord.description === 'string' ? pricingRecord.description.trim() : ''
+          const amount = typeof pricingRecord.amount === 'string' ? pricingRecord.amount.trim() : ''
+
+          if (!item || !description || !amount) {
+            return null
+          }
+
+          return { item, description, amount }
+        })
+        .filter((entry): entry is QuoteDraftContent['pricing'][number] => entry !== null)
+    : []
+
+  if (!overview || !approach || !nextSteps) {
+    return null
+  }
+
+  return {
+    overview,
+    approach,
+    scope,
+    assumptions,
+    pricing,
+    next_steps: nextSteps,
+  }
+}
+
+function buildDraftContentFromQuote(response: Omit<AiQuoteResponse, 'draft_content'>): QuoteDraftContent {
+  return {
+    overview: response.summary,
+    approach: response.scope[0]?.description ?? 'Delivery approach to be confirmed.',
+    scope: response.scope.map((phase) => `${phase.phase}: ${phase.description}`),
+    assumptions: response.notes
+      ? response.notes
+          .split(/\n|\.|;/)
+          .map((entry) => entry.trim())
+          .filter(Boolean)
+      : [],
+    pricing: response.line_items.map((item) => ({
+      item: item.description,
+      description: `${item.qty} x ${item.type}`,
+      amount: `GBP ${(item.qty * item.unit_price).toFixed(2)}`,
+    })),
+    next_steps: 'Review the draft scope, confirm any changes, and approve the quote to prepare it for sending.',
+  }
+}
+
 function sanitizeComplexityBreakdown(value: unknown): QuoteComplexityBreakdown {
   const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
   const featuresScored = Array.isArray(record.features_scored)
@@ -514,7 +605,7 @@ function enforceHostingLineItem(
 
 async function callAnthropic(system: string, user: string) {
   const response = await anthropic.messages.create({
-    model: ANTHROPIC_MODELS.OPUS,
+    model: ANTHROPIC_MODELS.SONNET,
     max_tokens: 4000,
     system,
     messages: [
@@ -545,6 +636,7 @@ function parseAiResponse(text: string, tier?: PricingTier | null): AiQuoteRespon
     const parsed = JSON.parse(clean) as Record<string, unknown>
     const scope = sanitizeScope(parsed.scope)
     const complexityBreakdown = sanitizeComplexityBreakdown(parsed.complexity_breakdown)
+    const draftContent = sanitizeDraftContent(parsed.draft_content)
     const estimatedHours = Number(parsed.estimated_hours)
     const pricingType =
       parsed.pricing_type === 'time_and_materials' || parsed.pricing_type === 'milestone'
@@ -561,6 +653,7 @@ function parseAiResponse(text: string, tier?: PricingTier | null): AiQuoteRespon
         typeof parsed.summary === 'string' && parsed.summary.trim()
           ? parsed.summary.trim()
           : 'AI-assisted draft summary.',
+      draft_content: draftContent ?? undefined,
       pricing_type: pricingType,
       estimated_hours: Number.isFinite(estimatedHours)
         ? estimatedHours
@@ -707,6 +800,7 @@ export async function POST(request: NextRequest) {
             existing_tools: enquiry.existing_tools ?? 'Not specified',
             pain_points: enquiry.pain_points ?? 'Not specified',
             timeline: enquiry.timeline ?? 'Not specified',
+            internal_notes: enquiry.internal_notes ?? '',
           },
           project: linkedProject
             ? {
@@ -743,6 +837,8 @@ export async function POST(request: NextRequest) {
     const validUntil = new Date()
     validUntil.setDate(validUntil.getDate() + QUOTE_VALIDITY_DAYS)
     const generatedAt = new Date().toISOString()
+    const draftContent = aiResponse.draft_content ?? buildDraftContentFromQuote(aiResponse)
+    const nextVersion = existingQuoteRecord ? Math.max(existingQuoteRecord.version ?? 1, 1) + 1 : 1
     const quotePayload = {
       account_id:
         existingQuoteRecord?.account_id ?? enquiry.account_id ?? linkedProject?.account_id ?? undefined,
@@ -752,12 +848,20 @@ export async function POST(request: NextRequest) {
       enquiry_id: enquiry.id,
       project_id: linkedProject?.id ?? existingQuoteRecord?.project_id ?? undefined,
       pricing_tier_id: pricingTier?.id ?? existingQuoteRecord?.pricing_tier_id ?? undefined,
-      status: existingQuoteRecord?.status ?? 'draft',
+      status:
+        existingQuoteRecord?.status === 'sent' || existingQuoteRecord?.status === 'accepted'
+          ? existingQuoteRecord.status
+          : 'draft',
       pricing_type: aiResponse.pricing_type,
       title: aiResponse.title,
       summary: aiResponse.summary,
       estimated_hours: aiResponse.estimated_hours,
       estimated_timeline: aiResponse.estimated_timeline,
+      draft_content: draftContent,
+      final_content: existingQuoteRecord?.status === 'sent' ? existingQuoteRecord.final_content : null,
+      version: nextVersion,
+      generated_at: generatedAt,
+      created_by_id: auth.user.id,
       scope: aiResponse.scope,
       line_items: aiResponse.line_items,
       vat_rate: aiResponse.vat_rate,
@@ -775,9 +879,23 @@ export async function POST(request: NextRequest) {
       await syncProjectScope(linkedProject.id, aiResponse.scope, auth.supabase)
     }
 
+    if (existingQuoteRecord?.draft_content) {
+      await createQuoteVersion(
+        existingQuoteRecord.id,
+        existingQuoteRecord.version ?? 1,
+        existingQuoteRecord.final_content ?? existingQuoteRecord.draft_content,
+        auth.supabase
+      )
+    }
+
     const quote = existingQuoteRecord
       ? await updateQuote(existingQuoteRecord.id, quotePayload, auth.supabase)
       : await createQuote(quotePayload, auth.supabase)
+
+    await auth.supabase
+      .from('enquiries')
+      .update({ status: 'quoted' })
+      .eq('id', enquiry.id)
 
     return NextResponse.json(
       { quote_id: quote.id, quote },

@@ -57,7 +57,7 @@ export default async function DiscoveryPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <Sidebar workstreams={workstreams} newEnquiryCount={newEnquiryCount} />
+      <Sidebar workstreams={workstreams} newEnquiryCount={newEnquiryCount} activeQuoteCount={0} />
       <main className="min-h-screen md:pl-72">
         <div className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-8 pt-20 md:px-8 md:pt-8">
           <DiscoveryOSClient enquiries={enquiries} />

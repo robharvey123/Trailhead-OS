@@ -1,26 +1,29 @@
 'use client'
 
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import type { Workstream } from '@/lib/types'
 
 interface OsShellProps {
   workstreams: Workstream[]
   newEnquiryCount: number
+  activeQuoteCount: number
   children: ReactNode
 }
 
 export default function OsShell({
   workstreams,
   newEnquiryCount,
+  activeQuoteCount,
   children,
 }: OsShellProps) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false
+    }
 
-  useEffect(() => {
-    const saved = localStorage.getItem('sidebar-collapsed')
-    if (saved === 'true') setCollapsed(true)
-  }, [])
+    return window.localStorage.getItem('sidebar-collapsed') === 'true'
+  })
 
   function toggle() {
     setCollapsed((prev) => {
@@ -34,6 +37,7 @@ export default function OsShell({
       <Sidebar
         workstreams={workstreams}
         newEnquiryCount={newEnquiryCount}
+        activeQuoteCount={activeQuoteCount}
         collapsed={collapsed}
         onToggle={toggle}
       />

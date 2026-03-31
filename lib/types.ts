@@ -9,7 +9,14 @@ export type WorkstreamColour =
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 export type ContactStatus = 'lead' | 'active' | 'inactive' | 'archived'
-export type EnquiryStatus = 'new' | 'reviewed' | 'converted'
+export type EnquiryStatus =
+  | 'new'
+  | 'reviewed'
+  | 'converted'
+  | 'received'
+  | 'under_review'
+  | 'quoted'
+  | 'closed'
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
 export type BlogPostStatus = 'draft' | 'published'
 export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled'
@@ -112,6 +119,9 @@ export interface Enquiry {
   status: EnquiryStatus
   account_id: string | null
   project_id: string | null
+  internal_notes: string | null
+  internal_notes_updated_at: string | null
+  internal_notes_author_id: string | null
   converted_contact_id: string | null
 }
 
@@ -219,11 +229,28 @@ export interface QuoteLineItem {
   type: 'fixed' | 'hourly' | 'milestone'
 }
 
+export interface QuoteDraftPricingItem {
+  item: string
+  description: string
+  amount: string
+}
+
+export interface QuoteDraftContent {
+  overview: string
+  approach: string
+  scope: string[]
+  assumptions: string[]
+  pricing: QuoteDraftPricingItem[]
+  next_steps: string
+}
+
 export type PricingType = 'fixed' | 'time_and_materials' | 'milestone'
 export type QuoteStatus =
   | 'draft'
+  | 'review'
   | 'sent'
   | 'accepted'
+  | 'rejected'
   | 'declined'
   | 'expired'
   | 'converted'
@@ -294,6 +321,12 @@ export interface Quote {
   summary?: string
   estimated_hours?: number
   estimated_timeline?: string
+  draft_content?: QuoteDraftContent | null
+  final_content?: QuoteDraftContent | null
+  version: number
+  generated_at?: string | null
+  sent_at?: string | null
+  created_by_id?: string | null
   scope: QuoteScope[]
   line_items: QuoteLineItem[]
   vat_rate: number
@@ -323,6 +356,15 @@ export interface QuoteListItem extends QuoteWithRelations {
   contact_company: string | null
   enquiry?: Enquiry
   invoice?: Invoice | null
+}
+
+export interface QuoteVersion {
+  id: string
+  quote_id: string
+  version: number
+  content: QuoteDraftContent
+  generated_at: string
+  created_at: string
 }
 
 export interface Workstream {

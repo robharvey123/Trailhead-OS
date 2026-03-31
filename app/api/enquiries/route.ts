@@ -6,7 +6,15 @@ import { newEnquiryEmail } from '@/lib/email/templates/new-enquiry'
 import type { Enquiry, EnquiryFormState, EnquiryStatus } from '@/lib/types'
 import { getEnquiries } from '@/lib/db/enquiries'
 
-const ENQUIRY_STATUSES = new Set<EnquiryStatus>(['new', 'reviewed', 'converted'])
+const ENQUIRY_STATUSES = new Set<EnquiryStatus>([
+  'new',
+  'reviewed',
+  'converted',
+  'received',
+  'under_review',
+  'quoted',
+  'closed',
+])
 
 function sanitizeText(value: unknown): string | null {
   if (typeof value !== 'string') {
@@ -70,6 +78,22 @@ function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 
         ? null
         : typeof body.project_id === 'string'
           ? body.project_id
+          : null,
+    internal_notes:
+      body.internal_notes === null || body.internal_notes === undefined
+        ? null
+        : typeof body.internal_notes === 'string'
+          ? body.internal_notes
+          : null,
+    internal_notes_updated_at:
+      typeof body.internal_notes_updated_at === 'string'
+        ? body.internal_notes_updated_at
+        : null,
+    internal_notes_author_id:
+      body.internal_notes_author_id === null || body.internal_notes_author_id === undefined
+        ? null
+        : typeof body.internal_notes_author_id === 'string'
+          ? body.internal_notes_author_id
           : null,
     converted_contact_id:
       body.converted_contact_id === null || body.converted_contact_id === undefined

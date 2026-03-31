@@ -12,6 +12,7 @@ type RecordEmailDialogProps = {
   defaultMessage: string
   buttonClassName?: string
   fullWidth?: boolean
+  onSent?: () => void | Promise<void>
 }
 
 function parseRecipients(value: string) {
@@ -31,6 +32,7 @@ export default function RecordEmailDialog({
   defaultMessage,
   buttonClassName,
   fullWidth = false,
+  onSent,
 }: RecordEmailDialogProps) {
   const [open, setOpen] = useState(false)
   const [recipientsText, setRecipientsText] = useState(defaultRecipient ?? '')
@@ -84,6 +86,8 @@ export default function RecordEmailDialog({
       if (!response.ok) {
         throw new Error(payload.error ?? 'Failed to send email.')
       }
+
+      await onSent?.()
 
       setSuccess('Email sent.')
       window.setTimeout(() => {

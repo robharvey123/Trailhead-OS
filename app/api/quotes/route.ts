@@ -5,6 +5,7 @@ import type {
   PricingType,
   Quote,
   QuoteComplexityBreakdown,
+  QuoteDraftContent,
   QuoteLineItem,
   QuoteScope,
   QuoteStatus,
@@ -12,8 +13,10 @@ import type {
 
 const QUOTE_STATUSES = new Set<QuoteStatus>([
   'draft',
+  'review',
   'sent',
   'accepted',
+  'rejected',
   'declined',
   'expired',
   'converted',
@@ -151,6 +154,56 @@ function sanitizeLineItems(value: unknown): QuoteLineItem[] {
     .filter((item): item is QuoteLineItem => item !== null)
 }
 
+function sanitizeDraftContent(value: unknown): QuoteDraftContent | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined
+  }
+
+  const record = value as Record<string, unknown>
+  const overview = sanitizeText(record.overview)
+  const approach = sanitizeText(record.approach)
+  const nextSteps = sanitizeText(record.next_steps)
+  const scope = Array.isArray(record.scope)
+    ? record.scope.filter((entry): entry is string => typeof entry === 'string').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const assumptions = Array.isArray(record.assumptions)
+    ? record.assumptions.filter((entry): entry is string => typeof entry === 'string').map((entry) => entry.trim()).filter(Boolean)
+    : []
+  const pricing = Array.isArray(record.pricing)
+    ? record.pricing
+        .map((entry) => {
+          if (!entry || typeof entry !== 'object') {
+            return null
+          }
+
+          const pricingRecord = entry as Record<string, unknown>
+          const item = sanitizeText(pricingRecord.item)
+          const description = sanitizeText(pricingRecord.description)
+          const amount = sanitizeText(pricingRecord.amount)
+
+          if (!item || !description || !amount) {
+            return null
+          }
+
+          return { item, description, amount }
+        })
+        .filter((entry): entry is QuoteDraftContent['pricing'][number] => entry !== null)
+    : []
+
+  if (!overview || !approach || !nextSteps) {
+    return undefined
+  }
+
+  return {
+    overview,
+    approach,
+    scope,
+    assumptions,
+    pricing,
+    next_steps: nextSteps,
+  }
+}
+
 export async function GET(request: NextRequest) {
   const auth = await getAuthenticatedSupabase()
   if (!auth.ok) {
@@ -252,6 +305,23 @@ export async function POST(request: NextRequest) {
           ? Number(body.estimated_hours)
           : undefined,
         estimated_timeline: sanitizeText(body.estimated_timeline) ?? undefined,
+        draft_content: sanitizeDraftContent(body.draft_content),
+        final_content: sanitizeDraftContent(body.final_content),
+        version: Number.isFinite(Number(body.version)) ? Number(body.version) : 1,
+        generated_at:
+          typeof body.generated_at === 'string' && body.generated_at.trim()
+            ? body.generated_at
+            : undefined,
+        sent_at:
+          typeof body.sent_at === 'string' && body.sent_at.trim()
+            ? body.sent_at
+            : undefined,
+        created_by_id:
+          body.created_by_id === null || body.created_by_id === undefined
+            ? undefined
+            : typeof body.created_by_id === 'string'
+              ? body.created_by_id
+              : undefined,
         scope: sanitizeScope(body.scope),
         line_items: sanitizeLineItems(body.line_items),
         vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : 20,

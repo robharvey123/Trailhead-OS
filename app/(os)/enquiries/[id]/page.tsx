@@ -12,6 +12,9 @@ export default async function EnquiryDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   const [enquiry, quoteResult, accounts, projects] = await Promise.all([
     getEnquiryById(id, supabase).catch(() => null),
     supabase
@@ -36,6 +39,7 @@ export default async function EnquiryDetailPage({
   return (
     <EnquiryDetailClient
       initialEnquiry={enquiry}
+      currentUserId={user?.id ?? null}
       generatedQuoteId={quoteResult.data?.id ?? null}
       accounts={accounts}
       projects={projects}

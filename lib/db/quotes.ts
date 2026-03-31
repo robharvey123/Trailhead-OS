@@ -8,10 +8,12 @@ import {
   type PricingTier,
   type InvoiceTotals,
   type ProjectStatus,
+  type QuoteDraftContent,
   type Quote,
   type QuoteListItem,
   type QuoteLineItem,
   type QuoteStatus,
+  type QuoteVersion,
 } from '@/lib/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
@@ -58,6 +60,7 @@ export async function getQuotes(
     status?: QuoteStatus
     workstream_id?: string
     account_id?: string
+    contact_id?: string
     project_id?: string
   } = {},
   client?: SupabaseClient
@@ -79,6 +82,10 @@ export async function getQuotes(
 
   if (filters.account_id) {
     query = query.eq('account_id', filters.account_id)
+  }
+
+  if (filters.contact_id) {
+    query = query.eq('contact_id', filters.contact_id)
   }
 
   if (filters.project_id) {
@@ -180,6 +187,12 @@ function sanitizeQuotePayload(data: QuoteMutationInput) {
   if ('summary' in data) payload.summary = sanitizeText(data.summary)
   if ('estimated_hours' in data) payload.estimated_hours = data.estimated_hours ?? null
   if ('estimated_timeline' in data) payload.estimated_timeline = sanitizeText(data.estimated_timeline)
+  if ('draft_content' in data) payload.draft_content = data.draft_content ?? null
+  if ('final_content' in data) payload.final_content = data.final_content ?? null
+  if ('version' in data) payload.version = data.version ?? 1
+  if ('generated_at' in data) payload.generated_at = data.generated_at ?? null
+  if ('sent_at' in data) payload.sent_at = data.sent_at ?? null
+  if ('created_by_id' in data) payload.created_by_id = data.created_by_id ?? null
   if ('scope' in data) payload.scope = data.scope ?? []
   if ('line_items' in data) payload.line_items = data.line_items ?? []
   if ('vat_rate' in data) payload.vat_rate = data.vat_rate ?? 20
@@ -249,4 +262,72 @@ export async function updateQuote(
   }
 
   return mapQuote(quote as QuoteRow)
+}
+
+export async function getLatestDraftQuoteByEnquiryId(
+  enquiryId: string,
+  client?: SupabaseClient
+): Promise<QuoteListItem | null> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('quotes')
+    .select('id')
+    .eq('enquiry_id', enquiryId)
+    .in('status', ['draft', 'review'])
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(error.message || 'Failed to load draft quote')
+  }
+
+  if (!data?.id) {
+    return null
+  }
+
+  return getQuoteById(data.id, supabase)
+}
+
+export async function createQuoteVersion(
+  quoteId: string,
+  version: number,
+  content: QuoteDraftContent,
+  client?: SupabaseClient
+): Promise<QuoteVersion> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('quote_versions')
+    .insert({
+      quote_id: quoteId,
+      version,
+      content,
+      generated_at: new Date().toISOString(),
+    })
+    .select('*')
+    .single()
+
+  if (error) {
+    throw new Error(error.message || 'Failed to create quote version')
+  }
+
+  return data as QuoteVersion
+}
+
+export async function getQuoteVersions(
+  quoteId: string,
+  client?: SupabaseClient
+): Promise<QuoteVersion[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('quote_versions')
+    .select('*')
+    .eq('quote_id', quoteId)
+    .order('version', { ascending: false })
+
+  if (error) {
+    throw new Error(error.message || 'Failed to load quote versions')
+  }
+
+  return (data ?? []) as QuoteVersion[]
 }

@@ -1,11 +1,17 @@
 import Link from 'next/link'
 import { getEnquiries } from '@/lib/db/enquiries'
+import { getQuotes } from '@/lib/db/quotes'
 import { createClient } from '@/lib/supabase/server'
 import StatusBadge from '@/components/os/StatusBadge'
+import type { EnquiryStatus } from '@/lib/types'
 
 const ENQUIRY_TABS = [
   { value: 'all', label: 'All' },
   { value: 'new', label: 'New' },
+  { value: 'received', label: 'Received' },
+  { value: 'under_review', label: 'Under review' },
+  { value: 'quoted', label: 'Quoted' },
+  { value: 'closed', label: 'Closed' },
   { value: 'reviewed', label: 'Reviewed' },
   { value: 'converted', label: 'Converted' },
 ] as const
@@ -18,17 +24,29 @@ export default async function EnquiriesPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const activeStatus = resolvedSearchParams?.status ?? 'all'
   const supabase = await createClient()
-  const enquiries = await getEnquiries(
-    {
-      status:
-        activeStatus === 'new' ||
-        activeStatus === 'reviewed' ||
-        activeStatus === 'converted'
-          ? activeStatus
+  const supportedStatuses = new Set<EnquiryStatus>([
+    'new',
+    'received',
+    'under_review',
+    'quoted',
+    'closed',
+    'reviewed',
+    'converted',
+  ])
+  const [enquiries, quotes] = await Promise.all([
+    getEnquiries(
+      {
+        status: supportedStatuses.has(activeStatus as EnquiryStatus)
+          ? activeStatus as EnquiryStatus
           : undefined,
-    },
-    supabase
-  ).catch(() => [])
+      },
+      supabase
+    ).catch(() => []),
+    getQuotes({}, supabase).catch(() => []),
+  ])
+  const latestQuoteByEnquiryId = new Map(
+    quotes.filter((quote) => quote.enquiry_id).map((quote) => [quote.enquiry_id as string, quote])
+  )
 
   return (
     <div className="space-y-6">
@@ -82,11 +100,23 @@ export default async function EnquiriesPage({
                       {enquiry.contact_name} · {new Date(enquiry.created_at).toLocaleDateString('en-GB')}
                     </p>
                   </div>
-                  <StatusBadge status={enquiry.status} kind="enquiry" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge status={enquiry.status} kind="enquiry" />
+                    {latestQuoteByEnquiryId.get(enquiry.id) ? (
+                      <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100">
+                        Quote {latestQuoteByEnquiryId.get(enquiry.id)?.status}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
                 <p className="mt-3 text-sm text-slate-300">
                   {enquiry.pain_points || enquiry.extra || 'Open to view full submission details.'}
                 </p>
+                {latestQuoteByEnquiryId.get(enquiry.id) ? (
+                  <p className="mt-3 text-xs text-sky-200">
+                    Latest quote: {latestQuoteByEnquiryId.get(enquiry.id)?.quote_number} · {latestQuoteByEnquiryId.get(enquiry.id)?.title}
+                  </p>
+                ) : null}
               </Link>
             ))}
           </div>

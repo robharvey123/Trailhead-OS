@@ -10,6 +10,7 @@ import type { Workstream } from '@/lib/types'
 interface SidebarProps {
   workstreams: Workstream[]
   newEnquiryCount: number
+  activeQuoteCount: number
   collapsed?: boolean
   onToggle?: () => void
 }
@@ -117,6 +118,7 @@ function CollapseToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 export default function Sidebar({
   workstreams,
   newEnquiryCount,
+  activeQuoteCount,
   collapsed = false,
   onToggle,
 }: SidebarProps) {
@@ -288,6 +290,7 @@ export default function Sidebar({
                 label="Quotes"
                 active={pathname.startsWith('/quotes')}
                 onClick={() => setMobileOpen(false)}
+                badge={activeQuoteCount}
                 collapsed={collapsed}
               />
               <NavLink

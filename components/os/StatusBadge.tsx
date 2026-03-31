@@ -24,7 +24,11 @@ const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
   },
   enquiry: {
     new: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
+    received: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
     reviewed: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
+    under_review: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
+    quoted: 'border-violet-500/30 bg-violet-500/10 text-violet-200',
+    closed: 'border-slate-600/60 bg-slate-800/80 text-slate-200',
     converted: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
   },
   invoice: {
@@ -43,8 +47,10 @@ const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
   },
   quote: {
     draft: 'border-slate-600/60 bg-slate-800/80 text-slate-200',
+    review: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
     sent: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
     accepted: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
+    rejected: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
     declined: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
     expired: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
     converted: 'border-violet-500/30 bg-violet-500/10 text-violet-200',

@@ -21,6 +21,7 @@ export default async function OsLayout({
 
   let workstreams: Workstream[] = []
   let newEnquiryCount = 0
+  let activeQuoteCount = 0
 
   try {
     workstreams = await getWorkstreams(supabase)
@@ -39,8 +40,23 @@ export default async function OsLayout({
     newEnquiryCount = 0
   }
 
+  try {
+    const { count } = await supabase
+      .from('quotes')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['draft', 'review'])
+
+    activeQuoteCount = count ?? 0
+  } catch {
+    activeQuoteCount = 0
+  }
+
   return (
-    <OsShell workstreams={workstreams} newEnquiryCount={newEnquiryCount}>
+    <OsShell
+      workstreams={workstreams}
+      newEnquiryCount={newEnquiryCount}
+      activeQuoteCount={activeQuoteCount}
+    >
       {children}
     </OsShell>
   )

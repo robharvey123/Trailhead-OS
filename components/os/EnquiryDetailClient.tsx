@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import EmailThread from './EmailThread'
 import EnquiryDetailActions from './EnquiryDetailActions'
@@ -40,7 +40,15 @@ type EnquiryFormState = Record<EnquiryFieldKey, string> & {
   project_id: string
 }
 
-const ENQUIRY_STATUSES: EnquiryStatus[] = ['new', 'reviewed', 'converted']
+const ENQUIRY_STATUSES: EnquiryStatus[] = [
+  'received',
+  'under_review',
+  'quoted',
+  'closed',
+  'new',
+  'reviewed',
+  'converted',
+]
 
 const FIELD_CONFIG: Array<{
   key: EnquiryFieldKey
@@ -194,12 +202,14 @@ function renderInput(
 
 export default function EnquiryDetailClient({
   initialEnquiry,
+  currentUserId,
   generatedQuoteId,
   accounts,
   projects,
   linkedProject,
 }: {
   initialEnquiry: Enquiry
+  currentUserId: string | null
   generatedQuoteId: string | null
   accounts: Account[]
   projects: ProjectListItem[]
@@ -211,6 +221,11 @@ export default function EnquiryDetailClient({
   const [form, setForm] = useState<EnquiryFormState>(() => buildFormState(initialEnquiry))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [internalNotes, setInternalNotes] = useState(initialEnquiry.internal_notes ?? '')
+  const [internalNotesStatus, setInternalNotesStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [internalNotesMessage, setInternalNotesMessage] = useState<string | null>(null)
+  const lastSavedInternalNotesRef = useRef(initialEnquiry.internal_notes ?? '')
+  const internalNotesTimeoutRef = useRef<number | null>(null)
 
   const linkedAccount = useMemo(
     () => accounts.find((account) => account.id === enquiry.account_id) ?? null,
@@ -246,6 +261,62 @@ export default function EnquiryDetailClient({
     setForm(buildFormState(enquiry))
     setError(null)
   }
+
+  useEffect(() => {
+    setInternalNotes(enquiry.internal_notes ?? '')
+    lastSavedInternalNotesRef.current = enquiry.internal_notes ?? ''
+    setInternalNotesStatus('idle')
+    setInternalNotesMessage(null)
+  }, [enquiry.id, enquiry.internal_notes])
+
+  useEffect(() => {
+    if (internalNotes === lastSavedInternalNotesRef.current) {
+      return
+    }
+
+    setInternalNotesStatus('saving')
+    setInternalNotesMessage('Saving internal notes...')
+
+    if (internalNotesTimeoutRef.current) {
+      window.clearTimeout(internalNotesTimeoutRef.current)
+    }
+
+    internalNotesTimeoutRef.current = window.setTimeout(async () => {
+      try {
+        const timestamp = new Date().toISOString()
+        const { enquiry: updatedEnquiry } = await apiFetch<{ enquiry: Enquiry }>(
+          `/api/enquiries/${enquiry.id}`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              internal_notes: internalNotes,
+              internal_notes_updated_at: timestamp,
+              internal_notes_author_id: currentUserId,
+            }),
+          }
+        )
+
+        lastSavedInternalNotesRef.current = updatedEnquiry.internal_notes ?? ''
+        setEnquiry(updatedEnquiry)
+        setInternalNotes(updatedEnquiry.internal_notes ?? '')
+        setInternalNotesStatus('saved')
+        setInternalNotesMessage(`Saved ${new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)
+        router.refresh()
+      } catch (saveError) {
+        setInternalNotesStatus('error')
+        setInternalNotesMessage(
+          saveError instanceof Error ? saveError.message : 'Failed to save internal notes'
+        )
+      }
+    }, 1000)
+
+    return () => {
+      if (internalNotesTimeoutRef.current) {
+        window.clearTimeout(internalNotesTimeoutRef.current)
+      }
+    }
+  }, [currentUserId, enquiry.id, internalNotes, router])
 
   async function saveChanges() {
     if (
@@ -520,6 +591,36 @@ export default function EnquiryDetailClient({
                 </div>
               ))}
             </div>
+          </section>
+
+          <section className="rounded-[2rem] border border-amber-500/20 bg-slate-900/70 p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-100">Internal notes</h2>
+                <p className="text-sm text-slate-400">
+                  Recommendations, delivery angles, and commercial context used for quote drafting. These notes are never sent to the client.
+                </p>
+              </div>
+              <p
+                className={`text-xs ${
+                  internalNotesStatus === 'error'
+                    ? 'text-rose-300'
+                    : internalNotesStatus === 'saved'
+                      ? 'text-emerald-300'
+                      : 'text-slate-500'
+                }`}
+              >
+                {internalNotesMessage ?? 'Autosaves after 1 second'}
+              </p>
+            </div>
+
+            <textarea
+              value={internalNotes}
+              onChange={(event) => setInternalNotes(event.target.value)}
+              rows={10}
+              placeholder="Add your internal recommendations, delivery assumptions, phase changes, pricing considerations, and anything the draft quote should account for."
+              className="mt-5 w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-4 text-sm text-slate-100"
+            />
           </section>
 
           <details className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">

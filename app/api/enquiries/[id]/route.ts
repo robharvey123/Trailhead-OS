@@ -3,7 +3,15 @@ import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { getEnquiryById, updateEnquiry } from '@/lib/db/enquiries'
 import type { Enquiry, EnquiryStatus } from '@/lib/types'
 
-const ENQUIRY_STATUSES = new Set<EnquiryStatus>(['new', 'reviewed', 'converted'])
+const ENQUIRY_STATUSES = new Set<EnquiryStatus>([
+  'new',
+  'reviewed',
+  'converted',
+  'received',
+  'under_review',
+  'quoted',
+  'closed',
+])
 
 function sanitizeText(value: unknown): string | null {
   if (typeof value !== 'string') {
@@ -139,13 +147,19 @@ export async function PATCH(
   if ('referral_source' in body) patch.referral_source = sanitizeText(body.referral_source)
   if ('budget' in body) patch.budget = sanitizeText(body.budget)
   if ('extra' in body) patch.extra = sanitizeText(body.extra)
+  if ('internal_notes' in body) patch.internal_notes = sanitizeText(body.internal_notes)
+  if ('internal_notes_updated_at' in body) {
+    patch.internal_notes_updated_at =
+      typeof body.internal_notes_updated_at === 'string' ? body.internal_notes_updated_at : null
+  }
+  if ('internal_notes_author_id' in body) {
+    patch.internal_notes_author_id =
+      typeof body.internal_notes_author_id === 'string' ? body.internal_notes_author_id : null
+  }
 
   if (body.status !== undefined) {
     if (typeof body.status !== 'string' || !ENQUIRY_STATUSES.has(body.status as EnquiryStatus)) {
-      return NextResponse.json(
-        { error: 'status must be new, reviewed, or converted' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'status must be a valid enquiry status' }, { status: 400 })
     }
 
     patch.status = body.status as EnquiryStatus

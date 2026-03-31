@@ -10,11 +10,13 @@ import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
 import { formatTaskSchedule } from '@/lib/os'
+import { calculateTotals } from '@/lib/types'
 import type {
   Account,
   Contact,
   ContactStatus,
   ProjectListItem,
+  QuoteListItem,
   TaskWithWorkstream,
   Touchpoint,
   Workstream,
@@ -32,6 +34,7 @@ export default function ContactDetailClient({
   workstreams,
   accounts,
   linkedTasks,
+  linkedQuotes,
   sourceEnquiryId,
   initialTouchpoints,
   projects,
@@ -40,6 +43,7 @@ export default function ContactDetailClient({
   workstreams: Workstream[]
   accounts: Account[]
   linkedTasks: TaskWithWorkstream[]
+  linkedQuotes: QuoteListItem[]
   sourceEnquiryId: string | null
   initialTouchpoints: Touchpoint[]
   projects: ProjectListItem[]
@@ -377,6 +381,51 @@ export default function ContactDetailClient({
         projects={projects}
         emptyMessage="No projects linked to this contact yet."
       />
+
+      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-100">Quotes</h2>
+            <p className="text-sm text-slate-400">Proposals linked to this contact.</p>
+          </div>
+          <Link
+            href={contact.account_id ? `/quotes/new?account_id=${contact.account_id}` : '/quotes/new'}
+            className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+          >
+            New quote
+          </Link>
+        </div>
+
+        {linkedQuotes.length ? (
+          <div className="mt-4 space-y-3">
+            {linkedQuotes.map((quote) => (
+              <Link
+                key={quote.id}
+                href={`/quotes/${quote.id}`}
+                className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-600"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-slate-100">{quote.quote_number}</p>
+                    <p className="mt-1 text-sm text-slate-300">{quote.title}</p>
+                    <p className="mt-2 text-xs text-slate-500">{quote.issue_date}</p>
+                  </div>
+                  <div className="text-right">
+                    <StatusBadge status={quote.status} kind="quote" />
+                    <p className="mt-2 text-sm font-medium text-slate-100">
+                      £{calculateTotals(quote.line_items, quote.vat_rate).total.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-3xl border border-dashed border-slate-700 px-4 py-8 text-sm text-slate-500">
+            No quotes linked to this contact yet.
+          </div>
+        )}
+      </div>
 
       <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
         <div className="flex items-center justify-between gap-3">
