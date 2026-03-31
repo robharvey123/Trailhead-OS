@@ -18,6 +18,51 @@ import type {
 } from '@/lib/types'
 
 const QUOTE_VALIDITY_DAYS = 30
+const JSON_REPAIR_SYSTEM_PROMPT = `You repair malformed JSON.
+
+Return only a valid JSON object.
+Do not include markdown, explanation, or code fences.
+Preserve the original meaning as closely as possible.
+The JSON must match this shape:
+{
+  "title": string,
+  "summary": string,
+  "draft_content": {
+    "overview": string,
+    "approach": string,
+    "scope": string[],
+    "assumptions": string[],
+    "pricing": [{ "item": string, "description": string, "amount": string }],
+    "next_steps": string
+  },
+  "pricing_type": "fixed" | "time_and_materials" | "milestone",
+  "estimated_hours": number,
+  "estimated_timeline": string,
+  "scope": [{
+    "phase": string,
+    "description": string,
+    "deliverables": string[],
+    "duration": string,
+    "estimated_hours": number
+  }],
+  "line_items": [{
+    "id": string,
+    "description": string,
+    "qty": number,
+    "unit_price": number,
+    "type": "fixed" | "hourly" | "milestone"
+  }],
+  "vat_rate": 20,
+  "payment_terms": string,
+  "notes": string,
+  "complexity_breakdown": {
+    "features_scored": string[],
+    "overhead_hours": number,
+    "total_hours_before_buffer": number,
+    "buffer_applied": string,
+    "total_hours_final": number
+  }
+}`
 
 type EnquiryPrompt = Pick<
   Enquiry,
@@ -321,10 +366,21 @@ function buildUserPrompt(args: {
   enquiry: EnquiryPrompt
   project?: ProjectPrompt | null
   guidance: QuoteGuidance
+  isRevision?: boolean
+  previousQuoteSummary?: string | null
+  previousQuoteVersion?: number | null
 }) {
   const { enquiry, project, guidance } = args
 
-  return `Client discovery form submission:
+  return `${args.isRevision ? `REVISION REQUEST — Version ${(args.previousQuoteVersion ?? 1) + 1}:
+You are revising an existing quote, not generating a fresh one.
+${args.previousQuoteSummary ? `Previous quote summary: ${args.previousQuoteSummary}` : ''}
+Apply the guidance below to improve and revise the quote.
+Keep what works. Change what the guidance directs.
+Do not start from scratch unless the guidance indicates a 
+fundamental change of direction.
+
+` : ''}Client discovery form submission:
 
 Business: ${enquiry.biz_name}
 Contact: ${enquiry.contact_name} (${enquiry.contact_email})
@@ -353,11 +409,12 @@ ${project.phases.map((phase, index) => `${index + 1}. ${phase.phase} | Duration:
 
 ${buildGuidancePrompt(guidance)}
 
-Internal recommendations for quote drafting (never expose these notes directly to the client, but use them to shape the quote):
+Internal notes (written by Rob — never expose to the client, 
+but treat these as high-priority instructions that override 
+general guidance where they conflict):
 ${enquiry.internal_notes || 'None provided'}
 
-Please analyse this and generate a detailed scope of work
-and accurate quote using your estimation methodology.`
+Please ${args.isRevision ? 'revise the quote based on the above guidance and internal notes' : 'analyse this and generate a detailed scope of work and accurate quote using your estimation methodology'}.`
 }
 
 function mapProjectToScope(project: ProjectDetail): QuoteScope[] {
@@ -416,7 +473,7 @@ function sanitizeScope(value: unknown): QuoteScope[] {
             .filter(Boolean)
         : []
 
-      if (!phase || !description || !duration) {
+      if (!phase || !description) {
         return null
       }
 
@@ -424,7 +481,7 @@ function sanitizeScope(value: unknown): QuoteScope[] {
         phase,
         description,
         deliverables,
-        duration,
+        duration: duration || 'TBC',
         estimated_hours: Number.isFinite(estimatedHours) ? estimatedHours : undefined,
       }
 
@@ -605,8 +662,8 @@ function enforceHostingLineItem(
 
 async function callAnthropic(system: string, user: string) {
   const response = await anthropic.messages.create({
-    model: ANTHROPIC_MODELS.SONNET,
-    max_tokens: 4000,
+    model: ANTHROPIC_MODELS.OPUS,
+    max_tokens: 6000,
     temperature: 0,
     system,
     messages: [
@@ -752,6 +809,45 @@ function parseAiResponse(text: string, tier?: PricingTier | null): AiQuoteRespon
   }
 }
 
+async function repairAiJson(text: string) {
+  const response = await anthropic.messages.create({
+    model: ANTHROPIC_MODELS.HAIKU,
+    max_tokens: 4000,
+    temperature: 0,
+    system: JSON_REPAIR_SYSTEM_PROMPT,
+    messages: [
+      {
+        role: 'user',
+        content: `Repair this malformed JSON into a valid JSON object only:\n\n${text}`,
+      },
+    ],
+  })
+
+  return response.content
+    .filter((item): item is Extract<(typeof response.content)[number], { type: 'text' }> => item.type === 'text')
+    .map((item) => item.text)
+    .join('\n')
+    .trim()
+}
+
+async function parseAiResponseWithRepair(text: string, tier?: PricingTier | null) {
+  try {
+    return parseAiResponse(text, tier)
+  } catch (initialError) {
+    console.error('Initial AI quote parse failed, attempting repair')
+
+    const repairedText = await repairAiJson(text)
+
+    try {
+      return parseAiResponse(repairedText, tier)
+    } catch {
+      console.error('AI quote repair failed. Original response excerpt:', text.slice(0, 1500))
+      console.error('AI quote repair failed. Repaired response excerpt:', repairedText.slice(0, 1500))
+      throw initialError
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   const auth = await getAuthenticatedSupabase()
   if (!auth.ok) {
@@ -806,7 +902,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Enquiry not found' }, { status: 404 })
     }
 
-    const targetQuoteId = quoteId ?? (!createNewVersion && forceRegenerate ? existingQuote?.id : undefined)
+    // When creating a new version or force-regenerating, we still need
+    // to load the existing quote so we can version it correctly.
+    const targetQuoteId =
+      quoteId ??
+      (createNewVersion || forceRegenerate ? existingQuote?.id : undefined)
     const existingQuoteRecord = targetQuoteId
       ? await getQuoteById(targetQuoteId, auth.supabase)
       : null
@@ -878,6 +978,9 @@ export async function POST(request: NextRequest) {
               }
             : null,
           guidance,
+          isRevision: !!existingQuoteRecord,
+          previousQuoteSummary: existingQuoteRecord?.summary ?? null,
+          previousQuoteVersion: existingQuoteRecord?.version ?? null,
         })
       )
     } catch (error) {
@@ -890,7 +993,7 @@ export async function POST(request: NextRequest) {
 
     let aiResponse: AiQuoteResponse
     try {
-      aiResponse = parseAiResponse(rawText, pricingTier)
+      aiResponse = await parseAiResponseWithRepair(rawText, pricingTier)
     } catch (parseError) {
       return NextResponse.json(
         { error: parseError instanceof Error ? parseError.message : 'Failed to parse AI quote' },
