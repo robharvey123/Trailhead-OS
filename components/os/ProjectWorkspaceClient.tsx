@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import {
   DndContext,
@@ -1038,19 +1039,28 @@ export default function ProjectWorkspaceClient({
             <p className="mt-2 max-w-3xl text-sm text-slate-400">{project.description || project.brief || 'No summary added yet.'}</p>
           </div>
 
-          <div className="inline-flex rounded-2xl border border-white/10 bg-slate-950/80 p-1 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
-            {(['list', 'gantt', 'table'] as const).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setView(mode)}
-                className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
-                  view === mode ? 'bg-white text-slate-950' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Link
+              href={`/projects/records/${project.id}/edit`}
+              className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
+            >
+              Edit project
+            </Link>
+
+            <div className="inline-flex rounded-2xl border border-white/10 bg-slate-950/80 p-1 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
+              {(['list', 'gantt', 'table'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setView(mode)}
+                  className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
+                    view === mode ? 'bg-white text-slate-950' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
