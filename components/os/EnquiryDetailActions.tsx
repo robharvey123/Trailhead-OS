@@ -177,6 +177,7 @@ export default function EnquiryDetailActions({
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to convert enquiry')
+    } finally {
       setLoadingAction(null)
     }
   }
@@ -237,6 +238,7 @@ export default function EnquiryDetailActions({
       setGenerateError(
         generateError instanceof Error ? generateError.message : 'Failed to generate quote'
       )
+    } finally {
       setLoadingAction(null)
     }
   }
@@ -303,6 +305,7 @@ export default function EnquiryDetailActions({
               <button
                 type="button"
                 onClick={() => {
+                  setLoadingAction(null)
                   setGenerateError(null)
                   setShowGenerateModal(true)
                 }}
@@ -372,8 +375,19 @@ export default function EnquiryDetailActions({
       </section>
 
       {showGenerateModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 py-8">
-          <div className="w-full max-w-5xl rounded-[2rem] border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 px-4 py-8">
+          <button
+            type="button"
+            aria-label="Close quote revision modal"
+            className="absolute inset-0"
+            onClick={() => {
+              if (loadingAction !== 'generate') {
+                setShowGenerateModal(false)
+              }
+            }}
+          />
+
+          <div className="relative mx-auto my-4 w-full max-w-5xl rounded-[2rem] border border-slate-800 bg-slate-900 p-6 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-2xl font-semibold text-slate-50">Select pricing tier</h2>
