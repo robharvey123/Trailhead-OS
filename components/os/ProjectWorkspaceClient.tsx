@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import {
   DndContext,
@@ -576,6 +577,7 @@ export default function ProjectWorkspaceClient({
   project: ProjectDetail
   initialTaskId?: string | null
 }) {
+  const router = useRouter()
   const [supabase] = useState(() => createClient())
   const [view, setView] = useState<ProjectView>('list')
   const [zoom, setZoom] = useState<GanttZoom>('week')
@@ -597,6 +599,7 @@ export default function ProjectWorkspaceClient({
   const [sortKey, setSortKey] = useState<SortKey>('due_date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [liveStatus, setLiveStatus] = useState<'live' | 'syncing' | 'offline'>('syncing')
+  const [planningProject, setPlanningProject] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
@@ -784,6 +787,26 @@ export default function ProjectWorkspaceClient({
     setPriorityFilter('all')
     setOwnerFilter('all')
     setShowSubtasks(true)
+  }
+
+  async function runAiPlan() {
+    if (planningProject || project.ai_planned) {
+      return
+    }
+
+    setPlanningProject(true)
+    setError(null)
+
+    try {
+      await apiFetch(`/api/projects/${project.id}/ai-plan`, {
+        method: 'POST',
+      })
+      router.refresh()
+    } catch (planningError) {
+      setError(planningError instanceof Error ? planningError.message : 'Failed to AI plan project')
+    } finally {
+      setPlanningProject(false)
+    }
   }
 
   function navigateBackInTaskStack() {
@@ -1037,9 +1060,36 @@ export default function ProjectWorkspaceClient({
             </div>
             <h1 className="mt-3 text-3xl font-semibold text-slate-50">{project.title || project.name}</h1>
             <p className="mt-2 max-w-3xl text-sm text-slate-400">{project.description || project.brief || 'No summary added yet.'}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {project.ai_planned ? (
+                  <span className="inline-flex rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">
+                    AI planned
+                  </span>
+                ) : null}
+                {!project.ai_planned && project.brief ? (
+                  <span className="inline-flex rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-100">
+                    Ready for AI planning
+                  </span>
+                ) : null}
+                {!project.ai_planned && !project.brief ? (
+                  <span className="inline-flex rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100">
+                    Add a brief to use AI planning
+                  </span>
+                ) : null}
+              </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-3">
+            {!project.ai_planned ? (
+              <button
+                type="button"
+                onClick={() => void runAiPlan()}
+                disabled={planningProject || !project.brief}
+                className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {planningProject ? 'Running AI plan...' : 'Run AI plan'}
+              </button>
+            ) : null}
             <Link
               href={`/projects/records/${project.id}/edit`}
               className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"

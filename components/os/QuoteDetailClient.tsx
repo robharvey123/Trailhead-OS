@@ -657,6 +657,60 @@ export default function QuoteDetailClient({
             <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Status</p>
             <StatusBadge status={quoteState.status} kind="quote" className="mt-4" />
 
+            <div className="mt-6 rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">AI handoff</p>
+              {quoteState.project ? (
+                <>
+                  <p className="mt-2 text-sm text-slate-300">
+                    This quote is already linked to a delivery project.
+                  </p>
+                  <Link
+                    href={`/projects/records/${quoteState.project.id}`}
+                    className="mt-3 block rounded-2xl border border-slate-700 px-4 py-3 text-center text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                  >
+                    Open linked project
+                  </Link>
+                </>
+              ) : quoteState.status === 'accepted' || quoteState.status === 'converted' ? (
+                <>
+                  <p className="mt-2 text-sm text-slate-300">
+                    The quote is approved. AI can now turn the agreed scope into a project, milestones, and starter tasks.
+                  </p>
+                  <div className="mt-3 space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => void createProjectFromQuote(true)}
+                      disabled={loadingAction !== null}
+                      className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                    >
+                      {loadingAction === 'create-project-ai' ? 'Creating AI project...' : 'Create project with AI plan'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void createProjectFromQuote(false)}
+                      disabled={loadingAction !== null}
+                      className="w-full rounded-2xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
+                    >
+                      {loadingAction === 'create-project' ? 'Creating project...' : 'Create project only'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="mt-2 text-sm text-slate-300">
+                    AI planning becomes available once this quote is marked accepted.
+                  </p>
+                  <button
+                    type="button"
+                    disabled
+                    className="mt-3 w-full rounded-2xl border border-slate-800 px-4 py-3 text-sm font-medium text-slate-500 opacity-80"
+                  >
+                    Accept quote to enable AI project planning
+                  </button>
+                </>
+              )}
+            </div>
+
             <div className="mt-6 space-y-3">
               {quoteState.status === 'draft' ? (
                 <button
@@ -707,35 +761,6 @@ export default function QuoteDetailClient({
 
               {quoteState.status === 'accepted' ? (
                 <>
-                  {!quoteState.project ? (
-                    <button
-                      type="button"
-                      onClick={() => void createProjectFromQuote(true)}
-                      disabled={loadingAction !== null}
-                      className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
-                    >
-                      {loadingAction === 'create-project-ai' ? 'Creating AI project...' : 'Create project with AI plan'}
-                    </button>
-                  ) : null}
-
-                  {!quoteState.project ? (
-                    <button
-                      type="button"
-                      onClick={() => void createProjectFromQuote(false)}
-                      disabled={loadingAction !== null}
-                      className="w-full rounded-2xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
-                    >
-                      {loadingAction === 'create-project' ? 'Creating project...' : 'Create project only'}
-                    </button>
-                  ) : (
-                    <Link
-                      href={`/projects/records/${quoteState.project.id}`}
-                      className="block rounded-2xl border border-slate-700 px-4 py-3 text-center text-sm font-medium text-slate-200 transition hover:border-slate-500"
-                    >
-                      View linked project
-                    </Link>
-                  )}
-
                   <button
                     type="button"
                     onClick={convertToInvoice}
