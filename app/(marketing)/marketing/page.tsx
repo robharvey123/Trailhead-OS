@@ -10,9 +10,9 @@ import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 
 const services = [
   {
-    title: 'Brand & NGP Consulting',
+    title: 'NGP & FMCG Consulting',
     description:
-      '13+ years in nicotine pouches, vaping, and adjacent FMCG categories across UK and European markets. From market entry strategy to distributor relationships and channel pricing — we know this space.',
+      'One of a handful of UK operators with hands-on experience across both nicotine pouches and vaping. 13+ years navigating category complexity, building distributor networks, and taking brands to market across the UK and Europe.',
     cta: 'Talk to us →',
     href: '#contact',
     icon: (
@@ -72,9 +72,69 @@ const services = [
 
 const stats = [
   ['13+', 'Years in NGP & FMCG'],
-  ['5', 'Active workstreams'],
-  ['3', 'Countries served'],
-  ['2026', 'Founded'],
+  ['6', 'International markets operated in'],
+  ['£5M+', 'Revenue built from scratch'],
+  ['1', 'Successful founder exit'],
+]
+
+const consultingServices = [
+  'Go-to-market strategy and execution',
+  'Market entry, UK, EU, DACH, Sweden',
+  'Distributor identification and negotiation',
+  'Pricing architecture and value-chain design',
+  'Brand launch and route-to-market',
+  'SKU and portfolio strategy',
+  'Channel strategy, D2C, Retail, Wholesale',
+  'Interim Commercial Director',
+]
+
+const consultingTrackRecord = [
+  {
+    period: '2024.26',
+    company: 'Dholakia Tobacco',
+    role: 'Head of Sales and Business Development',
+    summary:
+      'RUSH and PAZ nicotine pouches. UK and EU expansion across DACH, Sweden, Italy, and South Africa.',
+  },
+  {
+    period: '2023.24',
+    company: 'RoarLabs',
+    role: 'Chief Executive Officer',
+    summary:
+      'Built a reduced-risk nicotine brand from the ground up. Full UK launch delivered in six months.',
+  },
+  {
+    period: '2022.23',
+    company: 'Flonq',
+    role: 'Head of Sales UK',
+    summary:
+      'UK market entry for e-cigarettes from zero. Retail and distribution coverage built within twelve months.',
+  },
+  {
+    period: '2020.22',
+    company: 'V&YOU',
+    role: 'Head of Sales and Marketing',
+    summary:
+      '£1M+ annual revenue. National UK distribution secured through Unitas.',
+  },
+  {
+    period: '2014.20',
+    company: 'EOS Leisure',
+    role: 'Founder and CCO',
+    summary:
+      'One of the UK\'s leading vaping and CBD companies. £1,500 start-up to £5M+ turnover. £4M raised. Successful exit in 2019.',
+  },
+]
+
+const categoryTags = [
+  'Nicotine Pouches',
+  'Vaping',
+  'Caffeine Pouches',
+  'CBD',
+  'Reduced-Risk',
+  'FMCG',
+  'D2C',
+  'UK and Europe',
 ]
 
 const leaderboardRows = [
@@ -174,16 +234,16 @@ export default async function MarketingHomePage() {
         <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              About
+              NGP & FMCG Consulting
             </p>
             <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-              One company. Multiple workstreams.
+              Deep category expertise. From launch to scale.
             </h2>
             <p className="mt-6 text-lg leading-8 text-slate-600">
-              Trailhead Holdings is the holding company for Rob Harvey&apos;s
-              portfolio of commercial and digital ventures. Rather than
-              spreading across multiple entities, everything runs through one
-              lean, tech-enabled operation.
+              One of a handful of UK operators with hands-on experience across
+              both nicotine pouches and vaping. 13+ years navigating category
+              complexity, building distributor networks, and taking brands to
+              market across the UK and Europe.
             </p>
           </div>
 
@@ -202,6 +262,80 @@ export default async function MarketingHomePage() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="mx-auto mt-12 grid max-w-[1100px] gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+              Services
+            </p>
+            <ul className="mt-6 space-y-4">
+              {consultingServices.map((service) => (
+                <li
+                  key={service}
+                  className="rounded-2xl border border-[var(--marketing-border)] bg-white px-5 py-4 text-sm font-medium leading-6 text-slate-700"
+                >
+                  {service}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+              Track record
+            </p>
+            <div className="mt-6 space-y-4">
+              {consultingTrackRecord.map((entry) => (
+                <div
+                  key={`${entry.period}-${entry.company}`}
+                  className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-5"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">
+                    {entry.period}
+                  </p>
+                  <h3 className="mt-3 text-xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+                    {entry.company}
+                  </h3>
+                  <p className="mt-2 text-sm font-semibold text-slate-700">
+                    {entry.role}
+                  </p>
+                  <p className="mt-3 text-[0.98rem] leading-7 text-slate-600">
+                    {entry.summary}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </article>
+        </div>
+
+        <div className="mx-auto mt-6 max-w-[1100px] rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+            Category focus
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {categoryTags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
+            Available for retained advisory, project-based work, and interim
+            commercial director appointments. All engagements via Trailhead
+            Holdings Ltd.
+          </p>
+
+          <Link
+            href={buildMarketingHref('/#contact', isLocalhost)}
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
+          >
+            Talk to us
+          </Link>
         </div>
       </Reveal>
 
