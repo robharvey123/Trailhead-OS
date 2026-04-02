@@ -61,6 +61,7 @@ function mapTaskWithWorkstream(row: TaskRowWithJoin): TaskWithWorkstream {
     project_id: row.project_id,
     phase_id: row.phase_id ?? null,
     parent_task_id: row.parent_task_id ?? null,
+    owner_user_id: row.owner_user_id ?? null,
     title: row.title,
     description: row.description,
     status: row.status ?? (row.completed_at ? 'done' : 'todo'),
@@ -234,6 +235,7 @@ export async function createTask(
     contact_id: input.contact_id ?? null,
     project_id: input.project_id ?? null,
     parent_task_id: input.parent_task_id ?? null,
+    owner_user_id: input.owner_user_id ?? null,
     title,
     description: input.description?.trim() || null,
     status: input.status ?? 'todo',
@@ -322,6 +324,10 @@ export async function updateTask(
 
   if (input.parent_task_id !== undefined) {
     patch.parent_task_id = input.parent_task_id
+  }
+
+  if (input.owner_user_id !== undefined) {
+    patch.owner_user_id = input.owner_user_id
   }
 
   if (input.title !== undefined) {

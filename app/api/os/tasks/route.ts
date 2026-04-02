@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
         contact_id: body.contact_id ?? null,
         project_id: body.project_id ?? null,
         parent_task_id: body.parent_task_id ?? null,
+        owner_user_id: user.id,
         description: body.description ?? null,
         status: body.status ?? 'todo',
         priority: body.priority ?? 'medium',

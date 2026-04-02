@@ -316,12 +316,7 @@ export async function POST(request: NextRequest) {
           typeof body.sent_at === 'string' && body.sent_at.trim()
             ? body.sent_at
             : undefined,
-        created_by_id:
-          body.created_by_id === null || body.created_by_id === undefined
-            ? undefined
-            : typeof body.created_by_id === 'string'
-              ? body.created_by_id
-              : undefined,
+        created_by_id: auth.user.id,
         scope: sanitizeScope(body.scope),
         line_items: sanitizeLineItems(body.line_items),
         vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : 20,

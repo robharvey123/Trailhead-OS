@@ -476,6 +476,7 @@ export interface Task {
   project_id: string | null
   phase_id: string | null
   parent_task_id: string | null
+  owner_user_id: string | null
   title: string
   description: string | null
   status: ProjectTaskStatus
@@ -555,6 +556,7 @@ export interface CalendarEvent {
   start_at: string
   end_at: string
   all_day: boolean
+  user_id: string | null
   workstream_id: string | null
   contact_id: string | null
   project_id: string | null
@@ -642,6 +644,7 @@ export interface CreateTaskInput {
   contact_id?: string | null
   project_id?: string | null
   parent_task_id?: string | null
+  owner_user_id?: string | null
   title: string
   description?: string | null
   status?: ProjectTaskStatus
@@ -666,6 +669,7 @@ export interface UpdateTaskInput {
   contact_id?: string | null
   project_id?: string | null
   parent_task_id?: string | null
+  owner_user_id?: string | null
   title?: string
   description?: string | null
   status?: ProjectTaskStatus

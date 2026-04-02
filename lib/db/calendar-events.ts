@@ -21,6 +21,7 @@ export interface CreateCalendarEventInput {
   start_at: string
   end_at: string
   all_day?: boolean
+  user_id?: string | null
   workstream_id?: string | null
   contact_id?: string | null
   project_id?: string | null
@@ -107,6 +108,7 @@ export async function createCalendarEvent(
       start_at: input.start_at,
       end_at: input.end_at,
       all_day: input.all_day ?? false,
+      user_id: input.user_id ?? null,
       workstream_id: input.workstream_id ?? null,
       contact_id: input.contact_id ?? null,
       project_id: input.project_id ?? null,

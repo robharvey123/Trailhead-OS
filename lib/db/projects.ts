@@ -38,6 +38,7 @@ type TaskProjectRow = {
   project_id: string | null
   phase_id: string | null
   parent_task_id: string | null
+  owner_user_id: string | null
   title: string
   description: string | null
   status: TaskWithWorkstream['status']
@@ -165,6 +166,7 @@ function mapTaskRow(row: TaskProjectRow): TaskWithWorkstream {
     project_id: row.project_id,
     phase_id: row.phase_id,
     parent_task_id: row.parent_task_id,
+    owner_user_id: row.owner_user_id,
     title: row.title,
     description: row.description,
     status: row.status,
@@ -254,7 +256,7 @@ export async function getProjects(
   const [tasksResult, contactsResult, milestonesResult] = await Promise.all([
     supabase
       .from('tasks')
-      .select('id, workstream_id, column_id, account_id, contact_id, project_id, phase_id, parent_task_id, title, description, status, priority, owner, start_date, due_date, due_time, estimated_hours, actual_hours, is_master_todo, tags, sort_order, order_index, custom_fields, completed_at, created_at, updated_at, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
+      .select('id, workstream_id, column_id, account_id, contact_id, project_id, phase_id, parent_task_id, owner_user_id, title, description, status, priority, owner, start_date, due_date, due_time, estimated_hours, actual_hours, is_master_todo, tags, sort_order, order_index, custom_fields, completed_at, created_at, updated_at, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
       .in('project_id', projectIds),
     supabase
       .from('project_contacts')

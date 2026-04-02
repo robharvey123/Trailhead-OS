@@ -18,7 +18,7 @@ async function getAuthenticatedSupabase() {
     return { supabase, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
-  return { supabase, response: null }
+  return { supabase, user, response: null }
 }
 
 function parseIsoDateTime(value: unknown, field: string) {
@@ -130,6 +130,7 @@ export async function POST(request: NextRequest) {
       start_at,
       end_at,
       all_day: body.all_day === true,
+      user_id: auth.user.id,
       workstream_id: sanitizeOptionalId(body.workstream_id),
       contact_id: sanitizeOptionalId(body.contact_id),
       project_id: sanitizeOptionalId(body.project_id),
