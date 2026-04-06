@@ -244,7 +244,7 @@ function InvoiceDocument({
               <Text style={styles.bankValue}>CLRBGB22</Text>
             </View>
             <View style={styles.bankColumn}>
-              <Text style={styles.bankLabel}>RUR Account IBAN</Text>
+              <Text style={styles.bankLabel}>EUR Account IBAN</Text>
               <Text style={styles.bankValue}>GB18 TCCL 0099 7927 9655 89</Text>
               <Text style={styles.bankLabel}>BIC</Text>
               <Text style={styles.bankValue}>TCCLGB31</Text>
