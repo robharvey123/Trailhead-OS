@@ -102,6 +102,26 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: 700,
   },
+  bankDetails: {
+    marginTop: 24,
+    paddingTop: 12,
+    borderTop: '1 solid #e2e8f0',
+  },
+  bankGrid: {
+    flexDirection: 'row',
+    gap: 48,
+  },
+  bankColumn: {
+    flex: 1,
+  },
+  bankLabel: {
+    fontSize: 8,
+    color: '#64748b',
+    marginBottom: 1,
+  },
+  bankValue: {
+    marginBottom: 6,
+  },
   notes: {
     marginTop: 24,
     paddingTop: 12,
@@ -205,6 +225,30 @@ function InvoiceDocument({
           <View style={styles.totalRow}>
             <Text>Total</Text>
             <Text>{formatMoney(totals.total)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.bankDetails}>
+          <Text style={styles.sectionTitle}>Payment Details</Text>
+          <View style={styles.bankGrid}>
+            <View style={styles.bankColumn}>
+              <Text style={styles.bankLabel}>Account name</Text>
+              <Text style={styles.bankValue}>Trailhead Holdings LTD</Text>
+              <Text style={styles.bankLabel}>Sort code</Text>
+              <Text style={styles.bankValue}>04-06-05</Text>
+              <Text style={styles.bankLabel}>Account number</Text>
+              <Text style={styles.bankValue}>29684482</Text>
+              <Text style={styles.bankLabel}>IBAN</Text>
+              <Text style={styles.bankValue}>GB75 CLRB 0406 0529 6844 82</Text>
+              <Text style={styles.bankLabel}>SWIFT</Text>
+              <Text style={styles.bankValue}>CLRBGB22</Text>
+            </View>
+            <View style={styles.bankColumn}>
+              <Text style={styles.bankLabel}>RUR Account IBAN</Text>
+              <Text style={styles.bankValue}>GB18 TCCL 0099 7927 9655 89</Text>
+              <Text style={styles.bankLabel}>BIC</Text>
+              <Text style={styles.bankValue}>TCCLGB31</Text>
+            </View>
           </View>
         </View>
 
