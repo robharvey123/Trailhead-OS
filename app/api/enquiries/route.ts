@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
+import { getApiKeyAuth } from '@/lib/api/auth'
 import { DEFAULT_RESEND_FROM, resend } from '@/lib/email/resend'
 import { newEnquiryEmail } from '@/lib/email/templates/new-enquiry'
 import type { Enquiry, EnquiryFormState, EnquiryStatus } from '@/lib/types'
@@ -105,6 +106,11 @@ function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 
 }
 
 async function getAuthenticatedSupabase() {
+  const apiKeyAuth = await getApiKeyAuth()
+  if (apiKeyAuth) {
+    return { supabase: apiKeyAuth.supabase, response: null }
+  }
+
   const supabase = await createSupabaseClient()
   const {
     data: { user },

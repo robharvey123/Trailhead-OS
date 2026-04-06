@@ -1,7 +1,9 @@
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type WorkspaceContext = {
-  supabase: Awaited<ReturnType<typeof createClient>>
+  supabase: Awaited<ReturnType<typeof createClient>> | ReturnType<typeof createAdminClient>
   userId: string
   workspaceId: string
 }
@@ -14,6 +16,19 @@ export async function getWorkspaceContext(
 > {
   if (!workspaceId) {
     return { ok: false, status: 400, error: 'workspace_id is required' }
+  }
+
+  const headersList = await headers()
+  const isApiKeyAuth = headersList.get('x-api-key-verified') === 'true'
+
+  if (isApiKeyAuth) {
+    const supabase = createAdminClient()
+    const { data: { users } } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1 })
+    const user = users[0] ?? null
+    if (!user) {
+      return { ok: false, status: 500, error: 'No user found' }
+    }
+    return { ok: true, ctx: { supabase, userId: user.id, workspaceId } }
   }
 
   const supabase = await createClient()

@@ -94,6 +94,17 @@ export async function middleware(request: NextRequest) {
     ? NextResponse.rewrite(rewriteUrl)
     : NextResponse.next({ request })
 
+  // API key bypass for programmatic access (e.g. cowork agent)
+  // Early return before Supabase session check — signal downstream via header
+  if (isApiRequest) {
+    const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '')
+    if (apiKey && apiKey === process.env.COWORK_API_KEY) {
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set('x-api-key-verified', 'true')
+      return NextResponse.next({ request: { headers: requestHeaders } })
+    }
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
+import { getApiKeyAuth } from '@/lib/api/auth'
 import { getColumnsByWorkstream } from '@/lib/db/columns'
 import { getTasks } from '@/lib/db/tasks'
 import { getWorkstreams } from '@/lib/db/workstreams'
@@ -18,13 +19,17 @@ function formatDate(value: Date) {
 }
 
 export async function GET() {
-  const supabase = await createSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let supabase;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const apiKeyAuth = await getApiKeyAuth()
+  if (apiKeyAuth) {
+    supabase = apiKeyAuth.supabase
+  } else {
+    supabase = await createSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   try {
@@ -88,13 +93,17 @@ function normalizeSlug(value: string) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let supabase;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const apiKeyAuth = await getApiKeyAuth()
+  if (apiKeyAuth) {
+    supabase = apiKeyAuth.supabase
+  } else {
+    supabase = await createSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   const body = (await request.json().catch(() => ({}))) as Record<string, unknown>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
+import { getApiKeyAuth } from '@/lib/api/auth'
 import { getInvoiceById, updateInvoice } from '@/lib/db/invoices'
 import { calculateTotals, type InvoiceStatus, type LineItem } from '@/lib/types'
 
@@ -12,6 +13,11 @@ const INVOICE_STATUSES = new Set<InvoiceStatus>([
 ])
 
 async function getAuthenticatedSupabase() {
+  const apiKeyAuth = await getApiKeyAuth()
+  if (apiKeyAuth) {
+    return { supabase: apiKeyAuth.supabase, response: null }
+  }
+
   const supabase = await createSupabaseClient()
   const {
     data: { user },

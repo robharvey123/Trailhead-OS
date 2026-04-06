@@ -7,8 +7,14 @@ import {
 } from '@/lib/db/calendar-events'
 import { deleteGcalEvent, pushEventToGoogle } from '@/lib/google/calendar'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
+import { getApiKeyAuth } from '@/lib/api/auth'
 
 async function getAuthenticatedSupabase() {
+  const apiKeyAuth = await getApiKeyAuth()
+  if (apiKeyAuth) {
+    return { supabase: apiKeyAuth.supabase, user: apiKeyAuth.user, response: null }
+  }
+
   const supabase = await createSupabaseClient()
   const {
     data: { user },

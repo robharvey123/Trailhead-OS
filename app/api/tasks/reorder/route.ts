@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
+import { getApiKeyAuth } from '@/lib/api/auth'
 import { reorderTasks } from '@/lib/db/tasks'
 import type { ReorderTaskUpdate } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let supabase;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const apiKeyAuth = await getApiKeyAuth()
+  if (apiKeyAuth) {
+    supabase = apiKeyAuth.supabase
+  } else {
+    supabase = await createSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   const body = await request.json().catch(() => ({}))
