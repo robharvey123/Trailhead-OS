@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { syncAllGoogleAccounts } from '@/lib/google/calendar'
+import { syncAllMicrosoftAccounts } from '@/lib/microsoft/calendar'
 import { syncAllFeeds } from '@/lib/calendar/feeds'
 
 type SyncDirection = 'push' | 'pull' | 'both'
-type SyncSource = 'google' | 'feeds' | 'all'
+type SyncSource = 'google' | 'microsoft' | 'feeds' | 'all'
 
 function isSyncDirection(value: unknown): value is SyncDirection {
   return value === 'push' || value === 'pull' || value === 'both'
@@ -33,8 +34,10 @@ export async function POST(request: NextRequest) {
   try {
     const result: {
       google?: Awaited<ReturnType<typeof syncAllGoogleAccounts>>
+      microsoft?: Awaited<ReturnType<typeof syncAllMicrosoftAccounts>>
       feeds?: Awaited<ReturnType<typeof syncAllFeeds>>
       googleError?: string
+      microsoftError?: string
       feedError?: string
     } = {}
 
@@ -43,9 +46,18 @@ export async function POST(request: NextRequest) {
       try {
         result.google = await syncAllGoogleAccounts(days, userId)
       } catch (googleErr) {
-        // Google sync may fail if no accounts connected — that's fine
         result.google = { accounts: [], totalPushed: 0, totalPulled: 0 }
         result.googleError = googleErr instanceof Error ? googleErr.message : 'Google sync failed'
+      }
+    }
+
+    // Sync Microsoft accounts
+    if (source === 'microsoft' || source === 'all') {
+      try {
+        result.microsoft = await syncAllMicrosoftAccounts(days, userId)
+      } catch (msErr) {
+        result.microsoft = { accounts: [], totalPushed: 0, totalPulled: 0 }
+        result.microsoftError = msErr instanceof Error ? msErr.message : 'Microsoft sync failed'
       }
     }
 
@@ -58,17 +70,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const pushed = result.google?.totalPushed ?? 0
+    const pushed =
+      (result.google?.totalPushed ?? 0) +
+      (result.microsoft?.totalPushed ?? 0)
     const pulled =
       (result.google?.totalPulled ?? 0) +
+      (result.microsoft?.totalPulled ?? 0) +
       (result.feeds?.results.reduce((sum, r) => sum + r.upserted, 0) ?? 0)
 
     return NextResponse.json({
       pushed,
       pulled,
       google: result.google,
+      microsoft: result.microsoft,
       feeds: result.feeds,
       googleError: result.googleError ?? null,
+      microsoftError: result.microsoftError ?? null,
       feedError: result.feedError ?? null,
     })
   } catch (error) {

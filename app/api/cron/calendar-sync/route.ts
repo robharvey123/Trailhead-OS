@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { syncAllGoogleAccounts } from '@/lib/google/calendar'
+import { syncAllMicrosoftAccounts } from '@/lib/microsoft/calendar'
 import { syncAllFeeds } from '@/lib/calendar/feeds'
 import { supabaseService } from '@/lib/supabase/service'
 
@@ -21,12 +22,18 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [google, feeds] = await Promise.all([
+    const [google, microsoft, feeds] = await Promise.all([
       syncAllGoogleAccounts(60, userId).catch((err) => ({
         accounts: [],
         totalPushed: 0,
         totalPulled: 0,
         error: err instanceof Error ? err.message : 'Google sync failed',
+      })),
+      syncAllMicrosoftAccounts(60, userId).catch((err) => ({
+        accounts: [],
+        totalPushed: 0,
+        totalPulled: 0,
+        error: err instanceof Error ? err.message : 'Microsoft sync failed',
       })),
       syncAllFeeds(userId).catch((err) => ({
         results: [],
@@ -36,12 +43,14 @@ export async function GET(request: Request) {
 
     const pulled =
       ('totalPulled' in google ? google.totalPulled : 0) +
+      ('totalPulled' in microsoft ? microsoft.totalPulled : 0) +
       ('results' in feeds ? feeds.results.reduce((sum, r) => sum + r.upserted, 0) : 0)
 
     return NextResponse.json({
       ok: true,
       pulled,
       google,
+      microsoft,
       feeds,
       syncedAt: new Date().toISOString(),
     })

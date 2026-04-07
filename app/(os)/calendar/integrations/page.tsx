@@ -6,11 +6,18 @@ import { createClient } from '@/lib/supabase/server'
 export default async function CalendarIntegrationsPage() {
   const supabase = await createClient()
 
-  const [workstreams, googleAccounts, feeds] = await Promise.all([
+  const [workstreams, googleAccounts, microsoftAccounts, feeds] = await Promise.all([
     getWorkstreams(supabase).catch(() => []),
     (async () => {
       const { data } = await supabase
         .from('google_tokens')
+        .select('id, email, label, created_at')
+        .order('created_at')
+      return data ?? []
+    })(),
+    (async () => {
+      const { data } = await supabase
+        .from('microsoft_tokens')
         .select('id, email, label, created_at')
         .order('created_at')
       return data ?? []
@@ -46,6 +53,7 @@ export default async function CalendarIntegrationsPage() {
 
       <CalendarIntegrationsClient
         googleAccounts={googleAccounts}
+        microsoftAccounts={microsoftAccounts}
         feeds={feeds}
       />
 

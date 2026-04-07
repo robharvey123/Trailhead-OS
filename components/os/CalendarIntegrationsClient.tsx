@@ -22,6 +22,24 @@ interface GoogleCalendarItem {
   selection_id: string | null
 }
 
+interface MicrosoftAccount {
+  id: string
+  email: string
+  label: string | null
+  created_at: string
+}
+
+interface MicrosoftCalendarItem {
+  id: string
+  name: string
+  colour: string | null
+  isDefaultCalendar: boolean
+  canEdit: boolean
+  enabled: boolean
+  sync_direction: 'push' | 'pull' | 'both'
+  selection_id: string | null
+}
+
 interface CalendarFeed {
   id: string
   name: string
@@ -48,12 +66,15 @@ const FEED_COLOURS = [
 
 export default function CalendarIntegrationsClient({
   googleAccounts: initialGoogleAccounts,
+  microsoftAccounts: initialMicrosoftAccounts,
   feeds: initialFeeds,
 }: {
   googleAccounts: GoogleAccount[]
+  microsoftAccounts: MicrosoftAccount[]
   feeds: CalendarFeed[]
 }) {
   const [googleAccounts] = useState(initialGoogleAccounts)
+  const [microsoftAccounts] = useState(initialMicrosoftAccounts)
   const [feeds, setFeeds] = useState(initialFeeds)
   const [expandedAccount, setExpandedAccount] = useState<string | null>(null)
   const [calendarLists, setCalendarLists] = useState<
@@ -73,6 +94,83 @@ export default function CalendarIntegrationsClient({
   const [feedColour, setFeedColour] = useState(FEED_COLOURS[0].value)
   const [feedSaving, setFeedSaving] = useState(false)
   const [feedError, setFeedError] = useState<string | null>(null)
+
+  // Microsoft state
+  const [expandedMsAccount, setExpandedMsAccount] = useState<string | null>(null)
+  const [msCalendarLists, setMsCalendarLists] = useState<
+    Record<string, MicrosoftCalendarItem[]>
+  >({})
+  const [loadingMsCalendars, setLoadingMsCalendars] = useState<string | null>(null)
+  const [savingMsCalendars, setSavingMsCalendars] = useState(false)
+
+  async function loadCalendarsForMsAccount(tokenId: string) {
+    if (expandedMsAccount === tokenId) {
+      setExpandedMsAccount(null)
+      return
+    }
+
+    setLoadingMsCalendars(tokenId)
+    setExpandedMsAccount(tokenId)
+
+    try {
+      const response = await apiFetch<{ calendars: MicrosoftCalendarItem[] }>(
+        `/api/calendar/microsoft/${tokenId}/calendars`
+      )
+      setMsCalendarLists((prev) => ({
+        ...prev,
+        [tokenId]: response.calendars,
+      }))
+    } catch {
+      setMsCalendarLists((prev) => ({ ...prev, [tokenId]: [] }))
+    } finally {
+      setLoadingMsCalendars(null)
+    }
+  }
+
+  function toggleMsCalendar(tokenId: string, calendarId: string) {
+    setMsCalendarLists((prev) => ({
+      ...prev,
+      [tokenId]: (prev[tokenId] ?? []).map((cal) =>
+        cal.id === calendarId ? { ...cal, enabled: !cal.enabled } : cal
+      ),
+    }))
+  }
+
+  function setMsSyncDirection(
+    tokenId: string,
+    calendarId: string,
+    direction: 'push' | 'pull' | 'both'
+  ) {
+    setMsCalendarLists((prev) => ({
+      ...prev,
+      [tokenId]: (prev[tokenId] ?? []).map((cal) =>
+        cal.id === calendarId ? { ...cal, sync_direction: direction } : cal
+      ),
+    }))
+  }
+
+  async function saveMsCalendarSelections(tokenId: string) {
+    setSavingMsCalendars(true)
+    const calendars = msCalendarLists[tokenId] ?? []
+
+    try {
+      await apiFetch(`/api/calendar/microsoft/${tokenId}/calendars`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          calendars: calendars.map((cal) => ({
+            id: cal.id,
+            name: cal.name,
+            enabled: cal.enabled,
+            colour: cal.colour,
+            sync_direction: cal.sync_direction,
+          })),
+        }),
+      })
+    } catch {}
+
+    setSavingMsCalendars(false)
+  }
 
   async function loadCalendarsForAccount(tokenId: string) {
     if (expandedAccount === tokenId) {
@@ -248,7 +346,7 @@ export default function CalendarIntegrationsClient({
               Sync all calendars
             </h2>
             <p className="mt-1 text-sm text-slate-400">
-              Pull events from all connected Google accounts and iCal feeds
+              Pull events from all connected Google, Microsoft, and iCal feed accounts
             </p>
           </div>
           <button
@@ -428,6 +526,175 @@ export default function CalendarIntegrationsClient({
                             className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500 disabled:opacity-50"
                           >
                             {savingCalendars ? 'Saving…' : 'Save selections'}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Microsoft accounts */}
+      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+              Microsoft Calendar
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-100">
+              Connected accounts
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Two-way sync with Microsoft 365 / Outlook.com calendars.
+            </p>
+          </div>
+          <a
+            href="/api/auth/microsoft"
+            className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-white"
+          >
+            + Connect Microsoft account
+          </a>
+        </div>
+
+        {microsoftAccounts.length === 0 ? (
+          <p className="mt-6 text-sm text-slate-500">
+            No Microsoft accounts connected. Click above to add one.
+          </p>
+        ) : (
+          <div className="mt-6 space-y-4">
+            {microsoftAccounts.map((account) => (
+              <div
+                key={account.id}
+                className="rounded-2xl border border-slate-800 bg-slate-950/60"
+              >
+                <button
+                  type="button"
+                  onClick={() => loadCalendarsForMsAccount(account.id)}
+                  className="flex w-full items-center justify-between px-5 py-4 text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20 text-sky-400">
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-100">
+                        {account.email}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {account.label && account.label !== account.email
+                          ? account.label
+                          : 'Microsoft Calendar'}
+                      </p>
+                    </div>
+                  </div>
+                  <svg
+                    className={`h-5 w-5 text-slate-400 transition ${expandedMsAccount === account.id ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {expandedMsAccount === account.id && (
+                  <div className="border-t border-slate-800 px-5 py-4">
+                    {loadingMsCalendars === account.id ? (
+                      <p className="text-sm text-slate-500">
+                        Loading calendars…
+                      </p>
+                    ) : (msCalendarLists[account.id] ?? []).length === 0 ? (
+                      <p className="text-sm text-slate-500">
+                        No calendars found for this account.
+                      </p>
+                    ) : (
+                      <>
+                        <div className="space-y-3">
+                          {(msCalendarLists[account.id] ?? []).map((cal) => (
+                            <div
+                              key={cal.id}
+                              className="flex items-center justify-between gap-4"
+                            >
+                              <label className="flex items-center gap-3 text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={cal.enabled}
+                                  onChange={() =>
+                                    toggleMsCalendar(account.id, cal.id)
+                                  }
+                                  className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-sky-500 focus:ring-sky-500"
+                                />
+                                <span
+                                  className="inline-block h-3 w-3 rounded-full"
+                                  style={{
+                                    backgroundColor: cal.colour ?? '#3B82F6',
+                                  }}
+                                />
+                                <span className="text-slate-200">
+                                  {cal.name}
+                                  {cal.isDefaultCalendar && (
+                                    <span className="ml-2 text-xs text-slate-500">
+                                      (default)
+                                    </span>
+                                  )}
+                                </span>
+                              </label>
+
+                              {cal.enabled && cal.canEdit && (
+                                <select
+                                  value={cal.sync_direction}
+                                  onChange={(e) =>
+                                    setMsSyncDirection(
+                                      account.id,
+                                      cal.id,
+                                      e.target.value as
+                                        | 'push'
+                                        | 'pull'
+                                        | 'both'
+                                    )
+                                  }
+                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300"
+                                >
+                                  <option value="pull">Pull only</option>
+                                  <option value="push">Push only</option>
+                                  <option value="both">Two-way</option>
+                                </select>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            type="button"
+                            disabled={savingMsCalendars}
+                            onClick={() =>
+                              saveMsCalendarSelections(account.id)
+                            }
+                            className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-500 disabled:opacity-50"
+                          >
+                            {savingMsCalendars ? 'Saving…' : 'Save selections'}
                           </button>
                         </div>
                       </>

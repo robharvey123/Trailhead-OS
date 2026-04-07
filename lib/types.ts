@@ -190,6 +190,29 @@ export interface GcalSync {
   sync_direction: 'push' | 'pull' | 'both'
 }
 
+export interface MicrosoftTokens {
+  id: string
+  access_token: string
+  refresh_token: string
+  token_type: string
+  expiry_date: number
+  scope: string
+  email: string
+  label: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface MsCalSync {
+  id: string
+  calendar_event_id: string
+  ms_event_id: string
+  ms_calendar_id: string
+  microsoft_token_id: string
+  last_synced_at: string
+  sync_direction: 'push' | 'pull' | 'both'
+}
+
 export interface StripeCustomer {
   id: string
   account_id: string
@@ -563,7 +586,7 @@ export interface CalendarEvent {
   project_id: string | null
   location: string | null
   colour: string | null
-  source: 'manual' | 'google' | 'feed'
+  source: 'manual' | 'google' | 'feed' | 'microsoft'
   feed_id: string | null
   external_uid: string | null
   read_only: boolean
