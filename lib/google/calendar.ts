@@ -310,6 +310,7 @@ export async function pullEventsFromGoogleCalendar(
   const events = response.data.items ?? []
   const created: CalendarEvent[] = []
   let synced = 0
+  const isPrimary = calendarId === 'primary' || calendarId === tokenRow.email
 
   for (const gcalEvent of events) {
     if (!gcalEvent.id || !gcalEvent.summary) continue
@@ -318,6 +319,7 @@ export async function pullEventsFromGoogleCalendar(
     const end_at = toLocalDateTime(gcalEvent.end)
     if (!start_at || !end_at) continue
 
+    // Check if we already have a sync mapping for this Google event
     const { data: existing } = await supabaseService
       .from('gcal_sync')
       .select('id, calendar_event_id')
@@ -325,32 +327,47 @@ export async function pullEventsFromGoogleCalendar(
       .maybeSingle<Pick<GcalSync, 'id' | 'calendar_event_id'>>()
 
     if (existing?.calendar_event_id) {
-      await supabaseService
+      // Verify the linked calendar_event still exists
+      const { data: eventExists } = await supabaseService
         .from('calendar_events')
-        .update({
-          title: gcalEvent.summary,
-          description: gcalEvent.description || null,
-          location: gcalEvent.location || null,
-          start_at,
-          end_at,
-          all_day: Boolean(gcalEvent.start?.date),
-          updated_at: new Date().toISOString(),
-        })
+        .select('id')
         .eq('id', existing.calendar_event_id)
+        .maybeSingle()
 
-      await supabaseService
-        .from('gcal_sync')
-        .update({
-          last_synced_at: new Date().toISOString(),
-          sync_direction: 'both',
-        })
-        .eq('id', existing.id)
+      if (eventExists) {
+        // Event exists — update it
+        await supabaseService
+          .from('calendar_events')
+          .update({
+            title: gcalEvent.summary,
+            description: gcalEvent.description || null,
+            location: gcalEvent.location || null,
+            start_at,
+            end_at,
+            all_day: Boolean(gcalEvent.start?.date),
+            source: 'google',
+            external_uid: gcalEvent.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.calendar_event_id)
 
-      synced++
-      continue
+        await supabaseService
+          .from('gcal_sync')
+          .update({
+            last_synced_at: new Date().toISOString(),
+            sync_direction: isPrimary ? 'both' : 'pull',
+          })
+          .eq('id', existing.id)
+
+        synced++
+        continue
+      }
+
+      // Calendar event was deleted but gcal_sync is orphaned — remove it
+      await supabaseService.from('gcal_sync').delete().eq('id', existing.id)
     }
 
-    const isPrimary = calendarId === 'primary'
+    // Insert new calendar event
     const { data: newEvent, error } = await supabaseService
       .from('calendar_events')
       .insert({
