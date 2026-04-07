@@ -334,6 +334,7 @@ function toEventInput(
     allDay: event.all_day,
     backgroundColor: event.colour || '#3B82F6',
     borderColor: event.colour || '#3B82F6',
+    editable: !event.read_only,
     extendedProps: {
       type: 'event',
       data: event,
@@ -720,27 +721,24 @@ export default function CalendarClient({
                 </option>
               ))}
             </select>
-            {googleConnected ? (
-              <button
-                type="button"
-                onClick={() => void handleGoogleSync()}
-                disabled={syncState === 'syncing'}
-                className="rounded-2xl border border-sky-500/30 px-4 py-2.5 text-sm font-medium text-sky-100 transition hover:border-sky-400 hover:bg-slate-900 disabled:opacity-60"
-              >
-                {syncState === 'syncing'
-                  ? 'Syncing...'
-                  : syncState === 'synced'
-                    ? 'Synced'
-                    : 'Sync with Google'}
-              </button>
-            ) : (
-              <Link
-                href="/settings"
-                className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
-              >
-                Connect Google Calendar
-              </Link>
-            )}
+            <button
+              type="button"
+              onClick={() => void handleGoogleSync()}
+              disabled={syncState === 'syncing'}
+              className="rounded-2xl border border-sky-500/30 px-4 py-2.5 text-sm font-medium text-sky-100 transition hover:border-sky-400 hover:bg-slate-900 disabled:opacity-60"
+            >
+              {syncState === 'syncing'
+                ? 'Syncing...'
+                : syncState === 'synced'
+                  ? 'Synced'
+                  : 'Sync all'}
+            </button>
+            <Link
+              href="/calendar/integrations"
+              className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500 hover:bg-slate-900"
+            >
+              Integrations
+            </Link>
             <button
               type="button"
               onClick={() =>
@@ -887,6 +885,16 @@ export default function CalendarClient({
                       {selectedEvent.colour}
                     </span>
                   ) : null}
+                  {selectedEvent.source && selectedEvent.source !== 'manual' && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-400">
+                      {selectedEvent.source === 'google' ? '↓ Google' : '↓ Feed'}
+                    </span>
+                  )}
+                  {selectedEvent.read_only && (
+                    <span className="inline-flex items-center rounded-full border border-amber-800/50 px-2.5 py-1 text-xs font-medium text-amber-400">
+                      Read-only
+                    </span>
+                  )}
                 </div>
 
                 <dl className="space-y-4 text-sm">
@@ -934,20 +942,24 @@ export default function CalendarClient({
                 </dl>
 
                 <div className="flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => openEditForm(selectedEvent)}
-                    className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteEvent(selectedEvent)}
-                    className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400"
-                  >
-                    Delete
-                  </button>
+                  {!selectedEvent.read_only && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => openEditForm(selectedEvent)}
+                        className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-100 transition hover:border-slate-500"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteEvent(selectedEvent)}
+                        className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ) : null}

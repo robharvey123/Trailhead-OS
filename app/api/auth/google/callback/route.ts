@@ -25,26 +25,45 @@ export async function GET(request: NextRequest) {
 
     const supabase = createClient()
 
-    const { error: deleteError } = await supabase.from('google_tokens').delete().neq('id', '')
-    if (deleteError) {
-      throw deleteError
+    // Check if this Google account is already connected
+    const { data: existing } = await supabase
+      .from('google_tokens')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existing) {
+      // Update existing account tokens
+      await supabase
+        .from('google_tokens')
+        .update({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          token_type: tokens.token_type ?? 'Bearer',
+          expiry_date: tokens.expiry_date ?? null,
+          scope: tokens.scope ?? null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+    } else {
+      // Insert new account
+      const { error: insertError } = await supabase.from('google_tokens').insert({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        token_type: tokens.token_type ?? 'Bearer',
+        expiry_date: tokens.expiry_date ?? null,
+        scope: tokens.scope ?? null,
+        email,
+        label: email,
+      })
+
+      if (insertError) {
+        throw insertError
+      }
     }
 
-    const { error: insertError } = await supabase.from('google_tokens').insert({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      token_type: tokens.token_type ?? 'Bearer',
-      expiry_date: tokens.expiry_date ?? null,
-      scope: tokens.scope ?? null,
-      email,
-    })
-
-    if (insertError) {
-      throw insertError
-    }
-
-    return NextResponse.redirect(new URL('/settings?google=connected', request.url))
+    return NextResponse.redirect(new URL('/calendar/integrations?google=connected', request.url))
   } catch {
-    return NextResponse.redirect(new URL('/settings?google=error', request.url))
+    return NextResponse.redirect(new URL('/calendar/integrations?google=error', request.url))
   }
 }

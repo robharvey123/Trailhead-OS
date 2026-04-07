@@ -157,6 +157,7 @@ export interface GoogleTokens {
   expiry_date: number
   scope: string
   email: string
+  label: string | null
   created_at: string
   updated_at: string
 }
@@ -562,6 +563,10 @@ export interface CalendarEvent {
   project_id: string | null
   location: string | null
   colour: string | null
+  source: 'manual' | 'google' | 'feed'
+  feed_id: string | null
+  external_uid: string | null
+  read_only: boolean
   created_at: string
   updated_at: string
 }

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import type { CalendarEvent } from '@/lib/types'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
-import { pullEventsFromGoogle, pushEventToGoogle } from '@/lib/google/calendar'
+import { syncAllGoogleAccounts } from '@/lib/google/calendar'
+import { syncAllFeeds } from '@/lib/calendar/feeds'
 
 type SyncDirection = 'push' | 'pull' | 'both'
+type SyncSource = 'google' | 'feeds' | 'all'
 
 function isSyncDirection(value: unknown): value is SyncDirection {
   return value === 'push' || value === 'pull' || value === 'both'
@@ -16,7 +17,8 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({})) as Record<string, unknown>
-  const direction = body.direction
+  const direction = body.direction ?? 'both'
+  const source: SyncSource = (body.source as SyncSource) ?? 'all'
 
   if (!isSyncDirection(direction)) {
     return NextResponse.json(
@@ -28,38 +30,37 @@ export async function POST(request: NextRequest) {
   const days = Math.max(1, Number.parseInt(String(body.days ?? '30'), 10) || 30)
 
   try {
-    let pushed = 0
-    let pulled = 0
+    const result: {
+      google?: Awaited<ReturnType<typeof syncAllGoogleAccounts>>
+      feeds?: Awaited<ReturnType<typeof syncAllFeeds>>
+    } = {}
 
-    if (direction === 'push' || direction === 'both') {
-      const [{ data: localEvents, error }, { data: syncRows, error: syncError }] = await Promise.all([
-        auth.supabase.from('calendar_events').select('*'),
-        auth.supabase.from('gcal_sync').select('calendar_event_id'),
-      ])
-
-      if (error || syncError) {
-        throw new Error(error?.message || syncError?.message || 'Failed to load calendar sync state')
-      }
-
-      const syncedIds = new Set((syncRows ?? []).map(row => row.calendar_event_id))
-      const unsyncedEvents = ((localEvents ?? []) as CalendarEvent[]).filter(
-        event => !syncedIds.has(event.id)
-      )
-
-      for (const event of unsyncedEvents) {
-        await pushEventToGoogle(event)
-        pushed += 1
+    // Sync Google accounts
+    if (source === 'google' || source === 'all') {
+      try {
+        result.google = await syncAllGoogleAccounts(days)
+      } catch {
+        // Google sync may fail if no accounts connected — that's fine
+        result.google = { accounts: [], totalPushed: 0, totalPulled: 0 }
       }
     }
 
-    if (direction === 'pull' || direction === 'both') {
-      const timeMin = new Date().toISOString()
-      const timeMax = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
-      const result = await pullEventsFromGoogle(timeMin, timeMax)
-      pulled = result.synced
+    // Sync iCal feeds
+    if (source === 'feeds' || source === 'all') {
+      result.feeds = await syncAllFeeds()
     }
 
-    return NextResponse.json({ pushed, pulled })
+    const pushed = result.google?.totalPushed ?? 0
+    const pulled =
+      (result.google?.totalPulled ?? 0) +
+      (result.feeds?.results.reduce((sum, r) => sum + r.upserted, 0) ?? 0)
+
+    return NextResponse.json({
+      pushed,
+      pulled,
+      google: result.google,
+      feeds: result.feeds,
+    })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to sync calendar events' },

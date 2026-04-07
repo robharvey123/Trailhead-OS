@@ -1,0 +1,61 @@
+import CalendarIntegrationsClient from '@/components/os/CalendarIntegrationsClient'
+import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
+import { getWorkstreams } from '@/lib/db/workstreams'
+import { createClient } from '@/lib/supabase/server'
+
+export default async function CalendarIntegrationsPage() {
+  const supabase = await createClient()
+
+  const [workstreams, googleAccounts, feeds] = await Promise.all([
+    getWorkstreams(supabase).catch(() => []),
+    (async () => {
+      const { data } = await supabase
+        .from('google_tokens')
+        .select('id, email, label, created_at')
+        .order('created_at')
+      return data ?? []
+    })(),
+    (async () => {
+      const { data } = await supabase
+        .from('calendar_feeds')
+        .select('*')
+        .order('created_at')
+      return data ?? []
+    })(),
+  ])
+
+  const appUrl = (
+    process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk'
+  ).replace(/\/$/, '')
+  const icalSecret = process.env.ICAL_SECRET ?? ''
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="text-xs uppercase tracking-[0.32em] text-slate-500">
+          Calendar
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold text-slate-50">
+          Calendar Integrations
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">
+          Connect your Google, Apple, and Outlook calendars to see everything in
+          one place.
+        </p>
+      </div>
+
+      <CalendarIntegrationsClient
+        googleAccounts={googleAccounts}
+        feeds={feeds}
+      />
+
+      {icalSecret && (
+        <CalendarSubscriptionSection
+          appUrl={appUrl}
+          icalSecret={icalSecret}
+          workstreams={workstreams}
+        />
+      )}
+    </div>
+  )
+}
