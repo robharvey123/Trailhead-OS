@@ -655,10 +655,10 @@ export default function CalendarClient({
     setError(null)
 
     try {
-      await apiFetch<{ pushed: number; pulled: number }>('/api/calendar/sync', {
+      const result = await apiFetch<{ pushed: number; pulled: number }>('/api/calendar/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ direction: 'both', days: 30 }),
+        body: JSON.stringify({ direction: 'both', days: 90 }),
       })
 
       const calendarApi = calendarRef.current?.getApi()
@@ -676,7 +676,10 @@ export default function CalendarClient({
       } catch {}
 
       setSyncState('synced')
-      window.setTimeout(() => setSyncState('idle'), 2000)
+      if (result.pulled === 0 && result.pushed === 0) {
+        setError('Sync completed but no events were found. Check your calendar selections in Integrations.')
+      }
+      window.setTimeout(() => setSyncState('idle'), 3000)
     } catch (syncError) {
       setSyncState('idle')
       setError(

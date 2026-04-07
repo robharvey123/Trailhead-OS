@@ -33,21 +33,28 @@ export async function POST(request: NextRequest) {
     const result: {
       google?: Awaited<ReturnType<typeof syncAllGoogleAccounts>>
       feeds?: Awaited<ReturnType<typeof syncAllFeeds>>
+      googleError?: string
+      feedError?: string
     } = {}
 
     // Sync Google accounts
     if (source === 'google' || source === 'all') {
       try {
         result.google = await syncAllGoogleAccounts(days)
-      } catch {
+      } catch (googleErr) {
         // Google sync may fail if no accounts connected — that's fine
         result.google = { accounts: [], totalPushed: 0, totalPulled: 0 }
+        result.googleError = googleErr instanceof Error ? googleErr.message : 'Google sync failed'
       }
     }
 
     // Sync iCal feeds
     if (source === 'feeds' || source === 'all') {
-      result.feeds = await syncAllFeeds()
+      try {
+        result.feeds = await syncAllFeeds()
+      } catch (feedErr) {
+        result.feedError = feedErr instanceof Error ? feedErr.message : 'Feed sync failed'
+      }
     }
 
     const pushed = result.google?.totalPushed ?? 0
@@ -60,6 +67,8 @@ export async function POST(request: NextRequest) {
       pulled,
       google: result.google,
       feeds: result.feeds,
+      googleError: result.googleError ?? null,
+      feedError: result.feedError ?? null,
     })
   } catch (error) {
     return NextResponse.json(

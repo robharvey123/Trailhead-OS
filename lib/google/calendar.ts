@@ -390,13 +390,14 @@ export async function syncAllGoogleAccounts(
 ): Promise<{
   accounts: Array<{
     email: string
-    calendars: Array<{ name: string; synced: number; created: number }>
+    calendars: Array<{ name: string; synced: number; created: number; error?: string }>
+    error?: string
   }>
   totalPushed: number
   totalPulled: number
 }> {
   const tokens = await getAllGoogleTokens()
-  const timeMin = new Date().toISOString()
+  const timeMin = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
   const timeMax = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
 
   const accounts: Array<{
@@ -410,7 +411,7 @@ export async function syncAllGoogleAccounts(
     const selections = await getCalendarSelections(tokenRow.id)
     const enabledSelections = selections.filter((s) => s.enabled)
 
-    const calendarResults: Array<{ name: string; synced: number; created: number }> = []
+    const calendarResults: Array<{ name: string; synced: number; created: number; error?: string }> = []
 
     // If no selections configured, sync primary by default
     const calendarsToSync =
@@ -423,44 +424,53 @@ export async function syncAllGoogleAccounts(
         : [{ id: 'primary', name: 'Primary', direction: 'both' as const }]
 
     for (const cal of calendarsToSync) {
-      // Pull events
-      if (cal.direction === 'pull' || cal.direction === 'both') {
-        const result = await pullEventsFromGoogleCalendar(
-          tokenRow,
-          cal.id,
-          timeMin,
-          timeMax
-        )
-        totalPulled += result.synced
+      try {
+        // Pull events
+        if (cal.direction === 'pull' || cal.direction === 'both') {
+          const result = await pullEventsFromGoogleCalendar(
+            tokenRow,
+            cal.id,
+            timeMin,
+            timeMax
+          )
+          totalPulled += result.synced
+          calendarResults.push({
+            name: cal.name,
+            synced: result.synced,
+            created: result.created,
+          })
+        }
+
+        // Push events (only for calendars with push/both direction)
+        if (cal.direction === 'push' || cal.direction === 'both') {
+          const { data: localEvents } = await supabaseService
+            .from('calendar_events')
+            .select('*')
+            .eq('source', 'manual')
+
+          const { data: syncRows } = await supabaseService
+            .from('gcal_sync')
+            .select('calendar_event_id')
+
+          const syncedIds = new Set(
+            (syncRows ?? []).map((row: { calendar_event_id: string }) => row.calendar_event_id)
+          )
+          const unsyncedEvents = ((localEvents ?? []) as CalendarEvent[]).filter(
+            (event) => !syncedIds.has(event.id)
+          )
+
+          for (const event of unsyncedEvents) {
+            await pushEventToGoogle(event)
+            totalPushed++
+          }
+        }
+      } catch (calError) {
         calendarResults.push({
           name: cal.name,
-          synced: result.synced,
-          created: result.created,
+          synced: 0,
+          created: 0,
+          error: calError instanceof Error ? calError.message : 'Unknown error',
         })
-      }
-
-      // Push events (only for calendars with push/both direction)
-      if (cal.direction === 'push' || cal.direction === 'both') {
-        const { data: localEvents } = await supabaseService
-          .from('calendar_events')
-          .select('*')
-          .eq('source', 'manual')
-
-        const { data: syncRows } = await supabaseService
-          .from('gcal_sync')
-          .select('calendar_event_id')
-
-        const syncedIds = new Set(
-          (syncRows ?? []).map((row: { calendar_event_id: string }) => row.calendar_event_id)
-        )
-        const unsyncedEvents = ((localEvents ?? []) as CalendarEvent[]).filter(
-          (event) => !syncedIds.has(event.id)
-        )
-
-        for (const event of unsyncedEvents) {
-          await pushEventToGoogle(event)
-          totalPushed++
-        }
       }
     }
 
