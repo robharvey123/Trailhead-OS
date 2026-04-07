@@ -142,40 +142,23 @@ export async function fetchAndSyncFeed(feed: CalendarFeed, userId?: string): Pro
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
     const parsedEvents = allParsedEvents.filter((e) => e.end_at >= monthStart)
 
-    // Get all existing events for this feed
-    const { data: existingEvents } = await supabaseService
+    // Delete ALL existing events for this feed then re-insert fresh
+    // This avoids dedup issues (Supabase default 1000-row limit on queries)
+    // Feed events are read-only external data, so nothing is lost.
+    const { data: deletedRows } = await supabaseService
       .from('calendar_events')
-      .select('id, external_uid')
+      .delete()
       .eq('feed_id', feed.id)
+      .select('id')
 
-    const existingByUid = new Map(
-      (existingEvents ?? []).map((e: { id: string; external_uid: string }) => [
-        e.external_uid,
-        e.id,
-      ])
-    )
-
-    const incomingUids = new Set(parsedEvents.map((e) => e.uid))
-
-    // Separate into updates and inserts
-    const toUpdate: Array<{ id: string; event: typeof parsedEvents[0] }> = []
-    const toInsert: Array<typeof parsedEvents[0]> = []
-
-    for (const event of parsedEvents) {
-      const existingId = existingByUid.get(event.uid)
-      if (existingId) {
-        toUpdate.push({ id: existingId, event })
-      } else {
-        toInsert.push(event)
-      }
-    }
+    const removed = deletedRows?.length ?? 0
 
     let upserted = 0
     const BATCH_SIZE = 500
 
-    // Batch insert new events
-    for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
-      const batch = toInsert.slice(i, i + BATCH_SIZE).map((event) => ({
+    // Batch insert all parsed events
+    for (let i = 0; i < parsedEvents.length; i += BATCH_SIZE) {
+      const batch = parsedEvents.slice(i, i + BATCH_SIZE).map((event) => ({
         title: event.title,
         description: event.description,
         start_at: event.start_at,
@@ -196,7 +179,6 @@ export async function fetchAndSyncFeed(feed: CalendarFeed, userId?: string): Pro
         .select('id')
 
       if (insertError) {
-        // If batch fails, update feed error but continue
         await supabaseService
           .from('calendar_feeds')
           .update({
@@ -204,48 +186,10 @@ export async function fetchAndSyncFeed(feed: CalendarFeed, userId?: string): Pro
             updated_at: new Date().toISOString(),
           })
           .eq('id', feed.id)
-        return { upserted, removed: 0, error: `Insert failed: ${insertError.message} (code: ${insertError.code}, details: ${insertError.details})` }
+        return { upserted, removed, error: `Insert failed: ${insertError.message} (code: ${insertError.code}, details: ${insertError.details})` }
       }
 
       upserted += batch.length
-    }
-
-    // Batch update existing events (still sequential but fewer)
-    for (const { id, event } of toUpdate) {
-      await supabaseService
-        .from('calendar_events')
-        .update({
-          title: event.title,
-          description: event.description,
-          start_at: event.start_at,
-          end_at: event.end_at,
-          all_day: event.all_day,
-          location: event.location,
-          colour: feed.colour,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-
-      upserted++
-    }
-
-    // Remove events that are no longer in the feed
-    const toRemove = (existingEvents ?? [])
-      .filter(
-        (e: { id: string; external_uid: string }) =>
-          !incomingUids.has(e.external_uid)
-      )
-      .map((e: { id: string }) => e.id)
-
-    if (toRemove.length > 0) {
-      // Batch delete in chunks
-      for (let i = 0; i < toRemove.length; i += BATCH_SIZE) {
-        const batch = toRemove.slice(i, i + BATCH_SIZE)
-        await supabaseService
-          .from('calendar_events')
-          .delete()
-          .in('id', batch)
-      }
     }
 
     // Update feed metadata
@@ -259,7 +203,7 @@ export async function fetchAndSyncFeed(feed: CalendarFeed, userId?: string): Pro
       })
       .eq('id', feed.id)
 
-    return { upserted, removed: toRemove.length, error: null }
+    return { upserted, removed, error: null }
   } catch (err) {
     const errorMsg =
       err instanceof Error ? err.message : 'Unknown error fetching feed'

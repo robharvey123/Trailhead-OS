@@ -52,16 +52,59 @@ export async function GET() {
     .is('user_id', null)
     .select('id')
 
-  // Count events by source (use service role for accurate totals)
-  const { data: sourceCounts } = await supabaseService
-    .from('calendar_events')
-    .select('source')
+  // Deduplicate feed events: keep the newest row per (feed_id, external_uid)
+  // Use range to get ALL events (Supabase default limit is 1000)
+  let allFeedEvents: Array<{ id: string; feed_id: string; external_uid: string }> = []
+  let offset = 0
+  const PAGE = 1000
+  while (true) {
+    const { data: page } = await supabaseService
+      .from('calendar_events')
+      .select('id, feed_id, external_uid, created_at')
+      .eq('source', 'feed')
+      .not('feed_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + PAGE - 1)
+    if (!page || page.length === 0) break
+    allFeedEvents = allFeedEvents.concat(page as Array<{ id: string; feed_id: string; external_uid: string }>)
+    if (page.length < PAGE) break
+    offset += PAGE
+  }
 
+  const seenFeedKeys = new Set<string>()
+  const feedDupeIds: string[] = []
+  for (const row of allFeedEvents) {
+    const key = `${row.feed_id}:${row.external_uid}`
+    if (seenFeedKeys.has(key)) {
+      feedDupeIds.push(row.id)
+    } else {
+      seenFeedKeys.add(key)
+    }
+  }
+
+  if (feedDupeIds.length > 0) {
+    for (let i = 0; i < feedDupeIds.length; i += 500) {
+      const batch = feedDupeIds.slice(i, i + 500)
+      await supabaseService.from('calendar_events').delete().in('id', batch)
+    }
+  }
+
+  // Count events by source (use service role for accurate totals, paginate past 1000 limit)
   const counts = { manual: 0, google: 0, feed: 0, total: 0 }
-  for (const row of sourceCounts ?? []) {
-    const s = (row as { source: string }).source as keyof typeof counts
-    if (s in counts) counts[s]++
-    counts.total++
+  let countOffset = 0
+  while (true) {
+    const { data: page } = await supabaseService
+      .from('calendar_events')
+      .select('source')
+      .range(countOffset, countOffset + PAGE - 1)
+    if (!page || page.length === 0) break
+    for (const row of page) {
+      const s = (row as { source: string }).source as keyof typeof counts
+      if (s in counts) counts[s]++
+      counts.total++
+    }
+    if (page.length < PAGE) break
+    countOffset += PAGE
   }
 
   // Get a few sample google events
@@ -127,6 +170,7 @@ export async function GET() {
     sourceColumnExists,
     testInsertError,
     backfilledCount: backfilled?.length ?? 0,
+    feedDupesRemoved: feedDupeIds.length,
     nullUserIdCount: nullUserIdEvents?.length ?? 0,
     gcalSyncRowCount: syncRows?.length ?? 0,
     counts,
