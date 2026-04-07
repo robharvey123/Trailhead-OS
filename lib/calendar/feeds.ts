@@ -110,7 +110,7 @@ export function parseIcalFeed(icsText: string): ParsedEvent[] {
   return events
 }
 
-export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
+export async function fetchAndSyncFeed(feed: CalendarFeed, userId?: string): Promise<{
   upserted: number
   removed: number
   error: string | null
@@ -187,11 +187,13 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
         feed_id: feed.id,
         external_uid: event.uid,
         read_only: true,
+        ...(userId ? { user_id: userId } : {}),
       }))
 
-      const { error: insertError, count } = await supabaseService
+      const { error: insertError } = await supabaseService
         .from('calendar_events')
         .insert(batch)
+        .select('id')
 
       if (insertError) {
         // If batch fails, update feed error but continue
@@ -273,7 +275,7 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
   }
 }
 
-export async function syncAllFeeds(): Promise<{
+export async function syncAllFeeds(userId?: string): Promise<{
   results: Array<{ feed_id: string; name: string; upserted: number; removed: number; error: string | null }>
 }> {
   const { data: feeds } = await supabaseService
@@ -295,7 +297,7 @@ export async function syncAllFeeds(): Promise<{
   }> = []
 
   for (const feed of feeds as CalendarFeed[]) {
-    const result = await fetchAndSyncFeed(feed)
+    const result = await fetchAndSyncFeed(feed, userId)
     results.push({
       feed_id: feed.id,
       name: feed.name,

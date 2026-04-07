@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { syncAllGoogleAccounts } from '@/lib/google/calendar'
 import { syncAllFeeds } from '@/lib/calendar/feeds'
+import { supabaseService } from '@/lib/supabase/service'
 
 export const maxDuration = 60
 
@@ -11,15 +12,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Look up the single user's ID for RLS-compatible inserts
+  const { data: users } = await supabaseService.auth.admin.listUsers({ perPage: 1 })
+  const userId = users?.users?.[0]?.id
+
+  if (!userId) {
+    return NextResponse.json({ error: 'No user found' }, { status: 500 })
+  }
+
   try {
     const [google, feeds] = await Promise.all([
-      syncAllGoogleAccounts(60).catch((err) => ({
+      syncAllGoogleAccounts(60, userId).catch((err) => ({
         accounts: [],
         totalPushed: 0,
         totalPulled: 0,
         error: err instanceof Error ? err.message : 'Google sync failed',
       })),
-      syncAllFeeds().catch((err) => ({
+      syncAllFeeds(userId).catch((err) => ({
         results: [],
         error: err instanceof Error ? err.message : 'Feed sync failed',
       })),

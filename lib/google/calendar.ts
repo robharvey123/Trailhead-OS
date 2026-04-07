@@ -294,7 +294,8 @@ export async function pullEventsFromGoogleCalendar(
   tokenRow: GoogleTokens,
   calendarId: string,
   timeMin: string,
-  timeMax: string
+  timeMax: string,
+  userId?: string
 ): Promise<{ synced: number; created: number; errors: string[] }> {
   const calendar = await getCalendarClientForToken(tokenRow)
 
@@ -402,6 +403,7 @@ export async function pullEventsFromGoogleCalendar(
         source: 'google',
         external_uid: gcalEvent.id,
         read_only: !isPrimary,
+        ...(userId ? { user_id: userId } : {}),
         updated_at: new Date().toISOString(),
       })
       .select('id')
@@ -430,7 +432,8 @@ export async function pullEventsFromGoogleCalendar(
 }
 
 export async function syncAllGoogleAccounts(
-  days: number = 30
+  days: number = 30,
+  userId?: string
 ): Promise<{
   accounts: Array<{
     email: string
@@ -478,7 +481,8 @@ export async function syncAllGoogleAccounts(
             tokenRow,
             cal.id,
             timeMin,
-            timeMax
+            timeMax,
+            userId
           )
           totalPulled += result.synced
           calendarResults.push({

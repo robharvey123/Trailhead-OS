@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
   }
 
   const days = Math.max(1, Number.parseInt(String(body.days ?? '30'), 10) || 30)
+  const userId = auth.user.id
 
   try {
     const result: {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Sync Google accounts
     if (source === 'google' || source === 'all') {
       try {
-        result.google = await syncAllGoogleAccounts(days)
+        result.google = await syncAllGoogleAccounts(days, userId)
       } catch (googleErr) {
         // Google sync may fail if no accounts connected — that's fine
         result.google = { accounts: [], totalPushed: 0, totalPulled: 0 }
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Sync iCal feeds
     if (source === 'feeds' || source === 'all') {
       try {
-        result.feeds = await syncAllFeeds()
+        result.feeds = await syncAllFeeds(userId)
       } catch (feedErr) {
         result.feedError = feedErr instanceof Error ? feedErr.message : 'Feed sync failed'
       }
