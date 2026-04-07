@@ -118,7 +118,7 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
   try {
     const response = await fetch(feed.url, {
       headers: { Accept: 'text/calendar' },
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(30_000),
     })
 
     if (!response.ok) {
@@ -135,7 +135,12 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
     }
 
     const icsText = await response.text()
-    const parsedEvents = parseIcalFeed(icsText)
+    const allParsedEvents = parseIcalFeed(icsText)
+
+    // Only sync events from the 1st of the current month onwards
+    const now = new Date()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    const parsedEvents = allParsedEvents.filter((e) => e.end_at >= monthStart)
 
     // Get all existing events for this feed
     const { data: existingEvents } = await supabaseService
@@ -151,30 +156,63 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
     )
 
     const incomingUids = new Set(parsedEvents.map((e) => e.uid))
-    let upserted = 0
 
-    // Upsert incoming events
+    // Separate into updates and inserts
+    const toUpdate: Array<{ id: string; event: typeof parsedEvents[0] }> = []
+    const toInsert: Array<typeof parsedEvents[0]> = []
+
     for (const event of parsedEvents) {
       const existingId = existingByUid.get(event.uid)
-
       if (existingId) {
-        // Update existing
+        toUpdate.push({ id: existingId, event })
+      } else {
+        toInsert.push(event)
+      }
+    }
+
+    let upserted = 0
+    const BATCH_SIZE = 500
+
+    // Batch insert new events
+    for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
+      const batch = toInsert.slice(i, i + BATCH_SIZE).map((event) => ({
+        title: event.title,
+        description: event.description,
+        start_at: event.start_at,
+        end_at: event.end_at,
+        all_day: event.all_day,
+        location: event.location,
+        colour: feed.colour,
+        source: 'feed' as const,
+        feed_id: feed.id,
+        external_uid: event.uid,
+        read_only: true,
+      }))
+
+      const { error: insertError, count } = await supabaseService
+        .from('calendar_events')
+        .insert(batch)
+
+      if (insertError) {
+        // If batch fails, update feed error but continue
         await supabaseService
-          .from('calendar_events')
+          .from('calendar_feeds')
           .update({
-            title: event.title,
-            description: event.description,
-            start_at: event.start_at,
-            end_at: event.end_at,
-            all_day: event.all_day,
-            location: event.location,
-            colour: feed.colour,
+            last_error: `Insert batch failed: ${insertError.message}`,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existingId)
-      } else {
-        // Insert new
-        await supabaseService.from('calendar_events').insert({
+          .eq('id', feed.id)
+        return { upserted, removed: 0, error: `Insert failed: ${insertError.message} (code: ${insertError.code}, details: ${insertError.details})` }
+      }
+
+      upserted += batch.length
+    }
+
+    // Batch update existing events (still sequential but fewer)
+    for (const { id, event } of toUpdate) {
+      await supabaseService
+        .from('calendar_events')
+        .update({
           title: event.title,
           description: event.description,
           start_at: event.start_at,
@@ -182,12 +220,9 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
           all_day: event.all_day,
           location: event.location,
           colour: feed.colour,
-          source: 'feed',
-          feed_id: feed.id,
-          external_uid: event.uid,
-          read_only: true,
+          updated_at: new Date().toISOString(),
         })
-      }
+        .eq('id', id)
 
       upserted++
     }
@@ -201,10 +236,14 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
       .map((e: { id: string }) => e.id)
 
     if (toRemove.length > 0) {
-      await supabaseService
-        .from('calendar_events')
-        .delete()
-        .in('id', toRemove)
+      // Batch delete in chunks
+      for (let i = 0; i < toRemove.length; i += BATCH_SIZE) {
+        const batch = toRemove.slice(i, i + BATCH_SIZE)
+        await supabaseService
+          .from('calendar_events')
+          .delete()
+          .in('id', batch)
+      }
     }
 
     // Update feed metadata
