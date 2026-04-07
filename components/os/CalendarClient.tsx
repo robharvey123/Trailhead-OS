@@ -658,7 +658,7 @@ export default function CalendarClient({
       const result = await apiFetch<{ pushed: number; pulled: number }>('/api/calendar/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ direction: 'both', days: 90 }),
+        body: JSON.stringify({ direction: 'both', days: 60 }),
       })
 
       const calendarApi = calendarRef.current?.getApi()

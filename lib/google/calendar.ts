@@ -304,13 +304,55 @@ export async function pullEventsFromGoogleCalendar(
     timeMax,
     singleEvents: true,
     orderBy: 'startTime',
-    maxResults: 250,
+    maxResults: 500,
   })
 
   const events = response.data.items ?? []
-  const created: CalendarEvent[] = []
-  let synced = 0
+  if (events.length === 0) return { synced: 0, created: 0 }
+
   const isPrimary = calendarId === 'primary' || calendarId === tokenRow.email
+
+  // Batch-load all existing gcal_sync rows for this calendar
+  const gcalEventIds = events.map((e) => e.id).filter(Boolean) as string[]
+  const { data: existingSyncRows } = await supabaseService
+    .from('gcal_sync')
+    .select('id, calendar_event_id, gcal_event_id')
+    .in('gcal_event_id', gcalEventIds)
+
+  const syncByGcalId = new Map(
+    (existingSyncRows ?? []).map((row: Pick<GcalSync, 'id' | 'calendar_event_id'> & { gcal_event_id: string }) => [
+      row.gcal_event_id,
+      row,
+    ])
+  )
+
+  // Batch-check which linked calendar_events still exist
+  const linkedEventIds = (existingSyncRows ?? [])
+    .map((row: { calendar_event_id: string }) => row.calendar_event_id)
+    .filter(Boolean)
+
+  const existingEventIds = new Set<string>()
+  if (linkedEventIds.length > 0) {
+    const { data: existingEvents } = await supabaseService
+      .from('calendar_events')
+      .select('id')
+      .in('id', linkedEventIds)
+    for (const row of existingEvents ?? []) {
+      existingEventIds.add((row as { id: string }).id)
+    }
+  }
+
+  // Clean up orphaned sync rows in one go
+  const orphanedSyncIds = (existingSyncRows ?? [])
+    .filter((row: { calendar_event_id: string }) => !existingEventIds.has(row.calendar_event_id))
+    .map((row: { id: string }) => row.id)
+
+  if (orphanedSyncIds.length > 0) {
+    await supabaseService.from('gcal_sync').delete().in('id', orphanedSyncIds)
+  }
+
+  let synced = 0
+  let created = 0
 
   for (const gcalEvent of events) {
     if (!gcalEvent.id || !gcalEvent.summary) continue
@@ -319,52 +361,27 @@ export async function pullEventsFromGoogleCalendar(
     const end_at = toLocalDateTime(gcalEvent.end)
     if (!start_at || !end_at) continue
 
-    // Check if we already have a sync mapping for this Google event
-    const { data: existing } = await supabaseService
-      .from('gcal_sync')
-      .select('id, calendar_event_id')
-      .eq('gcal_event_id', gcalEvent.id)
-      .maybeSingle<Pick<GcalSync, 'id' | 'calendar_event_id'>>()
+    const existing = syncByGcalId.get(gcalEvent.id)
 
-    if (existing?.calendar_event_id) {
-      // Verify the linked calendar_event still exists
-      const { data: eventExists } = await supabaseService
+    if (existing && existingEventIds.has(existing.calendar_event_id)) {
+      // Event exists — update it
+      await supabaseService
         .from('calendar_events')
-        .select('id')
+        .update({
+          title: gcalEvent.summary,
+          description: gcalEvent.description || null,
+          location: gcalEvent.location || null,
+          start_at,
+          end_at,
+          all_day: Boolean(gcalEvent.start?.date),
+          source: 'google',
+          external_uid: gcalEvent.id,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', existing.calendar_event_id)
-        .maybeSingle()
 
-      if (eventExists) {
-        // Event exists — update it
-        await supabaseService
-          .from('calendar_events')
-          .update({
-            title: gcalEvent.summary,
-            description: gcalEvent.description || null,
-            location: gcalEvent.location || null,
-            start_at,
-            end_at,
-            all_day: Boolean(gcalEvent.start?.date),
-            source: 'google',
-            external_uid: gcalEvent.id,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existing.calendar_event_id)
-
-        await supabaseService
-          .from('gcal_sync')
-          .update({
-            last_synced_at: new Date().toISOString(),
-            sync_direction: isPrimary ? 'both' : 'pull',
-          })
-          .eq('id', existing.id)
-
-        synced++
-        continue
-      }
-
-      // Calendar event was deleted but gcal_sync is orphaned — remove it
-      await supabaseService.from('gcal_sync').delete().eq('id', existing.id)
+      synced++
+      continue
     }
 
     // Insert new calendar event
@@ -382,8 +399,8 @@ export async function pullEventsFromGoogleCalendar(
         read_only: !isPrimary,
         updated_at: new Date().toISOString(),
       })
-      .select('*')
-      .single<CalendarEvent>()
+      .select('id')
+      .single<{ id: string }>()
 
     if (error || !newEvent) continue
 
@@ -395,11 +412,11 @@ export async function pullEventsFromGoogleCalendar(
       sync_direction: isPrimary ? 'both' : 'pull',
     })
 
-    created.push(newEvent)
+    created++
     synced++
   }
 
-  return { synced, created: created.length }
+  return { synced, created }
 }
 
 export async function syncAllGoogleAccounts(
@@ -414,7 +431,10 @@ export async function syncAllGoogleAccounts(
   totalPulled: number
 }> {
   const tokens = await getAllGoogleTokens()
-  const timeMin = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+  // Sync from the 1st of the current month forwards
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const timeMin = monthStart.toISOString()
   const timeMax = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
 
   const accounts: Array<{
