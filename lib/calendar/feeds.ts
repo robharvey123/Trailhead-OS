@@ -1,4 +1,4 @@
-import ical from 'node-ical'
+import type ical from 'node-ical'
 import { supabaseService } from '@/lib/supabase/service'
 
 export interface CalendarFeed {
@@ -68,8 +68,9 @@ function isAllDay(event: ical.VEvent): boolean {
   return false
 }
 
-export function parseIcalFeed(icsText: string): ParsedEvent[] {
-  const parsed = ical.sync.parseICS(icsText)
+export async function parseIcalFeed(icsText: string): Promise<ParsedEvent[]> {
+  const nodeIcal = await import('node-ical')
+  const parsed = nodeIcal.sync.parseICS(icsText)
   const events: ParsedEvent[] = []
 
   for (const key of Object.keys(parsed)) {
@@ -135,7 +136,7 @@ export async function fetchAndSyncFeed(feed: CalendarFeed): Promise<{
     }
 
     const icsText = await response.text()
-    const parsedEvents = parseIcalFeed(icsText)
+    const parsedEvents = await parseIcalFeed(icsText)
 
     // Get all existing events for this feed
     const { data: existingEvents } = await supabaseService
