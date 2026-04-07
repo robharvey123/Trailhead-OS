@@ -1,10 +1,45 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
+import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET() {
   const auth = await getAuthenticatedSupabase()
   if (!auth.ok) {
     return auth.response
+  }
+
+  // Check if source column exists by trying a filtered query
+  let sourceColumnExists = true
+  const { error: sourceCheckError } = await supabaseService
+    .from('calendar_events')
+    .select('id')
+    .eq('source', 'google')
+    .limit(1)
+  if (sourceCheckError) {
+    sourceColumnExists = false
+  }
+
+  // Try a test insert with service role to see if it works
+  let testInsertError: string | null = null
+  const { data: testEvent, error: insertError } = await supabaseService
+    .from('calendar_events')
+    .insert({
+      title: '__debug_test__',
+      start_at: new Date().toISOString(),
+      end_at: new Date().toISOString(),
+      all_day: false,
+      source: 'google',
+      external_uid: '__debug_test__',
+      read_only: true,
+    })
+    .select('id')
+    .single()
+  
+  if (insertError) {
+    testInsertError = `${insertError.message} (code: ${insertError.code}, details: ${insertError.details}, hint: ${insertError.hint})`
+  } else if (testEvent) {
+    // Clean up test event
+    await supabaseService.from('calendar_events').delete().eq('id', (testEvent as { id: string }).id)
   }
 
   const supabase = auth.supabase
@@ -69,7 +104,15 @@ export async function GET() {
     if (s in monthBySource) monthBySource[s]++
   }
 
+  // Count gcal_sync rows
+  const { data: syncRows } = await supabase
+    .from('gcal_sync')
+    .select('id')
+
   return NextResponse.json({
+    sourceColumnExists,
+    testInsertError,
+    gcalSyncRowCount: syncRows?.length ?? 0,
     counts,
     currentMonth: {
       range: { start: monthStart, end: monthEnd },

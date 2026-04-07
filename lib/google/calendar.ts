@@ -295,7 +295,7 @@ export async function pullEventsFromGoogleCalendar(
   calendarId: string,
   timeMin: string,
   timeMax: string
-): Promise<{ synced: number; created: number }> {
+): Promise<{ synced: number; created: number; errors: string[] }> {
   const calendar = await getCalendarClientForToken(tokenRow)
 
   const response = await calendar.events.list({
@@ -308,16 +308,21 @@ export async function pullEventsFromGoogleCalendar(
   })
 
   const events = response.data.items ?? []
-  if (events.length === 0) return { synced: 0, created: 0 }
+  if (events.length === 0) return { synced: 0, created: 0, errors: [] }
 
   const isPrimary = calendarId === 'primary' || calendarId === tokenRow.email
+  const errors: string[] = []
 
   // Batch-load all existing gcal_sync rows for this calendar
   const gcalEventIds = events.map((e) => e.id).filter(Boolean) as string[]
-  const { data: existingSyncRows } = await supabaseService
+  const { data: existingSyncRows, error: syncLoadError } = await supabaseService
     .from('gcal_sync')
     .select('id, calendar_event_id, gcal_event_id')
     .in('gcal_event_id', gcalEventIds)
+
+  if (syncLoadError) {
+    errors.push(`gcal_sync load: ${syncLoadError.message}`)
+  }
 
   const syncByGcalId = new Map(
     (existingSyncRows ?? []).map((row: Pick<GcalSync, 'id' | 'calendar_event_id'> & { gcal_event_id: string }) => [
@@ -402,7 +407,12 @@ export async function pullEventsFromGoogleCalendar(
       .select('id')
       .single<{ id: string }>()
 
-    if (error || !newEvent) continue
+    if (error || !newEvent) {
+      if (error && errors.length < 5) {
+        errors.push(`insert "${gcalEvent.summary}": ${error.message} (code: ${error.code}, details: ${error.details})`)
+      }
+      continue
+    }
 
     await supabaseService.from('gcal_sync').insert({
       calendar_event_id: newEvent.id,
@@ -416,7 +426,7 @@ export async function pullEventsFromGoogleCalendar(
     synced++
   }
 
-  return { synced, created }
+  return { synced, created, errors }
 }
 
 export async function syncAllGoogleAccounts(
@@ -475,6 +485,7 @@ export async function syncAllGoogleAccounts(
             name: cal.name,
             synced: result.synced,
             created: result.created,
+            error: result.errors.length > 0 ? result.errors.join('; ') : undefined,
           })
         }
 
