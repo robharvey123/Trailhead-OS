@@ -19,9 +19,18 @@ create table if not exists calendar_feeds (
 );
 
 alter table calendar_feeds enable row level security;
-create policy "authenticated full access" on calendar_feeds
-  for all using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where tablename = 'calendar_feeds' and policyname = 'authenticated full access'
+  ) then
+    create policy "authenticated full access" on calendar_feeds
+      for all using (auth.role() = 'authenticated')
+      with check (auth.role() = 'authenticated');
+  end if;
+end $$;
 
 -- ========================================
 -- Extend google_tokens for multi-account support
@@ -49,9 +58,18 @@ create table if not exists google_calendar_selections (
 );
 
 alter table google_calendar_selections enable row level security;
-create policy "authenticated full access" on google_calendar_selections
-  for all using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where tablename = 'google_calendar_selections' and policyname = 'authenticated full access'
+  ) then
+    create policy "authenticated full access" on google_calendar_selections
+      for all using (auth.role() = 'authenticated')
+      with check (auth.role() = 'authenticated');
+  end if;
+end $$;
 
 -- ========================================
 -- Extend calendar_events to track source

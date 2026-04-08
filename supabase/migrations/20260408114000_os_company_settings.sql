@@ -31,8 +31,16 @@ on conflict (key) do nothing;
 
 alter table os_company_settings enable row level security;
 
-create policy "authenticated full access os_company_settings"
-  on os_company_settings
-  for all
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where tablename = 'os_company_settings' and policyname = 'authenticated full access os_company_settings'
+  ) then
+    create policy "authenticated full access os_company_settings"
+      on os_company_settings
+      for all
+      using (auth.role() = 'authenticated')
+      with check (auth.role() = 'authenticated');
+  end if;
+end $$;

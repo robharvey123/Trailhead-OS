@@ -193,22 +193,17 @@ export async function uploadReceipt(
     throw new Error(uploadError.message || 'Failed to upload receipt')
   }
 
-  const { data: urlData } = supabase.storage
-    .from('receipts')
-    .getPublicUrl(path)
-
-  const receiptUrl = urlData.publicUrl
-
+  // Store the storage path, not a public URL — bucket is private
   const { error: updateError } = await supabase
     .from('expenses')
-    .update({ receipt_url: receiptUrl })
+    .update({ receipt_url: path })
     .eq('id', expenseId)
 
   if (updateError) {
     throw new Error(updateError.message || 'Failed to save receipt URL')
   }
 
-  return receiptUrl
+  return path
 }
 
 export async function markExpensesAsBilled(

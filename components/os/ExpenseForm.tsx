@@ -278,7 +278,7 @@ export default function ExpenseForm({
           />
           {initialExpense?.receipt_url && !receiptFile && (
             <a
-              href={initialExpense.receipt_url}
+              href={`/api/expenses/${initialExpense.id}/receipt`}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-1 inline-block text-sm text-sky-300 hover:text-sky-200"
