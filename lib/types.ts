@@ -89,6 +89,11 @@ export interface Contact {
   email: string | null
   phone: string | null
   role: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  postcode: string | null
+  country: string | null
   status: ContactStatus
   notes: string | null
   tags: string[]
@@ -301,6 +306,13 @@ export interface Invoice {
   paid_at?: string
   is_recurring?: boolean
   recurring_interval?: 'month' | 'year'
+  bill_to_name: string | null
+  bill_to_address: string | null
+  bill_to_city: string | null
+  bill_to_postcode: string | null
+  bill_to_country: string | null
+  bill_to_email: string | null
+  bill_to_phone: string | null
   notes: string | null
   created_at: string
   updated_at: string

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
+import { getAccountById } from '@/lib/db/accounts'
+import { getContactById } from '@/lib/db/contacts'
 import { createInvoice } from '@/lib/db/invoices'
 import { getQuoteById, updateQuote } from '@/lib/db/quotes'
+import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 
 export async function POST(
   _request: Request,
@@ -32,6 +35,12 @@ export async function POST(
       )
     }
 
+    const [account, contact] = await Promise.all([
+      quote.account_id ? getAccountById(quote.account_id, auth.supabase).catch(() => null) : null,
+      quote.contact_id ? getContactById(quote.contact_id, auth.supabase).catch(() => null) : null,
+    ])
+    const billTo = deriveInvoiceBillTo(account, contact)
+
     const invoice = await createInvoice(
       {
         account_id: quote.account_id ?? null,
@@ -48,6 +57,13 @@ export async function POST(
           unit_price: item.unit_price,
         })),
         vat_rate: quote.vat_rate,
+        bill_to_name: billTo.bill_to_name,
+        bill_to_address: billTo.bill_to_address,
+        bill_to_city: billTo.bill_to_city,
+        bill_to_postcode: billTo.bill_to_postcode,
+        bill_to_country: billTo.bill_to_country,
+        bill_to_email: billTo.bill_to_email,
+        bill_to_phone: billTo.bill_to_phone,
         notes: [quote.payment_terms, quote.notes].filter(Boolean).join('\n\n') || null,
       },
       auth.supabase

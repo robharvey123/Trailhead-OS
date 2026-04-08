@@ -1,8 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PricingTierSelector from './PricingTierSelector'
+import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import {
   calculateTotals,
   type Account,
@@ -53,6 +54,29 @@ function getContactLabel(contact: Contact) {
   return contact.company ? `${contact.name} — ${contact.company}` : contact.name
 }
 
+function createEmptyContact(): Contact {
+  return {
+    id: '',
+    workstream_id: null,
+    account_id: null,
+    name: '',
+    company: null,
+    email: null,
+    phone: null,
+    role: null,
+    address_line1: null,
+    address_line2: null,
+    city: null,
+    postcode: null,
+    country: null,
+    status: 'lead',
+    notes: null,
+    tags: [],
+    created_at: '',
+    updated_at: '',
+  }
+}
+
 export default function InvoiceForm({
   accounts,
   contacts,
@@ -69,25 +93,15 @@ export default function InvoiceForm({
   initialPricingTierId?: string
 }) {
   const router = useRouter()
+  const initialContact =
+    contacts.find((contact) => contact.id === initialInvoice?.contact_id) ?? createEmptyContact()
+  const initialAccount = accounts.find((account) => account.id === (initialInvoice?.account_id ?? initialAccountId)) ?? null
+  const initialDerivedBillTo = deriveInvoiceBillTo(initialAccount, initialContact.id ? initialContact : null)
   const [accountId, setAccountId] = useState(initialInvoice?.account_id ?? initialAccountId)
   const [contactSearch, setContactSearch] = useState(
     initialInvoice?.contact_id
       ? getContactLabel(
-          contacts.find((contact) => contact.id === initialInvoice.contact_id) ?? {
-            id: '',
-            workstream_id: null,
-            account_id: null,
-            name: '',
-            company: null,
-            email: null,
-            phone: null,
-            role: null,
-            status: 'lead',
-            notes: null,
-            tags: [],
-            created_at: '',
-            updated_at: '',
-          }
+          contacts.find((contact) => contact.id === initialInvoice.contact_id) ?? createEmptyContact()
         )
       : ''
   )
@@ -110,6 +124,14 @@ export default function InvoiceForm({
     initialInvoice?.pricing_tier_id ?? initialPricingTierId ?? null
   )
   const [showTierNotice, setShowTierNotice] = useState(false)
+  const [billToName, setBillToName] = useState(initialInvoice?.bill_to_name ?? initialDerivedBillTo.bill_to_name ?? '')
+  const [billToAddress, setBillToAddress] = useState(initialInvoice?.bill_to_address ?? initialDerivedBillTo.bill_to_address ?? '')
+  const [billToCity, setBillToCity] = useState(initialInvoice?.bill_to_city ?? initialDerivedBillTo.bill_to_city ?? '')
+  const [billToPostcode, setBillToPostcode] = useState(initialInvoice?.bill_to_postcode ?? initialDerivedBillTo.bill_to_postcode ?? '')
+  const [billToCountry, setBillToCountry] = useState(initialInvoice?.bill_to_country ?? initialDerivedBillTo.bill_to_country ?? '')
+  const [billToEmail, setBillToEmail] = useState(initialInvoice?.bill_to_email ?? initialDerivedBillTo.bill_to_email ?? '')
+  const [billToPhone, setBillToPhone] = useState(initialInvoice?.bill_to_phone ?? initialDerivedBillTo.bill_to_phone ?? '')
+  const selectionSyncReadyRef = useRef(false)
 
   const filteredContacts = contacts.filter((contact) => {
     if (accountId && contact.account_id !== accountId) {
@@ -124,6 +146,25 @@ export default function InvoiceForm({
   })
 
   const totals = calculateTotals(lineItems, Number(vatRate) || 0)
+
+  useEffect(() => {
+    if (!selectionSyncReadyRef.current) {
+      selectionSyncReadyRef.current = true
+      return
+    }
+
+    const nextAccount = accounts.find((account) => account.id === accountId) ?? null
+    const nextContact = contacts.find((contact) => contact.id === contactId) ?? null
+    const nextBillTo = deriveInvoiceBillTo(nextAccount, nextContact)
+
+    setBillToName(nextBillTo.bill_to_name ?? '')
+    setBillToAddress(nextBillTo.bill_to_address ?? '')
+    setBillToCity(nextBillTo.bill_to_city ?? '')
+    setBillToPostcode(nextBillTo.bill_to_postcode ?? '')
+    setBillToCountry(nextBillTo.bill_to_country ?? '')
+    setBillToEmail(nextBillTo.bill_to_email ?? '')
+    setBillToPhone(nextBillTo.bill_to_phone ?? '')
+  }, [accountId, contactId, accounts, contacts])
 
   function updateLineItem(id: string, patch: Partial<LineItem>) {
     setLineItems((current) =>
@@ -184,6 +225,13 @@ export default function InvoiceForm({
         issue_date: issueDate,
         due_date: dueDate || null,
         vat_rate: Number(vatRate) || 0,
+        bill_to_name: billToName || null,
+        bill_to_address: billToAddress || null,
+        bill_to_city: billToCity || null,
+        bill_to_postcode: billToPostcode || null,
+        bill_to_country: billToCountry || null,
+        bill_to_email: billToEmail || null,
+        bill_to_phone: billToPhone || null,
         notes,
         line_items: sanitizedLineItems,
         status: nextStatus === 'edit' ? initialInvoice?.status ?? 'draft' : nextStatus,
@@ -317,6 +365,78 @@ export default function InvoiceForm({
             className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
           />
         </label>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-slate-800 bg-slate-950/50 p-4">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-100">Bill to</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Address fields can be pulled from the selected account or contact, then edited per invoice.
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label className="space-y-2 md:col-span-2">
+            <span className="text-sm text-slate-300">Recipient name</span>
+            <input
+              value={billToName}
+              onChange={(event) => setBillToName(event.target.value)}
+              placeholder="Company or recipient"
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            />
+          </label>
+          <label className="space-y-2 md:col-span-2">
+            <span className="text-sm text-slate-300">Address</span>
+            <textarea
+              value={billToAddress}
+              onChange={(event) => setBillToAddress(event.target.value)}
+              rows={4}
+              placeholder="Street address"
+              className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-slate-300">City</span>
+            <input
+              value={billToCity}
+              onChange={(event) => setBillToCity(event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-slate-300">Postcode</span>
+            <input
+              value={billToPostcode}
+              onChange={(event) => setBillToPostcode(event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-slate-300">Country</span>
+            <input
+              value={billToCountry}
+              onChange={(event) => setBillToCountry(event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-slate-300">Recipient email</span>
+            <input
+              type="email"
+              value={billToEmail}
+              onChange={(event) => setBillToEmail(event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            />
+          </label>
+          <label className="space-y-2 md:col-span-2">
+            <span className="text-sm text-slate-300">Recipient phone</span>
+            <input
+              value={billToPhone}
+              onChange={(event) => setBillToPhone(event.target.value)}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            />
+          </label>
+        </div>
       </div>
 
       <div className="rounded-[1.75rem] border border-slate-800 bg-slate-950/50 p-4">

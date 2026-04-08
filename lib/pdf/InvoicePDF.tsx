@@ -8,6 +8,7 @@ import {
   View,
   renderToBuffer,
 } from '@react-pdf/renderer'
+import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type Workstream } from '@/lib/types'
 
 const styles = StyleSheet.create({
@@ -152,6 +153,7 @@ function InvoiceDocument({
   workstream: Workstream | null
 }) {
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
+  const billTo = getInvoiceBillToDisplay(invoice, contact)
 
   return (
     <Document>
@@ -187,10 +189,16 @@ function InvoiceDocument({
         <View style={styles.metaGrid}>
           <View style={styles.metaBlock}>
             <Text style={styles.sectionTitle}>Bill To</Text>
-            <Text>{contact?.name ?? 'No client selected'}</Text>
-            {contact?.company ? <Text style={styles.muted}>{contact.company}</Text> : null}
-            {contact?.email ? <Text style={styles.muted}>{contact.email}</Text> : null}
-            {contact?.phone ? <Text style={styles.muted}>{contact.phone}</Text> : null}
+            <Text>{billTo.bill_to_name ?? 'No client selected'}</Text>
+            {billTo.bill_to_address ? <Text style={styles.muted}>{billTo.bill_to_address}</Text> : null}
+            {billTo.bill_to_city || billTo.bill_to_postcode ? (
+              <Text style={styles.muted}>
+                {[billTo.bill_to_city, billTo.bill_to_postcode].filter(Boolean).join(', ')}
+              </Text>
+            ) : null}
+            {billTo.bill_to_country ? <Text style={styles.muted}>{billTo.bill_to_country}</Text> : null}
+            {billTo.bill_to_email ? <Text style={styles.muted}>{billTo.bill_to_email}</Text> : null}
+            {billTo.bill_to_phone ? <Text style={styles.muted}>{billTo.bill_to_phone}</Text> : null}
           </View>
         </View>
 

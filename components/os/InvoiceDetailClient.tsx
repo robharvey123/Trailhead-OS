@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type InvoiceStatus, type Workstream } from '@/lib/types'
 import RecordEmailDialog from './RecordEmailDialog'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -45,6 +46,7 @@ export default function InvoiceDetailClient({
   const [subscriptionLoading, setSubscriptionLoading] = useState(false)
   const paidToastShownRef = useRef(false)
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
+  const billTo = getInvoiceBillToDisplay(invoice, contact)
   const truncatedPaymentLink =
     paymentLink.length > 52 ? `${paymentLink.slice(0, 49)}...` : paymentLink
   const isPaid = Boolean(invoice.paid_at)
@@ -216,7 +218,7 @@ export default function InvoiceDetailClient({
               recordId={invoice.id}
               buttonLabel="Email invoice"
               dialogTitle="Email invoice"
-              defaultRecipient={contact?.email ?? null}
+              defaultRecipient={billTo.bill_to_email ?? contact?.email ?? null}
               defaultSubject={`Invoice ${invoice.invoice_number}`}
               defaultMessage={`Hi,\n\nPlease find the attached invoice ${invoice.invoice_number}.\n\nThank you.`}
               buttonClassName="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
@@ -242,10 +244,24 @@ export default function InvoiceDetailClient({
             <p className="mt-2 text-sm text-slate-200">{invoice.due_date ?? '—'}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Client</p>
-            <p className="mt-2 text-sm text-slate-200">{contact?.name ?? '—'}</p>
-            {contact?.company ? (
-              <p className="mt-1 text-sm text-slate-400">{contact.company}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Bill to</p>
+            <p className="mt-2 text-sm text-slate-200">{billTo.bill_to_name ?? '—'}</p>
+            {billTo.bill_to_address ? (
+              <p className="mt-1 whitespace-pre-wrap text-sm text-slate-400">{billTo.bill_to_address}</p>
+            ) : null}
+            {billTo.bill_to_city || billTo.bill_to_postcode ? (
+              <p className="mt-1 text-sm text-slate-400">
+                {[billTo.bill_to_city, billTo.bill_to_postcode].filter(Boolean).join(', ')}
+              </p>
+            ) : null}
+            {billTo.bill_to_country ? (
+              <p className="mt-1 text-sm text-slate-400">{billTo.bill_to_country}</p>
+            ) : null}
+            {billTo.bill_to_email ? (
+              <p className="mt-2 text-sm text-slate-400">{billTo.bill_to_email}</p>
+            ) : null}
+            {billTo.bill_to_phone ? (
+              <p className="text-sm text-slate-400">{billTo.bill_to_phone}</p>
             ) : null}
           </div>
           <div>

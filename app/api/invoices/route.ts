@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { getApiKeyAuth } from '@/lib/api/auth'
+import { getAccountById } from '@/lib/db/accounts'
+import { getContactById } from '@/lib/db/contacts'
 import { createInvoice, getInvoices } from '@/lib/db/invoices'
+import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Invoice, type InvoiceStatus, type LineItem } from '@/lib/types'
 
 const INVOICE_STATUSES = new Set<InvoiceStatus>([
@@ -126,19 +129,28 @@ export async function POST(request: NextRequest) {
       ? (body.status as InvoiceStatus)
       : 'draft'
 
+  const accountId =
+    body.account_id === null || body.account_id === undefined
+      ? null
+      : typeof body.account_id === 'string'
+        ? body.account_id
+        : null
+  const contactId =
+    body.contact_id === null || body.contact_id === undefined
+      ? null
+      : typeof body.contact_id === 'string'
+        ? body.contact_id
+        : null
+
+  const [account, contact] = await Promise.all([
+    accountId ? getAccountById(accountId, auth.supabase).catch(() => null) : null,
+    contactId ? getContactById(contactId, auth.supabase).catch(() => null) : null,
+  ])
+  const derivedBillTo = deriveInvoiceBillTo(account, contact)
+
   const payload: Omit<Invoice, 'id' | 'invoice_number' | 'created_at' | 'updated_at'> = {
-    account_id:
-      body.account_id === null || body.account_id === undefined
-        ? null
-        : typeof body.account_id === 'string'
-          ? body.account_id
-          : null,
-    contact_id:
-      body.contact_id === null || body.contact_id === undefined
-        ? null
-        : typeof body.contact_id === 'string'
-          ? body.contact_id
-          : null,
+    account_id: accountId,
+    contact_id: contactId,
     workstream_id:
       body.workstream_id === null || body.workstream_id === undefined
         ? null
@@ -164,6 +176,13 @@ export async function POST(request: NextRequest) {
           : null,
     line_items: lineItems,
     vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : 20,
+      bill_to_name: sanitizeText(body.bill_to_name) ?? derivedBillTo.bill_to_name,
+      bill_to_address: sanitizeText(body.bill_to_address) ?? derivedBillTo.bill_to_address,
+      bill_to_city: sanitizeText(body.bill_to_city) ?? derivedBillTo.bill_to_city,
+      bill_to_postcode: sanitizeText(body.bill_to_postcode) ?? derivedBillTo.bill_to_postcode,
+      bill_to_country: sanitizeText(body.bill_to_country) ?? derivedBillTo.bill_to_country,
+      bill_to_email: sanitizeText(body.bill_to_email) ?? derivedBillTo.bill_to_email,
+      bill_to_phone: sanitizeText(body.bill_to_phone) ?? derivedBillTo.bill_to_phone,
     notes: sanitizeText(body.notes),
   }
 

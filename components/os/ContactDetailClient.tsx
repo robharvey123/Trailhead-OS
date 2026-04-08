@@ -58,6 +58,11 @@ export default function ContactDetailClient({
     email: initialContact.email ?? '',
     phone: initialContact.phone ?? '',
     role: initialContact.role ?? '',
+    address_line1: initialContact.address_line1 ?? '',
+    address_line2: initialContact.address_line2 ?? '',
+    city: initialContact.city ?? '',
+    postcode: initialContact.postcode ?? '',
+    country: initialContact.country ?? 'UK',
     workstream_id: initialContact.workstream_id ?? '',
     account_id: initialContact.account_id ?? '',
     status: initialContact.status,
@@ -82,6 +87,11 @@ export default function ContactDetailClient({
           email: form.email,
           phone: form.phone,
           role: form.role,
+          address_line1: form.address_line1,
+          address_line2: form.address_line2,
+          city: form.city,
+          postcode: form.postcode,
+          country: form.country,
           workstream_id: form.workstream_id || null,
           account_id: form.account_id || null,
           status: form.status,
@@ -173,6 +183,11 @@ export default function ContactDetailClient({
                       email: contact.email ?? '',
                       phone: contact.phone ?? '',
                       role: contact.role ?? '',
+                      address_line1: contact.address_line1 ?? '',
+                      address_line2: contact.address_line2 ?? '',
+                      city: contact.city ?? '',
+                      postcode: contact.postcode ?? '',
+                      country: contact.country ?? 'UK',
                       workstream_id: contact.workstream_id ?? '',
                       account_id: contact.account_id ?? '',
                       status: contact.status,
@@ -241,6 +256,46 @@ export default function ContactDetailClient({
                   className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
                 />
               </label>
+              <label className="space-y-2 md:col-span-2">
+                <span className="text-sm text-slate-300">Address line 1</span>
+                <input
+                  value={form.address_line1}
+                  onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                />
+              </label>
+              <label className="space-y-2 md:col-span-2">
+                <span className="text-sm text-slate-300">Address line 2</span>
+                <input
+                  value={form.address_line2}
+                  onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm text-slate-300">City</span>
+                <input
+                  value={form.city}
+                  onChange={(event) => setForm({ ...form, city: event.target.value })}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm text-slate-300">Postcode</span>
+                <input
+                  value={form.postcode}
+                  onChange={(event) => setForm({ ...form, postcode: event.target.value })}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                />
+              </label>
+              <label className="space-y-2 md:col-span-2">
+                <span className="text-sm text-slate-300">Country</span>
+                <input
+                  value={form.country}
+                  onChange={(event) => setForm({ ...form, country: event.target.value })}
+                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                />
+              </label>
               <label className="space-y-2">
                 <span className="text-sm text-slate-300">Workstream</span>
                 <select
@@ -296,6 +351,20 @@ export default function ContactDetailClient({
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Role</p>
                 <p className="mt-2 text-sm text-slate-200">{contact.role ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Address</p>
+                <div className="mt-2 whitespace-pre-wrap text-sm text-slate-200">
+                  {[
+                    contact.address_line1,
+                    contact.address_line2,
+                    contact.city,
+                    contact.postcode,
+                    contact.country,
+                  ]
+                    .filter(Boolean)
+                    .join('\n') || '—'}
+                </div>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Account</p>

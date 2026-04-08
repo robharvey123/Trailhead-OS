@@ -76,6 +76,11 @@ export async function createContact(
   const payload = {
     ...data,
     name: data.name.trim(),
+    address_line1: data.address_line1?.trim() || null,
+    address_line2: data.address_line2?.trim() || null,
+    city: data.city?.trim() || null,
+    postcode: data.postcode?.trim() || null,
+    country: data.country?.trim() || null,
   }
 
   if (!payload.name) {
@@ -108,6 +113,26 @@ export async function updateContact(
     if (!patch.name) {
       throw new Error('name is required')
     }
+  }
+
+  if (patch.address_line1 !== undefined) {
+    patch.address_line1 = patch.address_line1?.trim() || null
+  }
+
+  if (patch.address_line2 !== undefined) {
+    patch.address_line2 = patch.address_line2?.trim() || null
+  }
+
+  if (patch.city !== undefined) {
+    patch.city = patch.city?.trim() || null
+  }
+
+  if (patch.postcode !== undefined) {
+    patch.postcode = patch.postcode?.trim() || null
+  }
+
+  if (patch.country !== undefined) {
+    patch.country = patch.country?.trim() || null
   }
 
   const { data: contact, error } = await supabase

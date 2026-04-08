@@ -124,6 +124,11 @@ export async function PATCH(
   if (body.email !== undefined) patch.email = sanitizeText(body.email)
   if (body.phone !== undefined) patch.phone = sanitizeText(body.phone)
   if (body.role !== undefined) patch.role = sanitizeText(body.role)
+  if (body.address_line1 !== undefined) patch.address_line1 = sanitizeText(body.address_line1)
+  if (body.address_line2 !== undefined) patch.address_line2 = sanitizeText(body.address_line2)
+  if (body.city !== undefined) patch.city = sanitizeText(body.city)
+  if (body.postcode !== undefined) patch.postcode = sanitizeText(body.postcode)
+  if (body.country !== undefined) patch.country = sanitizeText(body.country)
   if (body.notes !== undefined) patch.notes = sanitizeText(body.notes)
   if (body.tags !== undefined) patch.tags = sanitizeStringArray(body.tags)
 

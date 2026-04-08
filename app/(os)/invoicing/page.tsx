@@ -153,9 +153,18 @@ export default async function InvoicingPage({
                       <td className="py-4 text-slate-300">
                         {contact ? (
                           <>
-                            <p>{contact.name}</p>
+                            <p>{invoice.bill_to_name ?? contact.name}</p>
                             {contact.company ? (
                               <p className="text-xs text-slate-500">{contact.company}</p>
+                            ) : null}
+                          </>
+                        ) : invoice.bill_to_name ? (
+                          <>
+                            <p>{invoice.bill_to_name}</p>
+                            {invoice.bill_to_address ? (
+                              <p className="text-xs text-slate-500 line-clamp-2 whitespace-pre-wrap">
+                                {invoice.bill_to_address}
+                              </p>
                             ) : null}
                           </>
                         ) : (

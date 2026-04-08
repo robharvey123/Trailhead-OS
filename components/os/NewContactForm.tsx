@@ -23,6 +23,11 @@ export default function NewContactForm({
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [role, setRole] = useState('')
+  const [addressLine1, setAddressLine1] = useState('')
+  const [addressLine2, setAddressLine2] = useState('')
+  const [city, setCity] = useState('')
+  const [postcode, setPostcode] = useState('')
+  const [country, setCountry] = useState('UK')
   const [workstreamId, setWorkstreamId] = useState('')
   const [accountId, setAccountId] = useState(initialAccountId)
   const [status, setStatus] = useState<ContactStatus>('lead')
@@ -44,6 +49,11 @@ export default function NewContactForm({
           email,
           phone,
           role,
+          address_line1: addressLine1,
+          address_line2: addressLine2,
+          city,
+          postcode,
+          country,
           workstream_id: workstreamId || null,
           account_id: accountId || null,
           status,
@@ -106,6 +116,46 @@ export default function NewContactForm({
           <input
             value={role}
             onChange={(event) => setRole(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          />
+        </label>
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm text-slate-300">Address line 1</span>
+          <input
+            value={addressLine1}
+            onChange={(event) => setAddressLine1(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          />
+        </label>
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm text-slate-300">Address line 2</span>
+          <input
+            value={addressLine2}
+            onChange={(event) => setAddressLine2(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm text-slate-300">City</span>
+          <input
+            value={city}
+            onChange={(event) => setCity(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm text-slate-300">Postcode</span>
+          <input
+            value={postcode}
+            onChange={(event) => setPostcode(event.target.value)}
+            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          />
+        </label>
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm text-slate-300">Country</span>
+          <input
+            value={country}
+            onChange={(event) => setCountry(event.target.value)}
             className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
           />
         </label>

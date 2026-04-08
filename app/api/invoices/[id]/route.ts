@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { getApiKeyAuth } from '@/lib/api/auth'
+import { getAccountById } from '@/lib/db/accounts'
+import { getContactById } from '@/lib/db/contacts'
 import { getInvoiceById, updateInvoice } from '@/lib/db/invoices'
+import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import { calculateTotals, type InvoiceStatus, type LineItem } from '@/lib/types'
 
 const INVOICE_STATUSES = new Set<InvoiceStatus>([
@@ -115,6 +118,11 @@ export async function PATCH(
   const { id } = await params
   const body = await request.json().catch(() => ({}))
   const patch: Record<string, unknown> = {}
+  const existing = await getInvoiceById(id, auth.supabase)
+
+  if (!existing) {
+    return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
+  }
 
   if (body.contact_id !== undefined) {
     if (body.contact_id !== null && typeof body.contact_id !== 'string') {
@@ -193,6 +201,51 @@ export async function PATCH(
     patch.notes = sanitizeText(body.notes)
   }
 
+  const accountIdChanged = body.account_id !== undefined
+  const contactIdChanged = body.contact_id !== undefined
+  const billToFieldKeys = [
+    'bill_to_name',
+    'bill_to_address',
+    'bill_to_city',
+    'bill_to_postcode',
+    'bill_to_country',
+    'bill_to_email',
+    'bill_to_phone',
+  ] as const
+  const hasBillToPatch = billToFieldKeys.some((key) => key in body)
+
+  if (accountIdChanged || contactIdChanged || hasBillToPatch) {
+    const nextAccountId = (patch.account_id as string | null | undefined) ?? existing.account_id
+    const nextContactId = (patch.contact_id as string | null | undefined) ?? existing.contact_id
+    const [account, contact] = await Promise.all([
+      nextAccountId ? getAccountById(nextAccountId, auth.supabase).catch(() => null) : null,
+      nextContactId ? getContactById(nextContactId, auth.supabase).catch(() => null) : null,
+    ])
+    const derivedBillTo = deriveInvoiceBillTo(account, contact)
+
+    if (body.bill_to_name !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_name = sanitizeText(body.bill_to_name) ?? derivedBillTo.bill_to_name
+    }
+    if (body.bill_to_address !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_address = sanitizeText(body.bill_to_address) ?? derivedBillTo.bill_to_address
+    }
+    if (body.bill_to_city !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_city = sanitizeText(body.bill_to_city) ?? derivedBillTo.bill_to_city
+    }
+    if (body.bill_to_postcode !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_postcode = sanitizeText(body.bill_to_postcode) ?? derivedBillTo.bill_to_postcode
+    }
+    if (body.bill_to_country !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_country = sanitizeText(body.bill_to_country) ?? derivedBillTo.bill_to_country
+    }
+    if (body.bill_to_email !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_email = sanitizeText(body.bill_to_email) ?? derivedBillTo.bill_to_email
+    }
+    if (body.bill_to_phone !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_phone = sanitizeText(body.bill_to_phone) ?? derivedBillTo.bill_to_phone
+    }
+  }
+
   if (body.line_items !== undefined) {
     const lineItems = sanitizeLineItems(body.line_items)
     if (!lineItems) {
@@ -221,11 +274,6 @@ export async function PATCH(
   }
 
   try {
-    const existing = await getInvoiceById(id, auth.supabase)
-    if (!existing) {
-      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
-    }
-
     const invoice = await updateInvoice(id, patch, auth.supabase)
     return NextResponse.json({ invoice })
   } catch (error) {
