@@ -758,3 +758,41 @@ export interface BlogPostInput {
   published_at?: string | null
   tags?: string[]
 }
+
+// ── Expenses ──────────────────────────────────────────────
+
+export type ExpenseCategory =
+  | 'travel'
+  | 'software'
+  | 'equipment'
+  | 'meals'
+  | 'subscriptions'
+  | 'other'
+
+export interface Expense {
+  id: string
+  created_at: string
+  updated_at: string
+  date: string
+  description: string
+  amount: number
+  currency: string
+  category: ExpenseCategory
+  receipt_url: string | null
+  workstream_id: string | null
+  account_id: string | null
+  project_id: string | null
+  billable: boolean
+  billed: boolean
+  invoice_id: string | null
+  tax_deductible: boolean
+  notes: string | null
+  user_id: string
+}
+
+export interface ExpenseWithRelations extends Expense {
+  workstream?: { label: string; colour: string }
+  account?: Account
+  project?: { id: string; name: string }
+  invoice?: { id: string; invoice_number: string }
+}

@@ -300,6 +300,13 @@ export default function Sidebar({
                 onClick={() => setMobileOpen(false)}
                 collapsed={collapsed}
               />
+              <NavLink
+                href="/expenses"
+                label="Expenses"
+                active={pathname.startsWith('/expenses')}
+                onClick={() => setMobileOpen(false)}
+                collapsed={collapsed}
+              />
             </div>
           </div>
 

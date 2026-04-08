@@ -3,11 +3,13 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import PricingTierSelector from './PricingTierSelector'
+import UnbilledExpensesWidget from './UnbilledExpensesWidget'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import {
   calculateTotals,
   type Account,
   type Contact,
+  type ExpenseWithRelations,
   type Invoice,
   type LineItem,
   type PricingTier,
@@ -124,6 +126,7 @@ export default function InvoiceForm({
     initialInvoice?.pricing_tier_id ?? initialPricingTierId ?? null
   )
   const [showTierNotice, setShowTierNotice] = useState(false)
+  const [billedExpenseIds, setBilledExpenseIds] = useState<string[]>([])
   const [billToName, setBillToName] = useState(initialInvoice?.bill_to_name ?? initialDerivedBillTo.bill_to_name ?? '')
   const [billToAddress, setBillToAddress] = useState(initialInvoice?.bill_to_address ?? initialDerivedBillTo.bill_to_address ?? '')
   const [billToCity, setBillToCity] = useState(initialInvoice?.bill_to_city ?? initialDerivedBillTo.bill_to_city ?? '')
@@ -181,6 +184,17 @@ export default function InvoiceForm({
   function applyStarterItemsForTier(tier: PricingTier) {
     setLineItems(buildStarterLineItems(tier))
     setShowTierNotice(false)
+  }
+
+  function handleExpensesSelected(expenses: ExpenseWithRelations[]) {
+    const expenseLineItems: LineItem[] = expenses.map((e) => ({
+      id: crypto.randomUUID(),
+      description: `Expense: ${e.description} (${e.date})`,
+      qty: 1,
+      unit_price: Number(e.amount),
+    }))
+    setLineItems((current) => [...current, ...expenseLineItems])
+    setBilledExpenseIds((current) => [...current, ...expenses.map((e) => e.id)])
   }
 
   async function submitInvoice(nextStatus: 'draft' | 'sent' | 'edit') {
@@ -249,6 +263,17 @@ export default function InvoiceForm({
           throw new Error(data.error || 'Failed to update invoice')
         }
 
+        if (billedExpenseIds.length > 0) {
+          await fetch('/api/expenses/mark-billed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              expense_ids: billedExpenseIds,
+              invoice_id: data.invoice.id,
+            }),
+          })
+        }
+
         router.push(`/invoicing/${data.invoice.id}`)
         router.refresh()
         return
@@ -263,6 +288,17 @@ export default function InvoiceForm({
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to create invoice')
+      }
+
+      if (billedExpenseIds.length > 0) {
+        await fetch('/api/expenses/mark-billed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            expense_ids: billedExpenseIds,
+            invoice_id: data.invoice.id,
+          }),
+        })
       }
 
       router.push(`/invoicing/${data.invoice.id}`)
@@ -467,6 +503,14 @@ export default function InvoiceForm({
           />
         </div>
       </div>
+
+      {/* Unbilled expenses for this account */}
+      {accountId && (
+        <UnbilledExpensesWidget
+          accountId={accountId}
+          onSelect={handleExpensesSelected}
+        />
+      )}
 
       <div className="rounded-[1.75rem] border border-slate-800 bg-slate-950/50 p-4">
         <div className="flex items-center justify-between gap-3">
