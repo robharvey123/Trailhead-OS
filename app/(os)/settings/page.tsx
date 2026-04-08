@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
+import CompanySettingsForm from '@/components/os/CompanySettingsForm'
 import PricingTierSettings from '@/components/os/PricingTierSettings'
 import WorkstreamSettings from '@/components/os/WorkstreamSettings'
+import { getCompanySettings } from '@/lib/company-settings'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { getPricingTiers } from '@/lib/db/pricing-tiers'
 import { createClient } from '@/lib/supabase/server'
@@ -22,6 +24,7 @@ export default async function SettingsPage() {
   let workstreams: Workstream[] = []
   let pricingTiers: PricingTier[] = []
   let googleEmail: string | null = null
+  const companySettings = await getCompanySettings(supabase)
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk').replace(/\/$/, '')
   const icalSecret = process.env.ICAL_SECRET ?? ''
 
@@ -98,6 +101,22 @@ export default async function SettingsPage() {
         initialGoogleEmail={googleEmail}
         paidInvoicesThisMonth={paidInvoicesThisMonth}
       />
+
+      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Company</p>
+            <h2 className="mt-2 text-xl font-semibold text-slate-100">Email footer details</h2>
+            <p className="mt-2 max-w-2xl text-sm text-slate-400">
+              Set the legal company details appended to outbound invoice, quote, and enquiry emails.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <CompanySettingsForm company={companySettings} />
+        </div>
+      </section>
 
       <CalendarSubscriptionSection
         appUrl={appUrl}

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
 import { Resend } from 'resend'
+import { z } from 'zod'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
+import { getCompanySettings, renderCompanyEmailFooterHtml, type CompanySettings } from '@/lib/company-settings'
 import { getContactById } from '@/lib/db/contacts'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getInvoiceById } from '@/lib/db/invoices'
@@ -79,18 +80,20 @@ function buildEnquirySummaryHtml(enquiry: Enquiry) {
   `
 }
 
-function buildQuoteEmailHtml(message: string, quote: QuoteListItem) {
+function buildQuoteEmailHtml(message: string, quote: QuoteListItem, companySettings: CompanySettings) {
   return `
     ${renderMessageParagraphs(message)}
     <p>Please find the attached quote${quote.quote_number ? ` (${escapeHtml(quote.quote_number)})` : ''}.</p>
     <p><strong>${escapeHtml(quote.title)}</strong></p>
+    ${renderCompanyEmailFooterHtml(companySettings)}
   `
 }
 
-function buildInvoiceEmailHtml(message: string, invoice: Invoice) {
+function buildInvoiceEmailHtml(message: string, invoice: Invoice, companySettings: CompanySettings) {
   return `
     ${renderMessageParagraphs(message)}
     <p>Please find the attached invoice <strong>${escapeHtml(invoice.invoice_number)}</strong>.</p>
+    ${renderCompanyEmailFooterHtml(companySettings)}
   `
 }
 
@@ -117,6 +120,7 @@ export async function POST(request: Request) {
 
   try {
     const { kind, id, recipients, subject, message } = parsed.data
+    const companySettings = await getCompanySettings(auth.supabase)
 
     if (kind === 'enquiry') {
       const enquiry = await getEnquiryById(id, auth.supabase)
@@ -133,6 +137,7 @@ export async function POST(request: Request) {
           ${renderMessageParagraphs(message)}
           <p>Discovery summary for <strong>${escapeHtml(enquiry.biz_name)}</strong>.</p>
           ${buildEnquirySummaryHtml(enquiry)}
+          ${renderCompanyEmailFooterHtml(companySettings)}
         `,
       })
 
@@ -152,7 +157,7 @@ export async function POST(request: Request) {
         from: fromAddress,
         to: recipients,
         subject,
-        html: buildQuoteEmailHtml(message, quote),
+        html: buildQuoteEmailHtml(message, quote, companySettings),
         attachments: [
           {
             filename: `${quote.quote_number}.pdf`,
@@ -174,15 +179,14 @@ export async function POST(request: Request) {
       invoice.contact_id ? getContactById(invoice.contact_id, auth.supabase).catch(() => null) : null,
       getWorkstreams(auth.supabase).catch(() => []),
     ])
-    const workstream =
-      workstreams.find((item) => item.id === invoice.workstream_id) ?? null
+    const workstream = workstreams.find((item) => item.id === invoice.workstream_id) ?? null
     const buffer = await renderInvoicePdf(invoice, contact, workstream)
 
     await resend.emails.send({
       from: fromAddress,
       to: recipients,
       subject,
-      html: buildInvoiceEmailHtml(message, invoice),
+      html: buildInvoiceEmailHtml(message, invoice, companySettings),
       attachments: [
         {
           filename: `${invoice.invoice_number}.pdf`,
