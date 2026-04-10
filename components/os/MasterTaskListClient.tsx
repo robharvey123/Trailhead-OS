@@ -20,6 +20,7 @@ import type {
   TaskWithWorkstream,
   Workstream,
 } from '@/lib/types'
+import ConfirmDialog from './ConfirmDialog'
 import MasterTaskKanban from './MasterTaskKanban'
 import PriorityBadge from './PriorityBadge'
 import TaskEmailModal from './TaskEmailModal'
@@ -60,6 +61,8 @@ export default function MasterTaskListClient({
   const [creatingTask, setCreatingTask] = useState(false)
   const [emailModalOpen, setEmailModalOpen] = useState(false)
   const [emailModalTasks, setEmailModalTasks] = useState<TaskWithWorkstream[]>([])
+  const [hardDeleteOpen, setHardDeleteOpen] = useState(false)
+  const [hardDeleteLoading, setHardDeleteLoading] = useState(false)
   const [workstreamFilter, setWorkstreamFilter] = useState<string[]>([])
   const [accountFilter, setAccountFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string[]>([])
@@ -685,8 +688,42 @@ export default function MasterTaskListClient({
           >
             Email selected
           </button>
+          <button
+            type="button"
+            onClick={() => setHardDeleteOpen(true)}
+            className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-200"
+          >
+            Delete selected
+          </button>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={hardDeleteOpen}
+        onOpenChange={setHardDeleteOpen}
+        title="Delete tasks permanently"
+        description={`This will permanently delete ${selectedTasks.length} task${selectedTasks.length !== 1 ? 's' : ''}. This cannot be undone.`}
+        confirmLabel="Delete all"
+        variant="destructive"
+        loading={hardDeleteLoading}
+        items={selectedTasks.slice(0, 8).map((t) => t.title)}
+        itemsLabel="Tasks to delete"
+        onConfirm={async () => {
+          setHardDeleteLoading(true)
+          try {
+            for (const task of selectedTasks) {
+              await apiFetch(`/api/os/tasks/${task.id}?hard=true`, { method: 'DELETE' })
+              setTasks((current) => current.filter((t) => t.id !== task.id))
+            }
+            setRowSelection({})
+            setHardDeleteOpen(false)
+          } catch {
+            // individual failures still removed above
+          } finally {
+            setHardDeleteLoading(false)
+          }
+        }}
+      />
 
       <TaskEmailModal
         open={emailModalOpen}
