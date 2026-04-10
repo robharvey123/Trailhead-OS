@@ -349,7 +349,7 @@ function MilestoneBanner({ milestone }: { milestone: ProjectMilestone }) {
 
 function ProgressBar({ percent, tone = 'bg-sky-400' }: { percent: number; tone?: string }) {
   return (
-    <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+    <div className="h-1.5 overflow-hidden rounded-full bg-[#2A2A3A]">
       <div
         className={`h-full rounded-full ${tone}`}
         style={{ width: `${Math.max(0, Math.min(percent, 100))}%` }}
@@ -368,7 +368,7 @@ function TaskStatusBadge({ status }: { status: ProjectTaskStatus }) {
 
 function OwnerAvatar({ owner }: { owner?: string | null }) {
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-[11px] font-semibold text-slate-200">
+    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2A2A3A] bg-[#0C0C14] text-[11px] font-semibold text-white">
       {getOwnerInitials(owner)}
     </span>
   )
@@ -406,14 +406,14 @@ function SortableTaskCard({
         {...attributes}
         {...listeners}
         onClick={onOpen}
-        className={`rounded-[1.6rem] border border-slate-800 bg-slate-950/90 p-4 text-left shadow-sm transition hover:border-slate-700 ${
+        className={`rounded-[1.6rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 text-left shadow-sm transition hover:border-[#B8FF00]/20 ${
           disabled ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
         }`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-sm font-semibold text-slate-100">{task.title}</h3>
-            <p className="mt-1 text-xs text-slate-400">{task.due_date ? formatTaskDate(task.due_date) : 'No due date'}</p>
+            <h3 className="truncate text-sm font-semibold text-white">{task.title}</h3>
+            <p className="mt-1 text-xs text-[#9CA3AF]">{task.due_date ? formatTaskDate(task.due_date) : 'No due date'}</p>
           </div>
           <PriorityBadge priority={task.priority} />
         </div>
@@ -421,12 +421,12 @@ function SortableTaskCard({
         <div className="mt-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <OwnerAvatar owner={task.owner} />
-            <span className="text-xs text-slate-400">{task.owner ?? 'Unassigned'}</span>
+            <span className="text-xs text-[#9CA3AF]">{task.owner ?? 'Unassigned'}</span>
           </div>
           <TaskStatusBadge status={task.status} />
         </div>
 
-        <div className="mt-4 space-y-3 text-xs text-slate-300">
+        <div className="mt-4 space-y-3 text-xs text-[#9CA3AF]">
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <span>Subtasks</span>
@@ -457,7 +457,7 @@ function DroppableStatusColumn({ status, children }: { status: ProjectTaskStatus
     <div
       ref={setNodeRef}
       className={`rounded-[1.8rem] border p-4 transition ${
-        isOver ? 'border-sky-500/60 bg-slate-900' : 'border-slate-800 bg-slate-900/70'
+        isOver ? 'border-[#B8FF00]/40 bg-[#13131E]' : 'border-[#2A2A3A] bg-[#1A1A28]'
       }`}
     >
       {children}
@@ -490,7 +490,7 @@ function EditableTextCell({
 
   if (!editing) {
     return (
-      <button type="button" onClick={() => setEditing(true)} className="min-h-9 w-full text-left text-sm text-slate-100">
+      <button type="button" onClick={() => setEditing(true)} className="min-h-9 w-full text-left text-sm text-white">
         {value || placeholder || 'Empty'}
       </button>
     )
@@ -508,7 +508,7 @@ function EditableTextCell({
           void commit()
         }
       }}
-      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
     />
   )
 }
@@ -526,7 +526,7 @@ function EditableSelectCell<T extends string>({
     <select
       value={value}
       onChange={(event) => void onSave(event.target.value as T)}
-      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>
@@ -543,7 +543,7 @@ function EditableDateCell({ value, onSave }: { value: string | null; onSave: (ne
       type="date"
       value={value ?? ''}
       onChange={(event) => void onSave(event.target.value || null)}
-      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
     />
   )
 }
@@ -565,7 +565,7 @@ function EditableNumberCell({ value, onSave }: { value: number | null; onSave: (
           void onSave(Number.isFinite(nextValue) ? nextValue : null)
         }
       }}
-      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
     />
   )
 }
@@ -1051,15 +1051,15 @@ export default function ProjectWorkspaceClient({
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-[2rem] border border-slate-800 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(251,146,60,0.14),transparent_24%),rgba(15,23,42,0.84)] p-6 backdrop-blur">
+      <section className="relative overflow-hidden rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
               <span className="h-3 w-3 rounded-full border border-white/20" style={{ backgroundColor: accent }} />
-              <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Project workspace</p>
+              <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">Project workspace</p>
             </div>
-            <h1 className="mt-3 text-3xl font-semibold text-slate-50">{project.title || project.name}</h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-400">{project.description || project.brief || 'No summary added yet.'}</p>
+            <h1 className="mt-3 text-3xl font-semibold text-white">{project.title || project.name}</h1>
+            <p className="mt-2 max-w-3xl text-sm text-[#9CA3AF]">{project.description || project.brief || 'No summary added yet.'}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {project.ai_planned ? (
                   <span className="inline-flex rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">
@@ -1085,26 +1085,26 @@ export default function ProjectWorkspaceClient({
                 type="button"
                 onClick={() => void runAiPlan()}
                 disabled={planningProject || !project.brief}
-                className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-2xl bg-[#B8FF00] px-4 py-2 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {planningProject ? 'Running AI plan...' : 'Run AI plan'}
               </button>
             ) : null}
             <Link
               href={`/projects/records/${project.id}/edit`}
-              className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
+              className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00]"
             >
               Edit project
             </Link>
 
-            <div className="inline-flex rounded-2xl border border-white/10 bg-slate-950/80 p-1 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
+            <div className="inline-flex rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-1">
               {(['list', 'gantt', 'table'] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setView(mode)}
                   className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
-                    view === mode ? 'bg-white text-slate-950' : 'text-slate-300 hover:text-white'
+                    view === mode ? 'bg-[#B8FF00]/10 text-[#B8FF00] border border-[#B8FF00]/30' : 'text-[#9CA3AF] hover:text-white'
                   }`}
                 >
                   {mode}
@@ -1114,11 +1114,11 @@ export default function ProjectWorkspaceClient({
           </div>
         </div>
 
-        <div className="mt-5 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.86),rgba(15,23,42,0.72))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <div className="mt-5 rounded-[1.6rem] border border-[#2A2A3A] bg-[#13131E] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Toolbar</p>
-              <p className="mt-1 text-sm text-slate-400">Search, filter, and add work without leaving the project workspace.</p>
+              <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Toolbar</p>
+              <p className="mt-1 text-sm text-[#9CA3AF]">Search, filter, and add work without leaving the project workspace.</p>
               <div className="mt-2 flex items-center gap-2 text-xs uppercase tracking-[0.18em]">
                 <span
                   className={`inline-flex rounded-full border px-2.5 py-1 ${
@@ -1137,7 +1137,7 @@ export default function ProjectWorkspaceClient({
               <button
                 type="button"
                 onClick={() => openMilestone('__new__')}
-                className="rounded-2xl border border-slate-700 px-4 py-3 text-sm text-slate-200 transition hover:border-slate-500 hover:text-white"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00]"
               >
                 Add Milestone
               </button>
@@ -1145,7 +1145,7 @@ export default function ProjectWorkspaceClient({
                 type="button"
                 onClick={clearToolbarFilters}
                 disabled={!hasActiveFilters}
-                className="rounded-2xl border border-slate-800 px-4 py-3 text-sm text-slate-300 transition hover:border-slate-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Clear Filters
               </button>
@@ -1153,22 +1153,22 @@ export default function ProjectWorkspaceClient({
           </div>
 
           <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,0.8fr))]">
-            <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
               Search
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search title, owner, notes, tags"
-                className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm normal-case tracking-normal text-slate-100 placeholder:text-slate-500"
+                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white placeholder:text-[#9CA3AF]"
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
               Status
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value as 'all' | ProjectTaskStatus)}
-                className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm normal-case tracking-normal text-slate-100"
+                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white"
               >
                 <option value="all">All statuses</option>
                 {STATUS_COLUMNS.map((column) => (
@@ -1179,12 +1179,12 @@ export default function ProjectWorkspaceClient({
               </select>
             </label>
 
-            <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
               Priority
               <select
                 value={priorityFilter}
                 onChange={(event) => setPriorityFilter(event.target.value as 'all' | TaskPriority)}
-                className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm normal-case tracking-normal text-slate-100"
+                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white"
               >
                 <option value="all">All priorities</option>
                 <option value="critical">Critical</option>
@@ -1195,12 +1195,12 @@ export default function ProjectWorkspaceClient({
               </select>
             </label>
 
-            <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
               Owner
               <select
                 value={ownerFilter}
                 onChange={(event) => setOwnerFilter(event.target.value)}
-                className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm normal-case tracking-normal text-slate-100"
+                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white"
               >
                 <option value="all">All owners</option>
                 <option value="Unassigned">Unassigned</option>
@@ -1212,13 +1212,13 @@ export default function ProjectWorkspaceClient({
               </select>
             </label>
 
-            <label className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm text-slate-200">
+            <label className="flex items-center justify-between gap-3 rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white">
               <span>Show subtasks</span>
               <input
                 type="checkbox"
                 checked={showSubtasks}
                 onChange={(event) => setShowSubtasks(event.target.checked)}
-                className="h-4 w-4 rounded border-slate-600 bg-slate-950 text-sky-400"
+                className="h-4 w-4 rounded border-[#2A2A3A] bg-[#13131E]"
               />
             </label>
           </div>
@@ -1234,39 +1234,39 @@ export default function ProjectWorkspaceClient({
               onCreated={(task) => setTasks((current) => [...current, task])}
             />
 
-            <div className="grid grid-cols-3 gap-3 rounded-2xl border border-white/10 bg-slate-900/60 p-3 text-center text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="grid grid-cols-3 gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3 text-center text-sm">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Visible</p>
-                <p className="mt-1 font-semibold text-slate-100">{visibleTasks.length}</p>
+                <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Visible</p>
+                <p className="mt-1 font-semibold text-white">{visibleTasks.length}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Open</p>
-                <p className="mt-1 font-semibold text-slate-100">{visibleTasks.filter((task) => task.status !== 'done').length}</p>
+                <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Open</p>
+                <p className="mt-1 font-semibold text-white">{visibleTasks.filter((task) => task.status !== 'done').length}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Milestones</p>
-                <p className="mt-1 font-semibold text-slate-100">{filteredMilestones.length}</p>
+                <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Milestones</p>
+                <p className="mt-1 font-semibold text-white">{filteredMilestones.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-4">
-          <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Owner</p>
-            <p className="mt-2 text-sm text-slate-100">{project.owner ?? 'Unassigned'}</p>
+          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Owner</p>
+            <p className="mt-2 text-sm text-white">{project.owner ?? 'Unassigned'}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Timeline</p>
-            <p className="mt-2 text-sm text-slate-100">{project.start_date ? formatTaskDate(project.start_date) : 'No start'} to {project.end_date ? formatTaskDate(project.end_date) : 'No end'}</p>
+          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Timeline</p>
+            <p className="mt-2 text-sm text-white">{project.start_date ? formatTaskDate(project.start_date) : 'No start'} to {project.end_date ? formatTaskDate(project.end_date) : 'No end'}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Tasks</p>
-            <p className="mt-2 text-sm text-slate-100">{visibleTasks.length} visible / {tasks.length} total</p>
+          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Tasks</p>
+            <p className="mt-2 text-sm text-white">{visibleTasks.length} visible / {tasks.length} total</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 backdrop-blur">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Milestones</p>
-            <p className="mt-2 text-sm text-slate-100">{filteredMilestones.length} visible / {orderedMilestones.length} tracked</p>
+          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Milestones</p>
+            <p className="mt-2 text-sm text-white">{filteredMilestones.length} visible / {orderedMilestones.length} tracked</p>
           </div>
         </div>
 
@@ -1291,8 +1291,8 @@ export default function ProjectWorkspaceClient({
                 <DroppableStatusColumn key={column.id} status={column.id}>
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-200">{column.label}</h2>
-                      <p className="mt-1 text-xs text-slate-500">{laneTasks[column.id].length} tasks</p>
+                      <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">{column.label}</h2>
+                      <p className="mt-1 text-xs text-[#9CA3AF]">{laneTasks[column.id].length} tasks</p>
                     </div>
                     <TaskStatusBadge status={column.id} />
                   </div>
@@ -1342,20 +1342,20 @@ export default function ProjectWorkspaceClient({
       ) : null}
 
       {view === 'gantt' ? (
-        <section className="overflow-hidden rounded-[2rem] border border-slate-800 bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.72))] p-6 backdrop-blur">
+        <section className="overflow-hidden rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-slate-100">Timeline</h2>
-              <p className="mt-1 text-sm text-slate-400">Drag a task bar horizontally to reschedule it.</p>
+              <h2 className="text-lg font-semibold text-white">Timeline</h2>
+              <p className="mt-1 text-sm text-[#9CA3AF]">Drag a task bar horizontally to reschedule it.</p>
             </div>
-            <div className="inline-flex rounded-2xl border border-slate-800 bg-slate-950/80 p-1">
+            <div className="inline-flex rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-1">
               {(['day', 'week', 'month'] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setZoom(mode)}
                   className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
-                    zoom === mode ? 'bg-white text-slate-950' : 'text-slate-300 hover:text-white'
+                    zoom === mode ? 'bg-[#B8FF00]/10 text-[#B8FF00] border border-[#B8FF00]/30' : 'text-[#9CA3AF] hover:text-white'
                   }`}
                 >
                   {mode}
@@ -1367,12 +1367,12 @@ export default function ProjectWorkspaceClient({
           <div className="overflow-x-auto">
             <div className="min-w-max space-y-3">
               <div className="flex items-stretch gap-3">
-                <div className="sticky left-0 z-10 flex w-80 items-end bg-slate-900/70 pb-2 pr-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+                <div className="sticky left-0 z-10 flex w-80 items-end bg-[#1A1A28] pb-2 pr-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
                   Tasks and milestones
                 </div>
                 <div className="flex gap-1">
                   {units.map((unit) => (
-                    <div key={unit.toISOString()} className={`${ZOOM_CELL_CLASS[zoom]} rounded-xl border border-slate-800 bg-slate-950/80 px-2 py-2 text-center text-[11px] text-slate-300`}>
+                    <div key={unit.toISOString()} className={`${ZOOM_CELL_CLASS[zoom]} rounded-xl border border-[#2A2A3A] bg-[#13131E] px-2 py-2 text-center text-[11px] text-[#9CA3AF]`}>
                       {formatHeaderDate(unit, zoom)}
                     </div>
                   ))}
@@ -1381,7 +1381,7 @@ export default function ProjectWorkspaceClient({
 
               {filteredMilestones.length > 0 ? (
                 <div className="flex items-stretch gap-3">
-                  <div className="sticky left-0 z-10 flex w-80 items-center rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm font-medium text-slate-100">
+                  <div className="sticky left-0 z-10 flex w-80 items-center rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm font-medium text-white">
                     Milestones
                   </div>
                   <div className="flex gap-1">
@@ -1393,13 +1393,13 @@ export default function ProjectWorkspaceClient({
                       })
 
                       return (
-                        <div key={`milestones-${unit.toISOString()}`} className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center justify-center rounded-xl border border-slate-800 bg-slate-950/70`}>
+                        <div key={`milestones-${unit.toISOString()}`} className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center justify-center rounded-xl border border-[#2A2A3A] bg-[#13131E]`}>
                           {milestoneInCell.map((milestone) => (
                             <button
                               key={milestone.id}
                               type="button"
                               onClick={() => openMilestone(milestone.id)}
-                              className="mx-1 flex max-w-full flex-col items-center gap-1 overflow-hidden text-[10px] text-slate-200"
+                              className="mx-1 flex max-w-full flex-col items-center gap-1 overflow-hidden text-[10px] text-white"
                               title={milestone.title}
                             >
                               <span className="block h-3 w-3 rotate-45 rounded-sm border border-white/20" style={{ backgroundColor: milestone.colour }} />
@@ -1422,18 +1422,18 @@ export default function ProjectWorkspaceClient({
 
                 return (
                   <div key={task.id} className="flex items-stretch gap-3">
-                    <div className="sticky left-0 z-10 flex w-80 items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3 text-sm text-slate-100">
+                    <div className="sticky left-0 z-10 flex w-80 items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white">
                       <div className={`h-2 w-2 rounded-full ${task.status === 'blocked' ? 'bg-red-400' : task.status === 'done' ? 'bg-emerald-400' : 'bg-sky-400'}`} />
                       <div className={`min-w-0 flex-1 overflow-hidden ${depth === 1 ? 'pl-4' : depth >= 2 ? 'pl-8' : ''}`}>
                         <button
                           type="button"
                           onClick={() => openTask(task.id)}
-                          className={`block w-full truncate text-left font-medium ${isSubtask ? 'text-slate-300' : 'text-slate-100'}`}
+                          className={`block w-full truncate text-left font-medium ${isSubtask ? 'text-[#9CA3AF]' : 'text-white'}`}
                           title={task.title}
                         >
                           {task.title}
                         </button>
-                        <p className="mt-1 text-xs text-slate-500">{task.owner ?? 'Unassigned'}</p>
+                        <p className="mt-1 text-xs text-[#9CA3AF]">{task.owner ?? 'Unassigned'}</p>
                       </div>
                     </div>
 
@@ -1455,7 +1455,7 @@ export default function ProjectWorkspaceClient({
                                 void handleGanttDrop(task, unit)
                               }
                             }}
-                            className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center border border-slate-800 bg-slate-950/70 ${isToday ? 'border-l-red-500' : ''}`}
+                            className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center border border-[#2A2A3A] bg-[#13131E] ${isToday ? 'border-l-red-500' : ''}`}
                           >
                             {isOccupied ? (
                               <div
@@ -1467,8 +1467,8 @@ export default function ProjectWorkspaceClient({
                                     : task.priority === 'high'
                                       ? 'bg-orange-400/80'
                                       : task.priority === 'medium'
-                                        ? 'bg-amber-300/80 text-slate-950'
-                                        : 'bg-slate-400/80 text-slate-950'
+                                        ? 'bg-amber-300/80 text-[#0C0C14]'
+                                        : 'bg-[#9CA3AF]/80 text-[#0C0C14]'
                                 } ${isBarStart ? 'rounded-l-lg' : ''} ${isBarEnd ? 'rounded-r-lg' : ''}`}
                               />
                             ) : null}
@@ -1485,14 +1485,14 @@ export default function ProjectWorkspaceClient({
       ) : null}
 
       {view === 'table' ? (
-        <section className="overflow-hidden rounded-[2rem] border border-slate-800 bg-[linear-gradient(180deg,rgba(15,23,42,0.8),rgba(15,23,42,0.68))] p-6 backdrop-blur">
+        <section className="overflow-hidden rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6">
           {selectedIds.length > 0 ? (
-            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-sky-500/30 bg-sky-500/10 p-3">
-              <span className="text-sm text-sky-100">{selectedIds.length} selected</span>
-              <button type="button" onClick={() => void applyBulkPatch({ status: 'done' })} className="rounded-xl border border-sky-300/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-50">
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-[#B8FF00]/30 bg-[#B8FF00]/10 p-3">
+              <span className="text-sm text-[#B8FF00]">{selectedIds.length} selected</span>
+              <button type="button" onClick={() => void applyBulkPatch({ status: 'done' })} className="rounded-xl border border-[#B8FF00]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#B8FF00]">
                 Mark done
               </button>
-              <button type="button" onClick={() => void applyBulkPatch({ priority: 'high' })} className="rounded-xl border border-sky-300/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-50">
+              <button type="button" onClick={() => void applyBulkPatch({ priority: 'high' })} className="rounded-xl border border-[#B8FF00]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#B8FF00]">
                 Set high
               </button>
               <button type="button" onClick={() => void deleteSelectedTasks()} className="rounded-xl border border-red-300/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-100">
@@ -1501,9 +1501,9 @@ export default function ProjectWorkspaceClient({
             </div>
           ) : null}
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-800">
-            <table className="min-w-full divide-y divide-slate-800 text-sm">
-              <thead className="bg-slate-950 text-xs uppercase tracking-[0.18em] text-slate-400">
+          <div className="overflow-x-auto rounded-2xl border border-[#2A2A3A]">
+            <table className="min-w-full divide-y divide-[#2A2A3A] text-sm">
+              <thead className="bg-[#13131E] text-[10px] font-bold uppercase tracking-[1px] text-[#9CA3AF]">
                 <tr>
                   <th className="px-4 py-3 text-left">
                     <input
@@ -1530,7 +1530,7 @@ export default function ProjectWorkspaceClient({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-200">
+              <tbody className="divide-y divide-[#2A2A3A] text-white">
                 {tableTasks.map((task) => (
                   <tr key={task.id}>
                     <td className="px-4 py-3 align-top">
@@ -1549,7 +1549,7 @@ export default function ProjectWorkspaceClient({
                     <td className="px-4 py-3 align-top">
                       <div className="space-y-2">
                         <EditableTextCell value={task.title} onSave={(nextValue) => saveTaskPatch(task.id, { title: nextValue })} />
-                        <button type="button" onClick={() => openTask(task.id)} className="text-xs text-sky-300 hover:text-sky-200">
+                        <button type="button" onClick={() => openTask(task.id)} className="text-xs text-[#B8FF00] hover:text-[#B8FF00]/80">
                           Open panel
                         </button>
                       </div>

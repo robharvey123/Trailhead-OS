@@ -84,9 +84,9 @@ export default function AccountDetailClient({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Clients</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">{account.name}</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">{account.name}</h1>
+          <p className="mt-2 text-sm text-[#9CA3AF]">
             Account overview across contacts, delivery, and commercial work.
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function AccountDetailClient({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
           >
             Edit
           </button>
@@ -102,7 +102,7 @@ export default function AccountDetailClient({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(320px,0.9fr)]">
-        <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+        <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
           {editing ? (
             <AccountForm
               workstreams={workstreams}
@@ -139,7 +139,7 @@ export default function AccountDetailClient({
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Website</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Website</p>
                   {account.website ? (
                     <a
                       href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
@@ -150,20 +150,20 @@ export default function AccountDetailClient({
                       {account.website}
                     </a>
                   ) : (
-                    <p className="mt-2 text-sm text-slate-200">—</p>
+                    <p className="mt-2 text-sm text-[#9CA3AF]">—</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Industry</p>
-                  <p className="mt-2 text-sm text-slate-200">{account.industry ?? '—'}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Industry</p>
+                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.industry ?? '—'}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Size</p>
-                  <p className="mt-2 text-sm text-slate-200">{account.size ?? '—'}</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Size</p>
+                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.size ?? '—'}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Address</p>
-                  <div className="mt-2 whitespace-pre-wrap text-sm text-slate-200">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Address</p>
+                  <div className="mt-2 whitespace-pre-wrap text-sm text-[#9CA3AF]">
                     {[
                       account.address_line1,
                       account.address_line2,
@@ -181,15 +181,15 @@ export default function AccountDetailClient({
         </section>
 
         <section className="space-y-6">
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Contacts</h2>
-                <p className="text-sm text-slate-400">People linked to this account.</p>
+                <h2 className="text-lg font-semibold text-white">Contacts</h2>
+                <p className="text-sm text-[#9CA3AF]">People linked to this account.</p>
               </div>
               <Link
                 href={`/crm/contacts/new?account_id=${account.id}`}
-                className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
               >
                 Add contact
               </Link>
@@ -201,18 +201,18 @@ export default function AccountDetailClient({
                   <Link
                     key={contact.id}
                     href={`/crm/contacts/${contact.id}`}
-                    className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-600"
+                    className="block rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 transition hover:border-[#2A2A3A]"
                   >
-                    <p className="font-medium text-slate-100">{contact.name}</p>
-                    <p className="mt-1 text-sm text-slate-400">{contact.role ?? 'No role set'}</p>
-                    <p className="mt-2 text-sm text-slate-300">
+                    <p className="font-medium text-white">{contact.name}</p>
+                    <p className="mt-1 text-sm text-[#9CA3AF]">{contact.role ?? 'No role set'}</p>
+                    <p className="mt-2 text-sm text-[#9CA3AF]">
                       {contact.email ?? 'No email'} {contact.phone ? `· ${contact.phone}` : ''}
                     </p>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="mt-4 rounded-3xl border border-dashed border-slate-700 px-4 py-8 text-sm text-slate-500">
+              <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
                 No contacts linked yet.
               </div>
             )}
@@ -227,13 +227,13 @@ export default function AccountDetailClient({
             actionLabel="New project"
           />
 
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Tasks</h2>
-                <p className="text-sm text-slate-400">Open follow-ups and completed work.</p>
+                <h2 className="text-lg font-semibold text-white">Tasks</h2>
+                <p className="text-sm text-[#9CA3AF]">Open follow-ups and completed work.</p>
               </div>
-              <Link href="/tasks" className="text-sm text-slate-400 transition hover:text-slate-200">
+              <Link href="/tasks" className="text-sm text-[#9CA3AF] transition hover:text-[#9CA3AF]">
                 Open master tasks
               </Link>
             </div>
@@ -249,57 +249,57 @@ export default function AccountDetailClient({
 
             <div className="mt-6 space-y-5">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Open</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Open</p>
                 {openTasks.length ? (
                   <div className="mt-3 space-y-3">
                     {openTasks.map((task) => (
-                      <div key={task.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
-                        <p className="font-medium text-slate-100">{task.title}</p>
-                        <p className="mt-1 text-sm text-slate-400">
+                      <div key={task.id} className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
+                        <p className="font-medium text-white">{task.title}</p>
+                        <p className="mt-1 text-sm text-[#9CA3AF]">
                           Due: {formatTaskSchedule(task.due_date, task.due_time)}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-500">No open tasks.</p>
+                  <p className="mt-3 text-sm text-white0">No open tasks.</p>
                 )}
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Completed</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Completed</p>
                 {completedTasks.length ? (
                   <div className="mt-3 space-y-3">
                     {completedTasks.map((task) => (
-                      <div key={task.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
-                        <p className="font-medium text-slate-100">{task.title}</p>
-                        <p className="mt-1 text-sm text-slate-400">
+                      <div key={task.id} className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
+                        <p className="font-medium text-white">{task.title}</p>
+                        <p className="mt-1 text-sm text-[#9CA3AF]">
                           Completed {task.completed_at?.slice(0, 10) ?? 'Recently'}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-500">No completed tasks yet.</p>
+                  <p className="mt-3 text-sm text-white0">No completed tasks yet.</p>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Notes</h2>
-                <p className="text-sm text-slate-400">Auto-saves when you leave the field.</p>
+                <h2 className="text-lg font-semibold text-white">Notes</h2>
+                <p className="text-sm text-[#9CA3AF]">Auto-saves when you leave the field.</p>
               </div>
-              {notesSaving ? <p className="text-xs text-slate-500">Saving…</p> : null}
+              {notesSaving ? <p className="text-xs text-white0">Saving…</p> : null}
             </div>
             <textarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               onBlur={saveNotesOnBlur}
               rows={8}
-              className="mt-4 w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+              className="mt-4 w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
             />
             {notesError ? <p className="mt-3 text-sm text-rose-300">{notesError}</p> : null}
           </div>
@@ -313,15 +313,15 @@ export default function AccountDetailClient({
         </section>
 
         <section className="space-y-6">
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Quotes</h2>
-                <p className="text-sm text-slate-400">Proposals and pricing for this account.</p>
+                <h2 className="text-lg font-semibold text-white">Quotes</h2>
+                <p className="text-sm text-[#9CA3AF]">Proposals and pricing for this account.</p>
               </div>
               <Link
                 href={`/quotes/new?account_id=${account.id}`}
-                className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+                className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
               >
                 New quote
               </Link>
@@ -333,17 +333,17 @@ export default function AccountDetailClient({
                   <Link
                     key={quote.id}
                     href={`/quotes/${quote.id}`}
-                    className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-600"
+                    className="block rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 transition hover:border-[#2A2A3A]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-medium text-slate-100">{quote.quote_number}</p>
-                        <p className="mt-1 text-sm text-slate-300">{quote.title}</p>
-                        <p className="mt-2 text-xs text-slate-500">{quote.issue_date}</p>
+                        <p className="font-medium text-white">{quote.quote_number}</p>
+                        <p className="mt-1 text-sm text-[#9CA3AF]">{quote.title}</p>
+                        <p className="mt-2 text-xs text-white0">{quote.issue_date}</p>
                       </div>
                       <div className="text-right">
                         <StatusBadge status={quote.status} kind="quote" />
-                        <p className="mt-2 text-sm font-medium text-slate-100">
+                        <p className="mt-2 text-sm font-medium text-white">
                           {formatMoney(calculateTotals(quote.line_items, quote.vat_rate).total)}
                         </p>
                       </div>
@@ -352,21 +352,21 @@ export default function AccountDetailClient({
                 ))}
               </div>
             ) : (
-              <div className="mt-4 rounded-3xl border border-dashed border-slate-700 px-4 py-8 text-sm text-slate-500">
+              <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
                 No quotes yet.
               </div>
             )}
           </div>
 
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Invoices</h2>
-                <p className="text-sm text-slate-400">Billing history for this account.</p>
+                <h2 className="text-lg font-semibold text-white">Invoices</h2>
+                <p className="text-sm text-[#9CA3AF]">Billing history for this account.</p>
               </div>
               <Link
                 href={`/invoicing/new?account_id=${account.id}`}
-                className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
               >
                 New invoice
               </Link>
@@ -378,16 +378,16 @@ export default function AccountDetailClient({
                   <Link
                     key={invoice.id}
                     href={`/invoicing/${invoice.id}`}
-                    className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-600"
+                    className="block rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 transition hover:border-[#2A2A3A]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-medium text-slate-100">{invoice.invoice_number}</p>
-                        <p className="mt-1 text-xs text-slate-500">{invoice.issue_date}</p>
+                        <p className="font-medium text-white">{invoice.invoice_number}</p>
+                        <p className="mt-1 text-xs text-white0">{invoice.issue_date}</p>
                       </div>
                       <div className="text-right">
                         <StatusBadge status={invoice.status} kind="invoice" />
-                        <p className="mt-2 text-sm font-medium text-slate-100">
+                        <p className="mt-2 text-sm font-medium text-white">
                           {formatMoney(calculateTotals(invoice.line_items, invoice.vat_rate).total)}
                         </p>
                       </div>
@@ -396,7 +396,7 @@ export default function AccountDetailClient({
                 ))}
               </div>
             ) : (
-              <div className="mt-4 rounded-3xl border border-dashed border-slate-700 px-4 py-8 text-sm text-slate-500">
+              <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
                 No invoices yet.
               </div>
             )}

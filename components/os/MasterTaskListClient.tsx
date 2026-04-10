@@ -11,7 +11,7 @@ import {
   type SortingState,
 } from '@tanstack/react-table'
 import { apiFetch } from '@/lib/api-fetch'
-import { formatTaskDate, formatTaskSchedule } from '@/lib/os'
+import { formatTaskDate, formatTaskSchedule, getWorkstreamColourClasses } from '@/lib/os'
 import type {
   Account,
   Contact,
@@ -170,7 +170,7 @@ export default function MasterTaskListClient({
             type="checkbox"
             checked={table.getIsAllRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
-            className="h-4 w-4 rounded border-slate-600 bg-slate-950"
+            className="h-4 w-4 rounded border-[#2A2A3A] bg-[#13131E]"
           />
         ),
         cell: ({ row }) => (
@@ -178,7 +178,7 @@ export default function MasterTaskListClient({
             type="checkbox"
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
-            className="h-4 w-4 rounded border-slate-600 bg-slate-950"
+            className="h-4 w-4 rounded border-[#2A2A3A] bg-[#13131E]"
           />
         ),
       }),
@@ -188,7 +188,7 @@ export default function MasterTaskListClient({
           <button
             type="button"
             onClick={() => setSelectedTask(info.row.original)}
-            className="text-left font-medium text-slate-100 underline-offset-2 hover:underline"
+            className="text-left font-medium text-white underline-offset-2 hover:underline"
           >
             {info.getValue()}
           </button>
@@ -212,7 +212,7 @@ export default function MasterTaskListClient({
           const project = info.row.original.project_id
             ? projectsById.get(info.row.original.project_id)
             : undefined
-          return <span className="text-slate-300">{project?.name ?? info.row.original.project_name ?? '—'}</span>
+          return <span className="text-[#9CA3AF]">{project?.name ?? info.row.original.project_name ?? '—'}</span>
         },
       }),
       columnHelper.display({
@@ -222,7 +222,7 @@ export default function MasterTaskListClient({
           const account = info.row.original.account_id
             ? accountsById.get(info.row.original.account_id)
             : undefined
-          return <span className="text-slate-300">{account?.name ?? '—'}</span>
+          return <span className="text-[#9CA3AF]">{account?.name ?? '—'}</span>
         },
       }),
       columnHelper.display({
@@ -233,14 +233,14 @@ export default function MasterTaskListClient({
             ? contactsById.get(info.row.original.contact_id)
             : undefined
           if (!contact) {
-            return <span className="text-slate-400">—</span>
+            return <span className="text-[#9CA3AF]">—</span>
           }
 
           return (
             <div>
-              <p className="text-slate-200">{contact.name}</p>
+              <p className="text-white">{contact.name}</p>
               {contact.company ? (
-                <p className="text-xs text-slate-500">{contact.company}</p>
+                <p className="text-xs text-[#9CA3AF]">{contact.company}</p>
               ) : null}
             </div>
           )
@@ -248,7 +248,20 @@ export default function MasterTaskListClient({
       }),
       columnHelper.accessor('priority', {
         header: 'Priority',
-        cell: (info) => <PriorityBadge priority={info.getValue()} />,
+        cell: (info) => {
+          const p = info.getValue()
+          const cls =
+            p === 'critical'
+              ? 'text-[#FF6B35] font-bold text-[11px] uppercase tracking-[1px]'
+              : p === 'urgent'
+                ? 'text-[#FF6B35] font-semibold text-[11px] uppercase tracking-[1px]'
+                : p === 'high'
+                  ? 'text-[#FF6B35] text-[11px] uppercase tracking-[1px]'
+                  : p === 'medium'
+                    ? 'text-[#FBBF24] text-[11px] uppercase tracking-[1px]'
+                    : 'text-[#9CA3AF] text-[11px] uppercase tracking-[1px]'
+          return <span className={cls}>{p}</span>
+        },
       }),
       columnHelper.accessor('due_date', {
         header: 'Due date',
@@ -262,7 +275,7 @@ export default function MasterTaskListClient({
             {info.getValue().map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-slate-300"
+                className="rounded-full border border-[#2A2A3A] bg-[#0C0C14] px-2 py-1 text-[11px] text-[#9CA3AF]"
               >
                 #{tag}
               </span>
@@ -308,17 +321,17 @@ export default function MasterTaskListClient({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">
+          <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00] pb-2 border-b border-[#2A2A3A] mb-4">
             Master list
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">Tasks</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <h1 className="mt-2 text-3xl font-semibold text-white">Tasks</h1>
+          <p className="mt-2 text-sm text-[#9CA3AF]">
             One table for every active task across the OS.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex rounded-2xl border border-slate-800 bg-slate-900/70 p-1">
+          <div className="inline-flex rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-1">
             {(['table', 'kanban'] as const).map((mode) => (
               <button
                 key={mode}
@@ -326,8 +339,8 @@ export default function MasterTaskListClient({
                 onClick={() => setViewMode(mode)}
                 className={`rounded-xl px-4 py-2 text-sm font-medium capitalize transition ${
                   viewMode === mode
-                    ? 'bg-slate-100 text-slate-950'
-                    : 'text-slate-300 hover:text-slate-100'
+                    ? 'bg-[#B8FF00]/10 text-[#B8FF00] border border-[#B8FF00]/30'
+                    : 'text-[#9CA3AF] hover:text-white'
                 }`}
               >
                 {mode}
@@ -338,19 +351,19 @@ export default function MasterTaskListClient({
           <button
             type="button"
             onClick={() => setCreatingTask(true)}
-            className="relative z-10 rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white"
+            className="relative z-10 rounded-2xl bg-[#B8FF00] px-5 py-3 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
           >
             New task
           </button>
         </div>
       </div>
 
-      <div className="grid gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-5 md:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-3 rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-2 xl:grid-cols-6">
         <div className="block md:col-span-2 xl:col-span-2">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Workstreams
           </span>
-          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-950 p-3">
+          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3">
             {workstreams.map((workstream) => (
               <button
                 key={workstream.id}
@@ -362,15 +375,15 @@ export default function MasterTaskListClient({
                 }
                 className={`rounded-full border px-3 py-1.5 text-sm transition ${
                   workstreamFilter.includes(workstream.id)
-                    ? 'border-sky-500/40 bg-sky-500/15 text-sky-100'
-                    : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+                    ? 'border-[#B8FF00]/30 bg-[#B8FF00]/15 text-[#B8FF00]'
+                    : 'border-[#2A2A3A] bg-[#13131E] text-[#9CA3AF] hover:border-[#B8FF00]/40'
                 }`}
               >
                 {workstream.label}
               </button>
             ))}
             {workstreams.length === 0 ? (
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-[#9CA3AF]">
                 No workstreams found
               </span>
             ) : null}
@@ -378,13 +391,13 @@ export default function MasterTaskListClient({
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Account
           </span>
           <select
             value={accountFilter}
             onChange={(event) => setAccountFilter(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           >
             <option value="">All accounts</option>
             {accounts.map((account) => (
@@ -396,13 +409,13 @@ export default function MasterTaskListClient({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Project
           </span>
           <select
             value={projectFilter}
             onChange={(event) => setProjectFilter(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           >
             <option value="">All projects</option>
             {projects.map((project) => (
@@ -414,10 +427,10 @@ export default function MasterTaskListClient({
         </label>
 
         <div className="block md:col-span-2 xl:col-span-1">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Priority
           </span>
-          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-950 p-3">
+          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3">
             {PRIORITIES.map((priority) => (
               <button
                 key={priority}
@@ -429,8 +442,8 @@ export default function MasterTaskListClient({
                 }
                 className={`rounded-full border px-3 py-1.5 text-sm capitalize transition ${
                   priorityFilter.includes(priority)
-                    ? 'border-sky-500/40 bg-sky-500/15 text-sky-100'
-                    : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-500'
+                    ? 'border-[#B8FF00]/30 bg-[#B8FF00]/15 text-[#B8FF00]'
+                    : 'border-[#2A2A3A] bg-[#13131E] text-[#9CA3AF] hover:border-[#B8FF00]/40'
                 }`}
               >
                 {priority}
@@ -440,45 +453,45 @@ export default function MasterTaskListClient({
         </div>
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Due from
           </span>
           <input
             type="date"
             value={dueFrom}
             onChange={(event) => setDueFrom(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-500">
+          <span className="mb-2 block text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Due to
           </span>
           <input
             type="date"
             value={dueTo}
             onChange={(event) => setDueTo(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3">
+        <label className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3">
           <input
             type="checkbox"
             checked={masterOnly}
             onChange={(event) => setMasterOnly(event.target.checked)}
-            className="h-4 w-4 rounded border-slate-600 bg-slate-950"
+            className="h-4 w-4 rounded border-[#2A2A3A] bg-[#13131E]"
           />
-          <span className="text-sm text-slate-200">
+          <span className="text-sm text-[#9CA3AF]">
             Show only master to-do tasks
           </span>
         </label>
       </div>
 
       {hasActiveFilters ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-[2rem] border border-slate-800 bg-slate-900/40 px-4 py-3">
-          <span className="text-xs uppercase tracking-[0.22em] text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3">
+          <span className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Active filters
           </span>
 
@@ -491,7 +504,7 @@ export default function MasterTaskListClient({
                   current.filter((entry) => entry !== workstreamId)
                 )
               }
-              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+              className="rounded-full border border-[#B8FF00]/30 bg-[#B8FF00]/15 px-3 py-1 text-sm text-[#B8FF00]"
             >
               {workstreamsById.get(workstreamId)?.label ?? 'Workstream'} ×
             </button>
@@ -501,7 +514,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setAccountFilter('')}
-              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+              className="rounded-full border border-[#B8FF00]/30 bg-[#B8FF00]/15 px-3 py-1 text-sm text-[#B8FF00]"
             >
               {accountsById.get(accountFilter)?.name ?? 'Account'} ×
             </button>
@@ -516,7 +529,7 @@ export default function MasterTaskListClient({
                   current.filter((entry) => entry !== priority)
                 )
               }
-              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm capitalize text-sky-100"
+              className="rounded-full border border-[#B8FF00]/30 bg-[#B8FF00]/15 px-3 py-1 text-sm capitalize text-[#B8FF00]"
             >
               {priority} ×
             </button>
@@ -526,7 +539,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setDueFrom('')}
-              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+              className="rounded-full border border-[#B8FF00]/30 bg-[#B8FF00]/15 px-3 py-1 text-sm text-[#B8FF00]"
             >
               From {dueFrom} ×
             </button>
@@ -536,7 +549,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setDueTo('')}
-              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+              className="rounded-full border border-[#B8FF00]/30 bg-[#B8FF00]/15 px-3 py-1 text-sm text-[#B8FF00]"
             >
               To {dueTo} ×
             </button>
@@ -546,7 +559,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setMasterOnly(false)}
-              className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm text-sky-100"
+              className="rounded-full border border-[#B8FF00]/30 bg-[#B8FF00]/15 px-3 py-1 text-sm text-[#B8FF00]"
             >
               Master to-do only ×
             </button>
@@ -555,7 +568,7 @@ export default function MasterTaskListClient({
           <button
             type="button"
             onClick={clearAllFilters}
-            className="ml-auto rounded-full border border-slate-700 px-3 py-1 text-sm text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
+            className="ml-auto rounded-full border border-[#2A2A3A] px-3 py-1 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00]"
           >
             Clear all
           </button>
@@ -563,8 +576,8 @@ export default function MasterTaskListClient({
       ) : null}
 
       {viewMode === 'table' && selectedTasks.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-4">
-          <p className="text-sm text-slate-300">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-4">
+          <p className="text-sm text-[#9CA3AF]">
             {selectedTasks.length} selected
           </p>
           <button
@@ -592,7 +605,7 @@ export default function MasterTaskListClient({
             onChange={(event) =>
               setBulkPriority(event.target.value as TaskPriority)
             }
-            className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100"
+            className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-2 text-sm text-white"
           >
             {PRIORITIES.map((priority) => (
               <option key={priority} value={priority}>
@@ -624,7 +637,7 @@ export default function MasterTaskListClient({
                 }
               )
             }
-            className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-100"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white"
           >
             Change priority
           </button>
@@ -655,7 +668,7 @@ export default function MasterTaskListClient({
                 }
               )
             }}
-            className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-100"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white"
           >
             Add/remove master flag
           </button>
@@ -675,9 +688,9 @@ export default function MasterTaskListClient({
           }}
         />
       ) : (
-        <div className="overflow-x-auto rounded-[2rem] border border-slate-800 bg-slate-900/70">
-          <table className="min-w-full divide-y divide-slate-800 text-sm">
-            <thead className="bg-slate-950/80 text-xs uppercase tracking-[0.2em] text-slate-500">
+        <div className="overflow-x-auto rounded-lg border border-[#2A2A3A] bg-[#1A1A28]">
+          <table className="min-w-full divide-y divide-[#2A2A3A] text-sm">
+            <thead className="bg-[#13131E] text-[10px] font-bold uppercase tracking-[1px] text-[#9CA3AF]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -699,9 +712,9 @@ export default function MasterTaskListClient({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-[#2A2A3A]">
               {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="text-slate-200">
+                <tr key={row.id} className="text-white hover:bg-[#B8FF00]/[0.025] transition-colors">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 align-top">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

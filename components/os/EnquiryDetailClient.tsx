@@ -143,7 +143,7 @@ function renderAnswer(key: EnquiryFieldKey, value: unknown) {
         {textValue}
       </a>
     ) : (
-      <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">—</p>
+      <p className="mt-3 whitespace-pre-wrap text-sm text-[#9CA3AF]">—</p>
     )
   }
 
@@ -158,12 +158,12 @@ function renderAnswer(key: EnquiryFieldKey, value: unknown) {
         {textValue}
       </a>
     ) : (
-      <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">—</p>
+      <p className="mt-3 whitespace-pre-wrap text-sm text-[#9CA3AF]">—</p>
     )
   }
 
   return (
-    <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
+    <p className="mt-3 whitespace-pre-wrap text-sm text-[#9CA3AF]">
       {formatAnswer(value)}
     </p>
   )
@@ -181,10 +181,10 @@ function renderInput(
           value={value}
           onChange={(event) => onChange(event.target.value)}
           rows={field.rows ?? 4}
-          className="mt-3 w-full rounded-[1.25rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="mt-3 w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         />
         {field.kind === 'list' ? (
-          <p className="mt-2 text-xs text-slate-500">Use one item per line or separate with commas.</p>
+          <p className="mt-2 text-xs text-white0">Use one item per line or separate with commas.</p>
         ) : null}
       </>
     )
@@ -195,7 +195,7 @@ function renderInput(
       type={field.kind}
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="mt-3 w-full rounded-[1.25rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+      className="mt-3 w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
     />
   )
 }
@@ -380,9 +380,9 @@ export default function EnquiryDetailClient({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Enquiries</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">{enquiry.biz_name}</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Enquiries</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">{enquiry.biz_name}</h1>
+          <p className="mt-2 text-sm text-[#9CA3AF]">
             Discovery submission from {enquiry.contact_name}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -390,7 +390,7 @@ export default function EnquiryDetailClient({
             {linkedAccount ? (
               <Link
                 href={`/crm/accounts/${linkedAccount.id}`}
-                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 transition hover:border-slate-500"
+                className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
               >
                 {linkedAccount.name}
               </Link>
@@ -398,7 +398,7 @@ export default function EnquiryDetailClient({
             {linkedProjectSummary ? (
               <Link
                 href={`/projects/records/${linkedProjectSummary.id}`}
-                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 transition hover:border-slate-500"
+                className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
               >
                 {linkedProjectSummary.name}
               </Link>
@@ -415,7 +415,7 @@ export default function EnquiryDetailClient({
             defaultRecipient={enquiry.contact_email}
             defaultSubject={`Discovery summary - ${enquiry.biz_name}`}
             defaultMessage={`Hi,\n\nPlease find the discovery summary for ${enquiry.biz_name} below.\n\nBest,\nRob`}
-            buttonClassName="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+            buttonClassName="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
           />
           {editing ? (
             <>
@@ -423,7 +423,7 @@ export default function EnquiryDetailClient({
                 type="button"
                 onClick={saveChanges}
                 disabled={saving}
-                className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>
@@ -433,7 +433,7 @@ export default function EnquiryDetailClient({
                   resetForm()
                   setEditing(false)
                 }}
-                className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
               >
                 Cancel
               </button>
@@ -445,7 +445,7 @@ export default function EnquiryDetailClient({
                 resetForm()
                 setEditing(true)
               }}
-              className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+              className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
             >
               Edit submission
             </button>
@@ -455,11 +455,11 @@ export default function EnquiryDetailClient({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_380px]">
         <div className="space-y-6">
-          <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+          <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Submission details</h2>
-                <p className="text-sm text-slate-400">
+                <h2 className="text-lg font-semibold text-white">Submission details</h2>
+                <p className="text-sm text-[#9CA3AF]">
                   Review and update the answers captured from discovery.
                 </p>
               </div>
@@ -468,7 +468,7 @@ export default function EnquiryDetailClient({
             {editing ? (
               <div className="mt-6 grid gap-4 md:grid-cols-3">
                 <label className="space-y-2">
-                  <span className="text-sm text-slate-300">Status</span>
+                  <span className="text-sm text-[#9CA3AF]">Status</span>
                   <select
                     value={form.status}
                     onChange={(event) =>
@@ -477,7 +477,7 @@ export default function EnquiryDetailClient({
                         status: event.target.value as EnquiryStatus,
                       }))
                     }
-                    className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                    className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                   >
                     {ENQUIRY_STATUSES.map((status) => (
                       <option key={status} value={status}>
@@ -525,14 +525,14 @@ export default function EnquiryDetailClient({
               </div>
             ) : (
               <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Status</p>
+                <div className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Status</p>
                   <div className="mt-3">
                     <StatusBadge status={enquiry.status} kind="enquiry" />
                   </div>
                 </div>
-                <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Linked account</p>
+                <div className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Linked account</p>
                   <div className="mt-3">
                     {linkedAccount ? (
                       <Link
@@ -542,12 +542,12 @@ export default function EnquiryDetailClient({
                         {linkedAccount.name}
                       </Link>
                     ) : (
-                      <p className="text-sm text-slate-200">—</p>
+                      <p className="text-sm text-[#9CA3AF]">—</p>
                     )}
                   </div>
                 </div>
-                <div className="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Linked project</p>
+                <div className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Linked project</p>
                   <div className="mt-3">
                     {linkedProjectSummary ? (
                       <Link
@@ -558,10 +558,10 @@ export default function EnquiryDetailClient({
                       </Link>
                     ) : (
                       <div className="space-y-3">
-                        <p className="text-sm text-slate-200">—</p>
+                        <p className="text-sm text-[#9CA3AF]">—</p>
                         <Link
                           href={createProjectHref}
-                          className="inline-flex rounded-2xl border border-slate-700 px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-slate-500"
+                          className="inline-flex rounded-2xl border border-[#2A2A3A] px-3 py-2 text-xs font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
                         >
                           Create linked project
                         </Link>
@@ -576,8 +576,8 @@ export default function EnquiryDetailClient({
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               {FIELD_CONFIG.map((field) => (
-                <div key={field.key} className="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                <div key={field.key} className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">
                     {field.label}
                   </p>
                   {editing
@@ -593,11 +593,11 @@ export default function EnquiryDetailClient({
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-amber-500/20 bg-slate-900/70 p-6">
+          <section className="rounded-[2rem] border border-amber-500/20 bg-[#1A1A28] p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-100">Internal notes</h2>
-                <p className="text-sm text-slate-400">
+                <h2 className="text-lg font-semibold text-white">Internal notes</h2>
+                <p className="text-sm text-[#9CA3AF]">
                   Recommendations, delivery angles, and commercial context used for quote drafting. These notes are never sent to the client.
                 </p>
               </div>
@@ -607,7 +607,7 @@ export default function EnquiryDetailClient({
                     ? 'text-rose-300'
                     : internalNotesStatus === 'saved'
                       ? 'text-emerald-300'
-                      : 'text-slate-500'
+                      : 'text-white0'
                 }`}
               >
                 {internalNotesMessage ?? 'Autosaves after 1 second'}
@@ -619,12 +619,12 @@ export default function EnquiryDetailClient({
               onChange={(event) => setInternalNotes(event.target.value)}
               rows={10}
               placeholder="Add your internal recommendations, delivery assumptions, phase changes, pricing considerations, and anything the draft quote should account for."
-              className="mt-5 w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-4 text-sm text-slate-100"
+              className="mt-5 w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-4 text-sm text-white"
             />
           </section>
 
-          <details className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-            <summary className="cursor-pointer list-none text-lg font-semibold text-slate-100">
+          <details className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+            <summary className="cursor-pointer list-none text-lg font-semibold text-white">
               Email thread
             </summary>
             <div className="mt-4">

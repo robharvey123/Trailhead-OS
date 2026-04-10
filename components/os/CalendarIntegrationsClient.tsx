@@ -339,13 +339,13 @@ export default function CalendarIntegrationsClient({
   return (
     <div className="space-y-8">
       {/* Sync all button */}
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">
+            <h2 className="text-lg font-semibold text-white">
               Sync all calendars
             </h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[#9CA3AF]">
               Pull events from all connected Google, Microsoft, and iCal feed accounts
             </p>
           </div>
@@ -353,7 +353,7 @@ export default function CalendarIntegrationsClient({
             type="button"
             disabled={syncState === 'syncing'}
             onClick={handleSyncAll}
-            className="rounded-2xl bg-slate-100 px-5 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-white disabled:opacity-50"
+            className="rounded-2xl bg-[#B8FF00] px-5 py-2.5 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-50"
           >
             {syncState === 'syncing'
               ? 'Syncing…'
@@ -363,35 +363,35 @@ export default function CalendarIntegrationsClient({
           </button>
         </div>
         {syncResult && (
-          <p className="mt-3 text-sm text-slate-400">{syncResult}</p>
+          <p className="mt-3 text-sm text-[#9CA3AF]">{syncResult}</p>
         )}
       </section>
 
       {/* Google accounts */}
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-xs uppercase tracking-[0.24em] text-white0">
               Google Calendar
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-100">
+            <h2 className="mt-2 text-xl font-semibold text-white">
               Connected accounts
             </h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[#9CA3AF]">
               Two-way sync with Google Calendar. Add multiple accounts to
               consolidate personal and work calendars.
             </p>
           </div>
           <a
             href="/api/auth/google"
-            className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-white"
+            className="rounded-2xl bg-[#B8FF00] px-4 py-2 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
           >
             + Connect Google account
           </a>
         </div>
 
         {googleAccounts.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-500">
+          <p className="mt-6 text-sm text-white0">
             No Google accounts connected. Click above to add one.
           </p>
         ) : (
@@ -399,7 +399,7 @@ export default function CalendarIntegrationsClient({
             {googleAccounts.map((account) => (
               <div
                 key={account.id}
-                className="rounded-2xl border border-slate-800 bg-slate-950/60"
+                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E]"
               >
                 <button
                   type="button"
@@ -423,10 +423,10 @@ export default function CalendarIntegrationsClient({
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-slate-100">
+                      <p className="font-medium text-white">
                         {account.email}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-white0">
                         {account.label && account.label !== account.email
                           ? account.label
                           : 'Google Calendar'}
@@ -434,7 +434,7 @@ export default function CalendarIntegrationsClient({
                     </div>
                   </div>
                   <svg
-                    className={`h-5 w-5 text-slate-400 transition ${expandedAccount === account.id ? 'rotate-180' : ''}`}
+                    className={`h-5 w-5 text-[#9CA3AF] transition ${expandedAccount === account.id ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -449,13 +449,13 @@ export default function CalendarIntegrationsClient({
                 </button>
 
                 {expandedAccount === account.id && (
-                  <div className="border-t border-slate-800 px-5 py-4">
+                  <div className="border-t border-[#2A2A3A] px-5 py-4">
                     {loadingCalendars === account.id ? (
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-white0">
                         Loading calendars…
                       </p>
                     ) : (calendarLists[account.id] ?? []).length === 0 ? (
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-white0">
                         No calendars found for this account.
                       </p>
                     ) : (
@@ -473,7 +473,7 @@ export default function CalendarIntegrationsClient({
                                   onChange={() =>
                                     toggleCalendar(account.id, cal.id)
                                   }
-                                  className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500"
+                                  className="h-4 w-4 rounded border-[#2A2A3A] bg-[#2A2A3A] text-blue-500 focus:ring-blue-500"
                                 />
                                 <span
                                   className="inline-block h-3 w-3 rounded-full"
@@ -482,10 +482,10 @@ export default function CalendarIntegrationsClient({
                                       cal.backgroundColor ?? '#3B82F6',
                                   }}
                                 />
-                                <span className="text-slate-200">
+                                <span className="text-[#9CA3AF]">
                                   {cal.summary}
                                   {cal.primary && (
-                                    <span className="ml-2 text-xs text-slate-500">
+                                    <span className="ml-2 text-xs text-white0">
                                       (primary)
                                     </span>
                                   )}
@@ -505,7 +505,7 @@ export default function CalendarIntegrationsClient({
                                         | 'both'
                                     )
                                   }
-                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300"
+                                  className="rounded-xl border border-[#2A2A3A] bg-[#1A1A28] px-3 py-1.5 text-xs text-[#9CA3AF]"
                                 >
                                   <option value="pull">Pull only</option>
                                   <option value="push">Push only</option>
@@ -539,29 +539,29 @@ export default function CalendarIntegrationsClient({
       </section>
 
       {/* Microsoft accounts */}
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-xs uppercase tracking-[0.24em] text-white0">
               Microsoft Calendar
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-100">
+            <h2 className="mt-2 text-xl font-semibold text-white">
               Connected accounts
             </h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[#9CA3AF]">
               Two-way sync with Microsoft 365 / Outlook.com calendars.
             </p>
           </div>
           <a
             href="/api/auth/microsoft"
-            className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-white"
+            className="rounded-2xl bg-[#B8FF00] px-4 py-2 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
           >
             + Connect Microsoft account
           </a>
         </div>
 
         {microsoftAccounts.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-500">
+          <p className="mt-6 text-sm text-white0">
             No Microsoft accounts connected. Click above to add one.
           </p>
         ) : (
@@ -569,7 +569,7 @@ export default function CalendarIntegrationsClient({
             {microsoftAccounts.map((account) => (
               <div
                 key={account.id}
-                className="rounded-2xl border border-slate-800 bg-slate-950/60"
+                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E]"
               >
                 <button
                   type="button"
@@ -593,10 +593,10 @@ export default function CalendarIntegrationsClient({
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-slate-100">
+                      <p className="font-medium text-white">
                         {account.email}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-white0">
                         {account.label && account.label !== account.email
                           ? account.label
                           : 'Microsoft Calendar'}
@@ -604,7 +604,7 @@ export default function CalendarIntegrationsClient({
                     </div>
                   </div>
                   <svg
-                    className={`h-5 w-5 text-slate-400 transition ${expandedMsAccount === account.id ? 'rotate-180' : ''}`}
+                    className={`h-5 w-5 text-[#9CA3AF] transition ${expandedMsAccount === account.id ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -619,13 +619,13 @@ export default function CalendarIntegrationsClient({
                 </button>
 
                 {expandedMsAccount === account.id && (
-                  <div className="border-t border-slate-800 px-5 py-4">
+                  <div className="border-t border-[#2A2A3A] px-5 py-4">
                     {loadingMsCalendars === account.id ? (
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-white0">
                         Loading calendars…
                       </p>
                     ) : (msCalendarLists[account.id] ?? []).length === 0 ? (
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-white0">
                         No calendars found for this account.
                       </p>
                     ) : (
@@ -643,7 +643,7 @@ export default function CalendarIntegrationsClient({
                                   onChange={() =>
                                     toggleMsCalendar(account.id, cal.id)
                                   }
-                                  className="h-4 w-4 rounded border-slate-600 bg-slate-800 text-sky-500 focus:ring-sky-500"
+                                  className="h-4 w-4 rounded border-[#2A2A3A] bg-[#2A2A3A] text-sky-500 focus:ring-sky-500"
                                 />
                                 <span
                                   className="inline-block h-3 w-3 rounded-full"
@@ -651,10 +651,10 @@ export default function CalendarIntegrationsClient({
                                     backgroundColor: cal.colour ?? '#3B82F6',
                                   }}
                                 />
-                                <span className="text-slate-200">
+                                <span className="text-[#9CA3AF]">
                                   {cal.name}
                                   {cal.isDefaultCalendar && (
-                                    <span className="ml-2 text-xs text-slate-500">
+                                    <span className="ml-2 text-xs text-white0">
                                       (default)
                                     </span>
                                   )}
@@ -674,7 +674,7 @@ export default function CalendarIntegrationsClient({
                                         | 'both'
                                     )
                                   }
-                                  className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-300"
+                                  className="rounded-xl border border-[#2A2A3A] bg-[#1A1A28] px-3 py-1.5 text-xs text-[#9CA3AF]"
                                 >
                                   <option value="pull">Pull only</option>
                                   <option value="push">Push only</option>
@@ -708,16 +708,16 @@ export default function CalendarIntegrationsClient({
       </section>
 
       {/* iCal feed subscriptions */}
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            <p className="text-xs uppercase tracking-[0.24em] text-white0">
               External Calendars
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-100">
+            <h2 className="mt-2 text-xl font-semibold text-white">
               iCal feed subscriptions
             </h2>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[#9CA3AF]">
               Subscribe to iCal (.ics) feeds from Apple Calendar, Outlook, or
               any calendar app. Events are pulled in read-only.
             </p>
@@ -725,7 +725,7 @@ export default function CalendarIntegrationsClient({
           <button
             type="button"
             onClick={() => setShowAddFeed(true)}
-            className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-white"
+            className="rounded-2xl bg-[#B8FF00] px-4 py-2 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
           >
             + Add feed
           </button>
@@ -733,31 +733,31 @@ export default function CalendarIntegrationsClient({
 
         {/* Add feed form */}
         {showAddFeed && (
-          <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-950/60 p-5 space-y-4">
+          <div className="mt-6 rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-5 space-y-4">
             <div>
-              <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <label className="text-xs uppercase tracking-[0.2em] text-white0">
                 Feed name
               </label>
               <input
                 value={feedName}
                 onChange={(e) => setFeedName(e.target.value)}
                 placeholder="e.g. iCloud Personal, Outlook Work"
-                className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-slate-500"
+                className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-[#9CA3AF] outline-none placeholder:text-[#2A2A3A] focus:border-[#B8FF00]/40"
               />
             </div>
             <div>
-              <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <label className="text-xs uppercase tracking-[0.2em] text-white0">
                 iCal URL
               </label>
               <input
                 value={feedUrl}
                 onChange={(e) => setFeedUrl(e.target.value)}
                 placeholder="https://... or webcal://..."
-                className="mt-2 w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-slate-500"
+                className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-[#9CA3AF] outline-none placeholder:text-[#2A2A3A] focus:border-[#B8FF00]/40"
               />
             </div>
             <div>
-              <label className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <label className="text-xs uppercase tracking-[0.2em] text-white0">
                 Colour
               </label>
               <div className="mt-2 flex gap-2">
@@ -797,20 +797,20 @@ export default function CalendarIntegrationsClient({
                   setShowAddFeed(false)
                   setFeedError(null)
                 }}
-                className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-300 transition hover:border-slate-500"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
               >
                 Cancel
               </button>
             </div>
 
             {/* How-to guide */}
-            <details className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
-              <summary className="cursor-pointer font-medium text-slate-100">
+            <details className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-[#9CA3AF]">
+              <summary className="cursor-pointer font-medium text-white">
                 How to find your iCal URL
               </summary>
-              <div className="mt-4 space-y-4 text-slate-400">
+              <div className="mt-4 space-y-4 text-[#9CA3AF]">
                 <div>
-                  <p className="font-medium text-slate-200">
+                  <p className="font-medium text-[#9CA3AF]">
                     Apple / iCloud Calendar
                   </p>
                   <p>
@@ -821,7 +821,7 @@ export default function CalendarIntegrationsClient({
                   <p>3. Copy the webcal:// URL and paste it above</p>
                 </div>
                 <div>
-                  <p className="font-medium text-slate-200">
+                  <p className="font-medium text-[#9CA3AF]">
                     Outlook / Microsoft 365
                   </p>
                   <p>1. Go to outlook.live.com → Calendar → Settings (⚙️)</p>
@@ -832,7 +832,7 @@ export default function CalendarIntegrationsClient({
                   <p>3. Copy the ICS link and paste it above</p>
                 </div>
                 <div>
-                  <p className="font-medium text-slate-200">
+                  <p className="font-medium text-[#9CA3AF]">
                     Google Calendar (as a feed)
                   </p>
                   <p>
@@ -840,7 +840,7 @@ export default function CalendarIntegrationsClient({
                   </p>
                   <p>2. Scroll to &quot;Secret address in iCal format&quot;</p>
                   <p>3. Copy the URL and paste it above</p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-white0 mt-1">
                     Tip: For Google, the two-way sync via OAuth is better — use
                     iCal feeds only for calendars you share with others.
                   </p>
@@ -852,7 +852,7 @@ export default function CalendarIntegrationsClient({
 
         {/* Existing feeds */}
         {feeds.length === 0 && !showAddFeed ? (
-          <p className="mt-6 text-sm text-slate-500">
+          <p className="mt-6 text-sm text-white0">
             No iCal feeds configured. Add one to import events from Apple
             Calendar, Outlook, or other apps.
           </p>
@@ -861,7 +861,7 @@ export default function CalendarIntegrationsClient({
             {feeds.map((feed) => (
               <div
                 key={feed.id}
-                className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950/60 px-5 py-4"
+                className="flex items-center justify-between rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-5 py-4"
               >
                 <div className="flex items-center gap-3">
                   <span
@@ -869,8 +869,8 @@ export default function CalendarIntegrationsClient({
                     style={{ backgroundColor: feed.colour }}
                   />
                   <div>
-                    <p className="font-medium text-slate-200">{feed.name}</p>
-                    <p className="text-xs text-slate-500">
+                    <p className="font-medium text-[#9CA3AF]">{feed.name}</p>
+                    <p className="text-xs text-white0">
                       {feed.event_count} events
                       {feed.last_fetched_at
                         ? ` · Last synced ${new Date(feed.last_fetched_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' })}`
@@ -888,7 +888,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleSyncFeed(feed.id)}
-                    className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:border-slate-500"
+                    className="rounded-xl border border-[#2A2A3A] px-3 py-1.5 text-xs text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
                     title="Sync now"
                   >
                     ↻ Sync
@@ -899,7 +899,7 @@ export default function CalendarIntegrationsClient({
                     className={`rounded-xl border px-3 py-1.5 text-xs transition ${
                       feed.enabled
                         ? 'border-green-800 text-green-400'
-                        : 'border-slate-700 text-slate-500'
+                        : 'border-[#2A2A3A] text-white0'
                     }`}
                   >
                     {feed.enabled ? 'Active' : 'Paused'}
@@ -907,7 +907,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleDeleteFeed(feed.id)}
-                    className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs text-red-400 transition hover:border-red-700"
+                    className="rounded-xl border border-[#2A2A3A] px-3 py-1.5 text-xs text-red-400 transition hover:border-red-700"
                   >
                     Remove
                   </button>

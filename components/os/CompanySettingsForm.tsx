@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+      className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
     >
       {pending ? 'Saving...' : 'Save footer details'}
     </button>
@@ -28,80 +28,80 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
     <form action={formAction} className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-slate-200">Company name</span>
+          <span className="font-medium text-[#9CA3AF]">Company name</span>
           <input
             name="company_name"
             defaultValue={company.company_name}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-slate-200">Address line 1</span>
+          <span className="font-medium text-[#9CA3AF]">Address line 1</span>
           <input
             name="address_line1"
             defaultValue={company.address_line1 ?? ''}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-slate-200">Address line 2</span>
+          <span className="font-medium text-[#9CA3AF]">Address line 2</span>
           <input
             name="address_line2"
             defaultValue={company.address_line2 ?? ''}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">City / area</span>
+          <span className="font-medium text-[#9CA3AF]">City / area</span>
           <input
             name="city"
             defaultValue={company.city ?? ''}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">Postcode</span>
+          <span className="font-medium text-[#9CA3AF]">Postcode</span>
           <input
             name="postcode"
             defaultValue={company.postcode ?? ''}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">Country</span>
+          <span className="font-medium text-[#9CA3AF]">Country</span>
           <input
             name="country"
             defaultValue={company.country ?? ''}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">Company email</span>
+          <span className="font-medium text-[#9CA3AF]">Company email</span>
           <input
             name="company_email"
             type="email"
             defaultValue={company.company_email ?? ''}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-slate-200">Company registration number</span>
+          <span className="font-medium text-[#9CA3AF]">Company registration number</span>
           <input
             name="company_number"
             defaultValue={company.company_number ?? ''}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
       </div>
 
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-[#9CA3AF]">
         These details are appended to invoice, quote, and enquiry emails sent from Trailhead OS.
       </p>
 

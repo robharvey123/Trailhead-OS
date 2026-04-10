@@ -18,16 +18,16 @@ export default function ProjectsSection({
   actionLabel?: string
 }) {
   return (
-    <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+    <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100">{title}</h2>
-          <p className="text-sm text-slate-400">{description}</p>
+          <h2 className="text-lg font-semibold text-white">{title}</h2>
+          <p className="text-sm text-[#9CA3AF]">{description}</p>
         </div>
         {actionHref && actionLabel ? (
           <Link
             href={actionHref}
-            className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
           >
             {actionLabel}
           </Link>
@@ -35,7 +35,7 @@ export default function ProjectsSection({
       </div>
 
       {projects.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-slate-700 px-4 py-8 text-sm text-slate-500">
+        <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
           {emptyMessage}
         </div>
       ) : (

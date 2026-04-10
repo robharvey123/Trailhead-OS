@@ -46,31 +46,31 @@ export default async function AccountsPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Clients</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">
-            Accounts <span className="text-slate-500">({accounts.length})</span>
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">
+            Accounts <span className="text-white0">({accounts.length})</span>
           </h1>
         </div>
         <Link
           href="/crm/accounts/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           New account
         </Link>
       </div>
 
-      <form className="grid gap-3 rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
         <input
           type="text"
           name="search"
           defaultValue={search}
           placeholder="Search by name or website"
-          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         />
         <select
           name="workstream_id"
           defaultValue={workstreamId}
-          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         >
           <option value="">All workstreams</option>
           {workstreams.map((workstream) => (
@@ -81,7 +81,7 @@ export default async function AccountsPage({
         </select>
         <button
           type="submit"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           Apply
         </button>
@@ -110,7 +110,7 @@ export default async function AccountsPage({
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'
+                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
               }`}
             >
               {tab.label}
@@ -119,14 +119,14 @@ export default async function AccountsPage({
         })}
       </div>
 
-      <div className="overflow-x-auto rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="overflow-x-auto rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         {accounts.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-700 px-4 py-10 text-center text-sm text-slate-500">
+          <div className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
             No accounts match this view yet.
           </div>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+            <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
               <tr>
                 <th className="pb-3">Name</th>
                 <th className="pb-3">Industry</th>
@@ -138,19 +138,19 @@ export default async function AccountsPage({
             </thead>
             <tbody>
               {accounts.map((account) => (
-                <tr key={account.id} className="border-t border-slate-800">
+                <tr key={account.id} className="border-t border-[#2A2A3A]">
                   <td className="py-4">
                     <Link
                       href={`/crm/accounts/${account.id}`}
-                      className="font-medium text-slate-100 hover:text-white hover:underline"
+                      className="font-medium text-white hover:text-white hover:underline"
                     >
                       {account.name}
                     </Link>
                     {account.website ? (
-                      <p className="mt-1 text-xs text-slate-500">{account.website}</p>
+                      <p className="mt-1 text-xs text-white0">{account.website}</p>
                     ) : null}
                   </td>
-                  <td className="py-4 text-slate-300">{account.industry ?? '—'}</td>
+                  <td className="py-4 text-[#9CA3AF]">{account.industry ?? '—'}</td>
                   <td className="py-4">
                     {account.workstream ? (
                       <WorkstreamBadge
@@ -159,14 +159,14 @@ export default async function AccountsPage({
                         colour={account.workstream.colour}
                       />
                     ) : (
-                      <span className="text-slate-400">—</span>
+                      <span className="text-[#9CA3AF]">—</span>
                     )}
                   </td>
-                  <td className="py-4 text-right text-slate-300">{account.contacts_count}</td>
+                  <td className="py-4 text-right text-[#9CA3AF]">{account.contacts_count}</td>
                   <td className="py-4">
                     <StatusBadge status={account.status} kind="account" />
                   </td>
-                  <td className="py-4 text-slate-300">
+                  <td className="py-4 text-[#9CA3AF]">
                     {new Date(account.created_at).toLocaleDateString('en-GB')}
                   </td>
                 </tr>

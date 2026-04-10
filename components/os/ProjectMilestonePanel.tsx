@@ -152,20 +152,20 @@ export default function ProjectMilestonePanel({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <aside className="fixed right-0 top-0 z-50 h-screen w-full max-w-[560px] translate-x-0 overflow-y-auto border-l border-white/10 bg-slate-950 shadow-2xl transition-transform duration-300">
-        <div className="sticky top-0 z-10 border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(251,146,60,0.16),transparent_24%),linear-gradient(180deg,rgba(15,23,42,0.98),rgba(15,23,42,0.92))] px-5 py-4 backdrop-blur">
+      <div className="fixed inset-0 z-40 bg-[#0C0C14]/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <aside className="fixed right-0 top-0 z-50 h-screen w-full max-w-[560px] translate-x-0 overflow-y-auto border-l border-[#2A2A3A] bg-[#0C0C14] shadow-2xl transition-transform duration-300">
+        <div className="sticky top-0 z-10 border-b border-[#2A2A3A] bg-[#1A1A28] px-5 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Milestone</p>
+              <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">Milestone</p>
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                className="mt-2 w-full bg-transparent text-2xl font-semibold text-slate-100 outline-none"
+                className="mt-2 w-full bg-transparent text-2xl font-semibold text-white outline-none"
                 placeholder="Milestone title"
               />
             </div>
-            <button type="button" onClick={onClose} className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.18em] text-slate-300">
+            <button type="button" onClick={onClose} className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#9CA3AF]">
               Close
             </button>
           </div>
@@ -174,28 +174,28 @@ export default function ProjectMilestonePanel({
             <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getMilestoneStatusClasses(status)}`}>
               {status}
             </span>
-            <span className="text-xs text-slate-500">{dueDate ? formatTaskDate(dueDate) : 'No due date'}</span>
+            <span className="text-xs text-[#9CA3AF]">{dueDate ? formatTaskDate(dueDate) : 'No due date'}</span>
           </div>
         </div>
 
-        <div className="space-y-5 bg-[linear-gradient(180deg,rgba(15,23,42,0.55),rgba(2,6,23,0.2))] px-5 py-5">
+        <div className="space-y-5 bg-[#0C0C14] px-5 py-5">
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Due date</span>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(event) => setDueDate(event.target.value)}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               />
             </label>
 
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Status</span>
               <select
                 value={status}
                 onChange={(event) => setStatus(event.target.value as ProjectMilestone['status'])}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -206,37 +206,37 @@ export default function ProjectMilestonePanel({
             </label>
           </div>
 
-          <label className="space-y-2 text-sm text-slate-300">
+          <label className="space-y-2 text-sm text-[#9CA3AF]">
             <span>Description</span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={6}
-              className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+              className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
             />
           </label>
 
-          <label className="space-y-2 text-sm text-slate-300">
+          <label className="space-y-2 text-sm text-[#9CA3AF]">
             <span>Colour</span>
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3">
-              <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} className="h-10 w-16 rounded border border-slate-700 bg-transparent" />
-              <span className="text-sm text-slate-100">{colour}</span>
+            <div className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3">
+              <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} className="h-10 w-16 rounded border border-[#2A2A3A] bg-transparent" />
+              <span className="text-sm text-white">{colour}</span>
             </div>
           </label>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+          <div className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-slate-100">Linked tasks</p>
-              <span className="text-xs text-slate-500">{linkedTasks.length} linked</span>
+              <p className="text-sm font-semibold text-white">Linked tasks</p>
+              <span className="text-xs text-[#9CA3AF]">{linkedTasks.length} linked</span>
             </div>
             {linkedTasks.length === 0 ? (
-              <p className="mt-3 text-sm text-slate-500">No tasks are explicitly linked to this milestone yet.</p>
+              <p className="mt-3 text-sm text-[#9CA3AF]">No tasks are explicitly linked to this milestone yet.</p>
             ) : (
               <div className="mt-3 space-y-3">
                 {linkedTasks.map((task) => (
-                  <div key={task.id} className="rounded-2xl border border-slate-800 bg-slate-900/70 px-3 py-3">
-                    <p className="text-sm font-medium text-slate-100">{task.title}</p>
-                    <p className="mt-1 text-xs text-slate-500">{task.status.replace('_', ' ')} {task.due_date ? `· ${formatTaskDate(task.due_date)}` : ''}</p>
+                  <div key={task.id} className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-3 py-3">
+                    <p className="text-sm font-medium text-white">{task.title}</p>
+                    <p className="mt-1 text-xs text-[#9CA3AF]">{task.status.replace('_', ' ')} {task.due_date ? `· ${formatTaskDate(task.due_date)}` : ''}</p>
                   </div>
                 ))}
               </div>
@@ -245,11 +245,11 @@ export default function ProjectMilestonePanel({
 
           {error ? <p className="text-sm text-rose-300">{error}</p> : null}
 
-          <div className="flex justify-end gap-3 border-t border-slate-800 pt-5">
-            <button type="button" onClick={onClose} className="rounded-2xl border border-slate-700 px-4 py-3 text-sm text-slate-200">
+          <div className="flex justify-end gap-3 border-t border-[#2A2A3A] pt-5">
+            <button type="button" onClick={onClose} className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF]">
               Cancel
             </button>
-            <button type="button" onClick={() => void handleSave()} disabled={saving || !title.trim() || !dueDate} className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 disabled:opacity-60">
+            <button type="button" onClick={() => void handleSave()} disabled={saving || !title.trim() || !dueDate} className="rounded-2xl bg-[#B8FF00] px-4 py-3 text-sm font-bold text-[#0C0C14] disabled:opacity-60">
               {saving ? 'Saving...' : milestone ? 'Save milestone' : 'Create milestone'}
             </button>
           </div>

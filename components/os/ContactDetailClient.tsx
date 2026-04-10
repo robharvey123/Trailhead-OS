@@ -152,12 +152,12 @@ export default function ContactDetailClient({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Contact</p>
-            <h1 className="mt-2 text-3xl font-semibold text-slate-50">{contact.name}</h1>
-            <p className="mt-2 text-sm text-slate-400">{contact.company ?? 'No company set'}</p>
+            <p className="text-xs uppercase tracking-[0.32em] text-white0">Contact</p>
+            <h1 className="mt-2 text-3xl font-semibold text-white">{contact.name}</h1>
+            <p className="mt-2 text-sm text-[#9CA3AF]">{contact.company ?? 'No company set'}</p>
             <StatusBadge status={contact.status} kind="contact" className="mt-4" />
           </div>
 
@@ -168,7 +168,7 @@ export default function ContactDetailClient({
                   type="button"
                   onClick={saveChanges}
                   disabled={saving}
-                  className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                  className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>
@@ -194,7 +194,7 @@ export default function ContactDetailClient({
                     })
                     setError(null)
                   }}
-                  className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                  className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
                 >
                   Cancel
                 </button>
@@ -203,7 +203,7 @@ export default function ContactDetailClient({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="rounded-2xl border border-slate-700 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
               >
                 Edit
               </button>
@@ -217,91 +217,91 @@ export default function ContactDetailClient({
           {editing ? (
             <>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Name</span>
+                <span className="text-sm text-[#9CA3AF]">Name</span>
                 <input
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Company</span>
+                <span className="text-sm text-[#9CA3AF]">Company</span>
                 <input
                   value={form.company}
                   onChange={(event) => setForm({ ...form, company: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Email</span>
+                <span className="text-sm text-[#9CA3AF]">Email</span>
                 <input
                   value={form.email}
                   onChange={(event) => setForm({ ...form, email: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Phone</span>
+                <span className="text-sm text-[#9CA3AF]">Phone</span>
                 <input
                   value={form.phone}
                   onChange={(event) => setForm({ ...form, phone: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Role</span>
+                <span className="text-sm text-[#9CA3AF]">Role</span>
                 <input
                   value={form.role}
                   onChange={(event) => setForm({ ...form, role: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-slate-300">Address line 1</span>
+                <span className="text-sm text-[#9CA3AF]">Address line 1</span>
                 <input
                   value={form.address_line1}
                   onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-slate-300">Address line 2</span>
+                <span className="text-sm text-[#9CA3AF]">Address line 2</span>
                 <input
                   value={form.address_line2}
                   onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">City</span>
+                <span className="text-sm text-[#9CA3AF]">City</span>
                 <input
                   value={form.city}
                   onChange={(event) => setForm({ ...form, city: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Postcode</span>
+                <span className="text-sm text-[#9CA3AF]">Postcode</span>
                 <input
                   value={form.postcode}
                   onChange={(event) => setForm({ ...form, postcode: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-slate-300">Country</span>
+                <span className="text-sm text-[#9CA3AF]">Country</span>
                 <input
                   value={form.country}
                   onChange={(event) => setForm({ ...form, country: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-slate-300">Workstream</span>
+                <span className="text-sm text-[#9CA3AF]">Workstream</span>
                 <select
                   value={form.workstream_id}
                   onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 >
                   <option value="">None</option>
                   {workstreams.map((workstream) => (
@@ -324,11 +324,11 @@ export default function ContactDetailClient({
                 emptyLabel="No account"
               />
               <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-slate-300">Status</span>
+                <span className="text-sm text-[#9CA3AF]">Status</span>
                 <select
                   value={form.status}
                   onChange={(event) => setForm({ ...form, status: event.target.value as ContactStatus })}
-                  className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 >
                   {CONTACT_STATUSES.map((status) => (
                     <option key={status} value={status}>
@@ -341,20 +341,20 @@ export default function ContactDetailClient({
           ) : (
             <>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Email</p>
-                <p className="mt-2 text-sm text-slate-200">{contact.email ?? '—'}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Email</p>
+                <p className="mt-2 text-sm text-[#9CA3AF]">{contact.email ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Phone</p>
-                <p className="mt-2 text-sm text-slate-200">{contact.phone ?? '—'}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Phone</p>
+                <p className="mt-2 text-sm text-[#9CA3AF]">{contact.phone ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Role</p>
-                <p className="mt-2 text-sm text-slate-200">{contact.role ?? '—'}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Role</p>
+                <p className="mt-2 text-sm text-[#9CA3AF]">{contact.role ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Address</p>
-                <div className="mt-2 whitespace-pre-wrap text-sm text-slate-200">
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Address</p>
+                <div className="mt-2 whitespace-pre-wrap text-sm text-[#9CA3AF]">
                   {[
                     contact.address_line1,
                     contact.address_line2,
@@ -367,7 +367,7 @@ export default function ContactDetailClient({
                 </div>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Account</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Account</p>
                 <div className="mt-2">
                   {contact.account ? (
                     <Link
@@ -394,18 +394,18 @@ export default function ContactDetailClient({
                         type="button"
                         onClick={saveChanges}
                         disabled={saving || !form.account_id}
-                        className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-100 transition hover:border-slate-500 disabled:opacity-60"
+                        className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white transition hover:border-[#B8FF00]/40 disabled:opacity-60"
                       >
                         Link account
                       </button>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-sm text-slate-200">No account</p>
+                      <p className="text-sm text-[#9CA3AF]">No account</p>
                       <button
                         type="button"
                         onClick={() => setLinkingAccount(true)}
-                        className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+                        className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
                       >
                         Link to account
                       </button>
@@ -414,7 +414,7 @@ export default function ContactDetailClient({
                 </div>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Workstream</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Workstream</p>
                 <div className="mt-2">
                   {contact.workstream ? (
                     <WorkstreamBadge
@@ -423,7 +423,7 @@ export default function ContactDetailClient({
                       colour={contact.workstream.colour}
                     />
                   ) : (
-                    <p className="text-sm text-slate-200">—</p>
+                    <p className="text-sm text-[#9CA3AF]">—</p>
                   )}
                 </div>
               </div>
@@ -451,15 +451,15 @@ export default function ContactDetailClient({
         emptyMessage="No projects linked to this contact yet."
       />
 
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Quotes</h2>
-            <p className="text-sm text-slate-400">Proposals linked to this contact.</p>
+            <h2 className="text-lg font-semibold text-white">Quotes</h2>
+            <p className="text-sm text-[#9CA3AF]">Proposals linked to this contact.</p>
           </div>
           <Link
             href={contact.account_id ? `/quotes/new?account_id=${contact.account_id}` : '/quotes/new'}
-            className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
           >
             New quote
           </Link>
@@ -471,17 +471,17 @@ export default function ContactDetailClient({
               <Link
                 key={quote.id}
                 href={`/quotes/${quote.id}`}
-                className="block rounded-3xl border border-slate-800 bg-slate-950/70 p-4 transition hover:border-slate-600"
+                className="block rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 transition hover:border-[#2A2A3A]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium text-slate-100">{quote.quote_number}</p>
-                    <p className="mt-1 text-sm text-slate-300">{quote.title}</p>
-                    <p className="mt-2 text-xs text-slate-500">{quote.issue_date}</p>
+                    <p className="font-medium text-white">{quote.quote_number}</p>
+                    <p className="mt-1 text-sm text-[#9CA3AF]">{quote.title}</p>
+                    <p className="mt-2 text-xs text-white0">{quote.issue_date}</p>
                   </div>
                   <div className="text-right">
                     <StatusBadge status={quote.status} kind="quote" />
-                    <p className="mt-2 text-sm font-medium text-slate-100">
+                    <p className="mt-2 text-sm font-medium text-white">
                       £{calculateTotals(quote.line_items, quote.vat_rate).total.toFixed(2)}
                     </p>
                   </div>
@@ -490,26 +490,26 @@ export default function ContactDetailClient({
             ))}
           </div>
         ) : (
-          <div className="mt-4 rounded-3xl border border-dashed border-slate-700 px-4 py-8 text-sm text-slate-500">
+          <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
             No quotes linked to this contact yet.
           </div>
         )}
       </div>
 
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Notes</h2>
-            <p className="text-sm text-slate-400">Auto-saves when you leave the field.</p>
+            <h2 className="text-lg font-semibold text-white">Notes</h2>
+            <p className="text-sm text-[#9CA3AF]">Auto-saves when you leave the field.</p>
           </div>
-          {notesSaving ? <p className="text-xs text-slate-500">Saving…</p> : null}
+          {notesSaving ? <p className="text-xs text-white0">Saving…</p> : null}
         </div>
         <textarea
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           onBlur={saveNotesOnBlur}
           rows={7}
-          className="mt-4 w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="mt-4 w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         />
         {notesError ? <p className="mt-3 text-sm text-rose-300">{notesError}</p> : null}
       </div>
@@ -529,29 +529,29 @@ export default function ContactDetailClient({
         account_id={contact.account_id}
       />
 
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Linked tasks</h2>
-            <p className="text-sm text-slate-400">Tasks currently tied to this contact.</p>
+            <h2 className="text-lg font-semibold text-white">Linked tasks</h2>
+            <p className="text-sm text-[#9CA3AF]">Tasks currently tied to this contact.</p>
           </div>
-          <Link href="/tasks" className="text-sm text-slate-400 transition hover:text-slate-200">
+          <Link href="/tasks" className="text-sm text-[#9CA3AF] transition hover:text-[#9CA3AF]">
             Open master tasks
           </Link>
         </div>
 
         {linkedTasks.length === 0 ? (
-          <div className="mt-4 rounded-3xl border border-dashed border-slate-700 px-4 py-8 text-sm text-slate-500">
+          <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
             No tasks are linked to this contact yet.
           </div>
         ) : (
           <div className="mt-4 space-y-3">
             {linkedTasks.map((task) => (
-              <div key={task.id} className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
+              <div key={task.id} className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium text-slate-100">{task.title}</p>
-                    <p className="mt-1 text-sm text-slate-400">
+                    <p className="font-medium text-white">{task.title}</p>
+                    <p className="mt-1 text-sm text-[#9CA3AF]">
                       Due: {formatTaskSchedule(task.due_date, task.due_time)}
                     </p>
                   </div>

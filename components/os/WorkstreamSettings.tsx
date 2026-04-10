@@ -83,17 +83,17 @@ export default function WorkstreamSettings({
   }
 
   return (
-    <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+    <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Workstreams</p>
-          <h2 className="mt-2 text-xl font-semibold text-slate-100">Workstream manager</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-400">
+          <p className="text-xs uppercase tracking-[0.24em] text-white0">Workstreams</p>
+          <h2 className="mt-2 text-xl font-semibold text-white">Workstream manager</h2>
+          <p className="mt-2 max-w-2xl text-sm text-[#9CA3AF]">
             Add a new workstream and it will appear automatically in the sidebar, project
             boards, task forms, and calendar event picker.
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-3 text-sm text-slate-300">
+        <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-[#9CA3AF]">
           Next position: {nextSortOrder}
         </div>
       </div>
@@ -101,11 +101,11 @@ export default function WorkstreamSettings({
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_1fr]">
         <form
           onSubmit={handleCreateWorkstream}
-          className="rounded-[1.75rem] border border-slate-800 bg-slate-950/60 p-5"
+          className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5"
         >
           <div className="grid gap-4">
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Label</span>
+              <span className="text-sm text-[#9CA3AF]">Label</span>
               <input
                 value={label}
                 onChange={(event) => {
@@ -116,12 +116,12 @@ export default function WorkstreamSettings({
                   }
                 }}
                 placeholder="Personal admin"
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
               />
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Slug</span>
+              <span className="text-sm text-[#9CA3AF]">Slug</span>
               <input
                 value={slug}
                 onChange={(event) => {
@@ -129,18 +129,18 @@ export default function WorkstreamSettings({
                   setSlug(event.target.value)
                 }}
                 placeholder="personal-admin"
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
               />
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Colour</span>
+              <span className="text-sm text-[#9CA3AF]">Colour</span>
               <select
                 value={colour}
                 onChange={(event) =>
                   setColour(event.target.value as (typeof COLOUR_OPTIONS)[number]['value'])
                 }
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
               >
                 {COLOUR_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -151,18 +151,18 @@ export default function WorkstreamSettings({
             </label>
           </div>
 
-          <div className="mt-5 rounded-[1.5rem] border border-slate-800 bg-slate-900/70 p-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Preview</p>
+          <div className="mt-5 rounded-[1.5rem] border border-[#2A2A3A] bg-[#1A1A28] p-4">
+            <p className="text-xs uppercase tracking-[0.18em] text-white0">Preview</p>
             <div className="mt-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <span
                   className={`h-3 w-3 rounded-full ${getWorkstreamColourClasses(colour).dot}`}
                 />
                 <div>
-                  <p className="text-sm font-medium text-slate-100">
+                  <p className="text-sm font-medium text-white">
                     {label.trim() || 'New workstream'}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">/projects/{previewSlug || 'new-workstream'}</p>
+                  <p className="mt-1 text-xs text-white0">/projects/{previewSlug || 'new-workstream'}</p>
                 </div>
               </div>
               <span
@@ -179,28 +179,28 @@ export default function WorkstreamSettings({
           {success ? <p className="mt-4 text-sm text-emerald-300">{success}</p> : null}
 
           <div className="mt-5 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-white0">
               Default board columns will be created automatically.
             </p>
             <button
               type="submit"
               disabled={creating || !label.trim() || !previewSlug}
-              className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+              className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
             >
               {creating ? 'Creating...' : 'Create workstream'}
             </button>
           </div>
         </form>
 
-        <div className="rounded-[1.75rem] border border-slate-800 bg-slate-950/60 p-5">
+        <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-slate-100">Current workstreams</h3>
-              <p className="mt-1 text-sm text-slate-400">
+              <h3 className="text-base font-semibold text-white">Current workstreams</h3>
+              <p className="mt-1 text-sm text-[#9CA3AF]">
                 Ordered as they appear in the sidebar.
               </p>
             </div>
-            <span className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300">
+            <span className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs text-[#9CA3AF]">
               {workstreams.length} total
             </span>
           </div>
@@ -209,7 +209,7 @@ export default function WorkstreamSettings({
             {workstreams.map((workstream) => (
               <div
                 key={workstream.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-800 bg-slate-900/60 px-4 py-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-[#2A2A3A] bg-[#1A1A28]/60 px-4 py-4"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-3">
@@ -218,17 +218,17 @@ export default function WorkstreamSettings({
                         workstream.colour
                       ).dot}`}
                     />
-                    <p className="truncate text-sm font-medium text-slate-100">
+                    <p className="truncate text-sm font-medium text-white">
                       {workstream.label}
                     </p>
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-white0">
                     /projects/{workstream.slug} · order {workstream.sort_order}
                   </p>
                 </div>
                 <Link
                   href={`/projects/${workstream.slug}`}
-                  className="rounded-2xl border border-slate-700 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500 hover:text-white"
+                  className="rounded-2xl border border-[#2A2A3A] px-3 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-white"
                 >
                   Open board
                 </Link>

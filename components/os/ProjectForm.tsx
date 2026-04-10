@@ -149,30 +149,30 @@ export default function ProjectForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+    <div className="space-y-6 rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Delivery</p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-50">
+        <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">Delivery</p>
+        <h1 className="mt-2 text-3xl font-semibold text-white">
           {initialProject ? 'Edit project' : 'New project'}
         </h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Name</span>
+          <span className="text-sm text-[#9CA3AF]">Name</span>
           <input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Workstream</span>
+          <span className="text-sm text-[#9CA3AF]">Workstream</span>
           <select
             value={form.workstream_id}
             onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           >
             <option value="">Select workstream</option>
             {workstreams.map((workstream) => (
@@ -193,11 +193,11 @@ export default function ProjectForm({
         />
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Status</span>
+          <span className="text-sm text-[#9CA3AF]">Status</span>
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value as ProjectStatus })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           >
             {PROJECT_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -208,52 +208,52 @@ export default function ProjectForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Start date</span>
+          <span className="text-sm text-[#9CA3AF]">Start date</span>
           <input
             type="date"
             value={form.start_date}
             onChange={(event) => setForm({ ...form, start_date: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">End date</span>
+          <span className="text-sm text-[#9CA3AF]">End date</span>
           <input
             type="date"
             value={form.end_date}
             onChange={(event) => setForm({ ...form, end_date: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Estimated end</span>
+          <span className="text-sm text-[#9CA3AF]">Estimated end</span>
           <input
             type="date"
             value={form.estimated_end_date}
             onChange={(event) => setForm({ ...form, estimated_end_date: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Description</span>
+          <span className="text-sm text-[#9CA3AF]">Description</span>
           <textarea
             value={form.description}
             onChange={(event) => setForm({ ...form, description: event.target.value })}
             rows={4}
-            className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Brief</span>
+          <span className="text-sm text-[#9CA3AF]">Brief</span>
           <textarea
             value={form.brief}
             onChange={(event) => setForm({ ...form, brief: event.target.value })}
             rows={6}
-            className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>
       </div>
@@ -265,14 +265,14 @@ export default function ProjectForm({
           type="button"
           onClick={handleSave}
           disabled={saving || archiving || deleting || !form.name.trim() || !form.workstream_id}
-          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+          className="rounded-2xl bg-[#B8FF00] px-5 py-3 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
         <button
           type="button"
           onClick={() => router.push(cancelHref)}
-          className="rounded-2xl border border-slate-700 px-5 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+          className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
         >
           Cancel
         </button>

@@ -253,8 +253,8 @@ export default function EnquiryDetailActions({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-        <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Status</p>
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+        <p className="text-xs uppercase tracking-[0.28em] text-white0">Status</p>
         <StatusBadge
           status={enquiry.status}
           kind="enquiry"
@@ -264,14 +264,14 @@ export default function EnquiryDetailActions({
           {linkedProject ? (
             <Link
               href={`/projects/records/${linkedProject.id}`}
-              className="block rounded-2xl border border-slate-700 px-4 py-3 text-center text-sm font-medium text-slate-200 transition hover:border-slate-500"
+              className="block rounded-2xl border border-[#2A2A3A] px-4 py-3 text-center text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
             >
               View linked project
             </Link>
           ) : (
             <Link
               href={createProjectHref}
-              className="block rounded-2xl border border-slate-700 px-4 py-3 text-center text-sm font-medium text-slate-200 transition hover:border-slate-500"
+              className="block rounded-2xl border border-[#2A2A3A] px-4 py-3 text-center text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
             >
               Create linked project
             </Link>
@@ -293,7 +293,7 @@ export default function EnquiryDetailActions({
                 defaultRecipient={generatedQuoteEmail}
                 defaultSubject={`Quote for ${enquiry.biz_name}`}
                 defaultMessage={`Hi,\n\nPlease find the attached quote for ${enquiry.biz_name}.\n\nBest,\nRob`}
-                buttonClassName="w-full rounded-2xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+                buttonClassName="w-full rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
                 fullWidth
               />
               <button
@@ -339,7 +339,7 @@ export default function EnquiryDetailActions({
               type="button"
               onClick={handleMarkReviewed}
               disabled={loadingAction !== null}
-              className="w-full rounded-2xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-100 transition hover:border-slate-500 disabled:opacity-60"
+              className="w-full rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-white transition hover:border-[#B8FF00]/40 disabled:opacity-60"
             >
               {loadingAction === 'review' ? 'Marking...' : 'Mark as reviewed'}
             </button>
@@ -348,7 +348,7 @@ export default function EnquiryDetailActions({
           {enquiry.converted_contact_id ? (
             <Link
               href={`/crm/contacts/${enquiry.converted_contact_id}`}
-              className="block rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+              className="block rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
             >
               View converted contact
             </Link>
@@ -357,7 +357,7 @@ export default function EnquiryDetailActions({
               type="button"
               onClick={handleConvert}
               disabled={loadingAction !== null}
-              className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+              className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
             >
               {loadingAction === 'convert' ? 'Converting...' : 'Convert to contact'}
             </button>
@@ -366,16 +366,16 @@ export default function EnquiryDetailActions({
         {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
       </section>
 
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-        <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Meta</p>
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+        <p className="text-xs uppercase tracking-[0.28em] text-white0">Meta</p>
         <dl className="mt-4 space-y-4 text-sm">
           <div>
-            <dt className="text-slate-500">Enquiry ID</dt>
-            <dd className="mt-1 text-slate-200">{enquiry.id}</dd>
+            <dt className="text-white0">Enquiry ID</dt>
+            <dd className="mt-1 text-[#9CA3AF]">{enquiry.id}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Submitted</dt>
-            <dd className="mt-1 text-slate-200">
+            <dt className="text-white0">Submitted</dt>
+            <dd className="mt-1 text-[#9CA3AF]">
               {formatDateTime(enquiry.created_at)}
             </dd>
           </div>
@@ -383,7 +383,7 @@ export default function EnquiryDetailActions({
       </section>
 
       {showGenerateModal ? (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 px-4 py-8">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-[#13131E] px-4 py-8">
           <button
             type="button"
             aria-label="Close quote revision modal"
@@ -395,11 +395,11 @@ export default function EnquiryDetailActions({
             }}
           />
 
-          <div className="relative mx-auto my-4 w-full max-w-5xl rounded-[2rem] border border-slate-800 bg-slate-900 p-6 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="relative mx-auto my-4 w-full max-w-5xl rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6 shadow-2xl max-h-[calc(100vh-4rem)] overflow-y-auto">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-semibold text-slate-50">Select pricing tier</h2>
-                <p className="mt-2 text-sm text-slate-400">
+                <h2 className="text-2xl font-semibold text-white">Select pricing tier</h2>
+                <p className="mt-2 text-sm text-[#9CA3AF]">
                   Review the linked project stages, then choose the pricing tier for the new quote.
                 </p>
               </div>
@@ -411,7 +411,7 @@ export default function EnquiryDetailActions({
                   }
                   setShowGenerateModal(false)
                 }}
-                className="rounded-full border border-slate-700 px-3 py-2 text-sm text-slate-200 transition hover:border-slate-500 disabled:opacity-60"
+                className="rounded-full border border-[#2A2A3A] px-3 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 disabled:opacity-60"
                 disabled={loadingAction === 'generate'}
               >
                 Close
@@ -420,18 +420,18 @@ export default function EnquiryDetailActions({
 
             <div className="mt-6">
               {linkedProject ? (
-                <div className="mb-6 rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-5">
+                <div className="mb-6 rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-100">Project stages</h3>
-                      <p className="mt-1 text-sm text-slate-400">
+                      <h3 className="text-lg font-semibold text-white">Project stages</h3>
+                      <p className="mt-1 text-sm text-[#9CA3AF]">
                         These stages will update the linked project and drive the new quote scope.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => setRevisionScope((current) => [...current, createEmptyPhase()])}
-                      className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-100 transition hover:border-slate-500"
+                      className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white transition hover:border-[#B8FF00]/40"
                     >
                       Add stage
                     </button>
@@ -439,9 +439,9 @@ export default function EnquiryDetailActions({
 
                   <div className="mt-4 space-y-4">
                     {revisionScope.map((phase, index) => (
-                      <div key={`${phase.phase}-${index}`} className="rounded-[1.5rem] border border-slate-800 bg-slate-900/70 p-4">
+                      <div key={`${phase.phase}-${index}`} className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#1A1A28] p-4">
                         <div className="mb-4 flex items-center justify-between gap-3">
-                          <span className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                          <span className="text-xs uppercase tracking-[0.18em] text-white0">
                             Stage {index + 1}
                           </span>
                           <button
@@ -459,7 +459,7 @@ export default function EnquiryDetailActions({
 
                         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
                           <label className="space-y-2">
-                            <span className="text-sm text-slate-300">Stage name</span>
+                            <span className="text-sm text-[#9CA3AF]">Stage name</span>
                             <input
                               value={phase.phase}
                               onChange={(event) =>
@@ -469,12 +469,12 @@ export default function EnquiryDetailActions({
                                   )
                                 )
                               }
-                              className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                             />
                           </label>
 
                           <label className="space-y-2">
-                            <span className="text-sm text-slate-300">Duration</span>
+                            <span className="text-sm text-[#9CA3AF]">Duration</span>
                             <input
                               value={phase.duration}
                               onChange={(event) =>
@@ -484,13 +484,13 @@ export default function EnquiryDetailActions({
                                   )
                                 )
                               }
-                              className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                             />
                           </label>
                         </div>
 
                         <label className="mt-4 block space-y-2">
-                          <span className="text-sm text-slate-300">Description</span>
+                          <span className="text-sm text-[#9CA3AF]">Description</span>
                           <textarea
                             value={phase.description}
                             onChange={(event) =>
@@ -501,12 +501,12 @@ export default function EnquiryDetailActions({
                               )
                             }
                             rows={3}
-                            className="w-full rounded-[1.25rem] border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                            className="w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                           />
                         </label>
 
                         <label className="mt-4 block space-y-2">
-                          <span className="text-sm text-slate-300">Deliverables</span>
+                          <span className="text-sm text-[#9CA3AF]">Deliverables</span>
                           <textarea
                             value={deliverablesToText(phase.deliverables)}
                             onChange={(event) =>
@@ -519,9 +519,9 @@ export default function EnquiryDetailActions({
                               )
                             }
                             rows={3}
-                            className="w-full rounded-[1.25rem] border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                            className="w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                           />
-                          <p className="text-xs text-slate-500">Use one deliverable per line or separate with commas.</p>
+                          <p className="text-xs text-white0">Use one deliverable per line or separate with commas.</p>
                         </label>
                       </div>
                     ))}
@@ -538,17 +538,17 @@ export default function EnquiryDetailActions({
                 onChange={setSelectedTier}
               />
 
-              <div className="mt-6 rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-5">
+              <div className="mt-6 rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-5">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-100">Quote guidance</h3>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <h3 className="text-lg font-semibold text-white">Quote guidance</h3>
+                  <p className="mt-1 text-sm text-[#9CA3AF]">
                     Set commercial guardrails before the quote is generated.
                   </p>
                 </div>
 
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                   <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Pricing posture</span>
+                    <span className="text-sm text-[#9CA3AF]">Pricing posture</span>
                     <select
                       value={guidance.pricingPosture}
                       onChange={(event) =>
@@ -557,7 +557,7 @@ export default function EnquiryDetailActions({
                           pricingPosture: event.target.value as QuoteGuidanceState['pricingPosture'],
                         }))
                       }
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                     >
                       <option value="conservative">Conservative</option>
                       <option value="balanced">Balanced</option>
@@ -566,7 +566,7 @@ export default function EnquiryDetailActions({
                   </label>
 
                   <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Budget handling</span>
+                    <span className="text-sm text-[#9CA3AF]">Budget handling</span>
                     <select
                       value={guidance.budgetAlignment}
                       onChange={(event) =>
@@ -575,7 +575,7 @@ export default function EnquiryDetailActions({
                           budgetAlignment: event.target.value as QuoteGuidanceState['budgetAlignment'],
                         }))
                       }
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                     >
                       <option value="respect">Stay close to stated budget</option>
                       <option value="flexible">Treat budget as soft guidance</option>
@@ -584,7 +584,7 @@ export default function EnquiryDetailActions({
                   </label>
 
                   <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Delivery model</span>
+                    <span className="text-sm text-[#9CA3AF]">Delivery model</span>
                     <select
                       value={guidance.deliveryBias}
                       onChange={(event) =>
@@ -593,7 +593,7 @@ export default function EnquiryDetailActions({
                           deliveryBias: event.target.value as QuoteGuidanceState['deliveryBias'],
                         }))
                       }
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                     >
                       <option value="best_fit">Let the model choose</option>
                       <option value="fixed">Bias toward fixed price</option>
@@ -605,7 +605,7 @@ export default function EnquiryDetailActions({
 
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Must include</span>
+                    <span className="text-sm text-[#9CA3AF]">Must include</span>
                     <textarea
                       value={guidance.mustInclude}
                       onChange={(event) =>
@@ -613,12 +613,12 @@ export default function EnquiryDetailActions({
                       }
                       rows={4}
                       placeholder="Examples: discovery workshop, training, hosting, phased rollout"
-                      className="w-full rounded-[1.25rem] border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                      className="w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                     />
                   </label>
 
                   <label className="space-y-2">
-                    <span className="text-sm text-slate-300">Must avoid</span>
+                    <span className="text-sm text-[#9CA3AF]">Must avoid</span>
                     <textarea
                       value={guidance.mustAvoid}
                       onChange={(event) =>
@@ -626,13 +626,13 @@ export default function EnquiryDetailActions({
                       }
                       rows={4}
                       placeholder="Examples: mobile app, deep integrations, admin portal in v1"
-                      className="w-full rounded-[1.25rem] border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                      className="w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                     />
                   </label>
                 </div>
 
                 <label className="mt-4 block space-y-2">
-                  <span className="text-sm text-slate-300">Additional notes</span>
+                  <span className="text-sm text-[#9CA3AF]">Additional notes</span>
                   <textarea
                     value={guidance.notes}
                     onChange={(event) =>
@@ -640,7 +640,7 @@ export default function EnquiryDetailActions({
                     }
                     rows={4}
                     placeholder="Anything commercial or delivery-specific you want the quote to reflect."
-                    className="w-full rounded-[1.25rem] border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                    className="w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                   />
                 </label>
               </div>
@@ -663,7 +663,7 @@ export default function EnquiryDetailActions({
                 type="button"
                 onClick={handleGenerateQuote}
                 disabled={!selectedTier || loadingAction === 'generate'}
-                className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
               >
                 {loadingAction === 'generate' ? 'Generating quote...' : 'Generate quote'}
               </button>

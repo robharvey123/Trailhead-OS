@@ -85,11 +85,11 @@ export default function AccountForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+    <div className="space-y-6 rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
       {!onSaved ? (
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Clients</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">
             {initialAccount ? 'Edit account' : 'New account'}
           </h1>
         </div>
@@ -97,30 +97,30 @@ export default function AccountForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Name</span>
+          <span className="text-sm text-[#9CA3AF]">Name</span>
           <input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
             required
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Website</span>
+          <span className="text-sm text-[#9CA3AF]">Website</span>
           <input
             value={form.website}
             onChange={(event) => setForm({ ...form, website: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Industry</span>
+          <span className="text-sm text-[#9CA3AF]">Industry</span>
           <select
             value={form.industry}
             onChange={(event) => setForm({ ...form, industry: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           >
             <option value="">Select industry</option>
             {ACCOUNT_INDUSTRY_OPTIONS.map((option) => (
@@ -132,11 +132,11 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Company size</span>
+          <span className="text-sm text-[#9CA3AF]">Company size</span>
           <select
             value={form.size}
             onChange={(event) => setForm({ ...form, size: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           >
             <option value="">Select size</option>
             {ACCOUNT_SIZE_OPTIONS.map((option) => (
@@ -148,11 +148,11 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Workstream</span>
+          <span className="text-sm text-[#9CA3AF]">Workstream</span>
           <select
             value={form.workstream_id}
             onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           >
             <option value="">None</option>
             {workstreams.map((workstream) => (
@@ -164,11 +164,11 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Status</span>
+          <span className="text-sm text-[#9CA3AF]">Status</span>
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value as AccountStatus })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           >
             {ACCOUNT_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -179,57 +179,57 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Address line 1</span>
+          <span className="text-sm text-[#9CA3AF]">Address line 1</span>
           <input
             value={form.address_line1}
             onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Address line 2</span>
+          <span className="text-sm text-[#9CA3AF]">Address line 2</span>
           <input
             value={form.address_line2}
             onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">City</span>
+          <span className="text-sm text-[#9CA3AF]">City</span>
           <input
             value={form.city}
             onChange={(event) => setForm({ ...form, city: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-slate-300">Postcode</span>
+          <span className="text-sm text-[#9CA3AF]">Postcode</span>
           <input
             value={form.postcode}
             onChange={(event) => setForm({ ...form, postcode: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Country</span>
+          <span className="text-sm text-[#9CA3AF]">Country</span>
           <input
             value={form.country}
             onChange={(event) => setForm({ ...form, country: event.target.value })}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Notes</span>
+          <span className="text-sm text-[#9CA3AF]">Notes</span>
           <textarea
             value={form.notes}
             onChange={(event) => setForm({ ...form, notes: event.target.value })}
             rows={6}
-            className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+            className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
       </div>
@@ -241,7 +241,7 @@ export default function AccountForm({
           type="button"
           onClick={handleSave}
           disabled={saving || !form.name.trim()}
-          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -255,7 +255,7 @@ export default function AccountForm({
 
             router.push(cancelHref)
           }}
-          className="rounded-2xl border border-slate-700 px-5 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-500"
+          className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
         >
           Cancel
         </button>

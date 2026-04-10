@@ -19,7 +19,7 @@ interface BlogPostEditorProps {
 }
 
 const inputClassName =
-  'w-full rounded-2xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10'
+  'w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white0 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10'
 
 export default function BlogPostEditor({
   mode,
@@ -116,10 +116,10 @@ export default function BlogPostEditor({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.28em] text-white0">
             Content
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-slate-50">
+          <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">
             {mode === 'create' ? 'New blog post' : 'Edit blog post'}
           </h1>
         </div>
@@ -130,7 +130,7 @@ export default function BlogPostEditor({
               href={publishedUrl}
               target={isLocalhost ? undefined : '_blank'}
               rel={isLocalhost ? undefined : 'noreferrer'}
-              className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-sky-400 hover:text-white"
+              className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-sky-400 hover:text-white"
             >
               View on site →
             </Link>
@@ -138,7 +138,7 @@ export default function BlogPostEditor({
           <button
             type="button"
             onClick={() => setPreview((current) => !current)}
-            className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-white"
           >
             {preview ? 'Hide preview' : 'Show preview'}
           </button>
@@ -147,11 +147,11 @@ export default function BlogPostEditor({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="space-y-6 rounded-[28px] border border-slate-800 bg-slate-900/60 p-6">
+          <div className="space-y-6 rounded-[28px] border border-[#2A2A3A] bg-[#1A1A28]/60 p-6">
             <div>
               <label
                 htmlFor="blog-title"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
               >
                 Title
               </label>
@@ -167,7 +167,7 @@ export default function BlogPostEditor({
             <div>
               <label
                 htmlFor="blog-slug"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
               >
                 Slug
               </label>
@@ -186,7 +186,7 @@ export default function BlogPostEditor({
             <div>
               <label
                 htmlFor="blog-excerpt"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
               >
                 Excerpt
               </label>
@@ -201,7 +201,7 @@ export default function BlogPostEditor({
             <div>
               <label
                 htmlFor="blog-tags"
-                className="mb-2 block text-sm font-medium text-slate-300"
+                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
               >
                 Tags
               </label>
@@ -214,26 +214,26 @@ export default function BlogPostEditor({
               />
             </div>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-sm text-slate-200">
+            <label className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-[#9CA3AF]">
               <input
                 type="checkbox"
                 checked={published}
                 onChange={(event) => setPublished(event.target.checked)}
-                className="h-4 w-4 rounded border-slate-600 bg-slate-950 text-sky-500 focus:ring-sky-500"
+                className="h-4 w-4 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
               />
               Published
             </label>
           </div>
 
-          <div className="space-y-4 rounded-[28px] border border-slate-800 bg-slate-900/60 p-6">
+          <div className="space-y-4 rounded-[28px] border border-[#2A2A3A] bg-[#1A1A28]/60 p-6">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="blog-body"
-                className="text-sm font-medium text-slate-300"
+                className="text-sm font-medium text-[#9CA3AF]"
               >
                 Body
               </label>
-              <span className="text-xs uppercase tracking-[0.24em] text-slate-500">
+              <span className="text-xs uppercase tracking-[0.24em] text-white0">
                 Markdown
               </span>
             </div>
@@ -248,7 +248,7 @@ export default function BlogPostEditor({
               />
 
               {preview ? (
-                <div className="min-h-[460px] rounded-3xl border border-slate-800 bg-white p-6">
+                <div className="min-h-[460px] rounded-3xl border border-[#2A2A3A] bg-white p-6">
                   <div className={blogMarkdownClassName}>
                     <ReactMarkdown>
                       {body || 'Nothing to preview yet.'}

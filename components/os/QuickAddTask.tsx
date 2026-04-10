@@ -90,12 +90,12 @@ export default function QuickAddTask({
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           placeholder={placeholder}
-          className="flex-1 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+          className="flex-1 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white placeholder:text-[#9CA3AF]/60 focus:border-[#B8FF00]/40 focus:outline-none"
         />
         <button
           type="submit"
           disabled={submitting || !title.trim()}
-          className="pointer-events-auto rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="pointer-events-auto rounded-2xl bg-[#B8FF00] px-4 py-3 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Adding...' : buttonLabel}
         </button>

@@ -275,27 +275,27 @@ export default function TaskSlideOver({
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/65">
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#0C0C14]/70">
       <button
         type="button"
         aria-label="Close task panel"
         className="flex-1"
         onClick={onClose}
       />
-      <div className="relative h-full w-full max-w-2xl overflow-y-auto border-l border-slate-800 bg-slate-950 p-6 shadow-2xl">
+      <div className="relative h-full w-full max-w-2xl overflow-y-auto border-l border-[#2A2A3A] bg-[#0C0C14] p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">
               {task ? 'Task detail' : 'New task'}
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-100">
+            <h2 className="mt-2 text-2xl font-semibold text-white">
               {task ? task.title : 'Create a task'}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300"
+            className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#9CA3AF]"
           >
             Close
           </button>
@@ -311,27 +311,27 @@ export default function TaskSlideOver({
             />
           ) : null}
           {task?.updated_at ? (
-            <span className="text-xs text-slate-500">Updated {formatDateTime(task.updated_at)}</span>
+            <span className="text-xs text-[#9CA3AF]">Updated {formatDateTime(task.updated_at)}</span>
           ) : null}
         </div>
 
         <div className="mt-8 space-y-5">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Title</span>
+            <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Title</span>
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
             />
           </label>
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Workstream</span>
+              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Workstream</span>
               <select
                 value={workstreamId}
                 onChange={(event) => setWorkstreamId(event.target.value)}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
               >
                 <option value="">No workstream</option>
                 {workstreams.map((workstream) => (
@@ -343,11 +343,11 @@ export default function TaskSlideOver({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Priority</span>
+              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Priority</span>
               <select
                 value={priority}
                 onChange={(event) => setPriority(event.target.value as TaskPriority)}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
               >
                 {PRIORITIES.map((entry) => (
                   <option key={entry} value={entry}>
@@ -358,7 +358,7 @@ export default function TaskSlideOver({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Due date</span>
+              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Due date</span>
               <input
                 type="date"
                 value={dueDate}
@@ -369,29 +369,29 @@ export default function TaskSlideOver({
                     setDueTime('')
                   }
                 }}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
               />
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-slate-300">Due time</span>
+              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Due time</span>
               <input
                 type="time"
                 value={dueTime}
                 onChange={(event) => setDueTime(event.target.value)}
                 disabled={!dueDate}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3">
+            <label className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3">
               <input
                 type="checkbox"
                 checked={isMasterTodo}
                 onChange={(event) => setIsMasterTodo(event.target.checked)}
-                className="h-4 w-4 rounded border-slate-600 bg-slate-900"
+                className="h-4 w-4 rounded border-[#2A2A3A] bg-[#13131E]"
               />
-              <span className="text-sm text-slate-200">Show on master to-do</span>
+              <span className="text-sm text-[#9CA3AF]">Show on master to-do</span>
             </label>
           </div>
 
@@ -424,31 +424,31 @@ export default function TaskSlideOver({
           />
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Tags</span>
+            <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Tags</span>
             <input
               value={tags}
               onChange={(event) => setTags(event.target.value)}
               placeholder="client, follow-up, launch"
-              className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
             />
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-300">Description</span>
+            <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Description</span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={6}
-              className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
             />
           </label>
         </div>
 
         {task?.id ? (
-          <section className="mt-10 space-y-4 border-t border-slate-800 pt-8">
+          <section className="mt-10 space-y-4 border-t border-[#2A2A3A] pt-8">
             <div>
-              <h3 className="text-lg font-semibold text-slate-100">Notes</h3>
-              <p className="text-sm text-slate-400">Keep task context close to the card.</p>
+              <h3 className="text-lg font-semibold text-white">Notes</h3>
+              <p className="text-sm text-[#9CA3AF]">Keep task context close to the card.</p>
             </div>
 
             <form className="space-y-2" onSubmit={handleAddNote}>
@@ -457,11 +457,11 @@ export default function TaskSlideOver({
                 onChange={(event) => setNoteDraft(event.target.value)}
                 rows={3}
                 placeholder="Add a note..."
-                className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 focus:border-slate-500 focus:outline-none"
+                className="w-full rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
               />
               <button
                 type="submit"
-                className="rounded-2xl border border-slate-700 px-4 py-2 text-sm font-medium text-slate-100"
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-white"
               >
                 Add note
               </button>
@@ -471,17 +471,17 @@ export default function TaskSlideOver({
 
             <div className="space-y-3">
               {notesLoading ? (
-                <p className="text-sm text-slate-500">Loading notes...</p>
+                <p className="text-sm text-[#9CA3AF]">Loading notes...</p>
               ) : notes.length === 0 ? (
-                <p className="rounded-3xl border border-dashed border-slate-800 px-4 py-6 text-sm text-slate-500">
+                <p className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-6 text-sm text-[#9CA3AF]">
                   No notes yet.
                 </p>
               ) : (
                 notes.map((note) => (
-                  <article key={note.id} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-4">
-                    {note.title ? <h4 className="font-medium text-slate-100">{note.title}</h4> : null}
-                    <p className="mt-1 whitespace-pre-wrap text-sm text-slate-300">{note.body}</p>
-                    <p className="mt-3 text-xs text-slate-500">{formatDateTime(note.updated_at)}</p>
+                  <article key={note.id} className="rounded-3xl border border-[#2A2A3A] bg-[#1A1A28] p-4">
+                    {note.title ? <h4 className="font-medium text-white">{note.title}</h4> : null}
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-[#9CA3AF]">{note.body}</p>
+                    <p className="mt-3 text-xs text-[#9CA3AF]">{formatDateTime(note.updated_at)}</p>
                   </article>
                 ))
               )}
@@ -491,7 +491,7 @@ export default function TaskSlideOver({
 
         {error ? <p className="mt-6 text-sm text-rose-300">{error}</p> : null}
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-6">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[#2A2A3A] pt-6">
           <div>
             {task?.id ? (
               <button
@@ -508,7 +508,7 @@ export default function TaskSlideOver({
             type="button"
             onClick={handleSave}
             disabled={saving || !title.trim()}
-            className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-2xl bg-[#B8FF00] px-5 py-3 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? 'Saving...' : task ? 'Save changes' : 'Create task'}
           </button>

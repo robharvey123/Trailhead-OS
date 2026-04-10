@@ -45,11 +45,11 @@ export default function WorkstreamPnL() {
 
   if (loading) {
     return (
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-        <div className="h-5 w-48 animate-pulse rounded bg-slate-800" />
+      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+        <div className="h-5 w-48 animate-pulse rounded bg-[#2A2A3A]" />
         <div className="mt-4 space-y-3">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-10 animate-pulse rounded-xl bg-slate-800/50" />
+            <div key={n} className="h-10 animate-pulse rounded-xl bg-[#2A2A3A]/50" />
           ))}
         </div>
       </div>
@@ -61,13 +61,13 @@ export default function WorkstreamPnL() {
   }
 
   return (
-    <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-      <h2 className="text-lg font-semibold text-slate-100">Workstream P&L</h2>
-      <p className="mt-1 text-sm text-slate-400">Revenue from paid invoices vs. total expenses</p>
+    <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+      <h2 className="text-lg font-semibold text-white">Workstream P&L</h2>
+      <p className="mt-1 text-sm text-[#9CA3AF]">Revenue from paid invoices vs. total expenses</p>
 
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+          <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
             <tr>
               <th className="pb-3">Workstream</th>
               <th className="pb-3 text-right">Revenue</th>
@@ -79,11 +79,11 @@ export default function WorkstreamPnL() {
             {rows.map((row) => {
               const classes = getWorkstreamColourClasses(row.colour ?? row.slug)
               return (
-                <tr key={row.workstream_id || 'unassigned'} className="border-t border-slate-800">
+                <tr key={row.workstream_id || 'unassigned'} className="border-t border-[#2A2A3A]">
                   <td className="py-3">
                     <span className="flex items-center gap-2">
                       <span className={`h-2 w-2 rounded-full ${classes.dot}`} />
-                      <span className="text-slate-100">{row.label}</span>
+                      <span className="text-white">{row.label}</span>
                     </span>
                   </td>
                   <td className="py-3 text-right font-medium text-emerald-300">
@@ -104,8 +104,8 @@ export default function WorkstreamPnL() {
             })}
           </tbody>
           <tfoot>
-            <tr className="border-t-2 border-slate-700">
-              <td className="py-3 font-semibold text-slate-100">Total</td>
+            <tr className="border-t-2 border-[#2A2A3A]">
+              <td className="py-3 font-semibold text-white">Total</td>
               <td className="py-3 text-right font-semibold text-emerald-200">
                 {formatMoney(totals.revenue)}
               </td>

@@ -44,17 +44,17 @@ export default async function AnalyticsWorkspaceLayout({
 
   return (
     <div className="space-y-8">
-      <div className="rounded-3xl border border-slate-800 bg-slate-900/70">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-6 py-6">
+      <div className="rounded-3xl border border-[#2A2A3A] bg-[#1A1A28]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2A2A3A] px-6 py-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">
               Analytics
             </p>
             <h2 className="mt-1 text-lg font-semibold">{workspace.name}</h2>
           </div>
           <Link
             href="/analytics"
-            className="text-xs text-slate-400 hover:text-slate-200"
+            className="text-xs text-[#9CA3AF] hover:text-[#9CA3AF]"
           >
             Switch workspace
           </Link>

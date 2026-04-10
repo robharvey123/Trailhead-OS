@@ -85,10 +85,10 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-[2rem] border p-4 transition ${
+      className={`rounded-lg border p-4 transition ${
         isOver
-          ? 'border-slate-500 bg-slate-900'
-          : 'border-slate-800 bg-slate-900/70'
+          ? 'border-[#B8FF00]/40 bg-[#13131E]'
+          : 'border-[#2A2A3A] bg-[#1A1A28]'
       }`}
     >
       {children}
@@ -216,7 +216,7 @@ export default function WorkstreamBoardClient({
           <button
             type="button"
             onClick={() => setSelectedTask(info.row.original)}
-            className="text-left font-medium text-slate-100 underline-offset-2 hover:underline"
+            className="text-left font-medium text-white underline-offset-2 hover:underline"
           >
             {info.getValue()}
           </button>
@@ -229,7 +229,20 @@ export default function WorkstreamBoardClient({
       }),
       columnHelper.accessor('priority', {
         header: 'Priority',
-        cell: (info) => <PriorityBadge priority={info.getValue()} />,
+        cell: (info) => {
+          const p = info.getValue()
+          const cls =
+            p === 'critical'
+              ? 'text-[#FF6B35] font-bold text-[11px] uppercase tracking-[1px]'
+              : p === 'urgent'
+                ? 'text-[#FF6B35] font-semibold text-[11px] uppercase tracking-[1px]'
+                : p === 'high'
+                  ? 'text-[#FF6B35] text-[11px] uppercase tracking-[1px]'
+                  : p === 'medium'
+                    ? 'text-[#FBBF24] text-[11px] uppercase tracking-[1px]'
+                    : 'text-[#9CA3AF] text-[11px] uppercase tracking-[1px]'
+          return <span className={cls}>{p}</span>
+        },
       }),
       columnHelper.accessor('due_date', {
         header: 'Due',
@@ -243,7 +256,7 @@ export default function WorkstreamBoardClient({
             {info.getValue().map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full border border-slate-700 bg-slate-950 px-2.5 py-1 text-[11px] text-slate-300"
+                className="rounded-full border border-[#2A2A3A] bg-[#0C0C14] px-2.5 py-1 text-[11px] text-[#9CA3AF]"
               >
                 #{tag}
               </span>
@@ -264,15 +277,15 @@ export default function WorkstreamBoardClient({
         <div>
           <div className="flex items-center gap-3">
             <span className={`h-3 w-3 rounded-full ${colourClasses.dot}`} />
-            <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Workstream</p>
+            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Workstream</p>
           </div>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">{workstream.label}</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <h1 className="mt-2 text-3xl font-semibold text-white">{workstream.label}</h1>
+          <p className="mt-2 text-sm text-[#9CA3AF]">
             {tasks.length} task{tasks.length === 1 ? '' : 's'} across {columns.length} columns
           </p>
         </div>
 
-        <div className="inline-flex rounded-2xl border border-slate-800 bg-slate-900/70 p-1">
+        <div className="inline-flex rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-1">
           {(['board', 'list'] as const).map((mode) => (
             <button
               key={mode}
@@ -280,8 +293,8 @@ export default function WorkstreamBoardClient({
               onClick={() => setViewMode(mode)}
               className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
                 viewMode === mode
-                  ? 'bg-slate-100 text-slate-950'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-[#B8FF00]/10 text-[#B8FF00] border border-[#B8FF00]/30'
+                  : 'text-[#9CA3AF] hover:text-white'
               }`}
             >
               {mode}
@@ -309,10 +322,10 @@ export default function WorkstreamBoardClient({
                   <DroppableColumn column={column}>
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
-                        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-200">
+                        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
                           {column.label}
                         </h2>
-                        <p className="mt-1 text-xs text-slate-500">{columnTasks.length} cards</p>
+                        <p className="mt-1 text-xs text-[#9CA3AF]">{columnTasks.length} cards</p>
                       </div>
                     </div>
 
@@ -330,7 +343,7 @@ export default function WorkstreamBoardClient({
                     </SortableContext>
 
                     {columnTasks.length === 0 ? (
-                      <div className="mt-3 rounded-3xl border border-dashed border-slate-800 px-4 py-6 text-center text-sm text-slate-500">
+                      <div className="mt-3 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-6 text-center text-sm text-[#9CA3AF]">
                         Drop a card here
                       </div>
                     ) : null}
@@ -350,7 +363,7 @@ export default function WorkstreamBoardClient({
                         <button
                           type="button"
                           onClick={() => setAddingColumnId(column.id)}
-                          className="relative z-10 w-full rounded-2xl border border-dashed border-slate-700 px-4 py-3 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
+                          className="relative z-10 w-full rounded-2xl border border-dashed border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00]"
                         >
                           Add card
                         </button>
@@ -363,9 +376,9 @@ export default function WorkstreamBoardClient({
           </div>
         </DndContext>
       ) : (
-        <div className="overflow-x-auto rounded-[2rem] border border-slate-800 bg-slate-900/70">
-          <table className="min-w-full divide-y divide-slate-800 text-sm">
-            <thead className="bg-slate-950/80 text-xs uppercase tracking-[0.2em] text-slate-500">
+        <div className="overflow-x-auto rounded-lg border border-[#2A2A3A] bg-[#1A1A28]">
+          <table className="min-w-full divide-y divide-[#2A2A3A] text-sm">
+            <thead className="bg-[#13131E] text-[10px] font-bold uppercase tracking-[1px] text-[#9CA3AF]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -384,9 +397,9 @@ export default function WorkstreamBoardClient({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-[#2A2A3A]">
               {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="text-slate-200">
+                <tr key={row.id} className="text-white hover:bg-[#B8FF00]/[0.025] transition-colors">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 align-top">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

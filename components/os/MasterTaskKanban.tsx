@@ -171,14 +171,14 @@ export default function MasterTaskKanban({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[2rem] border border-slate-800 bg-slate-900/40 px-4 py-3">
-        <p className="text-sm text-slate-400">
-          Drag cards between columns to move tasks across workstreams.
-        </p>
-        {moveError ? (
-          <p className="text-sm text-rose-300">{moveError}</p>
-        ) : (
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3">
+      <p className="text-sm text-[#9CA3AF]">
+        Drag cards between columns to move tasks across workstreams.
+      </p>
+      {moveError ? (
+        <p className="text-sm text-rose-300">{moveError}</p>
+      ) : (
+        <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
             Kanban view
           </p>
         )}
@@ -193,23 +193,23 @@ export default function MasterTaskKanban({
               key={column.id}
               onDrop={(event) => handleDrop(event, column.id)}
               onDragOver={handleDragOver}
-              className="flex min-h-[28rem] w-[20rem] min-w-[20rem] flex-shrink-0 flex-col rounded-[2rem] border border-slate-800 bg-slate-900/70 p-4"
+              className="flex min-h-[28rem] w-[20rem] min-w-[20rem] flex-shrink-0 flex-col rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-4"
             >
-              <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-4">
+              <div className="flex items-start justify-between gap-3 border-b border-[#2A2A3A] pb-4">
                 <div>
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-200">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#9CA3AF]">
                     {column.label}
                   </h2>
-                  <p className="mt-1 text-xs text-slate-500">{column.helper}</p>
+                  <p className="mt-1 text-xs text-white0">{column.helper}</p>
                 </div>
-                <span className="rounded-full border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs text-slate-300">
+                <span className="rounded-full border border-[#2A2A3A] bg-[#0C0C14] px-2.5 py-1 text-xs text-[#9CA3AF]">
                   {columnTasks.length}
                 </span>
               </div>
 
               <div className="mt-4 flex flex-1 flex-col gap-3">
                 {columnTasks.length === 0 ? (
-                  <div className="flex flex-1 items-center justify-center rounded-[1.5rem] border border-dashed border-slate-800 bg-slate-950/50 px-4 text-center text-sm text-slate-500">
+                  <div className="flex flex-1 items-center justify-center rounded-[1.5rem] border border-dashed border-[#2A2A3A] bg-[#13131E] px-4 text-center text-sm text-[#9CA3AF]">
                     Drop a task here
                   </div>
                 ) : (

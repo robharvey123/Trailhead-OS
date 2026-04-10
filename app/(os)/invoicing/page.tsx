@@ -45,7 +45,7 @@ function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]
     )
   }
 
-  return <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-600" />
+  return <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#2A2A3A]" />
 }
 
 export default async function InvoicingPage({
@@ -82,9 +82,9 @@ export default async function InvoicingPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Finance</p>
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Finance</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold text-slate-50">Invoicing</h1>
+            <h1 className="text-3xl font-semibold text-white">Invoicing</h1>
             <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-200">
               Outstanding {formatMoney(outstandingAmount)}
             </span>
@@ -92,7 +92,7 @@ export default async function InvoicingPage({
         </div>
         <Link
           href="/invoicing/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           New invoice
         </Link>
@@ -109,7 +109,7 @@ export default async function InvoicingPage({
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'
+                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
               }`}
             >
               {tab.label}
@@ -118,15 +118,15 @@ export default async function InvoicingPage({
         })}
       </div>
 
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         {invoices.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-700 px-4 py-10 text-center text-sm text-slate-500">
+          <div className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
             No invoices in this view yet.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+              <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
                 <tr>
                   <th className="pb-3">Invoice no.</th>
                   <th className="pb-3">Client</th>
@@ -148,21 +148,21 @@ export default async function InvoicingPage({
                   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
 
                   return (
-                    <tr key={invoice.id} className="border-t border-slate-800">
-                      <td className="py-4 font-medium text-slate-100">{invoice.invoice_number}</td>
-                      <td className="py-4 text-slate-300">
+                    <tr key={invoice.id} className="border-t border-[#2A2A3A]">
+                      <td className="py-4 font-medium text-white">{invoice.invoice_number}</td>
+                      <td className="py-4 text-[#9CA3AF]">
                         {contact ? (
                           <>
                             <p>{invoice.bill_to_name ?? contact.name}</p>
                             {contact.company ? (
-                              <p className="text-xs text-slate-500">{contact.company}</p>
+                              <p className="text-xs text-white0">{contact.company}</p>
                             ) : null}
                           </>
                         ) : invoice.bill_to_name ? (
                           <>
                             <p>{invoice.bill_to_name}</p>
                             {invoice.bill_to_address ? (
-                              <p className="text-xs text-slate-500 line-clamp-2 whitespace-pre-wrap">
+                              <p className="text-xs text-white0 line-clamp-2 whitespace-pre-wrap">
                                 {invoice.bill_to_address}
                               </p>
                             ) : null}
@@ -179,12 +179,12 @@ export default async function InvoicingPage({
                             colour={workstream.colour}
                           />
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-[#9CA3AF]">—</span>
                         )}
                       </td>
-                      <td className="py-4 text-slate-300">{invoice.issue_date}</td>
-                      <td className="py-4 text-slate-300">{invoice.due_date ?? '—'}</td>
-                      <td className="py-4 text-right font-medium text-slate-100">
+                      <td className="py-4 text-[#9CA3AF]">{invoice.issue_date}</td>
+                      <td className="py-4 text-[#9CA3AF]">{invoice.due_date ?? '—'}</td>
+                      <td className="py-4 text-right font-medium text-white">
                         {formatMoney(totals.total)}
                       </td>
                       <td className="py-4">
@@ -201,7 +201,7 @@ export default async function InvoicingPage({
                           </Link>
                           <a
                             href={`/api/invoices/${invoice.id}/pdf`}
-                            className="text-slate-300 hover:text-white"
+                            className="text-[#9CA3AF] hover:text-white"
                           >
                             Download PDF
                           </a>

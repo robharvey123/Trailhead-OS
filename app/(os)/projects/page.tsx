@@ -47,31 +47,31 @@ export default async function ProjectsPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Delivery</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">
-            Projects <span className="text-slate-500">({projects.length})</span>
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Delivery</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">
+            Projects <span className="text-white0">({projects.length})</span>
           </h1>
         </div>
         <Link
           href="/projects/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           New project
         </Link>
       </div>
 
-      <form className="grid gap-3 rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
         <input
           type="text"
           name="search"
           defaultValue={search}
           placeholder="Search by project name or summary"
-          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         />
         <select
           name="workstream_id"
           defaultValue={workstreamId}
-          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         >
           <option value="">All workstreams</option>
           {workstreams.map((workstream) => (
@@ -82,7 +82,7 @@ export default async function ProjectsPage({
         </select>
         <button
           type="submit"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           Apply
         </button>
@@ -111,7 +111,7 @@ export default async function ProjectsPage({
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'
+                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
               }`}
             >
               {tab.label}
@@ -121,7 +121,7 @@ export default async function ProjectsPage({
       </div>
 
       {projects.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-slate-700 px-4 py-10 text-center text-sm text-slate-500">
+        <div className="rounded-[2rem] border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
           No projects match this view yet.
         </div>
       ) : (

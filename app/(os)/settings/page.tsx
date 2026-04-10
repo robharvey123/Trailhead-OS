@@ -90,9 +90,9 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-slate-500">System</p>
-        <h1 className="mt-2 text-3xl font-semibold text-slate-50">Settings</h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-400">
+        <p className="text-xs uppercase tracking-[0.32em] text-white0">System</p>
+        <h1 className="mt-2 text-3xl font-semibold text-white">Settings</h1>
+        <p className="mt-2 max-w-2xl text-sm text-[#9CA3AF]">
           A control panel for the core OS surfaces, live workspace settings, and the current signed-in account.
         </p>
       </div>
@@ -102,12 +102,12 @@ export default async function SettingsPage() {
         paidInvoicesThisMonth={paidInvoicesThisMonth}
       />
 
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Company</p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-100">Email footer details</h2>
-            <p className="mt-2 max-w-2xl text-sm text-slate-400">
+            <p className="text-xs uppercase tracking-[0.24em] text-white0">Company</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Email footer details</h2>
+            <p className="mt-2 max-w-2xl text-sm text-[#9CA3AF]">
               Set the legal company details appended to outbound invoice, quote, and enquiry emails.
             </p>
           </div>
@@ -127,68 +127,68 @@ export default async function SettingsPage() {
       <WorkstreamSettings initialWorkstreams={workstreams} />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
-        <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Account</p>
-          <h2 className="mt-2 text-xl font-semibold text-slate-100">Signed-in access</h2>
+        <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+          <p className="text-xs uppercase tracking-[0.24em] text-white0">Account</p>
+          <h2 className="mt-2 text-xl font-semibold text-white">Signed-in access</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Email</p>
-              <p className="mt-2 text-sm text-slate-100">{user?.email ?? 'Unknown user'}</p>
+            <div className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-white0">Email</p>
+              <p className="mt-2 text-sm text-white">{user?.email ?? 'Unknown user'}</p>
             </div>
-            <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Workspace count</p>
-              <p className="mt-2 text-sm text-slate-100">{workspaces.length}</p>
+            <div className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-white0">Workspace count</p>
+              <p className="mt-2 text-sm text-white">{workspaces.length}</p>
             </div>
-            <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">New enquiries</p>
-              <p className="mt-2 text-sm text-slate-100">{newEnquiryCount}</p>
+            <div className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-white0">New enquiries</p>
+              <p className="mt-2 text-sm text-white">{newEnquiryCount}</p>
             </div>
-            <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Draft invoices</p>
-              <p className="mt-2 text-sm text-slate-100">{draftInvoiceCount}</p>
+            <div className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-white0">Draft invoices</p>
+              <p className="mt-2 text-sm text-white">{draftInvoiceCount}</p>
             </div>
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Shortcuts</p>
-          <h2 className="mt-2 text-xl font-semibold text-slate-100">Core OS areas</h2>
+        <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+          <p className="text-xs uppercase tracking-[0.24em] text-white0">Shortcuts</p>
+          <h2 className="mt-2 text-xl font-semibold text-white">Core OS areas</h2>
           <div className="mt-5 grid gap-3">
-            <Link href="/analytics" className="rounded-3xl border border-slate-800 bg-slate-950/70 px-4 py-4 text-sm text-slate-200 transition hover:border-slate-600">
+            <Link href="/analytics" className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-4 text-sm text-[#9CA3AF] transition hover:border-[#2A2A3A]">
               Analytics workspace list
             </Link>
-            <Link href="/crm/contacts" className="rounded-3xl border border-slate-800 bg-slate-950/70 px-4 py-4 text-sm text-slate-200 transition hover:border-slate-600">
+            <Link href="/crm/contacts" className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-4 text-sm text-[#9CA3AF] transition hover:border-[#2A2A3A]">
               CRM contacts ({contactsCount})
             </Link>
-            <Link href="/enquiries" className="rounded-3xl border border-slate-800 bg-slate-950/70 px-4 py-4 text-sm text-slate-200 transition hover:border-slate-600">
+            <Link href="/enquiries" className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-4 text-sm text-[#9CA3AF] transition hover:border-[#2A2A3A]">
               Enquiries inbox
             </Link>
-            <Link href="/invoicing" className="rounded-3xl border border-slate-800 bg-slate-950/70 px-4 py-4 text-sm text-slate-200 transition hover:border-slate-600">
+            <Link href="/invoicing" className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-4 text-sm text-[#9CA3AF] transition hover:border-[#2A2A3A]">
               Invoicing
             </Link>
           </div>
         </section>
       </div>
 
-      <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Analytics</p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-100">Workspace settings</h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <p className="text-xs uppercase tracking-[0.24em] text-white0">Analytics</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Workspace settings</h2>
+            <p className="mt-2 text-sm text-[#9CA3AF]">
               Jump straight into any analytics workspace configuration surface.
             </p>
           </div>
           <Link
             href="/analytics"
-            className="rounded-2xl border border-slate-700 px-4 py-2 text-sm text-slate-200 transition hover:border-slate-500 hover:text-white"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-white"
           >
             Open workspace list
           </Link>
         </div>
 
         {workspaces.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-dashed border-slate-700 px-4 py-10 text-center text-sm text-slate-500">
+          <div className="mt-6 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
             No analytics workspaces yet.
           </div>
         ) : (
@@ -197,10 +197,10 @@ export default async function SettingsPage() {
               <Link
                 key={workspace.id}
                 href={`/analytics/${workspace.id}/settings`}
-                className="rounded-3xl border border-slate-800 bg-slate-950/70 px-4 py-4 transition hover:border-slate-600"
+                className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-4 transition hover:border-[#2A2A3A]"
               >
-                <p className="text-sm font-medium text-slate-100">{workspace.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                <p className="text-sm font-medium text-white">{workspace.name}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white0">
                   Workspace settings
                 </p>
               </Link>

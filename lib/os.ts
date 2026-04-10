@@ -1,95 +1,124 @@
 const WORKSTREAM_SLUG_COLOURS: Record<string, string> = {
-  'brand-sales': 'teal',
-  ecommerce: 'amber',
-  'app-dev': 'purple',
-  'mvp-cricket': 'green',
-  consulting: 'coral',
-  personal: 'blue',
+  'brand-sales': 'brand-sales',
+  ecommerce: 'ecommerce',
+  'app-dev': 'app-dev',
+  'mvp-cricket': 'mvp-cricket',
+  consulting: 'consulting',
+  personal: 'personal',
+}
+
+/* Reverse map: legacy colour name → slug (for components that pass workstream.colour) */
+const WORKSTREAM_COLOUR_TO_SLUG: Record<string, string> = {
+  teal: 'brand-sales',
+  amber: 'ecommerce',
+  purple: 'app-dev',
+  green: 'mvp-cricket',
+  coral: 'consulting',
+  blue: 'personal',
 }
 
 const WORKSTREAM_COLOUR_TOKENS: Record<
   string,
-  { dot: string; badge: string; card: string }
+  { dot: string; badge: string; card: string; header: string; hex: string }
 > = {
-  teal: {
-    dot: 'bg-teal-400',
-    badge: 'border-teal-500/30 bg-teal-500/10 text-teal-200',
-    card: 'border-teal-500/20 bg-gradient-to-br from-teal-500/10 via-slate-900 to-slate-950',
+  'brand-sales': {
+    dot: 'bg-purple-400',
+    badge: 'border-purple-500/30 bg-purple-500/10 text-purple-300',
+    card: 'border-purple-500/20 bg-gradient-to-br from-purple-500/10 via-[#1A1A28] to-[#0C0C14]',
+    header: 'text-purple-400',
+    hex: '#A78BFA',
   },
-  amber: {
-    dot: 'bg-amber-400',
-    badge: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-    card: 'border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-slate-900 to-slate-950',
+  ecommerce: {
+    dot: 'bg-orange-400',
+    badge: 'border-orange-500/30 bg-orange-500/10 text-orange-300',
+    card: 'border-orange-500/20 bg-gradient-to-br from-orange-500/10 via-[#1A1A28] to-[#0C0C14]',
+    header: 'text-orange-400',
+    hex: '#FF6B35',
   },
-  purple: {
-    dot: 'bg-fuchsia-400',
-    badge: 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-200',
-    card: 'border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/10 via-slate-900 to-slate-950',
+  'app-dev': {
+    dot: 'bg-blue-400',
+    badge: 'border-blue-500/30 bg-blue-500/10 text-blue-300',
+    card: 'border-blue-500/20 bg-gradient-to-br from-blue-500/10 via-[#1A1A28] to-[#0C0C14]',
+    header: 'text-blue-400',
+    hex: '#4B9FFF',
   },
-  green: {
+  'mvp-cricket': {
     dot: 'bg-emerald-400',
-    badge: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-    card: 'border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-slate-950',
+    badge: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+    card: 'border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-[#1A1A28] to-[#0C0C14]',
+    header: 'text-emerald-400',
+    hex: '#34D399',
   },
-  coral: {
-    dot: 'bg-rose-400',
-    badge: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
-    card: 'border-rose-500/20 bg-gradient-to-br from-rose-500/10 via-slate-900 to-slate-950',
+  consulting: {
+    dot: 'bg-pink-400',
+    badge: 'border-pink-500/30 bg-pink-500/10 text-pink-300',
+    card: 'border-pink-500/20 bg-gradient-to-br from-pink-500/10 via-[#1A1A28] to-[#0C0C14]',
+    header: 'text-pink-400',
+    hex: '#FF4081',
   },
-  blue: {
-    dot: 'bg-sky-400',
-    badge: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    card: 'border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-slate-900 to-slate-950',
+  personal: {
+    dot: 'bg-[#B8FF00]',
+    badge: 'border-[#B8FF00]/30 bg-[#B8FF00]/10 text-[#B8FF00]',
+    card: 'border-[#B8FF00]/20 bg-gradient-to-br from-[#B8FF00]/10 via-[#1A1A28] to-[#0C0C14]',
+    header: 'text-[#B8FF00]',
+    hex: '#B8FF00',
   },
-  slate: {
+  default: {
     dot: 'bg-slate-400',
-    badge: 'border-slate-600/50 bg-slate-800/80 text-slate-200',
-    card: 'border-slate-700 bg-slate-900/80',
+    badge: 'border-slate-600/50 bg-slate-800/80 text-slate-300',
+    card: 'border-[#2A2A3A] bg-[#1A1A28]',
+    header: 'text-slate-400',
+    hex: '#9CA3AF',
   },
-}
-
-const WORKSTREAM_ACCENT_HEX: Record<string, string> = {
-  teal: '#1D9E75',
-  amber: '#BA7517',
-  purple: '#534AB7',
-  green: '#639922',
-  coral: '#D85A30',
-  blue: '#2563EB',
-  slate: '#888780',
 }
 
 const PRIORITY_TOKENS: Record<string, string> = {
-  low: 'border-slate-600/60 bg-slate-800/80 text-slate-200',
-  medium: 'border-amber-300/40 bg-amber-300/10 text-amber-100',
-  high: 'border-orange-400/40 bg-orange-400/10 text-orange-100',
-  urgent: 'border-rose-500/40 bg-rose-500/10 text-rose-100',
-  critical: 'border-red-500/40 bg-red-500/10 text-red-100',
+  low: 'border-slate-600/50 bg-slate-800/60 text-slate-400',
+  medium: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
+  high: 'border-orange-500/30 bg-orange-500/10 text-orange-300',
+  urgent: 'border-orange-400/50 bg-orange-400/15 text-orange-200',
+  critical: 'border-[#FF6B35]/60 bg-[#FF6B35]/20 text-[#FF6B35] font-bold',
 }
 
 const TASK_STATUS_TOKENS: Record<string, string> = {
-  todo: 'border-slate-500/40 bg-slate-500/10 text-slate-200',
-  in_progress: 'border-blue-500/40 bg-blue-500/10 text-blue-100',
-  blocked: 'border-red-400/40 bg-red-400/10 text-red-100',
-  done: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100',
-  cancelled: 'border-slate-300/30 bg-slate-300/10 text-slate-300 line-through',
+  todo: 'border-slate-600/50 bg-slate-800/60 text-slate-400',
+  in_progress: 'border-blue-500/30 bg-blue-500/10 text-blue-300',
+  blocked: 'border-[#FF4081]/40 bg-[#FF4081]/10 text-[#FF4081]',
+  done: 'border-[#34D399]/30 bg-[#34D399]/10 text-[#34D399]',
+  cancelled: 'border-slate-600/30 bg-slate-800/40 text-slate-500 line-through',
 }
 
 export function resolveWorkstreamColour(value?: string | null) {
   if (!value) {
-    return 'slate'
+    return 'default'
   }
 
-  return WORKSTREAM_SLUG_COLOURS[value] ?? value
+  // Direct slug match
+  if (value in WORKSTREAM_COLOUR_TOKENS) {
+    return value
+  }
+
+  // Legacy slug → slug lookup
+  if (value in WORKSTREAM_SLUG_COLOURS) {
+    return WORKSTREAM_SLUG_COLOURS[value]
+  }
+
+  // Legacy colour name → slug lookup
+  if (value in WORKSTREAM_COLOUR_TO_SLUG) {
+    return WORKSTREAM_COLOUR_TO_SLUG[value]
+  }
+
+  return 'default'
 }
 
 export function getWorkstreamColourClasses(value?: string | null) {
-  const colour = resolveWorkstreamColour(value)
-  return WORKSTREAM_COLOUR_TOKENS[colour] ?? WORKSTREAM_COLOUR_TOKENS.slate
+  const slug = resolveWorkstreamColour(value)
+  return WORKSTREAM_COLOUR_TOKENS[slug] ?? WORKSTREAM_COLOUR_TOKENS.default
 }
 
 export function getWorkstreamAccentHex(value?: string | null) {
-  const colour = resolveWorkstreamColour(value)
-  return WORKSTREAM_ACCENT_HEX[colour] ?? WORKSTREAM_ACCENT_HEX.slate
+  const classes = getWorkstreamColourClasses(value)
+  return classes.hex
 }
 
 export function getPriorityClasses(priority?: string | null) {

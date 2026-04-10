@@ -47,32 +47,32 @@ export default async function ContactsPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Clients</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">Contacts</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">Contacts</h1>
+          <p className="mt-2 text-sm text-[#9CA3AF]">
             Lead and client relationships across Trailhead OS.
           </p>
         </div>
         <Link
           href="/crm/contacts/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           New contact
         </Link>
       </div>
 
-      <form className="grid gap-3 rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
         <input
           type="text"
           name="search"
           defaultValue={search}
           placeholder="Search contacts"
-          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         />
         <select
           name="account_id"
           defaultValue={accountId}
-          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         >
           <option value="">All accounts</option>
           {accounts.map((account) => (
@@ -83,7 +83,7 @@ export default async function ContactsPage({
         </select>
         <button
           type="submit"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           Search
         </button>
@@ -111,7 +111,7 @@ export default async function ContactsPage({
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'
+                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
               }`}
             >
               {tab.label}
@@ -120,15 +120,15 @@ export default async function ContactsPage({
         })}
       </div>
 
-      <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         {contacts.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-700 px-4 py-10 text-center text-sm text-slate-500">
+          <div className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
             No contacts match this view yet.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+              <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
                 <tr>
                   <th className="pb-3">Name</th>
                   <th className="pb-3">Account</th>
@@ -145,19 +145,19 @@ export default async function ContactsPage({
                     accounts.find((item) => item.id === contact.account_id) ?? null
 
                   return (
-                    <tr key={contact.id} className="border-t border-slate-800">
+                    <tr key={contact.id} className="border-t border-[#2A2A3A]">
                       <td className="py-4">
                         <Link
                           href={`/crm/contacts/${contact.id}`}
-                          className="font-medium text-slate-100 hover:text-white hover:underline"
+                          className="font-medium text-white hover:text-white hover:underline"
                         >
                           {contact.name}
                         </Link>
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs text-white0">
                           {contact.email ?? contact.phone ?? 'No email or phone'}
                         </p>
                       </td>
-                      <td className="py-4 text-slate-300">{account?.name ?? '—'}</td>
+                      <td className="py-4 text-[#9CA3AF]">{account?.name ?? '—'}</td>
                       <td className="py-4">
                         {workstream ? (
                           <WorkstreamBadge
@@ -166,10 +166,10 @@ export default async function ContactsPage({
                             colour={workstream.colour}
                           />
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-[#9CA3AF]">—</span>
                         )}
                       </td>
-                      <td className="py-4 text-slate-300">{contact.role ?? '—'}</td>
+                      <td className="py-4 text-[#9CA3AF]">{contact.role ?? '—'}</td>
                       <td className="py-4">
                         <StatusBadge status={contact.status} kind="contact" />
                       </td>

@@ -74,8 +74,8 @@ export default function UnbilledExpensesWidget({
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-slate-700 bg-slate-950/50 p-4">
-        <div className="h-4 w-40 animate-pulse rounded bg-slate-800" />
+      <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
+        <div className="h-4 w-40 animate-pulse rounded bg-[#2A2A3A]" />
       </div>
     )
   }
@@ -91,12 +91,12 @@ export default function UnbilledExpensesWidget({
           {expenses.length} unbilled expense{expenses.length !== 1 ? 's' : ''} totalling{' '}
           {formatMoney(expenses.reduce((sum, e) => sum + Number(e.amount), 0))}
         </p>
-        <label className="flex items-center gap-2 text-xs text-slate-400">
+        <label className="flex items-center gap-2 text-xs text-[#9CA3AF]">
           <input
             type="checkbox"
             checked={selectedIds.size === expenses.length && expenses.length > 0}
             onChange={toggleAll}
-            className="h-4 w-4 rounded border-slate-600 bg-slate-950 text-sky-500 focus:ring-sky-500"
+            className="h-4 w-4 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
           />
           Select all
         </label>
@@ -106,17 +106,17 @@ export default function UnbilledExpensesWidget({
         {expenses.map((expense) => (
           <label
             key={expense.id}
-            className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-slate-800/50"
+            className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[#2A2A3A]/50"
           >
             <input
               type="checkbox"
               checked={selectedIds.has(expense.id)}
               onChange={() => toggleExpense(expense.id)}
-              className="h-4 w-4 rounded border-slate-600 bg-slate-950 text-sky-500 focus:ring-sky-500"
+              className="h-4 w-4 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
             />
-            <span className="flex-1 text-sm text-slate-300">{expense.description}</span>
-            <span className="text-xs text-slate-500">{expense.date}</span>
-            <span className="text-sm font-medium text-slate-100">
+            <span className="flex-1 text-sm text-[#9CA3AF]">{expense.description}</span>
+            <span className="text-xs text-white0">{expense.date}</span>
+            <span className="text-sm font-medium text-white">
               {formatMoney(Number(expense.amount))}
             </span>
           </label>
@@ -124,9 +124,9 @@ export default function UnbilledExpensesWidget({
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-          <p className="text-sm text-slate-400">
-            Selected: <span className="font-medium text-slate-100">{formatMoney(selectedTotal)}</span>
+        <div className="flex items-center justify-between pt-2 border-t border-[#2A2A3A]">
+          <p className="text-sm text-[#9CA3AF]">
+            Selected: <span className="font-medium text-white">{formatMoney(selectedTotal)}</span>
           </p>
           <button
             type="button"

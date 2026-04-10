@@ -51,25 +51,25 @@ export default async function QuotesPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-slate-500">Commercial</p>
-          <h1 className="mt-2 text-3xl font-semibold text-slate-50">Quotes</h1>
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">Commercial</p>
+          <h1 className="mt-2 text-3xl font-semibold text-white">Quotes</h1>
         </div>
         <Link
           href="/quotes/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
         >
           New quote
         </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Sent quote value</p>
-          <p className="mt-3 text-2xl font-semibold text-slate-50">{formatMoney(sentValue)}</p>
+        <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-5">
+          <p className="text-xs uppercase tracking-[0.2em] text-white0">Sent quote value</p>
+          <p className="mt-3 text-2xl font-semibold text-white">{formatMoney(sentValue)}</p>
         </div>
-        <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Accepted this month</p>
-          <p className="mt-3 text-2xl font-semibold text-slate-50">{acceptedThisMonth}</p>
+        <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-5">
+          <p className="text-xs uppercase tracking-[0.2em] text-white0">Accepted this month</p>
+          <p className="mt-3 text-2xl font-semibold text-white">{acceptedThisMonth}</p>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ export default async function QuotesPage({
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white'
+                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
               }`}
             >
               {tab.label}
@@ -93,14 +93,14 @@ export default async function QuotesPage({
         })}
       </div>
 
-      <div className="overflow-x-auto rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+      <div className="overflow-x-auto rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
         {quotes.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-700 px-4 py-10 text-center text-sm text-slate-500">
+          <div className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
             No quotes in this view yet.
           </div>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+            <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
               <tr>
                 <th className="pb-3">Quote no.</th>
                 <th className="pb-3">Title</th>
@@ -114,11 +114,11 @@ export default async function QuotesPage({
             </thead>
             <tbody>
               {quotes.map((quote) => (
-                <tr key={quote.id} className="border-t border-slate-800">
-                  <td className="py-4 font-medium text-slate-100">{quote.quote_number}</td>
-                  <td className="py-4 text-slate-300">{quote.title}</td>
-                  <td className="py-4 text-slate-300">{quote.account_name ?? '—'}</td>
-                  <td className="py-4 text-slate-300">{quote.contact_name ?? '—'}</td>
+                <tr key={quote.id} className="border-t border-[#2A2A3A]">
+                  <td className="py-4 font-medium text-white">{quote.quote_number}</td>
+                  <td className="py-4 text-[#9CA3AF]">{quote.title}</td>
+                  <td className="py-4 text-[#9CA3AF]">{quote.account_name ?? '—'}</td>
+                  <td className="py-4 text-[#9CA3AF]">{quote.contact_name ?? '—'}</td>
                   <td className="py-4">
                     {quote.workstream ? (
                       <WorkstreamBadge
@@ -127,10 +127,10 @@ export default async function QuotesPage({
                         colour={quote.workstream.colour}
                       />
                     ) : (
-                      <span className="text-slate-400">—</span>
+                      <span className="text-[#9CA3AF]">—</span>
                     )}
                   </td>
-                  <td className="py-4 text-right font-medium text-slate-100">{formatMoney(quote.totals.total)}</td>
+                  <td className="py-4 text-right font-medium text-white">{formatMoney(quote.totals.total)}</td>
                   <td className="py-4">
                     <StatusBadge status={quote.status} kind="quote" />
                   </td>
@@ -139,7 +139,7 @@ export default async function QuotesPage({
                       <Link href={`/quotes/${quote.id}`} className="text-sky-300 hover:text-sky-200">
                         View
                       </Link>
-                      <a href={`/api/quotes/${quote.id}/pdf`} className="text-slate-300 hover:text-white">
+                      <a href={`/api/quotes/${quote.id}/pdf`} className="text-[#9CA3AF] hover:text-white">
                         Download PDF
                       </a>
                     </div>

@@ -52,7 +52,7 @@ function StatusBadge({
       className={`rounded-full border px-3 py-1 text-xs font-medium ${
         connected
           ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
-          : 'border-slate-700 bg-slate-950/70 text-slate-300'
+          : 'border-[#2A2A3A] bg-[#13131E] text-[#9CA3AF]'
       }`}
     >
       {label}
@@ -163,23 +163,23 @@ export default function SettingsIntegrations({
   }
 
   return (
-    <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6">
+    <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Integrations</p>
-        <h2 className="mt-2 text-xl font-semibold text-slate-100">External services</h2>
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="text-xs uppercase tracking-[0.24em] text-white0">Integrations</p>
+        <h2 className="mt-2 text-xl font-semibold text-white">External services</h2>
+        <p className="mt-2 text-sm text-[#9CA3AF]">
           Connect Google Calendar and Stripe to keep scheduling and payments in sync.
         </p>
       </div>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-2">
-        <article className="rounded-[1.75rem] border border-slate-800 bg-slate-950/70 p-5">
+        <article className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <GoogleIcon />
               <div>
-                <h3 className="text-base font-semibold text-slate-100">Google Calendar</h3>
-                <p className="mt-1 text-sm text-slate-400">
+                <h3 className="text-base font-semibold text-white">Google Calendar</h3>
+                <p className="mt-1 text-sm text-[#9CA3AF]">
                   Sync your Trailhead OS calendar with Google Calendar
                 </p>
               </div>
@@ -193,13 +193,13 @@ export default function SettingsIntegrations({
           <div className="mt-5 space-y-3">
             {googleConnected ? (
               <>
-                <p className="text-sm text-slate-200">{googleEmail}</p>
+                <p className="text-sm text-[#9CA3AF]">{googleEmail}</p>
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => void syncCalendar()}
                     disabled={loadingAction !== null}
-                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:opacity-60"
+                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
                   >
                     {loadingAction === 'calendar' ? 'Syncing...' : 'Sync calendar now'}
                   </button>
@@ -216,7 +216,7 @@ export default function SettingsIntegrations({
             ) : (
               <Link
                 href="/api/auth/google"
-                className="inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+                className="inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
               >
                 Connect Google Calendar
               </Link>
@@ -224,13 +224,13 @@ export default function SettingsIntegrations({
           </div>
         </article>
 
-        <article className="rounded-[1.75rem] border border-slate-800 bg-slate-950/70 p-5">
+        <article className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <StripeIcon />
               <div>
-                <h3 className="text-base font-semibold text-slate-100">Stripe Payments</h3>
-                <p className="mt-1 text-sm text-slate-400">
+                <h3 className="text-base font-semibold text-white">Stripe Payments</h3>
+                <p className="mt-1 text-sm text-[#9CA3AF]">
                   Send payment links and track payments
                 </p>
               </div>
@@ -241,15 +241,15 @@ export default function SettingsIntegrations({
           <div className="mt-5 space-y-3">
             {stripeConnected ? (
               <>
-                <p className="text-sm text-slate-200">Payments enabled</p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-[#9CA3AF]">Payments enabled</p>
+                <p className="text-sm text-[#9CA3AF]">
                   Paid invoices this month: {paidInvoicesThisMonth}
                   {stripeCurrency ? ` · ${stripeCurrency.toUpperCase()}` : ''}
                 </p>
               </>
             ) : (
               <>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-[#9CA3AF]">
                   Add Stripe keys in Netlify environment variables.
                 </p>
                 <Link

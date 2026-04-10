@@ -53,16 +53,16 @@ function SortableChecklistRow({
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
-      className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-3 py-3"
+      className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-3 py-3"
     >
-      <button type="button" {...attributes} {...listeners} className="cursor-grab text-slate-500 active:cursor-grabbing">
+      <button type="button" {...attributes} {...listeners} className="cursor-grab text-[#9CA3AF] active:cursor-grabbing">
         ::
       </button>
       <input type="checkbox" checked={item.is_complete} onChange={onToggle} />
       <input
         value={item.title}
         onChange={(event) => onTitleChange(event.target.value)}
-        className="flex-1 bg-transparent text-sm text-slate-100 outline-none"
+        className="flex-1 bg-transparent text-sm text-white outline-none"
       />
       <button type="button" onClick={onDelete} className="text-xs text-rose-300">
         Delete
@@ -86,15 +86,15 @@ function SortableSubtaskRow({
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
-      className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-3 py-3"
+      className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-3 py-3"
     >
-      <button type="button" {...attributes} {...listeners} className="cursor-grab text-slate-500 active:cursor-grabbing">
+      <button type="button" {...attributes} {...listeners} className="cursor-grab text-[#9CA3AF] active:cursor-grabbing">
         ::
       </button>
       <input type="checkbox" checked={task.status === 'done'} onChange={onToggle} />
       <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">
-        <p className="truncate text-sm font-medium text-slate-100">{task.title}</p>
-        <p className="mt-1 text-xs text-slate-500">{task.owner ?? 'Unassigned'} {task.due_date ? `· ${formatTaskDate(task.due_date)}` : ''}</p>
+        <p className="truncate text-sm font-medium text-white">{task.title}</p>
+        <p className="mt-1 text-xs text-[#9CA3AF]">{task.owner ?? 'Unassigned'} {task.due_date ? `· ${formatTaskDate(task.due_date)}` : ''}</p>
       </button>
       <PriorityBadge priority={task.priority} />
       <span className={`rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.18em] ${getTaskStatusClasses(task.status)}`}>
@@ -619,14 +619,14 @@ export default function ProjectTaskPanel({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <aside className="fixed right-0 top-0 z-50 h-screen w-full max-w-[560px] translate-x-0 overflow-y-auto border-l border-white/10 bg-slate-950 shadow-2xl transition-transform duration-300">
-        <div className="sticky top-0 z-10 border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_28%),linear-gradient(180deg,rgba(15,23,42,0.98),rgba(15,23,42,0.92))] px-5 py-4 backdrop-blur">
+      <div className="fixed inset-0 z-40 bg-[#0C0C14]/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <aside className="fixed right-0 top-0 z-50 h-screen w-full max-w-[560px] translate-x-0 overflow-y-auto border-l border-[#2A2A3A] bg-[#0C0C14] shadow-2xl transition-transform duration-300">
+        <div className="sticky top-0 z-10 border-b border-[#2A2A3A] bg-[#1A1A28] px-5 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <div className="mb-2 flex items-center gap-2 text-xs text-slate-500">
+              <div className="mb-2 flex items-center gap-2 text-xs text-[#9CA3AF]">
                 {taskStack.length > 1 ? (
-                  <button type="button" onClick={onBack} className="rounded-full border border-slate-700 px-2 py-1 text-slate-300">
+                  <button type="button" onClick={onBack} className="rounded-full border border-[#2A2A3A] px-2 py-1 text-[#9CA3AF]">
                     Back
                   </button>
                 ) : null}
@@ -642,15 +642,15 @@ export default function ProjectTaskPanel({
                 value={currentTask.title}
                 onChange={(event) => onTaskSaved({ ...currentTask, title: event.target.value })}
                 onBlur={(event) => void saveTaskPatch({ title: event.target.value })}
-                className="w-full bg-transparent text-2xl font-semibold text-slate-900 outline-none dark:text-slate-100"
+                className="w-full bg-transparent text-2xl font-semibold text-white outline-none"
               />
               {parentTask ? (
-                <button type="button" onClick={() => onOpenTask(parentTask.id)} className="mt-2 text-sm text-sky-300 hover:text-sky-200">
+                <button type="button" onClick={() => onOpenTask(parentTask.id)} className="mt-2 text-sm text-[#B8FF00] hover:text-[#B8FF00]/80">
                   Parent: {parentTask.title}
                 </button>
               ) : null}
             </div>
-            <button type="button" onClick={onClose} className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-[0.18em] text-slate-300">
+            <button type="button" onClick={onClose} className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#9CA3AF]">
               Close
             </button>
           </div>
@@ -660,21 +660,21 @@ export default function ProjectTaskPanel({
               {currentTask.status.replace('_', ' ')}
             </span>
             <PriorityBadge priority={currentTask.priority} />
-            <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-300">
+            <span className="inline-flex rounded-full border border-[#2A2A3A] bg-white/5 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-[#9CA3AF]">
               {timeLogged.toFixed(1)}h logged
             </span>
-            <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-300">
+            <span className="inline-flex rounded-full border border-[#2A2A3A] bg-white/5 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-[#9CA3AF]">
               {estimated.toFixed(1)}h estimated
             </span>
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Status</span>
               <select
                 value={currentTask.status}
                 onChange={(event) => void saveTaskPatch({ status: event.target.value })}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -684,12 +684,12 @@ export default function ProjectTaskPanel({
               </select>
             </label>
 
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Priority</span>
               <select
                 value={currentTask.priority}
                 onChange={(event) => void saveTaskPatch({ priority: event.target.value })}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               >
                 {PRIORITY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -701,52 +701,52 @@ export default function ProjectTaskPanel({
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Owner</span>
               <input
                 defaultValue={currentTask.owner ?? ''}
                 onBlur={(event) => void saveTaskPatch({ owner: event.target.value.trim() || null })}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               />
             </label>
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Start date</span>
               <input
                 type="date"
                 value={currentTask.start_date ?? ''}
                 onChange={(event) => onTaskSaved({ ...currentTask, start_date: event.target.value || null })}
                 onBlur={(event) => void saveTaskPatch({ start_date: event.target.value || null })}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               />
             </label>
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Due date</span>
               <input
                 type="date"
                 value={currentTask.due_date ?? ''}
                 onChange={(event) => onTaskSaved({ ...currentTask, due_date: event.target.value || null })}
                 onBlur={(event) => void saveTaskPatch({ due_date: event.target.value || null })}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               />
             </label>
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Estimated hours</span>
               <input
                 type="number"
                 min="0"
                 defaultValue={currentTask.estimated_hours ?? ''}
                 onBlur={(event) => void saveTaskPatch({ estimated_hours: event.target.value ? Number(event.target.value) : null })}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               />
             </label>
-            <label className="space-y-2 text-sm text-slate-300">
+            <label className="space-y-2 text-sm text-[#9CA3AF]">
               <span>Actual hours</span>
               <input
                 type="number"
                 min="0"
                 defaultValue={currentTask.actual_hours ?? ''}
                 onBlur={(event) => void saveTaskPatch({ actual_hours: event.target.value ? Number(event.target.value) : null })}
-                className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
               />
             </label>
           </div>
@@ -754,7 +754,7 @@ export default function ProjectTaskPanel({
           {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
         </div>
 
-        <div className="bg-[linear-gradient(180deg,rgba(15,23,42,0.55),rgba(2,6,23,0.2))] px-5 py-5">
+        <div className="bg-[#0C0C14] px-5 py-5">
           <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <button
@@ -763,8 +763,8 @@ export default function ProjectTaskPanel({
                 onClick={() => setActiveTab(tab.id)}
                 className={`rounded-full border px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ${
                   activeTab === tab.id
-                    ? tab.accent ?? 'border-white/30 bg-white/10 text-slate-100'
-                    : 'border-slate-700 text-slate-400 hover:text-slate-200'
+                    ? tab.accent ?? 'border-[#B8FF00]/30 bg-[#B8FF00]/10 text-[#B8FF00]'
+                    : 'border-[#2A2A3A] text-[#9CA3AF] hover:text-white'
                 }`}
               >
                 {tab.label}
@@ -776,25 +776,25 @@ export default function ProjectTaskPanel({
             {activeTab === 'overview' ? (
               <div className="space-y-5">
                 <div>
-                  <p className="mb-2 text-sm font-medium text-slate-300">Description</p>
+                  <p className="mb-2 text-sm font-medium text-[#9CA3AF]">Description</p>
                   <textarea
                     defaultValue={currentTask.description ?? ''}
                     rows={6}
                     onBlur={(event) => void saveTaskPatch({ description: event.target.value || null })}
-                    className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                    className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                   />
                 </div>
 
                 <div>
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-300">Custom fields</p>
+                    <p className="text-sm font-medium text-[#9CA3AF]">Custom fields</p>
                     <button
                       type="button"
                       onClick={() => {
                         const nextFields = { ...currentTask.custom_fields, [`Field ${Object.keys(currentTask.custom_fields).length + 1}`]: '' }
                         void saveTaskPatch({ custom_fields: nextFields })
                       }}
-                      className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+                      className="rounded-xl border border-[#2A2A3A] px-3 py-2 text-xs text-[#9CA3AF]"
                     >
                       Add field
                     </button>
@@ -815,7 +815,7 @@ export default function ProjectTaskPanel({
                             nextFields[nextKey] = previousValue
                             void saveTaskPatch({ custom_fields: nextFields })
                           }}
-                          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                          className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                         />
                         <input
                           defaultValue={String(value ?? '')}
@@ -823,7 +823,7 @@ export default function ProjectTaskPanel({
                             const nextFields = { ...currentTask.custom_fields, [key]: event.target.value }
                             void saveTaskPatch({ custom_fields: nextFields })
                           }}
-                          className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                          className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                         />
                         <button
                           type="button"
@@ -842,15 +842,15 @@ export default function ProjectTaskPanel({
                 </div>
 
                 <div>
-                  <p className="mb-3 text-sm font-medium text-slate-300">Dependencies</p>
+                  <p className="mb-3 text-sm font-medium text-[#9CA3AF]">Dependencies</p>
                   <div className="flex flex-wrap gap-2">
                     {currentDependencies.map((item) => {
                       const dependencyTask = dependencyTaskMap.get(item.depends_on_task_id)
                       return (
-                        <span key={item.id} className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200">
+                        <span key={item.id} className="inline-flex items-center gap-2 rounded-full border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-xs text-[#9CA3AF]">
                           <span>[link]</span>
                           <span>{item.type}</span>
-                          <button type="button" onClick={() => void onOpenTask(item.depends_on_task_id)} className="text-sky-300">
+                          <button type="button" onClick={() => void onOpenTask(item.depends_on_task_id)} className="text-[#B8FF00]">
                             {dependencyTask?.title ?? 'Linked task'}
                           </button>
                           <button type="button" onClick={() => void removeDependency(item.id)} className="text-rose-300">
@@ -866,20 +866,20 @@ export default function ProjectTaskPanel({
                       value={dependencySearch}
                       onChange={(event) => setDependencySearch(event.target.value)}
                       placeholder="Search project tasks"
-                      className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                     />
                     <div className="max-h-48 space-y-2 overflow-y-auto">
                       {availableDependencyTasks.slice(0, 8).map((entry) => (
-                        <div key={entry.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-3 py-3">
+                        <div key={entry.id} className="flex items-center justify-between gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-3 py-3">
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-slate-100">{entry.title}</p>
-                            <p className="mt-1 text-xs text-slate-500">{entry.status.replace('_', ' ')}</p>
+                            <p className="truncate text-sm font-medium text-white">{entry.title}</p>
+                            <p className="mt-1 text-xs text-[#9CA3AF]">{entry.status.replace('_', ' ')}</p>
                           </div>
                           <div className="flex gap-2">
-                            <button type="button" onClick={() => void addDependency('blocks', entry.id)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200">
+                            <button type="button" onClick={() => void addDependency('blocks', entry.id)} className="rounded-xl border border-[#2A2A3A] px-3 py-2 text-xs text-[#9CA3AF]">
                               Blocks
                             </button>
-                            <button type="button" onClick={() => void addDependency('blocked_by', entry.id)} className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200">
+                            <button type="button" onClick={() => void addDependency('blocked_by', entry.id)} className="rounded-xl border border-[#2A2A3A] px-3 py-2 text-xs text-[#9CA3AF]">
                               Blocked by
                             </button>
                           </div>
@@ -893,12 +893,12 @@ export default function ProjectTaskPanel({
 
             {activeTab === 'subtasks' ? (
               <div className="space-y-5">
-                <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
+                <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-100">{childTasks.filter((entry) => entry.status === 'done').length} of {childTasks.length} complete</p>
+                    <p className="text-sm font-medium text-white">{childTasks.filter((entry) => entry.status === 'done').length} of {childTasks.length} complete</p>
                     <PriorityBadge priority={currentTask.priority} />
                   </div>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#2A2A3A]">
                     <div className="h-full bg-blue-500" style={{ width: `${childTasks.length > 0 ? (childTasks.filter((entry) => entry.status === 'done').length / childTasks.length) * 100 : 0}%` }} />
                   </div>
                 </div>
@@ -929,9 +929,9 @@ export default function ProjectTaskPanel({
                       }
                     }}
                     placeholder="Add subtask"
-                    className="flex-1 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                    className="flex-1 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                   />
-                  <button type="button" onClick={() => void createSubtask()} className="rounded-2xl border border-slate-700 px-4 py-3 text-sm text-slate-200">
+                  <button type="button" onClick={() => void createSubtask()} className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF]">
                     Add
                   </button>
                 </div>
@@ -967,9 +967,9 @@ export default function ProjectTaskPanel({
                       }
                     }}
                     placeholder="Add checklist item"
-                    className="flex-1 rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                    className="flex-1 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                   />
-                  <button type="button" onClick={() => void addChecklistItem()} className="rounded-2xl border border-slate-700 px-4 py-3 text-sm text-slate-200">
+                  <button type="button" onClick={() => void addChecklistItem()} className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF]">
                     Add
                   </button>
                 </div>
@@ -979,7 +979,7 @@ export default function ProjectTaskPanel({
             {activeTab === 'attachments' ? (
               <div className="space-y-5">
                 <div className="flex items-center justify-between gap-3">
-                  <label className="rounded-2xl border border-slate-700 px-4 py-3 text-sm text-slate-200">
+                  <label className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF]">
                     <input type="file" className="hidden" onChange={handleAttachmentUpload} />
                     {uploading ? 'Uploading...' : 'Upload file'}
                   </label>
@@ -987,13 +987,13 @@ export default function ProjectTaskPanel({
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {currentAttachments.map((item) => (
-                    <div key={item.id} className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
+                    <div key={item.id} className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
                       <button type="button" onClick={() => void openAttachment(item)} className="w-full text-left">
-                        <div className="flex h-28 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900 text-xs text-slate-500">
+                        <div className="flex h-28 items-center justify-center rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] text-xs text-[#9CA3AF]">
                           {item.mime_type?.startsWith('image/') ? 'Image preview' : (item.mime_type?.split('/')[1] ?? 'File').toUpperCase()}
                         </div>
-                        <p className="mt-3 truncate text-sm font-medium text-slate-100">{item.filename}</p>
-                        <p className="mt-1 text-xs text-slate-500">{item.file_size ? `${Math.round(item.file_size / 1024)} KB` : 'Unknown size'} · {item.uploaded_by ?? 'Unknown'} · {formatTaskDate(item.created_at.slice(0, 10))}</p>
+                        <p className="mt-3 truncate text-sm font-medium text-white">{item.filename}</p>
+                        <p className="mt-1 text-xs text-[#9CA3AF]">{item.file_size ? `${Math.round(item.file_size / 1024)} KB` : 'Unknown size'} · {item.uploaded_by ?? 'Unknown'} · {formatTaskDate(item.created_at.slice(0, 10))}</p>
                       </button>
                       <div className="mt-3 flex justify-end">
                         <button type="button" onClick={() => void deleteAttachment(item.id, item.storage_path)} className="text-xs text-rose-300">
@@ -1008,22 +1008,22 @@ export default function ProjectTaskPanel({
 
             {activeTab === 'time-log' ? (
               <div className="space-y-5">
-                <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
+                <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-slate-100">{timeLogged.toFixed(1)} hrs logged / {estimated} hrs estimated</p>
-                    <p className="text-xs text-slate-500">Tracked manually</p>
+                    <p className="text-sm font-medium text-white">{timeLogged.toFixed(1)} hrs logged / {estimated} hrs estimated</p>
+                    <p className="text-xs text-[#9CA3AF]">Tracked manually</p>
                   </div>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#2A2A3A]">
                     <div className="h-full bg-emerald-500" style={{ width: `${estimated > 0 ? Math.min((timeLogged / estimated) * 100, 100) : 0}%` }} />
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   {currentTimeLogs.map((entry) => (
-                    <div key={entry.id} className="flex items-start justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3">
+                    <div key={entry.id} className="flex items-start justify-between gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3">
                       <div>
-                        <p className="text-sm font-medium text-slate-100">{entry.description || 'Time entry'}</p>
-                        <p className="mt-1 text-xs text-slate-500">{entry.hours} hrs · {entry.logged_date} · {entry.logged_by ?? 'Unknown'}</p>
+                        <p className="text-sm font-medium text-white">{entry.description || 'Time entry'}</p>
+                        <p className="mt-1 text-xs text-[#9CA3AF]">{entry.hours} hrs · {entry.logged_date} · {entry.logged_by ?? 'Unknown'}</p>
                       </div>
                       {currentUserLabel && entry.logged_by === currentUserLabel ? (
                         <button type="button" onClick={() => void deleteTimeLog(entry.id)} className="text-xs text-rose-300">
@@ -1039,7 +1039,7 @@ export default function ProjectTaskPanel({
                     value={timeDraft.description}
                     onChange={(event) => setTimeDraft((current) => ({ ...current, description: event.target.value }))}
                     placeholder="Description"
-                    className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 md:col-span-2"
+                    className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white md:col-span-2"
                   />
                   <input
                     type="number"
@@ -1048,15 +1048,15 @@ export default function ProjectTaskPanel({
                     value={timeDraft.hours}
                     onChange={(event) => setTimeDraft((current) => ({ ...current, hours: event.target.value }))}
                     placeholder="Hours"
-                    className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                    className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                   />
                   <input
                     type="date"
                     value={timeDraft.logged_date}
                     onChange={(event) => setTimeDraft((current) => ({ ...current, logged_date: event.target.value }))}
-                    className="rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                    className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                   />
-                  <button type="button" onClick={() => void addTimeLog()} className="rounded-2xl border border-slate-700 px-4 py-3 text-sm text-slate-200 md:col-span-2">
+                  <button type="button" onClick={() => void addTimeLog()} className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] md:col-span-2">
                     Log time
                   </button>
                 </div>
@@ -1069,11 +1069,11 @@ export default function ProjectTaskPanel({
                   {currentActivity.map((entry) => {
                     const isOwnComment = entry.type === 'comment' && currentUserLabel && entry.created_by === currentUserLabel
                     return (
-                      <div key={entry.id} className="rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3">
+                      <div key={entry.id} className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-[10px] text-slate-200">
+                            <div className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+                              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#2A2A3A] bg-[#1A1A28] text-[10px] text-[#9CA3AF]">
                                 {(entry.created_by ?? 'System').slice(0, 2).toUpperCase()}
                               </span>
                               <span>{entry.created_by ?? 'System'}</span>
@@ -1090,10 +1090,10 @@ export default function ProjectTaskPanel({
                                   }
                                 }}
                                 rows={3}
-                                className="mt-3 w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100"
+                                className="mt-3 w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
                               />
                             ) : (
-                              <p className="mt-3 text-sm text-slate-200">{entry.content}</p>
+                              <p className="mt-3 text-sm text-[#9CA3AF]">{entry.content}</p>
                             )}
                           </div>
                           {isOwnComment ? (
@@ -1113,9 +1113,9 @@ export default function ProjectTaskPanel({
                     onChange={(event) => setCommentDraft(event.target.value)}
                     rows={4}
                     placeholder="Add a comment"
-                    className="w-full rounded-[1.5rem] border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100"
+                    className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
                   />
-                  <button type="button" onClick={() => void addComment()} className="rounded-2xl border border-slate-700 px-4 py-3 text-sm text-slate-200">
+                  <button type="button" onClick={() => void addComment()} className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF]">
                     Submit comment
                   </button>
                 </div>
@@ -1123,7 +1123,7 @@ export default function ProjectTaskPanel({
             ) : null}
           </div>
 
-          <div className="mt-8 flex justify-between gap-3 border-t border-slate-800 pt-5">
+          <div className="mt-8 flex justify-between gap-3 border-t border-[#2A2A3A] pt-5">
             <div className="flex items-center gap-2">
               <PriorityBadge priority={currentTask.priority} />
               <span className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] ${getTaskStatusClasses(currentTask.status)}`}>
@@ -1138,7 +1138,7 @@ export default function ProjectTaskPanel({
       </aside>
 
       {previewUrl ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-6" onClick={() => setPreviewUrl(null)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0C0C14]/80 p-6" onClick={() => setPreviewUrl(null)}>
           <img src={previewUrl} alt="Attachment preview" className="max-h-full max-w-full rounded-2xl" />
         </div>
       ) : null}
