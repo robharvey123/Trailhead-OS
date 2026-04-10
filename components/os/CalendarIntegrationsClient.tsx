@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import ConfirmDialog from './ConfirmDialog'
 
 interface GoogleAccount {
   id: string
@@ -76,6 +77,8 @@ export default function CalendarIntegrationsClient({
   const [googleAccounts] = useState(initialGoogleAccounts)
   const [microsoftAccounts] = useState(initialMicrosoftAccounts)
   const [feeds, setFeeds] = useState(initialFeeds)
+  const [deleteFeedId, setDeleteFeedId] = useState<string | null>(null)
+  const [deleteFeedLoading, setDeleteFeedLoading] = useState(false)
   const [expandedAccount, setExpandedAccount] = useState<string | null>(null)
   const [calendarLists, setCalendarLists] = useState<
     Record<string, GoogleCalendarItem[]>
@@ -271,12 +274,20 @@ export default function CalendarIntegrationsClient({
   }
 
   async function handleDeleteFeed(feedId: string) {
-    if (!window.confirm('Remove this calendar feed and all its events?')) return
+    setDeleteFeedId(feedId)
+  }
+
+  async function confirmDeleteFeed() {
+    if (!deleteFeedId) return
+    setDeleteFeedLoading(true)
 
     try {
-      await apiFetch(`/api/calendar/feeds/${feedId}`, { method: 'DELETE' })
-      setFeeds((prev) => prev.filter((f) => f.id !== feedId))
-    } catch {}
+      await apiFetch(`/api/calendar/feeds/${deleteFeedId}`, { method: 'DELETE' })
+      setFeeds((prev) => prev.filter((f) => f.id !== deleteFeedId))
+      setDeleteFeedId(null)
+    } catch {} finally {
+      setDeleteFeedLoading(false)
+    }
   }
 
   async function handleToggleFeed(feed: CalendarFeed) {
@@ -917,6 +928,17 @@ export default function CalendarIntegrationsClient({
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        open={deleteFeedId !== null}
+        onOpenChange={(open) => { if (!open) setDeleteFeedId(null) }}
+        title="Remove calendar feed?"
+        description="This feed and all its events will be permanently removed."
+        confirmLabel="Remove feed"
+        onConfirm={() => void confirmDeleteFeed()}
+        loading={deleteFeedLoading}
+        variant="destructive"
+      />
     </div>
   )
 }

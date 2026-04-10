@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type InvoiceStatus, type Workstream } from '@/lib/types'
+import ConfirmDialog from './ConfirmDialog'
 import RecordEmailDialog from './RecordEmailDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import StatusBadge from './StatusBadge'
@@ -30,6 +31,7 @@ export default function InvoiceDetailClient({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [updatingStatus, setUpdatingStatus] = useState<InvoiceStatus | 'cancelled' | null>(null)
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [paymentLink, setPaymentLink] = useState(invoice.stripe_payment_link ?? '')
   const [subscriptionState, setSubscriptionState] = useState({
@@ -83,11 +85,8 @@ export default function InvoiceDetailClient({
   }
 
   async function cancelInvoice() {
-    if (!window.confirm('Cancel this invoice?')) {
-      return
-    }
-
     await updateStatus('cancelled')
+    setCancelConfirmOpen(false)
   }
 
   async function handleCopyLink() {
@@ -427,7 +426,7 @@ export default function InvoiceDetailClient({
                   </button>
                   <button
                     type="button"
-                    onClick={cancelInvoice}
+                    onClick={() => setCancelConfirmOpen(true)}
                     disabled={updatingStatus !== null}
                     className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
                   >
@@ -455,7 +454,7 @@ export default function InvoiceDetailClient({
                   </button>
                   <button
                     type="button"
-                    onClick={cancelInvoice}
+                    onClick={() => setCancelConfirmOpen(true)}
                     disabled={updatingStatus !== null}
                     className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
                   >
@@ -529,6 +528,17 @@ export default function InvoiceDetailClient({
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={cancelConfirmOpen}
+        onOpenChange={setCancelConfirmOpen}
+        title="Cancel this invoice?"
+        description="The invoice will be marked as cancelled. This can be reversed by updating the status."
+        confirmLabel="Cancel invoice"
+        onConfirm={() => void cancelInvoice()}
+        loading={updatingStatus === 'cancelled'}
+        variant="warning"
+      />
     </div>
   )
 }

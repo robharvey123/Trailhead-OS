@@ -1,33 +1,59 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
+import { apiFetch } from '@/lib/api-fetch'
 import { getWorkstreamColourClasses } from '@/lib/os'
 import type { ProjectListItem } from '@/lib/types'
+import ConfirmDialog from './ConfirmDialog'
 import ProjectStatusBadge from './ProjectStatusBadge'
 import WorkstreamBadge from './WorkstreamBadge'
 
 export default function ProjectCard({
   project,
+  onDeleted,
 }: {
   project: ProjectListItem
+  onDeleted?: (id: string) => void
 }) {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
   const wsHex = project.workstream
     ? getWorkstreamColourClasses(project.workstream.colour ?? project.workstream.slug).hex
     : '#2A2A3A'
 
+  const hasLinkedTasks = project.task_count > 0
+
+  async function handleDelete(cascade: boolean) {
+    setDeleting(true)
+    try {
+      const qs = cascade ? '?hard=true&cascade=true' : '?hard=true'
+      await apiFetch(`/api/projects/${project.id}${qs}`, { method: 'DELETE' })
+      setConfirmOpen(false)
+      onDeleted?.(project.id)
+    } catch {
+      setDeleting(false)
+    }
+  }
+
   return (
-    <Link
-      href={`/projects/records/${project.id}`}
-      className="block rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-5 transition hover:bg-[#B8FF00]/[0.03]"
-      style={{ borderTop: `3px solid ${wsHex}` }}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-lg font-semibold text-white">{project.name}</p>
-          <p className="mt-2 line-clamp-2 text-sm text-[#9CA3AF]">
-            {project.description || project.brief || 'No project summary yet.'}
-          </p>
-        </div>
-        <ProjectStatusBadge status={project.status} />
-      </div>
+    <>
+      <div className="group relative">
+        <Link
+          href={`/projects/records/${project.id}`}
+          className="block rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-5 transition hover:bg-[#B8FF00]/[0.03]"
+          style={{ borderTop: `3px solid ${wsHex}` }}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-lg font-semibold text-white">{project.name}</p>
+              <p className="mt-2 line-clamp-2 text-sm text-[#9CA3AF]">
+                {project.description || project.brief || 'No project summary yet.'}
+              </p>
+            </div>
+            <ProjectStatusBadge status={project.status} />
+          </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {project.workstream ? (
@@ -65,5 +91,33 @@ export default function ProjectCard({
         </div>
       </div>
     </Link>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setConfirmOpen(true)
+          }}
+          className="absolute right-3 top-3 rounded-lg border border-[#2A2A3A] bg-[#13131E] p-1.5 text-[#9CA3AF] opacity-0 transition hover:border-rose-500/30 hover:text-rose-300 group-hover:opacity-100"
+          title="Delete project"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </button>
+      </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Delete project?"
+        description={`"${project.name}" will be permanently removed. This cannot be undone.`}
+        items={hasLinkedTasks ? [`${project.task_count} task${project.task_count > 1 ? 's' : ''} linked to this project`] : undefined}
+        itemsLabel={hasLinkedTasks ? 'Affected tasks' : undefined}
+        confirmLabel={hasLinkedTasks ? 'Delete project + tasks' : 'Delete project'}
+        secondaryAction={hasLinkedTasks ? { label: 'Delete project only', onClick: () => void handleDelete(false) } : undefined}
+        onConfirm={() => void handleDelete(hasLinkedTasks)}
+        loading={deleting}
+        variant="destructive"
+      />
+    </>
   )
 }

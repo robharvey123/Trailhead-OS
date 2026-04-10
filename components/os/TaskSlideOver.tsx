@@ -17,6 +17,7 @@ import type {
 import PriorityBadge from './PriorityBadge'
 import ProjectSelector from './ProjectSelector'
 import SearchSelect, { type SearchSelectOption } from './SearchSelect'
+import TaskEmailModal from './TaskEmailModal'
 import WorkstreamBadge from './WorkstreamBadge'
 
 const PRIORITIES: TaskPriority[] = ['low', 'medium', 'high', 'urgent']
@@ -64,6 +65,7 @@ export default function TaskSlideOver({
   const [tags, setTags] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notes, setNotes] = useState<Note[]>([])
   const [notesLoading, setNotesLoading] = useState(false)
@@ -492,7 +494,7 @@ export default function TaskSlideOver({
         {error ? <p className="mt-6 text-sm text-rose-300">{error}</p> : null}
 
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[#2A2A3A] pt-6">
-          <div>
+          <div className="flex items-center gap-2">
             {task?.id ? (
               <button
                 type="button"
@@ -501,6 +503,15 @@ export default function TaskSlideOver({
                 className="rounded-2xl border border-rose-500/30 px-4 py-2 text-sm font-medium text-rose-200 transition hover:bg-rose-500/10 disabled:opacity-60"
               >
                 {deleting ? 'Completing...' : 'Mark complete'}
+              </button>
+            ) : null}
+            {task?.id ? (
+              <button
+                type="button"
+                onClick={() => setEmailModalOpen(true)}
+                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/30 hover:text-white"
+              >
+                Email task
               </button>
             ) : null}
           </div>
@@ -513,6 +524,14 @@ export default function TaskSlideOver({
             {saving ? 'Saving...' : task ? 'Save changes' : 'Create task'}
           </button>
         </div>
+
+        {task ? (
+          <TaskEmailModal
+            open={emailModalOpen}
+            onOpenChange={setEmailModalOpen}
+            tasks={[task]}
+          />
+        ) : null}
       </div>
     </div>
   )

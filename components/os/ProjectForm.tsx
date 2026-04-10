@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import type { Account, Project, ProjectStatus, Workstream } from '@/lib/types'
+import ConfirmDialog from './ConfirmDialog'
 import SearchSelect from './SearchSelect'
 
 const PROJECT_STATUSES: ProjectStatus[] = [
@@ -48,6 +49,8 @@ export default function ProjectForm({
   const [saving, setSaving] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const accountOptions = useMemo(
@@ -99,11 +102,6 @@ export default function ProjectForm({
       return
     }
 
-    const confirmed = window.confirm('Archive this project? It will be moved to cancelled status but kept in the database.')
-    if (!confirmed) {
-      return
-    }
-
     setArchiving(true)
     setError(null)
 
@@ -111,6 +109,7 @@ export default function ProjectForm({
       await apiFetch<{ project: Project }>(`/api/projects/${initialProject.id}`, {
         method: 'DELETE',
       })
+      setArchiveConfirmOpen(false)
       router.push('/projects')
       router.refresh()
     } catch (archiveError) {
@@ -125,13 +124,6 @@ export default function ProjectForm({
       return
     }
 
-    const confirmed = window.confirm(
-      'Permanently delete this project? Linked phases, milestones, and project contacts will be removed. Tasks will remain but will be detached from the project.'
-    )
-    if (!confirmed) {
-      return
-    }
-
     setDeleting(true)
     setError(null)
 
@@ -139,6 +131,7 @@ export default function ProjectForm({
       await apiFetch<{ deleted: boolean }>(`/api/projects/${initialProject.id}?hard=true`, {
         method: 'DELETE',
       })
+      setDeleteConfirmOpen(false)
       router.push('/projects')
       router.refresh()
     } catch (deleteError) {
@@ -279,7 +272,7 @@ export default function ProjectForm({
         {initialProject ? (
           <button
             type="button"
-            onClick={() => void handleArchive()}
+            onClick={() => setArchiveConfirmOpen(true)}
             disabled={saving || archiving || deleting}
             className="rounded-2xl border border-amber-500/30 px-5 py-3 text-sm font-medium text-amber-100 transition hover:border-amber-400 disabled:opacity-60"
           >
@@ -289,7 +282,7 @@ export default function ProjectForm({
         {initialProject ? (
           <button
             type="button"
-            onClick={() => void handleDelete()}
+            onClick={() => setDeleteConfirmOpen(true)}
             disabled={saving || archiving || deleting}
             className="rounded-2xl border border-rose-500/30 px-5 py-3 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
           >
@@ -297,6 +290,31 @@ export default function ProjectForm({
           </button>
         ) : null}
       </div>
+
+      {initialProject ? (
+        <>
+          <ConfirmDialog
+            open={archiveConfirmOpen}
+            onOpenChange={setArchiveConfirmOpen}
+            title="Archive project?"
+            description="This project will be moved to cancelled status but kept in the database."
+            confirmLabel="Archive"
+            onConfirm={() => void handleArchive()}
+            loading={archiving}
+            variant="warning"
+          />
+          <ConfirmDialog
+            open={deleteConfirmOpen}
+            onOpenChange={setDeleteConfirmOpen}
+            title="Delete project permanently?"
+            description="Linked phases, milestones, and project contacts will be removed. Tasks will remain but will be detached from the project."
+            confirmLabel="Delete permanently"
+            onConfirm={() => void handleDelete()}
+            loading={deleting}
+            variant="destructive"
+          />
+        </>
+      ) : null}
     </div>
   )
 }

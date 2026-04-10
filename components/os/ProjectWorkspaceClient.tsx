@@ -43,6 +43,7 @@ import ProjectMilestonePanel from './ProjectMilestonePanel'
 import PriorityBadge from './PriorityBadge'
 import ProjectTaskPanel from './ProjectTaskPanel'
 import QuickAddTask from './QuickAddTask'
+import ConfirmDialog from './ConfirmDialog'
 
 type ProjectView = 'list' | 'gantt' | 'table'
 type GanttZoom = 'day' | 'week' | 'month'
@@ -596,6 +597,8 @@ export default function ProjectWorkspaceClient({
   const [taskStack, setTaskStack] = useState<string[]>(initialTaskId ? [initialTaskId] : [])
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false)
   const [sortKey, setSortKey] = useState<SortKey>('due_date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [liveStatus, setLiveStatus] = useState<'live' | 'syncing' | 'offline'>('syncing')
@@ -857,6 +860,7 @@ export default function ProjectWorkspaceClient({
 
   async function deleteSelectedTasks() {
     setError(null)
+    setBulkDeleteLoading(true)
 
     try {
       await Promise.all(
@@ -869,8 +873,11 @@ export default function ProjectWorkspaceClient({
 
       setTasks((current) => current.filter((task) => !selectedIds.includes(task.id)))
       setSelectedIds([])
+      setBulkDeleteOpen(false)
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete tasks')
+    } finally {
+      setBulkDeleteLoading(false)
     }
   }
 
@@ -1495,11 +1502,24 @@ export default function ProjectWorkspaceClient({
               <button type="button" onClick={() => void applyBulkPatch({ priority: 'high' })} className="rounded-xl border border-[#B8FF00]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#B8FF00]">
                 Set high
               </button>
-              <button type="button" onClick={() => void deleteSelectedTasks()} className="rounded-xl border border-red-300/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-100">
+              <button type="button" onClick={() => setBulkDeleteOpen(true)} className="rounded-xl border border-red-300/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-100">
                 Delete
               </button>
             </div>
           ) : null}
+
+          <ConfirmDialog
+            open={bulkDeleteOpen}
+            onOpenChange={setBulkDeleteOpen}
+            title={`Delete ${selectedIds.length} task${selectedIds.length > 1 ? 's' : ''}?`}
+            description="These tasks will be permanently deleted and cannot be recovered."
+            items={tasks.filter((t) => selectedIds.includes(t.id)).map((t) => t.title).slice(0, 5)}
+            itemsLabel={selectedIds.length > 5 ? `${selectedIds.length} tasks (showing first 5)` : `${selectedIds.length} task${selectedIds.length > 1 ? 's' : ''}`}
+            confirmLabel="Delete tasks"
+            onConfirm={() => void deleteSelectedTasks()}
+            loading={bulkDeleteLoading}
+            variant="destructive"
+          />
 
           <div className="overflow-x-auto rounded-2xl border border-[#2A2A3A]">
             <table className="min-w-full divide-y divide-[#2A2A3A] text-sm">

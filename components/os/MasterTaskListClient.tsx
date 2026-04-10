@@ -22,6 +22,7 @@ import type {
 } from '@/lib/types'
 import MasterTaskKanban from './MasterTaskKanban'
 import PriorityBadge from './PriorityBadge'
+import TaskEmailModal from './TaskEmailModal'
 import TaskSlideOver from './TaskSlideOver'
 import WorkstreamBadge from './WorkstreamBadge'
 
@@ -57,6 +58,8 @@ export default function MasterTaskListClient({
     null
   )
   const [creatingTask, setCreatingTask] = useState(false)
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
+  const [emailModalTasks, setEmailModalTasks] = useState<TaskWithWorkstream[]>([])
   const [workstreamFilter, setWorkstreamFilter] = useState<string[]>([])
   const [accountFilter, setAccountFilter] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string[]>([])
@@ -672,8 +675,24 @@ export default function MasterTaskListClient({
           >
             Add/remove master flag
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEmailModalTasks(selectedTasks)
+              setEmailModalOpen(true)
+            }}
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white"
+          >
+            Email selected
+          </button>
         </div>
       ) : null}
+
+      <TaskEmailModal
+        open={emailModalOpen}
+        onOpenChange={setEmailModalOpen}
+        tasks={emailModalTasks}
+      />
 
       {viewMode === 'kanban' ? (
         <MasterTaskKanban

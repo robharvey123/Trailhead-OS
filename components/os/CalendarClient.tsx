@@ -27,6 +27,7 @@ import type {
   Workstream,
 } from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
+import ConfirmDialog from './ConfirmDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 
 const EVENT_COLOURS = [
@@ -386,6 +387,8 @@ export default function CalendarClient({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedItem, setSelectedItem] = useState<SelectedCalendarItem>(null)
+  const [deleteEventTarget, setDeleteEventTarget] = useState<CalendarEvent | null>(null)
+  const [deleteEventLoading, setDeleteEventLoading] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [form, setForm] = useState<EventFormState>(createDefaultFormState())
@@ -633,20 +636,26 @@ export default function CalendarClient({
   }
 
   async function handleDeleteEvent(event: CalendarEvent) {
-    if (!window.confirm(`Delete "${event.title}"?`)) {
-      return
-    }
+    setDeleteEventTarget(event)
+  }
+
+  async function confirmDeleteEvent() {
+    if (!deleteEventTarget) return
+    setDeleteEventLoading(true)
 
     try {
-      await apiFetch(`/api/calendar/${event.id}`, { method: 'DELETE' })
-      setEvents((current) => current.filter((entry) => entry.id !== event.id))
+      await apiFetch(`/api/calendar/${deleteEventTarget.id}`, { method: 'DELETE' })
+      setEvents((current) => current.filter((entry) => entry.id !== deleteEventTarget.id))
       setSelectedItem(null)
+      setDeleteEventTarget(null)
     } catch (deleteError) {
       setError(
         deleteError instanceof Error
           ? deleteError.message
           : 'Failed to delete event'
       )
+    } finally {
+      setDeleteEventLoading(false)
     }
   }
 
@@ -1280,6 +1289,17 @@ export default function CalendarClient({
           </div>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        open={deleteEventTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteEventTarget(null) }}
+        title={`Delete "${deleteEventTarget?.title ?? 'event'}"?`}
+        description="This event will be permanently removed from the calendar."
+        confirmLabel="Delete event"
+        onConfirm={() => void confirmDeleteEvent()}
+        loading={deleteEventLoading}
+        variant="destructive"
+      />
     </>
   )
 }

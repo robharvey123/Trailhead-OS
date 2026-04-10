@@ -125,9 +125,13 @@ export async function DELETE(
 
   const { id } = await params
   const hardDelete = request.nextUrl.searchParams.get('hard') === 'true'
+  const cascade = request.nextUrl.searchParams.get('cascade') === 'true'
 
   try {
     if (hardDelete) {
+      if (cascade) {
+        await auth.supabase.from('tasks').delete().eq('project_id', id)
+      }
       await deleteProject(id, auth.supabase)
       return NextResponse.json({ deleted: true })
     }

@@ -351,6 +351,13 @@ export default function Sidebar({
                 onClick={() => setMobileOpen(false)}
                 collapsed={collapsed}
               />
+              <NavLink
+                href="/reports/weekly"
+                label="Weekly Report"
+                active={pathname.startsWith('/reports')}
+                onClick={() => setMobileOpen(false)}
+                collapsed={collapsed}
+              />
             </div>
           </div>
         </div>

@@ -17,6 +17,7 @@ import type {
   TaskWithWorkstream,
 } from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
+import TaskEmailModal from './TaskEmailModal'
 
 type PanelTab = 'overview' | 'subtasks' | 'checklist' | 'attachments' | 'time-log' | 'activity'
 
@@ -159,6 +160,7 @@ export default function ProjectTaskPanel({
   const [timeDraft, setTimeDraft] = useState({ description: '', hours: '', logged_date: new Date().toISOString().slice(0, 10) })
   const [uploading, setUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [emailModalOpen, setEmailModalOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -1133,9 +1135,18 @@ export default function ProjectTaskPanel({
             <button type="button" onClick={() => void deleteTask()} className="rounded-2xl border border-rose-400/30 px-4 py-3 text-sm text-rose-200">
               Delete task
             </button>
+            <button type="button" onClick={() => setEmailModalOpen(true)} className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] hover:border-[#B8FF00]/30 hover:text-white">
+              Email task
+            </button>
           </div>
         </div>
       </aside>
+
+      <TaskEmailModal
+        open={emailModalOpen}
+        onOpenChange={setEmailModalOpen}
+        tasks={[currentTask]}
+      />
 
       {previewUrl ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0C0C14]/80 p-6" onClick={() => setPreviewUrl(null)}>
