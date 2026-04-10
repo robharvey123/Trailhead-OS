@@ -5,6 +5,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import type { Workstream } from '@/lib/types'
 
+export const dynamic = 'force-dynamic'
+
 export default async function OsLayout({
   children,
 }: {
