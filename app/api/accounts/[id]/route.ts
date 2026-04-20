@@ -5,7 +5,11 @@ import type { AccountStatus } from '@/lib/types'
 
 const ACCOUNT_STATUSES = new Set<AccountStatus>([
   'prospect',
+  'contacted',
   'active',
+  'listed',
+  'declined',
+  'on_hold',
   'inactive',
   'archived',
 ])
@@ -104,6 +108,10 @@ export async function PATCH(
   if (body.postcode !== undefined) patch.postcode = sanitizeText(body.postcode)
   if (body.country !== undefined) patch.country = sanitizeText(body.country)
   if (body.notes !== undefined) patch.notes = sanitizeText(body.notes)
+  if (body.channel !== undefined) patch.channel = sanitizeText(body.channel)
+  if (body.source !== undefined) patch.source = sanitizeText(body.source)
+  if (body.email_contact !== undefined) patch.email_contact = sanitizeText(body.email_contact)
+  if (body.hq_address !== undefined) patch.hq_address = sanitizeText(body.hq_address)
 
   if (body.tags !== undefined) {
     const tags = sanitizeTags(body.tags)

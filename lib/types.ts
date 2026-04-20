@@ -53,6 +53,21 @@ export interface Touchpoint {
   updated_at: string
 }
 
+export type ActivityType = 'Email' | 'Call' | 'Meeting' | 'Note' | 'Task'
+
+export interface Activity {
+  id: string
+  account_id: string | null
+  contact_id: string | null
+  type: ActivityType
+  subject: string | null
+  notes: string | null
+  activity_date: string
+  next_action: string | null
+  next_action_date: string | null
+  created_at: string
+}
+
 export interface Account {
   id: string
   name: string
@@ -60,7 +75,11 @@ export interface Account {
   industry?: string
   size?: '1-10' | '11-50' | '51-200' | '201-500' | '500+'
   workstream_id?: string
-  status: 'prospect' | 'active' | 'inactive' | 'archived'
+  channel?: string | null
+  source?: string | null
+  email_contact?: string | null
+  hq_address?: string | null
+  status: 'prospect' | 'contacted' | 'active' | 'listed' | 'declined' | 'on_hold' | 'inactive' | 'archived'
   address_line1?: string
   address_line2?: string
   city?: string

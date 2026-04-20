@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { createAccount, getAccounts } from '@/lib/db/accounts'
-import type { AccountStatus } from '@/lib/types'
+import type { Account, AccountStatus } from '@/lib/types'
 
 const ACCOUNT_STATUSES = new Set<AccountStatus>([
   'prospect',
+  'contacted',
   'active',
+  'listed',
+  'declined',
+  'on_hold',
   'inactive',
   'archived',
 ])
@@ -46,6 +50,7 @@ export async function GET(request: NextRequest) {
           status && ACCOUNT_STATUSES.has(status as AccountStatus)
             ? (status as AccountStatus)
             : undefined,
+        channel: searchParams.get('channel') ?? undefined,
         search: searchParams.get('search') ?? undefined,
       },
       auth.supabase
@@ -101,7 +106,11 @@ export async function POST(request: NextRequest) {
         country: sanitizeText(body.country) ?? 'UK',
         notes: sanitizeText(body.notes) ?? undefined,
         tags: sanitizeTags(body.tags),
-      },
+        channel: sanitizeText(body.channel) ?? undefined,
+        source: sanitizeText(body.source) ?? undefined,
+        email_contact: sanitizeText(body.email_contact) ?? undefined,
+        hq_address: sanitizeText(body.hq_address) ?? undefined,
+      } as Omit<Account, 'id' | 'created_at' | 'updated_at'>,
       auth.supabase
     )
 

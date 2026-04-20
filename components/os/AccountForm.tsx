@@ -8,10 +8,25 @@ import type { Account, AccountStatus, AccountWithRelations, Workstream } from '@
 
 const ACCOUNT_STATUSES: AccountStatus[] = [
   'prospect',
+  'contacted',
   'active',
+  'listed',
+  'declined',
+  'on_hold',
   'inactive',
   'archived',
 ]
+
+const STATUS_LABELS: Record<AccountStatus, string> = {
+  prospect: 'Prospect',
+  contacted: 'Contacted',
+  active: 'Active',
+  listed: 'Listed',
+  declined: 'Declined',
+  on_hold: 'On Hold',
+  inactive: 'Inactive',
+  archived: 'Archived',
+}
 
 interface AccountFormProps {
   workstreams: Workstream[]
@@ -36,6 +51,10 @@ export default function AccountForm({
     size: initialAccount?.size ?? '',
     workstream_id: initialAccount?.workstream_id ?? '',
     status: initialAccount?.status ?? ('prospect' as AccountStatus),
+    channel: initialAccount?.channel ?? '',
+    source: initialAccount?.source ?? '',
+    email_contact: initialAccount?.email_contact ?? '',
+    hq_address: initialAccount?.hq_address ?? '',
     address_line1: initialAccount?.address_line1 ?? '',
     address_line2: initialAccount?.address_line2 ?? '',
     city: initialAccount?.city ?? '',
@@ -172,12 +191,48 @@ export default function AccountForm({
           >
             {ACCOUNT_STATUSES.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {STATUS_LABELS[status]}
               </option>
             ))}
           </select>
         </label>
+        <label className="space-y-2">
+          <span className="text-sm text-[#9CA3AF]">Channel</span>
+          <input
+            value={form.channel}
+            onChange={(event) => setForm({ ...form, channel: event.target.value })}
+            placeholder="e.g. Major UK Retailers"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          />
+        </label>
 
+        <label className="space-y-2">
+          <span className="text-sm text-[#9CA3AF]">Source</span>
+          <input
+            value={form.source}
+            onChange={(event) => setForm({ ...form, source: event.target.value })}
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm text-[#9CA3AF]">Email contact</span>
+          <input
+            type="email"
+            value={form.email_contact}
+            onChange={(event) => setForm({ ...form, email_contact: event.target.value })}
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm text-[#9CA3AF]">HQ / Address</span>
+          <input
+            value={form.hq_address}
+            onChange={(event) => setForm({ ...form, hq_address: event.target.value })}
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          />
+        </label>
         <label className="space-y-2 md:col-span-2">
           <span className="text-sm text-[#9CA3AF]">Address line 1</span>
           <input

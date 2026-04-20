@@ -1,52 +1,62 @@
 import Link from 'next/link'
 import StatusBadge from '@/components/os/StatusBadge'
-import WorkstreamBadge from '@/components/os/WorkstreamBadge'
 import { getAccounts } from '@/lib/db/accounts'
-import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import type { AccountStatus } from '@/lib/types'
 
 const ACCOUNT_TABS: Array<{ value: 'all' | AccountStatus; label: string }> = [
   { value: 'all', label: 'All' },
   { value: 'prospect', label: 'Prospect' },
+  { value: 'contacted', label: 'Contacted' },
   { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
+  { value: 'listed', label: 'Listed' },
+  { value: 'declined', label: 'Declined' },
+  { value: 'on_hold', label: 'On Hold' },
 ]
+
+const ALL_STATUSES = new Set(ACCOUNT_TABS.filter((t) => t.value !== 'all').map((t) => t.value))
 
 export default async function AccountsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string; search?: string; workstream_id?: string }>
+  searchParams?: Promise<{ status?: string; search?: string; channel?: string }>
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const activeStatus = resolvedSearchParams?.status ?? 'all'
   const search = resolvedSearchParams?.search ?? ''
-  const workstreamId = resolvedSearchParams?.workstream_id ?? ''
+  const activeChannel = resolvedSearchParams?.channel ?? ''
   const supabase = await createClient()
 
-  const [accounts, workstreams] = await Promise.all([
-    getAccounts(
-      {
-        status:
-          activeStatus === 'prospect' ||
-          activeStatus === 'active' ||
-          activeStatus === 'inactive' ||
-          activeStatus === 'archived'
-            ? activeStatus
-            : undefined,
-        search: search || undefined,
-        workstream_id: workstreamId || undefined,
-      },
-      supabase
-    ).catch(() => []),
-    getWorkstreams(supabase).catch(() => []),
-  ])
+  const accounts = await getAccounts(
+    {
+      status: ALL_STATUSES.has(activeStatus as AccountStatus)
+        ? (activeStatus as AccountStatus)
+        : undefined,
+      channel: activeChannel || undefined,
+      search: search || undefined,
+    },
+    supabase
+  ).catch(() => [])
+
+  // Derive unique channels for the dropdown
+  const channelSet = new Set<string>()
+  accounts.forEach((a) => {
+    if (a.channel) channelSet.add(a.channel)
+  })
+  // Also fetch all accounts' channels (unfiltered) for the dropdown
+  const allAccounts = activeChannel || activeStatus !== 'all' || search
+    ? await getAccounts({}, supabase).catch(() => [])
+    : accounts
+  allAccounts.forEach((a) => {
+    if (a.channel) channelSet.add(a.channel)
+  })
+  const channels = Array.from(channelSet).sort()
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
+          <p className="text-xs uppercase tracking-[0.32em] text-white0">CRM</p>
           <h1 className="mt-2 text-3xl font-semibold text-white">
             Accounts <span className="text-white0">({accounts.length})</span>
           </h1>
@@ -59,7 +69,7 @@ export default async function AccountsPage({
         </Link>
       </div>
 
-      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_200px_200px_auto]">
         <input
           type="text"
           name="search"
@@ -68,14 +78,26 @@ export default async function AccountsPage({
           className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         />
         <select
-          name="workstream_id"
-          defaultValue={workstreamId}
+          name="channel"
+          defaultValue={activeChannel}
           className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
         >
-          <option value="">All workstreams</option>
-          {workstreams.map((workstream) => (
-            <option key={workstream.id} value={workstream.id}>
-              {workstream.label}
+          <option value="">All channels</option>
+          {channels.map((ch) => (
+            <option key={ch} value={ch}>
+              {ch}
+            </option>
+          ))}
+        </select>
+        <select
+          name="status"
+          defaultValue={activeStatus === 'all' ? '' : activeStatus}
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+        >
+          <option value="">All statuses</option>
+          {ACCOUNT_TABS.filter((t) => t.value !== 'all').map((tab) => (
+            <option key={tab.value} value={tab.value}>
+              {tab.label}
             </option>
           ))}
         </select>
@@ -96,8 +118,8 @@ export default async function AccountsPage({
           if (search) {
             params.set('search', search)
           }
-          if (workstreamId) {
-            params.set('workstream_id', workstreamId)
+          if (activeChannel) {
+            params.set('channel', activeChannel)
           }
 
           const href = params.toString() ? `/crm/accounts?${params}` : '/crm/accounts'
@@ -128,12 +150,12 @@ export default async function AccountsPage({
           <table className="min-w-full text-sm">
             <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
               <tr>
-                <th className="pb-3">Name</th>
-                <th className="pb-3">Industry</th>
-                <th className="pb-3">Workstream</th>
-                <th className="pb-3 text-right">Contacts</th>
+                <th className="pb-3">Business Name</th>
+                <th className="pb-3">Channel</th>
                 <th className="pb-3">Status</th>
-                <th className="pb-3">Created</th>
+                <th className="pb-3">Website</th>
+                <th className="pb-3">Key Contact</th>
+                <th className="pb-3 text-right">Contacts</th>
               </tr>
             </thead>
             <tbody>
@@ -146,29 +168,31 @@ export default async function AccountsPage({
                     >
                       {account.name}
                     </Link>
-                    {account.website ? (
-                      <p className="mt-1 text-xs text-white0">{account.website}</p>
-                    ) : null}
                   </td>
-                  <td className="py-4 text-[#9CA3AF]">{account.industry ?? '—'}</td>
+                  <td className="py-4 text-[#9CA3AF]">{account.channel ?? '—'}</td>
                   <td className="py-4">
-                    {account.workstream ? (
-                      <WorkstreamBadge
-                        label={account.workstream.label}
-                        slug={account.workstream.label}
-                        colour={account.workstream.colour}
-                      />
+                    <StatusBadge status={account.status} kind="account" />
+                  </td>
+                  <td className="py-4">
+                    {account.website ? (
+                      <a
+                        href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#9CA3AF] hover:text-white hover:underline"
+                      >
+                        {account.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                      </a>
                     ) : (
                       <span className="text-[#9CA3AF]">—</span>
                     )}
                   </td>
-                  <td className="py-4 text-right text-[#9CA3AF]">{account.contacts_count}</td>
-                  <td className="py-4">
-                    <StatusBadge status={account.status} kind="account" />
-                  </td>
                   <td className="py-4 text-[#9CA3AF]">
-                    {new Date(account.created_at).toLocaleDateString('en-GB')}
+                    {account.contacts && account.contacts.length > 0
+                      ? account.contacts[0].name
+                      : '—'}
                   </td>
+                  <td className="py-4 text-right text-[#9CA3AF]">{account.contacts_count}</td>
                 </tr>
               ))}
             </tbody>

@@ -52,6 +52,7 @@ export async function getAccounts(
   filters: {
     workstream_id?: string
     status?: AccountStatus
+    channel?: string
     search?: string
   } = {},
   client?: SupabaseClient
@@ -68,6 +69,10 @@ export async function getAccounts(
 
   if (filters.status) {
     query = query.eq('status', filters.status)
+  }
+
+  if (filters.channel) {
+    query = query.eq('channel', filters.channel)
   }
 
   if (filters.search?.trim()) {
@@ -246,6 +251,10 @@ function sanitizeAccountPayload(data: AccountMutationInput) {
   if ('size' in data) payload.size = data.size ?? null
   if ('workstream_id' in data) payload.workstream_id = data.workstream_id ?? null
   if ('status' in data) payload.status = data.status
+  if ('channel' in data) payload.channel = (data as Record<string, unknown>).channel ?? null
+  if ('source' in data) payload.source = (data as Record<string, unknown>).source ?? null
+  if ('email_contact' in data) payload.email_contact = (data as Record<string, unknown>).email_contact ?? null
+  if ('hq_address' in data) payload.hq_address = (data as Record<string, unknown>).hq_address ?? null
   if ('address_line1' in data) payload.address_line1 = data.address_line1?.trim() || null
   if ('address_line2' in data) payload.address_line2 = data.address_line2?.trim() || null
   if ('city' in data) payload.city = data.city?.trim() || null

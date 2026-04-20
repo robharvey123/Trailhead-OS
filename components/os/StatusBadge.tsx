@@ -11,8 +11,12 @@ type StatusKind = 'account' | 'contact' | 'enquiry' | 'invoice' | 'project' | 'q
 
 const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
   account: {
-    prospect: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
+    prospect: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
+    contacted: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
     active: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
+    listed: 'border-teal-500/30 bg-teal-500/10 text-teal-200',
+    declined: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
+    on_hold: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
     inactive: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
     archived: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
   },

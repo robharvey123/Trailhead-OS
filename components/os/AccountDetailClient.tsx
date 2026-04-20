@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import AccountForm from './AccountForm'
+import ActivityTimeline from './ActivityTimeline'
 import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import StatusBadge from './StatusBadge'
@@ -11,7 +12,7 @@ import TouchpointTimeline from './TouchpointTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
 import { formatTaskSchedule } from '@/lib/os'
 import { calculateTotals } from '@/lib/types'
-import type { ProjectListItem, Workstream } from '@/lib/types'
+import type { Activity, ProjectListItem, Workstream } from '@/lib/types'
 import type { AccountDetail } from '@/lib/db/accounts'
 
 function formatMoney(value: number) {
@@ -22,10 +23,12 @@ export default function AccountDetailClient({
   initialAccount,
   workstreams,
   projects,
+  initialActivities = [],
 }: {
   initialAccount: AccountDetail
   workstreams: Workstream[]
   projects: ProjectListItem[]
+  initialActivities?: Activity[]
 }) {
   const router = useRouter()
   const [account, setAccount] = useState(initialAccount)
@@ -138,6 +141,31 @@ export default function AccountDetailClient({
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Channel</p>
+                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.channel ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Source</p>
+                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.source ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Email contact</p>
+                  {account.email_contact ? (
+                    <a
+                      href={`mailto:${account.email_contact}`}
+                      className="mt-2 inline-flex text-sm text-sky-300 hover:text-sky-200"
+                    >
+                      {account.email_contact}
+                    </a>
+                  ) : (
+                    <p className="mt-2 text-sm text-[#9CA3AF]">—</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white0">HQ / Address</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-[#9CA3AF]">{account.hq_address ?? '—'}</p>
+                </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-white0">Website</p>
                   {account.website ? (
@@ -309,6 +337,11 @@ export default function AccountDetailClient({
             accountId={account.id}
             title="Touchpoints"
             description="Log calls, emails, messages, meetings, and notes for this account."
+          />
+
+          <ActivityTimeline
+            initialActivities={initialActivities}
+            accountId={account.id}
           />
         </section>
 
