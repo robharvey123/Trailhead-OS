@@ -53,12 +53,20 @@ export default async function ContactsPage({
             Lead and client relationships across Trailhead OS.
           </p>
         </div>
-        <Link
-          href="/crm/contacts/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
-        >
-          New contact
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/crm/contacts/import"
+            className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-white transition hover:border-white/40"
+          >
+            Import CSV
+          </Link>
+          <Link
+            href="/crm/contacts/new"
+            className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+          >
+            New contact
+          </Link>
+        </div>
       </div>
 
       <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
