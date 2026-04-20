@@ -119,6 +119,8 @@ export async function POST(request: NextRequest) {
     city: sanitizeText(body.city),
     postcode: sanitizeText(body.postcode),
     country: sanitizeText(body.country),
+    channel: sanitizeText(body.channel),
+    website: sanitizeText(body.website),
     status: status as ContactStatus,
     notes: sanitizeText(body.notes),
     tags: sanitizeStringArray(body.tags),

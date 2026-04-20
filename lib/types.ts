@@ -114,6 +114,8 @@ export interface Contact {
   postcode: string | null
   country: string | null
   status: ContactStatus
+  channel: string | null
+  website: string | null
   notes: string | null
   tags: string[]
   created_at: string

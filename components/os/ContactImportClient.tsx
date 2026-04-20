@@ -11,6 +11,9 @@ const CONTACT_FIELDS = [
   { key: 'email', label: 'Email' },
   { key: 'phone', label: 'Phone' },
   { key: 'role', label: 'Role' },
+  { key: 'channel', label: 'Channel' },
+  { key: 'website', label: 'Website' },
+  { key: 'workstream', label: 'Workstream (slug)' },
   { key: 'address_line1', label: 'Address line 1' },
   { key: 'address_line2', label: 'Address line 2' },
   { key: 'city', label: 'City' },
@@ -59,6 +62,11 @@ function autoMap(csvHeader: string): FieldKey | '' {
     status: 'status',
     notes: 'notes',
     tags: 'tags',
+    channel: 'channel',
+    website: 'website',
+    site: 'website',
+    url: 'website',
+    workstream: 'workstream',
   }
   return map[h] ?? ''
 }
@@ -68,7 +76,16 @@ type ImportResult = {
   rejected: Array<{ row: number; reason: string }>
 }
 
-export default function ContactImportClient() {
+type WorkstreamOption = { id: string; slug: string; label: string }
+type ProjectOption = { id: string; name: string; workstream_id: string }
+
+export default function ContactImportClient({
+  workstreams = [],
+  projects = [],
+}: {
+  workstreams?: WorkstreamOption[]
+  projects?: ProjectOption[]
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [csvHeaders, setCsvHeaders] = useState<string[]>([])
   const [csvRows, setCsvRows] = useState<Record<string, string>[]>([])
@@ -78,6 +95,8 @@ export default function ContactImportClient() {
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
   const [error, setError] = useState('')
+  const [globalWorkstreamId, setGlobalWorkstreamId] = useState('')
+  const [globalProjectId, setGlobalProjectId] = useState('')
 
   /* ─── Parse file ─── */
   const handleFile = useCallback((file: File) => {
@@ -167,7 +186,11 @@ export default function ContactImportClient() {
       const res = await fetch('/api/contacts/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows: mappedRows }),
+        body: JSON.stringify({
+          rows: mappedRows,
+          workstream_id: globalWorkstreamId || null,
+          project_id: globalProjectId || null,
+        }),
       })
 
       const data = await res.json()
@@ -195,6 +218,8 @@ export default function ContactImportClient() {
     setStep('upload')
     setResult(null)
     setError('')
+    setGlobalWorkstreamId('')
+    setGlobalProjectId('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -387,6 +412,52 @@ export default function ContactImportClient() {
               )}
             </div>
           </div>
+
+          {/* Assign workstream & project */}
+          {(workstreams.length > 0 || projects.length > 0) && (
+            <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+              <h3 className="mb-1 text-sm font-semibold text-white">Assign to workstream &amp; project</h3>
+              <p className="mb-4 text-xs text-[#9CA3AF]">
+                Applied to all imported contacts (unless the CSV has a workstream column mapped).
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                {workstreams.length > 0 && (
+                  <label className="space-y-2">
+                    <span className="text-sm text-[#9CA3AF]">Workstream</span>
+                    <select
+                      value={globalWorkstreamId}
+                      onChange={(e) => setGlobalWorkstreamId(e.target.value)}
+                      className="w-full rounded-xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2.5 text-sm text-white"
+                    >
+                      <option value="">— None (use CSV value) —</option>
+                      {workstreams.map((ws) => (
+                        <option key={ws.id} value={ws.id}>
+                          {ws.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {projects.length > 0 && (
+                  <label className="space-y-2">
+                    <span className="text-sm text-[#9CA3AF]">Project</span>
+                    <select
+                      value={globalProjectId}
+                      onChange={(e) => setGlobalProjectId(e.target.value)}
+                      className="w-full rounded-xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2.5 text-sm text-white"
+                    >
+                      <option value="">— None —</option>
+                      {projects.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-3">
             <button

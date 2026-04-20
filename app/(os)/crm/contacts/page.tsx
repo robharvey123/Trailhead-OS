@@ -17,12 +17,13 @@ const CONTACT_TABS = [
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string; search?: string; account_id?: string }>
+  searchParams?: Promise<{ status?: string; search?: string; account_id?: string; channel?: string }>
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const activeStatus = resolvedSearchParams?.status ?? 'all'
   const search = resolvedSearchParams?.search ?? ''
   const accountId = resolvedSearchParams?.account_id ?? ''
+  const channelFilter = resolvedSearchParams?.channel ?? ''
   const supabase = await createClient()
   const [contacts, workstreams, accounts] = await Promise.all([
     getContacts(
@@ -36,6 +37,7 @@ export default async function ContactsPage({
             : undefined,
         search: search || undefined,
         account_id: accountId || undefined,
+        channel: channelFilter || undefined,
       },
       supabase
     ).catch(() => []),
@@ -69,7 +71,7 @@ export default async function ContactsPage({
         </div>
       </div>
 
-      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_180px_180px_auto]">
         <input
           type="text"
           name="search"
@@ -88,6 +90,20 @@ export default async function ContactsPage({
               {account.name}
             </option>
           ))}
+        </select>
+        <select
+          name="channel"
+          defaultValue={channelFilter}
+          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+        >
+          <option value="">All channels</option>
+          {[...new Set(contacts.map((c) => c.channel).filter(Boolean))]
+            .sort()
+            .map((ch) => (
+              <option key={ch} value={ch!}>
+                {ch}
+              </option>
+            ))}
         </select>
         <button
           type="submit"
@@ -108,6 +124,9 @@ export default async function ContactsPage({
           }
           if (accountId) {
             params.set('account_id', accountId)
+          }
+          if (channelFilter) {
+            params.set('channel', channelFilter)
           }
 
           const href = params.toString() ? `/crm/contacts?${params}` : '/crm/contacts'
@@ -140,6 +159,7 @@ export default async function ContactsPage({
                 <tr>
                   <th className="pb-3">Name</th>
                   <th className="pb-3">Account</th>
+                  <th className="pb-3">Channel</th>
                   <th className="pb-3">Workstream</th>
                   <th className="pb-3">Role</th>
                   <th className="pb-3">Status</th>
@@ -166,6 +186,7 @@ export default async function ContactsPage({
                         </p>
                       </td>
                       <td className="py-4 text-[#9CA3AF]">{account?.name ?? '—'}</td>
+                      <td className="py-4 text-[#9CA3AF]">{contact.channel ?? '—'}</td>
                       <td className="py-4">
                         {workstream ? (
                           <WorkstreamBadge

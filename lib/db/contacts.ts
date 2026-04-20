@@ -12,6 +12,7 @@ export async function getContacts(
     workstream_id?: string
     account_id?: string
     status?: ContactStatus
+    channel?: string
     search?: string
   } = {},
   client?: SupabaseClient
@@ -32,6 +33,10 @@ export async function getContacts(
 
   if (filters.status) {
     query = query.eq('status', filters.status)
+  }
+
+  if (filters.channel) {
+    query = query.eq('channel', filters.channel)
   }
 
   if (filters.search) {
@@ -81,6 +86,8 @@ export async function createContact(
     city: data.city?.trim() || null,
     postcode: data.postcode?.trim() || null,
     country: data.country?.trim() || null,
+    channel: data.channel?.trim() || null,
+    website: data.website?.trim() || null,
   }
 
   if (!payload.name) {
@@ -133,6 +140,14 @@ export async function updateContact(
 
   if (patch.country !== undefined) {
     patch.country = patch.country?.trim() || null
+  }
+
+  if (patch.channel !== undefined) {
+    patch.channel = patch.channel?.trim() || null
+  }
+
+  if (patch.website !== undefined) {
+    patch.website = patch.website?.trim() || null
   }
 
   const { data: contact, error } = await supabase

@@ -23,6 +23,8 @@ export default function NewContactForm({
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [role, setRole] = useState('')
+  const [channel, setChannel] = useState('')
+  const [website, setWebsite] = useState('')
   const [addressLine1, setAddressLine1] = useState('')
   const [addressLine2, setAddressLine2] = useState('')
   const [city, setCity] = useState('')
@@ -49,6 +51,8 @@ export default function NewContactForm({
           email,
           phone,
           role,
+          channel,
+          website,
           address_line1: addressLine1,
           address_line2: addressLine2,
           city,
@@ -116,6 +120,24 @@ export default function NewContactForm({
           <input
             value={role}
             onChange={(event) => setRole(event.target.value)}
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm text-[#9CA3AF]">Channel</span>
+          <input
+            value={channel}
+            onChange={(event) => setChannel(event.target.value)}
+            placeholder="e.g. Online Pouch Retailers"
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm text-[#9CA3AF]">Website</span>
+          <input
+            value={website}
+            onChange={(event) => setWebsite(event.target.value)}
+            placeholder="e.g. example.com"
             className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>

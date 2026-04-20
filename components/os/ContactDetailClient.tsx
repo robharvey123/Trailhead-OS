@@ -58,6 +58,8 @@ export default function ContactDetailClient({
     email: initialContact.email ?? '',
     phone: initialContact.phone ?? '',
     role: initialContact.role ?? '',
+    channel: initialContact.channel ?? '',
+    website: initialContact.website ?? '',
     address_line1: initialContact.address_line1 ?? '',
     address_line2: initialContact.address_line2 ?? '',
     city: initialContact.city ?? '',
@@ -87,6 +89,8 @@ export default function ContactDetailClient({
           email: form.email,
           phone: form.phone,
           role: form.role,
+          channel: form.channel,
+          website: form.website,
           address_line1: form.address_line1,
           address_line2: form.address_line2,
           city: form.city,
@@ -183,6 +187,8 @@ export default function ContactDetailClient({
                       email: contact.email ?? '',
                       phone: contact.phone ?? '',
                       role: contact.role ?? '',
+                      channel: contact.channel ?? '',
+                      website: contact.website ?? '',
                       address_line1: contact.address_line1 ?? '',
                       address_line2: contact.address_line2 ?? '',
                       city: contact.city ?? '',
@@ -253,6 +259,24 @@ export default function ContactDetailClient({
                 <input
                   value={form.role}
                   onChange={(event) => setForm({ ...form, role: event.target.value })}
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm text-[#9CA3AF]">Channel</span>
+                <input
+                  value={form.channel}
+                  onChange={(event) => setForm({ ...form, channel: event.target.value })}
+                  placeholder="e.g. Online Pouch Retailers"
+                  className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm text-[#9CA3AF]">Website</span>
+                <input
+                  value={form.website}
+                  onChange={(event) => setForm({ ...form, website: event.target.value })}
+                  placeholder="e.g. example.com"
                   className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
                 />
               </label>
@@ -351,6 +375,25 @@ export default function ContactDetailClient({
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-white0">Role</p>
                 <p className="mt-2 text-sm text-[#9CA3AF]">{contact.role ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Channel</p>
+                <p className="mt-2 text-sm text-[#9CA3AF]">{contact.channel ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-white0">Website</p>
+                <p className="mt-2 text-sm text-[#9CA3AF]">
+                  {contact.website ? (
+                    <a
+                      href={contact.website.startsWith('http') ? contact.website : `https://${contact.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sky-300 hover:text-sky-200"
+                    >
+                      {contact.website}
+                    </a>
+                  ) : '—'}
+                </p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-white0">Address</p>

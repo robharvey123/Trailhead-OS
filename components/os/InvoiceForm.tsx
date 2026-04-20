@@ -71,6 +71,8 @@ function createEmptyContact(): Contact {
     city: null,
     postcode: null,
     country: null,
+    channel: null,
+    website: null,
     status: 'lead',
     notes: null,
     tags: [],
