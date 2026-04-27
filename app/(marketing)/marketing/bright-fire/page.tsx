@@ -26,24 +26,26 @@ const features = [
   },
 ]
 
-const pricing = [
+const whatThisShowcases = [
   {
-    name: 'Starter',
-    price: '£29/mo',
+    title: 'PWA for field teams',
     description:
-      'For small field service teams getting started with digital job management and scheduling.',
+      'Every screen is optimised for mobile. Engineers access their jobs, complete forms, and capture photos from the same interface whether they are online or offline.',
   },
   {
-    name: 'Pro',
-    price: '£69/mo',
+    title: 'Offline-first architecture',
     description:
-      'For growing operations needing scheduling, digital forms, photo capture, and customer records in one platform.',
+      'Jobs sync locally and update the server automatically when connectivity returns. No data loss on poor signal — a common requirement for field service and construction businesses.',
   },
   {
-    name: 'Enterprise',
-    price: 'Custom',
+    title: 'Configurable workflows',
     description:
-      'For larger field service businesses with complex workflows, multi-team operations, and bespoke integration requirements.',
+      'Job sheet templates, checklists, and field types are configurable per client without code changes. This is the kind of flexibility we build into every bespoke tool we deliver.',
+  },
+  {
+    title: 'Real-time dispatch and calendar',
+    description:
+      'Office teams see live job status and engineer availability. Scheduling changes push instantly to field devices. This is a pattern we use across client portals and operational dashboards.',
   },
 ]
 
@@ -66,20 +68,20 @@ export default async function BrightFirePage() {
               BrightFire
             </p>
             <h1 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-              Field service management for teams that work in the real world.
+              An example of what we build for field service businesses.
             </h1>
             <p className="mt-6 text-lg leading-8 text-slate-600">
-              BrightFire is a progressive web app built for fire &amp; security,
-              electrical, HVAC, and facilities management businesses. Job
-              scheduling, digital job sheets, offline capability, and real-time
-              field-to-office sync.
+              BrightFire is a bespoke progressive web app we developed for fire &amp; security,
+              electrical, HVAC, and facilities management operations. It is not a
+              subscription product — it is a showcase of the kind of tool we design
+              and build for clients who have outgrown generic software.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link
                 href={buildMarketingHref('/#contact', isLocalhost)}
                 className="inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600"
               >
-                Get early access
+                Build something like this
               </Link>
               <Link
                 href={buildMarketingHref('/#contact', isLocalhost)}
@@ -139,7 +141,7 @@ export default async function BrightFirePage() {
       <Reveal className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
         <div className="mx-auto max-w-[1100px]">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
-            Features
+            What&apos;s inside
           </p>
           <div className="mt-10 grid gap-6 md:grid-cols-2">
             {features.map((feature) => (
@@ -162,22 +164,22 @@ export default async function BrightFirePage() {
       <Reveal className="px-6 py-20 md:px-8 md:py-24">
         <div className="mx-auto max-w-[1100px]">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
-            Pricing
+            What this showcases
           </p>
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {pricing.map((tier) => (
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
+            BrightFire demonstrates patterns and capabilities we apply across client builds. Here is what this project illustrates we can deliver.
+          </p>
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {whatThisShowcases.map((item) => (
               <article
-                key={tier.name}
+                key={item.title}
                 className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
               >
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  {tier.name}
-                </p>
-                <h2 className="mt-4 text-4xl font-bold tracking-[-0.04em]">
-                  {tier.price}
+                <h2 className="text-2xl font-bold tracking-[-0.03em]">
+                  {item.title}
                 </h2>
                 <p className="mt-4 text-[0.98rem] leading-8 text-slate-600">
-                  {tier.description}
+                  {item.description}
                 </p>
               </article>
             ))}
@@ -188,21 +190,21 @@ export default async function BrightFirePage() {
       <Reveal className="bg-slate-950 px-6 py-20 text-white md:px-8 md:py-24">
         <div className="mx-auto max-w-[1100px] text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-300">
-            Currently in development
+            Want something like this?
           </p>
           <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            Want early access or have a project in mind?
+            We build tools like BrightFire for clients.
           </h2>
           <p className="mt-6 text-lg leading-8 text-slate-400">
-            BrightFire is actively being developed. Get in touch if you want to
-            follow progress, explore a pilot, or discuss a bespoke build for
-            your operation.
+            If your operation is running on a mix of spreadsheets, phone calls,
+            and software that was never quite designed for how you work, we can
+            build you something that fits properly. Tell us what you need.
           </p>
           <Link
             href={buildMarketingHref('/#contact', isLocalhost)}
             className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-400"
           >
-            Get in touch
+            Start a project
           </Link>
         </div>
       </Reveal>

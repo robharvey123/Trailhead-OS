@@ -71,7 +71,7 @@ const services = [
   {
     title: 'BrightFire',
     description:
-      'A field service management PWA built for fire & security, electrical, HVAC, and facilities management businesses. Job scheduling, digital job sheets, photo capture, and offline capability. Engineered for the gap between what off-the-shelf tools assume and what field teams actually need.',
+      'BrightFire is a bespoke field service management PWA we built for fire & security, electrical, HVAC, and facilities management operations. Not a subscription product — an example of the kind of tool we design and build for clients.',,
     cta: 'Learn more',
     href: '/bright-fire',
     icon: (
@@ -706,10 +706,10 @@ export default async function MarketingHomePage() {
                 BrightFire
               </p>
               <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-                Field service management for teams that work on-site.
+                An example of what we build for field service businesses.
               </h2>
               <p className="mt-6 text-lg leading-8 text-slate-600">
-                BrightFire is a PWA built for fire &amp; security, electrical, HVAC, and facilities management businesses. Job scheduling, digital job sheets, photo capture, and offline capability. Engineered for the gap between what off-the-shelf tools promise and what field teams actually need.
+                BrightFire is not a subscription product — it is a bespoke PWA we developed to demonstrate what we can build for field service operations. Job scheduling, digital job sheets, offline capability, and real-time field-to-office sync. The kind of tool we deliver for clients who need something that fits the actual shape of how they work.
               </p>
               <Link
                 href={buildMarketingHref('/bright-fire', isLocalhost)}
@@ -821,14 +821,14 @@ export default async function MarketingHomePage() {
             </div>
 
             <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
-              Currently under active development. Built by the same team on the same stack as every other product under Trailhead Holdings.
+              An example build. If you need something like this for your operation, we can design and deliver it.
             </p>
 
             <Link
               href={buildMarketingHref('/bright-fire', isLocalhost)}
               className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600"
             >
-              Learn more about BrightFire
+              Learn more →
             </Link>
           </div>
         </div>
