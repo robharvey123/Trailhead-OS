@@ -68,6 +68,24 @@ const services = [
       </svg>
     ),
   },
+  {
+    title: 'BrightFire',
+    description:
+      'A field service management PWA built for fire & security, electrical, HVAC, and facilities management businesses. Job scheduling, digital job sheets, photo capture, and offline capability. Engineered for the gap between what off-the-shelf tools assume and what field teams actually need.',
+    cta: 'Learn more',
+    href: '/bright-fire',
+    icon: (
+      <svg
+        viewBox="0 0 48 48"
+        className="h-10 w-10 text-sky-500"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      >
+        <path d="M24 8c0 0-11 12-11 20a11 11 0 0022 0c0-5-2.5-9-2.5-9s-3.5 5-7.5 5c-2 0-4-3-4-6 0-3 3-10 3-10z" />
+      </svg>
+    ),
+  },
 ]
 
 const stats = [
@@ -222,6 +240,39 @@ const leaderboardRows = [
   ['5', 'C. Shaw', '96'],
 ]
 
+const brightFireStats = [
+  { value: 'PWA', label: 'Works in any browser, on any device' },
+  { value: 'Offline', label: 'Fully functional without a signal' },
+  { value: 'Live', label: 'Field and office always in sync' },
+]
+
+const brightFireFeatures = [
+  'Job scheduling, dispatch, and calendar view',
+  'Digital job sheets and engineer checklists',
+  'Photo and document capture in the field',
+  'Customer and site record management',
+  'Offline-capable — syncs automatically when signal returns',
+  'Push notifications for job assignments and updates',
+]
+
+const brightFireTags = [
+  'PWA',
+  'Field Service',
+  'Fire & Security',
+  'Electrical',
+  'HVAC',
+  'Job Management',
+  'Offline-Capable',
+  'Next.js',
+  'Supabase',
+]
+
+const brightFireJobs = [
+  ['#2048', 'Fire Alarm Inspection', '09:00', 'J. Cooper', 'active'],
+  ['#2049', 'HVAC Annual Service', '11:30', 'T. Marsh', 'scheduled'],
+  ['#2050', 'Emergency Lighting Test', '14:00', 'S. White', 'scheduled'],
+]
+
 export default async function MarketingHomePage() {
   const host = (await headers()).get('host') || ''
   const isLocalhost = isLocalDevelopmentHost(host)
@@ -280,7 +331,7 @@ export default async function MarketingHomePage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
             What we do
           </p>
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {services.map((service) => (
               <article
                 key={service.title}
@@ -643,6 +694,142 @@ export default async function MarketingHomePage() {
               </a>
               . Built by someone who plays the game and sits on a club committee.
             </p>
+          </div>
+        </div>
+      </Reveal>
+
+      <Reveal className="px-6 py-20 md:px-8 md:py-24">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="grid gap-10 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
+                BrightFire
+              </p>
+              <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
+                Field service management for teams that work on-site.
+              </h2>
+              <p className="mt-6 text-lg leading-8 text-slate-600">
+                BrightFire is a PWA built for fire &amp; security, electrical, HVAC, and facilities management businesses. Job scheduling, digital job sheets, photo capture, and offline capability. Engineered for the gap between what off-the-shelf tools promise and what field teams actually need.
+              </p>
+              <Link
+                href={buildMarketingHref('/bright-fire', isLocalhost)}
+                className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+              >
+                Learn more
+              </Link>
+            </div>
+
+            <div className="rounded-[2rem] border border-orange-100 bg-[linear-gradient(180deg,#FFF7ED_0%,#FFEDD5_100%)] p-5 shadow-[0_35px_80px_-45px_rgba(249,115,22,0.35)]">
+              <div className="rounded-[1.5rem] border border-orange-50 bg-white p-5 shadow-[0_20px_60px_-40px_rgba(249,115,22,0.25)]">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+                      Today&apos;s jobs
+                    </p>
+                    <h3 className="mt-2 text-xl font-bold tracking-[-0.03em] text-slate-800">
+                      Field schedule
+                    </h3>
+                  </div>
+                  <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                    27 Apr
+                  </span>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  {brightFireJobs.map(([id, title, time, engineer, status]) => (
+                    <div
+                      key={id}
+                      className="grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-2xl border border-slate-100 px-4 py-3"
+                    >
+                      <span className="text-xs font-semibold text-orange-500">{id}</span>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">{title}</p>
+                        <p className="text-xs text-slate-500">{time} · {engineer}</p>
+                      </div>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          status === 'active'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {status === 'active' ? 'Active' : 'Scheduled'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
+                Stats
+              </p>
+              <div className="mt-6 space-y-4">
+                {brightFireStats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-4"
+                  >
+                    <p className="text-3xl font-bold tracking-[-0.05em] text-[var(--marketing-text)]">
+                      {stat.value}
+                    </p>
+                    <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
+                Features
+              </p>
+              <ul className="mt-6 space-y-4">
+                {brightFireFeatures.map((feature) => (
+                  <li
+                    key={feature}
+                    className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-4 text-sm font-medium leading-6 text-slate-700"
+                  >
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </div>
+
+          <div className="mt-6 rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
+              Who it is for
+            </p>
+            <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-600">
+              Field service businesses running on phone calls, paper job sheets, and email chains. Fire &amp; security, electrical, HVAC, plumbing, and facilities management teams who need a single system that works for engineers in the field and managers back at the office.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              {brightFireTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-orange-700"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
+              Currently under active development. Built by the same team on the same stack as every other product under Trailhead Holdings.
+            </p>
+
+            <Link
+              href={buildMarketingHref('/bright-fire', isLocalhost)}
+              className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+            >
+              Learn more about BrightFire
+            </Link>
           </div>
         </div>
       </Reveal>

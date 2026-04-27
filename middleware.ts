@@ -30,7 +30,9 @@ function getMarketingRewritePath(pathname: string) {
     pathname === '/blog' ||
     pathname.startsWith('/blog/') ||
     pathname === '/mvp-cricket' ||
-    pathname.startsWith('/mvp-cricket/')
+    pathname.startsWith('/mvp-cricket/') ||
+    pathname === '/bright-fire' ||
+    pathname.startsWith('/bright-fire/')
   ) {
     return `/marketing${pathname}`
   }

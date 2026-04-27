@@ -37,6 +37,10 @@ export default function MarketingShell({
       label: 'MVP Cricket',
       href: buildMarketingHref('/mvp-cricket', isLocalhost),
     },
+    {
+      label: 'BrightFire',
+      href: buildMarketingHref('/bright-fire', isLocalhost),
+    },
     { label: 'Blog', href: buildMarketingHref('/blog', isLocalhost) },
     { label: 'Contact', href: buildMarketingHref('/#contact', isLocalhost) },
   ]

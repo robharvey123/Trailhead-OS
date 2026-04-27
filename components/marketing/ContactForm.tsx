@@ -138,6 +138,7 @@ export default function ContactForm() {
             <option>NGP/Brand Consulting</option>
             <option>App Development</option>
             <option>MVP Cricket</option>
+            <option>BrightFire</option>
             <option>Other</option>
           </select>
         </div>
