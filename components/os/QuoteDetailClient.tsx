@@ -759,17 +759,15 @@ export default function QuoteDetailClient({
                 </>
               ) : null}
 
-              {quoteState.status === 'accepted' ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={convertToInvoice}
-                    disabled={loadingAction !== null}
-                    className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
-                  >
-                    Convert to invoice
-                  </button>
-                </>
+              {quoteState.status !== 'converted' ? (
+                <button
+                  type="button"
+                  onClick={convertToInvoice}
+                  disabled={loadingAction !== null}
+                  className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                >
+                  Convert to invoice
+                </button>
               ) : null}
 
               {quoteState.status === 'converted' && quoteState.invoice ? (

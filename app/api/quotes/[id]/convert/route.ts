@@ -28,13 +28,6 @@ export async function POST(
       return NextResponse.json({ invoice_id: quote.converted_invoice_id })
     }
 
-    if (quote.status !== 'accepted') {
-      return NextResponse.json(
-        { error: 'Only accepted quotes can be converted to invoices' },
-        { status: 400 }
-      )
-    }
-
     const [account, contact] = await Promise.all([
       quote.account_id ? getAccountById(quote.account_id, auth.supabase).catch(() => null) : null,
       quote.contact_id ? getContactById(quote.contact_id, auth.supabase).catch(() => null) : null,
