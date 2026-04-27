@@ -188,11 +188,22 @@ const appDevelopmentExamples = [
     title: 'Trailhead OS',
     summary:
       'Our own internal operating system, built to run a multi-workstream business from a single platform. Covers a command centre dashboard, Kanban boards per workstream, CRM, invoicing with PDF generation, an AI quoting module, and a client discovery flow. Built on Next.js, TypeScript, Tailwind, and Supabase. The same stack we use for clients.',
+    href: null,
+    tag: 'Internal OS',
   },
   {
-    title: 'Current client engagement',
+    title: 'MVP Cricket',
     summary:
-      'We are in early-stage development with a consumer brand building a client-facing portal to centralise order management, account reporting, and brand asset distribution. Replacing a fragmented mix of emails, spreadsheets, and shared drives with one login.',
+      'A SaaS platform built for grassroots cricket clubs. Automated MVP scoring after every match, live Play-Cricket integration, player leaderboards, and club management. Everything a club committee needs to operate more professionally in one place.',
+    href: '/mvp-cricket',
+    tag: 'SaaS · Sports',
+  },
+  {
+    title: 'BrightFire',
+    summary:
+      'A bespoke field service management PWA for fire & security, electrical, HVAC, and facilities management businesses. Job scheduling, digital job sheets, photo capture, and offline-first sync. A showcase of what we build for operations that have outgrown generic software.',
+    href: '/bright-fire',
+    tag: 'PWA · Field Service',
   },
 ]
 
@@ -530,12 +541,25 @@ export default async function MarketingHomePage() {
                   key={example.title}
                   className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-5"
                 >
-                  <h3 className="text-xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-                    {example.title}
-                  </h3>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <h3 className="text-xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+                      {example.title}
+                    </h3>
+                    <span className="rounded-full border border-sky-100 bg-sky-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
+                      {example.tag}
+                    </span>
+                  </div>
                   <p className="mt-3 text-[0.98rem] leading-7 text-slate-600">
                     {example.summary}
                   </p>
+                  {example.href ? (
+                    <Link
+                      href={buildMarketingHref(example.href, isLocalhost)}
+                      className="mt-4 inline-flex text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+                    >
+                      Learn more →
+                    </Link>
+                  ) : null}
                 </div>
               ))}
             </div>
