@@ -71,7 +71,7 @@ const services = [
   {
     title: 'BrightFire',
     description:
-      'BrightFire is a bespoke field service management PWA we built for fire & security, electrical, HVAC, and facilities management operations. Not a subscription product — an example of the kind of tool we design and build for clients.',,
+      'BrightFire is a bespoke field service management PWA we built for fire & security, electrical, HVAC, and facilities management operations. Not a subscription product — an example of the kind of tool we design and build for clients.',
     cta: 'Learn more',
     href: '/bright-fire',
     icon: (
