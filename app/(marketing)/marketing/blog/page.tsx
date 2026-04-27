@@ -1,10 +1,19 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import Reveal from '@/components/marketing/Reveal'
 import { collectBlogTags, formatBlogDate } from '@/lib/blog'
 import { getPublishedBlogPosts } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
+import { buildMetadata } from '@/lib/seo'
+
+export const metadata: Metadata = buildMetadata({
+  title: 'Blog, Notes on NGP, FMCG and Building Products',
+  description:
+    'Working notes from Trailhead Holdings on the nicotine and reduced-risk category, FMCG go to market, and building software for real businesses.',
+  path: '/blog',
+})
 
 export default async function MarketingBlogPage({
   searchParams,

@@ -1,0 +1,21 @@
+// app/page.tsx (home)
+// Add this metadata export to the top of your existing home page file.
+
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Commercial Strategy & Product Development for NGP, FMCG and SaaS",
+  description:
+    "We help brands grow in competitive markets, from NGP and FMCG consulting to bespoke software and SaaS products. UK-based, founder-led.",
+  path: "/",
+  keywords: [
+    "NGP consulting",
+    "nicotine pouch consulting",
+    "FMCG go to market",
+    "bespoke software development UK",
+    "commercial strategy consultant",
+  ],
+});
+
+// ...your existing default-exported page component below

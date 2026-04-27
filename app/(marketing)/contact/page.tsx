@@ -5,10 +5,14 @@ import ContactDetailsCard from '@/components/marketing/ContactDetailsCard'
 import ContactForm from '@/components/marketing/ContactForm'
 import Reveal from '@/components/marketing/Reveal'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
+import { buildMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
-  title: 'Contact',
-}
+export const metadata: Metadata = buildMetadata({
+  title: 'Contact Trailhead Holdings',
+  description:
+    'Talk to Rob Harvey about NGP and FMCG commercial strategy, product development, or a SaaS build. UK-based, replies within 24 hours.',
+  path: '/contact',
+})
 
 export default async function ContactPage() {
   const host = (await headers()).get('host') || ''

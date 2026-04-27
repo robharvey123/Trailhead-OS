@@ -1,0 +1,20 @@
+// app/bright-fire/page.tsx
+// Add this metadata export to the top of your existing BrightFire page.
+
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "BrightFire, Field Service Software for SMEs",
+  description:
+    "BrightFire is a custom field service platform built by Trailhead. An example of what we ship for service businesses that have outgrown spreadsheets.",
+  path: "/bright-fire",
+  keywords: [
+    "field service software UK",
+    "field service management SME",
+    "bespoke field service app",
+    "custom job management software",
+  ],
+});
+
+// ...your existing default-exported page component below

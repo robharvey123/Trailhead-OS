@@ -1,0 +1,14 @@
+// app/blog/page.tsx (blog index)
+// Add this metadata export to the top of your existing blog index file.
+
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Blog, Notes on NGP, FMCG and Building Products",
+  description:
+    "Working notes from Trailhead Holdings on the nicotine and reduced-risk category, FMCG go to market, and building software for real businesses.",
+  path: "/blog",
+});
+
+// ...your existing default-exported page component below

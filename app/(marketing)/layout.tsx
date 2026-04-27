@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { Inter } from 'next/font/google'
 import MarketingShell from '@/components/marketing/MarketingShell'
 import { isLocalDevelopmentHost } from '@/lib/site'
+import { SITE_DEFAULTS } from '@/lib/seo'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -10,11 +11,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Trailhead Holdings',
-    template: '%s | Trailhead Holdings',
+    default: `${SITE_DEFAULTS.name} | ${SITE_DEFAULTS.tagline}`,
+    template: `%s | ${SITE_DEFAULTS.name}`,
   },
-  description:
-    'Commercial strategy, digital product development, and SaaS ventures from Trailhead Holdings Ltd.',
+  description: SITE_DEFAULTS.description,
 }
 
 export default async function MarketingLayout({

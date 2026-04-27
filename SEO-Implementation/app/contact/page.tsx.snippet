@@ -1,0 +1,14 @@
+// app/contact/page.tsx
+// Add this metadata export to the top of your existing Contact page.
+
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Contact Trailhead Holdings",
+  description:
+    "Talk to Rob Harvey about NGP and FMCG commercial strategy, product development, or a SaaS build. UK-based, replies within 24 hours.",
+  path: "/contact",
+});
+
+// ...your existing default-exported page component below

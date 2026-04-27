@@ -1,12 +1,48 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import ReactMarkdown from 'react-markdown'
 import Reveal from '@/components/marketing/Reveal'
 import { blogMarkdownClassName, formatBlogDate } from '@/lib/blog'
-import { getPublishedBlogPostBySlug } from '@/lib/db/blog-posts'
+import { getPublishedBlogPostBySlug, getPublishedBlogPosts } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
+import { buildMetadata, absoluteUrl } from '@/lib/seo'
+import { BlogPostingJsonLd } from '@/components/JsonLd'
+
+export async function generateStaticParams() {
+  try {
+    const posts = await getPublishedBlogPosts()
+    return posts.map((p) => ({ slug: p.slug }))
+  } catch {
+    return []
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  try {
+    const post = await getPublishedBlogPostBySlug(slug)
+    if (!post) return {}
+    return buildMetadata({
+      title: post.title,
+      description: post.excerpt ?? post.title,
+      path: `/blog/${post.slug}`,
+      type: 'article',
+      publishedTime: post.published_at ?? undefined,
+      modifiedTime: post.updated_at ?? post.published_at ?? undefined,
+      authors: ['Rob Harvey'],
+      keywords: post.tags,
+    })
+  } catch {
+    return {}
+  }
+}
 
 export default async function MarketingBlogPostPage({
   params,
@@ -28,6 +64,15 @@ export default async function MarketingBlogPostPage({
   return (
     <Reveal className="px-6 py-16 md:px-8 md:py-20">
       <article className="mx-auto max-w-[720px]">
+        <BlogPostingJsonLd
+          title={post.title}
+          description={post.excerpt ?? post.title}
+          url={absoluteUrl(`/blog/${post.slug}`)}
+          datePublished={post.published_at ?? post.created_at}
+          dateModified={post.updated_at ?? post.published_at ?? post.created_at}
+          authorName="Rob Harvey"
+        />
+
         <Link
           href={buildMarketingHref('/blog', isLocalhost)}
           className="text-sm font-semibold text-sky-600 transition hover:text-sky-700"

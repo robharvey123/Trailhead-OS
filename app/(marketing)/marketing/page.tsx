@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import ContactDetailsCard from '@/components/marketing/ContactDetailsCard'
 import ContactForm from '@/components/marketing/ContactForm'
 import Reveal from '@/components/marketing/Reveal'
@@ -7,6 +8,21 @@ import { formatBlogDate } from '@/lib/blog'
 import { getPublishedBlogPosts } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
+import { buildMetadata } from '@/lib/seo'
+
+export const metadata: Metadata = buildMetadata({
+  title: 'Commercial Strategy & Product Development for NGP, FMCG and SaaS',
+  description:
+    'We help brands grow in competitive markets, from NGP and FMCG consulting to bespoke software and SaaS products. UK-based, founder-led.',
+  path: '/',
+  keywords: [
+    'NGP consulting',
+    'nicotine pouch consulting',
+    'FMCG go to market',
+    'bespoke software development UK',
+    'commercial strategy consultant',
+  ],
+})
 
 const services = [
   {

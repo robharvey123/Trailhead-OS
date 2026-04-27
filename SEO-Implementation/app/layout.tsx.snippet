@@ -1,0 +1,63 @@
+// app/layout.tsx
+// REPLACE the metadata export in your existing layout.tsx with this block.
+// Keep your existing imports, fonts, providers etc. Only the metadata block needs to change.
+
+import type { Metadata, Viewport } from "next";
+import { SITE_URL, SITE_DEFAULTS } from "@/lib/seo";
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/JsonLd";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_DEFAULTS.name} | ${SITE_DEFAULTS.tagline}`,
+    template: `%s | ${SITE_DEFAULTS.name}`, // overridden when child pages set a title
+  },
+  description: SITE_DEFAULTS.description,
+  applicationName: SITE_DEFAULTS.name,
+  authors: [{ name: SITE_DEFAULTS.founder }],
+  generator: "Next.js",
+  referrer: "origin-when-cross-origin",
+  formatDetection: { email: false, address: false, telephone: false },
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    type: "website",
+    siteName: SITE_DEFAULTS.name,
+    locale: SITE_DEFAULTS.defaultLocale,
+    url: SITE_URL,
+    title: `${SITE_DEFAULTS.name} | ${SITE_DEFAULTS.tagline}`,
+    description: SITE_DEFAULTS.description,
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: SITE_DEFAULTS.name }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_DEFAULTS.name} | ${SITE_DEFAULTS.tagline}`,
+    description: SITE_DEFAULTS.description,
+    images: ["/opengraph-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
+  icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
+  // verification: { google: "REPLACE_WITH_GSC_TOKEN", other: { "msvalidate.01": "REPLACE_WITH_BING_TOKEN" } },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff", // match your brand background
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en-GB">
+      <body>
+        {/* Sitewide structured data */}
+        <OrganizationJsonLd />
+        <WebSiteJsonLd />
+        {children}
+      </body>
+    </html>
+  );
+}

@@ -1,7 +1,22 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import Reveal from '@/components/marketing/Reveal'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
+import { buildMetadata } from '@/lib/seo'
+
+export const metadata: Metadata = buildMetadata({
+  title: 'BrightFire, Field Service Software for SMEs',
+  description:
+    'BrightFire is a custom field service platform built by Trailhead. An example of what we ship for service businesses that have outgrown spreadsheets.',
+  path: '/bright-fire',
+  keywords: [
+    'field service software UK',
+    'field service management SME',
+    'bespoke field service app',
+    'custom job management software',
+  ],
+})
 
 const features = [
   {

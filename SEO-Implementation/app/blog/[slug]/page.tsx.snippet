@@ -1,0 +1,58 @@
+// app/blog/[slug]/page.tsx
+// Replace your existing generateMetadata with this. Adjust getPost() to match how you load posts
+// (MDX, contentlayer, CMS, fs, etc). The shape you need from each post:
+//   { title, description, slug, publishedAt, updatedAt, author, ogImage }
+
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { buildMetadata, absoluteUrl } from "@/lib/seo";
+import { BlogPostingJsonLd } from "@/components/JsonLd";
+// import { getPost, getAllPosts } from "@/lib/posts"; // your loader
+
+type Props = { params: { slug: string } };
+
+export async function generateStaticParams() {
+  // const posts = await getAllPosts();
+  // return posts.map((p) => ({ slug: p.slug }));
+  return []; // delete this stub once getAllPosts is wired up
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // const post = await getPost(params.slug);
+  // if (!post) return {};
+  const post: any = null; // delete once getPost is wired up
+  if (!post) return {};
+
+  return buildMetadata({
+    title: post.title,
+    description: post.description ?? post.excerpt ?? "",
+    path: `/blog/${post.slug}`,
+    type: "article",
+    image: post.ogImage, // optional, falls back to default OG image
+    publishedTime: post.publishedAt,
+    modifiedTime: post.updatedAt ?? post.publishedAt,
+    authors: [post.author ?? "Rob Harvey"],
+    keywords: post.tags,
+  });
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  // const post = await getPost(params.slug);
+  const post: any = null; // delete once getPost is wired up
+  if (!post) notFound();
+
+  return (
+    <>
+      <BlogPostingJsonLd
+        title={post.title}
+        description={post.description ?? post.excerpt ?? ""}
+        url={absoluteUrl(`/blog/${post.slug}`)}
+        image={post.ogImage}
+        datePublished={post.publishedAt}
+        dateModified={post.updatedAt ?? post.publishedAt}
+        authorName={post.author ?? "Rob Harvey"}
+      />
+      {/* your existing article rendering */}
+    </>
+  );
+}
