@@ -316,8 +316,10 @@ export default async function MarketingHomePage() {
             <p className="text-sm font-semibold uppercase tracking-[0.32em] text-sky-500">
               Trailhead Holdings Ltd
             </p>
-            <h1 className="mt-6 text-5xl font-bold leading-[1.02] tracking-[-0.05em] text-[var(--marketing-text)] md:text-[56px]">
-              Commercial strategy. Digital products. Built to last.
+            <h1 className="mt-6 text-5xl font-bold leading-[1.08] tracking-[-0.05em] text-[var(--marketing-text)] md:text-[56px]">
+              <span className="block">Commercial strategy.</span>
+              <span className="block">Digital products.</span>
+              <span className="block">Built to last.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 md:text-xl">
               We help brands grow in competitive markets, from NGP and FMCG
@@ -331,7 +333,7 @@ export default async function MarketingHomePage() {
                 Work with us
               </Link>
               <Link
-                href={buildMarketingHref('/#services', isLocalhost)}
+                href="#services"
                 className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
               >
                 See what we build
