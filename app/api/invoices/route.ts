@@ -184,11 +184,26 @@ export async function POST(request: NextRequest) {
       bill_to_email: sanitizeText(body.bill_to_email) ?? derivedBillTo.bill_to_email,
       bill_to_phone: sanitizeText(body.bill_to_phone) ?? derivedBillTo.bill_to_phone,
     notes: sanitizeText(body.notes),
+    is_recurring: body.is_recurring === true,
+    recurring_interval:
+      body.is_recurring === true && (body.recurring_interval === 'month' || body.recurring_interval === 'year')
+        ? body.recurring_interval
+        : null,
   }
 
   const totals = calculateTotals(payload.line_items, payload.vat_rate)
   if (!Number.isFinite(totals.total)) {
     return NextResponse.json({ error: 'Invalid invoice totals' }, { status: 400 })
+  }
+
+  if (payload.is_recurring && payload.recurring_interval) {
+    const base = new Date(payload.issue_date)
+    if (payload.recurring_interval === 'month') {
+      base.setMonth(base.getMonth() + 1)
+    } else {
+      base.setFullYear(base.getFullYear() + 1)
+    }
+    ;(payload as Record<string, unknown>).next_invoice_date = base.toISOString().slice(0, 10)
   }
 
   try {

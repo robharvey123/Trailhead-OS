@@ -136,6 +136,8 @@ export default function InvoiceForm({
   const [billToCountry, setBillToCountry] = useState(initialInvoice?.bill_to_country ?? initialDerivedBillTo.bill_to_country ?? '')
   const [billToEmail, setBillToEmail] = useState(initialInvoice?.bill_to_email ?? initialDerivedBillTo.bill_to_email ?? '')
   const [billToPhone, setBillToPhone] = useState(initialInvoice?.bill_to_phone ?? initialDerivedBillTo.bill_to_phone ?? '')
+  const [isRecurring, setIsRecurring] = useState(initialInvoice?.is_recurring ?? false)
+  const [recurringInterval, setRecurringInterval] = useState<'month' | 'year'>(initialInvoice?.recurring_interval ?? 'month')
   const selectionSyncReadyRef = useRef(false)
 
   const filteredContacts = contacts.filter((contact) => {
@@ -251,6 +253,8 @@ export default function InvoiceForm({
         notes,
         line_items: sanitizedLineItems,
         status: nextStatus === 'edit' ? initialInvoice?.status ?? 'draft' : nextStatus,
+        is_recurring: isRecurring,
+        recurring_interval: isRecurring ? recurringInterval : null,
       }
 
       if (initialInvoice) {
@@ -403,6 +407,51 @@ export default function InvoiceForm({
             className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
+
+        <div className="md:col-span-2">
+          <label className="flex cursor-pointer items-center gap-3">
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={isRecurring}
+                onChange={(event) => setIsRecurring(event.target.checked)}
+                className="sr-only"
+              />
+              <div
+                className={`h-6 w-11 rounded-full transition-colors ${isRecurring ? 'bg-violet-600' : 'bg-[#2A2A3A]'}`}
+              />
+              <div
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
+              />
+            </div>
+            <span className="text-sm text-[#9CA3AF]">Recurring invoice</span>
+          </label>
+
+          {isRecurring && (
+            <div className="mt-3">
+              <span className="mb-2 block text-sm text-[#9CA3AF]">Billing cycle</span>
+              <div className="flex gap-2">
+                {(['month', 'year'] as const).map((interval) => (
+                  <button
+                    key={interval}
+                    type="button"
+                    onClick={() => setRecurringInterval(interval)}
+                    className={`rounded-2xl border px-4 py-2 text-sm transition-colors ${
+                      recurringInterval === interval
+                        ? 'border-violet-600 bg-violet-600/20 text-violet-300'
+                        : 'border-[#2A2A3A] bg-[#0C0C14] text-[#9CA3AF] hover:border-violet-600/50'
+                    }`}
+                  >
+                    {interval === 'month' ? 'Monthly' : 'Yearly'}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-[#9CA3AF]">
+                A new draft invoice will be automatically created each {recurringInterval === 'month' ? 'month' : 'year'} from the issue date.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-4">

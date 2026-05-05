@@ -326,7 +326,8 @@ export interface Invoice {
   stripe_subscription_id?: string
   paid_at?: string
   is_recurring?: boolean
-  recurring_interval?: 'month' | 'year'
+  recurring_interval?: 'month' | 'year' | null
+  next_invoice_date?: string | null
   bill_to_name: string | null
   bill_to_address: string | null
   bill_to_city: string | null

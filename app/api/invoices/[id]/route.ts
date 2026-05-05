@@ -201,6 +201,21 @@ export async function PATCH(
     patch.notes = sanitizeText(body.notes)
   }
 
+  if (body.is_recurring !== undefined) {
+    patch.is_recurring = body.is_recurring === true
+  }
+
+  if (body.recurring_interval !== undefined) {
+    if (body.recurring_interval !== null && body.recurring_interval !== 'month' && body.recurring_interval !== 'year') {
+      return NextResponse.json({ error: 'recurring_interval must be month, year, or null' }, { status: 400 })
+    }
+    patch.recurring_interval = body.recurring_interval
+  }
+
+  if (body.next_invoice_date !== undefined) {
+    patch.next_invoice_date = body.next_invoice_date === null ? null : String(body.next_invoice_date)
+  }
+
   const accountIdChanged = body.account_id !== undefined
   const contactIdChanged = body.contact_id !== undefined
   const billToFieldKeys = [
