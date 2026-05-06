@@ -8,7 +8,14 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import type { Workstream } from '@/lib/types'
 
-export default async function DiscoveryPage() {
+export default async function DiscoveryPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ view?: string }>
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined
+  const requestedView = resolvedSearchParams?.view?.toLowerCase()
+  const showFormView = requestedView === 'form'
   const requestHeaders = await headers()
   const isIframeRequest = requestHeaders.get('sec-fetch-dest') === 'iframe'
   const supabase = await createClient()
@@ -16,7 +23,7 @@ export default async function DiscoveryPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user || isIframeRequest) {
+  if (!user || isIframeRequest || showFormView) {
     return <PublicDiscoveryForm />
   }
 

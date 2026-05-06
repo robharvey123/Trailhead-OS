@@ -254,7 +254,7 @@ export default function Sidebar({
                 collapsed={collapsed}
               />
               <NavLink
-                href="/discovery"
+                href="/discovery?view=form"
                 label="Discovery form"
                 active={pathname.startsWith('/discovery')}
                 onClick={() => setMobileOpen(false)}

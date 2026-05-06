@@ -124,9 +124,10 @@ const STEPS: StepDefinition[] = [
     kind: 'radio',
     required: true,
     options: [
-      'Mostly engineers in the field',
-      'Mostly office-based',
+      'Mostly field or on-site',
+      'Mostly office or desk-based',
       'Roughly 50/50',
+      'Mostly remote/distributed',
       'Mix varies week to week',
     ],
   },
@@ -136,43 +137,44 @@ const STEPS: StepDefinition[] = [
     kind: 'chips',
     required: true,
     options: [
-      'Shared team calendar',
-      'Job/appointment scheduling',
-      'Forms for engineers',
-      'Project notes & job history',
-      'File & document uploads',
-      'Customer/client records',
-      'Task management',
-      'Photo uploads from site',
-      'Notifications & reminders',
-      'Invoice or quote generation',
-      'Reporting & dashboards',
-      'User roles & permissions',
+      'Shared calendar and planning',
+      'Scheduling and workload management',
+      'Digital forms and checklists',
+      'Project notes and activity history',
+      'File and document management',
+      'Customer or client records (CRM)',
+      'Task and project management',
+      'Approvals and workflow automation',
+      'Internal communication and notifications',
+      'Invoicing and quoting',
+      'Reporting and dashboards',
+      'User roles and permissions',
+      'Integrations with existing tools',
     ],
   },
   {
     field: 'calendar_detail',
-    title: 'How are appointments or jobs managed right now?',
+    title: 'How are schedules, bookings, or key activities managed right now?',
     kind: 'radio',
     required: true,
     options: [
       'Mostly paper or whiteboard',
       'Shared spreadsheet or Google Calendar',
-      'A booking/CRM system',
+      'A scheduling, booking, or CRM system',
       'Scattered across emails and texts',
       'No real system',
     ],
   },
   {
     field: 'forms_detail',
-    title: 'What forms do engineers currently complete?',
+    title: 'What forms, records, or admin tasks does your team complete today?',
     kind: 'textarea',
     required: true,
-    hint: 'e.g. job sheets, risk assessments, COSHH, timesheets — list anything you can think of',
+    hint: 'e.g. job sheets, onboarding, compliance checks, approvals, timesheets, QA forms, handover notes',
   },
   {
     field: 'devices',
-    title: 'What devices do engineers use?',
+    title: 'What devices does your team primarily use?',
     kind: 'chips',
     required: true,
     options: [
@@ -186,7 +188,7 @@ const STEPS: StepDefinition[] = [
   },
   {
     field: 'offline_capability',
-    title: 'Do they need the app to work with poor signal or offline?',
+    title: 'Do you need this to work with poor signal or fully offline?',
     kind: 'radio',
     required: true,
     options: ['Yes, often', 'Sometimes', 'Rarely', 'No — always connected'],
@@ -196,7 +198,7 @@ const STEPS: StepDefinition[] = [
     title: 'Which tools or software are already in the mix?',
     kind: 'textarea',
     required: true,
-    hint: "e.g. Xero, QuickBooks, Outlook, Simpro — even if it's just spreadsheets",
+    hint: "e.g. Xero, HubSpot, Notion, Airtable, Outlook, Google Workspace, Simpro, spreadsheets",
   },
   {
     field: 'pain_points',
@@ -622,10 +624,10 @@ export default function PublicDiscoveryForm() {
               Trailhead discovery
             </p>
             <h1 className="text-[2rem] leading-tight text-[#1f2937] sm:text-[2.5rem]">
-              Built for teams that need jobs, people, paperwork, and schedules to stay in sync.
+              Built for businesses that need people, projects, operations, and customer work to stay in sync.
             </h1>
             <p className="max-w-lg text-base leading-7 text-[#526072] sm:text-lg">
-              A few quick questions will help shape the first conversation around your workflow, field team, and the operational gaps worth fixing first.
+              A few quick questions will help shape the first conversation around your workflows, priorities, and the bottlenecks worth fixing first.
             </p>
           </div>
         </div>

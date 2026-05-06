@@ -57,7 +57,7 @@ export default function DiscoveryOSClient({
   }
 
   function handleOpenForm() {
-    window.open('/discovery', '_blank', 'noopener,noreferrer')
+    window.open('/discovery?view=form', '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -109,7 +109,7 @@ export default function DiscoveryOSClient({
 
           {showPreview ? (
             <iframe
-              src="/discovery"
+              src="/discovery?view=form"
               title="Discovery form preview"
               className="mt-4 w-full rounded-lg border border-gray-200"
               style={{ height: '600px' }}
