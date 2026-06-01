@@ -4,16 +4,17 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
 
-    if (!ok || !supabase) {
+    if (!ok) {
       return authResponse
     }
 
-    const entry = await timesheet.getTimeEntryById(params.id, supabase)
+    const { id } = await params
+    const entry = await timesheet.getTimeEntryById(id, supabase)
 
     if (!entry) {
       return NextResponse.json({ error: 'Time entry not found' }, { status: 404 })
@@ -28,18 +29,19 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
 
-    if (!ok || !supabase) {
+    if (!ok) {
       return authResponse
     }
 
     const body = await request.json()
 
-    const updated = await timesheet.updateTimeEntry(params.id, body, supabase)
+    const { id } = await params
+    const updated = await timesheet.updateTimeEntry(id, body, supabase)
 
     return NextResponse.json({ entry: updated })
   } catch (error) {
@@ -50,16 +52,17 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
 
-    if (!ok || !supabase) {
+    if (!ok) {
       return authResponse
     }
 
-    await timesheet.deleteTimeEntry(params.id, supabase)
+    const { id } = await params
+    await timesheet.deleteTimeEntry(id, supabase)
 
     return NextResponse.json({})
   } catch (error) {

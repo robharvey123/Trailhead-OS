@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
 
-    if (!ok || !supabase) {
+    if (!ok) {
       return authResponse
     }
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   try {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
 
-    if (!ok || !supabase) {
+    if (!ok) {
       return authResponse
     }
 
