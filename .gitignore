@@ -41,3 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env.local
+
+# Local CRM import data (contains contact PII — never commit)
+/data/*.xlsx
+/data/*.csv

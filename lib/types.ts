@@ -873,3 +873,127 @@ export interface ProjectTimeTotals {
   billable_amount: number
   last_entry_date: string | null
 }
+
+// ---------------------------------------------------------------------------
+// CRM v3 — Deals / Tags / Saved Views
+// ---------------------------------------------------------------------------
+
+export type DealStage =
+  | 'New'
+  | 'Qualified'
+  | 'Proposal Sent'
+  | 'Negotiation'
+  | 'Won'
+  | 'Lost'
+  | 'On Hold'
+
+export const DEAL_STAGES: DealStage[] = [
+  'New',
+  'Qualified',
+  'Proposal Sent',
+  'Negotiation',
+  'Won',
+  'Lost',
+  'On Hold',
+]
+
+// Stages shown as kanban columns (Won/Lost are terminal — set via card actions).
+export const DEAL_PIPELINE_STAGES: DealStage[] = [
+  'New',
+  'Qualified',
+  'Proposal Sent',
+  'Negotiation',
+  'On Hold',
+]
+
+export const DEAL_SOURCES = [
+  'Referral',
+  'Inbound',
+  'Outbound',
+  'Existing Client',
+  'Event',
+  'Other',
+] as const
+
+export type DealSource = (typeof DEAL_SOURCES)[number]
+
+export interface Deal {
+  id: string
+  account_id: string
+  primary_contact_id: string | null
+  owner_id: string | null
+  name: string
+  stage: DealStage
+  value_amount: number | null
+  value_currency: string
+  probability: number
+  expected_close_date: string | null
+  closed_at: string | null
+  source: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DealWithRelations extends Deal {
+  account?: { id: string; name: string } | null
+  primary_contact?: { id: string; name: string } | null
+}
+
+export interface DealInput {
+  id?: string
+  account_id: string
+  primary_contact_id?: string | null
+  name: string
+  stage?: DealStage
+  value_amount?: number | null
+  value_currency?: string
+  probability?: number
+  expected_close_date?: string | null
+  source?: string | null
+  notes?: string | null
+}
+
+export interface PipelineStageSummary {
+  stage: DealStage
+  deal_count: number
+  total_value: number
+  weighted_value: number
+}
+
+export interface DealForecastBucket {
+  month: string // YYYY-MM
+  deal_count: number
+  total_value: number
+  weighted_value: number
+}
+
+export type TagColor = 'accent' | 'green' | 'amber' | 'red' | 'emerald' | 'grey'
+
+export interface Tag {
+  id: string
+  name: string
+  color: TagColor
+}
+
+export type SavedViewEntity = 'accounts' | 'deals' | 'tasks' | 'timesheet' | 'inbox'
+
+export interface SavedView {
+  id: string
+  owner_id: string | null
+  entity: SavedViewEntity
+  name: string
+  filters: Record<string, unknown>
+  sort: Record<string, unknown> | null
+  is_pinned: boolean
+  created_at: string
+}
+
+export interface SavedViewInput {
+  id?: string
+  entity: SavedViewEntity
+  name: string
+  filters?: Record<string, unknown>
+  sort?: Record<string, unknown> | null
+  is_pinned?: boolean
+}
