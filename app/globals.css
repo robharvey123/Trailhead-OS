@@ -270,6 +270,15 @@ body {
   --radius: 8px;
   --radius-sm: 5px;
 
+  /* Aliases of the :root (lime) token names, remapped to this theme.
+     Shared components reference these via var(--...) so they inherit the
+     mockup palette inside .thmock while staying unchanged at :root.
+     (--bg and --border are already redefined above.) */
+  --card: var(--surface);
+  --card-alt: var(--surface-2);
+  --muted: var(--text-2);
+  --lime: var(--accent);
+
   font-family: var(--font-syne), 'Syne', system-ui, sans-serif;
   color: var(--text);
   background: var(--bg);

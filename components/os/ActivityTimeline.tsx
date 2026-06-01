@@ -112,11 +112,11 @@ export default function ActivityTimeline({
   )
 
   return (
-    <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-white">Activity Log</h2>
-          <p className="text-sm text-[#9CA3AF]">
+          <p className="text-sm text-[var(--muted)]">
             Track emails, calls, meetings, notes, and tasks.
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function ActivityTimeline({
             if (showForm) resetForm()
             setShowForm((current) => !current)
           }}
-          className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+          className="rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:border-[var(--lime)]/40"
         >
           {showForm ? 'Cancel' : 'Log activity'}
         </button>
@@ -150,15 +150,15 @@ export default function ActivityTimeline({
       {showForm ? (
         <form
           onSubmit={handleSubmit}
-          className="mt-4 space-y-4 rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4"
+          className="mt-4 space-y-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--card-alt)] p-4"
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm text-[#9CA3AF]">Type</span>
+              <span className="text-sm text-[var(--muted)]">Type</span>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as ActivityType)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
               >
                 {ACTIVITY_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -168,52 +168,52 @@ export default function ActivityTimeline({
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[#9CA3AF]">Date</span>
+              <span className="text-sm text-[var(--muted)]">Date</span>
               <input
                 type="date"
                 value={activityDate}
                 onChange={(e) => setActivityDate(e.target.value)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
               />
             </label>
           </div>
 
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">Subject</span>
+            <span className="text-sm text-[var(--muted)]">Subject</span>
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">Notes</span>
+            <span className="text-sm text-[var(--muted)]">Notes</span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
             />
           </label>
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm text-[#9CA3AF]">Next action</span>
+              <span className="text-sm text-[var(--muted)]">Next action</span>
               <input
                 value={nextAction}
                 onChange={(e) => setNextAction(e.target.value)}
                 placeholder="e.g. Follow up call"
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[#9CA3AF]">Next action date</span>
+              <span className="text-sm text-[var(--muted)]">Next action date</span>
               <input
                 type="date"
                 value={nextActionDate}
                 onChange={(e) => setNextActionDate(e.target.value)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
               />
             </label>
           </div>
@@ -221,7 +221,7 @@ export default function ActivityTimeline({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+            className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--lime)]/90 disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Save activity'}
           </button>
@@ -231,7 +231,7 @@ export default function ActivityTimeline({
       {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
 
       {activities.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
+        <div className="mt-4 rounded-3xl border border-dashed border-[var(--border)] px-4 py-8 text-sm text-white0">
           No activities logged yet.
         </div>
       ) : (
@@ -239,7 +239,7 @@ export default function ActivityTimeline({
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4"
+              className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)] p-4"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -250,7 +250,7 @@ export default function ActivityTimeline({
                     <p className="font-medium text-white">
                       {activity.subject || activity.type}
                     </p>
-                    <span className="rounded-full bg-[#2A2A3A] px-2 py-1 text-[11px] text-[#9CA3AF]">
+                    <span className="rounded-full bg-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">
                       {activity.type}
                     </span>
                   </div>
@@ -258,7 +258,7 @@ export default function ActivityTimeline({
                     {new Date(activity.activity_date).toLocaleDateString('en-GB')}
                   </p>
                   {activity.notes ? (
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-[#9CA3AF]">
+                    <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--muted)]">
                       {activity.notes}
                     </p>
                   ) : null}

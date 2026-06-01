@@ -109,11 +109,11 @@ export default function TouchpointTimeline({
   }
 
   return (
-    <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <p className="text-sm text-[#9CA3AF]">{description}</p>
+          <p className="text-sm text-[var(--muted)]">{description}</p>
         </div>
         <button
           type="button"
@@ -123,21 +123,21 @@ export default function TouchpointTimeline({
             }
             setShowForm((current) => !current)
           }}
-          className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+          className="rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:border-[var(--lime)]/40"
         >
           {showForm ? 'Cancel' : 'Log touchpoint'}
         </button>
       </div>
 
       {showForm ? (
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--card-alt)] p-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm text-[#9CA3AF]">Type</span>
+              <span className="text-sm text-[var(--muted)]">Type</span>
               <select
                 value={type}
                 onChange={(event) => setType(event.target.value as TouchpointType)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
               >
                 {TOUCHPOINT_TYPES.map((entry) => (
                   <option key={entry} value={entry}>
@@ -147,39 +147,39 @@ export default function TouchpointTimeline({
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[#9CA3AF]">When</span>
+              <span className="text-sm text-[var(--muted)]">When</span>
               <input
                 type="datetime-local"
                 value={occurredAt}
                 onChange={(event) => setOccurredAt(event.target.value)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
               />
             </label>
           </div>
 
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">Subject</span>
+            <span className="text-sm text-[var(--muted)]">Subject</span>
             <input
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">Details</span>
+            <span className="text-sm text-[var(--muted)]">Details</span>
             <textarea
               value={body}
               onChange={(event) => setBody(event.target.value)}
               rows={3}
-              className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
             />
           </label>
 
           <button
             type="submit"
             disabled={saving}
-            className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+            className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--lime)]/90 disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Save touchpoint'}
           </button>
@@ -189,7 +189,7 @@ export default function TouchpointTimeline({
       {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
 
       {touchpoints.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
+        <div className="mt-4 rounded-3xl border border-dashed border-[var(--border)] px-4 py-8 text-sm text-white0">
           No touchpoints logged yet.
         </div>
       ) : (
@@ -197,16 +197,16 @@ export default function TouchpointTimeline({
           {touchpoints.map((touchpoint) => (
             <div
               key={touchpoint.id}
-              className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4"
+              className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)] p-4"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[#2A2A3A] px-2 py-1 text-[11px] text-[#9CA3AF]">
+                    <span className="rounded-full border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">
                       {TOUCHPOINT_ICONS[touchpoint.type]}
                     </span>
                     <p className="font-medium text-white">{touchpoint.subject}</p>
-                    <span className="rounded-full bg-[#2A2A3A] px-2 py-1 text-[11px] text-[#9CA3AF]">
+                    <span className="rounded-full bg-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">
                       {TOUCHPOINT_LABELS[touchpoint.type]}
                     </span>
                   </div>
@@ -214,7 +214,7 @@ export default function TouchpointTimeline({
                     {new Date(touchpoint.occurred_at).toLocaleString('en-GB')}
                   </p>
                   {touchpoint.body ? (
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-[#9CA3AF]">
+                    <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--muted)]">
                       {touchpoint.body}
                     </p>
                   ) : null}

@@ -104,7 +104,7 @@ export default function AccountForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <div className="space-y-6 rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
       {!onSaved ? (
         <div>
           <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
@@ -116,30 +116,30 @@ export default function AccountForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Name</span>
+          <span className="text-sm text-[var(--muted)]">Name</span>
           <input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
             required
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Website</span>
+          <span className="text-sm text-[var(--muted)]">Website</span>
           <input
             value={form.website}
             onChange={(event) => setForm({ ...form, website: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Industry</span>
+          <span className="text-sm text-[var(--muted)]">Industry</span>
           <select
             value={form.industry}
             onChange={(event) => setForm({ ...form, industry: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           >
             <option value="">Select industry</option>
             {ACCOUNT_INDUSTRY_OPTIONS.map((option) => (
@@ -151,11 +151,11 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Company size</span>
+          <span className="text-sm text-[var(--muted)]">Company size</span>
           <select
             value={form.size}
             onChange={(event) => setForm({ ...form, size: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           >
             <option value="">Select size</option>
             {ACCOUNT_SIZE_OPTIONS.map((option) => (
@@ -167,11 +167,11 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Workstream</span>
+          <span className="text-sm text-[var(--muted)]">Workstream</span>
           <select
             value={form.workstream_id}
             onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           >
             <option value="">None</option>
             {workstreams.map((workstream) => (
@@ -183,11 +183,11 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Status</span>
+          <span className="text-sm text-[var(--muted)]">Status</span>
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value as AccountStatus })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           >
             {ACCOUNT_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -197,94 +197,94 @@ export default function AccountForm({
           </select>
         </label>
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Channel</span>
+          <span className="text-sm text-[var(--muted)]">Channel</span>
           <input
             value={form.channel}
             onChange={(event) => setForm({ ...form, channel: event.target.value })}
             placeholder="e.g. Major UK Retailers"
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Source</span>
+          <span className="text-sm text-[var(--muted)]">Source</span>
           <input
             value={form.source}
             onChange={(event) => setForm({ ...form, source: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Email contact</span>
+          <span className="text-sm text-[var(--muted)]">Email contact</span>
           <input
             type="email"
             value={form.email_contact}
             onChange={(event) => setForm({ ...form, email_contact: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">HQ / Address</span>
+          <span className="text-sm text-[var(--muted)]">HQ / Address</span>
           <input
             value={form.hq_address}
             onChange={(event) => setForm({ ...form, hq_address: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Address line 1</span>
+          <span className="text-sm text-[var(--muted)]">Address line 1</span>
           <input
             value={form.address_line1}
             onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Address line 2</span>
+          <span className="text-sm text-[var(--muted)]">Address line 2</span>
           <input
             value={form.address_line2}
             onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">City</span>
+          <span className="text-sm text-[var(--muted)]">City</span>
           <input
             value={form.city}
             onChange={(event) => setForm({ ...form, city: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Postcode</span>
+          <span className="text-sm text-[var(--muted)]">Postcode</span>
           <input
             value={form.postcode}
             onChange={(event) => setForm({ ...form, postcode: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Country</span>
+          <span className="text-sm text-[var(--muted)]">Country</span>
           <input
             value={form.country}
             onChange={(event) => setForm({ ...form, country: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Notes</span>
+          <span className="text-sm text-[var(--muted)]">Notes</span>
           <textarea
             value={form.notes}
             onChange={(event) => setForm({ ...form, notes: event.target.value })}
             rows={6}
-            className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
           />
         </label>
       </div>
@@ -296,7 +296,7 @@ export default function AccountForm({
           type="button"
           onClick={handleSave}
           disabled={saving || !form.name.trim()}
-          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--lime)]/90 disabled:opacity-60"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -310,7 +310,7 @@ export default function AccountForm({
 
             router.push(cancelHref)
           }}
-          className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+          className="rounded-2xl border border-[var(--border)] px-5 py-3 text-sm font-medium text-[var(--muted)] transition hover:border-[var(--lime)]/40"
         >
           Cancel
         </button>
