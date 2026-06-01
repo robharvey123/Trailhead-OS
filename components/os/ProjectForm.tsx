@@ -43,6 +43,7 @@ export default function ProjectForm({
     start_date: initialProject?.start_date ?? '',
     end_date: initialProject?.end_date ?? '',
     estimated_end_date: initialProject?.estimated_end_date ?? '',
+    hourly_rate: initialProject?.hourly_rate ?? '',
     description: initialProject?.description ?? initialValues?.description ?? '',
     brief: initialProject?.brief ?? initialValues?.brief ?? '',
   })
@@ -74,6 +75,7 @@ export default function ProjectForm({
         estimated_end_date: form.estimated_end_date || null,
         start_date: form.start_date || null,
         end_date: form.end_date || null,
+        hourly_rate: form.hourly_rate ? parseFloat(String(form.hourly_rate)) : null,
       }
 
       const response = initialProject?.id
@@ -226,6 +228,19 @@ export default function ProjectForm({
             type="date"
             value={form.estimated_end_date}
             onChange={(event) => setForm({ ...form, estimated_end_date: event.target.value })}
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm text-[#9CA3AF]">Hourly rate (£)</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={form.hourly_rate}
+            onChange={(event) => setForm({ ...form, hourly_rate: event.target.value })}
+            placeholder="e.g. 85.00"
             className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
           />
         </label>

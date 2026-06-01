@@ -86,6 +86,8 @@ export interface Account {
   postcode?: string
   country?: string
   notes?: string
+  default_hourly_rate?: number
+  currency?: string
   tags: string[]
   created_at: string
   updated_at: string
@@ -497,6 +499,8 @@ export interface Project {
   colour: string | null
   owner: string | null
   ai_planned: boolean
+  hourly_rate?: number
+  currency?: string
   created_at: string
   updated_at: string
 }
@@ -817,4 +821,55 @@ export interface ExpenseWithRelations extends Expense {
   account?: Account
   project?: { id: string; name: string }
   invoice?: { id: string; invoice_number: string }
+}
+
+// ── Timesheet & Time Tracking ──────────────────────────
+
+export type TimeEntrySource = 'manual' | 'timer'
+
+export interface TimeEntry {
+  id: string
+  user_id: string
+  account_id: string | null
+  project_id: string | null
+  entry_date: string
+  start_at: string | null
+  end_at: string | null
+  duration_minutes: number
+  description: string | null
+  billable: boolean
+  rate_snapshot: number
+  currency_snapshot: string
+  source: TimeEntrySource
+  is_running: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface TimeEntryWithRelations extends TimeEntry {
+  account?: Account | null
+  project?: { id: string; name: string } | null
+}
+
+export interface RunningTimer extends TimeEntry {
+  elapsed_seconds: number
+}
+
+export interface AccountTimeTotals {
+  account_id: string
+  business_name: string
+  total_minutes: number
+  billable_minutes: number
+  billable_amount: number
+}
+
+export interface ProjectTimeTotals {
+  project_id: string
+  account_id: string | null
+  project_name: string
+  project_status: ProjectStatus
+  total_minutes: number
+  billable_minutes: number
+  billable_amount: number
+  last_entry_date: string | null
 }

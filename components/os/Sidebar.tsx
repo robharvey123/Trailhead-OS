@@ -301,6 +301,13 @@ export default function Sidebar({
                 collapsed={collapsed}
               />
               <NavLink
+                href="/timesheet"
+                label="Timesheet"
+                active={pathname.startsWith('/timesheet')}
+                onClick={() => setMobileOpen(false)}
+                collapsed={collapsed}
+              />
+              <NavLink
                 href="/expenses"
                 label="Expenses"
                 active={pathname.startsWith('/expenses')}
