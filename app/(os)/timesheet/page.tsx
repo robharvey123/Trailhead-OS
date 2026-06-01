@@ -1,6 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAccounts } from '@/lib/db/accounts'
+import { getProjects } from '@/lib/db/projects'
+import { getRunningTimer } from '@/lib/db/timesheet'
+import { mockupFontVars } from '@/lib/fonts'
 import TimesheetClient from '@/components/os/TimesheetClient'
 
 export const metadata = {
@@ -17,7 +20,19 @@ export default async function TimesheetPage() {
     redirect('/login')
   }
 
-  const accounts = await getAccounts({}, supabase)
+  const [accounts, projects, runningTimer] = await Promise.all([
+    getAccounts({}, supabase).catch(() => []),
+    getProjects({}, supabase).catch(() => []),
+    getRunningTimer(supabase).catch(() => null),
+  ])
 
-  return <TimesheetClient accounts={accounts} />
+  return (
+    <div className={`thmock ${mockupFontVars}`}>
+      <TimesheetClient
+        accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
+        projects={projects.map((p) => ({ id: p.id, name: p.name, account_id: p.account_id ?? null }))}
+        initialTimer={runningTimer}
+      />
+    </div>
+  )
 }
