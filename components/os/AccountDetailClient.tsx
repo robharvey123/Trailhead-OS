@@ -7,16 +7,48 @@ import AccountForm from './AccountForm'
 import ActivityTimeline from './ActivityTimeline'
 import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
-import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
-import WorkstreamBadge from './WorkstreamBadge'
+import DealForm from './DealForm'
+import { apiFetch } from '@/lib/api-fetch'
+import { formatCurrency } from '@/lib/format'
 import { formatTaskSchedule } from '@/lib/os'
-import { calculateTotals } from '@/lib/types'
-import type { Activity, ProjectListItem, Workstream } from '@/lib/types'
+import type {
+  Activity,
+  DealInput,
+  DealStage,
+  DealWithRelations,
+  ProjectListItem,
+  Tag,
+  TimeEntry,
+  Workstream,
+} from '@/lib/types'
 import type { AccountDetail } from '@/lib/db/accounts'
 
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
+const TABS = [
+  'Overview',
+  'Emails',
+  'Deals',
+  'Tasks',
+  'Projects',
+  'Time',
+  'Files',
+  'Activity',
+] as const
+type TabName = (typeof TABS)[number]
+
+const STATUS_LABEL: Record<string, string> = {
+  prospect: 'Prospect', contacted: 'Contacted', active: 'Active', listed: 'Listed',
+  declined: 'Declined', on_hold: 'On Hold', inactive: 'Inactive', archived: 'Archived',
+}
+
+function fmtMinutes(min: number) {
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+function fmtDate(value: string | null) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export default function AccountDetailClient({
@@ -24,228 +56,247 @@ export default function AccountDetailClient({
   workstreams,
   projects,
   initialActivities = [],
+  deals: initialDeals,
+  timeEntries,
+  tags,
 }: {
   initialAccount: AccountDetail
   workstreams: Workstream[]
   projects: ProjectListItem[]
   initialActivities?: Activity[]
+  deals: DealWithRelations[]
+  timeEntries: TimeEntry[]
+  tags: Tag[]
 }) {
   const router = useRouter()
   const [account, setAccount] = useState(initialAccount)
+  const [tab, setTab] = useState<TabName>('Overview')
   const [editing, setEditing] = useState(false)
   const [notes, setNotes] = useState(initialAccount.notes ?? '')
-  const [notesSaving, setNotesSaving] = useState(false)
-  const [notesError, setNotesError] = useState<string | null>(null)
+  const [deals, setDeals] = useState(initialDeals)
+  const [dealFormOpen, setDealFormOpen] = useState(false)
+  const [editingDeal, setEditingDeal] = useState<DealWithRelations | null>(null)
 
-  const openTasks = useMemo(
-    () => account.recent_tasks.filter((task) => !task.completed_at),
-    [account.recent_tasks]
-  )
-  const completedTasks = useMemo(
-    () => account.recent_tasks.filter((task) => Boolean(task.completed_at)),
-    [account.recent_tasks]
+  const openTasks = useMemo(() => account.recent_tasks.filter((t) => !t.completed_at), [account.recent_tasks])
+  const completedTasks = useMemo(() => account.recent_tasks.filter((t) => t.completed_at), [account.recent_tasks])
+
+  const timeTotals = useMemo(() => {
+    let minutes = 0
+    let amount = 0
+    for (const e of timeEntries) {
+      minutes += e.duration_minutes
+      if (e.billable) amount += (e.duration_minutes / 60) * e.rate_snapshot
+    }
+    return { minutes, amount }
+  }, [timeEntries])
+
+  const contactOptions = useMemo(
+    () => (account.contacts ?? []).map((c) => ({ id: c.id, name: c.name })),
+    [account.contacts]
   )
 
   async function saveNotesOnBlur() {
-    if ((account.notes ?? '') === notes) {
-      return
-    }
-
-    setNotesSaving(true)
-    setNotesError(null)
-
+    if ((account.notes ?? '') === notes) return
     try {
-      const response = await fetch(`/api/accounts/${account.id}`, {
+      const res = await fetch(`/api/accounts/${account.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes }),
       })
-      const data = await response.json()
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to save notes')
+      setAccount((c) => ({ ...c, notes }))
+    } catch {
+      /* surfaced inline via field if needed */
+    }
+  }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save notes')
-      }
-
-      setAccount((current) => ({
-        ...current,
-        ...data.account,
-        recent_quotes: current.recent_quotes,
-        recent_tasks: current.recent_tasks,
-        invoices: current.invoices,
-        source_enquiry: current.source_enquiry,
-        contacts: current.contacts,
-        quotes: current.quotes,
-      }))
-    } catch (error) {
-      setNotesError(error instanceof Error ? error.message : 'Failed to save notes')
-    } finally {
-      setNotesSaving(false)
+  async function saveDeal(input: DealInput) {
+    if (input.id) {
+      const { deal } = await apiFetch<{ deal: DealWithRelations }>(`/api/deals/${input.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      })
+      setDeals((d) => d.map((x) => (x.id === input.id ? { ...x, ...deal } : x)))
+    } else {
+      const { deal } = await apiFetch<{ deal: DealWithRelations }>('/api/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      })
+      setDeals((d) => [{ ...deal, account: { id: account.id, name: account.name } }, ...d])
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">{account.name}</h1>
-          <p className="mt-2 text-sm text-[#9CA3AF]">
-            Account overview across contacts, delivery, and commercial work.
-          </p>
+    <div className="panel overflow-hidden">
+      {/* header */}
+      <div className="topbar">
+        <Link href="/crm/accounts" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>
+          ‹ CRM
+        </Link>
+        <span className="topbar-title">{account.name}</span>
+        <span className={`status-badge status-${account.status}`}>{STATUS_LABEL[account.status] ?? account.status}</span>
+        {account.channel ? <span className="channel-tag">{account.channel}</span> : null}
+        <div className="topbar-actions">
+          {!editing ? (
+            <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>Edit</button>
+          ) : null}
         </div>
-        {!editing ? (
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
-          >
-            Edit
-          </button>
-        ) : null}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(320px,0.9fr)]">
-        <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-          {editing ? (
+      {/* tags row */}
+      {tags.length > 0 ? (
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', padding: '10px 24px', borderBottom: '1px solid var(--border)' }}>
+          {tags.map((t) => (<span key={t.id} className={`tag-chip ${t.color}`}>{t.name}</span>))}
+        </div>
+      ) : null}
+
+      {/* tabs */}
+      <div className="tabbar">
+        {TABS.map((t) => (
+          <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
+            {t}
+            {t === 'Deals' && deals.length ? ` (${deals.length})` : ''}
+            {t === 'Time' && timeEntries.length ? ` (${timeEntries.length})` : ''}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ padding: 24 }}>
+        {/* OVERVIEW */}
+        {tab === 'Overview' ? (
+          editing ? (
             <AccountForm
               workstreams={workstreams}
               initialAccount={account}
-              onSaved={(updatedAccount) => {
-                setAccount((current) => ({
-                  ...current,
-                  ...updatedAccount,
-                  recent_quotes: current.recent_quotes,
-                  recent_tasks: current.recent_tasks,
-                  invoices: current.invoices,
-                  source_enquiry: current.source_enquiry,
-                  contacts: current.contacts,
-                  quotes: current.quotes,
-                }))
-                setNotes(updatedAccount.notes ?? '')
+              onSaved={(updated) => {
+                setAccount((c) => ({ ...c, ...updated }))
+                setNotes(updated.notes ?? '')
                 setEditing(false)
                 router.refresh()
               }}
               onCancel={() => setEditing(false)}
             />
           ) : (
-            <div className="space-y-5">
-              <div className="flex flex-wrap items-center gap-3">
-                <StatusBadge status={account.status} kind="account" />
-                {account.workstream ? (
-                  <WorkstreamBadge
-                    label={account.workstream.label}
-                    slug={account.workstream.label}
-                    colour={account.workstream.colour}
-                  />
-                ) : null}
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Channel</p>
-                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.channel ?? '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Source</p>
-                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.source ?? '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Email contact</p>
-                  {account.email_contact ? (
-                    <a
-                      href={`mailto:${account.email_contact}`}
-                      className="mt-2 inline-flex text-sm text-sky-300 hover:text-sky-200"
-                    >
-                      {account.email_contact}
-                    </a>
-                  ) : (
-                    <p className="mt-2 text-sm text-[#9CA3AF]">—</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">HQ / Address</p>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-[#9CA3AF]">{account.hq_address ?? '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Website</p>
-                  {account.website ? (
-                    <a
-                      href={account.website.startsWith('http') ? account.website : `https://${account.website}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 inline-flex text-sm text-sky-300 hover:text-sky-200"
-                    >
-                      {account.website}
-                    </a>
-                  ) : (
-                    <p className="mt-2 text-sm text-[#9CA3AF]">—</p>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Industry</p>
-                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.industry ?? '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Size</p>
-                  <p className="mt-2 text-sm text-[#9CA3AF]">{account.size ?? '—'}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-white0">Address</p>
-                  <div className="mt-2 whitespace-pre-wrap text-sm text-[#9CA3AF]">
-                    {[
-                      account.address_line1,
-                      account.address_line2,
-                      account.city,
-                      account.postcode,
-                      account.country,
-                    ]
-                      .filter(Boolean)
-                      .join('\n') || '—'}
+            <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' }}>
+              <div className="card">
+                <div className="panel-section-title">Account info</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <Field label="Channel" value={account.channel} />
+                  <Field label="Source" value={account.source} />
+                  <Field label="Email" value={account.email_contact} mono />
+                  <Field label="Industry" value={account.industry} />
+                  <Field label="Website" value={account.website} mono />
+                  <Field label="Size" value={account.size} />
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <div className="field-label">HQ / Address</div>
+                    <div className="field-value" style={{ whiteSpace: 'pre-wrap' }}>
+                      {account.hq_address ||
+                        [account.address_line1, account.address_line2, account.city, account.postcode, account.country].filter(Boolean).join('\n') ||
+                        '—'}
+                    </div>
                   </div>
                 </div>
+                <div className="panel-section-title" style={{ marginTop: 20 }}>Notes</div>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  onBlur={saveNotesOnBlur}
+                  rows={6}
+                  className="search-input"
+                  style={{ width: '100%', paddingLeft: 12, resize: 'vertical' }}
+                />
+              </div>
+
+              <div className="card">
+                <div className="panel-section-title">
+                  Contacts
+                  <Link href={`/crm/contacts/new?account_id=${account.id}`} className="btn btn-ghost btn-sm">Add</Link>
+                </div>
+                {account.contacts?.length ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {account.contacts.map((c) => (
+                      <Link key={c.id} href={`/crm/contacts/${c.id}`} className="card" style={{ display: 'block', textDecoration: 'none' }}>
+                        <div className="td-name">{c.name}</div>
+                        <div className="td-sub">{c.role ?? 'No role'}</div>
+                        {c.email ? <div className="field-value mono" style={{ marginTop: 4, color: 'var(--accent)' }}>{c.email}</div> : null}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="field-label">No contacts linked.</p>
+                )}
               </div>
             </div>
-          )}
-        </section>
+          )
+        ) : null}
 
-        <section className="space-y-6">
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Contacts</h2>
-                <p className="text-sm text-[#9CA3AF]">People linked to this account.</p>
-              </div>
-              <Link
-                href={`/crm/contacts/new?account_id=${account.id}`}
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
-              >
-                Add contact
-              </Link>
+        {/* EMAILS (placeholder) */}
+        {tab === 'Emails' ? (
+          <div className="empty">
+            Email threads for this account will appear here once the Gmail integration lands.
+          </div>
+        ) : null}
+
+        {/* DEALS */}
+        {tab === 'Deals' ? (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <button className="btn btn-primary btn-sm" onClick={() => { setEditingDeal(null); setDealFormOpen(true) }}>+ New deal</button>
             </div>
-
-            {account.contacts?.length ? (
-              <div className="mt-4 space-y-3">
-                {account.contacts.map((contact) => (
-                  <Link
-                    key={contact.id}
-                    href={`/crm/contacts/${contact.id}`}
-                    className="block rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 transition hover:border-[#2A2A3A]"
-                  >
-                    <p className="font-medium text-white">{contact.name}</p>
-                    <p className="mt-1 text-sm text-[#9CA3AF]">{contact.role ?? 'No role set'}</p>
-                    <p className="mt-2 text-sm text-[#9CA3AF]">
-                      {contact.email ?? 'No email'} {contact.phone ? `· ${contact.phone}` : ''}
-                    </p>
-                  </Link>
-                ))}
-              </div>
+            {deals.length === 0 ? (
+              <div className="empty">No deals for this account yet.</div>
             ) : (
-              <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
-                No contacts linked yet.
-              </div>
+              <table className="data-table">
+                <thead>
+                  <tr><th>Name</th><th>Stage</th><th style={{ textAlign: 'right' }}>Value</th><th style={{ textAlign: 'right' }}>Prob.</th><th>Close</th></tr>
+                </thead>
+                <tbody>
+                  {deals.map((d) => (
+                    <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => { setEditingDeal(d); setDealFormOpen(true) }}>
+                      <td className="td-name">{d.name}</td>
+                      <td><span className={`status-badge ${stageClass(d.stage)}`}>{d.stage}</span></td>
+                      <td style={{ textAlign: 'right' }} className="td-mono">{d.value_amount != null ? formatCurrency(d.value_amount, d.value_currency || 'GBP') : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-mono">{d.probability}%</td>
+                      <td className="td-mono">{fmtDate(d.expected_close_date)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
+        ) : null}
 
+        {/* TASKS */}
+        {tab === 'Tasks' ? (
+          <div>
+            <QuickAddTask
+              workstream_id={account.workstream_id ?? null}
+              account_id={account.id}
+              placeholder="Add a task for this account..."
+              onCreated={() => router.refresh()}
+            />
+            <div className="panel-section-title" style={{ marginTop: 16 }}>Open</div>
+            {openTasks.length ? openTasks.map((t) => (
+              <div key={t.id} className="card" style={{ marginBottom: 8 }}>
+                <div className="td-name">{t.title}</div>
+                <div className="td-sub">Due: {formatTaskSchedule(t.due_date, t.due_time)}</div>
+              </div>
+            )) : <p className="field-label">No open tasks.</p>}
+            <div className="panel-section-title" style={{ marginTop: 16 }}>Completed</div>
+            {completedTasks.length ? completedTasks.map((t) => (
+              <div key={t.id} className="card" style={{ marginBottom: 8, opacity: 0.7 }}>
+                <div className="td-name">{t.title}</div>
+                <div className="td-sub">Completed {t.completed_at?.slice(0, 10)}</div>
+              </div>
+            )) : <p className="field-label">No completed tasks.</p>}
+          </div>
+        ) : null}
+
+        {/* PROJECTS (reuses existing component) */}
+        {tab === 'Projects' ? (
           <ProjectsSection
             title="Projects"
             description="Delivery work linked to this account."
@@ -254,201 +305,95 @@ export default function AccountDetailClient({
             actionHref={`/projects/new?account_id=${account.id}`}
             actionLabel="New project"
           />
+        ) : null}
 
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Tasks</h2>
-                <p className="text-sm text-[#9CA3AF]">Open follow-ups and completed work.</p>
-              </div>
-              <Link href="/tasks" className="text-sm text-[#9CA3AF] transition hover:text-[#9CA3AF]">
-                Open master tasks
-              </Link>
-            </div>
-
-            <div className="mt-4">
-              <QuickAddTask
-                workstream_id={account.workstream_id ?? null}
-                account_id={account.id}
-                placeholder="Add a task for this account..."
-                onCreated={() => router.refresh()}
-              />
-            </div>
-
-            <div className="mt-6 space-y-5">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Open</p>
-                {openTasks.length ? (
-                  <div className="mt-3 space-y-3">
-                    {openTasks.map((task) => (
-                      <div key={task.id} className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
-                        <p className="font-medium text-white">{task.title}</p>
-                        <p className="mt-1 text-sm text-[#9CA3AF]">
-                          Due: {formatTaskSchedule(task.due_date, task.due_time)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-white0">No open tasks.</p>
-                )}
-              </div>
-
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Completed</p>
-                {completedTasks.length ? (
-                  <div className="mt-3 space-y-3">
-                    {completedTasks.map((task) => (
-                      <div key={task.id} className="rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4">
-                        <p className="font-medium text-white">{task.title}</p>
-                        <p className="mt-1 text-sm text-[#9CA3AF]">
-                          Completed {task.completed_at?.slice(0, 10) ?? 'Recently'}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-3 text-sm text-white0">No completed tasks yet.</p>
-                )}
-              </div>
-            </div>
+        {/* TIME */}
+        {tab === 'Time' ? (
+          <div>
+            {timeEntries.length === 0 ? (
+              <div className="empty">No time logged against this account yet.</div>
+            ) : (
+              <table className="data-table">
+                <thead>
+                  <tr><th>Date</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Rate</th><th style={{ textAlign: 'right' }}>Amount</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {timeEntries.map((e) => (
+                    <tr key={e.id}>
+                      <td className="td-mono">{fmtDate(e.entry_date)}</td>
+                      <td>{e.description ?? '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-mono">{fmtMinutes(e.duration_minutes)}</td>
+                      <td style={{ textAlign: 'right' }} className="td-mono">{e.rate_snapshot ? formatCurrency(e.rate_snapshot, e.currency_snapshot || 'GBP') + '/h' : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-mono">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
+                      <td><span className={`pill ${e.billable ? 'billable' : 'nonbill'}`}>{e.billable ? 'Billable' : 'Non-bill'}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td className="total-label" colSpan={2}>Total</td>
+                    <td className="total-val" style={{ textAlign: 'right' }}>{fmtMinutes(timeTotals.minutes)}</td>
+                    <td></td>
+                    <td className="total-amount" style={{ textAlign: 'right' }}>{formatCurrency(timeTotals.amount, 'GBP')}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            )}
           </div>
+        ) : null}
 
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Notes</h2>
-                <p className="text-sm text-[#9CA3AF]">Auto-saves when you leave the field.</p>
-              </div>
-              {notesSaving ? <p className="text-xs text-white0">Saving…</p> : null}
-            </div>
-            <textarea
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              onBlur={saveNotesOnBlur}
-              rows={8}
-              className="mt-4 w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+        {/* FILES (placeholder) */}
+        {tab === 'Files' ? (
+          <div className="empty">
+            File attachments (uploads + email attachments) will appear here once the Files/Gmail slice lands.
+          </div>
+        ) : null}
+
+        {/* ACTIVITY (reuses existing components) */}
+        {tab === 'Activity' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <TouchpointTimeline
+              initialTouchpoints={account.touchpoints}
+              accountId={account.id}
+              title="Touchpoints"
+              description="Log calls, emails, messages, meetings, and notes."
             />
-            {notesError ? <p className="mt-3 text-sm text-rose-300">{notesError}</p> : null}
+            <ActivityTimeline initialActivities={initialActivities} accountId={account.id} />
           </div>
-
-          <TouchpointTimeline
-            initialTouchpoints={account.touchpoints}
-            accountId={account.id}
-            title="Touchpoints"
-            description="Log calls, emails, messages, meetings, and notes for this account."
-          />
-
-          <ActivityTimeline
-            initialActivities={initialActivities}
-            accountId={account.id}
-          />
-        </section>
-
-        <section className="space-y-6">
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Quotes</h2>
-                <p className="text-sm text-[#9CA3AF]">Proposals and pricing for this account.</p>
-              </div>
-              <Link
-                href={`/quotes/new?account_id=${account.id}`}
-                className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
-              >
-                New quote
-              </Link>
-            </div>
-
-            {account.recent_quotes.length ? (
-              <div className="mt-4 space-y-3">
-                {account.recent_quotes.map((quote) => (
-                  <Link
-                    key={quote.id}
-                    href={`/quotes/${quote.id}`}
-                    className="block rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 transition hover:border-[#2A2A3A]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium text-white">{quote.quote_number}</p>
-                        <p className="mt-1 text-sm text-[#9CA3AF]">{quote.title}</p>
-                        <p className="mt-2 text-xs text-white0">{quote.issue_date}</p>
-                      </div>
-                      <div className="text-right">
-                        <StatusBadge status={quote.status} kind="quote" />
-                        <p className="mt-2 text-sm font-medium text-white">
-                          {formatMoney(calculateTotals(quote.line_items, quote.vat_rate).total)}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
-                No quotes yet.
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Invoices</h2>
-                <p className="text-sm text-[#9CA3AF]">Billing history for this account.</p>
-              </div>
-              <Link
-                href={`/invoicing/new?account_id=${account.id}`}
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
-              >
-                New invoice
-              </Link>
-            </div>
-
-            {account.invoices.length ? (
-              <div className="mt-4 space-y-3">
-                {account.invoices.map((invoice) => (
-                  <Link
-                    key={invoice.id}
-                    href={`/invoicing/${invoice.id}`}
-                    className="block rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 transition hover:border-[#2A2A3A]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium text-white">{invoice.invoice_number}</p>
-                        <p className="mt-1 text-xs text-white0">{invoice.issue_date}</p>
-                      </div>
-                      <div className="text-right">
-                        <StatusBadge status={invoice.status} kind="invoice" />
-                        <p className="mt-2 text-sm font-medium text-white">
-                          {formatMoney(calculateTotals(invoice.line_items, invoice.vat_rate).total)}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-4 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-8 text-sm text-white0">
-                No invoices yet.
-              </div>
-            )}
-          </div>
-
-          {account.source_enquiry ? (
-            <div className="rounded-[2rem] border border-sky-500/30 bg-sky-500/10 p-6">
-              <p className="text-xs uppercase tracking-[0.24em] text-sky-200">Source enquiry</p>
-              <p className="mt-3 text-sm text-sky-50">{account.source_enquiry.biz_name}</p>
-              <Link
-                href={`/enquiries/${account.source_enquiry.id}`}
-                className="mt-3 inline-flex text-sm font-medium text-white hover:underline"
-              >
-                View enquiry
-              </Link>
-            </div>
-          ) : null}
-        </section>
+        ) : null}
       </div>
+
+      {dealFormOpen ? (
+        <DealForm
+          deal={editingDeal}
+          accounts={[{ id: account.id, name: account.name }]}
+          contacts={contactOptions}
+          onClose={() => setDealFormOpen(false)}
+          onSave={saveDeal}
+        />
+      ) : null}
     </div>
   )
+}
+
+function Field({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) {
+  return (
+    <div>
+      <div className="field-label">{label}</div>
+      <div className={`field-value ${mono ? 'mono' : ''}`}>{value || '—'}</div>
+    </div>
+  )
+}
+
+function stageClass(stage: DealStage) {
+  switch (stage) {
+    case 'Qualified': return 'status-prospect'
+    case 'Proposal Sent': return 'status-contacted'
+    case 'Negotiation': return 'status-contacted'
+    case 'Won': return 'status-active'
+    case 'Lost': return 'status-declined'
+    case 'On Hold': return 'status-on_hold'
+    default: return 'status-on_hold'
+  }
 }

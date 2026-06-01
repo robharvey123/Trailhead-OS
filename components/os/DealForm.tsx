@@ -12,14 +12,16 @@ import {
 interface DealFormProps {
   deal: DealWithRelations | null
   accounts: Array<{ id: string; name: string }>
+  contacts?: Array<{ id: string; name: string }>
   onClose: () => void
   onSave: (input: DealInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
 }
 
-export default function DealForm({ deal, accounts, onClose, onSave, onDelete }: DealFormProps) {
+export default function DealForm({ deal, accounts, contacts = [], onClose, onSave, onDelete }: DealFormProps) {
   const [name, setName] = useState(deal?.name ?? '')
   const [accountId, setAccountId] = useState(deal?.account_id ?? accounts[0]?.id ?? '')
+  const [primaryContactId, setPrimaryContactId] = useState(deal?.primary_contact_id ?? '')
   const [stage, setStage] = useState<DealStage>(deal?.stage ?? 'New')
   const [valueAmount, setValueAmount] = useState(
     deal?.value_amount != null ? String(deal.value_amount) : ''
@@ -42,6 +44,7 @@ export default function DealForm({ deal, accounts, onClose, onSave, onDelete }: 
       await onSave({
         id: deal?.id,
         account_id: accountId,
+        primary_contact_id: primaryContactId || null,
         name: name.trim(),
         stage,
         value_amount: valueAmount === '' ? null : Number(valueAmount),
@@ -96,6 +99,24 @@ export default function DealForm({ deal, accounts, onClose, onSave, onDelete }: 
               ))}
             </select>
           </div>
+
+          {contacts.length > 0 ? (
+            <div>
+              <label className={labelClass}>Primary contact</label>
+              <select
+                className={inputClass}
+                value={primaryContactId ?? ''}
+                onChange={(e) => setPrimaryContactId(e.target.value)}
+              >
+                <option value="">—</option>
+                {contacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
