@@ -47,6 +47,21 @@ export async function deleteTag(id: string, client?: SupabaseClient): Promise<vo
   if (error) throw new Error(error.message || 'Failed to delete tag')
 }
 
+/** All account→tag links as a map keyed by account_id (for list rendering). */
+export async function accountTagMap(
+  client?: SupabaseClient
+): Promise<Record<string, Tag[]>> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase.from('account_tags').select('account_id, tag:tags(*)')
+  if (error) throw new Error(error.message || 'Failed to load account tags')
+  const map: Record<string, Tag[]> = {}
+  for (const row of (data ?? []) as unknown as Array<{ account_id: string; tag: Tag }>) {
+    if (!row.tag) continue
+    ;(map[row.account_id] ??= []).push(row.tag)
+  }
+  return map
+}
+
 export async function tagsForAccount(accountId: string, client?: SupabaseClient): Promise<Tag[]> {
   const supabase = await getSupabase(client)
   const { data, error } = await supabase

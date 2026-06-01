@@ -239,3 +239,249 @@ body {
 .fc .fc-theme-standard th {
   border-color: rgba(51, 65, 85, 0.7);
 }
+
+/* ==========================================================================
+   Mockup design system — scoped to /crm and /timesheet via .thmock
+   Copied from docs/mockups/*.html (indigo accent, Syne + DM Mono).
+   All selectors are nested under .thmock so they never leak app-wide.
+   ========================================================================== */
+.thmock {
+  --bg: #0c0e13;
+  --surface: #13161e;
+  --surface-2: #1a1e28;
+  --surface-3: #212636;
+  --border: #252a38;
+  --border-light: #2e3448;
+  --text: #e8eaf2;
+  --text-2: #8b90a8;
+  --text-3: #565c78;
+  --accent: #4f6ef7;
+  --accent-dim: #1e2d6b;
+  --green: #22c55e;
+  --green-dim: #14532d;
+  --amber: #f59e0b;
+  --amber-dim: #451a03;
+  --red: #ef4444;
+  --red-dim: #450a0a;
+  --emerald: #10b981;
+  --emerald-dim: #064e3b;
+  --grey: #6b7280;
+  --grey-dim: #1f2937;
+  --radius: 8px;
+  --radius-sm: 5px;
+
+  font-family: var(--font-syne), 'Syne', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100%;
+}
+.thmock .mono { font-family: var(--font-dm-mono), 'DM Mono', monospace; }
+
+/* meta labels */
+.thmock .meta-label {
+  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.thmock .field-label {
+  font-size: 10px;
+  color: var(--text-3);
+  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+  margin-bottom: 3px;
+  letter-spacing: 0.05em;
+}
+.thmock .field-value { font-size: 13px; color: var(--text); font-weight: 500; }
+.thmock .field-value.mono { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 12px; color: var(--text-2); }
+
+/* status badges */
+.thmock .status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+}
+.thmock .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.thmock .status-prospect { color: #6b8cff; background: rgba(79,110,247,0.12); }
+.thmock .status-contacted { color: var(--amber); background: var(--amber-dim); }
+.thmock .status-active { color: var(--green); background: var(--green-dim); }
+.thmock .status-listed { color: var(--emerald); background: var(--emerald-dim); }
+.thmock .status-declined { color: var(--red); background: var(--red-dim); }
+.thmock .status-on_hold, .thmock .status-on-hold { color: var(--grey); background: var(--grey-dim); }
+.thmock .status-inactive { color: var(--grey); background: var(--grey-dim); }
+.thmock .status-archived { color: var(--red); background: var(--red-dim); }
+
+/* channel tags */
+.thmock .channel-tag {
+  display: inline-block; padding: 2px 7px; border-radius: 3px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  background: var(--surface-3); color: var(--text-2);
+  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+}
+
+/* generic tag chip (CRM tags) */
+.thmock .tag-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 10px; font-weight: 600;
+  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+  background: var(--surface-3); color: var(--text-2);
+}
+.thmock .tag-chip.accent { background: var(--accent-dim); color: #6b8cff; }
+.thmock .tag-chip.green { background: var(--green-dim); color: var(--green); }
+.thmock .tag-chip.amber { background: var(--amber-dim); color: var(--amber); }
+.thmock .tag-chip.red { background: var(--red-dim); color: var(--red); }
+.thmock .tag-chip.emerald { background: var(--emerald-dim); color: var(--emerald); }
+.thmock .tag-chip.grey { background: var(--grey-dim); color: var(--grey); }
+.thmock .tag-chip button { background: none; border: none; color: inherit; cursor: pointer; opacity: 0.6; padding: 0; }
+.thmock .tag-chip button:hover { opacity: 1; }
+
+/* buttons */
+.thmock .btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  font-family: var(--font-syne), 'Syne', sans-serif;
+  font-size: 12px; font-weight: 600; cursor: pointer; border: none;
+  transition: all 0.15s; letter-spacing: 0.02em;
+}
+.thmock .btn-primary { background: var(--accent); color: white; }
+.thmock .btn-primary:hover { background: #3d5be0; }
+.thmock .btn-ghost { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+.thmock .btn-ghost:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-light); }
+.thmock .btn-sm { padding: 5px 10px; font-size: 11px; }
+.thmock .btn:disabled { opacity: 0.55; cursor: default; }
+
+/* topbar within page */
+.thmock .topbar {
+  height: 56px; min-height: 56px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 24px; gap: 16px; background: var(--surface);
+}
+.thmock .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.thmock .topbar-count {
+  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 11px; color: var(--text-3);
+  background: var(--surface-2); padding: 3px 8px; border-radius: 4px;
+}
+.thmock .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+/* stats bar */
+.thmock .stats-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
+.thmock .stat-item { flex: 1; padding: 14px 20px; border-right: 1px solid var(--border); }
+.thmock .stat-item:last-child { border-right: none; }
+.thmock .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.thmock .stat-label {
+  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 9px; color: var(--text-3);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+}
+.thmock .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--font-dm-mono), 'DM Mono', monospace; }
+
+/* filter bar + search + selects */
+.thmock .filterbar {
+  padding: 12px 24px; border-bottom: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: center; background: var(--surface); flex-wrap: wrap;
+}
+.thmock .search-wrap { position: relative; flex: 1; max-width: 320px; }
+.thmock .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-3); }
+.thmock .search-input {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 7px 10px 7px 32px; font-family: var(--font-syne), 'Syne', sans-serif; font-size: 13px; color: var(--text); outline: none;
+}
+.thmock .search-input::placeholder { color: var(--text-3); }
+.thmock .search-input:focus { border-color: var(--accent); }
+.thmock .filter-select {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 7px 10px; font-family: var(--font-syne), 'Syne', sans-serif; font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
+}
+.thmock .filter-select:focus { border-color: var(--accent); }
+
+/* range chips + billable toggle */
+.thmock .range-chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
+.thmock .range-chip {
+  padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer;
+  border: none; background: none; color: var(--text-3); font-family: var(--font-syne), 'Syne', sans-serif;
+}
+.thmock .range-chip.active { background: var(--surface-3); color: var(--text); }
+.thmock .seg-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.thmock .seg-toggle button {
+  padding: 6px 10px; font-size: 11px; font-family: var(--font-syne), 'Syne', sans-serif;
+  background: var(--surface-2); color: var(--text-3); border: none; cursor: pointer;
+}
+.thmock .seg-toggle button.active { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
+
+/* data tables (accounts + entries) */
+.thmock .data-table { width: 100%; border-collapse: collapse; }
+.thmock .data-table thead th {
+  padding: 10px 16px; text-align: left;
+  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.thmock .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+.thmock .data-table tbody tr:hover { background: var(--surface-2); }
+.thmock .data-table tbody tr.selected { background: var(--accent-dim); }
+.thmock .data-table td { padding: 11px 16px; font-size: 13px; color: var(--text); vertical-align: middle; }
+.thmock .td-name { font-weight: 600; }
+.thmock .td-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--font-dm-mono), 'DM Mono', monospace; }
+.thmock .td-mono { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 11px; color: var(--text-3); }
+.thmock .website-link { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 11px; color: var(--text-3); text-decoration: none; }
+.thmock .website-link:hover { color: var(--accent); }
+
+/* pills (timesheet) */
+.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; font-family: var(--font-dm-mono), 'DM Mono', monospace; }
+.thmock .pill.billable { color: var(--emerald); background: var(--emerald-dim); }
+.thmock .pill.nonbill { color: var(--text-3); background: var(--surface-3); }
+.thmock .pill.timer { color: var(--red); background: var(--red-dim); }
+.thmock .row-running td { background: rgba(239,68,68,0.06); }
+.thmock tfoot td { padding: 14px 16px; font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 12px; background: var(--surface); border-top: 2px solid var(--border-light); }
+.thmock tfoot td.total-label { color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+.thmock tfoot td.total-val { font-weight: 700; color: var(--text); }
+.thmock tfoot td.total-amount { font-weight: 800; color: var(--emerald); font-size: 13px; }
+
+/* live timer pill */
+.thmock .timer {
+  display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--red-dim), rgba(69,10,10,0.4)); border: 1px solid var(--red);
+  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+}
+.thmock .timer-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 var(--red); animation: thmock-pulse 1.6s infinite; }
+@keyframes thmock-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6) }
+  70% { box-shadow: 0 0 0 10px rgba(239,68,68,0) }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0) }
+}
+.thmock .timer-meta { font-size: 11px; color: var(--text); line-height: 1.2; }
+.thmock .timer-meta b { font-family: var(--font-syne), 'Syne', sans-serif; font-weight: 700; }
+.thmock .timer-meta span { color: var(--text-3); font-size: 10px; }
+.thmock .timer-clock { font-size: 13px; font-weight: 600; color: var(--red); letter-spacing: 0.04em; min-width: 62px; text-align: right; }
+.thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+
+/* panels / cards */
+.thmock .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.thmock .panel-section-title {
+  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 9px; font-weight: 500; color: var(--text-3);
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* tabs (account detail) */
+.thmock .tabbar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 24px; background: var(--surface); }
+.thmock .tab {
+  padding: 12px 14px; font-size: 12px; font-weight: 600; color: var(--text-3); cursor: pointer;
+  background: none; border: none; border-bottom: 2px solid transparent; font-family: var(--font-syne), 'Syne', sans-serif;
+}
+.thmock .tab:hover { color: var(--text-2); }
+.thmock .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* bulk action bar */
+.thmock .bulkbar {
+  display: flex; align-items: center; gap: 10px; padding: 10px 24px;
+  background: var(--accent-dim); border-bottom: 1px solid var(--accent);
+}
+.thmock .bulkbar .bulk-count { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 12px; color: #6b8cff; font-weight: 700; }
+
+/* checkbox */
+.thmock input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+
+/* empty state */
+.thmock .empty { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 13px; }
