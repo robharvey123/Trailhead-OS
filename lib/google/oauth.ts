@@ -29,6 +29,7 @@ export function getAuthUrl() {
     scope: SCOPES,
     prompt: 'consent',
     hd: HOSTED_DOMAIN,
+    include_granted_scopes: true,
   })
 }
 
