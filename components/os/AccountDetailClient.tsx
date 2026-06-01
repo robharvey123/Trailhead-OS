@@ -17,6 +17,7 @@ import type {
   DealInput,
   DealStage,
   DealWithRelations,
+  EmailThread,
   ProjectListItem,
   Tag,
   TimeEntry,
@@ -59,6 +60,7 @@ export default function AccountDetailClient({
   deals: initialDeals,
   timeEntries,
   tags,
+  emailThreads = [],
 }: {
   initialAccount: AccountDetail
   workstreams: Workstream[]
@@ -67,6 +69,7 @@ export default function AccountDetailClient({
   deals: DealWithRelations[]
   timeEntries: TimeEntry[]
   tags: Tag[]
+  emailThreads?: EmailThread[]
 }) {
   const router = useRouter()
   const [account, setAccount] = useState(initialAccount)
@@ -233,11 +236,33 @@ export default function AccountDetailClient({
           )
         ) : null}
 
-        {/* EMAILS (placeholder) */}
+        {/* EMAILS */}
         {tab === 'Emails' ? (
-          <div className="empty">
-            Email threads for this account will appear here once the Gmail integration lands.
-          </div>
+          emailThreads.length === 0 ? (
+            <div className="empty">
+              No email threads linked to this account yet. New mail auto-links by contact/domain;
+              you can also link threads from the <Link href="/inbox" className="acct-chip" style={{ display: 'inline-flex' }}>Inbox</Link>.
+            </div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr><th>From</th><th>Subject</th><th>When</th><th></th></tr>
+              </thead>
+              <tbody>
+                {emailThreads.map((t) => (
+                  <tr key={t.gmail_thread_id} style={{ cursor: 'pointer' }} onClick={() => router.push('/inbox')}>
+                    <td className="td-name">{t.from_name}</td>
+                    <td>
+                      <div>{t.subject}</div>
+                      <div className="td-sub">{t.snippet}</div>
+                    </td>
+                    <td className="td-mono">{fmtDate(t.last_at)}</td>
+                    <td>{t.is_unread ? <span className="pill timer">unread</span> : null}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
         ) : null}
 
         {/* DEALS */}

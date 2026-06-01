@@ -5,7 +5,13 @@ const SCOPES = [
   'https://www.googleapis.com/auth/calendar.events',
   'https://www.googleapis.com/auth/calendar.readonly',
   'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/gmail.send',
+  'https://www.googleapis.com/auth/gmail.modify',
 ]
+
+// Restrict the OAuth flow to the Trailhead Workspace identity.
+const HOSTED_DOMAIN = 'trailheadholdings.uk'
 
 export function getOAuthClient() {
   return new google.auth.OAuth2(
@@ -22,6 +28,7 @@ export function getAuthUrl() {
     access_type: 'offline',
     scope: SCOPES,
     prompt: 'consent',
+    hd: HOSTED_DOMAIN,
   })
 }
 

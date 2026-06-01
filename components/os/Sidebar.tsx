@@ -281,6 +281,13 @@ export default function Sidebar({
                 onClick={() => setMobileOpen(false)}
                 collapsed={collapsed}
               />
+              <NavLink
+                href="/inbox"
+                label="Inbox"
+                active={pathname.startsWith('/inbox')}
+                onClick={() => setMobileOpen(false)}
+                collapsed={collapsed}
+              />
             </div>
           </div>
 

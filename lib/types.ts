@@ -190,23 +190,51 @@ export interface GoogleTokens {
   updated_at: string
 }
 
+export type EmailMatchMethod = 'contact_email' | 'domain' | 'manual' | 'unmatched'
+
 export interface EmailLog {
   id: string
   gmail_message_id?: string
   gmail_thread_id?: string
-  account_id?: string
-  contact_id?: string
-  enquiry_id?: string
-  quote_id?: string
+  account_id?: string | null
+  contact_id?: string | null
+  enquiry_id?: string | null
+  quote_id?: string | null
   direction: 'inbound' | 'outbound'
   from_address: string
+  from_name?: string | null
   to_addresses: string[]
+  cc_addresses?: string[]
+  bcc_addresses?: string[]
   subject: string
   snippet?: string
-  body_html?: string
+  body_html?: string | null
+  body_text?: string | null
+  is_unread?: boolean
+  is_starred?: boolean
+  labels?: string[]
+  match_method?: EmailMatchMethod | null
   received_at?: string
   sent_at?: string
   created_at: string
+}
+
+/** A grouped email thread for the inbox (derived from email_logs by gmail_thread_id). */
+export interface EmailThread {
+  gmail_thread_id: string
+  account_id: string | null
+  account_name?: string | null
+  subject: string
+  snippet: string
+  from_name: string
+  from_address: string
+  last_at: string
+  message_count: number
+  is_unread: boolean
+  is_starred: boolean
+  match_method: EmailMatchMethod | null
+  has_attachments: boolean
+  has_outbound: boolean
 }
 
 export interface GcalSync {

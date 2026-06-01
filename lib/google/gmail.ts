@@ -119,6 +119,52 @@ export async function sendEmail({
   return gmail.users.messages.send(params)
 }
 
+/** Raw HTML body (unsanitised) for the reader. */
+function findPartByMime(payload: gmail_v1.Schema$MessagePart | undefined, mime: string): gmail_v1.Schema$MessagePart | undefined {
+  if (!payload) return undefined
+  if (payload.mimeType === mime && payload.body?.data) return payload
+  for (const part of payload.parts ?? []) {
+    const found = findPartByMime(part, mime)
+    if (found) return found
+  }
+  return undefined
+}
+
+export function extractBodies(payload?: gmail_v1.Schema$MessagePart): { html: string | null; text: string | null } {
+  const htmlPart = findPartByMime(payload, 'text/html')
+  const textPart = findPartByMime(payload, 'text/plain')
+  const html = htmlPart?.body?.data ? decodeBase64Url(htmlPart.body.data) : null
+  const text = textPart?.body?.data
+    ? decodeBase64Url(textPart.body.data).trim()
+    : extractMessageBody(payload) || null
+  return { html, text }
+}
+
+export function messageHasAttachments(payload?: gmail_v1.Schema$MessagePart): boolean {
+  if (!payload) return false
+  if (payload.filename && payload.filename.length > 0 && payload.body?.attachmentId) return true
+  return (payload.parts ?? []).some((p) => messageHasAttachments(p))
+}
+
+/** List message ids matching a Gmail search query (e.g. "(in:inbox OR in:sent) newer_than:90d"). */
+export async function listMessageIds(query: string, max = 300): Promise<string[]> {
+  const gmail = await getGmailClient()
+  const ids: string[] = []
+  let pageToken: string | undefined
+  do {
+    const res = await gmail.users.messages.list({ userId: 'me', q: query, maxResults: 100, pageToken })
+    for (const m of res.data.messages ?? []) if (m.id) ids.push(m.id)
+    pageToken = res.data.nextPageToken ?? undefined
+  } while (pageToken && ids.length < max)
+  return ids.slice(0, max)
+}
+
+export async function getFullMessage(id: string): Promise<gmail_v1.Schema$Message> {
+  const gmail = await getGmailClient()
+  const res = await gmail.users.messages.get({ userId: 'me', id, format: 'full' })
+  return res.data
+}
+
 export function parseGmailMessage(msg: gmail_v1.Schema$Message): Partial<EmailLog> {
   const headers = msg.payload?.headers || []
   const get = (name: string) =>
