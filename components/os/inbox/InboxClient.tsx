@@ -4,8 +4,10 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/api-fetch'
 import type { EmailLog, EmailThread } from '@/lib/types'
+import ComposeModal from './ComposeModal'
 
 type Named = { id: string; name: string }
+type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
 type Folder = 'unread' | 'all' | 'starred' | 'unmatched' | 'sent'
 
 const FOLDERS: Array<{ key: Folder; label: string; icon: string }> = [
@@ -32,14 +34,17 @@ function initials(name: string) {
 export default function InboxClient({
   initialThreads,
   accounts,
+  contacts,
   connected,
   selfEmail,
 }: {
   initialThreads: EmailThread[]
   accounts: Named[]
+  contacts: ContactOpt[]
   connected: boolean
   selfEmail: string
 }) {
+  const [composeOpen, setComposeOpen] = useState(false)
   const [threads, setThreads] = useState(initialThreads)
   const [folder, setFolder] = useState<Folder>('all')
   const [search, setSearch] = useState('')
@@ -168,6 +173,7 @@ export default function InboxClient({
             <Link className="btn btn-primary btn-sm" href="/api/auth/google">Connect Gmail</Link>
           ) : (
             <>
+              <button className="btn btn-primary btn-sm" onClick={() => setComposeOpen(true)}>✎ Compose</button>
               <button className="btn btn-ghost btn-sm" onClick={() => syncNow(7)} disabled={busy}>{busy ? 'Syncing…' : '↻ Sync now'}</button>
               <button className="btn btn-ghost btn-sm" onClick={() => syncNow(90)} disabled={busy}>Backfill 90d</button>
             </>
@@ -176,6 +182,15 @@ export default function InboxClient({
       </div>
 
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '6px 16px' }}>{error}</p> : null}
+
+      {composeOpen ? (
+        <ComposeModal
+          contacts={contacts}
+          accounts={accounts}
+          onClose={() => setComposeOpen(false)}
+          onSent={() => refreshThreads()}
+        />
+      ) : null}
 
       <div className="inbox">
         {/* folders */}

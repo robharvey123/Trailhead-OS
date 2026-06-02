@@ -73,31 +73,63 @@ function extractMessageBody(payload?: gmail_v1.Schema$MessagePart): string {
   return decodeBase64Url(payload.body?.data).trim()
 }
 
+export interface OutboundAttachment {
+  filename: string
+  contentType: string
+  dataBase64: string // raw base64 (no data: prefix)
+}
+
 export async function sendEmail({
   to,
   cc,
+  bcc,
   subject,
   body,
   replyToMessageId,
+  attachments,
 }: {
   to: string
   cc?: string
+  bcc?: string
   subject: string
   body: string
   replyToMessageId?: string
+  attachments?: OutboundAttachment[]
 }) {
   const gmail = await getGmailClient()
 
   const headers = [`To: ${to}`]
   if (cc && cc.trim()) headers.push(`Cc: ${cc}`)
-  const message = [
-    ...headers,
-    `Subject: ${subject}`,
-    'Content-Type: text/html; charset=utf-8',
-    'MIME-Version: 1.0',
-    '',
-    body,
-  ].join('\n')
+  if (bcc && bcc.trim()) headers.push(`Bcc: ${bcc}`)
+  headers.push(`Subject: ${subject}`, 'MIME-Version: 1.0')
+
+  let message: string
+  if (attachments && attachments.length > 0) {
+    const boundary = `thb_${Math.abs(subject.length * 2654435761 % 2147483647)}_bnd`
+    const parts: string[] = [
+      ...headers,
+      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      '',
+      `--${boundary}`,
+      'Content-Type: text/html; charset=utf-8',
+      '',
+      body,
+    ]
+    for (const a of attachments) {
+      parts.push(
+        `--${boundary}`,
+        `Content-Type: ${a.contentType}; name="${a.filename}"`,
+        'Content-Transfer-Encoding: base64',
+        `Content-Disposition: attachment; filename="${a.filename}"`,
+        '',
+        a.dataBase64.replace(/(.{76})/g, '$1\n')
+      )
+    }
+    parts.push(`--${boundary}--`)
+    message = parts.join('\n')
+  } else {
+    message = [...headers, 'Content-Type: text/html; charset=utf-8', '', body].join('\n')
+  }
 
   const encoded = Buffer.from(message)
     .toString('base64')

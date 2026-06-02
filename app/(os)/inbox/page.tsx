@@ -17,10 +17,11 @@ export default async function InboxPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [threads, accounts, tokens] = await Promise.all([
+  const [threads, accounts, tokens, contactsRes] = await Promise.all([
     listThreads({ folder: 'all' }, supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
     getAllGoogleTokens().catch(() => []),
+    supabase.from('contacts').select('id, name, email, account_id').not('email', 'is', null),
   ])
 
   return (
@@ -28,6 +29,7 @@ export default async function InboxPage() {
       <InboxClient
         initialThreads={threads}
         accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
+        contacts={(contactsRes.data ?? []) as Array<{ id: string; name: string; email: string | null; account_id: string | null }>}
         connected={tokens.length > 0}
         selfEmail={user.email ?? ''}
       />

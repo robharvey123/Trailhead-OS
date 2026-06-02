@@ -15,9 +15,13 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({})) as Record<string, unknown>
   const to = sanitizeOptionalString(body.to)
   const cc = sanitizeOptionalString(body.cc) ?? undefined
+  const bcc = sanitizeOptionalString(body.bcc) ?? undefined
   const subject = sanitizeOptionalString(body.subject)
   const htmlBody = sanitizeOptionalString(body.body)
   const replyToMessageId = sanitizeOptionalString(body.reply_to_message_id) ?? undefined
+  const attachments = Array.isArray(body.attachments)
+    ? (body.attachments as Array<{ filename: string; contentType: string; dataBase64: string }>)
+    : undefined
 
   if (!to || !subject || !htmlBody) {
     return NextResponse.json(
@@ -33,9 +37,11 @@ export async function POST(request: Request) {
     const response = await sendEmail({
       to,
       cc,
+      bcc,
       subject,
       body: htmlBody,
       replyToMessageId,
+      attachments,
     })
 
     const messageId = response.data.id ?? null
@@ -51,6 +57,7 @@ export async function POST(request: Request) {
       from_address: auth.user.email ?? '',
       to_addresses: splitAddrs(to),
       cc_addresses: splitAddrs(cc),
+      bcc_addresses: splitAddrs(bcc),
       subject,
       snippet: htmlBody.slice(0, 200),
       body_html: htmlBody,
