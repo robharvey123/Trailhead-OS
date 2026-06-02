@@ -45,11 +45,11 @@ export default function WorkstreamPnL() {
 
   if (loading) {
     return (
-      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-        <div className="h-5 w-48 animate-pulse rounded bg-[#2A2A3A]" />
+      <div className="os-card p-6">
+        <div className="h-5 w-48 animate-pulse rounded bg-[var(--surface-2)]" />
         <div className="mt-4 space-y-3">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-10 animate-pulse rounded-xl bg-[#2A2A3A]/50" />
+            <div key={n} className="h-10 animate-pulse rounded-xl bg-[var(--surface-2)]" />
           ))}
         </div>
       </div>
@@ -61,13 +61,13 @@ export default function WorkstreamPnL() {
   }
 
   return (
-    <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-      <h2 className="text-lg font-semibold text-white">Workstream P&L</h2>
-      <p className="mt-1 text-sm text-[#9CA3AF]">Revenue from paid invoices vs. total expenses</p>
+    <div className="os-card p-6">
+      <h2 className="os-section-title">Workstream P&L</h2>
+      <p className="mt-1 text-sm text-[color:var(--text-2)]">Revenue from paid invoices vs. total expenses</p>
 
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
+          <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
             <tr>
               <th className="pb-3">Workstream</th>
               <th className="pb-3 text-right">Revenue</th>
@@ -79,22 +79,22 @@ export default function WorkstreamPnL() {
             {rows.map((row) => {
               const classes = getWorkstreamColourClasses(row.colour ?? row.slug)
               return (
-                <tr key={row.workstream_id || 'unassigned'} className="border-t border-[#2A2A3A]">
+                <tr key={row.workstream_id || 'unassigned'} className="border-t border-[color:var(--border)]">
                   <td className="py-3">
                     <span className="flex items-center gap-2">
                       <span className={`h-2 w-2 rounded-full ${classes.dot}`} />
-                      <span className="text-white">{row.label}</span>
+                      <span className="text-[color:var(--text)]">{row.label}</span>
                     </span>
                   </td>
-                  <td className="py-3 text-right font-medium text-emerald-300">
+                  <td className="py-3 text-right font-medium text-[color:var(--emerald-strong)]">
                     {formatMoney(row.revenue)}
                   </td>
-                  <td className="py-3 text-right font-medium text-rose-300">
+                  <td className="py-3 text-right font-medium text-[color:var(--red-strong)]">
                     {formatMoney(row.expenses)}
                   </td>
                   <td
                     className={`py-3 text-right font-semibold ${
-                      row.net >= 0 ? 'text-emerald-200' : 'text-rose-200'
+                      row.net >= 0 ? 'text-[color:var(--emerald-strong)]' : 'text-[color:var(--red-strong)]'
                     }`}
                   >
                     {formatMoney(row.net)}
@@ -104,17 +104,17 @@ export default function WorkstreamPnL() {
             })}
           </tbody>
           <tfoot>
-            <tr className="border-t-2 border-[#2A2A3A]">
-              <td className="py-3 font-semibold text-white">Total</td>
-              <td className="py-3 text-right font-semibold text-emerald-200">
+            <tr className="border-t-2 border-[color:var(--border-light)]">
+              <td className="py-3 font-semibold text-[color:var(--text)]">Total</td>
+              <td className="py-3 text-right font-semibold text-[color:var(--emerald-strong)]">
                 {formatMoney(totals.revenue)}
               </td>
-              <td className="py-3 text-right font-semibold text-rose-200">
+              <td className="py-3 text-right font-semibold text-[color:var(--red-strong)]">
                 {formatMoney(totals.expenses)}
               </td>
               <td
                 className={`py-3 text-right text-base font-bold ${
-                  totals.net >= 0 ? 'text-emerald-100' : 'text-rose-100'
+                  totals.net >= 0 ? 'text-[color:var(--emerald-strong)]' : 'text-[color:var(--red-strong)]'
                 }`}
               >
                 {formatMoney(totals.net)}

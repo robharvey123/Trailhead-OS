@@ -272,32 +272,32 @@ export default function QuoteDetailClient({
   return (
     <div className="space-y-6">
       {warning === 'edit-blocked' ? (
-        <div className="rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm text-amber-100">
+        <div className="rounded-[1.75rem] border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
           Accepted and converted quotes are locked. You were redirected back to the detail view.
         </div>
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
         <div className="space-y-6">
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+          <div className="os-card p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-xs uppercase tracking-[0.32em] text-white0">Quote</p>
+                  <p className="os-eyebrow">Quote</p>
                   <StatusBadge status={quoteState.status} kind="quote" />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <h1 className="text-3xl font-semibold text-white">{quoteState.quote_number}</h1>
+                  <h1 className="os-page-title">{quoteState.quote_number}</h1>
                   {quoteState.pricing_tier ? (
-                    <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100">
+                    <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                       {quoteState.pricing_tier.name} tier
                     </span>
                   ) : null}
-                  <span className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs text-[#9CA3AF]">
+                  <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
                     v{quoteState.version}
                   </span>
                 </div>
-                <p className="mt-2 text-lg text-[#9CA3AF]">{quoteState.title}</p>
+                <p className="mt-2 text-lg text-[color:var(--text-2)]">{quoteState.title}</p>
               </div>
               {quoteState.workstream ? (
                 <WorkstreamBadge
@@ -310,18 +310,18 @@ export default function QuoteDetailClient({
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Account</p>
-                <p className="mt-2 text-sm text-[#9CA3AF]">{quoteState.account?.name ?? '—'}</p>
+                <p className="os-eyebrow">Account</p>
+                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.account?.name ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Contact</p>
-                <p className="mt-2 text-sm text-[#9CA3AF]">{quoteState.contact?.name ?? '—'}</p>
+                <p className="os-eyebrow">Contact</p>
+                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.contact?.name ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Project</p>
-                <p className="mt-2 text-sm text-[#9CA3AF]">
+                <p className="os-eyebrow">Project</p>
+                <p className="mt-2 text-sm text-[color:var(--text-2)]">
                   {quoteState.project ? (
-                    <Link href={`/projects/records/${quoteState.project.id}`} className="text-sky-300 transition hover:text-sky-200">
+                    <Link href={`/projects/records/${quoteState.project.id}`} className="text-[color:var(--accent-strong)] transition hover:text-[color:var(--accent-hover)]">
                       {quoteState.project.name}
                     </Link>
                   ) : (
@@ -330,10 +330,10 @@ export default function QuoteDetailClient({
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Enquiry</p>
-                <p className="mt-2 text-sm text-[#9CA3AF]">
+                <p className="os-eyebrow">Enquiry</p>
+                <p className="mt-2 text-sm text-[color:var(--text-2)]">
                   {quoteState.enquiry ? (
-                    <Link href={`/enquiries/${quoteState.enquiry.id}`} className="text-sky-300 transition hover:text-sky-200">
+                    <Link href={`/enquiries/${quoteState.enquiry.id}`} className="text-[color:var(--accent-strong)] transition hover:text-[color:var(--accent-hover)]">
                       {quoteState.enquiry.biz_name}
                     </Link>
                   ) : (
@@ -342,31 +342,31 @@ export default function QuoteDetailClient({
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Issue date</p>
-                <p className="mt-2 text-sm text-[#9CA3AF]">{quoteState.issue_date}</p>
+                <p className="os-eyebrow">Issue date</p>
+                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.issue_date}</p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white0">Valid until</p>
-                <p className="mt-2 text-sm text-[#9CA3AF]">{quoteState.valid_until ?? '—'}</p>
+                <p className="os-eyebrow">Valid until</p>
+                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.valid_until ?? '—'}</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+          <div className="os-card p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-white">Draft quote</h2>
-                <p className="mt-2 text-sm text-[#9CA3AF]">
+                <h2 className="os-section-title">Draft quote</h2>
+                <p className="mt-2 text-sm text-[color:var(--text-2)]">
                   Edit the client-facing draft inline. Autosaves after 1 second.
                 </p>
               </div>
               <p
                 className={`text-xs ${
                   draftSaveState === 'error'
-                    ? 'text-rose-300'
+                    ? 'text-[color:var(--red-strong)]'
                     : draftSaveState === 'saved'
-                      ? 'text-emerald-300'
-                      : 'text-white0'
+                      ? 'text-[color:var(--emerald-strong)]'
+                      : 'text-[color:var(--text-3)]'
                 }`}
               >
                 {draftSaveMessage ?? (isLocked ? 'Locked after sending' : 'Editable draft')}
@@ -375,30 +375,30 @@ export default function QuoteDetailClient({
 
             <div className="mt-6 grid gap-5">
               <label className="block">
-                <span className="text-sm font-medium text-[#9CA3AF]">Overview</span>
+                <span className="text-sm font-medium text-[color:var(--text-2)]">Overview</span>
                 <textarea
                   rows={4}
                   value={draftContent.overview}
                   disabled={isLocked}
                   onChange={(event) => setDraftContent((current) => ({ ...current, overview: event.target.value }))}
-                  className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white disabled:opacity-60"
+                  className="os-textarea mt-2 w-full disabled:opacity-50"
                 />
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-[#9CA3AF]">Approach</span>
+                <span className="text-sm font-medium text-[color:var(--text-2)]">Approach</span>
                 <textarea
                   rows={5}
                   value={draftContent.approach}
                   disabled={isLocked}
                   onChange={(event) => setDraftContent((current) => ({ ...current, approach: event.target.value }))}
-                  className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white disabled:opacity-60"
+                  className="os-textarea mt-2 w-full disabled:opacity-50"
                 />
               </label>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="block">
-                  <span className="text-sm font-medium text-[#9CA3AF]">Scope bullets</span>
+                  <span className="text-sm font-medium text-[color:var(--text-2)]">Scope bullets</span>
                   <textarea
                     rows={7}
                     value={listToText(draftContent.scope)}
@@ -406,12 +406,12 @@ export default function QuoteDetailClient({
                     onChange={(event) =>
                       setDraftContent((current) => ({ ...current, scope: parseList(event.target.value) }))
                     }
-                    className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white disabled:opacity-60"
+                    className="os-textarea mt-2 w-full disabled:opacity-50"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-[#9CA3AF]">Assumptions</span>
+                  <span className="text-sm font-medium text-[color:var(--text-2)]">Assumptions</span>
                   <textarea
                     rows={7}
                     value={listToText(draftContent.assumptions)}
@@ -419,13 +419,13 @@ export default function QuoteDetailClient({
                     onChange={(event) =>
                       setDraftContent((current) => ({ ...current, assumptions: parseList(event.target.value) }))
                     }
-                    className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white disabled:opacity-60"
+                    className="os-textarea mt-2 w-full disabled:opacity-50"
                   />
                 </label>
               </div>
 
               <label className="block">
-                <span className="text-sm font-medium text-[#9CA3AF]">Pricing summary</span>
+                <span className="text-sm font-medium text-[color:var(--text-2)]">Pricing summary</span>
                 <textarea
                   rows={6}
                   value={draftContent.pricing.map((item) => `${item.item} | ${item.description} | ${item.amount}`).join('\n')}
@@ -444,53 +444,53 @@ export default function QuoteDetailClient({
                         .filter((item) => item.item && item.description && item.amount),
                     }))
                   }
-                  className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white disabled:opacity-60"
+                  className="os-textarea mt-2 w-full disabled:opacity-50"
                 />
-                <p className="mt-2 text-xs text-white0">One item per line in the format: item | description | amount</p>
+                <p className="mt-2 text-xs text-[color:var(--text-3)]">One item per line in the format: item | description | amount</p>
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-[#9CA3AF]">Next steps</span>
+                <span className="text-sm font-medium text-[color:var(--text-2)]">Next steps</span>
                 <textarea
                   rows={3}
                   value={draftContent.next_steps}
                   disabled={isLocked}
                   onChange={(event) => setDraftContent((current) => ({ ...current, next_steps: event.target.value }))}
-                  className="mt-2 w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white disabled:opacity-60"
+                  className="os-textarea mt-2 w-full disabled:opacity-50"
                 />
               </label>
             </div>
           </div>
 
           {quoteState.ai_generated && (quoteState.estimated_hours || quoteState.estimated_timeline) ? (
-            <div className="rounded-[2rem] border border-sky-500/20 bg-sky-500/5 p-6">
-              <h2 className="text-lg font-semibold text-white">Estimated hours & timeline</h2>
-              <p className="mt-4 text-sm text-sky-100">
+            <div className="rounded-[2rem] border border-[color:var(--accent)] bg-[var(--accent-dim)] p-6">
+              <h2 className="os-section-title">Estimated hours & timeline</h2>
+              <p className="mt-4 text-sm text-[color:var(--accent-strong)]">
                 Estimated: {quoteState.estimated_hours ?? '—'} hours
                 {quoteState.estimated_timeline ? ` · ${quoteState.estimated_timeline}` : ''}
               </p>
-              {pricingPreview ? <p className="mt-2 text-sm text-[#9CA3AF]">{pricingPreview}</p> : null}
+              {pricingPreview ? <p className="mt-2 text-sm text-[color:var(--text-2)]">{pricingPreview}</p> : null}
             </div>
           ) : null}
 
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <h2 className="text-lg font-semibold text-white">Scope of work</h2>
+          <div className="os-card p-6">
+            <h2 className="os-section-title">Scope of work</h2>
             {quoteState.scope.length ? (
               <div className="mt-4 space-y-4">
                 {quoteState.scope.map((phase, index) => (
-                  <div key={`${phase.phase}-${index}`} className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+                  <div key={`${phase.phase}-${index}`} className="rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="font-semibold text-white">
+                      <p className="font-semibold text-[color:var(--text)]">
                         {index + 1}. {phase.phase}
                       </p>
-                      <span className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs text-[#9CA3AF]">
+                      <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
                         {phase.duration}
                         {phase.estimated_hours ? ` · ${phase.estimated_hours} hrs` : ''}
                       </span>
                     </div>
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-[#9CA3AF]">{phase.description}</p>
+                    <p className="mt-3 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{phase.description}</p>
                     {phase.deliverables.length ? (
-                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[#9CA3AF]">
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[color:var(--text-2)]">
                         {phase.deliverables.map((deliverable, deliverableIndex) => (
                           <li key={`${deliverable}-${deliverableIndex}`}>{deliverable}</li>
                         ))}
@@ -500,15 +500,15 @@ export default function QuoteDetailClient({
                 ))}
               </div>
             ) : (
-              <p className="mt-4 text-sm text-white0">No scope phases added.</p>
+              <p className="mt-4 text-sm text-[color:var(--text-3)]">No scope phases added.</p>
             )}
           </div>
 
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <h2 className="text-lg font-semibold text-white">Line items</h2>
+          <div className="os-card p-6">
+            <h2 className="os-section-title">Line items</h2>
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
+                <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
                   <tr>
                     <th className="pb-3">Description</th>
                     <th className="pb-3">Type</th>
@@ -519,12 +519,12 @@ export default function QuoteDetailClient({
                 </thead>
                 <tbody>
                   {quoteState.line_items.map((item) => (
-                    <tr key={item.id} className="border-t border-[#2A2A3A]">
-                      <td className="py-3 text-white">{item.description}</td>
-                      <td className="py-3 text-[#9CA3AF]">{item.type}</td>
-                      <td className="py-3 text-right text-[#9CA3AF]">{item.qty}</td>
-                      <td className="py-3 text-right text-[#9CA3AF]">{formatMoney(item.unit_price)}</td>
-                      <td className="py-3 text-right text-white">{formatMoney(item.qty * item.unit_price)}</td>
+                    <tr key={item.id} className="border-t border-[color:var(--border)]">
+                      <td className="py-3 text-[color:var(--text)]">{item.description}</td>
+                      <td className="py-3 text-[color:var(--text-2)]">{item.type}</td>
+                      <td className="py-3 text-right text-[color:var(--text-2)]">{item.qty}</td>
+                      <td className="py-3 text-right text-[color:var(--text-2)]">{formatMoney(item.unit_price)}</td>
+                      <td className="py-3 text-right text-[color:var(--text)]">{formatMoney(item.qty * item.unit_price)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -533,12 +533,12 @@ export default function QuoteDetailClient({
           </div>
 
           {quoteState.ai_generated && quoteState.complexity_breakdown ? (
-            <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-              <h2 className="text-lg font-semibold text-white">Complexity breakdown</h2>
-              <p className="mt-2 text-sm text-[#9CA3AF]">How this estimate was calculated.</p>
+            <div className="os-card p-6">
+              <h2 className="os-section-title">Complexity breakdown</h2>
+              <p className="mt-2 text-sm text-[color:var(--text-2)]">How this estimate was calculated.</p>
               <div className="mt-4 space-y-4">
                 {quoteState.complexity_breakdown.features_scored.length ? (
-                  <ul className="list-disc space-y-2 pl-5 text-sm text-[#9CA3AF]">
+                  <ul className="list-disc space-y-2 pl-5 text-sm text-[color:var(--text-2)]">
                     {quoteState.complexity_breakdown.features_scored.map((feature, index) => (
                       <li key={`${feature}-${index}`}>{feature}</li>
                     ))}
@@ -546,25 +546,25 @@ export default function QuoteDetailClient({
                 ) : null}
 
                 <dl className="grid gap-3 md:grid-cols-3">
-                  <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-                    <dt className="text-xs uppercase tracking-[0.18em] text-white0">
+                  <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                    <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                       Before buffer
                     </dt>
-                    <dd className="mt-2 text-base font-medium text-white">
+                    <dd className="mt-2 text-base font-medium text-[color:var(--text)]">
                       {quoteState.complexity_breakdown.total_hours_before_buffer} hrs
                     </dd>
                   </div>
-                  <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-                    <dt className="text-xs uppercase tracking-[0.18em] text-white0">Overhead</dt>
-                    <dd className="mt-2 text-base font-medium text-white">
+                  <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                    <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Overhead</dt>
+                    <dd className="mt-2 text-base font-medium text-[color:var(--text)]">
                       {quoteState.complexity_breakdown.overhead_hours} hrs
                     </dd>
                   </div>
-                  <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-                    <dt className="text-xs uppercase tracking-[0.18em] text-white0">
+                  <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                    <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                       Final with {quoteState.complexity_breakdown.buffer_applied}
                     </dt>
-                    <dd className="mt-2 text-base font-medium text-white">
+                    <dd className="mt-2 text-base font-medium text-[color:var(--text)]">
                       {quoteState.complexity_breakdown.total_hours_final} hrs
                     </dd>
                   </div>
@@ -575,36 +575,36 @@ export default function QuoteDetailClient({
 
           <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
             <div className="space-y-6">
-              <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-                <h2 className="text-lg font-semibold text-white">Payment terms</h2>
-                <p className="mt-4 whitespace-pre-wrap text-sm text-[#9CA3AF]">{quoteState.payment_terms ?? '—'}</p>
+              <div className="os-card p-6">
+                <h2 className="os-section-title">Payment terms</h2>
+                <p className="mt-4 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{quoteState.payment_terms ?? '—'}</p>
               </div>
 
               {quoteState.notes ? (
-                <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-                  <h2 className="text-lg font-semibold text-white">Notes</h2>
-                  <p className="mt-4 whitespace-pre-wrap text-sm text-[#9CA3AF]">{quoteState.notes}</p>
+                <div className="os-card p-6">
+                  <h2 className="os-section-title">Notes</h2>
+                  <p className="mt-4 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{quoteState.notes}</p>
                 </div>
               ) : null}
 
               {versions.length ? (
-                <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-                  <h2 className="text-lg font-semibold text-white">Version history</h2>
+                <div className="os-card p-6">
+                  <h2 className="os-section-title">Version history</h2>
                   <div className="mt-4 space-y-3">
                     {versions.map((version) => (
                       <div
                         key={version.id}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3"
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3"
                       >
                         <div>
-                          <p className="text-sm font-medium text-white">Version {version.version}</p>
-                          <p className="text-xs text-white0">{formatVersionTimestamp(version.generated_at)}</p>
+                          <p className="text-sm font-medium text-[color:var(--text)]">Version {version.version}</p>
+                          <p className="text-xs text-[color:var(--text-3)]">{formatVersionTimestamp(version.generated_at)}</p>
                         </div>
                         {!isLocked ? (
                           <button
                             type="button"
                             onClick={() => setDraftContent(version.content)}
-                            className="rounded-2xl border border-[#2A2A3A] px-3 py-2 text-xs font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                            className="rounded-2xl border border-[color:var(--border)] px-3 py-2 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                           >
                             Restore into draft
                           </button>
@@ -615,8 +615,8 @@ export default function QuoteDetailClient({
                 </div>
               ) : null}
 
-              <details className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-                <summary className="cursor-pointer list-none text-lg font-semibold text-white">
+              <details className="os-card p-6">
+                <summary className="os-section-title cursor-pointer list-none">
                   Email thread
                 </summary>
                 <div className="mt-4">
@@ -632,20 +632,20 @@ export default function QuoteDetailClient({
               </details>
             </div>
 
-            <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-              <h2 className="text-lg font-semibold text-white">Invoice summary</h2>
+            <div className="os-card p-6">
+              <h2 className="os-section-title">Invoice summary</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-[#9CA3AF]">Subtotal</dt>
-                  <dd className="font-medium text-white">{formatMoney(totals.subtotal)}</dd>
+                  <dt className="text-[color:var(--text-2)]">Subtotal</dt>
+                  <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <dt className="text-[#9CA3AF]">VAT ({quoteState.vat_rate}%)</dt>
-                  <dd className="font-medium text-white">{formatMoney(totals.vat_amount)}</dd>
+                  <dt className="text-[color:var(--text-2)]">VAT ({quoteState.vat_rate}%)</dt>
+                  <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</dd>
                 </div>
-                <div className="flex items-center justify-between gap-4 border-t border-[#2A2A3A] pt-3">
-                  <dt className="text-base font-semibold text-white">Total</dt>
-                  <dd className="text-lg font-semibold text-white">{formatMoney(totals.total)}</dd>
+                <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
+                  <dt className="text-base font-semibold text-[color:var(--text)]">Total</dt>
+                  <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total)}</dd>
                 </div>
               </dl>
             </div>
@@ -653,27 +653,27 @@ export default function QuoteDetailClient({
         </div>
 
         <div className="space-y-6 xl:sticky xl:top-8 xl:self-start">
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <p className="text-xs uppercase tracking-[0.24em] text-white0">Status</p>
+          <div className="os-card p-6">
+            <p className="os-eyebrow">Status</p>
             <StatusBadge status={quoteState.status} kind="quote" className="mt-4" />
 
-            <div className="mt-6 rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-white0">AI handoff</p>
+            <div className="mt-6 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="os-eyebrow">AI handoff</p>
               {quoteState.project ? (
                 <>
-                  <p className="mt-2 text-sm text-[#9CA3AF]">
+                  <p className="mt-2 text-sm text-[color:var(--text-2)]">
                     This quote is already linked to a delivery project.
                   </p>
                   <Link
                     href={`/projects/records/${quoteState.project.id}`}
-                    className="mt-3 block rounded-2xl border border-[#2A2A3A] px-4 py-3 text-center text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                    className="mt-3 block rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                   >
                     Open linked project
                   </Link>
                 </>
               ) : quoteState.status === 'accepted' || quoteState.status === 'converted' ? (
                 <>
-                  <p className="mt-2 text-sm text-[#9CA3AF]">
+                  <p className="mt-2 text-sm text-[color:var(--text-2)]">
                     The quote is approved. AI can now turn the agreed scope into a project, milestones, and starter tasks.
                   </p>
                   <div className="mt-3 space-y-3">
@@ -681,7 +681,7 @@ export default function QuoteDetailClient({
                       type="button"
                       onClick={() => void createProjectFromQuote(true)}
                       disabled={loadingAction !== null}
-                      className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                      className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                     >
                       {loadingAction === 'create-project-ai' ? 'Creating AI project...' : 'Create project with AI plan'}
                     </button>
@@ -689,7 +689,7 @@ export default function QuoteDetailClient({
                       type="button"
                       onClick={() => void createProjectFromQuote(false)}
                       disabled={loadingAction !== null}
-                      className="w-full rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 disabled:opacity-60"
+                      className="w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
                     >
                       {loadingAction === 'create-project' ? 'Creating project...' : 'Create project only'}
                     </button>
@@ -697,13 +697,13 @@ export default function QuoteDetailClient({
                 </>
               ) : (
                 <>
-                  <p className="mt-2 text-sm text-[#9CA3AF]">
+                  <p className="mt-2 text-sm text-[color:var(--text-2)]">
                     AI planning becomes available once this quote is marked accepted.
                   </p>
                   <button
                     type="button"
                     disabled
-                    className="mt-3 w-full rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-white0 opacity-80"
+                    className="mt-3 w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-3)] opacity-80"
                   >
                     Accept quote to enable AI project planning
                   </button>
@@ -717,7 +717,7 @@ export default function QuoteDetailClient({
                   type="button"
                   onClick={() => void markReadyToSend()}
                   disabled={loadingAction !== null}
-                  className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                  className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                 >
                   Mark ready to send
                 </button>
@@ -732,7 +732,7 @@ export default function QuoteDetailClient({
                   defaultRecipient={quoteState.contact?.email ?? quoteState.enquiry?.contact_email ?? null}
                   defaultSubject={`Quote for ${quoteState.account?.name ?? quoteState.enquiry?.biz_name ?? quoteState.title}`}
                   defaultMessage={`Hi,\n\nPlease find the attached quote for ${quoteState.title}. Let me know if you would like to review any part of the scope.\n\nBest,\nRob`}
-                  buttonClassName="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+                  buttonClassName="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                   fullWidth
                   onSent={handleQuoteSent}
                 />
@@ -744,7 +744,7 @@ export default function QuoteDetailClient({
                     type="button"
                     onClick={() => patchQuote({ status: 'accepted' })}
                     disabled={loadingAction !== null}
-                    className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                    className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                   >
                     Mark as accepted
                   </button>
@@ -752,7 +752,7 @@ export default function QuoteDetailClient({
                     type="button"
                     onClick={() => patchQuote({ status: 'declined' })}
                     disabled={loadingAction !== null}
-                    className="w-full rounded-2xl border border-rose-500/30 px-4 py-3 text-sm text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+                    className="w-full rounded-2xl border border-[color:var(--red)] px-4 py-3 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
                   >
                     Mark as declined
                   </button>
@@ -764,7 +764,7 @@ export default function QuoteDetailClient({
                   type="button"
                   onClick={convertToInvoice}
                   disabled={loadingAction !== null}
-                  className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                  className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                 >
                   Convert to invoice
                 </button>
@@ -773,18 +773,18 @@ export default function QuoteDetailClient({
               {quoteState.status === 'converted' && quoteState.invoice ? (
                 <Link
                   href={`/invoicing/${quoteState.invoice.id}`}
-                  className="block rounded-2xl bg-white px-4 py-3 text-center text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+                  className="block rounded-2xl bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                 >
                   View invoice →
                 </Link>
               ) : null}
             </div>
 
-            <div className="mt-6 space-y-3 border-t border-[#2A2A3A] pt-6">
+            <div className="mt-6 space-y-3 border-t border-[color:var(--border)] pt-6">
               {(quoteState.status === 'draft' || quoteState.status === 'review' || quoteState.status === 'sent') ? (
                 <Link
                   href={`/quotes/${quoteState.id}/edit`}
-                  className="block rounded-2xl border border-[#2A2A3A] px-4 py-3 text-center text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                  className="block rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                 >
                   Edit quote
                 </Link>
@@ -792,7 +792,7 @@ export default function QuoteDetailClient({
 
               <a
                 href={`/api/quotes/${quoteState.id}/pdf`}
-                className="block rounded-2xl border border-[#2A2A3A] px-4 py-3 text-center text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                className="block rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
               >
                 Download PDF
               </a>
@@ -805,7 +805,7 @@ export default function QuoteDetailClient({
                 defaultRecipient={quoteState.contact?.email ?? quoteState.enquiry?.contact_email ?? null}
                 defaultSubject={`Quote ${quoteState.quote_number} - ${quoteState.title}`}
                 defaultMessage={`Hi,\n\nPlease find the attached quote for ${quoteState.title}.\n\nLet me know if you have any questions.`}
-                buttonClassName="w-full rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                buttonClassName="w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                 fullWidth
               />
 
@@ -813,20 +813,20 @@ export default function QuoteDetailClient({
                 type="button"
                 onClick={duplicateQuote}
                 disabled={loadingAction !== null}
-                className="w-full rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 disabled:opacity-60"
+                className="w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
               >
                 Duplicate quote
               </button>
             </div>
 
             {quoteState.status === 'converted' && quoteState.invoice ? (
-              <div className="mt-6 rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-white0">Converted invoice</p>
-                <p className="mt-2 text-sm text-white">{quoteState.invoice.invoice_number}</p>
+              <div className="mt-6 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                <p className="os-eyebrow">Converted invoice</p>
+                <p className="mt-2 text-sm text-[color:var(--text)]">{quoteState.invoice.invoice_number}</p>
               </div>
             ) : null}
 
-            {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+            {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
           </div>
         </div>
       </div>

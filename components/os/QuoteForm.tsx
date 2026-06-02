@@ -400,21 +400,21 @@ export default function QuoteForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <div className="os-card space-y-6 p-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-white0">Commercial</p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
+        <p className="os-eyebrow">Commercial</p>
+        <h1 className="os-page-title mt-2">
           {initialQuote ? 'Edit quote' : 'New quote'}
         </h1>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]">
         <label className="space-y-2 xl:col-span-6">
-          <span className="text-sm text-[#9CA3AF]">Title</span>
+          <span className="text-sm text-[color:var(--text-2)]">Title</span>
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
@@ -472,11 +472,11 @@ export default function QuoteForm({
         />
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Workstream</span>
+          <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
           <select
             value={workstreamId}
             onChange={(event) => setWorkstreamId(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="">No workstream</option>
             {workstreams.map((workstream) => (
@@ -488,11 +488,11 @@ export default function QuoteForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Pricing type</span>
+          <span className="text-sm text-[color:var(--text-2)]">Pricing type</span>
           <select
             value={pricingType}
             onChange={(event) => setPricingType(event.target.value as PricingType)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="fixed">Fixed</option>
             <option value="time_and_materials">Time &amp; materials</option>
@@ -501,47 +501,47 @@ export default function QuoteForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Valid until</span>
+          <span className="text-sm text-[color:var(--text-2)]">Valid until</span>
           <input
             type="date"
             value={validUntil}
             onChange={(event) => setValidUntil(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Issue date</span>
+          <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
           <input
             type="date"
             value={issueDate}
             onChange={(event) => setIssueDate(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
       </div>
 
       <label className="space-y-2">
-        <span className="text-sm text-[#9CA3AF]">Summary</span>
+        <span className="text-sm text-[color:var(--text-2)]">Summary</span>
         <textarea
           value={summary}
           onChange={(event) => setSummary(event.target.value)}
           rows={4}
           placeholder="Brief overview of what this quote covers..."
-          className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          className="os-textarea w-full"
         />
       </label>
 
-      <section className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
+      <section className="os-card-muted p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">Scope of work</h2>
-            <p className="text-sm text-[#9CA3AF]">Build out delivery phases and reorder by dragging a card.</p>
+            <h2 className="os-section-title">Scope of work</h2>
+            <p className="text-sm text-[color:var(--text-2)]">Build out delivery phases and reorder by dragging a card.</p>
           </div>
           <button
             type="button"
             onClick={() => setScope((current) => [...current, createEmptyPhase()])}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white transition hover:border-[#B8FF00]/40"
+            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
           >
             Add phase
           </button>
@@ -561,14 +561,14 @@ export default function QuoteForm({
                 movePhase(draggingPhaseIndex, index)
                 setDraggingPhaseIndex(null)
               }}
-              className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4"
+              className="os-card p-4"
             >
               <div className="mb-4 flex items-center justify-between gap-3">
-                <span className="text-xs uppercase tracking-[0.18em] text-white0">Drag handle · Phase {index + 1}</span>
+                <span className="os-eyebrow">Drag handle · Phase {index + 1}</span>
                 <button
                   type="button"
                   onClick={() => setScope((current) => current.filter((_, phaseIndex) => phaseIndex !== index))}
-                  className="rounded-2xl border border-rose-500/30 px-3 py-2 text-sm text-rose-200 transition hover:border-rose-400"
+                  className="rounded-2xl border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
                 >
                   Remove
                 </button>
@@ -576,35 +576,35 @@ export default function QuoteForm({
 
               <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
                 <label className="space-y-2">
-                  <span className="text-sm text-[#9CA3AF]">Phase name</span>
+                  <span className="text-sm text-[color:var(--text-2)]">Phase name</span>
                   <input
                     value={phase.phase}
                     onChange={(event) => updatePhase(index, { phase: event.target.value })}
-                    className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                    className="os-input w-full"
                   />
                 </label>
                 <label className="space-y-2">
-                  <span className="text-sm text-[#9CA3AF]">Estimated duration</span>
+                  <span className="text-sm text-[color:var(--text-2)]">Estimated duration</span>
                   <input
                     value={phase.duration}
                     onChange={(event) => updatePhase(index, { duration: event.target.value })}
-                    className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                    className="os-input w-full"
                   />
                 </label>
               </div>
 
               <label className="mt-4 block space-y-2">
-                <span className="text-sm text-[#9CA3AF]">Description</span>
+                <span className="text-sm text-[color:var(--text-2)]">Description</span>
                 <textarea
                   value={phase.description}
                   onChange={(event) => updatePhase(index, { description: event.target.value })}
                   rows={3}
-                  className="w-full rounded-[1.25rem] border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                  className="os-textarea w-full"
                 />
               </label>
 
               <div className="mt-4 space-y-2">
-                <span className="text-sm text-[#9CA3AF]">Deliverables</span>
+                <span className="text-sm text-[color:var(--text-2)]">Deliverables</span>
                 <div className="flex flex-wrap gap-2">
                   {phase.deliverables.map((deliverable, deliverableIndex) => (
                     <button
@@ -615,7 +615,7 @@ export default function QuoteForm({
                           deliverables: phase.deliverables.filter((_, entryIndex) => entryIndex !== deliverableIndex),
                         })
                       }
-                      className="rounded-full border border-[#2A2A3A] bg-[#1A1A28] px-3 py-1.5 text-xs text-[#9CA3AF]"
+                      className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
                     >
                       {deliverable} ×
                     </button>
@@ -643,7 +643,7 @@ export default function QuoteForm({
                       setDeliverableDrafts((current) => ({ ...current, [index]: '' }))
                     }}
                     placeholder="Type and press Enter"
-                    className="flex-1 rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                    className="os-input flex-1"
                   />
                 </div>
               </div>
@@ -652,10 +652,10 @@ export default function QuoteForm({
         </div>
       </section>
 
-      <section className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
+      <section className="os-card-muted p-5">
         <div>
-          <h2 className="text-lg font-semibold text-white">Pricing tier</h2>
-          <p className="mt-1 text-sm text-[#9CA3AF]">
+          <h2 className="os-section-title">Pricing tier</h2>
+          <p className="mt-1 text-sm text-[color:var(--text-2)]">
             Choose the rate structure for this quote before building line items.
           </p>
         </div>
@@ -684,11 +684,11 @@ export default function QuoteForm({
         </div>
       </section>
 
-      <section className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
+      <section className="os-card-muted p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">Line items</h2>
-            <p className="text-sm text-[#9CA3AF]">Same builder as invoices, with quote pricing type per line.</p>
+            <h2 className="os-section-title">Line items</h2>
+            <p className="text-sm text-[color:var(--text-2)]">Same builder as invoices, with quote pricing type per line.</p>
           </div>
           <button
             type="button"
@@ -705,19 +705,19 @@ export default function QuoteForm({
                 ),
               ])
             }}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white transition hover:border-[#B8FF00]/40"
+            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
           >
             Add line item
           </button>
         </div>
 
         {showTierNotice ? (
-          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100">
+          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
             <p>Tier updated - adjust line item rates manually if needed.</p>
             <button
               type="button"
               onClick={() => setShowTierNotice(false)}
-              className="rounded-full border border-sky-400/30 px-2 py-1 text-xs font-medium text-sky-100 transition hover:border-sky-300"
+              className="rounded-full border border-[color:var(--accent)] px-2 py-1 text-xs font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
             >
               Dismiss
             </button>
@@ -726,7 +726,7 @@ export default function QuoteForm({
 
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.18em] text-white0">
+            <thead className="text-left text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
               <tr>
                 <th className="pb-3">Description</th>
                 <th className="pb-3">Type</th>
@@ -739,25 +739,25 @@ export default function QuoteForm({
             <tbody>
               {lineItems.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-sm text-white0">
+                  <td colSpan={6} className="py-6 text-center text-sm text-[color:var(--text-3)]">
                     Select a pricing tier to pre-fill starter line items, or add your own manually.
                   </td>
                 </tr>
               ) : null}
               {lineItems.map((item) => (
-                <tr key={item.id} className="border-t border-[#2A2A3A]">
+                <tr key={item.id} className="border-t border-[color:var(--border)]">
                   <td className="py-3">
                     <input
                       value={item.description}
                       onChange={(event) => updateLineItem(item.id, { description: event.target.value })}
-                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                      className="os-input w-full"
                     />
                   </td>
                   <td className="py-3">
                     <select
                       value={item.type}
                       onChange={(event) => updateLineItem(item.id, { type: event.target.value as QuoteLineItem['type'] })}
-                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                      className="os-select w-full"
                     >
                       <option value="fixed">Fixed</option>
                       <option value="hourly">Hourly</option>
@@ -771,7 +771,7 @@ export default function QuoteForm({
                       step="0.01"
                       value={item.qty}
                       onChange={(event) => updateLineItem(item.id, { qty: Number(event.target.value) })}
-                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-right text-sm text-white"
+                      className="os-input w-full text-right"
                     />
                   </td>
                   <td className="py-3">
@@ -781,15 +781,15 @@ export default function QuoteForm({
                       step="0.01"
                       value={item.unit_price}
                       onChange={(event) => updateLineItem(item.id, { unit_price: Number(event.target.value) })}
-                      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-right text-sm text-white"
+                      className="os-input w-full text-right"
                     />
                   </td>
-                  <td className="py-3 text-right text-white">{formatMoney(item.qty * item.unit_price)}</td>
+                  <td className="py-3 text-right text-[color:var(--text)]">{formatMoney(item.qty * item.unit_price)}</td>
                   <td className="py-3 text-right">
                     <button
                       type="button"
                       onClick={() => removeLineItem(item.id)}
-                      className="rounded-2xl border border-rose-500/30 px-3 py-2 text-sm text-rose-200 transition hover:border-rose-400"
+                      className="rounded-2xl border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
                     >
                       Remove
                     </button>
@@ -800,10 +800,10 @@ export default function QuoteForm({
           </table>
         </div>
 
-        <div className="sticky bottom-4 mt-5 rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14]/95 p-4">
+        <div className="sticky bottom-4 mt-5 rounded-[1.5rem] border border-[color:var(--border)] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
           <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_180px]">
             <label className="space-y-2">
-              <span className="text-sm text-[#9CA3AF]">VAT rate (%)</span>
+              <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
               <input
                 type="number"
                 min="0"
@@ -811,46 +811,46 @@ export default function QuoteForm({
                 step="0.01"
                 value={vatRate}
                 onChange={(event) => setVatRate(event.target.value)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                className="os-input w-full"
               />
             </label>
-            <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-white0">Subtotal</p>
-              <p className="mt-2 text-base font-medium text-white">{formatMoney(totals.subtotal)}</p>
+            <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Subtotal</p>
+              <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</p>
             </div>
-            <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-white0">VAT ({Number(vatRate) || 0}%)</p>
-              <p className="mt-2 text-base font-medium text-white">{formatMoney(totals.vat_amount)}</p>
+            <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">VAT ({Number(vatRate) || 0}%)</p>
+              <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</p>
             </div>
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-emerald-200">Total</p>
-              <p className="mt-2 text-lg font-semibold text-white">{formatMoney(totals.total)}</p>
+            <div className="rounded-2xl border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--emerald-strong)]">Total</p>
+              <p className="mt-2 text-lg font-semibold text-[color:var(--emerald-strong)]">{formatMoney(totals.total)}</p>
             </div>
           </div>
         </div>
       </section>
 
       <label className="space-y-2">
-        <span className="text-sm text-[#9CA3AF]">Payment terms</span>
+        <span className="text-sm text-[color:var(--text-2)]">Payment terms</span>
         <textarea
           value={paymentTerms}
           onChange={(event) => setPaymentTerms(event.target.value)}
           rows={4}
-          className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          className="os-textarea w-full"
         />
       </label>
 
       <label className="space-y-2">
-        <span className="text-sm text-[#9CA3AF]">Notes</span>
+        <span className="text-sm text-[color:var(--text-2)]">Notes</span>
         <textarea
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           rows={4}
-          className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          className="os-textarea w-full"
         />
       </label>
 
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       <div className="flex flex-wrap gap-3">
         {initialQuote ? (
@@ -860,7 +860,7 @@ export default function QuoteForm({
                 type="button"
                 onClick={refreshFromEnquiry}
                 disabled={savingAs !== null || refreshingFromEnquiry}
-                className="rounded-2xl border border-sky-500/30 bg-sky-500/10 px-5 py-3 text-sm font-medium text-sky-100 transition hover:border-sky-400 disabled:opacity-60"
+                className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-5 py-3 text-sm font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)] disabled:opacity-50"
               >
                 {refreshingFromEnquiry ? 'Refreshing from enquiry...' : 'Refresh from enquiry'}
               </button>
@@ -869,13 +869,13 @@ export default function QuoteForm({
               type="button"
               onClick={() => submitQuote('edit')}
               disabled={savingAs !== null || refreshingFromEnquiry}
-              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'edit' ? 'Saving...' : 'Save'}
             </button>
             <Link
               href={`/quotes/${initialQuote.id}`}
-              className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             >
               Cancel
             </Link>
@@ -886,7 +886,7 @@ export default function QuoteForm({
               type="button"
               onClick={() => submitQuote('draft')}
               disabled={savingAs !== null}
-              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
             </button>
@@ -894,7 +894,7 @@ export default function QuoteForm({
               type="button"
               onClick={() => submitQuote('sent')}
               disabled={savingAs !== null}
-              className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 disabled:opacity-60"
+              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
             >
               {savingAs === 'sent' ? 'Saving...' : 'Save & send'}
             </button>

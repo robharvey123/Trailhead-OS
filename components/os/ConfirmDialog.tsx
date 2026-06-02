@@ -65,42 +65,42 @@ export default function ConfirmDialog({
 
   const confirmColour =
     variant === 'destructive'
-      ? 'bg-[#FF4081] text-white hover:bg-[#FF4081]/80'
-      : 'bg-[#FBBF24] text-[#0C0C14] hover:bg-[#FBBF24]/80'
+      ? 'bg-[var(--red)] text-white hover:bg-[var(--red-strong)]'
+      : 'bg-[var(--amber)] text-white hover:bg-[var(--amber-strong)]'
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0C0C14]/80"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)]"
       onClick={(e) => {
         if (e.target === e.currentTarget) onOpenChange(false)
       }}
     >
       <div
         ref={panelRef}
-        className="mx-4 w-full max-w-md rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6"
+        className="mx-4 w-full max-w-md rounded-lg border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
       >
-        <h2 id="confirm-dialog-title" className="mb-2 text-lg font-bold text-white">
+        <h2 id="confirm-dialog-title" className="mb-2 text-lg font-bold text-[color:var(--text)]">
           {title}
         </h2>
-        <p id="confirm-dialog-description" className="mb-4 text-sm text-[#9CA3AF]">
+        <p id="confirm-dialog-description" className="mb-4 text-sm text-[color:var(--text-2)]">
           {description}
         </p>
 
         {items && items.length > 0 ? (
-          <div className="mb-4 rounded border border-[#2A2A3A] bg-[#13131E] p-3">
+          <div className="mb-4 rounded border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
             {itemsLabel ? (
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[2px] text-[#9CA3AF]">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[2px] text-[color:var(--text-2)]">
                 {itemsLabel}
               </p>
             ) : null}
             {items.map((item, index) => (
               <p
                 key={index}
-                className="border-b border-[#2A2A3A] py-1 text-[11px] text-[#9CA3AF] last:border-0"
+                className="border-b border-[color:var(--border)] py-1 text-[11px] text-[color:var(--text-2)] last:border-0"
               >
                 {item}
               </p>
@@ -113,7 +113,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={() => onOpenChange(false)}
             disabled={loading}
-            className="rounded border border-[#2A2A3A] bg-[#13131E] px-4 py-2 text-white hover:border-[#B8FF00]/30"
+            className="rounded border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)]"
           >
             {cancelLabel}
           </button>
@@ -122,7 +122,7 @@ export default function ConfirmDialog({
               type="button"
               onClick={secondaryAction.onClick}
               disabled={loading}
-              className="rounded border border-[#2A2A3A] bg-[#13131E] px-4 py-2 text-white hover:border-[#B8FF00]/30 disabled:opacity-60"
+              className="rounded border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
             >
               {secondaryAction.label}
             </button>
@@ -131,7 +131,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className={`rounded px-4 py-2 font-bold disabled:opacity-60 ${confirmColour}`}
+            className={`rounded px-4 py-2 font-bold disabled:opacity-50 ${confirmColour}`}
           >
             {loading ? (
               <span className="flex items-center gap-2">

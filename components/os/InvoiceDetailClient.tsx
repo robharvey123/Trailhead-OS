@@ -175,27 +175,27 @@ export default function InvoiceDetailClient({
   return (
     <div className="space-y-6">
       {isPaid ? (
-        <div className="rounded-[1.75rem] border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-sm text-emerald-100">
+        <div className="rounded-[1.75rem] border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-5 py-4 text-sm text-[color:var(--emerald-strong)]">
           Paid on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('en-GB') : '—'}
         </div>
       ) : null}
 
       {warning === 'edit-blocked' ? (
-        <div className="rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm text-amber-100">
+        <div className="rounded-[1.75rem] border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
           Only draft invoices can be edited. You were redirected back to the detail view.
         </div>
       ) : null}
 
-      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+      <div className="os-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-white0">Invoice</p>
+            <p className="os-eyebrow">Invoice</p>
             <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-semibold text-white">
+              <h1 className="os-page-title">
                 {invoice.invoice_number}
               </h1>
               {invoice.pricing_tier ? (
-                <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100">
+                <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                   {invoice.pricing_tier.name} tier
                 </span>
               ) : null}
@@ -208,7 +208,7 @@ export default function InvoiceDetailClient({
           <div className="flex flex-wrap gap-3">
             <a
               href={`/api/invoices/${invoice.id}/pdf`}
-              className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+              className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             >
               Download PDF
             </a>
@@ -220,12 +220,12 @@ export default function InvoiceDetailClient({
               defaultRecipient={billTo.bill_to_email ?? contact?.email ?? null}
               defaultSubject={`Invoice ${invoice.invoice_number}`}
               defaultMessage={`Hi,\n\nPlease find the attached invoice ${invoice.invoice_number}.\n\nThank you.`}
-              buttonClassName="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+              buttonClassName="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             />
             {invoice.status === 'draft' ? (
               <Link
                 href={`/invoicing/${invoice.id}/edit`}
-                className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
               >
                 Edit
               </Link>
@@ -235,36 +235,36 @@ export default function InvoiceDetailClient({
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white0">Issue date</p>
-            <p className="mt-2 text-sm text-[#9CA3AF]">{invoice.issue_date}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Issue date</p>
+            <p className="mt-2 text-sm text-[color:var(--text-2)]">{invoice.issue_date}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white0">Due date</p>
-            <p className="mt-2 text-sm text-[#9CA3AF]">{invoice.due_date ?? '—'}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Due date</p>
+            <p className="mt-2 text-sm text-[color:var(--text-2)]">{invoice.due_date ?? '—'}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white0">Bill to</p>
-            <p className="mt-2 text-sm text-[#9CA3AF]">{billTo.bill_to_name ?? '—'}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Bill to</p>
+            <p className="mt-2 text-sm text-[color:var(--text-2)]">{billTo.bill_to_name ?? '—'}</p>
             {billTo.bill_to_address ? (
-              <p className="mt-1 whitespace-pre-wrap text-sm text-[#9CA3AF]">{billTo.bill_to_address}</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{billTo.bill_to_address}</p>
             ) : null}
             {billTo.bill_to_city || billTo.bill_to_postcode ? (
-              <p className="mt-1 text-sm text-[#9CA3AF]">
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">
                 {[billTo.bill_to_city, billTo.bill_to_postcode].filter(Boolean).join(', ')}
               </p>
             ) : null}
             {billTo.bill_to_country ? (
-              <p className="mt-1 text-sm text-[#9CA3AF]">{billTo.bill_to_country}</p>
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">{billTo.bill_to_country}</p>
             ) : null}
             {billTo.bill_to_email ? (
-              <p className="mt-2 text-sm text-[#9CA3AF]">{billTo.bill_to_email}</p>
+              <p className="mt-2 text-sm text-[color:var(--text-2)]">{billTo.bill_to_email}</p>
             ) : null}
             {billTo.bill_to_phone ? (
-              <p className="text-sm text-[#9CA3AF]">{billTo.bill_to_phone}</p>
+              <p className="text-sm text-[color:var(--text-2)]">{billTo.bill_to_phone}</p>
             ) : null}
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white0">Workstream</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Workstream</p>
             <div className="mt-2">
               {workstream ? (
                 <WorkstreamBadge
@@ -273,18 +273,18 @@ export default function InvoiceDetailClient({
                   colour={workstream.colour}
                 />
               ) : (
-                <p className="text-sm text-[#9CA3AF]">—</p>
+                <p className="text-sm text-[color:var(--text-2)]">—</p>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-        <h2 className="text-lg font-semibold text-white">Line items</h2>
+      <div className="os-card p-6">
+        <h2 className="os-section-title">Line items</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
+            <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
               <tr>
                 <th className="pb-3">Description</th>
                 <th className="pb-3 text-right">Qty</th>
@@ -294,11 +294,11 @@ export default function InvoiceDetailClient({
             </thead>
             <tbody>
               {invoice.line_items.map((item) => (
-                <tr key={item.id} className="border-t border-[#2A2A3A]">
-                  <td className="py-3 text-white">{item.description}</td>
-                  <td className="py-3 text-right text-[#9CA3AF]">{item.qty}</td>
-                  <td className="py-3 text-right text-[#9CA3AF]">{formatMoney(item.unit_price)}</td>
-                  <td className="py-3 text-right text-white">
+                <tr key={item.id} className="border-t border-[color:var(--border)]">
+                  <td className="py-3 text-[color:var(--text)]">{item.description}</td>
+                  <td className="py-3 text-right text-[color:var(--text-2)]">{item.qty}</td>
+                  <td className="py-3 text-right text-[color:var(--text-2)]">{formatMoney(item.unit_price)}</td>
+                  <td className="py-3 text-right text-[color:var(--text)]">
                     {formatMoney(item.qty * item.unit_price)}
                   </td>
                 </tr>
@@ -310,38 +310,38 @@ export default function InvoiceDetailClient({
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         {invoice.notes ? (
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <h2 className="text-lg font-semibold text-white">Notes</h2>
-            <p className="mt-4 whitespace-pre-wrap text-sm text-[#9CA3AF]">{invoice.notes}</p>
+          <div className="os-card p-6">
+            <h2 className="os-section-title">Notes</h2>
+            <p className="mt-4 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{invoice.notes}</p>
           </div>
         ) : (
           <div />
         )}
 
         <div className="space-y-6">
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <h2 className="text-lg font-semibold text-white">Summary</h2>
+          <div className="os-card p-6">
+            <h2 className="os-section-title">Summary</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-[#9CA3AF]">Subtotal</dt>
-                <dd className="font-medium text-white">{formatMoney(totals.subtotal)}</dd>
+                <dt className="text-[color:var(--text-2)]">Subtotal</dt>
+                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-[#9CA3AF]">VAT ({invoice.vat_rate}%)</dt>
-                <dd className="font-medium text-white">{formatMoney(totals.vat_amount)}</dd>
+                <dt className="text-[color:var(--text-2)]">VAT ({invoice.vat_rate}%)</dt>
+                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</dd>
               </div>
-              <div className="flex items-center justify-between gap-4 border-t border-[#2A2A3A] pt-3">
-                <dt className="text-base font-semibold text-white">Total</dt>
-                <dd className="text-lg font-semibold text-white">{formatMoney(totals.total)}</dd>
+              <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
+                <dt className="text-base font-semibold text-[color:var(--text)]">Total</dt>
+                <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total)}</dd>
               </div>
             </dl>
           </div>
 
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+          <div className="os-card p-6">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-white">Payment</h2>
+              <h2 className="os-section-title">Payment</h2>
               {subscriptionState.isRecurring && subscriptionState.interval ? (
-                <span className="rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-medium text-fuchsia-100">
+                <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                   Recurring: {formatMoney(totals.total)}/{subscriptionState.interval}
                 </span>
               ) : null}
@@ -349,28 +349,28 @@ export default function InvoiceDetailClient({
 
             {subscriptionState.isRecurring && subscriptionState.status ? (
               <div className="mt-4">
-                <span className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs font-medium text-[#9CA3AF]">
+                <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
                   {subscriptionState.status}
                 </span>
               </div>
             ) : null}
 
             {isPaid ? (
-              <p className="mt-4 text-sm text-emerald-200">
+              <p className="mt-4 text-sm text-[color:var(--emerald-strong)]">
                 This invoice has been paid. Stripe payment actions are no longer needed.
               </p>
             ) : paymentLink ? (
               <div className="mt-4 space-y-4">
-                <div className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-white0">Payment link</p>
-                  <p className="mt-2 break-all text-sm text-[#9CA3AF]">{truncatedPaymentLink}</p>
-                  <p className="mt-2 text-xs text-white0">Client can pay online at this link.</p>
+                <div className="rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Payment link</p>
+                  <p className="mt-2 break-all text-sm text-[color:var(--text-2)]">{truncatedPaymentLink}</p>
+                  <p className="mt-2 text-xs text-[color:var(--text-3)]">Client can pay online at this link.</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => void handleCopyLink()}
-                    className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                    className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                   >
                     {copied ? 'Copied!' : 'Copy'}
                   </button>
@@ -378,7 +378,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => void generatePaymentLink()}
                     disabled={paymentLoading}
-                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                    className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
                   >
                     {paymentLoading ? 'Generating...' : 'Resend link'}
                   </button>
@@ -390,20 +390,20 @@ export default function InvoiceDetailClient({
                   type="button"
                   onClick={() => void generatePaymentLink()}
                   disabled={paymentLoading}
-                  className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                  className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
                 >
                   {paymentLoading ? 'Generating...' : 'Send payment link'}
                 </button>
-                <p className="text-sm text-[#9CA3AF]">Client can pay online at this link.</p>
+                <p className="text-sm text-[color:var(--text-2)]">Client can pay online at this link.</p>
               </div>
             )}
 
             {!isPaid && !subscriptionState.isRecurring ? (
-              <div className="mt-6 border-t border-[#2A2A3A] pt-6">
+              <div className="mt-6 border-t border-[color:var(--border)] pt-6">
                 <button
                   type="button"
                   onClick={() => setShowRecurringModal(true)}
-                  className="rounded-2xl border border-fuchsia-500/30 px-4 py-2.5 text-sm font-medium text-fuchsia-100 transition hover:border-fuchsia-400"
+                  className="rounded-2xl border border-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
                 >
                   Set up recurring payment
                 </button>
@@ -411,8 +411,8 @@ export default function InvoiceDetailClient({
             ) : null}
           </div>
 
-          <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <h2 className="text-lg font-semibold text-white">Actions</h2>
+          <div className="os-card p-6">
+            <h2 className="os-section-title">Actions</h2>
             <div className="mt-4 flex flex-wrap gap-3">
               {invoice.status === 'draft' ? (
                 <>
@@ -420,7 +420,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => updateStatus('sent')}
                     disabled={updatingStatus !== null}
-                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                    className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
                   >
                     {updatingStatus === 'sent' ? 'Updating...' : 'Mark as sent'}
                   </button>
@@ -428,7 +428,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => setCancelConfirmOpen(true)}
                     disabled={updatingStatus !== null}
-                    className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+                    className="rounded-2xl border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-60"
                   >
                     Cancel invoice
                   </button>
@@ -440,7 +440,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => updateStatus('paid')}
                     disabled={updatingStatus !== null}
-                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                    className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
                   >
                     {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
                   </button>
@@ -448,7 +448,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => updateStatus('overdue')}
                     disabled={updatingStatus !== null}
-                    className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 disabled:opacity-60"
+                    className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-60"
                   >
                     {updatingStatus === 'overdue' ? 'Updating...' : 'Mark as overdue'}
                   </button>
@@ -456,7 +456,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => setCancelConfirmOpen(true)}
                     disabled={updatingStatus !== null}
-                    className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+                    className="rounded-2xl border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-60"
                   >
                     Cancel invoice
                   </button>
@@ -467,28 +467,28 @@ export default function InvoiceDetailClient({
                   type="button"
                   onClick={() => updateStatus('paid')}
                   disabled={updatingStatus !== null}
-                  className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                  className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
                 >
                   {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
                 </button>
               ) : null}
             </div>
-            {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+            {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
           </div>
         </div>
       </div>
 
       {showRecurringModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#13131E] px-4">
-          <div className="w-full max-w-md rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6 shadow-2xl">
-            <h2 className="text-lg font-semibold text-white">Set up recurring payment</h2>
-            <p className="mt-2 text-sm text-[#9CA3AF]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] px-4">
+          <div className="w-full max-w-md rounded-[2rem] border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+            <h2 className="os-section-title">Set up recurring payment</h2>
+            <p className="mt-2 text-sm text-[color:var(--text-2)]">
               Confirm the recurring amount and billing interval for this invoice.
             </p>
 
-            <div className="mt-6 rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-white0">Amount</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{formatMoney(totals.total)}</p>
+            <div className="mt-6 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Amount</p>
+              <p className="mt-2 text-2xl font-semibold text-[color:var(--text)]">{formatMoney(totals.total)}</p>
             </div>
 
             <div className="mt-6 flex gap-3">
@@ -499,8 +499,8 @@ export default function InvoiceDetailClient({
                   onClick={() => setRecurringInterval(interval)}
                   className={`flex-1 rounded-2xl border px-4 py-3 text-sm font-medium transition ${
                     recurringInterval === interval
-                      ? 'border-white/60 bg-white/10 text-white'
-                      : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40'
+                      ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
+                      : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
                   }`}
                 >
                   {interval === 'month' ? 'Monthly' : 'Yearly'}
@@ -512,7 +512,7 @@ export default function InvoiceDetailClient({
               <button
                 type="button"
                 onClick={() => setShowRecurringModal(false)}
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
               >
                 Cancel
               </button>
@@ -520,7 +520,7 @@ export default function InvoiceDetailClient({
                 type="button"
                 onClick={() => void createRecurringSubscription()}
                 disabled={subscriptionLoading}
-                className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
               >
                 {subscriptionLoading ? 'Setting up...' : 'Confirm recurring payment'}
               </button>

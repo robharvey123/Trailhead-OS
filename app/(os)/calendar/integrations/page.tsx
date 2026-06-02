@@ -39,13 +39,13 @@ export default async function CalendarIntegrationsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-white0">
+        <p className="os-eyebrow">
           Calendar
         </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
+        <h1 className="os-page-title mt-2">
           Calendar Integrations
         </h1>
-        <p className="mt-2 max-w-2xl text-sm text-[#9CA3AF]">
+        <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
           Connect your Google, Apple, and Outlook calendars to see everything in
           one place.
         </p>

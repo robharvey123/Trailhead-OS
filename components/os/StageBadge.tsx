@@ -1,13 +1,13 @@
 import type { DealStage } from '@/lib/types'
 
 const STAGE_CLASSES: Record<DealStage, string> = {
-  New: 'border-[#3A3A4A] bg-[#23232F] text-[#9CA3AF]',
-  Qualified: 'border-sky-500/40 bg-sky-500/10 text-sky-300',
-  'Proposal Sent': 'border-amber-500/40 bg-amber-500/10 text-amber-300',
-  Negotiation: 'border-orange-500/50 bg-orange-500/15 text-orange-300',
-  Won: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300',
-  Lost: 'border-rose-500/40 bg-rose-500/10 text-rose-300',
-  'On Hold': 'border-[#3A3A4A] bg-[#15151F] text-[#6B7280]',
+  New: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--text-2)]',
+  Qualified: 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+  'Proposal Sent': 'border-[color:var(--amber)] bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+  Negotiation: 'border-[color:var(--amber)] bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+  Won: 'border-[color:var(--emerald)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
+  Lost: 'border-[color:var(--red)] bg-[var(--red-dim)] text-[color:var(--red-strong)]',
+  'On Hold': 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--text-3)]',
 }
 
 export default function StageBadge({ stage }: { stage: DealStage }) {

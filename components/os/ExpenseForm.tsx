@@ -157,31 +157,31 @@ export default function ExpenseForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <div className="os-card space-y-6 p-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-white0">Finance</p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
+        <p className="os-eyebrow">Finance</p>
+        <h1 className="os-page-title mt-2">
           {isEdit ? 'Edit expense' : 'Add expense'}
         </h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Date</span>
+          <span className="text-sm text-[color:var(--text-2)]">Date</span>
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Category</span>
+          <span className="text-sm text-[color:var(--text-2)]">Category</span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             {CATEGORIES.map((cat) => (
               <option key={cat.value} value={cat.value}>
@@ -192,18 +192,18 @@ export default function ExpenseForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Description</span>
+          <span className="text-sm text-[color:var(--text-2)]">Description</span>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g. Train to London for client meeting"
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Amount (£)</span>
+          <span className="text-sm text-[color:var(--text-2)]">Amount (£)</span>
           <input
             type="number"
             min="0"
@@ -211,26 +211,26 @@ export default function ExpenseForm({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="0.00"
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Currency</span>
+          <span className="text-sm text-[color:var(--text-2)]">Currency</span>
           <input
             type="text"
             value={currency}
             disabled
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-[#9CA3AF]"
+            className="os-input w-full text-[color:var(--text-2)] opacity-50"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Workstream</span>
+          <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
           <select
             value={workstreamId}
             onChange={(e) => setWorkstreamId(e.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="">No workstream</option>
             {workstreams.map((ws) => (
@@ -242,11 +242,11 @@ export default function ExpenseForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Account</span>
+          <span className="text-sm text-[color:var(--text-2)]">Account</span>
           <select
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="">No account</option>
             {accounts.map((acc) => (
@@ -258,30 +258,30 @@ export default function ExpenseForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Notes</span>
+          <span className="text-sm text-[color:var(--text-2)]">Notes</span>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Optional notes…"
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-textarea w-full"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Receipt</span>
+          <span className="text-sm text-[color:var(--text-2)]">Receipt</span>
           <input
             type="file"
             accept="image/*,.pdf"
             onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-[#2A2A3A] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#9CA3AF]"
+            className="os-input w-full file:mr-4 file:rounded-full file:border-0 file:bg-[var(--surface-2)] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[color:var(--text-2)]"
           />
           {initialExpense?.receipt_url && !receiptFile && (
             <a
               href={`/api/expenses/${initialExpense.id}/receipt`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-block text-sm text-sky-300 hover:text-sky-200"
+              className="mt-1 inline-block text-sm text-[color:var(--accent-strong)] hover:text-[color:var(--accent-hover)]"
             >
               View existing receipt ↗
             </a>
@@ -296,9 +296,9 @@ export default function ExpenseForm({
             type="checkbox"
             checked={billable}
             onChange={(e) => setBillable(e.target.checked)}
-            className="h-5 w-5 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
+            className="h-5 w-5 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
           />
-          <span className="text-sm text-[#9CA3AF]">Billable to client</span>
+          <span className="text-sm text-[color:var(--text-2)]">Billable to client</span>
         </label>
 
         <label className="flex items-center gap-3">
@@ -306,19 +306,19 @@ export default function ExpenseForm({
             type="checkbox"
             checked={taxDeductible}
             onChange={(e) => setTaxDeductible(e.target.checked)}
-            className="h-5 w-5 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
+            className="h-5 w-5 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
           />
-          <span className="text-sm text-[#9CA3AF]">Tax deductible</span>
+          <span className="text-sm text-[color:var(--text-2)]">Tax deductible</span>
         </label>
       </div>
 
       {/* Summary */}
       {amount && Number(amount) > 0 && (
-        <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3">
-          <p className="text-sm text-[#9CA3AF]">
-            Amount: <span className="font-medium text-white">{formatMoney(Number(amount))}</span>
+        <div className="os-card-inset rounded-2xl px-4 py-3">
+          <p className="text-sm text-[color:var(--text-2)]">
+            Amount: <span className="font-medium text-[color:var(--text)]">{formatMoney(Number(amount))}</span>
             {billable && (
-              <span className="ml-3 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-xs text-sky-200">
+              <span className="ml-3 rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-2 py-0.5 text-xs text-[color:var(--accent-strong)]">
                 Billable
               </span>
             )}
@@ -328,7 +328,7 @@ export default function ExpenseForm({
 
       {/* Error */}
       {error && (
-        <p className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        <p className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
           {error}
         </p>
       )}
@@ -339,7 +339,7 @@ export default function ExpenseForm({
           type="button"
           onClick={handleSubmit}
           disabled={saving || deleting}
-          className="rounded-2xl bg-white px-6 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+          className="rounded-2xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? 'Saving…' : isEdit ? 'Update expense' : 'Save expense'}
         </button>
@@ -348,7 +348,7 @@ export default function ExpenseForm({
           type="button"
           onClick={() => router.back()}
           disabled={saving || deleting}
-          className="rounded-2xl border border-[#2A2A3A] px-6 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-white disabled:opacity-60"
+          className="rounded-2xl border border-[color:var(--border)] px-6 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)] disabled:opacity-50"
         >
           Cancel
         </button>
@@ -358,7 +358,7 @@ export default function ExpenseForm({
             type="button"
             onClick={handleDelete}
             disabled={saving || deleting}
-            className="ml-auto rounded-2xl border border-rose-500/30 px-6 py-3 text-sm font-medium text-rose-300 transition hover:bg-rose-500/10 disabled:opacity-60"
+            className="ml-auto rounded-2xl border border-[color:var(--red)] px-6 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-50"
           >
             {deleting ? 'Deleting…' : 'Delete'}
           </button>

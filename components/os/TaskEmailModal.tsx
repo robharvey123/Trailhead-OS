@@ -96,11 +96,11 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0C0C14]/80"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)]"
       onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false) }}
     >
-      <div className="mx-4 w-full max-w-lg rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6">
-        <p className="mb-4 text-[10px] font-bold tracking-[3px] uppercase text-[#B8FF00]">
+      <div className="mx-4 w-full max-w-lg rounded-lg border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+        <p className="os-eyebrow mb-4 text-[color:var(--accent-strong)]">
           EMAIL TASKS
         </p>
 
@@ -108,7 +108,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
           {tasks.map((task) => (
             <span
               key={task.id}
-              className="rounded border border-[#2A2A3A] bg-[#13131E] px-2 py-1 text-[11px] text-white"
+              className="rounded border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-1 text-[11px] text-[color:var(--text)]"
             >
               {task.title}
             </span>
@@ -117,14 +117,14 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
 
         {sendState === 'sent' ? (
           <div className="flex flex-col items-center gap-3 py-8">
-            <svg className="h-8 w-8 text-[#34D399]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="h-8 w-8 text-[color:var(--green-strong)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
-            <p className="text-sm text-[#34D399]">Sent to {sentCount} recipient{sentCount > 1 ? 's' : ''}</p>
+            <p className="text-sm text-[color:var(--green-strong)]">Sent to {sentCount} recipient{sentCount > 1 ? 's' : ''}</p>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="mt-2 rounded border border-[#2A2A3A] bg-[#13131E] px-4 py-2 text-sm text-white hover:border-[#B8FF00]/30"
+              className="mt-2 rounded border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-3)]"
             >
               Close
             </button>
@@ -132,15 +132,15 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
         ) : (
           <>
             <div className="mb-4">
-              <p className="mb-1.5 text-[10px] font-bold tracking-[2px] uppercase text-[#9CA3AF]">TO</p>
-              <div className="flex min-h-[42px] flex-wrap items-center gap-1.5 rounded border border-[#2A2A3A] bg-[#13131E] px-2 py-1.5">
+              <p className="os-eyebrow mb-1.5 text-[color:var(--text-2)]">TO</p>
+              <div className="flex min-h-[42px] flex-wrap items-center gap-1.5 rounded border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-1.5">
                 {recipients.map((r) => (
-                  <span key={r} className="flex items-center gap-1 rounded border border-[#2A2A3A] bg-[#1A1A28] px-2 py-1 text-xs text-white">
+                  <span key={r} className="flex items-center gap-1 rounded border border-[color:var(--border)] bg-white px-2 py-1 text-xs text-[color:var(--text)]">
                     {r}
                     <button
                       type="button"
                       onClick={() => removeRecipient(r)}
-                      className="ml-0.5 text-[#9CA3AF] hover:text-white"
+                      className="ml-0.5 text-[color:var(--text-2)] hover:text-[color:var(--text)]"
                     >
                       &times;
                     </button>
@@ -154,13 +154,13 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
                   onKeyDown={handleInputKeyDown}
                   onBlur={() => { if (inputValue.trim()) addRecipient(inputValue) }}
                   placeholder={recipients.length === 0 ? 'Type email and press Enter' : ''}
-                  className="min-w-[120px] flex-1 border-none bg-transparent text-sm text-white placeholder:text-[#9CA3AF] outline-none"
+                  className="min-w-[120px] flex-1 border-none bg-transparent text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] outline-none"
                 />
               </div>
             </div>
 
             <div className="mb-4">
-              <p className="mb-1.5 text-[10px] font-bold tracking-[2px] uppercase text-[#9CA3AF]">
+              <p className="os-eyebrow mb-1.5 text-[color:var(--text-2)]">
                 COVERING NOTE (OPTIONAL)
               </p>
               <textarea
@@ -168,19 +168,19 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
                 placeholder="Add a message..."
-                className="w-full rounded border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white placeholder:text-[#9CA3AF] outline-none"
+                className="os-textarea w-full"
               />
             </div>
 
             {errorMessage ? (
-              <p className="mb-3 text-sm text-rose-300">{errorMessage}</p>
+              <p className="mb-3 text-sm text-[color:var(--red-strong)]">{errorMessage}</p>
             ) : null}
 
             <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="rounded border border-[#2A2A3A] bg-[#13131E] px-4 py-2 text-white hover:border-[#B8FF00]/30"
+                className="rounded border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-3)]"
               >
                 Cancel
               </button>
@@ -188,7 +188,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
                 type="button"
                 onClick={() => void handleSend()}
                 disabled={recipients.length === 0 || sendState === 'sending'}
-                className="rounded bg-[#B8FF00] px-4 py-2 font-bold text-[#0C0C14] disabled:opacity-60"
+                className="rounded bg-[var(--accent)] px-4 py-2 font-bold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
               >
                 {sendState === 'sending' ? (
                   <span className="flex items-center gap-2">

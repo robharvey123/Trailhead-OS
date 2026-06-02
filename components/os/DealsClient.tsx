@@ -150,7 +150,7 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
       type="button"
       onClick={() => setView(target)}
       className={`rounded-lg px-3 py-1.5 text-sm transition ${
-        view === target ? 'bg-white text-[#0C0C14]' : 'text-[#9CA3AF] hover:text-white'
+        view === target ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'text-[color:var(--text-2)] hover:bg-[var(--surface-2)]'
       }`}
     >
       {label}
@@ -161,42 +161,42 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
     <div className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Deals</h1>
-          <p className="mt-1 text-sm text-[#9CA3AF]">
+          <h1 className="os-page-title">Deals</h1>
+          <p className="mt-1 text-sm text-[color:var(--text-2)]">
             Open pipeline {formatCurrency(openTotal, 'GBP')} · weighted{' '}
             {formatCurrency(weightedTotal, 'GBP')}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-xl border border-[#2A2A3A] bg-[#1A1A28] p-1">
+          <div className="flex items-center rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] p-1">
             {toggleBtn('kanban', 'Kanban')}
             {toggleBtn('table', 'Table')}
           </div>
           <button
             type="button"
             onClick={() => setShowForecast(true)}
-            className="rounded-xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-2 text-sm text-[#9CA3AF] hover:text-white"
+            className="rounded-xl border border-[color:var(--border)] bg-white px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
           >
             Forecast
           </button>
           <button
             type="button"
             onClick={openNew}
-            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0C0C14] hover:bg-[#E5E7EB]"
+            className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
           >
             + New deal
           </button>
         </div>
       </div>
 
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       {view === 'kanban' ? (
         <DealKanban deals={deals} onMove={handleMove} onSelect={openEdit} />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[#2A2A3A] bg-[#1A1A28]">
+        <div className="os-card overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-[#2A2A3A] text-xs uppercase tracking-wide text-[#9CA3AF]">
+            <thead className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-2)]">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Account</th>
@@ -210,7 +210,7 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
             <tbody>
               {deals.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-[#6B7280]">
+                  <td colSpan={7} className="px-4 py-8 text-center text-[color:var(--text-3)]">
                     No deals yet. Create your first deal.
                   </td>
                 </tr>
@@ -219,23 +219,23 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
                   <tr
                     key={d.id}
                     onClick={() => openEdit(d)}
-                    className="cursor-pointer border-b border-[#23232F] last:border-0 hover:bg-[#16161F]"
+                    className="cursor-pointer border-b border-[color:var(--border)] last:border-0 hover:bg-[var(--surface-2)]"
                   >
-                    <td className="px-4 py-3 font-medium text-white">{d.name}</td>
-                    <td className="px-4 py-3 text-[#9CA3AF]">{d.account?.name ?? '—'}</td>
+                    <td className="px-4 py-3 font-medium text-[color:var(--text)]">{d.name}</td>
+                    <td className="px-4 py-3 text-[color:var(--text-2)]">{d.account?.name ?? '—'}</td>
                     <td className="px-4 py-3">
                       <StageBadge stage={d.stage} />
                     </td>
-                    <td className="px-4 py-3 text-right text-white">
+                    <td className="px-4 py-3 text-right text-[color:var(--text)]">
                       {d.value_amount != null ? formatCurrency(d.value_amount, d.value_currency || 'GBP') : '—'}
                     </td>
-                    <td className="px-4 py-3 text-right text-[#9CA3AF]">{d.probability}%</td>
-                    <td className="px-4 py-3 text-right text-[#9CA3AF]">
+                    <td className="px-4 py-3 text-right text-[color:var(--text-2)]">{d.probability}%</td>
+                    <td className="px-4 py-3 text-right text-[color:var(--text-2)]">
                       {d.value_amount != null
                         ? formatCurrency(d.value_amount * (d.probability / 100), d.value_currency || 'GBP')
                         : '—'}
                     </td>
-                    <td className="px-4 py-3 text-[#9CA3AF]">{formatDate(d.expected_close_date)}</td>
+                    <td className="px-4 py-3 text-[color:var(--text-2)]">{formatDate(d.expected_close_date)}</td>
                   </tr>
                 ))
               )}
@@ -256,24 +256,24 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
 
       {showForecast ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4"
           onClick={() => setShowForecast(false)}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-6"
+            className="w-full max-w-lg rounded-2xl border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Weighted forecast — next 6 months</h2>
-              <button onClick={() => setShowForecast(false)} className="text-[#9CA3AF] hover:text-white">
+              <h2 className="os-section-title">Weighted forecast — next 6 months</h2>
+              <button onClick={() => setShowForecast(false)} className="text-[color:var(--text-2)] hover:text-[color:var(--text)]">
                 ✕
               </button>
             </div>
-            <p className="mt-1 text-xs text-[#6B7280]">
+            <p className="mt-1 text-xs text-[color:var(--text-3)]">
               value × probability, bucketed by expected close. Excludes Won/Lost.
             </p>
             <table className="mt-4 w-full text-left text-sm">
-              <thead className="border-b border-[#2A2A3A] text-xs uppercase tracking-wide text-[#9CA3AF]">
+              <thead className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-2)]">
                 <tr>
                   <th className="py-2">Month</th>
                   <th className="py-2 text-right">Deals</th>
@@ -284,19 +284,19 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
               <tbody>
                 {forecast.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-6 text-center text-[#6B7280]">
+                    <td colSpan={4} className="py-6 text-center text-[color:var(--text-3)]">
                       No deals with an expected close date.
                     </td>
                   </tr>
                 ) : (
                   forecast.map((b) => (
-                    <tr key={b.month} className="border-b border-[#23232F] last:border-0">
-                      <td className="py-2 text-white">{b.month}</td>
-                      <td className="py-2 text-right text-[#9CA3AF]">{b.deal_count}</td>
-                      <td className="py-2 text-right text-[#9CA3AF]">
+                    <tr key={b.month} className="border-b border-[color:var(--border)] last:border-0">
+                      <td className="py-2 text-[color:var(--text)]">{b.month}</td>
+                      <td className="py-2 text-right text-[color:var(--text-2)]">{b.deal_count}</td>
+                      <td className="py-2 text-right text-[color:var(--text-2)]">
                         {formatCurrency(b.total_value, 'GBP')}
                       </td>
-                      <td className="py-2 text-right font-medium text-white">
+                      <td className="py-2 text-right font-medium text-[color:var(--text)]">
                         {formatCurrency(b.weighted_value, 'GBP')}
                       </td>
                     </tr>

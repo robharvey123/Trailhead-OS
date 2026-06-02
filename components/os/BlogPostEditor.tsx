@@ -19,7 +19,7 @@ interface BlogPostEditorProps {
 }
 
 const inputClassName =
-  'w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white0 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10'
+  'w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[var(--accent-dim)]'
 
 export default function BlogPostEditor({
   mode,
@@ -116,10 +116,10 @@ export default function BlogPostEditor({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-white0">
+          <p className="os-eyebrow">
             Content
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">
+          <h1 className="os-page-title mt-2 tracking-[-0.04em]">
             {mode === 'create' ? 'New blog post' : 'Edit blog post'}
           </h1>
         </div>
@@ -130,7 +130,7 @@ export default function BlogPostEditor({
               href={publishedUrl}
               target={isLocalhost ? undefined : '_blank'}
               rel={isLocalhost ? undefined : 'noreferrer'}
-              className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-sky-400 hover:text-white"
+              className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
             >
               View on site →
             </Link>
@@ -138,7 +138,7 @@ export default function BlogPostEditor({
           <button
             type="button"
             onClick={() => setPreview((current) => !current)}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-white"
+            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
           >
             {preview ? 'Hide preview' : 'Show preview'}
           </button>
@@ -147,11 +147,11 @@ export default function BlogPostEditor({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <div className="space-y-6 rounded-[28px] border border-[#2A2A3A] bg-[#1A1A28]/60 p-6">
+          <div className="os-card space-y-6 p-6">
             <div>
               <label
                 htmlFor="blog-title"
-                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
+                className="mb-2 block text-sm font-medium text-[color:var(--text-2)]"
               >
                 Title
               </label>
@@ -167,7 +167,7 @@ export default function BlogPostEditor({
             <div>
               <label
                 htmlFor="blog-slug"
-                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
+                className="mb-2 block text-sm font-medium text-[color:var(--text-2)]"
               >
                 Slug
               </label>
@@ -186,7 +186,7 @@ export default function BlogPostEditor({
             <div>
               <label
                 htmlFor="blog-excerpt"
-                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
+                className="mb-2 block text-sm font-medium text-[color:var(--text-2)]"
               >
                 Excerpt
               </label>
@@ -201,7 +201,7 @@ export default function BlogPostEditor({
             <div>
               <label
                 htmlFor="blog-tags"
-                className="mb-2 block text-sm font-medium text-[#9CA3AF]"
+                className="mb-2 block text-sm font-medium text-[color:var(--text-2)]"
               >
                 Tags
               </label>
@@ -214,26 +214,26 @@ export default function BlogPostEditor({
               />
             </div>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-[#9CA3AF]">
+            <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
               <input
                 type="checkbox"
                 checked={published}
                 onChange={(event) => setPublished(event.target.checked)}
-                className="h-4 w-4 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
+                className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--bg)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
               />
               Published
             </label>
           </div>
 
-          <div className="space-y-4 rounded-[28px] border border-[#2A2A3A] bg-[#1A1A28]/60 p-6">
+          <div className="os-card space-y-4 p-6">
             <div className="flex items-center justify-between">
               <label
                 htmlFor="blog-body"
-                className="text-sm font-medium text-[#9CA3AF]"
+                className="text-sm font-medium text-[color:var(--text-2)]"
               >
                 Body
               </label>
-              <span className="text-xs uppercase tracking-[0.24em] text-white0">
+              <span className="os-eyebrow">
                 Markdown
               </span>
             </div>
@@ -248,7 +248,7 @@ export default function BlogPostEditor({
               />
 
               {preview ? (
-                <div className="min-h-[460px] rounded-3xl border border-[#2A2A3A] bg-white p-6">
+                <div className="min-h-[460px] rounded-3xl border border-[color:var(--border)] bg-white p-6">
                   <div className={blogMarkdownClassName}>
                     <ReactMarkdown>
                       {body || 'Nothing to preview yet.'}
@@ -261,13 +261,13 @@ export default function BlogPostEditor({
         </div>
 
         {error ? (
-          <p className="rounded-2xl border border-rose-500/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <p className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
             {error}
           </p>
         ) : null}
 
         {savedMessage ? (
-          <p className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <p className="rounded-2xl border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3 text-sm text-[color:var(--emerald-strong)]">
             {savedMessage}
           </p>
         ) : null}
@@ -275,7 +275,7 @@ export default function BlogPostEditor({
         <button
           type="submit"
           disabled={saving}
-          className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:opacity-70"
+          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>

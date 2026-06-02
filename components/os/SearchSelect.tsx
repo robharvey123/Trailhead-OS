@@ -47,19 +47,19 @@ export default function SearchSelect({
 
   return (
     <label className="space-y-2">
-      {label ? <span className="text-sm text-[#9CA3AF]">{label}</span> : null}
+      {label ? <span className="text-sm text-[color:var(--text-2)]">{label}</span> : null}
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white placeholder:text-[#9CA3AF]/60 disabled:opacity-60"
+        className="w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] disabled:opacity-50"
       />
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white disabled:opacity-60"
+        className="w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] disabled:opacity-50"
       >
         <option value="">{emptyLabel}</option>
         {filteredOptions.map((option) => (

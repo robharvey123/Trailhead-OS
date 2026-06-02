@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+      className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
     >
       {pending ? 'Saving...' : 'Save footer details'}
     </button>
@@ -29,108 +29,108 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
     <form action={formAction} className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-[#9CA3AF]">Company name</span>
+          <span className="font-medium text-[color:var(--text-2)]">Company name</span>
           <input
             name="company_name"
             defaultValue={company.company_name}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-[#9CA3AF]">Address line 1</span>
+          <span className="font-medium text-[color:var(--text-2)]">Address line 1</span>
           <input
             name="address_line1"
             defaultValue={company.address_line1 ?? ''}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-[#9CA3AF]">Address line 2</span>
+          <span className="font-medium text-[color:var(--text-2)]">Address line 2</span>
           <input
             name="address_line2"
             defaultValue={company.address_line2 ?? ''}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-[#9CA3AF]">City / area</span>
+          <span className="font-medium text-[color:var(--text-2)]">City / area</span>
           <input
             name="city"
             defaultValue={company.city ?? ''}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-[#9CA3AF]">Postcode</span>
+          <span className="font-medium text-[color:var(--text-2)]">Postcode</span>
           <input
             name="postcode"
             defaultValue={company.postcode ?? ''}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-[#9CA3AF]">Country</span>
+          <span className="font-medium text-[color:var(--text-2)]">Country</span>
           <input
             name="country"
             defaultValue={company.country ?? ''}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-[#9CA3AF]">Company email</span>
+          <span className="font-medium text-[color:var(--text-2)]">Company email</span>
           <input
             name="company_email"
             type="email"
             defaultValue={company.company_email ?? ''}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-[#9CA3AF]">Company registration number</span>
+          <span className="font-medium text-[color:var(--text-2)]">Company registration number</span>
           <input
             name="company_number"
             defaultValue={company.company_number ?? ''}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
 
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-[#9CA3AF]">Email signature (HTML)</span>
+          <span className="font-medium text-[color:var(--text-2)]">Email signature (HTML)</span>
           <textarea
             name="email_signature"
             value={sig}
             onChange={(e) => setSig(e.target.value)}
             rows={6}
             placeholder={'<strong>Rob Harvey</strong><br>Trailhead Holdings Ltd<br><a href="mailto:rob@trailheadholdings.uk">rob@trailheadholdings.uk</a>'}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 font-mono text-sm text-white"
+            className="os-textarea w-full rounded-2xl px-4 py-3 font-mono text-sm"
           />
-          <span className="text-xs text-[#9CA3AF]">
+          <span className="text-xs text-[color:var(--text-3)]">
             HTML — supports links, bold, images (e.g. <code>&lt;img src=&quot;https://…/logo.png&quot;&gt;</code>). Appended to emails you compose and reply to in the Inbox.
           </span>
           {sig.trim() ? (
-            <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-              <p className="mb-2 text-xs uppercase tracking-wide text-[#9CA3AF]">Preview</p>
-              <div className="text-sm text-white" dangerouslySetInnerHTML={{ __html: sig }} />
+            <div className="os-card p-4">
+              <p className="mb-2 text-xs uppercase tracking-wide text-[color:var(--text-3)]">Preview</p>
+              <div className="text-sm text-[color:var(--text)]" dangerouslySetInnerHTML={{ __html: sig }} />
             </div>
           ) : null}
         </label>
       </div>
 
-      <p className="text-sm text-[#9CA3AF]">
+      <p className="text-sm text-[color:var(--text-2)]">
         These details are appended to invoice, quote, and enquiry emails sent from Trailhead OS.
       </p>
 
       <div className="flex items-center justify-between gap-4">
         <div>
-          {state.error ? <p className="text-sm text-rose-300">{state.error}</p> : null}
-          {state.success ? <p className="text-sm text-emerald-300">Footer details saved.</p> : null}
+          {state.error ? <p className="text-sm text-[color:var(--red-strong)]">{state.error}</p> : null}
+          {state.success ? <p className="text-sm text-[color:var(--emerald-strong)]">Footer details saved.</p> : null}
         </div>
         <SubmitButton />
       </div>

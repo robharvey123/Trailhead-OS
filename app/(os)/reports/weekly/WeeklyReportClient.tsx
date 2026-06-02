@@ -76,17 +76,17 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[10px] font-bold tracking-[3px] uppercase text-[#B8FF00]">
+          <p className="os-eyebrow text-[color:var(--accent-strong)]">
             WEEKLY REPORT
           </p>
-          <h1 className="mt-1 text-2xl font-bold text-white">{data.weekLabel}</h1>
+          <h1 className="os-page-title mt-1">{data.weekLabel}</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => void refresh()}
             disabled={loading}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white hover:border-[#B8FF00]/30 disabled:opacity-60"
+            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
           >
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -94,7 +94,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void generateNarrative()}
             disabled={narrativeLoading}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm text-white hover:border-[#B8FF00]/30 disabled:opacity-60"
+            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
           >
             {narrativeLoading ? 'Generating...' : 'Generate AI briefing'}
           </button>
@@ -102,7 +102,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void downloadPdf()}
             disabled={pdfLoading}
-            className="rounded-2xl bg-[#B8FF00] px-4 py-2 text-sm font-bold text-[#0C0C14] disabled:opacity-60"
+            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
           >
             {pdfLoading ? 'Generating...' : 'Download PDF'}
           </button>
@@ -112,30 +112,30 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
       {/* Task stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <StatCard label="Open" value={taskSummary.total} />
-        <StatCard label="Completed" value={taskSummary.completed} colour="text-[#B8FF00]" />
+        <StatCard label="Completed" value={taskSummary.completed} colour="text-[color:var(--accent-strong)]" />
         <StatCard label="Added" value={taskSummary.added} />
-        <StatCard label="Overdue" value={taskSummary.overdue} colour={taskSummary.overdue > 0 ? 'text-[#FF4081]' : undefined} />
-        <StatCard label="Due soon" value={taskSummary.dueSoon} colour="text-amber-400" />
+        <StatCard label="Overdue" value={taskSummary.overdue} colour={taskSummary.overdue > 0 ? 'text-[color:var(--red-strong)]' : undefined} />
+        <StatCard label="Due soon" value={taskSummary.dueSoon} colour="text-[color:var(--amber-strong)]" />
       </div>
 
       {/* Workstreams */}
       <section>
-        <p className="mb-3 text-[10px] font-bold tracking-[3px] uppercase text-[#B8FF00]">
+        <p className="os-eyebrow mb-3 text-[color:var(--accent-strong)]">
           WORKSTREAMS
         </p>
-        <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] divide-y divide-[#2A2A3A]">
+        <div className="os-card divide-y divide-[color:var(--border)]">
           {workstreams.map((ws) => (
             <div key={ws.id} className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-3">
                 <span className={`h-2.5 w-2.5 rounded-full ${WORKSTREAM_COLOUR_MAP[ws.colour] ?? 'bg-gray-400'}`} />
-                <span className="font-medium text-white">{ws.label}</span>
+                <span className="font-medium text-[color:var(--text)]">{ws.label}</span>
               </div>
-              <div className="flex items-center gap-5 text-sm text-[#9CA3AF]">
+              <div className="flex items-center gap-5 text-sm text-[color:var(--text-2)]">
                 <span>{ws.openTasks} open</span>
-                <span className="text-[#B8FF00]">{ws.completedThisWeek} done</span>
+                <span className="text-[color:var(--accent-strong)]">{ws.completedThisWeek} done</span>
                 <span>{ws.dueThisWeek} due</span>
                 {ws.overdue > 0 ? (
-                  <span className="text-[#FF4081]">{ws.overdue} overdue</span>
+                  <span className="text-[color:var(--red-strong)]">{ws.overdue} overdue</span>
                 ) : null}
               </div>
             </div>
@@ -146,28 +146,28 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
       {/* Projects */}
       {projectSummary.length > 0 ? (
         <section>
-          <p className="mb-3 text-[10px] font-bold tracking-[3px] uppercase text-[#B8FF00]">
+          <p className="os-eyebrow mb-3 text-[color:var(--accent-strong)]">
             ACTIVE PROJECTS
           </p>
-          <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] divide-y divide-[#2A2A3A]">
+          <div className="os-card divide-y divide-[color:var(--border)]">
             {projectSummary.map((proj) => {
               const pct = proj.task_count > 0 ? Math.round((proj.completed_task_count / proj.task_count) * 100) : 0
               return (
                 <div key={proj.id} className="flex items-center justify-between px-5 py-4">
                   <div className="min-w-0 flex-1 pr-4">
-                    <p className="truncate font-medium text-white">{proj.name}</p>
+                    <p className="truncate font-medium text-[color:var(--text)]">{proj.name}</p>
                     {proj.workstream_label ? (
-                      <p className={`text-xs ${WORKSTREAM_TEXT_MAP[proj.workstream_colour ?? ''] ?? 'text-[#9CA3AF]'}`}>
+                      <p className={`text-xs ${WORKSTREAM_TEXT_MAP[proj.workstream_colour ?? ''] ?? 'text-[color:var(--text-2)]'}`}>
                         {proj.workstream_label}
                       </p>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-5 text-sm text-[#9CA3AF]">
+                  <div className="flex items-center gap-5 text-sm text-[color:var(--text-2)]">
                     <span>
                       {proj.completed_task_count}/{proj.task_count} tasks ({pct}%)
                     </span>
                     {proj.next_milestone ? (
-                      <span className="text-amber-400">→ {proj.next_milestone}</span>
+                      <span className="text-[color:var(--amber-strong)]">→ {proj.next_milestone}</span>
                     ) : null}
                   </div>
                 </div>
@@ -180,11 +180,11 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
       {/* Narrative */}
       {narrative ? (
         <section>
-          <p className="mb-3 text-[10px] font-bold tracking-[3px] uppercase text-[#B8FF00]">
+          <p className="os-eyebrow mb-3 text-[color:var(--accent-strong)]">
             AI BRIEFING
           </p>
-          <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-6">
-            <p className="whitespace-pre-wrap leading-relaxed text-[#9CA3AF]">{narrative}</p>
+          <div className="os-card p-6">
+            <p className="whitespace-pre-wrap leading-relaxed text-[color:var(--text-2)]">{narrative}</p>
           </div>
         </section>
       ) : null}
@@ -194,9 +194,9 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
 
 function StatCard({ label, value, colour }: { label: string; value: number; colour?: string }) {
   return (
-    <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-5 text-center">
-      <p className={`text-3xl font-bold ${colour ?? 'text-white'}`}>{value}</p>
-      <p className="mt-1 text-[10px] font-bold tracking-[2px] uppercase text-[#9CA3AF]">{label}</p>
+    <div className="os-card px-4 py-5 text-center">
+      <p className={`text-3xl font-bold ${colour ?? 'text-[color:var(--text)]'}`}>{value}</p>
+      <p className="os-eyebrow mt-1 tracking-[2px] text-[color:var(--text-3)]">{label}</p>
     </div>
   )
 }

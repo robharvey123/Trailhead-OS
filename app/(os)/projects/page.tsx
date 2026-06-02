@@ -47,31 +47,31 @@ export default async function ProjectsPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-white0">Delivery</p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">
-            Projects <span className="text-white0">({projects.length})</span>
+          <p className="os-eyebrow">Delivery</p>
+          <h1 className="os-page-title mt-2">
+            Projects <span className="text-[color:var(--text-3)]">({projects.length})</span>
           </h1>
         </div>
         <Link
           href="/projects/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           New project
         </Link>
       </div>
 
-      <form className="grid gap-3 rounded-[1.75rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <form className="os-card grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
         <input
           type="text"
           name="search"
           defaultValue={search}
           placeholder="Search by project name or summary"
-          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          className="os-input rounded-2xl px-4 py-3 text-sm"
         />
         <select
           name="workstream_id"
           defaultValue={workstreamId}
-          className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          className="os-select rounded-2xl px-4 py-3 text-sm"
         >
           <option value="">All workstreams</option>
           {workstreams.map((workstream) => (
@@ -82,7 +82,7 @@ export default async function ProjectsPage({
         </select>
         <button
           type="submit"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           Apply
         </button>
@@ -110,8 +110,8 @@ export default async function ProjectsPage({
               href={href}
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
-                  ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
+                  ? 'border-[color:var(--border)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
+                  : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--border-light)] hover:text-[color:var(--text)]'
               }`}
             >
               {tab.label}
@@ -121,7 +121,7 @@ export default async function ProjectsPage({
       </div>
 
       {projects.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
+        <div className="rounded-[2rem] border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No projects match this view yet.
         </div>
       ) : (

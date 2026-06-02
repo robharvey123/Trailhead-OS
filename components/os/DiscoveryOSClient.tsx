@@ -23,14 +23,14 @@ function formatSubmittedDate(value: string) {
 
 function getStatusClasses(status: DiscoveryEnquiryRow['status']) {
   if (status === 'reviewed') {
-    return 'bg-sky-500/15 text-sky-200 ring-1 ring-sky-400/20'
+    return 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)] ring-1 ring-[color:var(--border-light)]'
   }
 
   if (status === 'converted') {
-    return 'bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-400/20'
+    return 'bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)] ring-1 ring-[color:var(--border-light)]'
   }
 
-  return 'bg-amber-500/15 text-amber-200 ring-1 ring-amber-400/20'
+  return 'bg-[var(--amber-dim)] text-[color:var(--amber-strong)] ring-1 ring-[color:var(--border-light)]'
 }
 
 export default function DiscoveryOSClient({
@@ -63,43 +63,43 @@ export default function DiscoveryOSClient({
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">Discovery form</h1>
-        <p className="mt-2 text-sm text-[#9CA3AF]">
+        <p className="os-eyebrow">Clients</p>
+        <h1 className="os-page-title mt-2">Discovery form</h1>
+        <p className="mt-2 text-sm text-[color:var(--text-2)]">
           Send this link to clients to capture their app requirements.
         </p>
       </div>
 
-      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+      <section className="os-card p-6">
         <div className="space-y-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.26em] text-white0">Public form URL</p>
+            <p className="os-eyebrow">Public form URL</p>
             <div className="mt-3 flex flex-col gap-3 lg:flex-row">
               <input
                 type="text"
                 readOnly
                 value={publicUrl}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white outline-none"
+                className="os-input w-full px-4 py-3 text-sm"
               />
               <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
                   onClick={() => void handleCopyLink()}
-                  className="rounded-2xl bg-white px-4 py-3 text-sm font-medium text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+                  className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
                 >
                   {copied ? 'Copied!' : 'Copy link'}
                 </button>
                 <button
                   type="button"
                   onClick={handleOpenForm}
-                  className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-white transition hover:border-[#B8FF00]/40 hover:bg-[#2A2A3A]"
+                  className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
                 >
                   Open form
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPreview((current) => !current)}
-                  className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-white transition hover:border-[#B8FF00]/40 hover:bg-[#2A2A3A]"
+                  className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
                 >
                   {showPreview ? 'Hide preview' : 'Preview'}
                 </button>
@@ -111,26 +111,26 @@ export default function DiscoveryOSClient({
             <iframe
               src="/discovery?view=form"
               title="Discovery form preview"
-              className="mt-4 w-full rounded-lg border border-gray-200"
+              className="mt-4 w-full rounded-lg border border-[color:var(--border)]"
               style={{ height: '600px' }}
             />
           ) : null}
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+      <section className="os-card p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-white">Recent submissions</h2>
+          <h2 className="os-section-title">Recent submissions</h2>
         </div>
 
         {enquiries.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
+          <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No enquiries yet. Share the form link above to get started.
           </div>
         ) : (
-          <div className="mt-6 overflow-hidden rounded-3xl border border-[#2A2A3A]">
-            <table className="min-w-full divide-y divide-[#2A2A3A] text-left">
-              <thead className="bg-[#13131E] text-xs uppercase tracking-[0.18em] text-white0">
+          <div className="mt-6 overflow-hidden rounded-3xl border border-[color:var(--border)]">
+            <table className="min-w-full divide-y divide-[color:var(--border)] text-left">
+              <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                 <tr>
                   <th className="px-4 py-3 font-medium">Business</th>
                   <th className="px-4 py-3 font-medium">Contact</th>
@@ -141,18 +141,18 @@ export default function DiscoveryOSClient({
                   <th className="px-4 py-3 font-medium">View</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2A2A3A] bg-[#13131E] text-sm text-[#9CA3AF]">
+              <tbody className="divide-y divide-[color:var(--border)] bg-white text-sm text-[color:var(--text-2)]">
                 {enquiries.map((enquiry) => (
                   <tr key={enquiry.id}>
-                    <td className="px-4 py-4 font-medium text-white">{enquiry.biz_name}</td>
+                    <td className="px-4 py-4 font-medium text-[color:var(--text)]">{enquiry.biz_name}</td>
                     <td className="px-4 py-4">{enquiry.contact_name}</td>
-                    <td className="px-4 py-4 text-[#9CA3AF]">
+                    <td className="px-4 py-4 text-[color:var(--text-2)]">
                       {enquiry.contact_email ?? '—'}
                     </td>
-                    <td className="px-4 py-4 text-[#9CA3AF]">
+                    <td className="px-4 py-4 text-[color:var(--text-2)]">
                       {enquiry.contact_phone ?? '—'}
                     </td>
-                    <td className="px-4 py-4 text-[#9CA3AF]">
+                    <td className="px-4 py-4 text-[color:var(--text-2)]">
                       {formatSubmittedDate(enquiry.created_at)}
                     </td>
                     <td className="px-4 py-4">
@@ -165,7 +165,7 @@ export default function DiscoveryOSClient({
                     <td className="px-4 py-4">
                       <Link
                         href={`/enquiries/${enquiry.id}`}
-                        className="inline-flex rounded-full border border-[#2A2A3A] px-3 py-1.5 text-xs font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-white"
+                        className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                       >
                         View
                       </Link>
@@ -180,7 +180,7 @@ export default function DiscoveryOSClient({
         <div className="mt-5">
           <Link
             href="/enquiries"
-            className="text-sm font-medium text-[#9CA3AF] transition hover:text-white"
+            className="text-sm font-medium text-[color:var(--text-2)] transition hover:text-[color:var(--accent-strong)]"
           >
             View all enquiries →
           </Link>

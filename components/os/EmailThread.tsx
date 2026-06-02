@@ -236,12 +236,12 @@ export default function EmailThread({
   }
 
   return (
-    <section className={embedded ? 'space-y-0' : 'rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6'}>
+    <section className={embedded ? 'space-y-0' : 'os-card p-6'}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          {!embedded ? <h2 className="text-lg font-semibold text-white">{title}</h2> : null}
+          {!embedded ? <h2 className="os-section-title">{title}</h2> : null}
           {!embedded ? (
-            <p className="mt-1 text-sm text-[#9CA3AF]">
+            <p className="mt-1 text-sm text-[color:var(--text-2)]">
               Gmail conversation history for this contact.
             </p>
           ) : null}
@@ -254,7 +254,7 @@ export default function EmailThread({
               setSendError(null)
             }}
             disabled={!contact_email}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 disabled:opacity-50"
+            className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
           >
             {composing ? 'Close compose' : 'Compose'}
           </button>
@@ -262,23 +262,23 @@ export default function EmailThread({
       </div>
 
       {!contact_email ? (
-        <div className="mt-6 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
+        <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No contact email is available for this record yet.
         </div>
       ) : null}
 
       {contact_email && emailFeaturePaused ? (
-        <div className="mt-6 rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-8 text-center">
-          <p className="text-sm text-[#9CA3AF]">Email integration is temporarily paused.</p>
-          <p className="mt-2 text-sm text-[#9CA3AF]">
+        <div className="mt-6 rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-8 text-center">
+          <p className="text-sm text-[color:var(--text-2)]">Email integration is temporarily paused.</p>
+          <p className="mt-2 text-sm text-[color:var(--text-2)]">
             Gmail access has been removed for now while Google verification is being simplified.
           </p>
         </div>
       ) : null}
 
       {contact_email && googleDisconnected ? (
-        <div className="mt-6 rounded-3xl border border-sky-500/30 bg-sky-500/10 px-4 py-8 text-center">
-          <p className="text-sm text-sky-100">Connect Google to see emails.</p>
+        <div className="mt-6 rounded-3xl border border-[color:var(--border)] bg-[var(--accent-dim)] px-4 py-8 text-center">
+          <p className="text-sm text-[color:var(--accent-strong)]">Connect Google to see emails.</p>
         </div>
       ) : null}
 
@@ -287,18 +287,18 @@ export default function EmailThread({
           {[0, 1, 2].map(item => (
             <div
               key={item}
-              className="animate-pulse rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4"
+              className="animate-pulse rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4"
             >
-              <div className="h-4 w-1/3 rounded bg-[#2A2A3A]" />
-              <div className="mt-3 h-3 w-2/3 rounded bg-[#2A2A3A]" />
-              <div className="mt-2 h-3 w-1/2 rounded bg-[#2A2A3A]" />
+              <div className="h-4 w-1/3 rounded bg-[var(--surface-3)]" />
+              <div className="mt-3 h-3 w-2/3 rounded bg-[var(--surface-3)]" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-[var(--surface-3)]" />
             </div>
           ))}
         </div>
       ) : null}
 
       {contact_email && !emailFeaturePaused && !loading && !googleDisconnected && error ? (
-        <div className="mt-6 rounded-3xl border border-rose-500/30 bg-rose-500/10 px-4 py-8 text-center text-sm text-rose-200">
+        <div className="mt-6 rounded-3xl border border-[color:var(--border)] bg-[var(--red-dim)] px-4 py-8 text-center text-sm text-[color:var(--red-strong)]">
           {error}
         </div>
       ) : null}
@@ -309,7 +309,7 @@ export default function EmailThread({
       !googleDisconnected &&
       !error &&
       threads.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
+        <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No emails yet with this contact.
         </div>
       ) : null}
@@ -323,31 +323,31 @@ export default function EmailThread({
             return (
               <div
                 key={thread.id}
-                className="overflow-hidden rounded-3xl border border-[#2A2A3A] bg-[#13131E]"
+                className="overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)]"
               >
                 <button
                   type="button"
                   onClick={() =>
                     setExpandedThreadId(current => (current === thread.id ? null : thread.id))
                   }
-                  className="w-full px-4 py-4 text-left transition hover:bg-[#1A1A28]/60"
+                  className="w-full px-4 py-4 text-left transition hover:bg-[var(--surface-3)]"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-[color:var(--text)]">
                         {latestMessage.subject || '(No subject)'}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white0">
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                         {latestMessage.from_address || 'Unknown sender'} to{' '}
                         {(latestMessage.to_addresses ?? []).join(', ') || 'Unknown recipient'}
                       </p>
-                      <p className="mt-2 text-sm text-[#9CA3AF]">
+                      <p className="mt-2 text-sm text-[color:var(--text-2)]">
                         {latestMessage.snippet || 'No preview available'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-white0">{formatDate(thread.latestAt)}</p>
-                      <p className="mt-2 text-xs text-[#9CA3AF]">
+                      <p className="text-xs text-[color:var(--text-3)]">{formatDate(thread.latestAt)}</p>
+                      <p className="mt-2 text-xs text-[color:var(--text-2)]">
                         {thread.messages.length} message{thread.messages.length === 1 ? '' : 's'}
                       </p>
                     </div>
@@ -355,30 +355,30 @@ export default function EmailThread({
                 </button>
 
                 {expanded ? (
-                  <div className="border-t border-[#2A2A3A] px-4 py-4">
+                  <div className="border-t border-[color:var(--border)] px-4 py-4">
                     <div className="space-y-4">
                       {thread.messages.map(message => (
                         <article
                           key={message.gmail_message_id ?? `${thread.id}-${getMessageDate(message)}`}
-                          className="rounded-[1.5rem] border border-[#2A2A3A] bg-[#1A1A28]/40 p-4"
+                          className="rounded-[1.5rem] border border-[color:var(--border)] bg-white p-4"
                         >
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                              <p className="text-sm font-medium text-white">
+                              <p className="text-sm font-medium text-[color:var(--text)]">
                                 {message.subject || '(No subject)'}
                               </p>
-                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white0">
+                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                                 {message.from_address || 'Unknown sender'}
                               </p>
-                              <p className="mt-1 text-xs text-white0">
+                              <p className="mt-1 text-xs text-[color:var(--text-3)]">
                                 To {(message.to_addresses ?? []).join(', ') || 'Unknown recipient'}
                               </p>
                             </div>
-                            <p className="text-xs text-white0">
+                            <p className="text-xs text-[color:var(--text-3)]">
                               {formatDate(getMessageDate(message))}
                             </p>
                           </div>
-                          <p className="mt-4 whitespace-pre-wrap text-sm text-[#9CA3AF]">
+                          <p className="mt-4 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">
                             {message.body_html || message.snippet || 'No message body available'}
                           </p>
                         </article>
@@ -393,37 +393,37 @@ export default function EmailThread({
       ) : null}
 
       {contact_email && !emailFeaturePaused && composing ? (
-        <div className="mt-6 rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
+        <div className="mt-6 rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-5">
           <div className="space-y-4">
             <label className="block space-y-2">
-              <span className="text-sm text-[#9CA3AF]">To</span>
+              <span className="text-sm text-[color:var(--text-2)]">To</span>
               <input
                 value={contact_email}
                 readOnly
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-[#9CA3AF]"
+                className="os-input text-[color:var(--text-2)]"
               />
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm text-[#9CA3AF]">Subject</span>
+              <span className="text-sm text-[color:var(--text-2)]">Subject</span>
               <input
                 value={subject}
                 onChange={event => setSubject(event.target.value)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                className="os-input"
               />
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm text-[#9CA3AF]">Body</span>
+              <span className="text-sm text-[color:var(--text-2)]">Body</span>
               <textarea
                 value={body}
                 onChange={event => setBody(event.target.value)}
                 rows={8}
-                className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                className="os-textarea"
               />
             </label>
 
-            {sendError ? <p className="text-sm text-rose-300">{sendError}</p> : null}
+            {sendError ? <p className="text-sm text-[color:var(--red-strong)]">{sendError}</p> : null}
 
             <div className="flex flex-wrap justify-end gap-3">
               <button
@@ -432,7 +432,7 @@ export default function EmailThread({
                   setComposing(false)
                   setSendError(null)
                 }}
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-2.5 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
               >
                 Cancel
               </button>
@@ -440,7 +440,7 @@ export default function EmailThread({
                 type="button"
                 onClick={handleSend}
                 disabled={sending}
-                className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
               >
                 {sending ? 'Sending...' : 'Send'}
               </button>

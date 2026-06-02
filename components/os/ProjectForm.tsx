@@ -144,30 +144,30 @@ export default function ProjectForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <div className="os-card space-y-6 p-6">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">Delivery</p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
+        <p className="os-eyebrow text-[color:var(--accent-strong)]">Delivery</p>
+        <h1 className="os-page-title mt-2">
           {initialProject ? 'Edit project' : 'New project'}
         </h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Name</span>
+          <span className="text-sm text-[color:var(--text-2)]">Name</span>
           <input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Workstream</span>
+          <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
           <select
             value={form.workstream_id}
             onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="">Select workstream</option>
             {workstreams.map((workstream) => (
@@ -188,11 +188,11 @@ export default function ProjectForm({
         />
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Status</span>
+          <span className="text-sm text-[color:var(--text-2)]">Status</span>
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value as ProjectStatus })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             {PROJECT_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -203,37 +203,37 @@ export default function ProjectForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Start date</span>
+          <span className="text-sm text-[color:var(--text-2)]">Start date</span>
           <input
             type="date"
             value={form.start_date}
             onChange={(event) => setForm({ ...form, start_date: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">End date</span>
+          <span className="text-sm text-[color:var(--text-2)]">End date</span>
           <input
             type="date"
             value={form.end_date}
             onChange={(event) => setForm({ ...form, end_date: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Estimated end</span>
+          <span className="text-sm text-[color:var(--text-2)]">Estimated end</span>
           <input
             type="date"
             value={form.estimated_end_date}
             onChange={(event) => setForm({ ...form, estimated_end_date: event.target.value })}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Hourly rate (£)</span>
+          <span className="text-sm text-[color:var(--text-2)]">Hourly rate (£)</span>
           <input
             type="number"
             step="0.01"
@@ -241,46 +241,46 @@ export default function ProjectForm({
             value={form.hourly_rate}
             onChange={(event) => setForm({ ...form, hourly_rate: event.target.value })}
             placeholder="e.g. 85.00"
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Description</span>
+          <span className="text-sm text-[color:var(--text-2)]">Description</span>
           <textarea
             value={form.description}
             onChange={(event) => setForm({ ...form, description: event.target.value })}
             rows={4}
-            className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-textarea w-full"
           />
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Brief</span>
+          <span className="text-sm text-[color:var(--text-2)]">Brief</span>
           <textarea
             value={form.brief}
             onChange={(event) => setForm({ ...form, brief: event.target.value })}
             rows={6}
-            className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white"
+            className="os-textarea w-full"
           />
         </label>
       </div>
 
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
           onClick={handleSave}
           disabled={saving || archiving || deleting || !form.name.trim() || !form.workstream_id}
-          className="rounded-2xl bg-[#B8FF00] px-5 py-3 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
         <button
           type="button"
           onClick={() => router.push(cancelHref)}
-          className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+          className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]"
         >
           Cancel
         </button>
@@ -289,7 +289,7 @@ export default function ProjectForm({
             type="button"
             onClick={() => setArchiveConfirmOpen(true)}
             disabled={saving || archiving || deleting}
-            className="rounded-2xl border border-amber-500/30 px-5 py-3 text-sm font-medium text-amber-100 transition hover:border-amber-400 disabled:opacity-60"
+            className="rounded-2xl border border-[color:var(--amber)] px-5 py-3 text-sm font-medium text-[color:var(--amber-strong)] transition hover:border-[color:var(--amber-strong)] disabled:opacity-50"
           >
             {archiving ? 'Archiving...' : 'Archive project'}
           </button>
@@ -299,7 +299,7 @@ export default function ProjectForm({
             type="button"
             onClick={() => setDeleteConfirmOpen(true)}
             disabled={saving || archiving || deleting}
-            className="rounded-2xl border border-rose-500/30 px-5 py-3 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+            className="rounded-2xl border border-[color:var(--red)] px-5 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
           >
             {deleting ? 'Deleting...' : 'Delete permanently'}
           </button>

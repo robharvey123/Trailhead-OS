@@ -328,10 +328,10 @@ function milestoneMatchesSearch(milestone: ProjectMilestone, query: string) {
 function MilestoneBanner({ milestone }: { milestone: ProjectMilestone }) {
   const statusClasses =
     milestone.status === 'achieved'
-      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
+      ? 'border-[color:var(--border)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
       : milestone.status === 'missed'
-        ? 'border-red-500/30 bg-red-500/10 text-red-100'
-        : 'border-sky-500/30 bg-sky-500/10 text-sky-100'
+        ? 'border-[color:var(--border)] bg-[var(--red-dim)] text-[color:var(--red-strong)]'
+        : 'border-[color:var(--border)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
   const icon = milestone.status === 'achieved' ? '[check]' : milestone.status === 'missed' ? '[warn]' : '[flag]'
 
   return (
@@ -343,14 +343,14 @@ function MilestoneBanner({ milestone }: { milestone: ProjectMilestone }) {
         </div>
         <span>{formatTaskDate(milestone.due_date)}</span>
       </div>
-      {milestone.description ? <p className="mt-2 text-[12px] text-sky-100/80">{milestone.description}</p> : null}
+      {milestone.description ? <p className="mt-2 text-[12px] text-[color:var(--accent-strong)]">{milestone.description}</p> : null}
     </div>
   )
 }
 
 function ProgressBar({ percent, tone = 'bg-sky-400' }: { percent: number; tone?: string }) {
   return (
-    <div className="h-1.5 overflow-hidden rounded-full bg-[#2A2A3A]">
+    <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-3)]">
       <div
         className={`h-full rounded-full ${tone}`}
         style={{ width: `${Math.max(0, Math.min(percent, 100))}%` }}
@@ -369,7 +369,7 @@ function TaskStatusBadge({ status }: { status: ProjectTaskStatus }) {
 
 function OwnerAvatar({ owner }: { owner?: string | null }) {
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2A2A3A] bg-[#0C0C14] text-[11px] font-semibold text-white">
+    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] text-[11px] font-semibold text-[color:var(--text)]">
       {getOwnerInitials(owner)}
     </span>
   )
@@ -407,14 +407,14 @@ function SortableTaskCard({
         {...attributes}
         {...listeners}
         onClick={onOpen}
-        className={`rounded-[1.6rem] border border-[#2A2A3A] bg-[#1A1A28] p-4 text-left shadow-sm transition hover:border-[#B8FF00]/20 ${
+        className={`rounded-[1.6rem] border border-[color:var(--border)] bg-white p-4 text-left shadow-sm transition hover:border-[color:var(--accent)] ${
           disabled ? 'cursor-pointer' : 'cursor-grab active:cursor-grabbing'
         }`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-sm font-semibold text-white">{task.title}</h3>
-            <p className="mt-1 text-xs text-[#9CA3AF]">{task.due_date ? formatTaskDate(task.due_date) : 'No due date'}</p>
+            <h3 className="truncate text-sm font-semibold text-[color:var(--text)]">{task.title}</h3>
+            <p className="mt-1 text-xs text-[color:var(--text-2)]">{task.due_date ? formatTaskDate(task.due_date) : 'No due date'}</p>
           </div>
           <PriorityBadge priority={task.priority} />
         </div>
@@ -422,12 +422,12 @@ function SortableTaskCard({
         <div className="mt-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <OwnerAvatar owner={task.owner} />
-            <span className="text-xs text-[#9CA3AF]">{task.owner ?? 'Unassigned'}</span>
+            <span className="text-xs text-[color:var(--text-2)]">{task.owner ?? 'Unassigned'}</span>
           </div>
           <TaskStatusBadge status={task.status} />
         </div>
 
-        <div className="mt-4 space-y-3 text-xs text-[#9CA3AF]">
+        <div className="mt-4 space-y-3 text-xs text-[color:var(--text-2)]">
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <span>Subtasks</span>
@@ -458,7 +458,7 @@ function DroppableStatusColumn({ status, children }: { status: ProjectTaskStatus
     <div
       ref={setNodeRef}
       className={`rounded-[1.8rem] border p-4 transition ${
-        isOver ? 'border-[#B8FF00]/40 bg-[#13131E]' : 'border-[#2A2A3A] bg-[#1A1A28]'
+        isOver ? 'border-[color:var(--accent)] bg-[var(--accent-dim)]' : 'border-[color:var(--border)] bg-[var(--surface)]'
       }`}
     >
       {children}
@@ -491,7 +491,7 @@ function EditableTextCell({
 
   if (!editing) {
     return (
-      <button type="button" onClick={() => setEditing(true)} className="min-h-9 w-full text-left text-sm text-white">
+      <button type="button" onClick={() => setEditing(true)} className="min-h-9 w-full text-left text-sm text-[color:var(--text)]">
         {value || placeholder || 'Empty'}
       </button>
     )
@@ -509,7 +509,7 @@ function EditableTextCell({
           void commit()
         }
       }}
-      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
+      className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)]"
     />
   )
 }
@@ -527,7 +527,7 @@ function EditableSelectCell<T extends string>({
     <select
       value={value}
       onChange={(event) => void onSave(event.target.value as T)}
-      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
+      className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)]"
     >
       {options.map((option) => (
         <option key={option.value} value={option.value}>
@@ -544,7 +544,7 @@ function EditableDateCell({ value, onSave }: { value: string | null; onSave: (ne
       type="date"
       value={value ?? ''}
       onChange={(event) => void onSave(event.target.value || null)}
-      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
+      className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)]"
     />
   )
 }
@@ -566,7 +566,7 @@ function EditableNumberCell({ value, onSave }: { value: number | null; onSave: (
           void onSave(Number.isFinite(nextValue) ? nextValue : null)
         }
       }}
-      className="w-full rounded-xl border border-[#2A2A3A] bg-[#13131E] px-3 py-2 text-sm text-white"
+      className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)]"
     />
   )
 }
@@ -1058,28 +1058,28 @@ export default function ProjectWorkspaceClient({
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6">
+      <section className="relative overflow-hidden rounded-lg border border-[color:var(--border)] bg-white p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <span className="h-3 w-3 rounded-full border border-white/20" style={{ backgroundColor: accent }} />
-              <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">Project workspace</p>
+              <span className="h-3 w-3 rounded-full border border-[color:var(--border)]" style={{ backgroundColor: accent }} />
+              <p className="os-eyebrow text-[color:var(--accent-strong)]">Project workspace</p>
             </div>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{project.title || project.name}</h1>
-            <p className="mt-2 max-w-3xl text-sm text-[#9CA3AF]">{project.description || project.brief || 'No summary added yet.'}</p>
+            <h1 className="os-page-title mt-3">{project.title || project.name}</h1>
+            <p className="mt-2 max-w-3xl text-sm text-[color:var(--text-2)]">{project.description || project.brief || 'No summary added yet.'}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {project.ai_planned ? (
-                  <span className="inline-flex rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">
+                  <span className="inline-flex rounded-full border border-[color:var(--border)] bg-[var(--emerald-dim)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--emerald-strong)]">
                     AI planned
                   </span>
                 ) : null}
                 {!project.ai_planned && project.brief ? (
-                  <span className="inline-flex rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-100">
+                  <span className="inline-flex rounded-full border border-[color:var(--border)] bg-[var(--accent-dim)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-strong)]">
                     Ready for AI planning
                   </span>
                 ) : null}
                 {!project.ai_planned && !project.brief ? (
-                  <span className="inline-flex rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100">
+                  <span className="inline-flex rounded-full border border-[color:var(--border)] bg-[var(--amber-dim)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--amber-strong)]">
                     Add a brief to use AI planning
                   </span>
                 ) : null}
@@ -1092,26 +1092,26 @@ export default function ProjectWorkspaceClient({
                 type="button"
                 onClick={() => void runAiPlan()}
                 disabled={planningProject || !project.brief}
-                className="rounded-2xl bg-[#B8FF00] px-4 py-2 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {planningProject ? 'Running AI plan...' : 'Run AI plan'}
               </button>
             ) : null}
             <Link
               href={`/projects/records/${project.id}/edit`}
-              className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00]"
+              className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
             >
               Edit project
             </Link>
 
-            <div className="inline-flex rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-1">
+            <div className="inline-flex rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-1">
               {(['list', 'gantt', 'table'] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setView(mode)}
                   className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
-                    view === mode ? 'bg-[#B8FF00]/10 text-[#B8FF00] border border-[#B8FF00]/30' : 'text-[#9CA3AF] hover:text-white'
+                    view === mode ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)] border border-[color:var(--accent)]' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'
                   }`}
                 >
                   {mode}
@@ -1121,19 +1121,19 @@ export default function ProjectWorkspaceClient({
           </div>
         </div>
 
-        <div className="mt-5 rounded-[1.6rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+        <div className="mt-5 rounded-[1.6rem] border border-[color:var(--border)] bg-[var(--surface)] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Toolbar</p>
-              <p className="mt-1 text-sm text-[#9CA3AF]">Search, filter, and add work without leaving the project workspace.</p>
+              <p className="os-eyebrow">Toolbar</p>
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">Search, filter, and add work without leaving the project workspace.</p>
               <div className="mt-2 flex items-center gap-2 text-xs uppercase tracking-[0.18em]">
                 <span
                   className={`inline-flex rounded-full border px-2.5 py-1 ${
                     liveStatus === 'live'
-                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
+                      ? 'border-[color:var(--border)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
                       : liveStatus === 'syncing'
-                        ? 'border-amber-500/30 bg-amber-500/10 text-amber-100'
-                        : 'border-rose-500/30 bg-rose-500/10 text-rose-100'
+                        ? 'border-[color:var(--border)] bg-[var(--amber-dim)] text-[color:var(--amber-strong)]'
+                        : 'border-[color:var(--border)] bg-[var(--red-dim)] text-[color:var(--red-strong)]'
                   }`}
                 >
                   {liveStatus === 'live' ? 'Live updates on' : liveStatus === 'syncing' ? 'Syncing updates' : 'Live updates offline'}
@@ -1144,7 +1144,7 @@ export default function ProjectWorkspaceClient({
               <button
                 type="button"
                 onClick={() => openMilestone('__new__')}
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00]"
+                className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
               >
                 Add Milestone
               </button>
@@ -1152,7 +1152,7 @@ export default function ProjectWorkspaceClient({
                 type="button"
                 onClick={clearToolbarFilters}
                 disabled={!hasActiveFilters}
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00] disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Clear Filters
               </button>
@@ -1160,22 +1160,22 @@ export default function ProjectWorkspaceClient({
           </div>
 
           <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,0.8fr))]">
-            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
+            <label className="os-eyebrow flex flex-col gap-2">
               Search
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search title, owner, notes, tags"
-                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white placeholder:text-[#9CA3AF]"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm normal-case tracking-normal text-[color:var(--text)] placeholder:text-[color:var(--text-3)]"
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
+            <label className="os-eyebrow flex flex-col gap-2">
               Status
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value as 'all' | ProjectTaskStatus)}
-                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm normal-case tracking-normal text-[color:var(--text)]"
               >
                 <option value="all">All statuses</option>
                 {STATUS_COLUMNS.map((column) => (
@@ -1186,12 +1186,12 @@ export default function ProjectWorkspaceClient({
               </select>
             </label>
 
-            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
+            <label className="os-eyebrow flex flex-col gap-2">
               Priority
               <select
                 value={priorityFilter}
                 onChange={(event) => setPriorityFilter(event.target.value as 'all' | TaskPriority)}
-                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm normal-case tracking-normal text-[color:var(--text)]"
               >
                 <option value="all">All priorities</option>
                 <option value="critical">Critical</option>
@@ -1202,12 +1202,12 @@ export default function ProjectWorkspaceClient({
               </select>
             </label>
 
-            <label className="flex flex-col gap-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
+            <label className="os-eyebrow flex flex-col gap-2">
               Owner
               <select
                 value={ownerFilter}
                 onChange={(event) => setOwnerFilter(event.target.value)}
-                className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm normal-case tracking-normal text-white"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm normal-case tracking-normal text-[color:var(--text)]"
               >
                 <option value="all">All owners</option>
                 <option value="Unassigned">Unassigned</option>
@@ -1219,13 +1219,13 @@ export default function ProjectWorkspaceClient({
               </select>
             </label>
 
-            <label className="flex items-center justify-between gap-3 rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white">
+            <label className="flex items-center justify-between gap-3 rounded-2xl border border-[color:var(--border)] bg-white px-4 py-3 text-sm text-[color:var(--text)]">
               <span>Show subtasks</span>
               <input
                 type="checkbox"
                 checked={showSubtasks}
                 onChange={(event) => setShowSubtasks(event.target.checked)}
-                className="h-4 w-4 rounded border-[#2A2A3A] bg-[#13131E]"
+                className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)]"
               />
             </label>
           </div>
@@ -1241,50 +1241,50 @@ export default function ProjectWorkspaceClient({
               onCreated={(task) => setTasks((current) => [...current, task])}
             />
 
-            <div className="grid grid-cols-3 gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3 text-center text-sm">
+            <div className="grid grid-cols-3 gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-3 text-center text-sm">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Visible</p>
-                <p className="mt-1 font-semibold text-white">{visibleTasks.length}</p>
+                <p className="os-eyebrow">Visible</p>
+                <p className="mt-1 font-semibold text-[color:var(--text)]">{visibleTasks.length}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Open</p>
-                <p className="mt-1 font-semibold text-white">{visibleTasks.filter((task) => task.status !== 'done').length}</p>
+                <p className="os-eyebrow">Open</p>
+                <p className="mt-1 font-semibold text-[color:var(--text)]">{visibleTasks.filter((task) => task.status !== 'done').length}</p>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Milestones</p>
-                <p className="mt-1 font-semibold text-white">{filteredMilestones.length}</p>
+                <p className="os-eyebrow">Milestones</p>
+                <p className="mt-1 font-semibold text-[color:var(--text)]">{filteredMilestones.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-4">
-          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Owner</p>
-            <p className="mt-2 text-sm text-white">{project.owner ?? 'Unassigned'}</p>
+          <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-4">
+            <p className="os-eyebrow">Owner</p>
+            <p className="mt-2 text-sm text-[color:var(--text)]">{project.owner ?? 'Unassigned'}</p>
           </div>
-          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Timeline</p>
-            <p className="mt-2 text-sm text-white">{project.start_date ? formatTaskDate(project.start_date) : 'No start'} to {project.end_date ? formatTaskDate(project.end_date) : 'No end'}</p>
+          <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-4">
+            <p className="os-eyebrow">Timeline</p>
+            <p className="mt-2 text-sm text-[color:var(--text)]">{project.start_date ? formatTaskDate(project.start_date) : 'No start'} to {project.end_date ? formatTaskDate(project.end_date) : 'No end'}</p>
           </div>
-          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Tasks</p>
-            <p className="mt-2 text-sm text-white">{visibleTasks.length} visible / {tasks.length} total</p>
+          <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-4">
+            <p className="os-eyebrow">Tasks</p>
+            <p className="mt-2 text-sm text-[color:var(--text)]">{visibleTasks.length} visible / {tasks.length} total</p>
           </div>
-          <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Milestones</p>
-            <p className="mt-2 text-sm text-white">{filteredMilestones.length} visible / {orderedMilestones.length} tracked</p>
+          <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-4">
+            <p className="os-eyebrow">Milestones</p>
+            <p className="mt-2 text-sm text-[color:var(--text)]">{filteredMilestones.length} visible / {orderedMilestones.length} tracked</p>
           </div>
         </div>
 
-        {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+        {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
       </section>
 
       {view === 'list' ? (
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={(event) => void handleLaneDragEnd(event)}>
           <div className="space-y-4">
             {hasActiveFilters ? (
-              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
                 Drag and drop is paused while filters are active so lane ordering stays stable.
               </div>
             ) : null}
@@ -1298,8 +1298,8 @@ export default function ProjectWorkspaceClient({
                 <DroppableStatusColumn key={column.id} status={column.id}>
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
-                      <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">{column.label}</h2>
-                      <p className="mt-1 text-xs text-[#9CA3AF]">{laneTasks[column.id].length} tasks</p>
+                      <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--text)]">{column.label}</h2>
+                      <p className="mt-1 text-xs text-[color:var(--text-2)]">{laneTasks[column.id].length} tasks</p>
                     </div>
                     <TaskStatusBadge status={column.id} />
                   </div>
@@ -1349,20 +1349,20 @@ export default function ProjectWorkspaceClient({
       ) : null}
 
       {view === 'gantt' ? (
-        <section className="overflow-hidden rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6">
+        <section className="overflow-hidden rounded-lg border border-[color:var(--border)] bg-white p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-white">Timeline</h2>
-              <p className="mt-1 text-sm text-[#9CA3AF]">Drag a task bar horizontally to reschedule it.</p>
+              <h2 className="os-section-title">Timeline</h2>
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">Drag a task bar horizontally to reschedule it.</p>
             </div>
-            <div className="inline-flex rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-1">
+            <div className="inline-flex rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-1">
               {(['day', 'week', 'month'] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setZoom(mode)}
                   className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
-                    zoom === mode ? 'bg-[#B8FF00]/10 text-[#B8FF00] border border-[#B8FF00]/30' : 'text-[#9CA3AF] hover:text-white'
+                    zoom === mode ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)] border border-[color:var(--accent)]' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'
                   }`}
                 >
                   {mode}
@@ -1374,12 +1374,12 @@ export default function ProjectWorkspaceClient({
           <div className="overflow-x-auto">
             <div className="min-w-max space-y-3">
               <div className="flex items-stretch gap-3">
-                <div className="sticky left-0 z-10 flex w-80 items-end bg-[#1A1A28] pb-2 pr-2 text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">
+                <div className="os-eyebrow sticky left-0 z-10 flex w-80 items-end bg-white pb-2 pr-2">
                   Tasks and milestones
                 </div>
                 <div className="flex gap-1">
                   {units.map((unit) => (
-                    <div key={unit.toISOString()} className={`${ZOOM_CELL_CLASS[zoom]} rounded-xl border border-[#2A2A3A] bg-[#13131E] px-2 py-2 text-center text-[11px] text-[#9CA3AF]`}>
+                    <div key={unit.toISOString()} className={`${ZOOM_CELL_CLASS[zoom]} rounded-xl border border-[color:var(--border)] bg-[var(--surface)] px-2 py-2 text-center text-[11px] text-[color:var(--text-2)]`}>
                       {formatHeaderDate(unit, zoom)}
                     </div>
                   ))}
@@ -1388,7 +1388,7 @@ export default function ProjectWorkspaceClient({
 
               {filteredMilestones.length > 0 ? (
                 <div className="flex items-stretch gap-3">
-                  <div className="sticky left-0 z-10 flex w-80 items-center rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm font-medium text-white">
+                  <div className="sticky left-0 z-10 flex w-80 items-center rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] px-4 py-3 text-sm font-medium text-[color:var(--text)]">
                     Milestones
                   </div>
                   <div className="flex gap-1">
@@ -1400,16 +1400,16 @@ export default function ProjectWorkspaceClient({
                       })
 
                       return (
-                        <div key={`milestones-${unit.toISOString()}`} className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center justify-center rounded-xl border border-[#2A2A3A] bg-[#13131E]`}>
+                        <div key={`milestones-${unit.toISOString()}`} className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center justify-center rounded-xl border border-[color:var(--border)] bg-[var(--surface)]`}>
                           {milestoneInCell.map((milestone) => (
                             <button
                               key={milestone.id}
                               type="button"
                               onClick={() => openMilestone(milestone.id)}
-                              className="mx-1 flex max-w-full flex-col items-center gap-1 overflow-hidden text-[10px] text-white"
+                              className="mx-1 flex max-w-full flex-col items-center gap-1 overflow-hidden text-[10px] text-[color:var(--text)]"
                               title={milestone.title}
                             >
-                              <span className="block h-3 w-3 rotate-45 rounded-sm border border-white/20" style={{ backgroundColor: milestone.colour }} />
+                              <span className="block h-3 w-3 rotate-45 rounded-sm border border-[color:var(--border)]" style={{ backgroundColor: milestone.colour }} />
                               <span className="max-w-full truncate">{milestone.title}</span>
                             </button>
                           ))}
@@ -1429,18 +1429,18 @@ export default function ProjectWorkspaceClient({
 
                 return (
                   <div key={task.id} className="flex items-stretch gap-3">
-                    <div className="sticky left-0 z-10 flex w-80 items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white">
+                    <div className="sticky left-0 z-10 flex w-80 items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[color:var(--text)]">
                       <div className={`h-2 w-2 rounded-full ${task.status === 'blocked' ? 'bg-red-400' : task.status === 'done' ? 'bg-emerald-400' : 'bg-sky-400'}`} />
                       <div className={`min-w-0 flex-1 overflow-hidden ${depth === 1 ? 'pl-4' : depth >= 2 ? 'pl-8' : ''}`}>
                         <button
                           type="button"
                           onClick={() => openTask(task.id)}
-                          className={`block w-full truncate text-left font-medium ${isSubtask ? 'text-[#9CA3AF]' : 'text-white'}`}
+                          className={`block w-full truncate text-left font-medium ${isSubtask ? 'text-[color:var(--text-2)]' : 'text-[color:var(--text)]'}`}
                           title={task.title}
                         >
                           {task.title}
                         </button>
-                        <p className="mt-1 text-xs text-[#9CA3AF]">{task.owner ?? 'Unassigned'}</p>
+                        <p className="mt-1 text-xs text-[color:var(--text-2)]">{task.owner ?? 'Unassigned'}</p>
                       </div>
                     </div>
 
@@ -1462,7 +1462,7 @@ export default function ProjectWorkspaceClient({
                                 void handleGanttDrop(task, unit)
                               }
                             }}
-                            className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center border border-[#2A2A3A] bg-[#13131E] ${isToday ? 'border-l-red-500' : ''}`}
+                            className={`${ZOOM_CELL_CLASS[zoom]} flex min-h-12 items-center border border-[color:var(--border)] bg-[var(--surface)] ${isToday ? 'border-l-red-500' : ''}`}
                           >
                             {isOccupied ? (
                               <div
@@ -1474,8 +1474,8 @@ export default function ProjectWorkspaceClient({
                                     : task.priority === 'high'
                                       ? 'bg-orange-400/80'
                                       : task.priority === 'medium'
-                                        ? 'bg-amber-300/80 text-[#0C0C14]'
-                                        : 'bg-[#9CA3AF]/80 text-[#0C0C14]'
+                                        ? 'bg-amber-300/80 text-[color:var(--text)]'
+                                        : 'bg-[var(--grey)]/80 text-[color:var(--text)]'
                                 } ${isBarStart ? 'rounded-l-lg' : ''} ${isBarEnd ? 'rounded-r-lg' : ''}`}
                               />
                             ) : null}
@@ -1492,17 +1492,17 @@ export default function ProjectWorkspaceClient({
       ) : null}
 
       {view === 'table' ? (
-        <section className="overflow-hidden rounded-lg border border-[#2A2A3A] bg-[#1A1A28] p-6">
+        <section className="overflow-hidden rounded-lg border border-[color:var(--border)] bg-white p-6">
           {selectedIds.length > 0 ? (
-            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-[#B8FF00]/30 bg-[#B8FF00]/10 p-3">
-              <span className="text-sm text-[#B8FF00]">{selectedIds.length} selected</span>
-              <button type="button" onClick={() => void applyBulkPatch({ status: 'done' })} className="rounded-xl border border-[#B8FF00]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#B8FF00]">
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] p-3">
+              <span className="text-sm text-[color:var(--accent-strong)]">{selectedIds.length} selected</span>
+              <button type="button" onClick={() => void applyBulkPatch({ status: 'done' })} className="rounded-xl border border-[color:var(--accent)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-strong)]">
                 Mark done
               </button>
-              <button type="button" onClick={() => void applyBulkPatch({ priority: 'high' })} className="rounded-xl border border-[#B8FF00]/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#B8FF00]">
+              <button type="button" onClick={() => void applyBulkPatch({ priority: 'high' })} className="rounded-xl border border-[color:var(--accent)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-strong)]">
                 Set high
               </button>
-              <button type="button" onClick={() => setBulkDeleteOpen(true)} className="rounded-xl border border-red-300/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-100">
+              <button type="button" onClick={() => setBulkDeleteOpen(true)} className="rounded-xl border border-[color:var(--border)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--red-strong)]">
                 Delete
               </button>
             </div>
@@ -1521,9 +1521,9 @@ export default function ProjectWorkspaceClient({
             variant="destructive"
           />
 
-          <div className="overflow-x-auto rounded-2xl border border-[#2A2A3A]">
-            <table className="min-w-full divide-y divide-[#2A2A3A] text-sm">
-              <thead className="bg-[#13131E] text-[10px] font-bold uppercase tracking-[1px] text-[#9CA3AF]">
+          <div className="overflow-x-auto rounded-2xl border border-[color:var(--border)]">
+            <table className="min-w-full divide-y divide-[color:var(--border)] text-sm">
+              <thead className="bg-[var(--surface)] text-[10px] font-bold uppercase tracking-[1px] text-[color:var(--text-2)]">
                 <tr>
                   <th className="px-4 py-3 text-left">
                     <input
@@ -1550,7 +1550,7 @@ export default function ProjectWorkspaceClient({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#2A2A3A] text-white">
+              <tbody className="divide-y divide-[color:var(--border)] text-[color:var(--text)]">
                 {tableTasks.map((task) => (
                   <tr key={task.id}>
                     <td className="px-4 py-3 align-top">
@@ -1569,7 +1569,7 @@ export default function ProjectWorkspaceClient({
                     <td className="px-4 py-3 align-top">
                       <div className="space-y-2">
                         <EditableTextCell value={task.title} onSave={(nextValue) => saveTaskPatch(task.id, { title: nextValue })} />
-                        <button type="button" onClick={() => openTask(task.id)} className="text-xs text-[#B8FF00] hover:text-[#B8FF00]/80">
+                        <button type="button" onClick={() => openTask(task.id)} className="text-xs text-[color:var(--accent-strong)] hover:text-[color:var(--accent-hover)]">
                           Open panel
                         </button>
                       </div>

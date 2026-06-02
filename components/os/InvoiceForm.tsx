@@ -316,21 +316,21 @@ export default function InvoiceForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <div className="os-card space-y-6 p-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.32em] text-white0">Finance</p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
+        <p className="os-eyebrow">Finance</p>
+        <h1 className="os-page-title mt-2">
           {initialInvoice ? 'Edit invoice' : 'New invoice'}
         </h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Account</span>
+          <span className="text-sm text-[color:var(--text-2)]">Account</span>
           <select
             value={accountId}
             onChange={(event) => setAccountId(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="">No account selected</option>
             {accounts.map((account) => (
@@ -341,17 +341,17 @@ export default function InvoiceForm({
           </select>
         </label>
         <div className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[#9CA3AF]">Client selector</span>
+          <span className="text-sm text-[color:var(--text-2)]">Client selector</span>
           <input
             value={contactSearch}
             onChange={(event) => setContactSearch(event.target.value)}
             placeholder="Search contacts"
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
           <select
             value={contactId}
             onChange={(event) => setContactId(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="">No client selected</option>
             {filteredContacts.map((contact) => (
@@ -363,11 +363,11 @@ export default function InvoiceForm({
         </div>
 
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Workstream</span>
+          <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
           <select
             value={workstreamId}
             onChange={(event) => setWorkstreamId(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-select w-full"
           >
             <option value="">No workstream</option>
             {workstreams.map((workstream) => (
@@ -378,7 +378,7 @@ export default function InvoiceForm({
           </select>
         </label>
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">VAT rate (%)</span>
+          <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
           <input
             type="number"
             min="0"
@@ -386,25 +386,25 @@ export default function InvoiceForm({
             step="0.01"
             value={vatRate}
             onChange={(event) => setVatRate(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Issue date</span>
+          <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
           <input
             type="date"
             value={issueDate}
             onChange={(event) => setIssueDate(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Due date</span>
+          <span className="text-sm text-[color:var(--text-2)]">Due date</span>
           <input
             type="date"
             value={dueDate}
             onChange={(event) => setDueDate(event.target.value)}
-            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-input w-full"
           />
         </label>
 
@@ -418,18 +418,18 @@ export default function InvoiceForm({
                 className="sr-only"
               />
               <div
-                className={`h-6 w-11 rounded-full transition-colors ${isRecurring ? 'bg-violet-600' : 'bg-[#2A2A3A]'}`}
+                className={`h-6 w-11 rounded-full transition-colors ${isRecurring ? 'bg-[var(--accent)]' : 'bg-[var(--surface-3)]'}`}
               />
               <div
                 className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
               />
             </div>
-            <span className="text-sm text-[#9CA3AF]">Recurring invoice</span>
+            <span className="text-sm text-[color:var(--text-2)]">Recurring invoice</span>
           </label>
 
           {isRecurring && (
             <div className="mt-3">
-              <span className="mb-2 block text-sm text-[#9CA3AF]">Billing cycle</span>
+              <span className="mb-2 block text-sm text-[color:var(--text-2)]">Billing cycle</span>
               <div className="flex gap-2">
                 {(['month', 'year'] as const).map((interval) => (
                   <button
@@ -438,15 +438,15 @@ export default function InvoiceForm({
                     onClick={() => setRecurringInterval(interval)}
                     className={`rounded-2xl border px-4 py-2 text-sm transition-colors ${
                       recurringInterval === interval
-                        ? 'border-violet-600 bg-violet-600/20 text-violet-300'
-                        : 'border-[#2A2A3A] bg-[#0C0C14] text-[#9CA3AF] hover:border-violet-600/50'
+                        ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
+                        : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
                     }`}
                   >
                     {interval === 'month' ? 'Monthly' : 'Yearly'}
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-[#9CA3AF]">
+              <p className="mt-2 text-xs text-[color:var(--text-2)]">
                 A new draft invoice will be automatically created each {recurringInterval === 'month' ? 'month' : 'year'} from the issue date.
               </p>
             </div>
@@ -454,82 +454,82 @@ export default function InvoiceForm({
         </div>
       </div>
 
-      <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+      <div className="os-card-muted rounded-[1.75rem] p-4">
         <div>
-          <h2 className="text-lg font-semibold text-white">Bill to</h2>
-          <p className="mt-1 text-sm text-[#9CA3AF]">
+          <h2 className="os-section-title">Bill to</h2>
+          <p className="mt-1 text-sm text-[color:var(--text-2)]">
             Address fields can be pulled from the selected account or contact, then edited per invoice.
           </p>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[#9CA3AF]">Recipient name</span>
+            <span className="text-sm text-[color:var(--text-2)]">Recipient name</span>
             <input
               value={billToName}
               onChange={(event) => setBillToName(event.target.value)}
               placeholder="Company or recipient"
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="os-input w-full"
             />
           </label>
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[#9CA3AF]">Address</span>
+            <span className="text-sm text-[color:var(--text-2)]">Address</span>
             <textarea
               value={billToAddress}
               onChange={(event) => setBillToAddress(event.target.value)}
               rows={4}
               placeholder="Street address"
-              className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="os-textarea w-full"
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">City</span>
+            <span className="text-sm text-[color:var(--text-2)]">City</span>
             <input
               value={billToCity}
               onChange={(event) => setBillToCity(event.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="os-input w-full"
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">Postcode</span>
+            <span className="text-sm text-[color:var(--text-2)]">Postcode</span>
             <input
               value={billToPostcode}
               onChange={(event) => setBillToPostcode(event.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="os-input w-full"
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">Country</span>
+            <span className="text-sm text-[color:var(--text-2)]">Country</span>
             <input
               value={billToCountry}
               onChange={(event) => setBillToCountry(event.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="os-input w-full"
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[#9CA3AF]">Recipient email</span>
+            <span className="text-sm text-[color:var(--text-2)]">Recipient email</span>
             <input
               type="email"
               value={billToEmail}
               onChange={(event) => setBillToEmail(event.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="os-input w-full"
             />
           </label>
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[#9CA3AF]">Recipient phone</span>
+            <span className="text-sm text-[color:var(--text-2)]">Recipient phone</span>
             <input
               value={billToPhone}
               onChange={(event) => setBillToPhone(event.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+              className="os-input w-full"
             />
           </label>
         </div>
       </div>
 
-      <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+      <div className="os-card-muted rounded-[1.75rem] p-4">
         <div>
-          <h2 className="text-lg font-semibold text-white">Pricing tier</h2>
-          <p className="mt-1 text-sm text-[#9CA3AF]">
+          <h2 className="os-section-title">Pricing tier</h2>
+          <p className="mt-1 text-sm text-[color:var(--text-2)]">
             Pick a rate structure before adding invoice line items.
           </p>
         </div>
@@ -563,30 +563,30 @@ export default function InvoiceForm({
         />
       )}
 
-      <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-4">
+      <div className="os-card-muted rounded-[1.75rem] p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">Line items</h2>
-            <p className="text-sm text-[#9CA3AF]">Calculated live in GBP.</p>
+            <h2 className="os-section-title">Line items</h2>
+            <p className="text-sm text-[color:var(--text-2)]">Calculated live in GBP.</p>
           </div>
           <button
             type="button"
             onClick={() => {
               setLineItems((current) => [...current, createEmptyLineItem()])
             }}
-            className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
           >
             Add line item
           </button>
         </div>
 
         {showTierNotice ? (
-          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100">
+          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
             <p>Tier updated - adjust line item rates manually if needed.</p>
             <button
               type="button"
               onClick={() => setShowTierNotice(false)}
-              className="rounded-full border border-sky-400/30 px-2 py-1 text-xs font-medium text-sky-100 transition hover:border-sky-300"
+              className="rounded-full border border-[color:var(--accent)] px-2 py-1 text-xs font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
             >
               Dismiss
             </button>
@@ -595,14 +595,14 @@ export default function InvoiceForm({
 
         <div className="mt-4 space-y-3">
           {lineItems.length === 0 ? (
-            <div className="rounded-[1.5rem] border border-dashed border-[#2A2A3A] bg-[#13131E] px-4 py-6 text-center text-sm text-white0">
+            <div className="rounded-[1.5rem] border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6 text-center text-sm text-[color:var(--text-3)]">
               Select a pricing tier to pre-fill starter line items, or add your own manually.
             </div>
           ) : null}
           {lineItems.map((item) => (
             <div
               key={item.id}
-              className="grid gap-3 rounded-3xl border border-[#2A2A3A] bg-[#13131E] p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
+              className="grid gap-3 rounded-3xl border border-[color:var(--border)] bg-white p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
             >
               <input
                 value={item.description}
@@ -610,7 +610,7 @@ export default function InvoiceForm({
                   updateLineItem(item.id, { description: event.target.value })
                 }
                 placeholder="Description"
-                className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
               <input
                 type="number"
@@ -620,7 +620,7 @@ export default function InvoiceForm({
                 onChange={(event) =>
                   updateLineItem(item.id, { qty: Number(event.target.value) })
                 }
-                className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
               <input
                 type="number"
@@ -632,15 +632,15 @@ export default function InvoiceForm({
                     unit_price: Number(event.target.value),
                   })
                 }
-                className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-white"
+                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
-              <div className="flex items-center rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3 text-sm text-[#9CA3AF]">
+              <div className="flex items-center rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
                 {formatMoney(item.qty * item.unit_price)}
               </div>
               <button
                 type="button"
                 onClick={() => removeLineItem(item.id)}
-                className="rounded-2xl border border-rose-500/30 px-4 py-3 text-sm font-medium text-rose-200 transition hover:border-rose-400"
+                className="rounded-2xl border border-[color:var(--red)] px-4 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)]"
               >
                 Remove
               </button>
@@ -651,35 +651,35 @@ export default function InvoiceForm({
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <label className="space-y-2">
-          <span className="text-sm text-[#9CA3AF]">Notes</span>
+          <span className="text-sm text-[color:var(--text-2)]">Notes</span>
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             rows={8}
-            className="w-full rounded-[1.5rem] border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+            className="os-textarea w-full"
           />
         </label>
 
-        <div className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
-          <h2 className="text-lg font-semibold text-white">Invoice summary</h2>
+        <div className="os-card-muted rounded-[1.75rem] p-5">
+          <h2 className="os-section-title">Invoice summary</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-[#9CA3AF]">Subtotal</dt>
-              <dd className="font-medium text-white">{formatMoney(totals.subtotal)}</dd>
+              <dt className="text-[color:var(--text-2)]">Subtotal</dt>
+              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-[#9CA3AF]">VAT ({Number(vatRate) || 0}%)</dt>
-              <dd className="font-medium text-white">{formatMoney(totals.vat_amount)}</dd>
+              <dt className="text-[color:var(--text-2)]">VAT ({Number(vatRate) || 0}%)</dt>
+              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</dd>
             </div>
-            <div className="flex items-center justify-between gap-4 border-t border-[#2A2A3A] pt-3">
-              <dt className="text-base font-semibold text-white">Total</dt>
-              <dd className="text-lg font-semibold text-white">{formatMoney(totals.total)}</dd>
+            <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
+              <dt className="text-base font-semibold text-[color:var(--text)]">Total</dt>
+              <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total)}</dd>
             </div>
           </dl>
         </div>
       </div>
 
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       <div className="flex flex-wrap gap-3">
         {initialInvoice ? (
@@ -688,14 +688,14 @@ export default function InvoiceForm({
               type="button"
               onClick={() => submitInvoice('edit')}
               disabled={savingAs !== null}
-              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'edit' ? 'Saving...' : 'Save'}
             </button>
             <button
               type="button"
               onClick={() => router.push(`/invoicing/${initialInvoice.id}`)}
-              className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40"
+              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             >
               Cancel
             </button>
@@ -706,7 +706,7 @@ export default function InvoiceForm({
               type="button"
               onClick={() => submitInvoice('draft')}
               disabled={savingAs !== null}
-              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
             </button>
@@ -714,7 +714,7 @@ export default function InvoiceForm({
               type="button"
               onClick={() => submitInvoice('sent')}
               disabled={savingAs !== null}
-              className="rounded-2xl border border-[#2A2A3A] px-5 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/40 disabled:opacity-60"
+              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
             >
               {savingAs === 'sent' ? 'Saving...' : 'Mark as sent'}
             </button>

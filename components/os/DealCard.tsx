@@ -21,26 +21,26 @@ export default function DealCard({ deal, onClick }: DealCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4 text-left transition hover:border-[#3A3A4A] hover:bg-[#16161F]"
+      className="os-card w-full rounded-2xl p-4 text-left transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
     >
-      <p className="text-sm font-semibold text-white">{deal.name}</p>
+      <p className="text-sm font-semibold text-[color:var(--text)]">{deal.name}</p>
       {deal.account?.name ? (
-        <p className="mt-0.5 truncate text-xs text-[#9CA3AF]">{deal.account.name}</p>
+        <p className="mt-0.5 truncate text-xs text-[color:var(--text-2)]">{deal.account.name}</p>
       ) : null}
 
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-sm font-semibold text-white">
+        <span className="text-sm font-semibold text-[color:var(--text)]">
           {deal.value_amount != null
             ? formatCurrency(deal.value_amount, deal.value_currency || 'GBP')
             : '—'}
         </span>
-        <span className="rounded-full border border-[#2A2A3A] bg-[#0C0C14] px-2 py-0.5 text-[11px] text-[#9CA3AF]">
+        <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">
           {deal.probability}%
         </span>
       </div>
 
       {close ? (
-        <p className="mt-2 text-[11px] text-[#6B7280]">Close: {close}</p>
+        <p className="mt-2 text-[11px] text-[color:var(--text-3)]">Close: {close}</p>
       ) : null}
     </button>
   )

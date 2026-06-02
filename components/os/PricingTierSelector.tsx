@@ -85,7 +85,7 @@ export default function PricingTierSelector({
           ? Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="min-h-[220px] rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5 animate-pulse"
+                className="min-h-[220px] rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-5 animate-pulse"
               />
             ))
           : tiers.map((tier) => {
@@ -101,20 +101,20 @@ export default function PricingTierSelector({
                   }}
                   className={`text-left rounded-[1.75rem] border p-5 transition ${
                     isSelected
-                      ? 'border-sky-500 bg-sky-500/10 shadow-[0_0_0_1px_rgba(14,165,233,0.25)]'
-                      : 'border-[#2A2A3A] bg-[#13131E] hover:border-[#2A2A3A]'
+                      ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] shadow-[0_0_0_1px_rgba(14,165,233,0.25)]'
+                      : 'border-[color:var(--border)] bg-white hover:border-[color:var(--border-light)]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-lg font-semibold text-white">{tier.name}</p>
-                      <p className="mt-2 text-sm text-[#9CA3AF]">{tier.description}</p>
+                      <p className="text-lg font-semibold text-[color:var(--text)]">{tier.name}</p>
+                      <p className="mt-2 text-sm text-[color:var(--text-2)]">{tier.description}</p>
                     </div>
                     <span
                       className={`flex h-8 w-8 items-center justify-center rounded-full border ${
                         isSelected
-                          ? 'border-sky-400 bg-sky-500 text-[#0C0C14]'
-                          : 'border-[#2A2A3A] text-transparent'
+                          ? 'border-[color:var(--accent)] bg-[var(--accent)] text-white'
+                          : 'border-[color:var(--border)] text-transparent'
                       }`}
                       aria-hidden="true"
                     >
@@ -125,37 +125,37 @@ export default function PricingTierSelector({
                   </div>
 
                   <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-white0">Hourly</p>
-                      <p className="mt-1 font-medium text-white">{formatCurrency(tier.hourly_rate)}</p>
+                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Hourly</p>
+                      <p className="mt-1 font-medium text-[color:var(--text)]">{formatCurrency(tier.hourly_rate)}</p>
                     </div>
-                    <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-white0">Day</p>
-                      <p className="mt-1 font-medium text-white">{formatCurrency(tier.day_rate)}</p>
+                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Day</p>
+                      <p className="mt-1 font-medium text-[color:var(--text)]">{formatCurrency(tier.day_rate)}</p>
                     </div>
-                    <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-white0">Retainer</p>
-                      <p className="mt-1 font-medium text-white">
+                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Retainer</p>
+                      <p className="mt-1 font-medium text-[color:var(--text)]">
                         {formatCurrency(tier.monthly_retainer, '/mo')}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-white0">Hosting</p>
-                      <p className="mt-1 font-medium text-white">
+                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Hosting</p>
+                      <p className="mt-1 font-medium text-[color:var(--text)]">
                         {formatCurrency(tier.hosting_maintenance, '/mo')}
                       </p>
                     </div>
                   </div>
 
-                  <p className="mt-4 text-sm text-[#9CA3AF]">Fixed margin: {tier.fixed_fee_margin}%</p>
+                  <p className="mt-4 text-sm text-[color:var(--text-2)]">Fixed margin: {tier.fixed_fee_margin}%</p>
                 </button>
               )
             })}
       </div>
 
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
-      <p className="text-sm text-[#9CA3AF]">
+      <p className="text-sm text-[color:var(--text-2)]">
         Selecting a tier pre-fills rates on new quotes - you can still edit individual line
         items after.
       </p>

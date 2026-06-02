@@ -23,7 +23,7 @@ function formatMoney(value: number) {
 function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]) {
   if (invoice.paid_at || invoice.status === 'paid') {
     return (
-      <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-100">
+      <span className="rounded-full border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-3 py-1 text-xs font-medium text-[color:var(--emerald-strong)]">
         Paid
       </span>
     )
@@ -31,7 +31,7 @@ function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]
 
   if (invoice.is_recurring) {
     return (
-      <span className="rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-xs font-medium text-fuchsia-100">
+      <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
         Recurring
       </span>
     )
@@ -39,13 +39,13 @@ function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]
 
   if (invoice.stripe_payment_link) {
     return (
-      <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-100">
+      <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
         Link sent
       </span>
     )
   }
 
-  return <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#2A2A3A]" />
+  return <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--surface-3)]" />
 }
 
 export default async function InvoicingPage({
@@ -82,17 +82,17 @@ export default async function InvoicingPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-white0">Finance</p>
+          <p className="os-eyebrow">Finance</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold text-white">Invoicing</h1>
-            <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-200">
+            <h1 className="os-page-title">Invoicing</h1>
+            <span className="rounded-full border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-1 text-sm font-medium text-[color:var(--amber-strong)]">
               Outstanding {formatMoney(outstandingAmount)}
             </span>
           </div>
         </div>
         <Link
           href="/invoicing/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           New invoice
         </Link>
@@ -108,8 +108,8 @@ export default async function InvoicingPage({
               href={href}
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
-                  ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
+                  ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
+                  : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--border-light)] hover:text-[color:var(--text)]'
               }`}
             >
               {tab.label}
@@ -118,15 +118,15 @@ export default async function InvoicingPage({
         })}
       </div>
 
-      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+      <div className="os-card p-6">
         {invoices.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
+          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No invoices in this view yet.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
+              <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
                 <tr>
                   <th className="pb-3">Invoice no.</th>
                   <th className="pb-3">Client</th>
@@ -148,21 +148,21 @@ export default async function InvoicingPage({
                   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
 
                   return (
-                    <tr key={invoice.id} className="border-t border-[#2A2A3A]">
-                      <td className="py-4 font-medium text-white">{invoice.invoice_number}</td>
-                      <td className="py-4 text-[#9CA3AF]">
+                    <tr key={invoice.id} className="border-t border-[color:var(--border)]">
+                      <td className="py-4 font-medium text-[color:var(--text)]">{invoice.invoice_number}</td>
+                      <td className="py-4 text-[color:var(--text-2)]">
                         {contact ? (
                           <>
                             <p>{invoice.bill_to_name ?? contact.name}</p>
                             {contact.company ? (
-                              <p className="text-xs text-white0">{contact.company}</p>
+                              <p className="text-xs text-[color:var(--text-3)]">{contact.company}</p>
                             ) : null}
                           </>
                         ) : invoice.bill_to_name ? (
                           <>
                             <p>{invoice.bill_to_name}</p>
                             {invoice.bill_to_address ? (
-                              <p className="text-xs text-white0 line-clamp-2 whitespace-pre-wrap">
+                              <p className="text-xs text-[color:var(--text-3)] line-clamp-2 whitespace-pre-wrap">
                                 {invoice.bill_to_address}
                               </p>
                             ) : null}
@@ -179,12 +179,12 @@ export default async function InvoicingPage({
                             colour={workstream.colour}
                           />
                         ) : (
-                          <span className="text-[#9CA3AF]">—</span>
+                          <span className="text-[color:var(--text-2)]">—</span>
                         )}
                       </td>
-                      <td className="py-4 text-[#9CA3AF]">{invoice.issue_date}</td>
-                      <td className="py-4 text-[#9CA3AF]">{invoice.due_date ?? '—'}</td>
-                      <td className="py-4 text-right font-medium text-white">
+                      <td className="py-4 text-[color:var(--text-2)]">{invoice.issue_date}</td>
+                      <td className="py-4 text-[color:var(--text-2)]">{invoice.due_date ?? '—'}</td>
+                      <td className="py-4 text-right font-medium text-[color:var(--text)]">
                         {formatMoney(totals.total)}
                       </td>
                       <td className="py-4">
@@ -195,13 +195,13 @@ export default async function InvoicingPage({
                         <div className="flex flex-wrap gap-3">
                           <Link
                             href={`/invoicing/${invoice.id}`}
-                            className="text-sky-300 hover:text-sky-200"
+                            className="text-[color:var(--accent-strong)] hover:text-[color:var(--accent-hover)]"
                           >
                             View
                           </Link>
                           <a
                             href={`/api/invoices/${invoice.id}/pdf`}
-                            className="text-[#9CA3AF] hover:text-white"
+                            className="text-[color:var(--text-2)] hover:text-[color:var(--text)]"
                           >
                             Download PDF
                           </a>

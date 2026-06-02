@@ -91,17 +91,17 @@ export default function TimerWidget() {
 
   if (running) {
     return (
-      <div className="inline-flex items-center gap-2 rounded-full border border-[#2A2A3A] bg-[#1A1A28] px-4 py-2">
+      <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-white px-4 py-2">
         <div className="flex items-center gap-2">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
-          <span className="font-mono text-sm font-semibold text-white">
+          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--red)]" />
+          <span className="font-mono text-sm font-semibold text-[color:var(--text)]">
             {formatTime(elapsedSeconds)}
           </span>
         </div>
         <button
           onClick={handleStopTimer}
           disabled={isStopping}
-          className="rounded-full bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+          className="rounded-full bg-[var(--red)] px-3 py-1 text-xs font-medium text-white hover:bg-[var(--red-strong)] disabled:opacity-50"
         >
           {isStopping ? 'Stopping...' : 'Stop'}
         </button>
@@ -113,7 +113,7 @@ export default function TimerWidget() {
     <button
       onClick={handleStartTimer}
       disabled={isStarting}
-      className="rounded-full border border-[#2A2A3A] bg-[#1A1A28] px-4 py-2 text-xs font-medium text-[#9CA3AF] hover:bg-[#232335] disabled:opacity-50"
+      className="rounded-full border border-[color:var(--border)] bg-white px-4 py-2 text-xs font-medium text-[color:var(--text-2)] hover:bg-[var(--surface-2)] disabled:opacity-50"
     >
       {isStarting ? 'Starting...' : 'Start timer'}
     </button>

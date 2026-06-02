@@ -74,8 +74,8 @@ export default function UnbilledExpensesWidget({
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-[#2A2A3A] bg-[#13131E] p-4">
-        <div className="h-4 w-40 animate-pulse rounded bg-[#2A2A3A]" />
+      <div className="os-card p-4">
+        <div className="h-4 w-40 animate-pulse rounded bg-[var(--surface-2)]" />
       </div>
     )
   }
@@ -85,18 +85,18 @@ export default function UnbilledExpensesWidget({
   }
 
   return (
-    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+    <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-amber-200">
+        <p className="text-sm font-medium text-[color:var(--amber-strong)]">
           {expenses.length} unbilled expense{expenses.length !== 1 ? 's' : ''} totalling{' '}
           {formatMoney(expenses.reduce((sum, e) => sum + Number(e.amount), 0))}
         </p>
-        <label className="flex items-center gap-2 text-xs text-[#9CA3AF]">
+        <label className="flex items-center gap-2 text-xs text-[color:var(--text-2)]">
           <input
             type="checkbox"
             checked={selectedIds.size === expenses.length && expenses.length > 0}
             onChange={toggleAll}
-            className="h-4 w-4 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
+            className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
           />
           Select all
         </label>
@@ -106,17 +106,17 @@ export default function UnbilledExpensesWidget({
         {expenses.map((expense) => (
           <label
             key={expense.id}
-            className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[#2A2A3A]/50"
+            className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[var(--surface-2)]"
           >
             <input
               type="checkbox"
               checked={selectedIds.has(expense.id)}
               onChange={() => toggleExpense(expense.id)}
-              className="h-4 w-4 rounded border-[#2A2A3A] bg-[#0C0C14] text-sky-500 focus:ring-sky-500"
+              className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
             />
-            <span className="flex-1 text-sm text-[#9CA3AF]">{expense.description}</span>
-            <span className="text-xs text-white0">{expense.date}</span>
-            <span className="text-sm font-medium text-white">
+            <span className="flex-1 text-sm text-[color:var(--text-2)]">{expense.description}</span>
+            <span className="text-xs text-[color:var(--text-3)]">{expense.date}</span>
+            <span className="text-sm font-medium text-[color:var(--text)]">
               {formatMoney(Number(expense.amount))}
             </span>
           </label>
@@ -124,14 +124,14 @@ export default function UnbilledExpensesWidget({
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between pt-2 border-t border-[#2A2A3A]">
-          <p className="text-sm text-[#9CA3AF]">
-            Selected: <span className="font-medium text-white">{formatMoney(selectedTotal)}</span>
+        <div className="flex items-center justify-between pt-2 border-t border-[color:var(--border)]">
+          <p className="text-sm text-[color:var(--text-2)]">
+            Selected: <span className="font-medium text-[color:var(--text)]">{formatMoney(selectedTotal)}</span>
           </p>
           <button
             type="button"
             onClick={handleAddToInvoice}
-            className="rounded-xl bg-amber-500/20 px-4 py-2 text-sm font-medium text-amber-200 transition hover:bg-amber-500/30"
+            className="rounded-xl bg-[var(--amber-dim)] px-4 py-2 text-sm font-medium text-[color:var(--amber-strong)] transition hover:bg-[var(--amber)]"
           >
             Add to invoice
           </button>

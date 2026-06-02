@@ -18,11 +18,11 @@ export default function TaskCard({
   buttonProps,
 }: TaskCardProps) {
   const content = (
-    <div className="rounded-3xl border border-[#2A2A3A] bg-[#1A1A28] p-4 text-left shadow-sm transition hover:border-[#2A2A3A] hover:bg-[#B8FF00]/[0.025]">
+    <div className="os-card p-4 text-left transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-white">{task.title}</h3>
-          <p className="mt-1 text-xs text-[#9CA3AF]">
+          <h3 className="text-sm font-semibold text-[color:var(--text)]">{task.title}</h3>
+          <p className="mt-1 text-xs text-[color:var(--text-2)]">
             {formatTaskSchedule(task.due_date, task.due_time)}
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function TaskCard({
       </div>
 
       {task.description ? (
-        <p className="mt-3 line-clamp-2 text-sm text-[#9CA3AF]">{task.description}</p>
+        <p className="mt-3 line-clamp-2 text-sm text-[color:var(--text-2)]">{task.description}</p>
       ) : null}
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -44,7 +44,7 @@ export default function TaskCard({
         {task.tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="rounded-full border border-[#2A2A3A] bg-[#0C0C14] px-2.5 py-1 text-[11px] text-[#9CA3AF]"
+            className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
           >
             #{tag}
           </span>

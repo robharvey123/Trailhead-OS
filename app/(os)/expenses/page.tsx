@@ -16,12 +16,12 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
 }
 
 const CATEGORY_CLASSES: Record<ExpenseCategory, string> = {
-  travel: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-  software: 'border-violet-500/30 bg-violet-500/10 text-violet-200',
-  equipment: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-  meals: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-  subscriptions: 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-200',
-  other: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
+  travel: 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+  software: 'border-violet-300 bg-violet-50 text-violet-700',
+  equipment: 'border-[color:var(--amber)] bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+  meals: 'border-[color:var(--emerald)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
+  subscriptions: 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-700',
+  other: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
 }
 
 const FILTER_TABS = [
@@ -98,19 +98,19 @@ export default async function ExpensesPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-white0">Finance</p>
+          <p className="os-eyebrow">Finance</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold text-white">Expenses</h1>
-            <span className="rounded-full border border-[#2A2A3A]/60 bg-[#2A2A3A]/80 px-3 py-1 text-sm font-medium text-[#9CA3AF]">
+            <h1 className="os-page-title">Expenses</h1>
+            <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-sm font-medium text-[color:var(--text-2)]">
               Total {formatMoney(totalAmount)}
             </span>
             {totalBillable > 0 && (
-              <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-200">
+              <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-sm font-medium text-[color:var(--accent-strong)]">
                 Billable {formatMoney(totalBillable)}
               </span>
             )}
             {totalUnbilled > 0 && (
-              <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-200">
+              <span className="rounded-full border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-1 text-sm font-medium text-[color:var(--amber-strong)]">
                 Unbilled {formatMoney(totalUnbilled)}
               </span>
             )}
@@ -118,7 +118,7 @@ export default async function ExpensesPage({
         </div>
         <Link
           href="/expenses/new"
-          className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           Add expense
         </Link>
@@ -134,8 +134,8 @@ export default async function ExpensesPage({
               href={buildTabHref(tab.value)}
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 active
-                  ? 'border-white/60 bg-white/10 text-white'
-                  : 'border-[#2A2A3A] text-[#9CA3AF] hover:border-[#B8FF00]/40 hover:text-white'
+                  ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
+                  : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)] hover:text-[color:var(--text)]'
               }`}
             >
               {tab.label}
@@ -152,7 +152,7 @@ export default async function ExpensesPage({
           <select
             name="workstream_id"
             defaultValue={resolved?.workstream_id ?? ''}
-            className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2 text-sm text-white"
+            className="os-select rounded-2xl px-3 py-2 text-sm"
           >
             <option value="">All workstreams</option>
             {workstreams.map((ws) => (
@@ -165,7 +165,7 @@ export default async function ExpensesPage({
           <select
             name="account_id"
             defaultValue={resolved?.account_id ?? ''}
-            className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2 text-sm text-white"
+            className="os-select rounded-2xl px-3 py-2 text-sm"
           >
             <option value="">All accounts</option>
             {accounts.map((acc) => (
@@ -178,7 +178,7 @@ export default async function ExpensesPage({
           <select
             name="category"
             defaultValue={resolved?.category ?? ''}
-            className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2 text-sm text-white"
+            className="os-select rounded-2xl px-3 py-2 text-sm"
           >
             <option value="">All categories</option>
             {(Object.keys(CATEGORY_LABELS) as ExpenseCategory[]).map((cat) => (
@@ -192,18 +192,18 @@ export default async function ExpensesPage({
             type="date"
             name="date_from"
             defaultValue={resolved?.date_from ?? ''}
-            className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2 text-sm text-white"
+            className="os-input rounded-2xl px-3 py-2 text-sm"
           />
           <input
             type="date"
             name="date_to"
             defaultValue={resolved?.date_to ?? ''}
-            className="rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2 text-sm text-white"
+            className="os-input rounded-2xl px-3 py-2 text-sm"
           />
 
           <button
             type="submit"
-            className="rounded-2xl border border-[#2A2A3A] bg-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:bg-[#2A2A3A]"
+            className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:bg-[var(--surface-3)]"
           >
             Filter
           </button>
@@ -211,15 +211,15 @@ export default async function ExpensesPage({
       </div>
 
       {/* Table */}
-      <div className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+      <div className="os-card p-6">
         {expenses.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-10 text-center text-sm text-white0">
+          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No expenses found.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-[0.2em] text-white0">
+              <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
                 <tr>
                   <th className="pb-3">Date</th>
                   <th className="pb-3">Description</th>
@@ -238,9 +238,9 @@ export default async function ExpensesPage({
                   const acc = accounts.find((a) => a.id === expense.account_id) ?? null
 
                   return (
-                    <tr key={expense.id} className="border-t border-[#2A2A3A]">
-                      <td className="py-4 text-[#9CA3AF]">{expense.date}</td>
-                      <td className="py-4 font-medium text-white">{expense.description}</td>
+                    <tr key={expense.id} className="border-t border-[color:var(--border)]">
+                      <td className="py-4 text-[color:var(--text-2)]">{expense.date}</td>
+                      <td className="py-4 font-medium text-[color:var(--text)]">{expense.description}</td>
                       <td className="py-4">
                         <span
                           className={`inline-block rounded-full border px-2.5 py-1 text-xs font-medium ${
@@ -255,34 +255,34 @@ export default async function ExpensesPage({
                         {ws ? (
                           <WorkstreamBadge label={ws.label} slug={ws.slug} colour={ws.colour} />
                         ) : acc ? (
-                          <span className="text-[#9CA3AF]">{acc.name}</span>
+                          <span className="text-[color:var(--text-2)]">{acc.name}</span>
                         ) : (
-                          <span className="text-white0">—</span>
+                          <span className="text-[color:var(--text-3)]">—</span>
                         )}
                       </td>
-                      <td className="py-4 text-right font-medium text-white">
+                      <td className="py-4 text-right font-medium text-[color:var(--text)]">
                         {formatMoney(Number(expense.amount))}
                       </td>
                       <td className="py-4">
                         {expense.billable ? (
-                          <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-200">
+                          <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-2.5 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                             Billable
                           </span>
                         ) : (
-                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#2A2A3A]" />
+                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--surface-3)]" />
                         )}
                       </td>
                       <td className="py-4">
                         {expense.billed ? (
-                          <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-200">
+                          <span className="rounded-full border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-2.5 py-1 text-xs font-medium text-[color:var(--emerald-strong)]">
                             Billed
                           </span>
                         ) : expense.billable ? (
-                          <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-200">
+                          <span className="rounded-full border border-[color:var(--amber)] bg-[var(--amber-dim)] px-2.5 py-1 text-xs font-medium text-[color:var(--amber-strong)]">
                             Unbilled
                           </span>
                         ) : (
-                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#2A2A3A]" />
+                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--surface-3)]" />
                         )}
                       </td>
                       <td className="py-4">
@@ -291,7 +291,7 @@ export default async function ExpensesPage({
                             href={expense.receipt_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sky-300 hover:text-sky-200"
+                            className="text-[color:var(--accent-strong)] hover:text-[color:var(--accent-hover)]"
                             title="View receipt"
                           >
                             <svg
@@ -312,13 +312,13 @@ export default async function ExpensesPage({
                             </svg>
                           </a>
                         ) : (
-                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#2A2A3A]" />
+                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--surface-3)]" />
                         )}
                       </td>
                       <td className="py-4">
                         <Link
                           href={`/expenses/${expense.id}`}
-                          className="text-sky-300 hover:text-sky-200"
+                          className="text-[color:var(--accent-strong)] hover:text-[color:var(--accent-hover)]"
                         >
                           View
                         </Link>

@@ -302,6 +302,54 @@ body {
 }
 .thmock .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
 
+/* ---- os-* utility classes (page-body sweep v5.1) ----
+   Reusable light surfaces/typography for the converted OS page bodies.
+   Scoped to .thmock so they only apply inside the app shell. */
+.thmock .os-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+}
+.thmock .os-card-muted {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+}
+.thmock .os-card-inset {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+
+/* Page chrome */
+.thmock .os-page { background: var(--surface); color: var(--text); }
+.thmock .os-page-title { font-family: var(--serif); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+.thmock .os-section-title { font-family: var(--serif); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+.thmock .os-eyebrow { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--text-3); letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* Inputs */
+.thmock .os-input, .thmock .os-select, .thmock .os-textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--sans);
+  outline: none;
+}
+.thmock .os-input::placeholder, .thmock .os-textarea::placeholder { color: var(--text-3); }
+.thmock .os-input:focus, .thmock .os-select:focus, .thmock .os-textarea:focus { border-color: var(--accent); }
+
+/* Dividers + meta text */
+.thmock .os-divider { border-color: var(--border); }
+.thmock .os-text { color: var(--text); }
+.thmock .os-text-2 { color: var(--text-2); }
+.thmock .os-text-3 { color: var(--text-3); }
+.thmock .os-mono { font-family: var(--mono); }
+
 /* meta labels */
 .thmock .meta-label {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;

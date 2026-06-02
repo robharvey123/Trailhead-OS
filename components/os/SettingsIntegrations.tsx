@@ -51,8 +51,8 @@ function StatusBadge({
     <span
       className={`rounded-full border px-3 py-1 text-xs font-medium ${
         connected
-          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
-          : 'border-[#2A2A3A] bg-[#13131E] text-[#9CA3AF]'
+          ? 'border-[color:var(--emerald)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
+          : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]'
       }`}
     >
       {label}
@@ -163,23 +163,23 @@ export default function SettingsIntegrations({
   }
 
   return (
-    <section className="rounded-[2rem] border border-[#2A2A3A] bg-[#1A1A28] p-6">
+    <section className="os-card rounded-[2rem] p-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-white0">Integrations</p>
-        <h2 className="mt-2 text-xl font-semibold text-white">External services</h2>
-        <p className="mt-2 text-sm text-[#9CA3AF]">
+        <p className="os-eyebrow">Integrations</p>
+        <h2 className="os-section-title mt-2">External services</h2>
+        <p className="mt-2 text-sm text-[color:var(--text-2)]">
           Connect Google Calendar and Stripe to keep scheduling and payments in sync.
         </p>
       </div>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-2">
-        <article className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
+        <article className="os-card rounded-[1.75rem] p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <GoogleIcon />
               <div>
-                <h3 className="text-base font-semibold text-white">Google Calendar</h3>
-                <p className="mt-1 text-sm text-[#9CA3AF]">
+                <h3 className="text-base font-semibold text-[color:var(--text)]">Google Calendar</h3>
+                <p className="mt-1 text-sm text-[color:var(--text-2)]">
                   Sync your Trailhead OS calendar with Google Calendar
                 </p>
               </div>
@@ -193,13 +193,13 @@ export default function SettingsIntegrations({
           <div className="mt-5 space-y-3">
             {googleConnected ? (
               <>
-                <p className="text-sm text-[#9CA3AF]">{googleEmail}</p>
+                <p className="text-sm text-[color:var(--text-2)]">{googleEmail}</p>
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => void syncCalendar()}
                     disabled={loadingAction !== null}
-                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:opacity-60"
+                    className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                   >
                     {loadingAction === 'calendar' ? 'Syncing...' : 'Sync calendar now'}
                   </button>
@@ -207,7 +207,7 @@ export default function SettingsIntegrations({
                     type="button"
                     onClick={() => void disconnectGoogle()}
                     disabled={loadingAction !== null}
-                    className="rounded-2xl border border-rose-500/30 px-4 py-2.5 text-sm font-medium text-rose-200 transition hover:border-rose-400 disabled:opacity-60"
+                    className="rounded-2xl border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-50"
                   >
                     {loadingAction === 'disconnect' ? 'Disconnecting...' : 'Disconnect'}
                   </button>
@@ -216,7 +216,7 @@ export default function SettingsIntegrations({
             ) : (
               <Link
                 href="/api/auth/google"
-                className="inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[#0C0C14] transition hover:bg-[#B8FF00]/90"
+                className="inline-flex rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
               >
                 Connect Google Calendar
               </Link>
@@ -224,13 +224,13 @@ export default function SettingsIntegrations({
           </div>
         </article>
 
-        <article className="rounded-[1.75rem] border border-[#2A2A3A] bg-[#13131E] p-5">
+        <article className="os-card rounded-[1.75rem] p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <StripeIcon />
               <div>
-                <h3 className="text-base font-semibold text-white">Stripe Payments</h3>
-                <p className="mt-1 text-sm text-[#9CA3AF]">
+                <h3 className="text-base font-semibold text-[color:var(--text)]">Stripe Payments</h3>
+                <p className="mt-1 text-sm text-[color:var(--text-2)]">
                   Send payment links and track payments
                 </p>
               </div>
@@ -241,22 +241,22 @@ export default function SettingsIntegrations({
           <div className="mt-5 space-y-3">
             {stripeConnected ? (
               <>
-                <p className="text-sm text-[#9CA3AF]">Payments enabled</p>
-                <p className="text-sm text-[#9CA3AF]">
+                <p className="text-sm text-[color:var(--text-2)]">Payments enabled</p>
+                <p className="text-sm text-[color:var(--text-2)]">
                   Paid invoices this month: {paidInvoicesThisMonth}
                   {stripeCurrency ? ` · ${stripeCurrency.toUpperCase()}` : ''}
                 </p>
               </>
             ) : (
               <>
-                <p className="text-sm text-[#9CA3AF]">
+                <p className="text-sm text-[color:var(--text-2)]">
                   Add Stripe keys in Netlify environment variables.
                 </p>
                 <Link
                   href="https://docs.netlify.com/environment-variables/overview/"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex text-sm text-sky-300 transition hover:text-sky-200"
+                  className="inline-flex text-sm text-[color:var(--accent-strong)] transition hover:text-[color:var(--accent-hover)]"
                 >
                   Open Netlify docs
                 </Link>

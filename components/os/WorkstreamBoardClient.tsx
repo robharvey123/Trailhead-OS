@@ -87,8 +87,8 @@ function DroppableColumn({
       ref={setNodeRef}
       className={`rounded-lg border p-4 transition ${
         isOver
-          ? 'border-[#B8FF00]/40 bg-[#13131E]'
-          : 'border-[#2A2A3A] bg-[#1A1A28]'
+          ? 'border-[color:var(--accent)] bg-[var(--accent-dim)]'
+          : 'border-[color:var(--border)] bg-white'
       }`}
     >
       {children}
@@ -216,7 +216,7 @@ export default function WorkstreamBoardClient({
           <button
             type="button"
             onClick={() => setSelectedTask(info.row.original)}
-            className="text-left font-medium text-white underline-offset-2 hover:underline"
+            className="text-left font-medium text-[color:var(--text)] underline-offset-2 hover:underline"
           >
             {info.getValue()}
           </button>
@@ -233,14 +233,14 @@ export default function WorkstreamBoardClient({
           const p = info.getValue()
           const cls =
             p === 'critical'
-              ? 'text-[#FF6B35] font-bold text-[11px] uppercase tracking-[1px]'
+              ? 'text-[color:var(--red-strong)] font-bold text-[11px] uppercase tracking-[1px]'
               : p === 'urgent'
-                ? 'text-[#FF6B35] font-semibold text-[11px] uppercase tracking-[1px]'
+                ? 'text-[color:var(--red-strong)] font-semibold text-[11px] uppercase tracking-[1px]'
                 : p === 'high'
-                  ? 'text-[#FF6B35] text-[11px] uppercase tracking-[1px]'
+                  ? 'text-[color:var(--red-strong)] text-[11px] uppercase tracking-[1px]'
                   : p === 'medium'
-                    ? 'text-[#FBBF24] text-[11px] uppercase tracking-[1px]'
-                    : 'text-[#9CA3AF] text-[11px] uppercase tracking-[1px]'
+                    ? 'text-[color:var(--amber-strong)] text-[11px] uppercase tracking-[1px]'
+                    : 'text-[color:var(--text-3)] text-[11px] uppercase tracking-[1px]'
           return <span className={cls}>{p}</span>
         },
       }),
@@ -256,7 +256,7 @@ export default function WorkstreamBoardClient({
             {info.getValue().map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full border border-[#2A2A3A] bg-[#0C0C14] px-2.5 py-1 text-[11px] text-[#9CA3AF]"
+                className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
               >
                 #{tag}
               </span>
@@ -277,15 +277,15 @@ export default function WorkstreamBoardClient({
         <div>
           <div className="flex items-center gap-3">
             <span className={`h-3 w-3 rounded-full ${colourClasses.dot}`} />
-            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#9CA3AF]">Workstream</p>
+            <p className="os-eyebrow">Workstream</p>
           </div>
-          <h1 className="mt-2 text-3xl font-semibold text-white">{workstream.label}</h1>
-          <p className="mt-2 text-sm text-[#9CA3AF]">
+          <h1 className="os-page-title mt-2">{workstream.label}</h1>
+          <p className="mt-2 text-sm text-[color:var(--text-2)]">
             {tasks.length} task{tasks.length === 1 ? '' : 's'} across {columns.length} columns
           </p>
         </div>
 
-        <div className="inline-flex rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-1">
+        <div className="inline-flex rounded-2xl border border-[color:var(--border)] bg-white p-1">
           {(['board', 'list'] as const).map((mode) => (
             <button
               key={mode}
@@ -293,8 +293,8 @@ export default function WorkstreamBoardClient({
               onClick={() => setViewMode(mode)}
               className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
                 viewMode === mode
-                  ? 'bg-[#B8FF00]/10 text-[#B8FF00] border border-[#B8FF00]/30'
-                  : 'text-[#9CA3AF] hover:text-white'
+                  ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)] border border-[color:var(--accent)]'
+                  : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'
               }`}
             >
               {mode}
@@ -322,10 +322,10 @@ export default function WorkstreamBoardClient({
                   <DroppableColumn column={column}>
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
-                        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-white">
+                        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--text)]">
                           {column.label}
                         </h2>
-                        <p className="mt-1 text-xs text-[#9CA3AF]">{columnTasks.length} cards</p>
+                        <p className="mt-1 text-xs text-[color:var(--text-2)]">{columnTasks.length} cards</p>
                       </div>
                     </div>
 
@@ -343,7 +343,7 @@ export default function WorkstreamBoardClient({
                     </SortableContext>
 
                     {columnTasks.length === 0 ? (
-                      <div className="mt-3 rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-6 text-center text-sm text-[#9CA3AF]">
+                      <div className="mt-3 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-6 text-center text-sm text-[color:var(--text-2)]">
                         Drop a card here
                       </div>
                     ) : null}
@@ -363,7 +363,7 @@ export default function WorkstreamBoardClient({
                         <button
                           type="button"
                           onClick={() => setAddingColumnId(column.id)}
-                          className="relative z-10 w-full rounded-2xl border border-dashed border-[#2A2A3A] px-4 py-3 text-sm text-[#9CA3AF] transition hover:border-[#B8FF00]/40 hover:text-[#B8FF00]"
+                          className="relative z-10 w-full rounded-2xl border border-dashed border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                         >
                           Add card
                         </button>
@@ -376,9 +376,9 @@ export default function WorkstreamBoardClient({
           </div>
         </DndContext>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[#2A2A3A] bg-[#1A1A28]">
-          <table className="min-w-full divide-y divide-[#2A2A3A] text-sm">
-            <thead className="bg-[#13131E] text-[10px] font-bold uppercase tracking-[1px] text-[#9CA3AF]">
+        <div className="overflow-x-auto os-card p-0">
+          <table className="min-w-full divide-y divide-[color:var(--border)] text-sm">
+            <thead className="bg-[var(--surface)] text-[10px] font-bold uppercase tracking-[1px] text-[color:var(--text-2)]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -397,9 +397,9 @@ export default function WorkstreamBoardClient({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-[#2A2A3A]">
+            <tbody className="divide-y divide-[color:var(--border)]">
               {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="text-white hover:bg-[#B8FF00]/[0.025] transition-colors">
+                <tr key={row.id} className="text-[color:var(--text)] hover:bg-[var(--surface-2)] transition-colors">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-3 align-top">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

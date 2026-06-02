@@ -54,7 +54,10 @@ export default function OsShell({
           collapsed ? 'md:pl-16' : 'md:pl-72'
         }`}
       >
-        <div className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-8 pt-20 md:px-8 md:pt-8">
+        <div
+          className="thmock mx-auto min-h-screen max-w-screen-2xl px-4 pb-8 pt-20 md:px-8 md:pt-8"
+          style={{ background: 'var(--surface)' }}
+        >
           {children}
         </div>
       </main>

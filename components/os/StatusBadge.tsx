@@ -11,53 +11,53 @@ type StatusKind = 'account' | 'contact' | 'enquiry' | 'invoice' | 'project' | 'q
 
 const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
   account: {
-    prospect: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    contacted: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-    active: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-    listed: 'border-teal-500/30 bg-teal-500/10 text-teal-200',
-    declined: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
-    on_hold: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
-    inactive: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
-    archived: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
+    prospect: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    contacted: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+    active: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
+    listed: 'border-[color:var(--green)]/30 bg-[var(--green-dim)] text-[color:var(--green-strong)]',
+    declined: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
+    on_hold: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    inactive: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    archived: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
   },
   contact: {
-    lead: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    active: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-    inactive: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
-    archived: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
+    lead: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    active: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
+    inactive: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    archived: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
   },
   enquiry: {
-    new: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-    received: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-    reviewed: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    under_review: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    quoted: 'border-violet-500/30 bg-violet-500/10 text-violet-200',
-    closed: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
-    converted: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
+    new: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+    received: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+    reviewed: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    under_review: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    quoted: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    closed: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    converted: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
   },
   invoice: {
-    draft: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
-    sent: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    paid: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-    overdue: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
-    cancelled: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
+    draft: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    sent: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    paid: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
+    overdue: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
+    cancelled: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
   },
   project: {
-    planning: 'border-[#B8FF00]/30 bg-[#B8FF00]/10 text-[#B8FF00]',
-    active: 'border-[#34D399]/30 bg-[#34D399]/15 text-[#34D399]',
-    on_hold: 'border-yellow-400/30 bg-yellow-400/10 text-yellow-300',
-    completed: 'border-[#A78BFA]/30 bg-[#A78BFA]/10 text-[#A78BFA]',
-    cancelled: 'border-[#2A2A3A]/30 bg-[#2A2A3A]/40 text-white0',
+    planning: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    active: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
+    on_hold: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+    completed: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    cancelled: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-3)]',
   },
   quote: {
-    draft: 'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]',
-    review: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-    sent: 'border-sky-500/30 bg-sky-500/10 text-sky-200',
-    accepted: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
-    rejected: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
-    declined: 'border-rose-500/30 bg-rose-500/10 text-rose-200',
-    expired: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
-    converted: 'border-violet-500/30 bg-violet-500/10 text-violet-200',
+    draft: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    review: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+    sent: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    accepted: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
+    rejected: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
+    declined: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
+    expired: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
+    converted: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
   },
 }
 
@@ -81,7 +81,7 @@ export default function StatusBadge({
 }) {
   const classes =
     STATUS_CLASSES[kind][status] ??
-    'border-[#2A2A3A]/60 bg-[#2A2A3A]/80 text-[#9CA3AF]'
+    'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]'
 
   return (
     <span

@@ -62,18 +62,18 @@ export default function DealForm({ deal, accounts, contacts = [], onClose, onSav
   }
 
   const inputClass =
-    'w-full rounded-xl border border-[#2A2A3A] bg-[#0C0C14] px-3 py-2 text-sm text-white placeholder-[#6B7280] focus:border-[#3A3A4A] focus:outline-none'
-  const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-[#9CA3AF]'
+    'w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]'
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.45)]" onClick={onClose}>
       <div
-        className="flex h-full w-full max-w-md flex-col border-l border-[#2A2A3A] bg-[#1A1A28] shadow-2xl"
+        className="flex h-full w-full max-w-md flex-col border-l border-[color:var(--border)] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-[#2A2A3A] px-6 py-4">
-          <h2 className="text-lg font-semibold text-white">{deal ? 'Edit deal' : 'New deal'}</h2>
-          <button onClick={onClose} className="text-[#9CA3AF] hover:text-white" type="button">
+        <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-4">
+          <h2 className="text-lg font-semibold text-[color:var(--text)]">{deal ? 'Edit deal' : 'New deal'}</h2>
+          <button onClick={onClose} className="text-[color:var(--text-2)] hover:text-[color:var(--text)]" type="button">
             ✕
           </button>
         </div>
@@ -191,15 +191,15 @@ export default function DealForm({ deal, accounts, contacts = [], onClose, onSav
             />
           </div>
 
-          {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+          {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#2A2A3A] px-6 py-4">
+        <div className="flex items-center justify-between border-t border-[color:var(--border)] px-6 py-4">
           {deal && onDelete ? (
             <button
               type="button"
               onClick={() => onDelete(deal.id)}
-              className="text-sm text-rose-300 hover:text-rose-200"
+              className="text-sm text-[color:var(--red-strong)] hover:text-[color:var(--red)]"
             >
               Delete
             </button>
@@ -210,7 +210,7 @@ export default function DealForm({ deal, accounts, contacts = [], onClose, onSav
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-[#2A2A3A] px-4 py-2 text-sm text-[#9CA3AF] hover:text-white"
+              className="rounded-xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[color:var(--text)]"
             >
               Cancel
             </button>
@@ -218,7 +218,7 @@ export default function DealForm({ deal, accounts, contacts = [], onClose, onSav
               type="button"
               onClick={handleSubmit}
               disabled={saving}
-              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0C0C14] hover:bg-[#E5E7EB] disabled:opacity-60"
+              className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {saving ? 'Saving…' : 'Save deal'}
             </button>

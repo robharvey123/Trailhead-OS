@@ -112,11 +112,11 @@ export default function ActivityTimeline({
   )
 
   return (
-    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
+    <div className="rounded-[2rem] os-card p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-white">Activity Log</h2>
-          <p className="text-sm text-[var(--muted)]">
+          <h2 className="os-section-title">Activity Log</h2>
+          <p className="text-sm text-[color:var(--text-2)]">
             Track emails, calls, meetings, notes, and tasks.
           </p>
         </div>
@@ -126,20 +126,20 @@ export default function ActivityTimeline({
             if (showForm) resetForm()
             setShowForm((current) => !current)
           }}
-          className="rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:border-[var(--lime)]/40"
+          className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
         >
           {showForm ? 'Cancel' : 'Log activity'}
         </button>
       </div>
 
       {nextOpenAction ? (
-        <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">
+        <div className="mt-4 rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--amber-strong)]">
             Next Action
           </p>
-          <p className="mt-1 text-sm text-white">{nextOpenAction.next_action}</p>
+          <p className="mt-1 text-sm text-[color:var(--text)]">{nextOpenAction.next_action}</p>
           {nextOpenAction.next_action_date ? (
-            <p className="mt-1 text-xs text-amber-200/80">
+            <p className="mt-1 text-xs text-[color:var(--amber-strong)]">
               Due:{' '}
               {new Date(nextOpenAction.next_action_date).toLocaleDateString('en-GB')}
             </p>
@@ -150,15 +150,15 @@ export default function ActivityTimeline({
       {showForm ? (
         <form
           onSubmit={handleSubmit}
-          className="mt-4 space-y-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--card-alt)] p-4"
+          className="mt-4 space-y-4 rounded-[1.5rem] os-card-muted p-4"
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Type</span>
+              <span className="text-sm text-[color:var(--text-2)]">Type</span>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as ActivityType)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+                className="os-select w-full"
               >
                 {ACTIVITY_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -168,52 +168,52 @@ export default function ActivityTimeline({
               </select>
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Date</span>
+              <span className="text-sm text-[color:var(--text-2)]">Date</span>
               <input
                 type="date"
                 value={activityDate}
                 onChange={(e) => setActivityDate(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+                className="os-input w-full"
               />
             </label>
           </div>
 
           <label className="space-y-2">
-            <span className="text-sm text-[var(--muted)]">Subject</span>
+            <span className="text-sm text-[color:var(--text-2)]">Subject</span>
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+              className="os-input w-full"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[var(--muted)]">Notes</span>
+            <span className="text-sm text-[color:var(--text-2)]">Notes</span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+              className="os-textarea w-full rounded-[1.5rem]"
             />
           </label>
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Next action</span>
+              <span className="text-sm text-[color:var(--text-2)]">Next action</span>
               <input
                 value={nextAction}
                 onChange={(e) => setNextAction(e.target.value)}
                 placeholder="e.g. Follow up call"
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+                className="os-input w-full"
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Next action date</span>
+              <span className="text-sm text-[color:var(--text-2)]">Next action date</span>
               <input
                 type="date"
                 value={nextActionDate}
                 onChange={(e) => setNextActionDate(e.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+                className="os-input w-full"
               />
             </label>
           </div>
@@ -221,17 +221,17 @@ export default function ActivityTimeline({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--lime)]/90 disabled:opacity-60"
+            className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save activity'}
           </button>
         </form>
       ) : null}
 
-      {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       {activities.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[var(--border)] px-4 py-8 text-sm text-white0">
+        <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
           No activities logged yet.
         </div>
       ) : (
@@ -239,7 +239,7 @@ export default function ActivityTimeline({
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)] p-4"
+              className="rounded-3xl os-card-muted p-4"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -247,24 +247,24 @@ export default function ActivityTimeline({
                     <span className="text-base">
                       {ACTIVITY_ICONS[activity.type]}
                     </span>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-[color:var(--text)]">
                       {activity.subject || activity.type}
                     </p>
-                    <span className="rounded-full bg-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">
+                    <span className="rounded-full bg-[var(--surface-3)] px-2 py-1 text-[11px] text-[color:var(--text-2)]">
                       {activity.type}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-white0">
+                  <p className="mt-2 text-xs text-[color:var(--text-3)]">
                     {new Date(activity.activity_date).toLocaleDateString('en-GB')}
                   </p>
                   {activity.notes ? (
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--muted)]">
+                    <p className="mt-3 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">
                       {activity.notes}
                     </p>
                   ) : null}
                   {activity.next_action ? (
-                    <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2">
-                      <p className="text-xs font-medium text-amber-200">
+                    <div className="mt-3 rounded-xl border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-2">
+                      <p className="text-xs font-medium text-[color:var(--amber-strong)]">
                         Next: {activity.next_action}
                         {activity.next_action_date
                           ? ` (${new Date(activity.next_action_date).toLocaleDateString('en-GB')})`
@@ -276,7 +276,7 @@ export default function ActivityTimeline({
                 <button
                   type="button"
                   onClick={() => handleDelete(activity.id)}
-                  className="flex-shrink-0 rounded-full border border-rose-500/20 px-3 py-1 text-xs text-rose-200 transition hover:border-rose-400"
+                  className="flex-shrink-0 rounded-full border border-[color:var(--red)] px-3 py-1 text-xs text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)]"
                 >
                   Delete
                 </button>

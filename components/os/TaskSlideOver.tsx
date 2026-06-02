@@ -277,27 +277,27 @@ export default function TaskSlideOver({
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[#0C0C14]/70">
+    <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.45)]">
       <button
         type="button"
         aria-label="Close task panel"
         className="flex-1"
         onClick={onClose}
       />
-      <div className="relative h-full w-full max-w-2xl overflow-y-auto border-l border-[#2A2A3A] bg-[#0C0C14] p-6 shadow-2xl">
+      <div className="relative h-full w-full max-w-2xl overflow-y-auto border-l border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">
+            <p className="os-eyebrow text-[color:var(--accent-strong)]">
               {task ? 'Task detail' : 'New task'}
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
+            <h2 className="os-section-title mt-2">
               {task ? task.title : 'Create a task'}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[#2A2A3A] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[#9CA3AF]"
+            className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
           >
             Close
           </button>
@@ -313,27 +313,27 @@ export default function TaskSlideOver({
             />
           ) : null}
           {task?.updated_at ? (
-            <span className="text-xs text-[#9CA3AF]">Updated {formatDateTime(task.updated_at)}</span>
+            <span className="text-xs text-[color:var(--text-2)]">Updated {formatDateTime(task.updated_at)}</span>
           ) : null}
         </div>
 
         <div className="mt-8 space-y-5">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Title</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Title</span>
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
+              className="os-input w-full"
             />
           </label>
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Workstream</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Workstream</span>
               <select
                 value={workstreamId}
                 onChange={(event) => setWorkstreamId(event.target.value)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
+                className="os-select w-full"
               >
                 <option value="">No workstream</option>
                 {workstreams.map((workstream) => (
@@ -345,11 +345,11 @@ export default function TaskSlideOver({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Priority</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Priority</span>
               <select
                 value={priority}
                 onChange={(event) => setPriority(event.target.value as TaskPriority)}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
+                className="os-select w-full"
               >
                 {PRIORITIES.map((entry) => (
                   <option key={entry} value={entry}>
@@ -360,7 +360,7 @@ export default function TaskSlideOver({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Due date</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due date</span>
               <input
                 type="date"
                 value={dueDate}
@@ -371,29 +371,29 @@ export default function TaskSlideOver({
                     setDueTime('')
                   }
                 }}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
+                className="os-input w-full"
               />
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Due time</span>
+              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due time</span>
               <input
                 type="time"
                 value={dueTime}
                 onChange={(event) => setDueTime(event.target.value)}
                 disabled={!dueDate}
-                className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="os-input w-full disabled:cursor-not-allowed disabled:opacity-50"
               />
             </label>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] px-4 py-3">
+            <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
               <input
                 type="checkbox"
                 checked={isMasterTodo}
                 onChange={(event) => setIsMasterTodo(event.target.checked)}
-                className="h-4 w-4 rounded border-[#2A2A3A] bg-[#13131E]"
+                className="h-4 w-4 rounded border-[color:var(--border)] bg-white"
               />
-              <span className="text-sm text-[#9CA3AF]">Show on master to-do</span>
+              <span className="text-sm text-[color:var(--text-2)]">Show on master to-do</span>
             </label>
           </div>
 
@@ -426,31 +426,31 @@ export default function TaskSlideOver({
           />
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Tags</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Tags</span>
             <input
               value={tags}
               onChange={(event) => setTags(event.target.value)}
               placeholder="client, follow-up, launch"
-              className="w-full rounded-2xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
+              className="os-input w-full"
             />
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[#9CA3AF]">Description</span>
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Description</span>
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={6}
-              className="w-full rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
+              className="os-textarea w-full rounded-3xl"
             />
           </label>
         </div>
 
         {task?.id ? (
-          <section className="mt-10 space-y-4 border-t border-[#2A2A3A] pt-8">
+          <section className="mt-10 space-y-4 border-t border-[color:var(--border)] pt-8">
             <div>
-              <h3 className="text-lg font-semibold text-white">Notes</h3>
-              <p className="text-sm text-[#9CA3AF]">Keep task context close to the card.</p>
+              <h3 className="text-lg font-semibold text-[color:var(--text)]">Notes</h3>
+              <p className="text-sm text-[color:var(--text-2)]">Keep task context close to the card.</p>
             </div>
 
             <form className="space-y-2" onSubmit={handleAddNote}>
@@ -459,31 +459,31 @@ export default function TaskSlideOver({
                 onChange={(event) => setNoteDraft(event.target.value)}
                 rows={3}
                 placeholder="Add a note..."
-                className="w-full rounded-3xl border border-[#2A2A3A] bg-[#13131E] px-4 py-3 text-sm text-white focus:border-[#B8FF00]/40 focus:outline-none"
+                className="os-textarea w-full rounded-3xl"
               />
               <button
                 type="submit"
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-white"
+                className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:bg-[var(--surface-2)]"
               >
                 Add note
               </button>
             </form>
 
-            {noteError ? <p className="text-sm text-rose-300">{noteError}</p> : null}
+            {noteError ? <p className="text-sm text-[color:var(--red-strong)]">{noteError}</p> : null}
 
             <div className="space-y-3">
               {notesLoading ? (
-                <p className="text-sm text-[#9CA3AF]">Loading notes...</p>
+                <p className="text-sm text-[color:var(--text-2)]">Loading notes...</p>
               ) : notes.length === 0 ? (
-                <p className="rounded-3xl border border-dashed border-[#2A2A3A] px-4 py-6 text-sm text-[#9CA3AF]">
+                <p className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-6 text-sm text-[color:var(--text-2)]">
                   No notes yet.
                 </p>
               ) : (
                 notes.map((note) => (
-                  <article key={note.id} className="rounded-3xl border border-[#2A2A3A] bg-[#1A1A28] p-4">
-                    {note.title ? <h4 className="font-medium text-white">{note.title}</h4> : null}
-                    <p className="mt-1 whitespace-pre-wrap text-sm text-[#9CA3AF]">{note.body}</p>
-                    <p className="mt-3 text-xs text-[#9CA3AF]">{formatDateTime(note.updated_at)}</p>
+                  <article key={note.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                    {note.title ? <h4 className="font-medium text-[color:var(--text)]">{note.title}</h4> : null}
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{note.body}</p>
+                    <p className="mt-3 text-xs text-[color:var(--text-3)]">{formatDateTime(note.updated_at)}</p>
                   </article>
                 ))
               )}
@@ -491,16 +491,16 @@ export default function TaskSlideOver({
           </section>
         ) : null}
 
-        {error ? <p className="mt-6 text-sm text-rose-300">{error}</p> : null}
+        {error ? <p className="mt-6 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[#2A2A3A] pt-6">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--border)] pt-6">
           <div className="flex items-center gap-2">
             {task?.id ? (
               <button
                 type="button"
                 onClick={handleComplete}
                 disabled={deleting}
-                className="rounded-2xl border border-rose-500/30 px-4 py-2 text-sm font-medium text-rose-200 transition hover:bg-rose-500/10 disabled:opacity-60"
+                className="rounded-2xl border border-[color:var(--red)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-60"
               >
                 {deleting ? 'Completing...' : 'Mark complete'}
               </button>
@@ -509,7 +509,7 @@ export default function TaskSlideOver({
               <button
                 type="button"
                 onClick={() => setEmailModalOpen(true)}
-                className="rounded-2xl border border-[#2A2A3A] px-4 py-2 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/30 hover:text-white"
+                className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
               >
                 Email task
               </button>
@@ -519,7 +519,7 @@ export default function TaskSlideOver({
             type="button"
             onClick={handleSave}
             disabled={saving || !title.trim()}
-            className="rounded-2xl bg-[#B8FF00] px-5 py-3 text-sm font-bold text-[#0C0C14] transition hover:bg-[#B8FF00]/90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? 'Saving...' : task ? 'Save changes' : 'Create task'}
           </button>
