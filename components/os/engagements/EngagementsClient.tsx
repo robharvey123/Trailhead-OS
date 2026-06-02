@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
 import type { EngagementWithRelations } from '@/lib/types'
 
@@ -25,6 +26,22 @@ export default function EngagementsClient({
   milestonesCompletedThisMonth: number
 }) {
   const router = useRouter()
+  const [toast, setToast] = useState('')
+  const [seeding, setSeeding] = useState(false)
+
+  async function seedQola() {
+    setSeeding(true)
+    setToast('')
+    try {
+      const r = await apiFetch<{ created: number; linked: number; tier1: number }>('/api/engagements/seed-qola', { method: 'POST' })
+      setToast(`Seeded ${r.created} new accounts, linked ${r.linked} existing, ${r.tier1} tier-1 milestones tracked.`)
+      router.refresh()
+    } catch (err) {
+      setToast(err instanceof Error ? err.message : 'Seed failed')
+    } finally {
+      setSeeding(false)
+    }
+  }
 
   const stats = useMemo(() => {
     const active = engagements.filter((e) => e.status === 'Active')
@@ -39,9 +56,18 @@ export default function EngagementsClient({
         <span className="topbar-title">Engagements</span>
         <span className="topbar-count">{engagements.length}</span>
         <div className="topbar-actions">
+          <button className="btn btn-ghost btn-sm" onClick={seedQola} disabled={seeding}>
+            {seeding ? 'Seeding…' : 'Seed Qola demo engagement'}
+          </button>
           <Link className="btn btn-primary btn-sm" href="/engagements/new">+ New engagement</Link>
         </div>
       </div>
+
+      {toast ? (
+        <div style={{ padding: '10px 24px', background: 'var(--accent-dim)', borderBottom: '1px solid var(--accent)', color: '#6b8cff', fontSize: 13 }}>
+          {toast}
+        </div>
+      ) : null}
 
       <div className="stats-bar">
         <div className="stat-item"><div className="stat-label">Active engagements</div><div className="stat-value">{stats.active}</div></div>
