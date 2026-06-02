@@ -188,6 +188,18 @@ export async function updateTimeEntry(
     patch.project_id = data.project_id ?? null
   }
 
+  if ('engagement_id' in data) {
+    patch.engagement_id = data.engagement_id ?? null
+    // Keep workstream consistent with the engagement unless one is supplied.
+    if (!('workstream' in data)) {
+      patch.workstream = await resolveWorkstream(supabase, data.engagement_id ?? null, undefined)
+    }
+  }
+
+  if ('workstream' in data) {
+    patch.workstream = data.workstream ?? null
+  }
+
   if ('entry_date' in data && data.entry_date) {
     patch.entry_date = data.entry_date
   }
