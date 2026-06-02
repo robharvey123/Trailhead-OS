@@ -150,7 +150,7 @@ export default function InboxClient({
         body: JSON.stringify({
           to,
           subject: active.subject.startsWith('Re:') ? active.subject : `Re: ${active.subject}`,
-          body: `${reply}${signature ? `\n\n${signature}` : ''}`.replace(/\n/g, '<br>'),
+          body: reply.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>') + (signature ? `<br><br>${signature}` : ''),
           reply_to_message_id: active.gmail_thread_id,
           account_id: active.account_id,
         }),

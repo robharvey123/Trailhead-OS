@@ -44,7 +44,7 @@ export default function ComposeModal({
   const [queries, setQueries] = useState<Record<Field, string>>({ to: '', cc: '', bcc: '' })
   const [showBcc, setShowBcc] = useState(false)
   const [subject, setSubject] = useState('')
-  const [bodyText, setBodyText] = useState(signature ? `\n\n${signature}` : '')
+  const [bodyText, setBodyText] = useState('')
   const [files, setFiles] = useState<File[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -143,7 +143,7 @@ export default function ComposeModal({
           cc: L.cc.map((r) => r.email).join(','),
           bcc: L.bcc.map((r) => r.email).join(','),
           subject,
-          body: bodyText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>'),
+          body: bodyText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>') + (signature ? `<br><br>${signature}` : ''),
           attachments,
         }),
       })
@@ -177,6 +177,12 @@ export default function ComposeModal({
               <span key={i} className="tag-chip grey">{file.name}<button onClick={() => setFiles((f) => f.filter((_, j) => j !== i))}>✕</button></span>
             ))}
           </div>
+          {signature ? (
+            <div className="rounded-[5px] border border-[#252a38] bg-[#1a1e28] p-3">
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-[#565c78]">Signature (appended on send)</div>
+              <div className="text-sm text-[#8b90a8]" dangerouslySetInnerHTML={{ __html: signature }} />
+            </div>
+          ) : null}
           {error ? <p className="text-sm text-[#ef4444]">{error}</p> : null}
         </div>
 
