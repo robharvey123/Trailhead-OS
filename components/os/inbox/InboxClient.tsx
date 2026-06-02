@@ -37,12 +37,14 @@ export default function InboxClient({
   contacts,
   connected,
   selfEmail,
+  signature = '',
 }: {
   initialThreads: EmailThread[]
   accounts: Named[]
   contacts: ContactOpt[]
   connected: boolean
   selfEmail: string
+  signature?: string
 }) {
   const [composeOpen, setComposeOpen] = useState(false)
   const [threads, setThreads] = useState(initialThreads)
@@ -148,7 +150,7 @@ export default function InboxClient({
         body: JSON.stringify({
           to,
           subject: active.subject.startsWith('Re:') ? active.subject : `Re: ${active.subject}`,
-          body: reply.replace(/\n/g, '<br>'),
+          body: `${reply}${signature ? `\n\n${signature}` : ''}`.replace(/\n/g, '<br>'),
           reply_to_message_id: active.gmail_thread_id,
           account_id: active.account_id,
         }),
@@ -187,6 +189,7 @@ export default function InboxClient({
         <ComposeModal
           contacts={contacts}
           accounts={accounts}
+          signature={signature}
           onClose={() => setComposeOpen(false)}
           onSent={() => refreshThreads()}
         />

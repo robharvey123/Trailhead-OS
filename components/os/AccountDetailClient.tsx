@@ -63,6 +63,7 @@ export default function AccountDetailClient({
   tags,
   emailThreads = [],
   selfEmail = '',
+  signature = '',
 }: {
   initialAccount: AccountDetail
   workstreams: Workstream[]
@@ -73,6 +74,7 @@ export default function AccountDetailClient({
   tags: Tag[]
   emailThreads?: EmailThread[]
   selfEmail?: string
+  signature?: string
 }) {
   const [composeOpen, setComposeOpen] = useState(false)
   const router = useRouter()
@@ -414,6 +416,7 @@ export default function AccountDetailClient({
           accounts={[{ id: account.id, name: account.name }]}
           initialTo={(account.contacts ?? []).filter((c) => c.email).slice(0, 1).map((c) => c.email!) as string[]}
           initialCc={selfEmail ? [selfEmail] : []}
+          signature={signature}
           onClose={() => setComposeOpen(false)}
           onSent={() => router.refresh()}
         />

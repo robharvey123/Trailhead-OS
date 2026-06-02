@@ -22,12 +22,13 @@ function readAsBase64(file: File): Promise<string> {
 }
 
 export default function ComposeModal({
-  contacts, accounts, initialTo = [], initialCc = [], onClose, onSent,
+  contacts, accounts, initialTo = [], initialCc = [], signature = '', onClose, onSent,
 }: {
   contacts: ContactOpt[]
   accounts: Named[]
   initialTo?: string[]
   initialCc?: string[]
+  signature?: string
   onClose: () => void
   onSent: () => void
 }) {
@@ -43,7 +44,7 @@ export default function ComposeModal({
   const [queries, setQueries] = useState<Record<Field, string>>({ to: '', cc: '', bcc: '' })
   const [showBcc, setShowBcc] = useState(false)
   const [subject, setSubject] = useState('')
-  const [bodyText, setBodyText] = useState('')
+  const [bodyText, setBodyText] = useState(signature ? `\n\n${signature}` : '')
   const [files, setFiles] = useState<File[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -85,6 +86,7 @@ export default function ComposeModal({
             value={q}
             onChange={(e) => setQueries((qq) => ({ ...qq, [f]: e.target.value }))}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitFreeText(f) } }}
+            onBlur={() => commitFreeText(f)}
             placeholder="name or email…"
           />
         </div>
@@ -102,17 +104,32 @@ export default function ComposeModal({
     )
   }
 
+  // Fold any uncommitted typed address in each field into the recipient list.
+  function withPending(recips: Recipient[], q: string): Recipient[] {
+    const e = q.trim().toLowerCase()
+    if (!e || !e.includes('@') || recips.some((r) => r.email.toLowerCase() === e)) return recips
+    const c = byEmail.get(e)
+    return [...recips, c ? { email: e, name: c.name, inCrm: true, accountId: c.account_id } : { email: e, inCrm: false }]
+  }
+
   function doSendCheck() {
-    if (to.length === 0) { setError('Add at least one recipient.'); return }
-    const unknown = [...to, ...cc, ...bcc].filter((r) => !r.inCrm)
+    const eff = { to: withPending(to, queries.to), cc: withPending(cc, queries.cc), bcc: withPending(bcc, queries.bcc) }
+    // Commit flushed recipients to state + clear inputs so the chips render.
+    setTo(eff.to); setCc(eff.cc); setBcc(eff.bcc); setQueries({ to: '', cc: '', bcc: '' })
+    if (eff.to.length === 0) { setError('Add at least one recipient.'); return }
+    const unknown = [...eff.to, ...eff.cc, ...eff.bcc].filter((r) => !r.inCrm)
     if (unknown.length > 0) {
       setAddList(unknown.map((r) => ({ email: r.email, add: true, name: '', account: '' })))
       return
     }
-    void send()
+    void send(undefined, eff)
   }
 
-  async function send(createRecipients?: Array<{ email: string; name?: string; account_id?: string | null; new_account_name?: string | null }>) {
+  async function send(
+    createRecipients?: Array<{ email: string; name?: string; account_id?: string | null; new_account_name?: string | null }>,
+    lists?: { to: Recipient[]; cc: Recipient[]; bcc: Recipient[] }
+  ) {
+    const L = lists ?? { to, cc, bcc }
     setBusy(true); setError('')
     try {
       if (createRecipients && createRecipients.length > 0) {
@@ -122,9 +139,9 @@ export default function ComposeModal({
       await apiFetch('/api/gmail/send', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: to.map((r) => r.email).join(','),
-          cc: cc.map((r) => r.email).join(','),
-          bcc: bcc.map((r) => r.email).join(','),
+          to: L.to.map((r) => r.email).join(','),
+          cc: L.cc.map((r) => r.email).join(','),
+          bcc: L.bcc.map((r) => r.email).join(','),
           subject,
           body: bodyText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>'),
           attachments,

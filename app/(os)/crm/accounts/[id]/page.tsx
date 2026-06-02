@@ -8,6 +8,7 @@ import { listDeals } from '@/lib/db/deals'
 import { listTimeEntries } from '@/lib/db/timesheet'
 import { tagsForAccount } from '@/lib/db/tags'
 import { listThreads } from '@/lib/db/inbox'
+import { getCompanySettings } from '@/lib/company-settings'
 import { mockupFontVars } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/server'
 
@@ -30,6 +31,7 @@ export default async function AccountDetailPage({
       tagsForAccount(id, supabase).catch(() => []),
       listThreads({ accountId: id }, supabase).catch(() => []),
     ])
+  const settings = await getCompanySettings(supabase).catch(() => null)
 
   if (!account) {
     notFound()
@@ -47,6 +49,7 @@ export default async function AccountDetailPage({
         tags={tags}
         emailThreads={emailThreads}
         selfEmail={user?.email ?? ''}
+        signature={settings?.email_signature ?? ''}
       />
     </div>
   )

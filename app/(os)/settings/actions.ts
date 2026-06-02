@@ -24,6 +24,7 @@ export async function updateOsCompanySettings(
     country: String(formData.get('country') ?? '').trim() || null,
     company_email: String(formData.get('company_email') ?? '').trim() || null,
     company_number: String(formData.get('company_number') ?? '').trim() || null,
+    email_signature: String(formData.get('email_signature') ?? '').trim() || null,
     updated_at: new Date().toISOString(),
   })
 

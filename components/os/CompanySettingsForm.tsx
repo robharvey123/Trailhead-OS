@@ -99,6 +99,18 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
             className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
           />
         </label>
+
+        <label className="space-y-2 text-sm md:col-span-2">
+          <span className="font-medium text-[#9CA3AF]">Email signature</span>
+          <textarea
+            name="email_signature"
+            defaultValue={company.email_signature ?? ''}
+            rows={4}
+            placeholder={'Rob Harvey\nTrailhead Holdings Ltd\nrob@trailheadholdings.uk'}
+            className="w-full rounded-2xl border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm text-white"
+          />
+          <span className="text-xs text-[#9CA3AF]">Appended to emails you compose and reply to in the Inbox.</span>
+        </label>
       </div>
 
       <p className="text-sm text-[#9CA3AF]">

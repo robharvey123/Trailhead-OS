@@ -9,6 +9,7 @@ export type CompanySettings = {
   country: string | null
   company_email: string | null
   company_number: string | null
+  email_signature: string | null
 }
 
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
@@ -20,10 +21,11 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   country: 'United Kingdom',
   company_email: 'info@trailheadholdings.uk',
   company_number: '16910286',
+  email_signature: null,
 }
 
 const COMPANY_SETTINGS_FIELDS =
-  'company_name, address_line1, address_line2, city, postcode, country, company_email, company_number'
+  'company_name, address_line1, address_line2, city, postcode, country, company_email, company_number, email_signature'
 
 function escapeHtml(value: string) {
   return value
@@ -59,6 +61,7 @@ export async function getCompanySettings(supabase: SupabaseClient): Promise<Comp
     country: withFallback(data.country, DEFAULT_COMPANY_SETTINGS.country),
     company_email: withFallback(data.company_email, DEFAULT_COMPANY_SETTINGS.company_email),
     company_number: withFallback(data.company_number, DEFAULT_COMPANY_SETTINGS.company_number),
+    email_signature: withFallback(data.email_signature, null),
   }
 }
 
