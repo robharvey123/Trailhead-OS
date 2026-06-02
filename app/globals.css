@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
   --background: #ffffff;
@@ -241,8 +242,8 @@ body {
 }
 
 /* ==========================================================================
-   Mockup design system — scoped to /crm and /timesheet via .thmock
-   Copied from docs/mockups/*.html (indigo accent, Syne + DM Mono).
+   Mockup design system — scoped to /crm, /timesheet, /inbox via .thmock
+   Indigo accent, Inter (sans) + JetBrains Mono (loaded via @import at top).
    All selectors are nested under .thmock so they never leak app-wide.
    ========================================================================== */
 .thmock {
@@ -279,37 +280,38 @@ body {
   --muted: var(--text-2);
   --lime: var(--accent);
 
-  font-family: var(--font-syne), 'Syne', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  line-height: 1.5;
   color: var(--text);
   background: var(--bg);
   min-height: 100%;
 }
-.thmock .mono { font-family: var(--font-dm-mono), 'DM Mono', monospace; }
+.thmock .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
 
 /* meta labels */
 .thmock .meta-label {
-  font-family: var(--font-dm-mono), 'DM Mono', monospace;
-  font-size: 9px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px;
   font-weight: 500;
   color: var(--text-3);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .thmock .field-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-3);
-  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   margin-bottom: 3px;
   letter-spacing: 0.05em;
 }
-.thmock .field-value { font-size: 13px; color: var(--text); font-weight: 500; }
-.thmock .field-value.mono { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 12px; color: var(--text-2); }
+.thmock .field-value { font-size: 14px; color: var(--text); font-weight: 500; }
+.thmock .field-value.mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--text-2); }
 
 /* status badges */
 .thmock .status-badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 9px; border-radius: 20px;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.03em;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.03em;
 }
 .thmock .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 .thmock .status-prospect { color: #6b8cff; background: rgba(79,110,247,0.12); }
@@ -324,17 +326,17 @@ body {
 /* channel tags */
 .thmock .channel-tag {
   display: inline-block; padding: 2px 7px; border-radius: 3px;
-  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
   background: var(--surface-3); color: var(--text-2);
-  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 /* generic tag chip (CRM tags) */
 .thmock .tag-chip {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px; border-radius: 999px;
-  font-size: 10px; font-weight: 600;
-  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+  font-size: 11px; font-weight: 600;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   background: var(--surface-3); color: var(--text-2);
 }
 .thmock .tag-chip.accent { background: var(--accent-dim); color: #6b8cff; }
@@ -350,7 +352,7 @@ body {
 .thmock .btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 14px; border-radius: var(--radius-sm);
-  font-family: var(--font-syne), 'Syne', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 12px; font-weight: 600; cursor: pointer; border: none;
   transition: all 0.15s; letter-spacing: 0.02em;
 }
@@ -366,9 +368,9 @@ body {
   height: 56px; min-height: 56px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 24px; gap: 16px; background: var(--surface);
 }
-.thmock .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.thmock .topbar-title { font-size: 16px; font-weight: 700; color: var(--text); }
 .thmock .topbar-count {
-  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 11px; color: var(--text-3);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--text-3);
   background: var(--surface-2); padding: 3px 8px; border-radius: 4px;
 }
 .thmock .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
@@ -379,10 +381,10 @@ body {
 .thmock .stat-item:last-child { border-right: none; }
 .thmock .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
 .thmock .stat-label {
-  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 9px; color: var(--text-3);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; color: var(--text-3);
   letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
 }
-.thmock .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--font-dm-mono), 'DM Mono', monospace; }
+.thmock .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
 
 /* filter bar + search + selects */
 .thmock .filterbar {
@@ -393,13 +395,13 @@ body {
 .thmock .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-3); }
 .thmock .search-input {
   width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 7px 10px 7px 32px; font-family: var(--font-syne), 'Syne', sans-serif; font-size: 13px; color: var(--text); outline: none;
+  padding: 7px 10px 7px 32px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 14px; color: var(--text); outline: none;
 }
 .thmock .search-input::placeholder { color: var(--text-3); }
 .thmock .search-input:focus { border-color: var(--accent); }
 .thmock .filter-select {
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 7px 10px; font-family: var(--font-syne), 'Syne', sans-serif; font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
+  padding: 7px 10px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
 }
 .thmock .filter-select:focus { border-color: var(--accent); }
 
@@ -407,12 +409,12 @@ body {
 .thmock .range-chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
 .thmock .range-chip {
   padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer;
-  border: none; background: none; color: var(--text-3); font-family: var(--font-syne), 'Syne', sans-serif;
+  border: none; background: none; color: var(--text-3); font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 .thmock .range-chip.active { background: var(--surface-3); color: var(--text); }
 .thmock .seg-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
 .thmock .seg-toggle button {
-  padding: 6px 10px; font-size: 11px; font-family: var(--font-syne), 'Syne', sans-serif;
+  padding: 6px 10px; font-size: 11px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   background: var(--surface-2); color: var(--text-3); border: none; cursor: pointer;
 }
 .thmock .seg-toggle button.active { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
@@ -421,36 +423,36 @@ body {
 .thmock .data-table { width: 100%; border-collapse: collapse; }
 .thmock .data-table thead th {
   padding: 10px 16px; text-align: left;
-  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; font-weight: 500;
   color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase;
   background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap;
 }
 .thmock .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
 .thmock .data-table tbody tr:hover { background: var(--surface-2); }
 .thmock .data-table tbody tr.selected { background: var(--accent-dim); }
-.thmock .data-table td { padding: 11px 16px; font-size: 13px; color: var(--text); vertical-align: middle; }
+.thmock .data-table td { padding: 11px 16px; font-size: 14px; color: var(--text); vertical-align: middle; }
 .thmock .td-name { font-weight: 600; }
-.thmock .td-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--font-dm-mono), 'DM Mono', monospace; }
-.thmock .td-mono { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 11px; color: var(--text-3); }
-.thmock .website-link { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 11px; color: var(--text-3); text-decoration: none; }
+.thmock .td-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
+.thmock .td-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); }
+.thmock .website-link { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); text-decoration: none; }
 .thmock .website-link:hover { color: var(--accent); }
 
 /* pills (timesheet) */
-.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; font-family: var(--font-dm-mono), 'DM Mono', monospace; }
+.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
 .thmock .pill.billable { color: var(--emerald); background: var(--emerald-dim); }
 .thmock .pill.nonbill { color: var(--text-3); background: var(--surface-3); }
 .thmock .pill.timer { color: var(--red); background: var(--red-dim); }
 .thmock .row-running td { background: rgba(239,68,68,0.06); }
-.thmock tfoot td { padding: 14px 16px; font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 12px; background: var(--surface); border-top: 2px solid var(--border-light); }
-.thmock tfoot td.total-label { color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+.thmock tfoot td { padding: 14px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--surface); border-top: 2px solid var(--border-light); }
+.thmock tfoot td.total-label { color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
 .thmock tfoot td.total-val { font-weight: 700; color: var(--text); }
-.thmock tfoot td.total-amount { font-weight: 800; color: var(--emerald); font-size: 13px; }
+.thmock tfoot td.total-amount { font-weight: 800; color: var(--emerald); font-size: 14px; }
 
 /* live timer pill */
 .thmock .timer {
   display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: 999px;
   background: linear-gradient(135deg, var(--red-dim), rgba(69,10,10,0.4)); border: 1px solid var(--red);
-  font-family: var(--font-dm-mono), 'DM Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 .thmock .timer-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 var(--red); animation: thmock-pulse 1.6s infinite; }
 @keyframes thmock-pulse {
@@ -459,7 +461,7 @@ body {
   100% { box-shadow: 0 0 0 0 rgba(239,68,68,0) }
 }
 .thmock .timer-meta { font-size: 11px; color: var(--text); line-height: 1.2; }
-.thmock .timer-meta b { font-family: var(--font-syne), 'Syne', sans-serif; font-weight: 700; }
+.thmock .timer-meta b { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-weight: 700; }
 .thmock .timer-meta span { color: var(--text-3); font-size: 10px; }
 .thmock .timer-clock { font-size: 13px; font-weight: 600; color: var(--red); letter-spacing: 0.04em; min-width: 62px; text-align: right; }
 .thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
@@ -468,8 +470,8 @@ body {
 .thmock .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
 .thmock .panel-section-title {
-  font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 9px; font-weight: 500; color: var(--text-3);
-  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; font-weight: 500; color: var(--text-3);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
   display: flex; align-items: center; justify-content: space-between;
 }
 
@@ -477,7 +479,7 @@ body {
 .thmock .tabbar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 24px; background: var(--surface); }
 .thmock .tab {
   padding: 12px 14px; font-size: 12px; font-weight: 600; color: var(--text-3); cursor: pointer;
-  background: none; border: none; border-bottom: 2px solid transparent; font-family: var(--font-syne), 'Syne', sans-serif;
+  background: none; border: none; border-bottom: 2px solid transparent; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 .thmock .tab:hover { color: var(--text-2); }
 .thmock .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -487,22 +489,22 @@ body {
   display: flex; align-items: center; gap: 10px; padding: 10px 24px;
   background: var(--accent-dim); border-bottom: 1px solid var(--accent);
 }
-.thmock .bulkbar .bulk-count { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 12px; color: #6b8cff; font-weight: 700; }
+.thmock .bulkbar .bulk-count { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: #6b8cff; font-weight: 700; }
 
 /* checkbox */
 .thmock input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
 
 /* empty state */
-.thmock .empty { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 13px; }
+.thmock .empty { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
 
 /* ---- inbox 3-pane ---- */
 .thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 120px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
 .thmock .folders { border-right: 1px solid var(--border); background: var(--surface); padding: 12px 8px; overflow-y: auto; }
-.thmock .folder-label { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 9px; color: var(--text-3); letter-spacing: 0.12em; padding: 6px 10px 4px; text-transform: uppercase; }
+.thmock .folder-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; padding: 6px 10px 4px; text-transform: uppercase; }
 .thmock .folder { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; color: var(--text-2); background: none; border: none; width: 100%; text-align: left; }
 .thmock .folder:hover { background: var(--surface-2); color: var(--text); }
 .thmock .folder.active { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
-.thmock .folder-count { margin-left: auto; font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 10px; color: var(--text-3); }
+.thmock .folder-count { margin-left: auto; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); }
 .thmock .folder.active .folder-count { color: var(--accent); }
 
 .thmock .threads { border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
@@ -514,11 +516,11 @@ body {
 .thmock .thread.unread .thread-from, .thmock .thread.unread .thread-subj { color: var(--text); font-weight: 700; }
 .thmock .thread-row { display: flex; align-items: baseline; gap: 6px; }
 .thmock .thread-from { font-size: 12px; font-weight: 600; color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thmock .thread-time { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 10px; color: var(--text-3); flex-shrink: 0; }
-.thmock .thread-subj { font-size: 13px; color: var(--text-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thmock .thread-time { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); flex-shrink: 0; }
+.thmock .thread-subj { font-size: 14px; color: var(--text-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-snippet { font-size: 11px; color: var(--text-3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-tags { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
-.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 3px; font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.04em; background: var(--surface-3); color: var(--text-2); }
+.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 3px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; background: var(--surface-3); color: var(--text-2); }
 .thmock .acct-pill.matched { background: var(--accent-dim); color: var(--accent); }
 .thmock .acct-pill.unmatched { background: var(--amber-dim); color: var(--amber); }
 .thmock .acct-pill.outbound { background: var(--emerald-dim); color: var(--emerald); }
@@ -527,9 +529,9 @@ body {
 .thmock .reader-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); }
 .thmock .reader-subject { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; color: var(--text); }
 .thmock .reader-meta-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
-.thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: none; }
+.thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
 .thmock .acct-chip:hover { background: var(--accent); color: white; }
-.thmock .meta-chip { padding: 3px 8px; border-radius: 4px; font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 10px; background: var(--surface-2); color: var(--text-3); }
+.thmock .meta-chip { padding: 3px 8px; border-radius: 4px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; background: var(--surface-2); color: var(--text-3); }
 .thmock .reader-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 .thmock .reader-body { flex: 1; overflow-y: auto; padding: 0 24px; }
 .thmock .message { padding: 18px 0; border-bottom: 1px solid var(--border); }
@@ -537,11 +539,11 @@ body {
 .thmock .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
 .thmock .avatar.inbound { background: linear-gradient(135deg, var(--accent), #6b8cff); }
 .thmock .avatar.outbound { background: linear-gradient(135deg, var(--emerald), #34d399); }
-.thmock .msg-from { font-size: 13px; font-weight: 700; color: var(--text); }
-.thmock .msg-to { font-size: 11px; color: var(--text-3); font-family: var(--font-dm-mono), 'DM Mono', monospace; margin-top: 2px; }
-.thmock .msg-time { font-family: var(--font-dm-mono), 'DM Mono', monospace; font-size: 11px; color: var(--text-3); }
-.thmock .msg-body { font-size: 13px; line-height: 1.7; color: var(--text-2); white-space: pre-wrap; padding-left: 48px; }
+.thmock .msg-from { font-size: 14px; font-weight: 700; color: var(--text); }
+.thmock .msg-to { font-size: 11px; color: var(--text-3); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; margin-top: 2px; }
+.thmock .msg-time { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); }
+.thmock .msg-body { font-size: 14px; line-height: 1.7; color: var(--text-2); white-space: pre-wrap; padding-left: 48px; }
 .thmock .reader-reply { border-top: 1px solid var(--border); background: var(--surface); padding: 14px 24px; }
-.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: var(--font-syne), 'Syne', sans-serif; font-size: 13px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
+.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
 .thmock .reply-input:focus { border-color: var(--accent); }
 .thmock .reply-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
