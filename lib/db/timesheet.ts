@@ -7,6 +7,19 @@ async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
 }
 
+/** If an engagement is set but no workstream, default to its first workstream (or 'Unspecified'). */
+async function resolveWorkstream(
+  supabase: SupabaseClient,
+  engagementId: string | null | undefined,
+  workstream: string | null | undefined
+): Promise<string | null> {
+  if (workstream) return workstream
+  if (!engagementId) return null
+  const { data } = await supabase.from('engagements').select('workstreams').eq('id', engagementId).maybeSingle()
+  const list = (data?.workstreams as string[] | undefined) ?? []
+  return list[0] ?? 'Unspecified'
+}
+
 interface TimeEntryFilters {
   account_id?: string
   project_id?: string
@@ -88,6 +101,8 @@ export async function createTimeEntry(
   data: {
     account_id?: string | null
     project_id?: string | null
+    engagement_id?: string | null
+    workstream?: string | null
     entry_date?: string
     duration_minutes: number
     description?: string | null
@@ -106,11 +121,14 @@ export async function createTimeEntry(
   const userId = auth.data.user.id
   const entryDate = data.entry_date || new Date().toISOString().split('T')[0]
   const rate = data.rate_snapshot ?? 0
+  const workstream = await resolveWorkstream(supabase, data.engagement_id, data.workstream)
 
   const payload = {
     user_id: userId,
     account_id: data.account_id ?? null,
     project_id: data.project_id ?? null,
+    engagement_id: data.engagement_id ?? null,
+    workstream,
     entry_date: entryDate,
     start_at: null,
     end_at: null,
@@ -204,6 +222,8 @@ export async function startTimer(
   data: {
     account_id?: string | null
     project_id?: string | null
+    engagement_id?: string | null
+    workstream?: string | null
     description?: string | null
   },
   client?: SupabaseClient
@@ -237,11 +257,14 @@ export async function startTimer(
   const now = new Date()
   const startAt = now.toISOString()
   const entryDate = now.toISOString().split('T')[0]
+  const workstream = await resolveWorkstream(supabase, data.engagement_id, data.workstream)
 
   const payload = {
     user_id: userId,
     account_id: data.account_id ?? null,
     project_id: data.project_id ?? null,
+    engagement_id: data.engagement_id ?? null,
+    workstream,
     entry_date: entryDate,
     start_at: startAt,
     end_at: null,

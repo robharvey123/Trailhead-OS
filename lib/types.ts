@@ -190,7 +190,122 @@ export interface GoogleTokens {
   updated_at: string
 }
 
-export type EmailMatchMethod = 'contact_email' | 'domain' | 'manual' | 'unmatched'
+// ---------------------------------------------------------------------------
+// v4 — Engagements / Tier-1 milestones
+// ---------------------------------------------------------------------------
+
+export type EngagementStatus = 'Draft' | 'Active' | 'Paused' | 'Completed' | 'Terminated'
+
+export const ENGAGEMENT_STATUSES: EngagementStatus[] = [
+  'Draft', 'Active', 'Paused', 'Completed', 'Terminated',
+]
+
+export const DEFAULT_WORKSTREAMS = [
+  'Market Development',
+  'Sales Growth',
+  'New Client Acquisition',
+  'Reporting & Governance',
+] as const
+
+export interface ApprovalThresholds {
+  hours_overage_hours?: number
+  travel_amount_gbp?: number
+  slotting_fees_required?: boolean
+  exhibition_required?: boolean
+  third_party_costs_required?: boolean
+}
+
+export interface Engagement {
+  id: string
+  end_client_account_id: string
+  billed_via_account_id: string | null
+  name: string
+  code: string | null
+  status: EngagementStatus
+  currency: string
+  retainer_amount_monthly: number | null
+  included_hours_monthly: number | null
+  day_rate: number | null
+  performance_fee_default: number | null
+  start_date: string
+  end_date: string | null
+  workstreams: string[]
+  approval_thresholds: ApprovalThresholds
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EngagementWithRelations extends Engagement {
+  end_client?: { id: string; name: string } | null
+  billed_via?: { id: string; name: string } | null
+}
+
+export interface EngagementInput {
+  id?: string
+  end_client_account_id: string
+  billed_via_account_id?: string | null
+  name: string
+  code?: string | null
+  status?: EngagementStatus
+  currency?: string
+  retainer_amount_monthly?: number | null
+  included_hours_monthly?: number | null
+  day_rate?: number | null
+  performance_fee_default?: number | null
+  start_date: string
+  end_date?: string | null
+  workstreams?: string[]
+  approval_thresholds?: ApprovalThresholds
+  notes?: string | null
+}
+
+export interface Tier1Milestone {
+  id: string
+  engagement_id: string
+  account_id: string
+  range_review_decided_at: string | null
+  go_live_confirmed_at: string | null
+  first_po_received_at: string | null
+  is_complete: boolean
+  completed_at: string | null
+  performance_fee: number | null
+  fee_invoice_id: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Tier1MilestoneWithAccount extends Tier1Milestone {
+  account?: { id: string; name: string; channel: string | null } | null
+}
+
+export interface EngagementHoursByMonth {
+  engagement_id: string
+  period_month: string | null
+  hours_used: number
+  hours_included: number | null
+  hours_over: number
+  billable_hours: number
+}
+
+export interface EngagementWorkstreamSplit {
+  engagement_id: string
+  period_month: string
+  workstream: string
+  hours: number
+}
+
+export interface Tier1MilestoneSummary {
+  engagement_id: string
+  total_tracked: number
+  completed: number
+  in_progress: number
+  billable_not_invoiced: number
+  invoiced: number
+}
+
+export type EmailMatchMethod = 'contact_email' | 'domain' | 'unmatched' | 'manual'
 
 export interface EmailLog {
   id: string
@@ -860,6 +975,8 @@ export interface TimeEntry {
   user_id: string
   account_id: string | null
   project_id: string | null
+  engagement_id?: string | null
+  workstream?: string | null
   entry_date: string
   start_at: string | null
   end_at: string | null

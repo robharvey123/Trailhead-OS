@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
       {
         account_id: body.account_id,
         project_id: body.project_id,
+        engagement_id: body.engagement_id,
+        workstream: body.workstream,
         description: body.description,
       },
       supabase
