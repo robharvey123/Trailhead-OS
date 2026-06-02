@@ -7,26 +7,43 @@ import { DEFAULT_WORKSTREAMS, type EngagementWithRelations } from '@/lib/types'
 
 type Named = { id: string; name: string }
 
-export default function EngagementForm({ accounts }: { accounts: Named[] }) {
+const num = (v: number | null | undefined) => (v == null ? '' : String(v))
+
+export default function EngagementForm({
+  accounts,
+  initial,
+  onCancel,
+  onSaved,
+}: {
+  accounts: Named[]
+  /** When set, the form edits this engagement (PATCH) instead of creating a new one. */
+  initial?: EngagementWithRelations
+  /** Overrides the default "go to /engagements" cancel behaviour (e.g. close a modal). */
+  onCancel?: () => void
+  /** Overrides the default "navigate to the engagement" save behaviour. */
+  onSaved?: (engagement: EngagementWithRelations) => void
+}) {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [code, setCode] = useState('')
-  const [endClient, setEndClient] = useState(accounts[0]?.id ?? '')
-  const [billedVia, setBilledVia] = useState('')
-  const [currency, setCurrency] = useState('GBP')
-  const [retainer, setRetainer] = useState('')
-  const [includedHours, setIncludedHours] = useState('')
-  const [dayRate, setDayRate] = useState('')
-  const [perfFee, setPerfFee] = useState('')
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
-  const [endDate, setEndDate] = useState('')
-  const [workstreams, setWorkstreams] = useState<string[]>([...DEFAULT_WORKSTREAMS])
+  const isEdit = !!initial?.id
+  const at = initial?.approval_thresholds
+  const [name, setName] = useState(initial?.name ?? '')
+  const [code, setCode] = useState(initial?.code ?? '')
+  const [endClient, setEndClient] = useState(initial?.end_client_account_id ?? accounts[0]?.id ?? '')
+  const [billedVia, setBilledVia] = useState(initial?.billed_via_account_id ?? '')
+  const [currency, setCurrency] = useState(initial?.currency ?? 'GBP')
+  const [retainer, setRetainer] = useState(num(initial?.retainer_amount_monthly))
+  const [includedHours, setIncludedHours] = useState(num(initial?.included_hours_monthly))
+  const [dayRate, setDayRate] = useState(num(initial?.day_rate))
+  const [perfFee, setPerfFee] = useState(num(initial?.performance_fee_default))
+  const [startDate, setStartDate] = useState(initial?.start_date ?? new Date().toISOString().split('T')[0])
+  const [endDate, setEndDate] = useState(initial?.end_date ?? '')
+  const [workstreams, setWorkstreams] = useState<string[]>(initial?.workstreams ?? [...DEFAULT_WORKSTREAMS])
   const [wsInput, setWsInput] = useState('')
-  const [hoursOverage, setHoursOverage] = useState('8')
-  const [travelThreshold, setTravelThreshold] = useState('250')
-  const [slotting, setSlotting] = useState(true)
-  const [exhibition, setExhibition] = useState(true)
-  const [thirdParty, setThirdParty] = useState(true)
+  const [hoursOverage, setHoursOverage] = useState(num(at?.hours_overage_hours) || '8')
+  const [travelThreshold, setTravelThreshold] = useState(num(at?.travel_amount_gbp) || '250')
+  const [slotting, setSlotting] = useState(at?.slotting_fees_required ?? true)
+  const [exhibition, setExhibition] = useState(at?.exhibition_required ?? true)
+  const [thirdParty, setThirdParty] = useState(at?.third_party_costs_required ?? true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -47,43 +64,49 @@ export default function EngagementForm({ accounts }: { accounts: Named[] }) {
     }
     setSaving(true)
     setError('')
+    const body: Record<string, unknown> = {
+      name: name.trim(),
+      code: code.trim() || null,
+      end_client_account_id: endClient,
+      billed_via_account_id: billedVia || null,
+      currency,
+      retainer_amount_monthly: retainer ? Number(retainer) : null,
+      included_hours_monthly: includedHours ? Number(includedHours) : null,
+      day_rate: dayRate ? Number(dayRate) : null,
+      performance_fee_default: perfFee ? Number(perfFee) : null,
+      start_date: startDate,
+      end_date: endDate || null,
+      workstreams,
+      approval_thresholds: {
+        hours_overage_hours: Number(hoursOverage) || 0,
+        travel_amount_gbp: Number(travelThreshold) || 0,
+        slotting_fees_required: slotting,
+        exhibition_required: exhibition,
+        third_party_costs_required: thirdParty,
+      },
+    }
+    // Only stamp status on create — editing must not silently re-activate a paused/terminated engagement.
+    if (!isEdit) body.status = 'Active'
     try {
-      const { engagement } = await apiFetch<{ engagement: EngagementWithRelations }>('/api/engagements', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          code: code.trim() || null,
-          end_client_account_id: endClient,
-          billed_via_account_id: billedVia || null,
-          currency,
-          retainer_amount_monthly: retainer ? Number(retainer) : null,
-          included_hours_monthly: includedHours ? Number(includedHours) : null,
-          day_rate: dayRate ? Number(dayRate) : null,
-          performance_fee_default: perfFee ? Number(perfFee) : null,
-          start_date: startDate,
-          end_date: endDate || null,
-          workstreams,
-          status: 'Active',
-          approval_thresholds: {
-            hours_overage_hours: Number(hoursOverage) || 0,
-            travel_amount_gbp: Number(travelThreshold) || 0,
-            slotting_fees_required: slotting,
-            exhibition_required: exhibition,
-            third_party_costs_required: thirdParty,
-          },
-        }),
-      })
-      router.push(`/engagements/${engagement.id}`)
+      const { engagement } = await apiFetch<{ engagement: EngagementWithRelations }>(
+        isEdit ? `/api/engagements/${initial!.id}` : '/api/engagements',
+        {
+          method: isEdit ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }
+      )
+      if (onSaved) onSaved(engagement)
+      else router.push(`/engagements/${engagement.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create engagement')
+      setError(err instanceof Error ? err.message : `Failed to ${isEdit ? 'update' : 'create'} engagement`)
       setSaving(false)
     }
   }
 
   return (
     <div className="panel" style={{ maxWidth: 760, margin: '0 auto', padding: 24 }}>
-      <h1 className="topbar-title" style={{ marginBottom: 16 }}>New engagement</h1>
+      <h1 className="topbar-title" style={{ marginBottom: 16 }}>{isEdit ? 'Edit engagement' : 'New engagement'}</h1>
       <div style={{ display: 'grid', gap: 14 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
           <div><label className={label}>Name *</label><input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Qola - DRIVER GTM (via Wide Advocacy)" /></div>
@@ -147,8 +170,10 @@ export default function EngagementForm({ accounts }: { accounts: Named[] }) {
 
         {error ? <p style={{ color: 'var(--red)', fontSize: 13 }}>{error}</p> : null}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button className="btn btn-ghost btn-sm" onClick={() => router.push('/engagements')}>Cancel</button>
-          <button className="btn btn-primary btn-sm" onClick={submit} disabled={saving}>{saving ? 'Creating…' : 'Create engagement'}</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => (onCancel ? onCancel() : router.push('/engagements'))}>Cancel</button>
+          <button className="btn btn-primary btn-sm" onClick={submit} disabled={saving}>
+            {saving ? (isEdit ? 'Saving…' : 'Creating…') : isEdit ? 'Save changes' : 'Create engagement'}
+          </button>
         </div>
       </div>
     </div>

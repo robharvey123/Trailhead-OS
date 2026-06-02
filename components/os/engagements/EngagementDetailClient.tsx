@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
-import type { EngagementDetail } from '@/lib/db/engagements'
+import type { EngagementDetail, EngagementLinkCounts } from '@/lib/db/engagements'
+import ConfirmDialog from '@/components/os/ConfirmDialog'
+import EngagementForm from '@/components/os/engagements/EngagementForm'
 import {
   APPROVAL_TYPE_LABELS,
   type ApprovalRequestWithRelations,
@@ -44,6 +46,7 @@ export default function EngagementDetailClient({
   accounts,
   documents = [],
   approvals: initialApprovals = [],
+  linkCounts,
 }: {
   detail: EngagementDetail
   timeEntries: TimeEntry[]
@@ -51,6 +54,7 @@ export default function EngagementDetailClient({
   accounts: Named[]
   documents?: EngagementDoc[]
   approvals?: ApprovalRequestWithRelations[]
+  linkCounts: EngagementLinkCounts
 }) {
   const router = useRouter()
   const e = detail.engagement
@@ -63,6 +67,50 @@ export default function EngagementDetailClient({
   const [reqType, setReqType] = useState<ApprovalType>('hours_overage')
   const [reqAmount, setReqAmount] = useState('')
   const [reqDesc, setReqDesc] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [terminateOpen, setTerminateOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  async function terminate() {
+    setBusy(true)
+    setError('')
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      await apiFetch(`/api/engagements/${e.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'terminate', end_date: today }),
+      })
+      setTerminateOpen(false)
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to terminate engagement')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function doDelete() {
+    setBusy(true)
+    setError('')
+    try {
+      await apiFetch(`/api/engagements/${e.id}`, { method: 'DELETE' })
+      router.push('/engagements')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete engagement')
+      setBusy(false)
+    }
+  }
+
+  // What a delete does, by FK rule: projects + time entries are unlinked (kept); the rest cascade-delete.
+  const deleteItems = [
+    `${linkCounts.projects} project${linkCounts.projects === 1 ? '' : 's'} — unlinked, kept`,
+    `${linkCounts.timeEntries} time ${linkCounts.timeEntries === 1 ? 'entry' : 'entries'} — unlinked, kept`,
+    `${linkCounts.milestones} Tier-1 milestone${linkCounts.milestones === 1 ? '' : 's'} — deleted`,
+    `${linkCounts.approvals} approval request${linkCounts.approvals === 1 ? '' : 's'} — deleted`,
+    `${linkCounts.documents} document${linkCounts.documents === 1 ? '' : 's'} — deleted`,
+  ]
 
   async function createApprovalReq() {
     try {
@@ -166,6 +214,37 @@ export default function EngagementDetailClient({
           <span className="meta-chip">{e.retainer_amount_monthly != null ? `${formatCurrency(e.retainer_amount_monthly, e.currency)}/mo` : '—'}</span>
           <span className="meta-chip">{e.day_rate != null ? `${formatCurrency(e.day_rate, e.currency)}/h` : ''}</span>
           <span className="meta-chip">fee {e.performance_fee_default != null ? formatCurrency(e.performance_fee_default, e.currency) : '—'}</span>
+          <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>Edit</button>
+          <div style={{ position: 'relative' }}>
+            <button className="btn btn-ghost btn-sm" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>⋯</button>
+            {menuOpen ? (
+              <>
+                <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                <div role="menu" style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 41, minWidth: 210, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.16)', overflow: 'hidden', padding: 4 }}>
+                  {e.status !== 'Terminated' ? (
+                    <button
+                      role="menuitem"
+                      onClick={() => { setMenuOpen(false); setTerminateOpen(true) }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 4, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
+                      onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
+                      onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
+                    >
+                      Terminate engagement
+                    </button>
+                  ) : null}
+                  <button
+                    role="menuitem"
+                    onClick={() => { setMenuOpen(false); setDeleteOpen(true) }}
+                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 4, fontSize: 13, color: 'var(--red)', cursor: 'pointer' }}
+                    onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
+                    onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
+                  >
+                    Delete engagement
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -433,6 +512,55 @@ export default function EngagementDetailClient({
           )
         ) : null}
       </div>
+
+      {editing ? (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-[rgba(15,23,42,0.45)]"
+          style={{ padding: '40px 16px' }}
+          onClick={(ev) => { if (ev.target === ev.currentTarget) setEditing(false) }}
+        >
+          <EngagementForm
+            accounts={accounts}
+            initial={e}
+            onCancel={() => setEditing(false)}
+            onSaved={() => { setEditing(false); router.refresh() }}
+          />
+        </div>
+      ) : null}
+
+      <ConfirmDialog
+        open={terminateOpen}
+        onOpenChange={setTerminateOpen}
+        title="Terminate engagement?"
+        description={`This sets ${e.name} to Terminated with an end date of today. All time, milestones, approvals and documents are kept — you can still view the engagement. This does not delete anything.`}
+        confirmLabel="Terminate"
+        variant="warning"
+        loading={busy}
+        onConfirm={terminate}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete engagement?"
+        description={`Permanently delete ${e.name}. Projects and time entries are unlinked but kept; milestones, approval requests and documents are deleted.`}
+        banner={
+          <div style={{ display: 'flex', gap: 8, padding: '10px 12px', borderRadius: 6, background: 'var(--surface-2)', border: '1px solid var(--border)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--text-2)' }}>
+            <span aria-hidden style={{ color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>ⓘ</span>
+            <span>
+              Most of the time, use <strong style={{ color: 'var(--text)' }}>Terminate</strong> instead — it keeps everything (milestones, approvals, documents, invoices). Delete is for engagements created by mistake (test data, duplicates).
+            </span>
+          </div>
+        }
+        confirmLabel="Delete engagement"
+        variant="destructive"
+        items={deleteItems}
+        itemsLabel="What happens to linked records"
+        confirmPhrase={e.name}
+        confirmPhraseLabel={`Type the engagement name to confirm`}
+        loading={busy}
+        onConfirm={doDelete}
+      />
     </div>
   )
 }

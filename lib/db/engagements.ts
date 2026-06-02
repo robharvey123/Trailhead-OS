@@ -140,6 +140,44 @@ export const resumeEngagement = (id: string, c?: SupabaseClient) => setStatus(id
 export const terminateEngagement = (id: string, endDate: string, c?: SupabaseClient) =>
   setStatus(id, 'Terminated', endDate, c)
 
+export interface EngagementLinkCounts {
+  projects: number // unlinked (engagement_id set null) — records kept
+  timeEntries: number // unlinked (engagement_id set null) — records kept
+  milestones: number // cascade-deleted — engagement_id is NOT NULL, cannot be unlinked
+  approvals: number // cascade-deleted
+  documents: number // cascade-deleted
+}
+
+/** Counts of records linked to an engagement, for the delete-confirmation UI. */
+export async function engagementLinkCounts(id: string, client?: SupabaseClient): Promise<EngagementLinkCounts> {
+  const supabase = await getSupabase(client)
+  const head = async (table: string) => {
+    const { count } = await supabase.from(table).select('id', { count: 'exact', head: true }).eq('engagement_id', id)
+    return count ?? 0
+  }
+  const [projects, timeEntries, milestones, approvals, documents] = await Promise.all([
+    head('projects'),
+    head('time_entries'),
+    head('tier1_milestones'),
+    head('approval_requests'),
+    head('engagement_documents'),
+  ])
+  return { projects, timeEntries, milestones, approvals, documents }
+}
+
+/**
+ * Hard-deletes an engagement. The FK rules do the cleanup:
+ *   • projects / time_entries → engagement_id set to NULL (records kept, just unlinked)
+ *   • tier1_milestones, engagement_tier1_accounts, approval_requests,
+ *     engagement_documents → cascade-deleted (these cannot exist without the engagement)
+ * To keep all data instead, terminate the engagement rather than deleting it.
+ */
+export async function deleteEngagement(id: string, client?: SupabaseClient): Promise<void> {
+  const supabase = await getSupabase(client)
+  const { error } = await supabase.from('engagements').delete().eq('id', id)
+  if (error) throw new Error(error.message || 'Failed to delete engagement')
+}
+
 export async function addTier1Account(
   engagementId: string,
   accountId: string,

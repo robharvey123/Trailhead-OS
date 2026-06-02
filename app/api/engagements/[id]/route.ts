@@ -32,3 +32,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to update engagement' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
+    if (!ok) return authResponse
+    const { id } = await params
+    await engagements.deleteEngagement(id, supabase)
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to delete engagement' }, { status: 500 })
+  }
+}

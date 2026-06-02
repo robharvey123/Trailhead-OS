@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getEngagement } from '@/lib/db/engagements'
+import { getEngagement, engagementLinkCounts } from '@/lib/db/engagements'
 import { listTimeEntries } from '@/lib/db/timesheet'
 import { listApprovals } from '@/lib/db/approvals'
 import { getAccounts } from '@/lib/db/accounts'
@@ -18,11 +18,12 @@ export default async function EngagementDetailPage({ params }: { params: Promise
   const detail = await getEngagement(id, supabase).catch(() => null)
   if (!detail) notFound()
 
-  const [timeEntries, projectsRes, accounts, docsRes] = await Promise.all([
+  const [timeEntries, projectsRes, accounts, docsRes, linkCounts] = await Promise.all([
     listTimeEntries({ engagement_id: id, limit: 300 }, supabase).catch(() => []),
     supabase.from('projects').select('id, name, status').eq('engagement_id', id),
     getAccounts({}, supabase).catch(() => []),
     supabase.from('engagement_documents').select('id, type, title, week_start, created_at').eq('engagement_id', id).order('created_at', { ascending: false }),
+    engagementLinkCounts(id, supabase).catch(() => ({ projects: 0, timeEntries: 0, milestones: 0, approvals: 0, documents: 0 })),
   ])
   const approvals = await listApprovals(id, supabase).catch(() => [])
 
@@ -35,6 +36,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
         accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
         documents={(docsRes.data ?? []) as Array<{ id: string; type: string; title: string | null; week_start: string | null; created_at: string }>}
         approvals={approvals}
+        linkCounts={linkCounts}
       />
     </div>
   )
