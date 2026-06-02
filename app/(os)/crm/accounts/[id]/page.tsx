@@ -18,6 +18,7 @@ export default async function AccountDetailPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   const [account, workstreams, projects, activities, deals, timeEntries, tags, emailThreads] =
     await Promise.all([
       getAccountById(id, supabase).catch(() => null),
@@ -45,6 +46,7 @@ export default async function AccountDetailPage({
         timeEntries={timeEntries}
         tags={tags}
         emailThreads={emailThreads}
+        selfEmail={user?.email ?? ''}
       />
     </div>
   )

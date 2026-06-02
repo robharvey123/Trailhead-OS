@@ -9,6 +9,7 @@ import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TouchpointTimeline from './TouchpointTimeline'
 import DealForm from './DealForm'
+import ComposeModal from './inbox/ComposeModal'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
 import { formatTaskSchedule } from '@/lib/os'
@@ -61,6 +62,7 @@ export default function AccountDetailClient({
   timeEntries,
   tags,
   emailThreads = [],
+  selfEmail = '',
 }: {
   initialAccount: AccountDetail
   workstreams: Workstream[]
@@ -70,7 +72,9 @@ export default function AccountDetailClient({
   timeEntries: TimeEntry[]
   tags: Tag[]
   emailThreads?: EmailThread[]
+  selfEmail?: string
 }) {
+  const [composeOpen, setComposeOpen] = useState(false)
   const router = useRouter()
   const [account, setAccount] = useState(initialAccount)
   const [tab, setTab] = useState<TabName>('Overview')
@@ -238,31 +242,36 @@ export default function AccountDetailClient({
 
         {/* EMAILS */}
         {tab === 'Emails' ? (
-          emailThreads.length === 0 ? (
-            <div className="empty">
-              No email threads linked to this account yet. New mail auto-links by contact/domain;
-              you can also link threads from the <Link href="/inbox" className="acct-chip" style={{ display: 'inline-flex' }}>Inbox</Link>.
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <button className="btn btn-primary btn-sm" onClick={() => setComposeOpen(true)}>+ New email</button>
             </div>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr><th>From</th><th>Subject</th><th>When</th><th></th></tr>
-              </thead>
-              <tbody>
-                {emailThreads.map((t) => (
-                  <tr key={t.gmail_thread_id} style={{ cursor: 'pointer' }} onClick={() => router.push('/inbox')}>
-                    <td className="td-name">{t.from_name}</td>
-                    <td>
-                      <div>{t.subject}</div>
-                      <div className="td-sub">{t.snippet}</div>
-                    </td>
-                    <td className="td-mono">{fmtDate(t.last_at)}</td>
-                    <td>{t.is_unread ? <span className="pill timer">unread</span> : null}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )
+            {emailThreads.length === 0 ? (
+              <div className="empty">
+                No email threads linked to this account yet. New mail auto-links by contact/domain;
+                you can also link threads from the <Link href="/inbox" className="acct-chip" style={{ display: 'inline-flex' }}>Inbox</Link>.
+              </div>
+            ) : (
+              <table className="data-table">
+                <thead>
+                  <tr><th>From</th><th>Subject</th><th>When</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {emailThreads.map((t) => (
+                    <tr key={t.gmail_thread_id} style={{ cursor: 'pointer' }} onClick={() => router.push('/inbox')}>
+                      <td className="td-name">{t.from_name}</td>
+                      <td>
+                        <div>{t.subject}</div>
+                        <div className="td-sub">{t.snippet}</div>
+                      </td>
+                      <td className="td-mono">{fmtDate(t.last_at)}</td>
+                      <td>{t.is_unread ? <span className="pill timer">unread</span> : null}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         ) : null}
 
         {/* DEALS */}
@@ -396,6 +405,17 @@ export default function AccountDetailClient({
           contacts={contactOptions}
           onClose={() => setDealFormOpen(false)}
           onSave={saveDeal}
+        />
+      ) : null}
+
+      {composeOpen ? (
+        <ComposeModal
+          contacts={(account.contacts ?? []).map((c) => ({ id: c.id, name: c.name, email: c.email ?? null, account_id: account.id }))}
+          accounts={[{ id: account.id, name: account.name }]}
+          initialTo={(account.contacts ?? []).filter((c) => c.email).slice(0, 1).map((c) => c.email!) as string[]}
+          initialCc={selfEmail ? [selfEmail] : []}
+          onClose={() => setComposeOpen(false)}
+          onSent={() => router.refresh()}
         />
       ) : null}
     </div>
