@@ -171,3 +171,102 @@ export async function setProjectEngagement(projectId: string, engagementId: stri
   const { error } = await supabase.from('projects').update({ engagement_id: engagementId }).eq('id', projectId)
   if (error) throw new Error(error.message || 'Failed to link project')
 }
+
+export interface WeeklyUpdateData {
+  engagement: EngagementWithRelations
+  weekStart: string
+  weekEnd: string
+  hoursWeek: number
+  hoursMonth: number
+  cap: number | null
+  pctOfCap: number
+  workstreamSplit: Array<{ workstream: string; hours: number }>
+  pipeline: Array<{ stage: string; deals: Array<{ name: string; account: string }> }>
+  milestonesTouched: Array<{ account: string; condition: string; date: string }>
+  tasks: Array<{ title: string; due: string | null }>
+}
+
+/** Everything needed to populate the Annex A 3.4 weekly client update. */
+export async function weeklyClientUpdateData(
+  engagementId: string,
+  weekStart: string,
+  client?: SupabaseClient
+): Promise<WeeklyUpdateData> {
+  const supabase = await getSupabase(client)
+  const start = new Date(weekStart)
+  const endDate = new Date(start)
+  endDate.setDate(start.getDate() + 6)
+  const weekEnd = endDate.toISOString().split('T')[0]
+
+  const { data: engRow } = await supabase.from('engagements').select(ENGAGEMENT_SELECT).eq('id', engagementId).maybeSingle()
+  const engagement = engRow as unknown as EngagementWithRelations
+
+  const [weekEntries, monthHours, tier1Res] = await Promise.all([
+    supabase.from('time_entries').select('workstream, duration_minutes').eq('engagement_id', engagementId).eq('is_running', false).gte('entry_date', weekStart).lte('entry_date', weekEnd),
+    engagementHoursThisMonth(engagementId, engagement?.included_hours_monthly ?? null, supabase),
+    supabase.from('tier1_milestones').select('account_id, range_review_decided_at, go_live_confirmed_at, first_po_received_at, account:accounts(name)').eq('engagement_id', engagementId),
+  ])
+
+  let weekMinutes = 0
+  const wsMap = new Map<string, number>()
+  for (const r of (weekEntries.data ?? []) as Array<{ workstream: string | null; duration_minutes: number }>) {
+    weekMinutes += r.duration_minutes ?? 0
+    const ws = r.workstream || 'Unspecified'
+    wsMap.set(ws, (wsMap.get(ws) ?? 0) + (r.duration_minutes ?? 0) / 60)
+  }
+
+  const milestones = (tier1Res.data ?? []) as unknown as Array<{
+    account_id: string
+    range_review_decided_at: string | null
+    go_live_confirmed_at: string | null
+    first_po_received_at: string | null
+    account?: { name: string } | null
+  }>
+  const tier1AccountIds = milestones.map((m) => m.account_id)
+
+  const milestonesTouched: WeeklyUpdateData['milestonesTouched'] = []
+  const inWeek = (d: string | null) => d && d >= weekStart && d <= weekEnd
+  for (const m of milestones) {
+    if (inWeek(m.range_review_decided_at)) milestonesTouched.push({ account: m.account?.name ?? '—', condition: 'Range review decided', date: m.range_review_decided_at! })
+    if (inWeek(m.go_live_confirmed_at)) milestonesTouched.push({ account: m.account?.name ?? '—', condition: 'Go-live confirmed', date: m.go_live_confirmed_at! })
+    if (inWeek(m.first_po_received_at)) milestonesTouched.push({ account: m.account?.name ?? '—', condition: 'First PO received', date: m.first_po_received_at! })
+  }
+
+  // Pipeline: deals on the tier-1 accounts, grouped by stage.
+  let pipeline: WeeklyUpdateData['pipeline'] = []
+  if (tier1AccountIds.length) {
+    const { data: deals } = await supabase.from('deals').select('name, stage, account:accounts(name)').in('account_id', tier1AccountIds).not('stage', 'in', '("Won","Lost")')
+    const byStage = new Map<string, Array<{ name: string; account: string }>>()
+    for (const d of (deals ?? []) as unknown as Array<{ name: string; stage: string; account?: { name: string } | null }>) {
+      const list = byStage.get(d.stage) ?? byStage.set(d.stage, []).get(d.stage)!
+      list.push({ name: d.name, account: d.account?.name ?? '—' })
+    }
+    pipeline = Array.from(byStage.entries()).map(([stage, deals]) => ({ stage, deals }))
+  }
+
+  // Open tasks for the end client, due in the next 7 days.
+  const today = new Date().toISOString().split('T')[0]
+  const in7 = new Date(); in7.setDate(in7.getDate() + 7)
+  const in7iso = in7.toISOString().split('T')[0]
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('title, due_date')
+    .eq('account_id', engagement?.end_client_account_id ?? '')
+    .is('completed_at', null)
+    .gte('due_date', today)
+    .lte('due_date', in7iso)
+
+  return {
+    engagement,
+    weekStart,
+    weekEnd,
+    hoursWeek: weekMinutes / 60,
+    hoursMonth: monthHours.used,
+    cap: monthHours.included,
+    pctOfCap: monthHours.pct,
+    workstreamSplit: Array.from(wsMap.entries()).map(([workstream, hours]) => ({ workstream, hours })),
+    pipeline,
+    milestonesTouched,
+    tasks: ((tasks ?? []) as Array<{ title: string; due_date: string | null }>).map((t) => ({ title: t.title, due: t.due_date })),
+  }
+}

@@ -75,19 +75,23 @@ function extractMessageBody(payload?: gmail_v1.Schema$MessagePart): string {
 
 export async function sendEmail({
   to,
+  cc,
   subject,
   body,
   replyToMessageId,
 }: {
   to: string
+  cc?: string
   subject: string
   body: string
   replyToMessageId?: string
 }) {
   const gmail = await getGmailClient()
 
+  const headers = [`To: ${to}`]
+  if (cc && cc.trim()) headers.push(`Cc: ${cc}`)
   const message = [
-    `To: ${to}`,
+    ...headers,
     `Subject: ${subject}`,
     'Content-Type: text/html; charset=utf-8',
     'MIME-Version: 1.0',

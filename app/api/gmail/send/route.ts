@@ -14,6 +14,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({})) as Record<string, unknown>
   const to = sanitizeOptionalString(body.to)
+  const cc = sanitizeOptionalString(body.cc) ?? undefined
   const subject = sanitizeOptionalString(body.subject)
   const htmlBody = sanitizeOptionalString(body.body)
   const replyToMessageId = sanitizeOptionalString(body.reply_to_message_id) ?? undefined
@@ -25,9 +26,13 @@ export async function POST(request: Request) {
     )
   }
 
+  const splitAddrs = (s: string | undefined) =>
+    (s ?? '').split(',').map((x) => x.trim()).filter(Boolean)
+
   try {
     const response = await sendEmail({
       to,
+      cc,
       subject,
       body: htmlBody,
       replyToMessageId,
@@ -44,7 +49,8 @@ export async function POST(request: Request) {
       quote_id: sanitizeOptionalString(body.quote_id),
       direction: 'outbound',
       from_address: auth.user.email ?? '',
-      to_addresses: [to],
+      to_addresses: splitAddrs(to),
+      cc_addresses: splitAddrs(cc),
       subject,
       snippet: htmlBody.slice(0, 200),
       body_html: htmlBody,

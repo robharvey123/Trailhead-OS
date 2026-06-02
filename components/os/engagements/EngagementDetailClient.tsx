@@ -25,16 +25,20 @@ function fmtDate(v: string | null) {
   return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 }
 
+type EngagementDoc = { id: string; type: string; title: string | null; week_start: string | null; created_at: string }
+
 export default function EngagementDetailClient({
   detail,
   timeEntries,
   projects,
   accounts,
+  documents = [],
 }: {
   detail: EngagementDetail
   timeEntries: TimeEntry[]
   projects: Array<{ id: string; name: string; status: string }>
   accounts: Named[]
+  documents?: EngagementDoc[]
 }) {
   const router = useRouter()
   const e = detail.engagement
@@ -277,14 +281,47 @@ export default function EngagementDetailClient({
 
         {/* WEEKLY UPDATES */}
         {tab === 'Weekly Updates' ? (
-          <div className="empty">
-            <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/weekly-update/new`}>Generate this week’s update</Link>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/weekly-update/new`}>Generate this week’s update</Link>
+            </div>
+            {documents.filter((d) => d.type === 'weekly_update').length === 0 ? (
+              <div className="empty">No weekly updates generated yet.</div>
+            ) : (
+              <table className="data-table">
+                <thead><tr><th>Title</th><th>Week of</th><th>Created</th></tr></thead>
+                <tbody>
+                  {documents.filter((d) => d.type === 'weekly_update').map((d) => (
+                    <tr key={d.id}>
+                      <td className="td-name">{d.title ?? 'Weekly update'}</td>
+                      <td className="td-mono">{d.week_start ? fmtDate(d.week_start) : '—'}</td>
+                      <td className="td-mono">{fmtDate(d.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         ) : null}
 
         {/* DOCUMENTS */}
         {tab === 'Documents' ? (
-          <div className="empty">Engagement documents (Annex A/B, Tier-1 sub-schedule, signed copies) will live here.</div>
+          documents.length === 0 ? (
+            <div className="empty">Engagement documents (weekly updates, Annex A/B, Tier-1 sub-schedule, signed copies) will live here.</div>
+          ) : (
+            <table className="data-table">
+              <thead><tr><th>Title</th><th>Type</th><th>Created</th></tr></thead>
+              <tbody>
+                {documents.map((d) => (
+                  <tr key={d.id}>
+                    <td className="td-name">{d.title ?? '—'}</td>
+                    <td><span className="channel-tag">{d.type}</span></td>
+                    <td className="td-mono">{fmtDate(d.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
         ) : null}
       </div>
     </div>
