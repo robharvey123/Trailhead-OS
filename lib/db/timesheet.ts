@@ -23,6 +23,7 @@ async function resolveWorkstream(
 interface TimeEntryFilters {
   account_id?: string
   project_id?: string
+  engagement_id?: string
   date_from?: string
   date_to?: string
   billable?: boolean
@@ -48,6 +49,10 @@ export async function listTimeEntries(
 
   if (filters.project_id) {
     query = query.eq('project_id', filters.project_id)
+  }
+
+  if (filters.engagement_id) {
+    query = query.eq('engagement_id', filters.engagement_id)
   }
 
   if (filters.date_from) {
