@@ -88,7 +88,7 @@ export default async function SettingsPage() {
   } catch {}
 
   return (
-    <div className="space-y-6">
+    <div className="os-narrow space-y-6">
       <div>
         <p className="os-eyebrow">System</p>
         <h1 className="mt-2 os-page-title">Settings</h1>

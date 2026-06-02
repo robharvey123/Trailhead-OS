@@ -325,6 +325,9 @@ body {
   color: var(--text);
 }
 
+/* Opt-in narrow container for long-form / single-document pages (blog, settings forms, previews) */
+.thmock .os-narrow { width: 100%; max-width: 880px; margin-left: auto; margin-right: auto; }
+
 /* Page chrome */
 .thmock .os-page { background: var(--surface); color: var(--text); }
 .thmock .os-page-title { font-family: var(--serif); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }

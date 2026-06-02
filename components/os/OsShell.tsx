@@ -55,7 +55,7 @@ export default function OsShell({
         }`}
       >
         <div
-          className="thmock mx-auto min-h-screen max-w-screen-2xl px-4 pb-8 pt-20 md:px-8 md:pt-8"
+          className="thmock min-h-screen w-full px-4 pb-8 pt-20 md:px-6 md:pt-8 lg:px-8"
           style={{ background: 'var(--surface)' }}
         >
           {children}

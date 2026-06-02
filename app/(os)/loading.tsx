@@ -3,7 +3,7 @@ export default function OsLoading() {
     <div className="min-h-screen text-[color:var(--text)]">
       <div className="hidden md:fixed md:inset-y-0 md:left-0 md:block md:w-72 md:border-r md:border-[color:var(--border)] md:bg-[var(--surface)]" />
       <main className="md:pl-72">
-        <div className="mx-auto max-w-screen-2xl px-4 pb-8 pt-20 md:px-8 md:pt-8">
+        <div className="w-full px-4 pb-8 pt-20 md:px-6 md:pt-8 lg:px-8">
           <div className="h-10 w-48 animate-pulse rounded-2xl bg-[var(--surface-3)]" />
           <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
