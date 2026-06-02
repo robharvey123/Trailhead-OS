@@ -23,8 +23,8 @@ export default function WeeklyUpdateClient({
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
 
-  const input = 'w-full rounded-[5px] border border-[#252a38] bg-[#1a1e28] px-3 py-2 text-sm text-[#e8eaf2] outline-none focus:border-[#4f6ef7]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#565c78]'
+  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
 
   async function saveDraft() {
     setBusy(true); setMsg('')

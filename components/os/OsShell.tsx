@@ -41,7 +41,7 @@ export default function OsShell({
   }
 
   return (
-    <div className="min-h-screen bg-[#0C0C14] text-white">
+    <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A]">
       <Sidebar
         workstreams={workstreams}
         newEnquiryCount={newEnquiryCount}

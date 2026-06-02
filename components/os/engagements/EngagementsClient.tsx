@@ -64,7 +64,7 @@ export default function EngagementsClient({
       </div>
 
       {toast ? (
-        <div style={{ padding: '10px 24px', background: 'var(--accent-dim)', borderBottom: '1px solid var(--accent)', color: '#6b8cff', fontSize: 13 }}>
+        <div style={{ padding: '10px 24px', background: 'var(--accent-dim)', borderBottom: '1px solid var(--accent)', color: 'var(--accent-strong)', fontSize: 13 }}>
           {toast}
         </div>
       ) : null}

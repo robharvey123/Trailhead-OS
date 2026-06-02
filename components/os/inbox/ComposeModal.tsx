@@ -52,7 +52,7 @@ export default function ComposeModal({
 
   const value = (f: Field) => (f === 'to' ? to : f === 'cc' ? cc : bcc)
   const set = (f: Field) => (f === 'to' ? setTo : f === 'cc' ? setCc : setBcc)
-  const input = 'rounded-[5px] border border-[#252a38] bg-[#1a1e28] px-3 py-2 text-sm text-[#e8eaf2] outline-none focus:border-[#4f6ef7]'
+  const input = 'rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   function addRecipient(f: Field, r: Recipient) {
     set(f)((prev) => prev.some((x) => x.email.toLowerCase() === r.email.toLowerCase()) ? prev : [...prev, r])
@@ -73,8 +73,8 @@ export default function ComposeModal({
       : []
     return (
       <div style={{ position: 'relative' }}>
-        <div className="flex flex-wrap items-center gap-1 rounded-[5px] border border-[#252a38] bg-[#1a1e28] px-2 py-1">
-          <span className="mr-1 text-[11px] uppercase tracking-wide text-[#565c78]">{label}</span>
+        <div className="flex flex-wrap items-center gap-1 rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1">
+          <span className="mr-1 text-[11px] uppercase tracking-wide text-[var(--text-3)]">{label}</span>
           {recips.map((r) => (
             <span key={r.email} className={`tag-chip ${r.inCrm ? 'accent' : 'amber'}`} title={r.email}>
               {r.name ? `${r.name} ` : ''}{r.email}{!r.inCrm ? ' · Not in CRM' : ''}
@@ -82,7 +82,7 @@ export default function ComposeModal({
             </span>
           ))}
           <input
-            className="min-w-[120px] flex-1 bg-transparent px-1 py-1 text-sm text-[#e8eaf2] outline-none"
+            className="min-w-[120px] flex-1 bg-transparent px-1 py-1 text-sm text-[var(--text)] outline-none"
             value={q}
             onChange={(e) => setQueries((qq) => ({ ...qq, [f]: e.target.value }))}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitFreeText(f) } }}
@@ -93,9 +93,9 @@ export default function ComposeModal({
         {matches.length > 0 ? (
           <div className="panel" style={{ position: 'absolute', zIndex: 60, left: 0, right: 0, top: 'calc(100% + 2px)', maxHeight: 200, overflowY: 'auto' }}>
             {matches.map((c) => (
-              <button key={c.id} className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#1a1e28]" onClick={() => addRecipient(f, { email: c.email!, name: c.name, inCrm: true, accountId: c.account_id })}>
-                <span className="text-sm text-[#e8eaf2]">{c.name}</span>
-                <span className="text-[11px] text-[#565c78]">{c.email}</span>
+              <button key={c.id} className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[var(--surface-2)]" onClick={() => addRecipient(f, { email: c.email!, name: c.name, inCrm: true, accountId: c.account_id })}>
+                <span className="text-sm text-[var(--text)]">{c.name}</span>
+                <span className="text-[11px] text-[var(--text-3)]">{c.email}</span>
               </button>
             ))}
           </div>
@@ -155,11 +155,11 @@ export default function ComposeModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-[8px] border border-[#252a38] bg-[#13161e]" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#252a38] px-5 py-3">
-          <h2 className="text-base font-semibold text-[#e8eaf2]">New email</h2>
-          <button onClick={onClose} className="text-[#565c78] hover:text-[#e8eaf2]">✕</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={onClose}>
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-[8px] border border-[var(--border)] bg-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3">
+          <h2 className="text-base font-semibold text-[var(--text)]">New email</h2>
+          <button onClick={onClose} className="text-[var(--text-3)] hover:text-[var(--text)]">✕</button>
         </div>
 
         <div className="flex-1 space-y-2 overflow-y-auto p-5">
@@ -178,28 +178,28 @@ export default function ComposeModal({
             ))}
           </div>
           {signature ? (
-            <div className="rounded-[5px] border border-[#252a38] bg-[#1a1e28] p-3">
-              <div className="mb-1 text-[11px] uppercase tracking-wide text-[#565c78]">Signature (appended on send)</div>
-              <div className="text-sm text-[#8b90a8]" dangerouslySetInnerHTML={{ __html: signature }} />
+            <div className="rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] p-3">
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-[var(--text-3)]">Signature (appended on send)</div>
+              <div className="text-sm text-[var(--text-2)]" dangerouslySetInnerHTML={{ __html: signature }} />
             </div>
           ) : null}
-          {error ? <p className="text-sm text-[#ef4444]">{error}</p> : null}
+          {error ? <p className="text-sm text-[var(--red)]">{error}</p> : null}
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#252a38] px-5 py-3">
-          <span className="font-mono text-[11px] text-[#565c78]">Sends from your Workspace mailbox</span>
+        <div className="flex items-center justify-between border-t border-[var(--border)] px-5 py-3">
+          <span className="font-mono text-[11px] text-[var(--text-3)]">Sends from your Workspace mailbox</span>
           <button className="btn btn-primary btn-sm" onClick={doSendCheck} disabled={busy}>{busy ? 'Sending…' : '↗ Send'}</button>
         </div>
       </div>
 
       {addList ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" onClick={() => setAddList(null)}>
-          <div className="w-full max-w-lg rounded-[8px] border border-[#252a38] bg-[#13161e] p-5" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-[#e8eaf2]">These recipients aren’t in your CRM. Add them?</h3>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={() => setAddList(null)}>
+          <div className="w-full max-w-lg rounded-[8px] border border-[var(--border)] bg-white p-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-base font-semibold text-[var(--text)]">These recipients aren’t in your CRM. Add them?</h3>
             <div className="mt-3 space-y-3">
               {addList.map((r, i) => (
-                <div key={r.email} className="rounded-[5px] border border-[#252a38] p-3">
-                  <label className="flex items-center gap-2 text-sm text-[#e8eaf2]">
+                <div key={r.email} className="rounded-[5px] border border-[var(--border)] p-3">
+                  <label className="flex items-center gap-2 text-sm text-[var(--text)]">
                     <input type="checkbox" checked={r.add} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, add: e.target.checked } : x))} />
                     {r.email}
                   </label>

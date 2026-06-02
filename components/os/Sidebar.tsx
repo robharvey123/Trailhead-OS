@@ -40,8 +40,8 @@ function NavLink({
         title={label}
         className={`group relative flex h-9 w-9 items-center justify-center rounded-xl transition ${
           active
-            ? 'bg-[#B8FF00]/10 text-[#B8FF00]'
-            : 'text-[#9CA3AF] hover:bg-[#B8FF00]/5 hover:text-[#B8FF00]'
+            ? 'bg-[#E0F2FE] text-[#0369A1]'
+            : 'text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
         }`}
       >
         {dotColour ? (
@@ -64,8 +64,8 @@ function NavLink({
       onClick={onClick}
       className={`flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm transition ${
         active
-          ? 'bg-[#B8FF00]/10 text-[#B8FF00]'
-          : 'text-[#9CA3AF] hover:bg-[#B8FF00]/5 hover:text-[#B8FF00]'
+          ? 'bg-[#E0F2FE] text-[#0369A1]'
+          : 'text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
       }`}
     >
       <span className="flex min-w-0 items-center gap-3">
@@ -78,8 +78,8 @@ function NavLink({
         <span
           className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
             active
-              ? 'bg-[#0C0C14]/20 text-[#0C0C14]'
-              : 'bg-rose-500/15 text-rose-200'
+              ? 'bg-[#0EA5E9] text-white'
+              : 'bg-rose-100 text-rose-600'
           }`}
         >
           {badge}
@@ -94,7 +94,7 @@ function CollapseToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle:
     <button
       type="button"
       onClick={onToggle}
-      className="flex h-7 w-7 items-center justify-center rounded-lg text-[#9CA3AF] transition hover:bg-[#2A2A3A] hover:text-[#B8FF00]"
+      className="flex h-7 w-7 items-center justify-center rounded-lg text-[#475569] transition hover:bg-[#F1F5F9] hover:text-[#0EA5E9]"
       title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
     >
       <svg
@@ -137,7 +137,7 @@ export default function Sidebar({
 
   const panel = (
     <aside
-      className={`flex h-screen flex-col overflow-hidden border-r border-[#2A2A3A] bg-[#1A1A28] pointer-events-auto transition-[width] duration-300 ${
+      className={`flex h-screen flex-col overflow-hidden border-r border-[#E2E8F0] bg-[#F8FAFC] pointer-events-auto transition-[width] duration-300 ${
         collapsed ? 'w-16' : 'w-72'
       }`}
     >
@@ -146,7 +146,7 @@ export default function Sidebar({
           <Link
             href="/dashboard"
             onClick={() => setMobileOpen(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#2A2A3A] bg-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E2E8F0] bg-white"
             title="Dashboard"
           >
             <span className="text-sm font-bold text-[#0C0C14]">T</span>
@@ -155,7 +155,7 @@ export default function Sidebar({
           <Link
             href="/dashboard"
             onClick={() => setMobileOpen(false)}
-            className="block flex-1 rounded-3xl border border-[#2A2A3A] bg-white px-4 py-4 shadow-sm"
+            className="block flex-1 rounded-3xl border border-[#E2E8F0] bg-white px-4 py-4 shadow-sm"
           >
             <img
               src="/logo.svg"
@@ -217,11 +217,11 @@ export default function Sidebar({
 
           <div className={collapsed ? 'flex flex-col items-center' : ''}>
             {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
                 Workstreams
               </p>
             )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#2A2A3A]" />}
+            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
             <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
               {workstreams.map((workstream) => (
                 <NavLink
@@ -239,11 +239,11 @@ export default function Sidebar({
 
           <div className={collapsed ? 'flex flex-col items-center' : ''}>
             {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
                 Clients
               </p>
             )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#2A2A3A]" />}
+            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
             <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
               <NavLink
                 href="/enquiries"
@@ -300,11 +300,11 @@ export default function Sidebar({
 
           <div className={collapsed ? 'flex flex-col items-center' : ''}>
             {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
                 Commercial
               </p>
             )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#2A2A3A]" />}
+            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
             <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
               <NavLink
                 href="/quotes"
@@ -340,11 +340,11 @@ export default function Sidebar({
 
           <div className={collapsed ? 'flex flex-col items-center' : ''}>
             {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
                 Content
               </p>
             )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#2A2A3A]" />}
+            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
             <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
               <NavLink
                 href="/blog"
@@ -362,11 +362,11 @@ export default function Sidebar({
 
           <div className={collapsed ? 'flex flex-col items-center' : ''}>
             {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#B8FF00]">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
                 Analytics
               </p>
             )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#2A2A3A]" />}
+            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
             <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
               <NavLink
                 href="/analytics"
@@ -391,7 +391,7 @@ export default function Sidebar({
         </div>
       </nav>
 
-      <div className={`flex-shrink-0 space-y-2 border-t border-[#2A2A3A] ${collapsed ? 'p-2' : 'p-4'}`}>
+      <div className={`flex-shrink-0 space-y-2 border-t border-[#E2E8F0] ${collapsed ? 'p-2' : 'p-4'}`}>
         {collapsed ? (
           <>
             <NavLink
@@ -406,7 +406,7 @@ export default function Sidebar({
               onClick={handleSignOut}
               disabled={signingOut}
               title="Sign out"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#2A2A3A] text-xs font-semibold text-[#9CA3AF] transition hover:border-[#B8FF00]/30 hover:text-[#B8FF00] disabled:opacity-60 mx-auto"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] text-xs font-semibold text-[#475569] transition hover:border-[#0EA5E9]/40 hover:text-[#0EA5E9] disabled:opacity-60 mx-auto"
             >
               {signingOut ? '...' : '✕'}
             </button>
@@ -423,7 +423,7 @@ export default function Sidebar({
               type="button"
               onClick={handleSignOut}
               disabled={signingOut}
-              className="flex w-full items-center justify-center rounded-2xl border border-[#2A2A3A] px-4 py-3 text-sm font-medium text-[#9CA3AF] transition hover:border-[#B8FF00]/30 hover:text-[#B8FF00] disabled:opacity-60"
+              className="flex w-full items-center justify-center rounded-2xl border border-[#E2E8F0] px-4 py-3 text-sm font-medium text-[#475569] transition hover:border-[#0EA5E9]/40 hover:text-[#0EA5E9] disabled:opacity-60"
             >
               {signingOut ? 'Signing out...' : 'Sign out'}
             </button>
@@ -438,7 +438,7 @@ export default function Sidebar({
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-40 rounded-2xl border border-[#2A2A3A] bg-[#0C0C14]/90 px-3 py-2 text-sm font-medium text-white backdrop-blur md:hidden"
+        className="fixed left-4 top-4 z-40 rounded-2xl border border-[#E2E8F0] bg-white/90 px-3 py-2 text-sm font-medium text-[#0F172A] backdrop-blur md:hidden"
       >
         Menu
       </button>
@@ -455,7 +455,7 @@ export default function Sidebar({
         <div className="fixed inset-0 z-50 md:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-[#0C0C14]/70"
+            className="absolute inset-0 bg-[rgba(15,23,42,0.45)]"
             onClick={() => setMobileOpen(false)}
             aria-label="Close navigation"
           />

@@ -50,8 +50,8 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
     [projects, accountId]
   )
 
-  const input = 'w-full rounded-[5px] border border-[#252a38] bg-[#1a1e28] px-3 py-2 text-sm text-[#e8eaf2] outline-none focus:border-[#4f6ef7]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[#565c78]'
+  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
 
   function onPickEngagement(id: string) {
     setEngagementId(id)
@@ -109,11 +109,11 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
     : ''
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50" onClick={onClose}>
-      <div className="flex h-full w-full max-w-md flex-col border-l border-[#252a38] bg-[#13161e] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#252a38] px-6 py-4">
-          <h2 className="text-base font-semibold text-[#e8eaf2]">{editing ? 'Edit entry' : 'Add time entry'}</h2>
-          <button onClick={onClose} className="text-[#565c78] hover:text-[#e8eaf2]" type="button">✕</button>
+    <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.45)]" onClick={onClose}>
+      <div className="flex h-full w-full max-w-md flex-col border-l border-[var(--border)] bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
+          <h2 className="text-base font-semibold text-[var(--text)]">{editing ? 'Edit entry' : 'Add time entry'}</h2>
+          <button onClick={onClose} className="text-[var(--text-3)] hover:text-[var(--text)]" type="button">✕</button>
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
@@ -122,8 +122,8 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
             <div>
               <label className={label}>Duration</label>
               <div className="flex items-center gap-1">
-                <input type="number" min={0} className={input} value={hours} onChange={(e) => setHours(e.target.value)} /><span className="text-xs text-[#565c78]">h</span>
-                <input type="number" min={0} max={59} className={input} value={minutes} onChange={(e) => setMinutes(e.target.value)} /><span className="text-xs text-[#565c78]">m</span>
+                <input type="number" min={0} className={input} value={hours} onChange={(e) => setHours(e.target.value)} /><span className="text-xs text-[var(--text-3)]">h</span>
+                <input type="number" min={0} max={59} className={input} value={minutes} onChange={(e) => setMinutes(e.target.value)} /><span className="text-xs text-[var(--text-3)]">m</span>
               </div>
             </div>
           </div>
@@ -154,12 +154,12 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
             </select>
           </div>
           <div><label className={label}>Description</label><textarea className={`${input} min-h-[5rem] resize-y`} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-          <label className="flex items-center gap-2 text-sm text-[#8b90a8]"><input type="checkbox" checked={billable} onChange={(e) => setBillable(e.target.checked)} /> Billable</label>
-          {error ? <p className="text-sm text-[#ef4444]">{error}</p> : null}
+          <label className="flex items-center gap-2 text-sm text-[var(--text-2)]"><input type="checkbox" checked={billable} onChange={(e) => setBillable(e.target.checked)} /> Billable</label>
+          {error ? <p className="text-sm text-[var(--red)]">{error}</p> : null}
 
           {confirmDelete ? (
-            <div className="rounded-[5px] border border-[#ef4444]/40 bg-[#450a0a]/40 p-3">
-              <p className="text-sm text-[#e8eaf2]">Delete this entry? {deleteLabel}</p>
+            <div className="rounded-[5px] border border-[var(--red)] bg-[var(--red-dim)] p-3">
+              <p className="text-sm text-[var(--text)]">Delete this entry? {deleteLabel}</p>
               <div className="mt-2 flex gap-2">
                 <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDelete(false)}>Cancel</button>
                 <button className="btn btn-sm" style={{ background: 'var(--red)', color: 'white' }} onClick={doDelete} disabled={busy}>Delete entry</button>
@@ -168,8 +168,8 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
           ) : null}
         </div>
 
-        <div className="flex items-center justify-between border-t border-[#252a38] px-6 py-4">
-          {editing ? <button className="text-sm text-[#ef4444] hover:opacity-80" onClick={() => setConfirmDelete(true)}>Delete</button> : <span />}
+        <div className="flex items-center justify-between border-t border-[var(--border)] px-6 py-4">
+          {editing ? <button className="text-sm text-[var(--red)] hover:opacity-80" onClick={() => setConfirmDelete(true)}>Delete</button> : <span />}
           <div className="flex gap-2">
             <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
             <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save entry'}</button>
