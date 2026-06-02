@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailhead OS — Inbox</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#0c0e13; --surface:#13161e; --surface-2:#1a1e28; --surface-3:#212636;
+    --border:#252a38; --border-light:#2e3448;
+    --text:#e8eaf2; --text-2:#8b90a8; --text-3:#565c78;
+    --accent:#4f6ef7; --accent-dim:#1e2d6b;
+    --green:#22c55e; --green-dim:#14532d;
+    --amber:#f59e0b; --amber-dim:#451a03;
+    --red:#ef4444;  --red-dim:#450a0a;
+    --emerald:#10b981; --emerald-dim:#064e3b;
+    --grey:#6b7280; --grey-dim:#1f2937;
+    --radius:8px; --radius-sm:5px;
+  }
+  body { font-family:'Syne',sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; overflow:hidden; }
+
+  /* SIDEBAR */
+  .sidebar { width:220px; min-width:220px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+  .sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .logo-mark { width:28px; height:28px; background:var(--accent); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:white; }
+  .logo-text { font-size:14px; font-weight:700; }
+  .logo-text span { color:var(--text-3); font-weight:400; font-size:11px; display:block; margin-top:1px; letter-spacing:0.05em; }
+  .sidebar-section { padding:14px 12px 6px; }
+  .sidebar-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--text-3); letter-spacing:0.12em; text-transform:uppercase; padding:0 8px 6px; }
+  .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:var(--radius-sm); font-size:13px; font-weight:500; color:var(--text-2); cursor:pointer; position:relative; }
+  .nav-item:hover { background:var(--surface-2); color:var(--text); }
+  .nav-item.active { background:var(--accent-dim); color:var(--accent); font-weight:600; }
+  .nav-item.active::before { content:''; position:absolute; left:0; top:4px; bottom:4px; width:2px; background:var(--accent); border-radius:2px; }
+  .nav-icon { font-size:14px; width:18px; text-align:center; }
+  .nav-badge { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; background:var(--surface-3); color:var(--text-3); padding:1px 6px; border-radius:10px; }
+  .nav-badge.unread { background:var(--accent); color:white; }
+  .nav-badge.alert { background:var(--red); color:white; }
+  .sidebar-footer { margin-top:auto; border-top:1px solid var(--border); padding:14px 12px; }
+
+  /* MAIN */
+  .main { flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+  .topbar { height:56px; min-height:56px; border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 20px; gap:14px; background:var(--surface); }
+  .topbar-title { font-size:15px; font-weight:700; }
+  .topbar-count { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-3); background:var(--surface-2); padding:3px 8px; border-radius:4px; }
+  .topbar-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+  /* SYNC pill */
+  .sync-pill { display:flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:var(--surface-2); border:1px solid var(--border); font-family:'DM Mono',monospace; font-size:11px; color:var(--text-3); }
+  .sync-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); }
+
+  /* BUTTONS */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:var(--radius-sm); font-family:'Syne',sans-serif; font-size:12px; font-weight:600; cursor:pointer; border:none; }
+  .btn-primary { background:var(--accent); color:white; }
+  .btn-primary:hover { background:#3d5be0; }
+  .btn-ghost { background:var(--surface-2); color:var(--text-2); border:1px solid var(--border); }
+  .btn-ghost:hover { background:var(--surface-3); color:var(--text); }
+  .btn-sm { padding:5px 10px; font-size:11px; }
+
+  /* 3-PANE INBOX */
+  .inbox { flex:1; display:grid; grid-template-columns: 220px 360px 1fr; height:calc(100vh - 56px); overflow:hidden; }
+
+  /* FOLDERS pane */
+  .folders { border-right:1px solid var(--border); background:var(--surface); padding:12px 8px; overflow-y:auto; }
+  .folder-section { margin-bottom:14px; }
+  .folder-label { font-family:'DM Mono',monospace; font-size:9px; color:var(--text-3); letter-spacing:0.12em; padding:6px 10px 4px; text-transform:uppercase; }
+  .folder { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:var(--radius-sm); font-size:12px; cursor:pointer; color:var(--text-2); }
+  .folder:hover { background:var(--surface-2); color:var(--text); }
+  .folder.active { background:var(--accent-dim); color:var(--accent); font-weight:700; }
+  .folder-count { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; color:var(--text-3); }
+  .folder.active .folder-count { color:var(--accent); }
+
+  /* THREAD LIST pane */
+  .threads { border-right:1px solid var(--border); background:var(--surface); display:flex; flex-direction:column; overflow:hidden; }
+  .threads-search { padding:12px; border-bottom:1px solid var(--border); }
+  .search-input { width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px 7px 30px; font-family:'Syne',sans-serif; font-size:12px; color:var(--text); outline:none; }
+  .search-wrap { position:relative; }
+  .search-icon { position:absolute; left:9px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--text-3); }
+  .threads-list { flex:1; overflow-y:auto; }
+  .thread { padding:11px 14px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .12s; }
+  .thread:hover { background:var(--surface-2); }
+  .thread.active { background:var(--accent-dim); border-left:2px solid var(--accent); padding-left:12px; }
+  .thread.unread .thread-from, .thread.unread .thread-subj { color:var(--text); font-weight:700; }
+  .thread-row { display:flex; align-items:baseline; gap:6px; }
+  .thread-from { font-size:12px; font-weight:600; color:var(--text-2); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .thread-time { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-3); flex-shrink:0; }
+  .thread-subj { font-size:13px; color:var(--text-2); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .thread-snippet { font-size:11px; color:var(--text-3); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .thread-tags { display:flex; gap:4px; margin-top:6px; align-items:center; }
+  .acct-pill { display:inline-flex; align-items:center; gap:4px; padding:1px 7px; border-radius:3px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.04em; background:var(--surface-3); color:var(--text-2); }
+  .acct-pill.matched { background:var(--accent-dim); color:var(--accent); }
+  .acct-pill.unmatched { background:var(--amber-dim); color:var(--amber); }
+  .acct-pill.outbound { background:var(--emerald-dim); color:var(--emerald); }
+  .attach-icon { font-size:11px; color:var(--text-3); }
+  .star { color:var(--amber); font-size:11px; }
+
+  /* READER pane */
+  .reader { display:flex; flex-direction:column; overflow:hidden; background:var(--bg); }
+  .reader-header { padding:18px 24px 14px; border-bottom:1px solid var(--border); }
+  .reader-subject { font-size:18px; font-weight:800; letter-spacing:-0.01em; }
+  .reader-meta-row { display:flex; gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap; }
+  .acct-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background:var(--accent-dim); border:1px solid var(--accent); color:var(--accent); font-size:11px; font-weight:700; cursor:pointer; }
+  .acct-chip:hover { background:var(--accent); color:white; }
+  .acct-chip-icon { font-size:11px; }
+  .meta-chip { padding:3px 8px; border-radius:4px; font-family:'DM Mono',monospace; font-size:10px; background:var(--surface-2); color:var(--text-3); }
+  .reader-actions { display:flex; gap:6px; margin-top:12px; flex-wrap:wrap; }
+
+  .reader-body { flex:1; overflow-y:auto; padding:0 24px; }
+  .message { padding:18px 0; border-bottom:1px solid var(--border); }
+  .message-head { display:flex; gap:12px; align-items:center; margin-bottom:10px; }
+  .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; flex-shrink:0; }
+  .avatar.inbound { background:linear-gradient(135deg, var(--accent), #6b8cff); }
+  .avatar.outbound { background:linear-gradient(135deg, var(--emerald), #34d399); }
+  .msg-meta { flex:1; }
+  .msg-from { font-size:13px; font-weight:700; }
+  .msg-to { font-size:11px; color:var(--text-3); font-family:'DM Mono',monospace; margin-top:2px; }
+  .msg-time { font-family:'DM Mono',monospace; font-size:11px; color:var(--text-3); }
+  .msg-body { font-size:13px; line-height:1.7; color:var(--text-2); white-space:pre-wrap; padding-left:48px; }
+  .msg-attachments { display:flex; gap:8px; padding-left:48px; margin-top:12px; flex-wrap:wrap; }
+  .attach-card { display:flex; gap:8px; align-items:center; padding:8px 12px; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; }
+  .attach-card:hover { border-color:var(--accent); }
+  .attach-icon-lg { font-size:18px; }
+  .attach-name { font-size:12px; font-weight:600; }
+  .attach-size { font-family:'DM Mono',monospace; font-size:10px; color:var(--text-3); }
+
+  .reader-reply { border-top:1px solid var(--border); background:var(--surface); padding:14px 24px; }
+  .reply-input { width:100%; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; font-family:'Syne',sans-serif; font-size:13px; color:var(--text); outline:none; min-height:80px; resize:vertical; }
+  .reply-input:focus { border-color:var(--accent); }
+  .reply-actions { display:flex; gap:8px; margin-top:10px; align-items:center; }
+  .reply-actions .icon-btn { background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); width:30px; height:30px; cursor:pointer; color:var(--text-3); display:flex; align-items:center; justify-content:center; }
+  .reply-actions .icon-btn:hover { color:var(--text); }
+
+  /* UNMATCHED banner */
+  .unmatched-banner { display:flex; gap:10px; align-items:center; background:linear-gradient(135deg, var(--amber-dim), rgba(69,26,3,0.4)); border:1px solid var(--amber); border-radius:var(--radius); padding:10px 14px; margin:14px 0; }
+  .unmatched-icon { font-size:16px; }
+  .unmatched-text { font-size:12px; flex:1; }
+  .unmatched-text b { color:var(--amber); }
+
+  ::-webkit-scrollbar { width:4px; height:4px; }
+  ::-webkit-scrollbar-thumb { background:var(--border-light); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">T</div>
+    <div class="logo-text">Trailhead OS <span>HOLDINGS LTD</span></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Workspace</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">◈</span> CRM <span class="nav-badge">86</span></div>
+    <div class="nav-item"><span class="nav-icon">◇</span> Deals <span class="nav-badge">12</span></div>
+    <div class="nav-item active"><span class="nav-icon">✉</span> Inbox <span class="nav-badge unread">7</span></div>
+    <div class="nav-item"><span class="nav-icon">✓</span> Tasks <span class="nav-badge alert">3</span></div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Projects</div>
+    <div class="nav-item"><span class="nav-icon">◷</span> Timesheet</div>
+    <div class="nav-item"><span class="nav-icon">⊡</span> Documents</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Momentum</div>
+    <div class="nav-item"><span class="nav-icon">▦</span> eBay Listings</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Amazon</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="nav-item"><span class="nav-icon">⚙</span> Settings</div>
+    <div class="nav-item" style="margin-top:2px">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">R</div>
+      <span style="font-size:12px">Rob Harvey</span>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title">Inbox</span>
+    <span class="topbar-count">7 unread · 142 threads</span>
+    <div class="topbar-actions">
+      <div class="sync-pill"><span class="sync-dot"></span> Synced · rob@trailheadholdings.uk</div>
+      <button class="btn btn-ghost btn-sm">+ Quick add</button>
+      <button class="btn btn-primary btn-sm">✎ Compose</button>
+    </div>
+  </div>
+
+  <div class="inbox">
+    <!-- FOLDERS -->
+    <div class="folders">
+      <div class="folder-section">
+        <div class="folder-label">Mailbox</div>
+        <div class="folder active"><span>✉</span> Unread <span class="folder-count">7</span></div>
+        <div class="folder"><span>⊞</span> All <span class="folder-count">142</span></div>
+        <div class="folder"><span>★</span> Starred <span class="folder-count">11</span></div>
+        <div class="folder"><span>⚠</span> Unmatched <span class="folder-count">4</span></div>
+        <div class="folder"><span>↗</span> Sent <span class="folder-count">38</span></div>
+      </div>
+      <div class="folder-section">
+        <div class="folder-label">Pinned Views</div>
+        <div class="folder"><span>◈</span> DRIVER prospects <span class="folder-count">23</span></div>
+        <div class="folder"><span>◇</span> Active deals <span class="folder-count">9</span></div>
+        <div class="folder"><span>◷</span> Awaiting reply <span class="folder-count">12</span></div>
+      </div>
+    </div>
+
+    <!-- THREAD LIST -->
+    <div class="threads">
+      <div class="threads-search">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input class="search-input" placeholder="Search inbox…">
+        </div>
+      </div>
+      <div class="threads-list">
+
+        <div class="thread active unread">
+          <div class="thread-row">
+            <div class="thread-from">Andy Whitfield</div>
+            <div class="thread-time">09:42</div>
+          </div>
+          <div class="thread-subj">RE: DRIVER caffeine pouches — listings plan</div>
+          <div class="thread-snippet">Rob, thanks for the deck. We can do a Phase 1 launch on the website with…</div>
+          <div class="thread-tags">
+            <span class="acct-pill matched">◈ Vape Superstore</span>
+            <span class="attach-icon">📎 2</span>
+          </div>
+        </div>
+
+        <div class="thread unread">
+          <div class="thread-row">
+            <div class="thread-from">Sarah Lin · Haypp UK</div>
+            <div class="thread-time">08:18</div>
+          </div>
+          <div class="thread-subj">Samples + brand deck</div>
+          <div class="thread-snippet">Got the samples this morning, packaging looks great. Forwarding to the…</div>
+          <div class="thread-tags">
+            <span class="acct-pill matched">◈ Haypp UK</span>
+          </div>
+        </div>
+
+        <div class="thread unread">
+          <div class="thread-row">
+            <div class="thread-from">james@northernvape.co.uk</div>
+            <div class="thread-time">07:55</div>
+          </div>
+          <div class="thread-subj">Trade enquiry — caffeine pouch range</div>
+          <div class="thread-snippet">Hi, saw your range at the trade show. We run 14 stores across the north and…</div>
+          <div class="thread-tags">
+            <span class="acct-pill unmatched">⚠ Unmatched</span>
+          </div>
+        </div>
+
+        <div class="thread">
+          <div class="thread-row">
+            <div class="thread-from"><span class="star">★</span> Me → JM Wholesale</div>
+            <div class="thread-time">Yesterday</div>
+          </div>
+          <div class="thread-subj">Distributor terms — revised</div>
+          <div class="thread-snippet">Hi Mark, attached is the revised pricing schedule reflecting the volume…</div>
+          <div class="thread-tags">
+            <span class="acct-pill outbound">↗ Sent · JM Wholesale</span>
+            <span class="attach-icon">📎 1</span>
+          </div>
+        </div>
+
+        <div class="thread">
+          <div class="thread-row">
+            <div class="thread-from">Lisa Carter · Tesco</div>
+            <div class="thread-time">Tue</div>
+          </div>
+          <div class="thread-subj">RE: Range review meeting — June</div>
+          <div class="thread-snippet">Confirming Thursday 12 June, 14:00 at our Welwyn office. Please let reception…</div>
+          <div class="thread-tags">
+            <span class="acct-pill matched">◈ Tesco</span>
+          </div>
+        </div>
+
+        <div class="thread">
+          <div class="thread-row">
+            <div class="thread-from">VPZ Buying Team</div>
+            <div class="thread-time">Tue</div>
+          </div>
+          <div class="thread-subj">Brand deck request</div>
+          <div class="thread-snippet">Hi Rob, our category buyer has asked for a copy of the DRIVER deck and…</div>
+          <div class="thread-tags">
+            <span class="acct-pill matched">◈ VPZ</span>
+          </div>
+        </div>
+
+        <div class="thread">
+          <div class="thread-row">
+            <div class="thread-from">Booker Wholesale</div>
+            <div class="thread-time">Mon</div>
+          </div>
+          <div class="thread-subj">Supplier onboarding — next steps</div>
+          <div class="thread-snippet">Following our call last week, please find attached our supplier pack…</div>
+          <div class="thread-tags">
+            <span class="acct-pill matched">◈ Booker Wholesale</span>
+            <span class="attach-icon">📎 3</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- READER -->
+    <div class="reader">
+      <div class="reader-header">
+        <div class="reader-subject">RE: DRIVER caffeine pouches — listings plan</div>
+        <div class="reader-meta-row">
+          <span class="acct-chip"><span class="acct-chip-icon">◈</span> Vape Superstore</span>
+          <span class="meta-chip">Auto-linked · contact match</span>
+          <span class="meta-chip">3 messages</span>
+        </div>
+        <div class="reader-actions">
+          <button class="btn btn-primary btn-sm">↶ Reply</button>
+          <button class="btn btn-ghost btn-sm">↷ Forward</button>
+          <button class="btn btn-ghost btn-sm">★ Star</button>
+          <button class="btn btn-ghost btn-sm">⊠ Convert to task</button>
+          <button class="btn btn-ghost btn-sm">◇ Convert to deal</button>
+          <button class="btn btn-ghost btn-sm">⚲ Re-link…</button>
+        </div>
+      </div>
+
+      <div class="reader-body">
+        <div class="message">
+          <div class="message-head">
+            <div class="avatar inbound">AW</div>
+            <div class="msg-meta">
+              <div class="msg-from">Andy Whitfield &lt;andy@vapesuperstore.co.uk&gt;</div>
+              <div class="msg-to">to rob@trailheadholdings.uk · cc purchasing@vapesuperstore.co.uk</div>
+            </div>
+            <div class="msg-time">Today · 09:42</div>
+          </div>
+          <div class="msg-body">Rob,
+
+Thanks for the deck. We can do a Phase 1 launch on the website with the four core SKUs you mentioned. Couple of asks before we go live:
+
+1. Confirmed RRP including VAT for each SKU
+2. Lead time on first PO (we'd want stock landed within 3 weeks)
+3. Any in-store POS material — we have 14 of our shops that could trial physical units alongside the online launch
+
+Happy to do a 30 min call later this week to walk through. Tuesday afternoon works for me.
+
+Andy</div>
+          <div class="msg-attachments">
+            <div class="attach-card">
+              <span class="attach-icon-lg">📄</span>
+              <div>
+                <div class="attach-name">VS_Listing_Spec_v2.pdf</div>
+                <div class="attach-size">PDF · 412 KB</div>
+              </div>
+            </div>
+            <div class="attach-card">
+              <span class="attach-icon-lg">🖼</span>
+              <div>
+                <div class="attach-name">store_layout_mockup.png</div>
+                <div class="attach-size">PNG · 1.2 MB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="message">
+          <div class="message-head">
+            <div class="avatar outbound">R</div>
+            <div class="msg-meta">
+              <div class="msg-from">Rob Harvey &lt;rob@trailheadholdings.uk&gt;</div>
+              <div class="msg-to">to andy@vapesuperstore.co.uk</div>
+            </div>
+            <div class="msg-time">Yesterday · 17:20</div>
+          </div>
+          <div class="msg-body">Andy,
+
+Attached the latest deck with refined Phase 1 SKU selection and the indicative pricing per case. Happy to talk through it whenever suits — I'm free most of Wed and Thurs.
+
+Also looped in our distributor side so we can coordinate logistics from day one.
+
+Rob</div>
+        </div>
+
+      </div>
+
+      <div class="reader-reply">
+        <textarea class="reply-input" placeholder="Reply to Andy…"></textarea>
+        <div class="reply-actions">
+          <button class="icon-btn" title="Attach file">📎</button>
+          <button class="icon-btn" title="Bold">B</button>
+          <button class="icon-btn" title="Italic">I</button>
+          <button class="icon-btn" title="Link">⛓</button>
+          <span style="font-family:'DM Mono',monospace; font-size:10px; color:var(--text-3); margin-left:8px">Will send from rob@trailheadholdings.uk</span>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto">Save draft</button>
+          <button class="btn btn-primary btn-sm">↗ Send reply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

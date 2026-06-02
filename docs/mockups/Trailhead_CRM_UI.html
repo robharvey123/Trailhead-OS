@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trailhead OS — CRM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0e13;
+    --surface: #13161e;
+    --surface-2: #1a1e28;
+    --surface-3: #212636;
+    --border: #252a38;
+    --border-light: #2e3448;
+    --text: #e8eaf2;
+    --text-2: #8b90a8;
+    --text-3: #565c78;
+    --accent: #4f6ef7;
+    --accent-dim: #1e2d6b;
+    --accent-glow: rgba(79,110,247,0.15);
+    --green: #22c55e;
+    --green-dim: #14532d;
+    --amber: #f59e0b;
+    --amber-dim: #451a03;
+    --red: #ef4444;
+    --red-dim: #450a0a;
+    --emerald: #10b981;
+    --emerald-dim: #064e3b;
+    --grey: #6b7280;
+    --grey-dim: #1f2937;
+    --radius: 8px;
+    --radius-sm: 5px;
+  }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .logo-text span { color: var(--text-3); font-weight: 400; font-size: 11px; display: block; letter-spacing: 0.05em; margin-top: 1px; }
+
+  .sidebar-section {
+    padding: 16px 12px 8px;
+  }
+
+  .sidebar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 8px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    position: relative;
+  }
+  .nav-item:hover { background: var(--surface-2); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 4px; bottom: 4px;
+    width: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: var(--surface-3);
+    color: var(--text-3);
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+  .nav-item.active .nav-badge { background: var(--accent); color: white; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    padding: 14px 12px;
+  }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    height: 56px;
+    min-height: 56px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    background: var(--surface);
+  }
+
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+
+  .topbar-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    background: var(--surface-2);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  /* FILTER BAR */
+  .filterbar {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: var(--surface);
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 320px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px 7px 32px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input::placeholder { color: var(--text-3); }
+  .search-input:focus { border-color: var(--accent); }
+
+  .filter-select {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    color: var(--text-2);
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+
+  .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-3);
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+
+  /* TABLE */
+  .accounts-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .accounts-table thead th {
+    padding: 10px 16px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  .accounts-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .accounts-table tbody tr:hover { background: var(--surface-2); }
+  .accounts-table tbody tr.selected { background: var(--accent-dim); }
+
+  .accounts-table td {
+    padding: 11px 16px;
+    font-size: 13px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .td-name { font-weight: 600; }
+  .td-sub {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .channel-tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: var(--surface-3);
+    color: var(--text-2);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .status-prospect { color: #6b8cff; background: rgba(79,110,247,0.12); }
+  .status-contacted { color: var(--amber); background: var(--amber-dim); }
+  .status-active { color: var(--green); background: var(--green-dim); }
+  .status-listed { color: var(--emerald); background: var(--emerald-dim); }
+  .status-declined { color: var(--red); background: var(--red-dim); }
+  .status-on-hold { color: var(--grey); background: var(--grey-dim); }
+
+  .website-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    text-decoration: none;
+  }
+  .website-link:hover { color: var(--accent); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #3d5be0; }
+  .btn-ghost { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-light); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  /* DETAIL PANEL */
+  .detail-panel {
+    position: fixed;
+    right: 0; top: 0; bottom: 0;
+    width: 480px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+    overflow: hidden;
+  }
+  .detail-panel.open { transform: translateX(0); }
+
+  .panel-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-close {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--text-3);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .panel-close:hover { background: var(--surface-2); color: var(--text); }
+
+  .panel-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-top: 4px;
+  }
+  .panel-meta { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+
+  .panel-section { margin-bottom: 24px; }
+  .panel-section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field-item { }
+  .field-label { font-size: 10px; color: var(--text-3); font-family: 'DM Mono', monospace; margin-bottom: 3px; letter-spacing: 0.05em; }
+  .field-value { font-size: 13px; color: var(--text); font-weight: 500; }
+  .field-value.mono { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-2); }
+
+  .contact-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .contact-name { font-weight: 700; font-size: 13px; }
+  .contact-role { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .contact-email { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); margin-top: 6px; }
+
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .activity-icon.email { background: var(--accent-dim); }
+  .activity-icon.call { background: var(--green-dim); }
+  .activity-icon.meeting { background: var(--amber-dim); }
+  .activity-icon.note { background: var(--surface-3); }
+  .activity-content { flex: 1; }
+  .activity-subject { font-size: 13px; font-weight: 600; }
+  .activity-date { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-3); margin-top: 2px; }
+  .activity-notes { font-size: 12px; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
+
+  .next-action-card {
+    background: linear-gradient(135deg, var(--accent-dim), rgba(30,45,107,0.5));
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .next-action-icon { font-size: 16px; margin-top: 1px; }
+  .next-action-label { font-size: 10px; color: rgba(79,110,247,0.7); font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
+  .next-action-text { font-size: 13px; font-weight: 600; color: var(--accent); }
+
+  /* PIPELINE VIEW */
+  .pipeline-view {
+    display: none;
+    padding: 20px 24px;
+    gap: 12px;
+    overflow-x: auto;
+  }
+  .pipeline-view.active { display: flex; }
+
+  .pipeline-col {
+    min-width: 220px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .pipeline-col-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pipeline-col-title { font-size: 12px; font-weight: 700; }
+  .pipeline-col-count {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: var(--surface-3);
+    padding: 1px 6px;
+    border-radius: 10px;
+    color: var(--text-3);
+  }
+  .pipeline-col-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 200px; }
+  .pipeline-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pipeline-card:hover { border-color: var(--accent); }
+  .pipeline-card-name { font-size: 12px; font-weight: 700; }
+  .pipeline-card-channel { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-3); margin-top: 3px; }
+
+  /* VIEW TOGGLE */
+  .view-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+  }
+  .view-btn {
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text-3);
+    transition: all 0.15s;
+    font-family: 'Syne', sans-serif;
+  }
+  .view-btn.active { background: var(--surface-3); color: var(--text); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-3);
+  }
+  .empty-state-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-state-title { font-size: 16px; font-weight: 700; color: var(--text-2); margin-bottom: 6px; }
+  .empty-state-text { font-size: 13px; line-height: 1.6; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 20px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; color: var(--text-3); font-family: 'DM Mono', monospace; letter-spacing: 0.06em; margin-bottom: 5px; display: block; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .stat-item {
+    flex: 1;
+    padding: 12px 20px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-value { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+  .stat-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+  .table-view { display: block; }
+  .table-view.hidden { display: none; }
+
+  .no-results { padding: 40px; text-align: center; color: var(--text-3); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">T</div>
+    <div class="logo-text">Trailhead OS <span>HOLDINGS LTD</span></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Workspace</div>
+    <div class="nav-item"><span class="nav-icon">⊞</span> Dashboard</div>
+    <div class="nav-item active"><span class="nav-icon">◈</span> CRM <span class="nav-badge">86</span></div>
+    <div class="nav-item"><span class="nav-icon">◎</span> Projects</div>
+    <div class="nav-item"><span class="nav-icon">⊡</span> Documents</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Momentum</div>
+    <div class="nav-item"><span class="nav-icon">▦</span> eBay Listings</div>
+    <div class="nav-item"><span class="nav-icon">◻</span> Amazon</div>
+    <div class="nav-item"><span class="nav-icon">△</span> Pricing</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">DRIVER</div>
+    <div class="nav-item"><span class="nav-icon">◉</span> Go-To-Market</div>
+    <div class="nav-item"><span class="nav-icon">⊠</span> Pipeline</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="nav-item"><span class="nav-icon">⚙</span> Settings</div>
+    <div class="nav-item" style="margin-top:2px">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">R</div>
+      <span style="font-size:12px">Rob Harvey</span>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="topbar-title">CRM</span>
+    <span class="topbar-count" id="totalCount">86 accounts</span>
+    <div class="topbar-actions">
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="setView('list')">List</button>
+        <button class="view-btn" onclick="setView('pipeline')">Pipeline</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('importModal')">↑ Import</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('addModal')">+ Add Account</button>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-value" id="stat-prospect">86</div>
+      <div class="stat-label">Prospect</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="stat-contacted" style="color:var(--amber)">0</div>
+      <div class="stat-label">Contacted</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="stat-active" style="color:var(--green)">0</div>
+      <div class="stat-label">Active</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="stat-listed" style="color:var(--emerald)">0</div>
+      <div class="stat-label">Listed</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="stat-high">44</div>
+      <div class="stat-label">High Priority</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="stat-channels">6</div>
+      <div class="stat-label">Channels</div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filterbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input class="search-input" type="text" placeholder="Search accounts..." oninput="filterTable()" id="searchInput">
+    </div>
+    <select class="filter-select" onchange="filterTable()" id="channelFilter">
+      <option value="">All Channels</option>
+      <option>Major UK Retailers</option>
+      <option>UK Distributors</option>
+      <option>UK Wholesalers</option>
+      <option>UK Vape Shop Chains</option>
+      <option>Online Vape Retailers UK &amp; EU</option>
+      <option>Online Pouch Retailers UK &amp; EU</option>
+    </select>
+    <select class="filter-select" onchange="filterTable()" id="statusFilter">
+      <option value="">All Statuses</option>
+      <option>Prospect</option>
+      <option>Contacted</option>
+      <option>Active</option>
+      <option>Listed</option>
+      <option>Declined</option>
+      <option>On Hold</option>
+    </select>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TABLE VIEW -->
+    <div class="table-view" id="listView">
+      <table class="accounts-table">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Channel</th>
+            <th>Status</th>
+            <th>Website</th>
+            <th>Key Contact</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="accountsBody"></tbody>
+      </table>
+      <div class="no-results" id="noResults" style="display:none">No accounts match your filters.</div>
+    </div>
+
+    <!-- PIPELINE VIEW -->
+    <div class="pipeline-view" id="pipelineView">
+      <div class="pipeline-col">
+        <div class="pipeline-col-header">
+          <span style="color:#6b8cff">●</span>
+          <span class="pipeline-col-title">Prospect</span>
+          <span class="pipeline-col-count" id="pipe-prospect">86</span>
+        </div>
+        <div class="pipeline-col-body" id="pipe-col-prospect"></div>
+      </div>
+      <div class="pipeline-col">
+        <div class="pipeline-col-header">
+          <span style="color:var(--amber)">●</span>
+          <span class="pipeline-col-title">Contacted</span>
+          <span class="pipeline-col-count" id="pipe-contacted">0</span>
+        </div>
+        <div class="pipeline-col-body" id="pipe-col-contacted">
+          <div class="empty-state" style="padding:20px">
+            <div style="font-size:11px">No accounts yet</div>
+          </div>
+        </div>
+      </div>
+      <div class="pipeline-col">
+        <div class="pipeline-col-header">
+          <span style="color:var(--green)">●</span>
+          <span class="pipeline-col-title">Active</span>
+          <span class="pipeline-col-count">0</span>
+        </div>
+        <div class="pipeline-col-body">
+          <div class="empty-state" style="padding:20px">
+            <div style="font-size:11px">No accounts yet</div>
+          </div>
+        </div>
+      </div>
+      <div class="pipeline-col">
+        <div class="pipeline-col-header">
+          <span style="color:var(--emerald)">●</span>
+          <span class="pipeline-col-title">Listed</span>
+          <span class="pipeline-col-count">0</span>
+        </div>
+        <div class="pipeline-col-body">
+          <div class="empty-state" style="padding:20px">
+            <div style="font-size:11px">No accounts yet</div>
+          </div>
+        </div>
+      </div>
+      <div class="pipeline-col">
+        <div class="pipeline-col-header">
+          <span style="color:var(--red)">●</span>
+          <span class="pipeline-col-title">Declined</span>
+          <span class="pipeline-col-count">0</span>
+        </div>
+        <div class="pipeline-col-body">
+          <div class="empty-state" style="padding:20px">
+            <div style="font-size:11px">No accounts yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ACCOUNT DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <div class="panel-header">
+    <button class="panel-close" onclick="closePanel()">✕</button>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text-3);letter-spacing:0.1em;text-transform:uppercase">Account Detail</div>
+    <div class="panel-name" id="panelName">—</div>
+    <div class="panel-meta" id="panelMeta"></div>
+  </div>
+  <div class="panel-body">
+    <div class="next-action-card" id="nextActionCard" style="display:none">
+      <div class="next-action-icon">→</div>
+      <div>
+        <div class="next-action-label">Next Action</div>
+        <div class="next-action-text" id="nextActionText">—</div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Account Info</div>
+      <div class="field-grid" id="panelFields"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">
+        Contacts
+        <button class="btn btn-ghost btn-sm" onclick="openModal('addContactModal')">+ Add</button>
+      </div>
+      <div id="panelContacts"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">
+        Activity Log
+        <button class="btn btn-ghost btn-sm" onclick="openModal('addActivityModal')">+ Log</button>
+      </div>
+      <div id="panelActivities">
+        <div style="font-size:12px;color:var(--text-3);padding:10px 0">No activities logged yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ACCOUNT MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">Add Account</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Business Name *</label><input class="form-input" placeholder="e.g. Tesco"></div>
+      <div class="form-group"><label class="form-label">Website</label><input class="form-input" placeholder="tesco.com"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" placeholder="+44..."></div>
+      <div class="form-group"><label class="form-label">Email / Contact</label><input class="form-input" placeholder="buyer@company.com"></div>
+    </div>
+    <div class="form-group"><label class="form-label">HQ / Address</label><input class="form-input" placeholder="Full address or city"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Channel</label>
+        <select class="form-select">
+          <option>Major UK Retailers</option>
+          <option>UK Distributors</option>
+          <option>UK Wholesalers</option>
+          <option>UK Vape Shop Chains</option>
+          <option>Online Vape Retailers UK &amp; EU</option>
+          <option>Online Pouch Retailers UK &amp; EU</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select">
+          <option>Prospect</option>
+          <option>Contacted</option>
+          <option>Active</option>
+          <option>Listed</option>
+          <option>Declined</option>
+          <option>On Hold</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" placeholder="Context, priority, intro route..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CONTACT MODAL -->
+<div class="modal-overlay" id="addContactModal">
+  <div class="modal">
+    <div class="modal-title">Add Contact</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" placeholder="Jane Smith"></div>
+      <div class="form-group"><label class="form-label">Role / Title</label><input class="form-input" placeholder="Category Buyer"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" placeholder="jane@company.com"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" placeholder="+44..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addContactModal')">Cancel</button>
+      <button class="btn btn-primary">Save Contact</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ACTIVITY MODAL -->
+<div class="modal-overlay" id="addActivityModal">
+  <div class="modal">
+    <div class="modal-title">Log Activity</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select">
+          <option>Email</option>
+          <option>Call</option>
+          <option>Meeting</option>
+          <option>Note</option>
+          <option>Task</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Subject</label><input class="form-input" placeholder="Intro email sent"></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" placeholder="What was discussed, outcome..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Next Action</label><input class="form-input" placeholder="Follow up in 2 weeks"></div>
+      <div class="form-group"><label class="form-label">Next Action Date</label><input class="form-input" type="date"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addActivityModal')">Cancel</button>
+      <button class="btn btn-primary">Save Activity</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-title">Import from Excel</div>
+    <div style="background:var(--surface-2);border:2px dashed var(--border-light);border-radius:var(--radius);padding:28px;text-align:center;margin-bottom:16px">
+      <div style="font-size:28px;margin-bottom:10px">⬆</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:4px">Drop your .xlsx file here</div>
+      <div style="font-size:11px;color:var(--text-3)">Trailhead_CRM_Master.xlsx or any contact list in the standard format</div>
+    </div>
+    <div style="font-size:11px;color:var(--text-3);line-height:1.7">
+      Expected columns: Business Name, Website, Phone, Email, Address, Key Contact, Role, Notes, Channel<br>
+      Duplicate accounts will be updated, not duplicated.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn btn-primary">Choose File</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const accounts = [
+  {id:1, name:"Tesco", website:"tesco.com", phone:"+44 (0)800 505555", email:"new.supplier@tesco.com", address:"Welwyn Garden City AL7 1GA", contact:"", role:"Buyer – Tobacco & Alternatives", notes:"Stocks full Nordic Spirit/VELO range; Tesco Extra carries widest NP SKUs", channel:"Major UK Retailers", status:"Prospect"},
+  {id:2, name:"Sainsbury's", website:"about.sainsburys.co.uk", phone:"+44 (0)800 636262", email:"supplier.helpdesk@sainsburys.co.uk", address:"London EC1N 2HT", contact:"", role:"Buyer – BWS / Tobacco Alt", notes:"Listed KLAR nicotine pouches Jan 2025", channel:"Major UK Retailers", status:"Prospect"},
+  {id:3, name:"WHSmith", website:"whsmith.co.uk", phone:"+44 (0)1793 616161", email:"supplier@whsmith.co.uk", address:"Swindon SN3 3RX", contact:"", role:"Buyer – Health & Convenience", notes:"ZYN listed Aug 2025; Denssi caffeine pouches nationwide", channel:"Major UK Retailers", status:"Prospect"},
+  {id:4, name:"Asda", website:"asda.com", phone:"+44 (0)113 243 5435", email:"new.supplier@asda.co.uk", address:"Leeds LS11 5AD", contact:"", role:"Buyer – Tobacco & Next-Gen", notes:"Growing NP range; active convenience reformatting", channel:"Major UK Retailers", status:"Prospect"},
+  {id:5, name:"Boots UK", website:"boots.com", phone:"+44 (0)115 950 6111", email:"buyer@boots.co.uk", address:"Nottingham NG2 3AA", contact:"", role:"Buyer – Healthcare & Supplements", notes:"Lists NPs as health/wellness adjacency", channel:"Major UK Retailers", status:"Prospect"},
+  {id:6, name:"Holland & Barrett", website:"hollandandbarrett.com", phone:"+44 (0)1788 578820", email:"trading@hollandandbarrett.com", address:"Nuneaton CV10 7RH", contact:"", role:"Buyer – Supplements / Energy", notes:"Strong appetite for functional energy products; 800+ UK stores", channel:"Major UK Retailers", status:"Prospect"},
+  {id:7, name:"Vape Superstore", website:"vapesuperstore.co.uk", phone:"+44 (0)1282 507629", email:"andy@vapesuperstore.co.uk", address:"Nelson, Lancashire", contact:"Andy", role:"Commercial / Buyer", notes:"Introduced by Ged Shuddal Apr 2026. Active V&YOU buyer; Rob is KAM. High priority.", channel:"Online Vape Retailers UK & EU", status:"Contacted"},
+  {id:8, name:"JM Wholesale Ltd", website:"jm-wholesale.co.uk", phone:"", email:"sales@jm-wholesale.co.uk", address:"Harlow, Essex", contact:"", role:"Head of Sales / Commercial", notes:"Largest UK vape & NP distributor; official ZYN wholesale supplier", channel:"UK Distributors", status:"Prospect"},
+  {id:9, name:"DCS Group", website:"dcsgroup.com", phone:"+44 (0)1789 208000", email:"info@dcsgroup.com", address:"Banbury OX16 2AA", contact:"", role:"Category Director – FMCG", notes:"UK's largest FMCG distributor; major convenience channel reach", channel:"UK Distributors", status:"Prospect"},
+  {id:10, name:"Booker Wholesale", website:"booker.co.uk", phone:"+44 (0)1933 371000", email:"supplier.relations@booker.co.uk", address:"Wellingborough NN8 1LT", contact:"", role:"Category Manager – Tobacco & NGP", notes:"UK's largest cash & carry; part of Tesco Group; 200+ depots", channel:"UK Wholesalers", status:"Prospect"},
+  {id:11, name:"Bestway Wholesale", website:"bestwaywholesale.co.uk", phone:"+44 (0)20 8453 1234", email:"contact@bestway.co.uk", address:"Park Royal, London NW10 7BW", contact:"", role:"Category Manager – Tobacco", notes:"Largest independent cash & carry; 60+ depots", channel:"UK Wholesalers", status:"Prospect"},
+  {id:12, name:"VPZ", website:"vpz.co.uk", phone:"+44 (0)141 255 0525", email:"info@vpz.co.uk", address:"Glasgow G51 1EB", contact:"", role:"Head of Buying / Commercial", notes:"UK's largest vape chain; 160+ stores; NPs a growth category", channel:"UK Vape Shop Chains", status:"Prospect"},
+  {id:13, name:"Haypp UK", website:"haypp.com/uk", phone:"+44 (0)20 4551 4200", email:"support@haypp.com", address:"Sweden HQ; UK operations", contact:"", role:"UK Commercial Manager", notes:"Leading UK NP specialist; 40+ brands; high traffic", channel:"Online Pouch Retailers UK & EU", status:"Prospect"},
+  {id:14, name:"Pouchline", website:"pouchline.com", phone:"", email:"info@pouchline.com", address:"UK", contact:"", role:"Head of Commercial", notes:"UK's original online NP store; open to new listings", channel:"Online Pouch Retailers UK & EU", status:"Prospect"},
+  {id:15, name:"Electric Tobacconist", website:"electrictobacconist.co.uk", phone:"", email:"support@electrictobacconist.co.uk", address:"UK / US (dual market)", contact:"", role:"Buyer – Tobacco Alternatives", notes:"Premium online vape & tobacco alt retailer; NP focus", channel:"Online Vape Retailers UK & EU", status:"Prospect"},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentView = 'list';
+let selectedAccount = null;
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function statusClass(s) {
+  return 'status-' + s.toLowerCase().replace(' ','-');
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('accountsBody');
+  const noRes = document.getElementById('noResults');
+  if (!data.length) {
+    tbody.innerHTML = '';
+    noRes.style.display = 'block';
+    return;
+  }
+  noRes.style.display = 'none';
+  tbody.innerHTML = data.map(a => `
+    <tr onclick="openPanel(${a.id})" ${selectedAccount===a.id?'class="selected"':''}>
+      <td>
+        <div class="td-name">${a.name}</div>
+        <div class="td-sub">${a.address||'—'}</div>
+      </td>
+      <td><span class="channel-tag">${shortChannel(a.channel)}</span></td>
+      <td><span class="status-badge ${statusClass(a.status)}">${a.status}</span></td>
+      <td><a class="website-link" href="https://${a.website}" target="_blank">${a.website||'—'}</a></td>
+      <td style="font-size:12px;color:var(--text-2)">${a.contact||'—'}</td>
+      <td style="font-size:11px;color:var(--text-3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(a.notes||'').substring(0,60)}${a.notes&&a.notes.length>60?'...':''}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('totalCount').textContent = `${data.length} account${data.length!==1?'s':''}`;
+}
+
+function shortChannel(ch) {
+  const map = {
+    'Major UK Retailers':'Retailers',
+    'UK Distributors':'Distributors',
+    'UK Wholesalers':'Wholesalers',
+    'UK Vape Shop Chains':'Vape Chains',
+    'Online Vape Retailers UK & EU':'Online Vape',
+    'Online Pouch Retailers UK & EU':'Online Pouch',
+  };
+  return map[ch] || ch;
+}
+
+function renderPipeline(data) {
+  const statuses = ['Prospect','Contacted','Active','Listed','Declined'];
+  statuses.forEach(s => {
+    const col = document.getElementById('pipe-col-' + s.toLowerCase());
+    if (!col) return;
+    const items = data.filter(a => a.status === s);
+    if (!items.length) {
+      col.innerHTML = '<div class="empty-state" style="padding:20px"><div style="font-size:11px">No accounts</div></div>';
+      return;
+    }
+    col.innerHTML = items.map(a => `
+      <div class="pipeline-card" onclick="openPanel(${a.id})">
+        <div class="pipeline-card-name">${a.name}</div>
+        <div class="pipeline-card-channel">${shortChannel(a.channel)}</div>
+      </div>
+    `).join('');
+    const countEl = document.getElementById('pipe-' + s.toLowerCase());
+    if (countEl) countEl.textContent = items.length;
+  });
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const ch = document.getElementById('channelFilter').value;
+  const st = document.getElementById('statusFilter').value;
+  const filtered = accounts.filter(a => {
+    if (q && !a.name.toLowerCase().includes(q) && !a.email.toLowerCase().includes(q)) return false;
+    if (ch && a.channel !== ch) return false;
+    if (st && a.status !== st) return false;
+    return true;
+  });
+  renderTable(filtered);
+  renderPipeline(filtered);
+}
+
+// ── PANEL ─────────────────────────────────────────────────────────────────────
+function openPanel(id) {
+  const a = accounts.find(x => x.id === id);
+  if (!a) return;
+  selectedAccount = id;
+
+  document.getElementById('panelName').textContent = a.name;
+
+  const meta = document.getElementById('panelMeta');
+  meta.innerHTML = `
+    <span class="status-badge ${statusClass(a.status)}">${a.status}</span>
+    <span class="channel-tag">${a.channel}</span>
+    ${a.website ? `<a class="website-link" href="https://${a.website}" target="_blank">↗ ${a.website}</a>` : ''}
+  `;
+
+  document.getElementById('panelFields').innerHTML = `
+    <div class="field-item"><div class="field-label">Phone</div><div class="field-value mono">${a.phone||'—'}</div></div>
+    <div class="field-item"><div class="field-label">Email</div><div class="field-value mono" style="font-size:11px">${a.email||'—'}</div></div>
+    <div class="field-item" style="grid-column:1/-1"><div class="field-label">Address</div><div class="field-value">${a.address||'—'}</div></div>
+    <div class="field-item" style="grid-column:1/-1"><div class="field-label">Notes</div><div class="field-value" style="font-size:12px;color:var(--text-2);line-height:1.6">${a.notes||'—'}</div></div>
+  `;
+
+  const contacts = document.getElementById('panelContacts');
+  if (a.contact) {
+    contacts.innerHTML = `
+      <div class="contact-card">
+        <div class="contact-name">${a.contact}</div>
+        <div class="contact-role">${a.role||''}</div>
+        <div class="contact-email">${a.email||''}</div>
+      </div>
+    `;
+  } else {
+    contacts.innerHTML = `<div style="font-size:12px;color:var(--text-3);padding:6px 0">No named contacts yet. <span style="color:var(--accent);cursor:pointer" onclick="openModal('addContactModal')">Add one →</span></div>`;
+  }
+
+  // Demo activity for Vape Superstore
+  const acts = document.getElementById('panelActivities');
+  if (a.name === 'Vape Superstore') {
+    acts.innerHTML = `
+      <div class="activity-item">
+        <div class="activity-icon email">📧</div>
+        <div class="activity-content">
+          <div class="activity-subject">Intro email sent</div>
+          <div class="activity-date">20 Apr 2026</div>
+          <div class="activity-notes">Sent intro to Andy via andy@vapesuperstore.co.uk. Referenced Ged Shuddal intro. Attached DRIVER one-pager.</div>
+        </div>
+      </div>
+    `;
+    document.getElementById('nextActionCard').style.display = 'flex';
+    document.getElementById('nextActionText').textContent = 'Follow up if no reply by 27 Apr';
+  } else {
+    acts.innerHTML = `<div style="font-size:12px;color:var(--text-3);padding:10px 0">No activities logged yet.</div>`;
+    document.getElementById('nextActionCard').style.display = 'none';
+  }
+
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('detailPanel').classList.remove('open');
+  selectedAccount = null;
+}
+
+// ── VIEW TOGGLE ───────────────────────────────────────────────────────────────
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('listView').classList.toggle('hidden', v !== 'list');
+  document.getElementById('pipelineView').classList.toggle('active', v === 'pipeline');
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+renderTable(accounts);
+renderPipeline(accounts);
+</script>
+</body>
+</html>
