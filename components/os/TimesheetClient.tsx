@@ -66,7 +66,7 @@ export default function TimesheetClient({
   )
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<TimeEntry | null>(null)
-  const [capToast, setCapToast] = useState<{ msg: string; level: 'amber' | 'red' } | null>(null)
+  const [capToast, setCapToast] = useState<{ msg: string; level: 'amber' | 'red'; engagementId?: string } | null>(null)
 
   const accountName = useMemo(() => new Map(accounts.map((a) => [a.id, a.name])), [accounts])
   const engById = useMemo(() => new Map(engagements.map((e) => [e.id, e])), [engagements])
@@ -133,7 +133,7 @@ export default function TimesheetClient({
       const { used, pct, included } = detail.hoursThisMonth
       setEngHours((m) => ({ ...m, [engagementId]: used }))
       const e = engById.get(engagementId)
-      if (pct >= 100) setCapToast({ level: 'red', msg: `${e?.name ?? 'Engagement'}: ${pct}% of monthly hours used (${used.toFixed(1)} / ${included ?? '—'}) — over cap triggers approval.` })
+      if (pct >= 100) setCapToast({ level: 'red', engagementId, msg: `${e?.name ?? 'Engagement'}: ${pct}% of monthly hours used (${used.toFixed(1)} / ${included ?? '—'}) — over cap triggers approval.` })
       else if (pct >= 80) setCapToast({ level: 'amber', msg: `${e?.name ?? 'Engagement'}: ${pct}% of monthly hours used (${used.toFixed(1)} / ${included ?? '—'}).` })
     } catch { /* non-fatal */ }
   }
@@ -239,7 +239,10 @@ export default function TimesheetClient({
       {capToast ? (
         <div style={{ padding: '8px 24px', background: capToast.level === 'red' ? 'var(--red-dim)' : 'var(--amber-dim)', borderBottom: `1px solid ${capToast.level === 'red' ? 'var(--red)' : 'var(--amber)'}`, color: capToast.level === 'red' ? 'var(--red)' : 'var(--amber)', fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
           <span>{capToast.msg}</span>
-          <button onClick={() => setCapToast(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>✕</button>
+          <span style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            {capToast.engagementId ? <Link href={`/engagements/${capToast.engagementId}`} style={{ color: 'inherit', textDecoration: 'underline' }}>Request approval</Link> : null}
+            <button onClick={() => setCapToast(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>✕</button>
+          </span>
         </div>
       ) : null}
 

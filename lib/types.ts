@@ -305,6 +305,40 @@ export interface Tier1MilestoneSummary {
   invoiced: number
 }
 
+export type ApprovalType = 'hours_overage' | 'slotting_fee' | 'exhibition' | 'travel' | 'third_party'
+export type ApprovalStatus = 'Open' | 'Approved' | 'Declined' | 'Withdrawn'
+
+export const APPROVAL_TYPE_LABELS: Record<ApprovalType, string> = {
+  hours_overage: 'Hours overage',
+  slotting_fee: 'Slotting fee',
+  exhibition: 'Exhibition spend',
+  travel: 'Travel',
+  third_party: 'Third-party cost',
+}
+
+export interface ApprovalRequest {
+  id: string
+  engagement_id: string
+  requester_id: string | null
+  approver_id: string | null
+  type: ApprovalType
+  amount: number | null
+  currency: string
+  description: string | null
+  status: ApprovalStatus
+  requested_at: string
+  decided_at: string | null
+  decision_notes: string | null
+  related_entity_type: 'time_entry' | 'invoice_line' | 'expense' | 'milestone' | null
+  related_entity_id: string | null
+  gmail_thread_id: string | null
+  created_at: string
+}
+
+export interface ApprovalRequestWithRelations extends ApprovalRequest {
+  approver?: { id: string; name: string; email: string | null } | null
+}
+
 export type EmailMatchMethod = 'contact_email' | 'domain' | 'unmatched' | 'manual'
 
 export interface EmailLog {

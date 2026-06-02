@@ -6,11 +6,21 @@ import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
 import type { EngagementDetail } from '@/lib/db/engagements'
-import type { Tier1MilestoneWithAccount, TimeEntry } from '@/lib/types'
+import {
+  APPROVAL_TYPE_LABELS,
+  type ApprovalRequestWithRelations,
+  type ApprovalType,
+  type Tier1MilestoneWithAccount,
+  type TimeEntry,
+} from '@/lib/types'
 
 type Named = { id: string; name: string }
-const TABS = ['Overview', 'Time', 'Tier 1', 'Milestones', 'Projects', 'Weekly Updates', 'Documents'] as const
+const TABS = ['Overview', 'Time', 'Tier 1', 'Milestones', 'Projects', 'Approvals', 'Weekly Updates', 'Documents'] as const
 type Tab = (typeof TABS)[number]
+
+const APPROVAL_STATUS_CLASS: Record<string, string> = {
+  Open: 'status-contacted', Approved: 'status-active', Declined: 'status-declined', Withdrawn: 'status-on_hold',
+}
 
 const STATUS_CLASS: Record<string, string> = {
   Active: 'status-active', Draft: 'status-on_hold', Paused: 'status-contacted',
@@ -33,12 +43,14 @@ export default function EngagementDetailClient({
   projects,
   accounts,
   documents = [],
+  approvals: initialApprovals = [],
 }: {
   detail: EngagementDetail
   timeEntries: TimeEntry[]
   projects: Array<{ id: string; name: string; status: string }>
   accounts: Named[]
   documents?: EngagementDoc[]
+  approvals?: ApprovalRequestWithRelations[]
 }) {
   const router = useRouter()
   const e = detail.engagement
@@ -47,6 +59,42 @@ export default function EngagementDetailClient({
   const [groupByWs, setGroupByWs] = useState(false)
   const [error, setError] = useState('')
   const [addAccountId, setAddAccountId] = useState('')
+  const [approvals, setApprovals] = useState<ApprovalRequestWithRelations[]>(initialApprovals)
+  const [reqType, setReqType] = useState<ApprovalType>('hours_overage')
+  const [reqAmount, setReqAmount] = useState('')
+  const [reqDesc, setReqDesc] = useState('')
+
+  async function createApprovalReq() {
+    try {
+      const { approval } = await apiFetch<{ approval: ApprovalRequestWithRelations }>('/api/approvals', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ engagement_id: e.id, type: reqType, amount: reqAmount ? Number(reqAmount) : null, description: reqDesc || null }),
+      })
+      setApprovals((a) => [approval, ...a])
+      setReqAmount(''); setReqDesc('')
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to create approval') }
+  }
+  async function decideApprovalReq(id: string, action: 'approve' | 'decline' | 'withdraw') {
+    try {
+      const { approval } = await apiFetch<{ approval: ApprovalRequestWithRelations }>(`/api/approvals/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }),
+      })
+      setApprovals((a) => a.map((x) => (x.id === id ? { ...x, ...approval, approver: x.approver } : x)))
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to update approval') }
+  }
+  async function emailApprovalReq(id: string) {
+    try {
+      await apiFetch(`/api/approvals/${id}/send`, { method: 'POST' })
+      setError('')
+      alert('Approval request emailed to the approver.')
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to email approval') }
+  }
+  function requestOverage() {
+    setReqType('hours_overage')
+    setReqAmount(detail.hoursThisMonth.over > 0 ? detail.hoursThisMonth.over.toFixed(1) : '')
+    setReqDesc(`Hours overage: ${detail.hoursThisMonth.over.toFixed(1)}h over the ${e.included_hours_monthly ?? '—'}h monthly cap.`)
+    setTab('Approvals')
+  }
 
   const hours = detail.hoursThisMonth
   const pct = hours.pct
@@ -142,7 +190,14 @@ export default function EngagementDetailClient({
               <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 999, overflow: 'hidden' }}>
                 <div style={{ width: `${Math.min(100, pct)}%`, height: '100%', background: barColor }} />
               </div>
-              {hours.over > 0 ? <p style={{ color: 'var(--red)', fontSize: 12, marginTop: 6 }}>{hours.over.toFixed(1)}h over cap — triggers approval ({e.approval_thresholds?.hours_overage_hours ?? 0}h threshold)</p> : null}
+              {hours.over > (e.approval_thresholds?.hours_overage_hours ?? 0) ? (
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <p style={{ color: 'var(--red)', fontSize: 12 }}>{hours.over.toFixed(1)}h over cap — exceeds the {e.approval_thresholds?.hours_overage_hours ?? 0}h approval threshold.</p>
+                  <button className="btn btn-ghost btn-sm" onClick={requestOverage}>Request approval</button>
+                </div>
+              ) : hours.over > 0 ? (
+                <p style={{ color: 'var(--amber)', fontSize: 12, marginTop: 6 }}>{hours.over.toFixed(1)}h over the included {e.included_hours_monthly}h.</p>
+              ) : null}
 
               <div className="panel-section-title" style={{ marginTop: 18 }}>Workstream split (this month)</div>
               {detail.workstreamSplit.length === 0 ? <p className="field-label">No time logged this month.</p> : detail.workstreamSplit.map((w) => {
@@ -277,6 +332,60 @@ export default function EngagementDetailClient({
               ))}</tbody>
             </table>
           )
+        ) : null}
+
+        {/* APPROVALS */}
+        {tab === 'Approvals' ? (
+          <div>
+            <div className="card" style={{ marginBottom: 16 }}>
+              <div className="panel-section-title">Request approval</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div>
+                  <label className="field-label">Type</label>
+                  <select className="filter-select" style={{ width: '100%' }} value={reqType} onChange={(ev) => setReqType(ev.target.value as ApprovalType)}>
+                    {(Object.keys(APPROVAL_TYPE_LABELS) as ApprovalType[]).map((t) => (<option key={t} value={t}>{APPROVAL_TYPE_LABELS[t]}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label className="field-label">Amount ({e.currency})</label>
+                  <input type="number" className="filter-select" style={{ width: '100%' }} value={reqAmount} onChange={(ev) => setReqAmount(ev.target.value)} placeholder="optional" />
+                </div>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                <label className="field-label">Detail</label>
+                <input className="filter-select" style={{ width: '100%' }} value={reqDesc} onChange={(ev) => setReqDesc(ev.target.value)} placeholder="What needs approving and why" />
+              </div>
+              <div style={{ marginTop: 10, textAlign: 'right' }}>
+                <button className="btn btn-primary btn-sm" onClick={createApprovalReq}>Submit request</button>
+              </div>
+            </div>
+
+            {approvals.length === 0 ? <div className="empty">No approval requests yet.</div> : (
+              <table className="data-table">
+                <thead><tr><th>Type</th><th style={{ textAlign: 'right' }}>Amount</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead>
+                <tbody>
+                  {approvals.map((a) => (
+                    <tr key={a.id}>
+                      <td className="td-name">{APPROVAL_TYPE_LABELS[a.type]}{a.description ? <div className="td-sub">{a.description}</div> : null}</td>
+                      <td style={{ textAlign: 'right' }} className="td-mono">{a.amount != null ? formatCurrency(a.amount, a.currency) : '—'}</td>
+                      <td><span className={`status-badge ${APPROVAL_STATUS_CLASS[a.status] ?? 'status-on_hold'}`}>{a.status}</span>{a.decision_notes ? <div className="td-sub">{a.decision_notes}</div> : null}</td>
+                      <td className="td-mono">{fmtDate(a.requested_at)}</td>
+                      <td>
+                        {a.status === 'Open' ? (
+                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                            <button className="btn btn-ghost btn-sm" onClick={() => emailApprovalReq(a.id)}>✉ Email</button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'approve')} style={{ color: 'var(--green)' }}>Approve</button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'decline')} style={{ color: 'var(--red)' }}>Decline</button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'withdraw')}>Withdraw</button>
+                          </div>
+                        ) : a.gmail_thread_id ? <Link className="btn btn-ghost btn-sm" href="/inbox">View thread</Link> : <span className="td-mono">—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         ) : null}
 
         {/* WEEKLY UPDATES */}

@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getEngagement } from '@/lib/db/engagements'
 import { listTimeEntries } from '@/lib/db/timesheet'
+import { listApprovals } from '@/lib/db/approvals'
 import { getAccounts } from '@/lib/db/accounts'
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementDetailClient from '@/components/os/engagements/EngagementDetailClient'
@@ -23,6 +24,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
     getAccounts({}, supabase).catch(() => []),
     supabase.from('engagement_documents').select('id, type, title, week_start, created_at').eq('engagement_id', id).order('created_at', { ascending: false }),
   ])
+  const approvals = await listApprovals(id, supabase).catch(() => [])
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -32,6 +34,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
         projects={(projectsRes.data ?? []) as Array<{ id: string; name: string; status: string }>}
         accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
         documents={(docsRes.data ?? []) as Array<{ id: string; type: string; title: string | null; week_start: string | null; created_at: string }>}
+        approvals={approvals}
       />
     </div>
   )

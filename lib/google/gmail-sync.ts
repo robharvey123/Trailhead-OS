@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/service'
 import { getAllGoogleTokens } from './oauth'
 import { listMessageIds, getFullMessage, extractBodies } from './gmail'
 import { buildAutolinkMaps, determineLink, parseAddress, parseAddressList } from './autolink'
+import { applyInboundApprovalReplies } from '@/lib/db/approvals'
 
 export interface SyncResult {
   scanned: number
@@ -38,6 +39,7 @@ export async function syncMailbox({ sinceDays = 7, max = 300 }: { sinceDays?: nu
 
   const toFetch = ids.filter((id) => !existing.has(id))
   let inserted = 0
+  const inboundReplies: Array<{ gmail_thread_id: string; body_text: string | null }> = []
 
   for (const id of toFetch) {
     try {
@@ -81,9 +83,15 @@ export async function syncMailbox({ sinceDays = 7, max = 300 }: { sinceDays?: nu
         sent_at: direction === 'outbound' ? ts : null,
       })
       if (!error) inserted++
+      if (direction === 'inbound' && msg.threadId) inboundReplies.push({ gmail_thread_id: msg.threadId, body_text: text })
     } catch {
       // skip individual message failures; continue the batch
     }
+  }
+
+  // Flip any Open approval requests whose linked thread got an approve/decline reply.
+  if (inboundReplies.length > 0) {
+    try { await applyInboundApprovalReplies(inboundReplies, supabase) } catch { /* non-fatal */ }
   }
 
   return { scanned: ids.length, inserted, skipped: ids.length - toFetch.length }
