@@ -187,6 +187,13 @@ export default function EmailThread({
     setSending(true)
     setSendError(null)
 
+    // Resolve the thread to reply into from context: the open thread if one is
+    // expanded, else the most recent conversation. Only use a REAL Gmail thread
+    // id (the grouping falls back to message-id / random uuid when absent, which
+    // must not be sent as a threadId). Null → starts a new thread.
+    const targetThread = (expandedThreadId ? threads.find((t) => t.id === expandedThreadId) : undefined) ?? threads[0]
+    const replyToThreadId = targetThread?.messages.find((m) => m.gmail_thread_id)?.gmail_thread_id ?? null
+
     try {
       const response = await fetch('/api/gmail/send', {
         method: 'POST',
@@ -199,6 +206,7 @@ export default function EmailThread({
           account_id: account_id ?? null,
           enquiry_id: enquiry_id ?? null,
           quote_id: quote_id ?? null,
+          reply_to_message_id: replyToThreadId,
         }),
       })
       const data = await response.json()
