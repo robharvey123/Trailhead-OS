@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import OsShell from '@/components/os/OsShell'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { getCurrentProfile } from '@/lib/auth/roles'
-import { getUnreadTaskCount } from '@/lib/notifications/unread'
+import { getUnreadTaskCount, getUnreadMailCount } from '@/lib/notifications/unread'
 import { createClient } from '@/lib/supabase/server'
 import type { Workstream } from '@/lib/types'
 
@@ -27,6 +27,7 @@ export default async function OsLayout({
   let newEnquiryCount = 0
   let activeQuoteCount = 0
   let unreadTaskCount = 0
+  let unreadMailCount = 0
 
   try {
     workstreams = await getWorkstreams(supabase)
@@ -39,6 +40,12 @@ export default async function OsLayout({
     if (profile?.person_id) unreadTaskCount = await getUnreadTaskCount(profile.person_id, supabase)
   } catch {
     unreadTaskCount = 0
+  }
+
+  try {
+    unreadMailCount = await getUnreadMailCount(supabase)
+  } catch {
+    unreadMailCount = 0
   }
 
   try {
@@ -69,6 +76,7 @@ export default async function OsLayout({
       newEnquiryCount={newEnquiryCount}
       activeQuoteCount={activeQuoteCount}
       unreadTaskCount={unreadTaskCount}
+      unreadMailCount={unreadMailCount}
     >
       {children}
     </OsShell>

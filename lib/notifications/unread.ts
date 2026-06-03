@@ -25,3 +25,19 @@ export async function getUnreadTaskCount(personId: string, client?: SupabaseClie
   }
   return count
 }
+
+/**
+ * Count of unread mail threads still in the inbox (distinct gmail_thread_id with
+ * an unread message carrying the INBOX label). email_logs is the shared, admin-
+ * only mailbox, so RLS returns rows only for admins — non-admins get 0.
+ */
+export async function getUnreadMailCount(client?: SupabaseClient): Promise<number> {
+  const supabase = client ?? (await createClient())
+  const { data } = await supabase.from('email_logs').select('gmail_thread_id, labels').eq('is_unread', true)
+  const threads = new Set<string>()
+  for (const r of data ?? []) {
+    const labels = (r.labels ?? []) as string[]
+    if (r.gmail_thread_id && labels.includes('INBOX')) threads.add(r.gmail_thread_id as string)
+  }
+  return threads.size
+}

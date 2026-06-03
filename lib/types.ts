@@ -533,6 +533,7 @@ export interface EmailThread {
   message_count: number
   is_unread: boolean
   is_starred: boolean
+  in_inbox: boolean
   match_method: EmailMatchMethod | null
   has_attachments: boolean
   has_outbound: boolean

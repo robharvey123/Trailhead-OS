@@ -194,6 +194,19 @@ export function messageHasAttachments(payload?: gmail_v1.Schema$MessagePart): bo
   return (payload.parts ?? []).some((p) => messageHasAttachments(p))
 }
 
+/** Add/remove Gmail labels on a whole thread (e.g. archive = remove INBOX). */
+export async function modifyThread(
+  threadId: string,
+  mods: { addLabelIds?: string[]; removeLabelIds?: string[] }
+): Promise<void> {
+  const gmail = await getGmailClient()
+  await gmail.users.threads.modify({
+    userId: 'me',
+    id: threadId,
+    requestBody: { addLabelIds: mods.addLabelIds ?? [], removeLabelIds: mods.removeLabelIds ?? [] },
+  })
+}
+
 /**
  * Threading headers for a reply into an existing Gmail thread: the RFC822
  * Message-ID of the thread's most recent message, plus a References chain.

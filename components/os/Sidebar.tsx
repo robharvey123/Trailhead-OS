@@ -12,6 +12,7 @@ interface SidebarProps {
   newEnquiryCount: number
   activeQuoteCount: number
   unreadTaskCount?: number
+  unreadMailCount?: number
   collapsed?: boolean
   onToggle?: () => void
 }
@@ -121,6 +122,7 @@ export default function Sidebar({
   newEnquiryCount,
   activeQuoteCount,
   unreadTaskCount = 0,
+  unreadMailCount = 0,
   collapsed = false,
   onToggle,
 }: SidebarProps) {
@@ -297,6 +299,7 @@ export default function Sidebar({
                 active={pathname.startsWith('/inbox')}
                 onClick={() => setMobileOpen(false)}
                 collapsed={collapsed}
+                badge={unreadMailCount}
               />
               <NavLink
                 href="/engagements"

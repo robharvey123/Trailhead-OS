@@ -8,14 +8,16 @@ import ComposeModal from './ComposeModal'
 
 type Named = { id: string; name: string }
 type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
-type Folder = 'unread' | 'all' | 'starred' | 'unmatched' | 'sent'
+type Folder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived'
 
 const FOLDERS: Array<{ key: Folder; label: string; icon: string }> = [
+  { key: 'inbox', label: 'Inbox', icon: '📥' },
   { key: 'unread', label: 'Unread', icon: '✉' },
   { key: 'all', label: 'All', icon: '⊞' },
   { key: 'starred', label: 'Starred', icon: '★' },
   { key: 'unmatched', label: 'Unmatched', icon: '⚠' },
   { key: 'sent', label: 'Sent', icon: '↗' },
+  { key: 'archived', label: 'Archived', icon: '🗄' },
 ]
 
 function timeLabel(iso: string) {
@@ -48,7 +50,7 @@ export default function InboxClient({
 }) {
   const [composeOpen, setComposeOpen] = useState(false)
   const [threads, setThreads] = useState(initialThreads)
-  const [folder, setFolder] = useState<Folder>('all')
+  const [folder, setFolder] = useState<Folder>('inbox')
   const [search, setSearch] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
   const [messages, setMessages] = useState<EmailLog[]>([])
@@ -57,17 +59,21 @@ export default function InboxClient({
   const [error, setError] = useState('')
 
   const counts = useMemo(() => ({
-    unread: threads.filter((t) => t.is_unread).length,
+    inbox: threads.filter((t) => t.in_inbox).length,
+    unread: threads.filter((t) => t.is_unread && t.in_inbox).length,
     all: threads.length,
     starred: threads.filter((t) => t.is_starred).length,
     unmatched: threads.filter((t) => !t.account_id).length,
     sent: threads.filter((t) => t.has_outbound).length,
+    archived: threads.filter((t) => !t.in_inbox).length,
   }), [threads])
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
     return threads.filter((t) => {
-      if (folder === 'unread' && !t.is_unread) return false
+      if (folder === 'inbox' && !t.in_inbox) return false
+      if (folder === 'archived' && t.in_inbox) return false
+      if (folder === 'unread' && !(t.is_unread && t.in_inbox)) return false
       if (folder === 'starred' && !t.is_starred) return false
       if (folder === 'unmatched' && t.account_id) return false
       if (folder === 'sent' && !t.has_outbound) return false
@@ -112,6 +118,9 @@ export default function InboxClient({
         if (action === 'star') return { ...x, is_starred: true }
         if (action === 'unstar') return { ...x, is_starred: false }
         if (action === 'unread') return { ...x, is_unread: true }
+        if (action === 'read') return { ...x, is_unread: false }
+        if (action === 'archive') return { ...x, in_inbox: false }
+        if (action === 'unarchive') return { ...x, in_inbox: true }
         if (action === 'link') return { ...x, account_id: String(extra?.account_id), account_name: accounts.find((a) => a.id === extra?.account_id)?.name ?? null, match_method: 'manual' }
         if (action === 'unlink') return { ...x, account_id: null, account_name: null, match_method: 'unmatched' }
         return x
@@ -271,8 +280,11 @@ export default function InboxClient({
                   <span className="meta-chip">{active.message_count} message{active.message_count > 1 ? 's' : ''}</span>
                 </div>
                 <div className="reader-actions">
+                  <button className="btn btn-ghost btn-sm" onClick={() => threadAction(active.in_inbox ? 'archive' : 'unarchive')}>
+                    {active.in_inbox ? '🗄 Archive' : '↩ Move to inbox'}
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => threadAction(active.is_unread ? 'read' : 'unread')}>{active.is_unread ? 'Mark read' : 'Mark unread'}</button>
                   <button className="btn btn-ghost btn-sm" onClick={() => threadAction(active.is_starred ? 'unstar' : 'star')}>★ {active.is_starred ? 'Unstar' : 'Star'}</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => threadAction('unread')}>Mark unread</button>
                   {active.account_id ? <button className="btn btn-ghost btn-sm" onClick={() => threadAction('unlink')}>⚲ Unlink</button> : null}
                 </div>
               </div>
