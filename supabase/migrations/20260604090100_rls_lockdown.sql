@@ -67,3 +67,23 @@ begin
     );
   end loop;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- CONTRACTORS: read-only access to engagements they actively contribute to.
+-- Added alongside engagements_employee_rw (permissive policies are OR'd), so
+-- owner/admin/employee keep full access via that policy and contractors gain
+-- SELECT on just their engagements — without widening is_employee(). This is
+-- also what makes the timesheet engagement picker work for a contractor.
+-- (Defined after the DO block so the loop's blanket drop doesn't remove it;
+--  drop-if-exists keeps the migration rerunnable.)
+-- ---------------------------------------------------------------------------
+drop policy if exists engagements_contributor_select on engagements;
+create policy engagements_contributor_select on engagements for select to authenticated
+  using (
+    is_admin() or exists (
+      select 1 from engagement_contributors ec
+      where ec.engagement_id = engagements.id
+        and ec.person_id = current_person_id()
+        and ec.is_active
+    )
+  );

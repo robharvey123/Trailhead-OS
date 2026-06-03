@@ -122,8 +122,10 @@ $$;
 -- ---------------------------------------------------------------------------
 -- RE-SCOPE THE 5 BRIEF-2 TABLES — drop the REAL policies, recreate by role
 -- ---------------------------------------------------------------------------
--- people
+-- people  (drop both old AND new names — idempotent against partial/out-of-band state)
 drop policy if exists people_authenticated_full_access on people;
+drop policy if exists people_select on people;
+drop policy if exists people_write_admin on people;
 create policy people_select on people for select
   using (is_admin() or auth_user_id = auth.uid());
 create policy people_write_admin on people for all
@@ -131,17 +133,23 @@ create policy people_write_admin on people for all
 
 -- engagement_contributors
 drop policy if exists engagement_contributors_authenticated_full_access on engagement_contributors;
+drop policy if exists ec_select on engagement_contributors;
+drop policy if exists ec_write_admin on engagement_contributors;
 create policy ec_select on engagement_contributors for select
   using (is_admin() or is_self_person(person_id));
 create policy ec_write_admin on engagement_contributors for all
   using (is_admin()) with check (is_admin());
 
--- time_entries — drop the stale full-access policy AND the per-user ones.
+-- time_entries — drop the stale full-access policy AND the per-user ones AND the new names.
 drop policy if exists "authenticated full access" on time_entries;
 drop policy if exists "authenticated can view own time entries" on time_entries;
 drop policy if exists "authenticated can insert own time entries" on time_entries;
 drop policy if exists "authenticated can update own time entries" on time_entries;
 drop policy if exists "authenticated can delete own time entries" on time_entries;
+drop policy if exists te_select on time_entries;
+drop policy if exists te_insert on time_entries;
+drop policy if exists te_update on time_entries;
+drop policy if exists te_delete on time_entries;
 create policy te_select on time_entries for select
   using (is_admin() or is_self_person(person_id));
 create policy te_insert on time_entries for insert
