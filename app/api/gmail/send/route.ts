@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
-import { sendEmail } from '@/lib/google/gmail'
+import { sendEmail, getThreadReplyHeaders } from '@/lib/google/gmail'
 
 function sanitizeOptionalString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : null
@@ -33,6 +33,21 @@ export async function POST(request: Request) {
   const splitAddrs = (s: string | undefined) =>
     (s ?? '').split(',').map((x) => x.trim()).filter(Boolean)
 
+  // For replies (replyToMessageId is a Gmail thread id), resolve the original
+  // Message-ID so In-Reply-To/References thread correctly. Best-effort: a failure
+  // falls back to threadId-only behaviour rather than blocking the send.
+  let inReplyTo: string | undefined
+  let references: string | undefined
+  if (replyToMessageId) {
+    try {
+      const h = await getThreadReplyHeaders(replyToMessageId)
+      inReplyTo = h.inReplyTo
+      references = h.references
+    } catch {
+      /* non-fatal */
+    }
+  }
+
   try {
     const response = await sendEmail({
       to,
@@ -41,6 +56,8 @@ export async function POST(request: Request) {
       subject,
       body: htmlBody,
       replyToMessageId,
+      inReplyTo,
+      references,
       attachments,
     })
 

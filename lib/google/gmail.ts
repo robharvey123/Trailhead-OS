@@ -86,6 +86,8 @@ export async function sendEmail({
   subject,
   body,
   replyToMessageId,
+  inReplyTo,
+  references,
   attachments,
 }: {
   to: string
@@ -94,14 +96,24 @@ export async function sendEmail({
   subject: string
   body: string
   replyToMessageId?: string
+  /** RFC822 Message-ID of the message being replied to (for In-Reply-To/References). */
+  inReplyTo?: string
+  references?: string
   attachments?: OutboundAttachment[]
 }) {
   const gmail = await getGmailClient()
 
+  // For replies, prefix "Re: " (if absent) and emit threading headers so the
+  // message threads on the Gmail side AND in the recipient's mail client.
+  const isReply = Boolean(inReplyTo)
+  const finalSubject = isReply && !/^re:\s/i.test(subject) ? `Re: ${subject}` : subject
+
   const headers = [`To: ${to}`]
   if (cc && cc.trim()) headers.push(`Cc: ${cc}`)
   if (bcc && bcc.trim()) headers.push(`Bcc: ${bcc}`)
-  headers.push(`Subject: ${subject}`, 'MIME-Version: 1.0')
+  headers.push(`Subject: ${finalSubject}`, 'MIME-Version: 1.0')
+  if (inReplyTo) headers.push(`In-Reply-To: ${inReplyTo}`)
+  if (references) headers.push(`References: ${references}`)
 
   let message: string
   if (attachments && attachments.length > 0) {
@@ -180,6 +192,29 @@ export function messageHasAttachments(payload?: gmail_v1.Schema$MessagePart): bo
   if (!payload) return false
   if (payload.filename && payload.filename.length > 0 && payload.body?.attachmentId) return true
   return (payload.parts ?? []).some((p) => messageHasAttachments(p))
+}
+
+/**
+ * Threading headers for a reply into an existing Gmail thread: the RFC822
+ * Message-ID of the thread's most recent message, plus a References chain.
+ * Returns {} if it can't be resolved (caller falls back to threadId-only).
+ */
+export async function getThreadReplyHeaders(threadId: string): Promise<{ inReplyTo?: string; references?: string }> {
+  const gmail = await getGmailClient()
+  const { data } = await gmail.users.threads.get({
+    userId: 'me',
+    id: threadId,
+    format: 'metadata',
+    metadataHeaders: ['Message-ID', 'References'],
+  })
+  const messages = data.messages ?? []
+  const last = messages[messages.length - 1]
+  const headers = last?.payload?.headers ?? []
+  const header = (name: string) => headers.find((h) => h.name?.toLowerCase() === name.toLowerCase())?.value ?? undefined
+  const messageId = header('Message-ID')
+  if (!messageId) return {}
+  const priorRefs = header('References')
+  return { inReplyTo: messageId, references: [priorRefs, messageId].filter(Boolean).join(' ') }
 }
 
 /** List message ids matching a Gmail search query (e.g. "(in:inbox OR in:sent) newer_than:90d"). */

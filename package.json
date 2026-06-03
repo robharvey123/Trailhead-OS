@@ -27,6 +27,7 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.91.0",
     "@tanstack/react-table": "^8.21.3",
+    "@types/sanitize-html": "^2.16.1",
     "exceljs": "^4.4.0",
     "googleapis": "^171.4.0",
     "ical-generator": "^10.2.0",
@@ -40,6 +41,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.7.0",
     "resend": "^6.8.0",
+    "sanitize-html": "^2.17.4",
     "sonner": "^2.0.7",
     "stripe": "^22.0.2",
     "zod": "^4.3.6"

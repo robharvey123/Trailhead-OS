@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { EmailLog } from '@/lib/types'
+import SafeEmailHtml from './SafeEmailHtml'
 
 const EMAIL_INTEGRATION_PAUSED = true
 
@@ -23,6 +24,7 @@ type ThreadMessage = Partial<EmailLog> & {
   subject?: string
   snippet?: string
   body_html?: string
+  body_text?: string
   received_at?: string
   sent_at?: string
 }
@@ -378,9 +380,15 @@ export default function EmailThread({
                               {formatDate(getMessageDate(message))}
                             </p>
                           </div>
-                          <p className="mt-4 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">
-                            {message.body_html || message.snippet || 'No message body available'}
-                          </p>
+                          {message.body_html ? (
+                            <div className="mt-4">
+                              <SafeEmailHtml html={message.body_html} />
+                            </div>
+                          ) : (
+                            <p className="mt-4 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">
+                              {message.body_text || message.snippet || 'No message body available'}
+                            </p>
+                          )}
                         </article>
                       ))}
                     </div>
