@@ -215,10 +215,29 @@ export interface ApprovalThresholds {
   third_party_costs_required?: boolean
 }
 
+export type EngagementType =
+  | 'client_consulting'
+  | 'client_app_build'
+  | 'internal_app_build'
+  | 'internal_ops'
+
+export const ENGAGEMENT_TYPE_LABELS: Record<EngagementType, string> = {
+  client_consulting: 'Client — consulting',
+  client_app_build: 'Client — app build',
+  internal_app_build: 'Internal — app build',
+  internal_ops: 'Internal — ops',
+}
+
+/** Client engagements are billable; internal ones are not. Mirrors the DB generated column. */
+export const isBillableType = (t: EngagementType) =>
+  t === 'client_consulting' || t === 'client_app_build'
+
 export interface Engagement {
   id: string
-  end_client_account_id: string
+  end_client_account_id: string | null
   billed_via_account_id: string | null
+  engagement_type: EngagementType
+  is_billable: boolean
   name: string
   code: string | null
   status: EngagementStatus
@@ -243,8 +262,9 @@ export interface EngagementWithRelations extends Engagement {
 
 export interface EngagementInput {
   id?: string
-  end_client_account_id: string
+  end_client_account_id?: string | null
   billed_via_account_id?: string | null
+  engagement_type?: EngagementType
   name: string
   code?: string | null
   status?: EngagementStatus
@@ -258,6 +278,32 @@ export interface EngagementInput {
   workstreams?: string[]
   approval_thresholds?: ApprovalThresholds
   notes?: string | null
+}
+
+// ── People & contributors ──────────────────────────────
+
+export interface Person {
+  id: string
+  full_name: string
+  email: string | null
+  auth_user_id: string | null
+  default_hourly_rate_gbp: number | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface EngagementContributor {
+  id: string
+  engagement_id: string
+  person_id: string
+  role: string | null
+  hourly_rate_gbp: number
+  is_active: boolean
+  created_at: string
+}
+
+export interface EngagementContributorWithPerson extends EngagementContributor {
+  person?: Pick<Person, 'id' | 'full_name' | 'email'> | null
 }
 
 export interface Tier1Milestone {
@@ -1007,6 +1053,7 @@ export type TimeEntrySource = 'manual' | 'timer'
 export interface TimeEntry {
   id: string
   user_id: string
+  person_id?: string | null
   account_id: string | null
   project_id: string | null
   engagement_id?: string | null

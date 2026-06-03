@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
         account_id: body.account_id,
         project_id: body.project_id,
         engagement_id: body.engagement_id,
+        person_id: body.person_id,
         workstream: body.workstream,
         entry_date: body.entry_date,
         duration_minutes: body.duration_minutes,

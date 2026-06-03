@@ -11,6 +11,7 @@ export type EngagementOption = {
   included_hours_monthly: number | null
   account_id: string | null
   hours_used_mtd: number
+  is_billable: boolean
 }
 type Named = { id: string; name: string }
 
@@ -19,6 +20,9 @@ interface Props {
   accounts: Named[]
   projects: Array<Named & { account_id: string | null }>
   engagements: EngagementOption[]
+  people: Named[]
+  /** Who to attribute new entries to by default (the logged-in owner's person row). */
+  defaultPersonId?: string | null
   onClose: () => void
   onSaved: (entry: TimeEntry) => void
   onDeleted: (id: string) => void
@@ -29,9 +33,10 @@ function fmtDur(min: number) {
   return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
-export default function TimeEntryForm({ entry, accounts, projects, engagements, onClose, onSaved, onDeleted }: Props) {
+export default function TimeEntryForm({ entry, accounts, projects, engagements, people, defaultPersonId, onClose, onSaved, onDeleted }: Props) {
   const editing = !!entry
   const [date, setDate] = useState(entry?.entry_date ?? new Date().toISOString().split('T')[0])
+  const [personId, setPersonId] = useState(entry?.person_id ?? defaultPersonId ?? '')
   const [accountId, setAccountId] = useState(entry?.account_id ?? '')
   const [engagementId, setEngagementId] = useState(entry?.engagement_id ?? '')
   const [workstream, setWorkstream] = useState(entry?.workstream ?? '')
@@ -59,6 +64,8 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
     if (e) {
       if (e.account_id && !accountId) setAccountId(e.account_id)
       if (!workstream && e.workstreams[0]) setWorkstream(e.workstreams[0])
+      // Default billable from the engagement type (internal = non-billable); still overridable below.
+      setBillable(e.is_billable)
     } else {
       setWorkstream('')
     }
@@ -70,6 +77,7 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
     if (engagementId && !workstream) { setError('Pick a workstream for this engagement.'); return }
     setBusy(true); setError('')
     const payload = {
+      person_id: personId || null,
       account_id: accountId || null,
       project_id: projectId || null,
       engagement_id: engagementId || null,
@@ -126,6 +134,12 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
                 <input type="number" min={0} max={59} className={input} value={minutes} onChange={(e) => setMinutes(e.target.value)} /><span className="text-xs text-[var(--text-3)]">m</span>
               </div>
             </div>
+          </div>
+          <div><label className={label}>Person</label>
+            <select className={input} value={personId} onChange={(e) => setPersonId(e.target.value)}>
+              <option value="">— unattributed</option>
+              {people.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
+            </select>
           </div>
           <div><label className={label}>Account</label>
             <select className={input} value={accountId} onChange={(e) => setAccountId(e.target.value)}>

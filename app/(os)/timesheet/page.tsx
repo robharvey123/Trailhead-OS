@@ -4,6 +4,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getProjects } from '@/lib/db/projects'
 import { getRunningTimer } from '@/lib/db/timesheet'
 import { listEngagements } from '@/lib/db/engagements'
+import { listPeople, getPersonByAuthUser } from '@/lib/db/people'
 import { mockupFontVars } from '@/lib/fonts'
 import TimesheetClient, { type EngagementOption } from '@/components/os/TimesheetClient'
 
@@ -27,12 +28,14 @@ export default async function TimesheetPage() {
   }
 
   const monthStart = monthStartISO()
-  const [accounts, projects, runningTimer, engagements, hoursRows] = await Promise.all([
+  const [accounts, projects, runningTimer, engagements, hoursRows, people, ownPerson] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getProjects({}, supabase).catch(() => []),
     getRunningTimer(supabase).catch(() => null),
     listEngagements({ status: 'Active' }, supabase).catch(() => []),
     supabase.from('engagement_hours_by_month').select('engagement_id, hours_used').eq('period_month', monthStart),
+    listPeople({ activeOnly: true }, supabase).catch(() => []),
+    getPersonByAuthUser(user.id, supabase).catch(() => null),
   ])
 
   const hoursMap: Record<string, number> = {}
@@ -47,6 +50,7 @@ export default async function TimesheetPage() {
     included_hours_monthly: e.included_hours_monthly,
     account_id: e.end_client_account_id,
     hours_used_mtd: hoursMap[e.id] ?? 0,
+    is_billable: e.is_billable,
   }))
 
   return (
@@ -56,6 +60,8 @@ export default async function TimesheetPage() {
         projects={projects.map((p) => ({ id: p.id, name: p.name, account_id: p.account_id ?? null }))}
         initialTimer={runningTimer}
         engagements={engagementOptions}
+        people={people.map((p) => ({ id: p.id, name: p.full_name }))}
+        defaultPersonId={ownPerson?.id ?? null}
       />
     </div>
   )

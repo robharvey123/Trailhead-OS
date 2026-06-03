@@ -43,12 +43,14 @@ function fmtDur(min: number) { const h = Math.floor(min / 60), m = min % 60; ret
 function fmtClock(s: number) { return [Math.floor(s / 3600), Math.floor((s % 3600) / 60), s % 60].map((n) => String(n).padStart(2, '0')).join(':') }
 
 export default function TimesheetClient({
-  accounts, projects, initialTimer, engagements,
+  accounts, projects, initialTimer, engagements, people = [], defaultPersonId = null,
 }: {
   accounts: Named[]
   projects: ProjectOpt[]
   initialTimer: TimeEntry | null
   engagements: EngagementOption[]
+  people?: Named[]
+  defaultPersonId?: string | null
 }) {
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [range, setRange] = useState<RangeKey>('this_week')
@@ -309,6 +311,8 @@ export default function TimesheetClient({
           accounts={accounts}
           projects={projects}
           engagements={engagements}
+          people={people}
+          defaultPersonId={defaultPersonId}
           onClose={() => setFormOpen(false)}
           onSaved={onSaved}
           onDeleted={(id) => onDeleted(id, editing?.engagement_id)}

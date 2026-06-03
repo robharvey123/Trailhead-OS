@@ -111,7 +111,7 @@ export async function upsertEngagement(input: EngagementInput, client?: Supabase
   const supabase = await getSupabase(client)
   const patch: Record<string, unknown> = {}
   const fields: (keyof EngagementInput)[] = [
-    'end_client_account_id', 'billed_via_account_id', 'name', 'code', 'status', 'currency',
+    'end_client_account_id', 'billed_via_account_id', 'engagement_type', 'name', 'code', 'status', 'currency',
     'retainer_amount_monthly', 'included_hours_monthly', 'day_rate', 'performance_fee_default',
     'start_date', 'end_date', 'workstreams', 'approval_thresholds', 'notes',
   ]

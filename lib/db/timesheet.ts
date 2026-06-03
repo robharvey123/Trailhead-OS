@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { TimeEntry } from '@/lib/types'
+import { contributorRate } from '@/lib/db/contributors'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -107,6 +108,7 @@ export async function createTimeEntry(
     account_id?: string | null
     project_id?: string | null
     engagement_id?: string | null
+    person_id?: string | null
     workstream?: string | null
     entry_date?: string
     duration_minutes: number
@@ -125,11 +127,18 @@ export async function createTimeEntry(
 
   const userId = auth.data.user.id
   const entryDate = data.entry_date || new Date().toISOString().split('T')[0]
-  const rate = data.rate_snapshot ?? 0
   const workstream = await resolveWorkstream(supabase, data.engagement_id, data.workstream)
+
+  // Rate snapshot: an explicit rate wins; otherwise, for engagement+contributor
+  // work, snapshot the contributor's current engagement rate; else 0.
+  let rate = data.rate_snapshot ?? 0
+  if (data.rate_snapshot == null && data.engagement_id && data.person_id) {
+    rate = (await contributorRate(data.engagement_id, data.person_id, supabase)) ?? 0
+  }
 
   const payload = {
     user_id: userId,
+    person_id: data.person_id ?? null,
     account_id: data.account_id ?? null,
     project_id: data.project_id ?? null,
     engagement_id: data.engagement_id ?? null,
@@ -178,6 +187,10 @@ export async function updateTimeEntry(
 
   if ('billable' in data && data.billable !== undefined) {
     patch.billable = data.billable
+  }
+
+  if ('person_id' in data) {
+    patch.person_id = data.person_id ?? null
   }
 
   if ('account_id' in data) {

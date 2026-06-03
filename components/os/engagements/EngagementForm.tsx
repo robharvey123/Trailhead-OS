@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
-import { DEFAULT_WORKSTREAMS, type EngagementWithRelations } from '@/lib/types'
+import { DEFAULT_WORKSTREAMS, ENGAGEMENT_TYPE_LABELS, type EngagementType, type EngagementWithRelations } from '@/lib/types'
 
 type Named = { id: string; name: string }
 
@@ -26,6 +26,8 @@ export default function EngagementForm({
   const router = useRouter()
   const isEdit = !!initial?.id
   const at = initial?.approval_thresholds
+  const [engagementType, setEngagementType] = useState<EngagementType>(initial?.engagement_type ?? 'client_consulting')
+  const isInternal = engagementType.startsWith('internal')
   const [name, setName] = useState(initial?.name ?? '')
   const [code, setCode] = useState(initial?.code ?? '')
   const [endClient, setEndClient] = useState(initial?.end_client_account_id ?? accounts[0]?.id ?? '')
@@ -58,22 +60,24 @@ export default function EngagementForm({
   }
 
   async function submit() {
-    if (!name.trim() || !endClient || !startDate) {
-      setError('Name, end client and start date are required.')
+    if (!name.trim() || !startDate || (!isInternal && !endClient)) {
+      setError(isInternal ? 'Name and start date are required.' : 'Name, end client and start date are required.')
       return
     }
     setSaving(true)
     setError('')
     const body: Record<string, unknown> = {
+      engagement_type: engagementType,
       name: name.trim(),
       code: code.trim() || null,
-      end_client_account_id: endClient,
-      billed_via_account_id: billedVia || null,
+      // Internal engagements have no client and no client-billing fields.
+      end_client_account_id: isInternal ? null : endClient,
+      billed_via_account_id: isInternal ? null : billedVia || null,
       currency,
-      retainer_amount_monthly: retainer ? Number(retainer) : null,
-      included_hours_monthly: includedHours ? Number(includedHours) : null,
-      day_rate: dayRate ? Number(dayRate) : null,
-      performance_fee_default: perfFee ? Number(perfFee) : null,
+      retainer_amount_monthly: isInternal || !retainer ? null : Number(retainer),
+      included_hours_monthly: isInternal || !includedHours ? null : Number(includedHours),
+      day_rate: isInternal || !dayRate ? null : Number(dayRate),
+      performance_fee_default: isInternal || !perfFee ? null : Number(perfFee),
       start_date: startDate,
       end_date: endDate || null,
       workstreams,
@@ -109,35 +113,52 @@ export default function EngagementForm({
       <h1 className="topbar-title" style={{ marginBottom: 16 }}>{isEdit ? 'Edit engagement' : 'New engagement'}</h1>
       <div style={{ display: 'grid', gap: 14 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
-          <div><label className={label}>Name *</label><input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Qola - DRIVER GTM (via Wide Advocacy)" /></div>
+          <div>
+            <label className={label}>Engagement type *</label>
+            <select className={input} value={engagementType} onChange={(e) => setEngagementType(e.target.value as EngagementType)}>
+              {(Object.keys(ENGAGEMENT_TYPE_LABELS) as EngagementType[]).map((t) => (<option key={t} value={t}>{ENGAGEMENT_TYPE_LABELS[t]}</option>))}
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0, paddingBottom: 9 }}>
+              {isInternal ? 'Internal · non-billable — cost is tracked from contributor time.' : 'Client · billable.'}
+            </p>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+          <div><label className={label}>Name *</label><input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={isInternal ? 'Trailhead OS build' : 'Qola - DRIVER GTM (via Wide Advocacy)'} /></div>
           <div><label className={label}>Code</label><input className={input} value={code} onChange={(e) => setCode(e.target.value)} placeholder="QOLA-GTM" /></div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>
-            <label className={label}>End client *</label>
-            <select className={input} value={endClient} onChange={(e) => setEndClient(e.target.value)}>
-              {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
-            </select>
+        {!isInternal ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label className={label}>End client *</label>
+              <select className={input} value={endClient} onChange={(e) => setEndClient(e.target.value)}>
+                {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
+              </select>
+            </div>
+            <div>
+              <label className={label}>Billed via</label>
+              <select className={input} value={billedVia} onChange={(e) => setBilledVia(e.target.value)}>
+                <option value="">— direct (end client)</option>
+                {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
+              </select>
+            </div>
           </div>
-          <div>
-            <label className={label}>Billed via</label>
-            <select className={input} value={billedVia} onChange={(e) => setBilledVia(e.target.value)}>
-              <option value="">— direct (end client)</option>
-              {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
-            </select>
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
-          <div><label className={label}>Currency</label><input className={input} value={currency} onChange={(e) => setCurrency(e.target.value)} /></div>
-          <div><label className={label}>Retainer / mo</label><input type="number" className={input} value={retainer} onChange={(e) => setRetainer(e.target.value)} placeholder="8500" /></div>
-          <div><label className={label}>Included hrs/mo</label><input type="number" className={input} value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} placeholder="40" /></div>
-          <div><label className={label}>Day rate</label><input type="number" className={input} value={dayRate} onChange={(e) => setDayRate(e.target.value)} placeholder="350" /></div>
-        </div>
+        ) : null}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-          <div><label className={label}>Default perf fee</label><input type="number" className={input} value={perfFee} onChange={(e) => setPerfFee(e.target.value)} placeholder="4000" /></div>
+          <div><label className={label}>Currency</label><input className={input} value={currency} onChange={(e) => setCurrency(e.target.value)} /></div>
           <div><label className={label}>Start date *</label><input type="date" className={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} /></div>
           <div><label className={label}>End date</label><input type="date" className={input} value={endDate} onChange={(e) => setEndDate(e.target.value)} /></div>
         </div>
+        {!isInternal ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+            <div><label className={label}>Retainer / mo</label><input type="number" className={input} value={retainer} onChange={(e) => setRetainer(e.target.value)} placeholder="8500" /></div>
+            <div><label className={label}>Included hrs/mo</label><input type="number" className={input} value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} placeholder="40" /></div>
+            <div><label className={label}>Day rate</label><input type="number" className={input} value={dayRate} onChange={(e) => setDayRate(e.target.value)} placeholder="350" /></div>
+            <div><label className={label}>Default perf fee</label><input type="number" className={input} value={perfFee} onChange={(e) => setPerfFee(e.target.value)} placeholder="4000" /></div>
+          </div>
+        ) : null}
 
         <div>
           <label className={label}>Workstreams</label>

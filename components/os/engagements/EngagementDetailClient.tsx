@@ -12,12 +12,14 @@ import {
   APPROVAL_TYPE_LABELS,
   type ApprovalRequestWithRelations,
   type ApprovalType,
+  type EngagementContributorWithPerson,
+  type Person,
   type Tier1MilestoneWithAccount,
   type TimeEntry,
 } from '@/lib/types'
 
 type Named = { id: string; name: string }
-const TABS = ['Overview', 'Time', 'Tier 1', 'Milestones', 'Projects', 'Approvals', 'Weekly Updates', 'Documents'] as const
+const TABS = ['Overview', 'Time', 'Contributors', 'Tier 1', 'Milestones', 'Projects', 'Approvals', 'Weekly Updates', 'Documents'] as const
 type Tab = (typeof TABS)[number]
 
 const APPROVAL_STATUS_CLASS: Record<string, string> = {
@@ -47,6 +49,8 @@ export default function EngagementDetailClient({
   documents = [],
   approvals: initialApprovals = [],
   linkCounts,
+  contributors: initialContributors = [],
+  people = [],
 }: {
   detail: EngagementDetail
   timeEntries: TimeEntry[]
@@ -55,6 +59,8 @@ export default function EngagementDetailClient({
   documents?: EngagementDoc[]
   approvals?: ApprovalRequestWithRelations[]
   linkCounts: EngagementLinkCounts
+  contributors?: EngagementContributorWithPerson[]
+  people?: Person[]
 }) {
   const router = useRouter()
   const e = detail.engagement
@@ -72,6 +78,61 @@ export default function EngagementDetailClient({
   const [terminateOpen, setTerminateOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  // Contributors
+  const [contributors, setContributors] = useState<EngagementContributorWithPerson[]>(initialContributors)
+  const [showAddContributor, setShowAddContributor] = useState(false)
+  // Add-contributor modal fields. personPick = an existing people.id, or '__new__' to create one.
+  const [personPick, setPersonPick] = useState('')
+  const [newName, setNewName] = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [cRole, setCRole] = useState('')
+  const [cRate, setCRate] = useState('')
+  const [savingContributor, setSavingContributor] = useState(false)
+
+  const contributorPersonIds = new Set(contributors.map((c) => c.person_id))
+  const availablePeople = people.filter((p) => !contributorPersonIds.has(p.id))
+
+  function resetContributorForm() {
+    setPersonPick(''); setNewName(''); setNewEmail(''); setCRole(''); setCRate('')
+  }
+
+  async function submitContributor() {
+    if (!personPick) { setError('Choose a person or create a new one.'); return }
+    if (personPick === '__new__' && !newName.trim()) { setError('New person needs a name.'); return }
+    setSavingContributor(true)
+    setError('')
+    try {
+      let personId = personPick
+      if (personPick === '__new__') {
+        const { person } = await apiFetch<{ person: Person }>('/api/people', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name: newName.trim(), email: newEmail.trim() || null, default_hourly_rate_gbp: cRate ? Number(cRate) : null }),
+        })
+        personId = person.id
+      }
+      const { contributor } = await apiFetch<{ contributor: EngagementContributorWithPerson }>(`/api/engagements/${e.id}/contributors`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person_id: personId, role: cRole.trim() || null, hourly_rate_gbp: cRate ? Number(cRate) : 0 }),
+      })
+      setContributors((cs) => [...cs, contributor])
+      setShowAddContributor(false)
+      resetContributorForm()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add contributor')
+    } finally {
+      setSavingContributor(false)
+    }
+  }
+
+  async function patchContributor(id: string, patch: Record<string, unknown>) {
+    try {
+      const { contributor } = await apiFetch<{ contributor: EngagementContributorWithPerson }>(`/api/contributors/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+      })
+      setContributors((cs) => cs.map((c) => (c.id === id ? { ...c, ...contributor, person: c.person } : c)))
+    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to update contributor') }
+  }
 
   async function terminate() {
     setBusy(true)
@@ -340,6 +401,41 @@ export default function EngagementDetailClient({
           </div>
         ) : null}
 
+        {/* CONTRIBUTORS */}
+        {tab === 'Contributors' ? (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <p className="field-label" style={{ margin: 0 }}>
+                Rates are snapshotted per engagement — changing a person’s default rate later won’t affect these.
+              </p>
+              <button className="btn btn-primary btn-sm" onClick={() => { resetContributorForm(); setError(''); setShowAddContributor(true) }}>+ Add contributor</button>
+            </div>
+            {contributors.length === 0 ? <div className="empty">No contributors yet.</div> : (
+              <table className="data-table">
+                <thead><tr><th>Person</th><th>Role</th><th style={{ textAlign: 'right' }}>Rate £/h</th><th>Active</th></tr></thead>
+                <tbody>
+                  {contributors.map((c) => (
+                    <tr key={c.id} style={{ opacity: c.is_active ? 1 : 0.5 }}>
+                      <td className="td-name">{c.person?.full_name ?? '—'}{c.person?.email ? <div className="td-sub">{c.person.email}</div> : null}</td>
+                      <td>
+                        <input className="filter-select" style={{ width: '100%' }} defaultValue={c.role ?? ''} placeholder="role"
+                          onBlur={(ev) => { const v = ev.target.value.trim(); if (v !== (c.role ?? '')) patchContributor(c.id, { role: v || null }) }} />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <input type="number" className="filter-select" style={{ width: 90, textAlign: 'right' }} defaultValue={c.hourly_rate_gbp}
+                          onBlur={(ev) => { const v = Number(ev.target.value); if (!Number.isNaN(v) && v !== c.hourly_rate_gbp) patchContributor(c.id, { hourly_rate_gbp: v }) }} />
+                      </td>
+                      <td>
+                        <input type="checkbox" checked={c.is_active} onChange={(ev) => patchContributor(c.id, { is_active: ev.target.checked })} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        ) : null}
+
         {/* TIER 1 */}
         {tab === 'Tier 1' ? (
           <div>
@@ -525,6 +621,43 @@ export default function EngagementDetailClient({
             onCancel={() => setEditing(false)}
             onSaved={() => { setEditing(false); router.refresh() }}
           />
+        </div>
+      ) : null}
+
+      {showAddContributor ? (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto"
+          style={{ background: 'rgba(15,23,42,0.45)', padding: '60px 16px' }}
+          onClick={(ev) => { if (ev.target === ev.currentTarget) setShowAddContributor(false) }}
+        >
+          <div className="panel" style={{ width: '100%', maxWidth: 460, padding: 20 }}>
+            <div className="panel-section-title">Add contributor</div>
+            <div style={{ display: 'grid', gap: 12, marginTop: 8 }}>
+              <div>
+                <label className="field-label">Person</label>
+                <select className="filter-select" style={{ width: '100%' }} value={personPick} onChange={(ev) => setPersonPick(ev.target.value)}>
+                  <option value="">Choose…</option>
+                  {availablePeople.map((p) => (<option key={p.id} value={p.id}>{p.full_name}{p.email ? ` · ${p.email}` : ''}</option>))}
+                  <option value="__new__">➕ Create new person…</option>
+                </select>
+              </div>
+              {personPick === '__new__' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div><label className="field-label">Full name *</label><input className="filter-select" style={{ width: '100%' }} value={newName} onChange={(ev) => setNewName(ev.target.value)} /></div>
+                  <div><label className="field-label">Email</label><input className="filter-select" style={{ width: '100%' }} value={newEmail} onChange={(ev) => setNewEmail(ev.target.value)} placeholder="optional" /></div>
+                </div>
+              ) : null}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div><label className="field-label">Role</label><input className="filter-select" style={{ width: '100%' }} value={cRole} onChange={(ev) => setCRole(ev.target.value)} placeholder="e.g. Engineer" /></div>
+                <div><label className="field-label">Rate £/h *</label><input type="number" className="filter-select" style={{ width: '100%' }} value={cRate} onChange={(ev) => setCRate(ev.target.value)} placeholder="0 for volunteer" /></div>
+              </div>
+              {error ? <p style={{ color: 'var(--red)', fontSize: 12, margin: 0 }}>{error}</p> : null}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <button className="btn btn-ghost btn-sm" onClick={() => setShowAddContributor(false)} disabled={savingContributor}>Cancel</button>
+                <button className="btn btn-primary btn-sm" onClick={submitContributor} disabled={savingContributor}>{savingContributor ? 'Adding…' : 'Add contributor'}</button>
+              </div>
+            </div>
+          </div>
         </div>
       ) : null}
 
