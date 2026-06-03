@@ -89,8 +89,12 @@ export default function ConfirmDialog({
       : 'bg-[var(--amber)] text-white hover:bg-[var(--amber-strong)]'
 
   return createPortal(
+    // `thmock` is required: this portals to document.body, OUTSIDE the app's
+    // .thmock wrapper where the design tokens (--red, --border, --text, …) are
+    // defined. Without it, the destructive button's bg-[var(--red)] resolves to
+    // nothing and the white-text button is invisible (looked like "Cancel only").
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)]"
+      className="thmock fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)]"
       onClick={(e) => {
         if (e.target === e.currentTarget) onOpenChange(false)
       }}
@@ -152,6 +156,9 @@ export default function ConfirmDialog({
             type="button"
             onClick={() => onOpenChange(false)}
             disabled={loading}
+            // Default focus on Cancel (not the destructive action) so Enter can't
+            // accidentally confirm — unless there's a type-to-confirm input to focus.
+            autoFocus={confirmPhrase == null}
             className="rounded border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)]"
           >
             {cancelLabel}
