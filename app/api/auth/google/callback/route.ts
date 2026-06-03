@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { google } from 'googleapis'
-import { getOAuthClient, getTokensFromCode } from '@/lib/google/oauth'
+import { getOAuthClient, getTokensFromCode, refreshTokenStorage } from '@/lib/google/oauth'
 import { createClient } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         .from('google_tokens')
         .update({
           access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
+          ...refreshTokenStorage(tokens.refresh_token),
           token_type: tokens.token_type ?? 'Bearer',
           expiry_date: tokens.expiry_date ?? null,
           scope: tokens.scope ?? null,
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       // Insert new account
       const { error: insertError } = await supabase.from('google_tokens').insert({
         access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
+        ...refreshTokenStorage(tokens.refresh_token),
         token_type: tokens.token_type ?? 'Bearer',
         expiry_date: tokens.expiry_date ?? null,
         scope: tokens.scope ?? null,

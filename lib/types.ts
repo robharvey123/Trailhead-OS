@@ -180,7 +180,9 @@ export interface EnquiryFormState {
 export interface GoogleTokens {
   id: string
   access_token: string
-  refresh_token: string
+  refresh_token: string | null
+  /** base64(iv|tag|ciphertext) of the refresh token; preferred over plaintext when set. */
+  refresh_token_encrypted?: string | null
   token_type: string
   expiry_date: number
   scope: string

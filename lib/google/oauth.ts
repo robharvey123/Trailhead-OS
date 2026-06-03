@@ -1,5 +1,29 @@
 import { google } from 'googleapis'
 import type { GoogleTokens } from '@/lib/types'
+import { decryptToken, encryptToken, tokenEncryptionReady } from '@/lib/crypto/tokens'
+
+/** The usable (plaintext) refresh token for a row: decrypt the encrypted column
+ *  when present + a key is configured, else fall back to the legacy plaintext. */
+function resolveRefreshToken(
+  row: Pick<GoogleTokens, 'refresh_token' | 'refresh_token_encrypted'>
+): string | undefined {
+  if (row.refresh_token_encrypted && tokenEncryptionReady()) {
+    try {
+      return decryptToken(row.refresh_token_encrypted)
+    } catch {
+      /* fall back to plaintext below */
+    }
+  }
+  return row.refresh_token ?? undefined
+}
+
+/** Storage fields for a new/rotated refresh token: encrypted (plaintext cleared)
+ *  when a key is configured, else legacy plaintext. Exported for the callback +
+ *  backfill route so all write paths encrypt consistently. */
+export function refreshTokenStorage(plain: string): Record<string, unknown> {
+  if (tokenEncryptionReady()) return { refresh_token_encrypted: encryptToken(plain), refresh_token: null }
+  return { refresh_token: plain }
+}
 
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.events',
@@ -60,28 +84,22 @@ export async function getAuthenticatedClient(tokenId?: string) {
   const client = getOAuthClient()
   client.setCredentials({
     access_token: tokenRow.access_token,
-    refresh_token: tokenRow.refresh_token,
+    refresh_token: resolveRefreshToken(tokenRow),
     expiry_date: tokenRow.expiry_date,
   })
 
   client.on('tokens', async (tokens) => {
-    const nextAccessToken = tokens.access_token ?? tokenRow.access_token
-    const nextRefreshToken = tokens.refresh_token ?? tokenRow.refresh_token
-    const nextTokenType = tokens.token_type ?? tokenRow.token_type
-    const nextScope = tokens.scope ?? tokenRow.scope
-    const nextExpiryDate = tokens.expiry_date ?? tokenRow.expiry_date
+    const update: Record<string, unknown> = {
+      access_token: tokens.access_token ?? tokenRow.access_token,
+      token_type: tokens.token_type ?? tokenRow.token_type,
+      scope: tokens.scope ?? tokenRow.scope,
+      expiry_date: tokens.expiry_date ?? tokenRow.expiry_date,
+      updated_at: new Date().toISOString(),
+    }
+    // Only re-store the refresh token when Google issues a new one (rare).
+    if (tokens.refresh_token) Object.assign(update, refreshTokenStorage(tokens.refresh_token))
 
-    await supabase
-      .from('google_tokens')
-      .update({
-        access_token: nextAccessToken,
-        refresh_token: nextRefreshToken,
-        token_type: nextTokenType,
-        scope: nextScope,
-        expiry_date: nextExpiryDate,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', tokenRow.id)
+    await supabase.from('google_tokens').update(update).eq('id', tokenRow.id)
   })
 
   return client
@@ -110,22 +128,21 @@ export async function getAuthenticatedClientForToken(tokenRow: GoogleTokens) {
   const client = getOAuthClient()
   client.setCredentials({
     access_token: tokenRow.access_token,
-    refresh_token: tokenRow.refresh_token,
+    refresh_token: resolveRefreshToken(tokenRow),
     expiry_date: tokenRow.expiry_date,
   })
 
   client.on('tokens', async (tokens) => {
-    await supabase
-      .from('google_tokens')
-      .update({
-        access_token: tokens.access_token ?? tokenRow.access_token,
-        refresh_token: tokens.refresh_token ?? tokenRow.refresh_token,
-        token_type: tokens.token_type ?? tokenRow.token_type,
-        scope: tokens.scope ?? tokenRow.scope,
-        expiry_date: tokens.expiry_date ?? tokenRow.expiry_date,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', tokenRow.id)
+    const update: Record<string, unknown> = {
+      access_token: tokens.access_token ?? tokenRow.access_token,
+      token_type: tokens.token_type ?? tokenRow.token_type,
+      scope: tokens.scope ?? tokenRow.scope,
+      expiry_date: tokens.expiry_date ?? tokenRow.expiry_date,
+      updated_at: new Date().toISOString(),
+    }
+    if (tokens.refresh_token) Object.assign(update, refreshTokenStorage(tokens.refresh_token))
+
+    await supabase.from('google_tokens').update(update).eq('id', tokenRow.id)
   })
 
   return client
