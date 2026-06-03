@@ -3,20 +3,11 @@ import { randomUUID } from 'crypto'
 import { convert as htmlToText } from 'html-to-text'
 import type { EmailLog } from '@/lib/types'
 import { getAuthenticatedClient } from './oauth'
+import { stripDocumentWrappers } from '@/lib/email/strip-document'
 
 export async function getGmailClient() {
   const auth = await getAuthenticatedClient()
   return google.gmail({ version: 'v1', auth })
-}
-
-/** Strip document wrappers (doctype/html/head/body) anywhere in a fragment, so an
- *  embedded signature stored as a full document doesn't nest a second document. */
-function stripDocumentWrappers(html: string): string {
-  return html
-    .replace(/<!doctype[^>]*>/gi, '')
-    .replace(/<head[\s\S]*?<\/head>/gi, '')
-    .replace(/<\/?(html|body)[^>]*>/gi, '')
-    .trim()
 }
 
 /**
