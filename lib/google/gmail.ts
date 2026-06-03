@@ -1,10 +1,33 @@
 import { google, type gmail_v1 } from 'googleapis'
+import { randomUUID } from 'crypto'
+import { convert as htmlToText } from 'html-to-text'
 import type { EmailLog } from '@/lib/types'
 import { getAuthenticatedClient } from './oauth'
 
 export async function getGmailClient() {
   const auth = await getAuthenticatedClient()
   return google.gmail({ version: 'v1', auth })
+}
+
+/** Strip document wrappers (doctype/html/head/body) anywhere in a fragment, so an
+ *  embedded signature stored as a full document doesn't nest a second document. */
+function stripDocumentWrappers(html: string): string {
+  return html
+    .replace(/<!doctype[^>]*>/gi, '')
+    .replace(/<head[\s\S]*?<\/head>/gi, '')
+    .replace(/<\/?(html|body)[^>]*>/gi, '')
+    .trim()
+}
+
+/**
+ * Compose an outbound email from an inner HTML fragment (typed body + signature):
+ * wrap it in ONE clean HTML document and derive a readable plain-text alternative.
+ */
+export function composeOutboundEmail(inner: string): { html: string; text: string } {
+  const cleanInner = stripDocumentWrappers(inner)
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${cleanInner}</body></html>`
+  const text = htmlToText(html, { wordwrap: 80 })
+  return { html, text }
 }
 
 export async function getEmailsForContact(contactEmail: string, maxResults = 20) {
@@ -115,21 +138,40 @@ export async function sendEmail({
   if (inReplyTo) headers.push(`In-Reply-To: ${inReplyTo}`)
   if (references) headers.push(`References: ${references}`)
 
+  // Single clean HTML document + plain-text alternative.
+  const { html, text } = composeOutboundEmail(body)
+
+  // text/plain + text/html as a multipart/alternative block (clients pick HTML,
+  // spam filters + accessibility get the text version).
+  const altBoundary = `alt_${randomUUID()}`
+  const altBlock = [
+    `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+    '',
+    `--${altBoundary}`,
+    'Content-Type: text/plain; charset=utf-8',
+    '',
+    text,
+    `--${altBoundary}`,
+    'Content-Type: text/html; charset=utf-8',
+    '',
+    html,
+    `--${altBoundary}--`,
+  ]
+
   let message: string
   if (attachments && attachments.length > 0) {
-    const boundary = `thb_${Math.abs(subject.length * 2654435761 % 2147483647)}_bnd`
+    // multipart/mixed [ multipart/alternative, ...attachments ]
+    const mixed = `mix_${randomUUID()}`
     const parts: string[] = [
       ...headers,
-      `Content-Type: multipart/mixed; boundary="${boundary}"`,
+      `Content-Type: multipart/mixed; boundary="${mixed}"`,
       '',
-      `--${boundary}`,
-      'Content-Type: text/html; charset=utf-8',
-      '',
-      body,
+      `--${mixed}`,
+      ...altBlock,
     ]
     for (const a of attachments) {
       parts.push(
-        `--${boundary}`,
+        `--${mixed}`,
         `Content-Type: ${a.contentType}; name="${a.filename}"`,
         'Content-Transfer-Encoding: base64',
         `Content-Disposition: attachment; filename="${a.filename}"`,
@@ -137,10 +179,10 @@ export async function sendEmail({
         a.dataBase64.replace(/(.{76})/g, '$1\n')
       )
     }
-    parts.push(`--${boundary}--`)
+    parts.push(`--${mixed}--`)
     message = parts.join('\n')
   } else {
-    message = [...headers, 'Content-Type: text/html; charset=utf-8', '', body].join('\n')
+    message = [...headers, ...altBlock].join('\n')
   }
 
   const encoded = Buffer.from(message)
@@ -164,7 +206,9 @@ export async function sendEmail({
     params.requestBody.threadId = replyToMessageId
   }
 
-  return gmail.users.messages.send(params)
+  const res = await gmail.users.messages.send(params)
+  // Return the composed html/text too so callers can store the clean versions.
+  return { data: res.data, html, text }
 }
 
 /** Raw HTML body (unsanitised) for the reader. */

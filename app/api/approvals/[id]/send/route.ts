@@ -53,7 +53,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       to_addresses: [to],
       subject,
       snippet: `Approval request — ${typeLabel}`,
-      body_html: body,
+      body_html: res.html,
+      body_text: res.text,
       sent_at: new Date().toISOString(),
     })
 

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { apiFetch } from '@/lib/api-fetch'
 import type { EmailLog, EmailThread } from '@/lib/types'
 import ComposeModal from './ComposeModal'
+import SafeEmailHtml from '../SafeEmailHtml'
 
 type Named = { id: string; name: string }
 type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
@@ -300,7 +301,13 @@ export default function InboxClient({
                       </div>
                       <div className="msg-time">{m.received_at || m.sent_at ? timeLabel((m.received_at || m.sent_at)!) : ''}</div>
                     </div>
-                    <div className="msg-body">{m.body_text || m.snippet || '(no content)'}</div>
+                    <div className="msg-body">
+                      {m.body_html
+                        ? <SafeEmailHtml html={m.body_html} />
+                        : m.body_text
+                          ? <pre className="whitespace-pre-wrap">{m.body_text}</pre>
+                          : <span className="text-[color:var(--text-3)]">{m.snippet || '(no content)'}</span>}
+                    </div>
                   </div>
                 ))}
               </div>

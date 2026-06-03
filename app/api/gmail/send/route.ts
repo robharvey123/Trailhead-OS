@@ -76,8 +76,9 @@ export async function POST(request: Request) {
       cc_addresses: splitAddrs(cc),
       bcc_addresses: splitAddrs(bcc),
       subject,
-      snippet: htmlBody.slice(0, 200),
-      body_html: htmlBody,
+      snippet: response.text.slice(0, 200),
+      body_html: response.html,
+      body_text: response.text,
       sent_at: new Date().toISOString(),
     })
 
