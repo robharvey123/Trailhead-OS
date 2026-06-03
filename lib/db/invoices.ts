@@ -25,6 +25,7 @@ export async function getInvoices(
   let query = supabase
     .from('invoices')
     .select('*, pricing_tiers(*)')
+    .is('deleted_at', null)
     .order('issue_date', { ascending: false })
     .order('created_at', { ascending: false })
 
@@ -103,4 +104,15 @@ export async function updateInvoice(
   }
 
   return mapInvoice(invoice as InvoiceRow)
+}
+
+/** Soft-delete: stamp deleted_at. Never hard-deletes (invoices are referenced
+ *  by payments/ledgers/stripe). Restore by setting deleted_at back to null. */
+export async function softDeleteInvoice(id: string, client?: SupabaseClient): Promise<void> {
+  const supabase = await getSupabase(client)
+  const { error } = await supabase
+    .from('invoices')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw new Error(error.message || 'Failed to delete invoice')
 }

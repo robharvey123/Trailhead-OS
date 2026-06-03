@@ -56,6 +56,7 @@ export default async function SettingsPage() {
       .from('invoices')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'draft')
+      .is('deleted_at', null)
     draftInvoiceCount = count ?? 0
   } catch {}
 
@@ -68,6 +69,7 @@ export default async function SettingsPage() {
       .from('invoices')
       .select('id', { count: 'exact', head: true })
       .gte('paid_at', startOfMonth.toISOString())
+      .is('deleted_at', null)
     paidInvoicesThisMonth = count ?? 0
   } catch {}
 

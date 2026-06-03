@@ -4,6 +4,7 @@ import { getContactById } from '@/lib/db/contacts'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 
 export default async function InvoiceDetailPage({
   params,
@@ -36,6 +37,8 @@ export default async function InvoiceDetailPage({
     : { data: null }
   const workstream =
     workstreams.find((item) => item.id === invoice.workstream_id) ?? null
+  const profile = await getCurrentProfile(supabase).catch(() => null)
+  const isAdmin = roleIsAdmin(profile?.role)
 
   return (
     <InvoiceDetailClient
@@ -44,6 +47,7 @@ export default async function InvoiceDetailPage({
       workstream={workstream}
       subscriptionStatus={stripeCustomerResult.data?.subscription_status ?? null}
       warning={resolvedSearchParams?.warning ?? null}
+      isAdmin={isAdmin}
     />
   )
 }

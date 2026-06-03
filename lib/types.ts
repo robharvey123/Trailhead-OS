@@ -670,6 +670,7 @@ export interface Invoice {
   notes: string | null
   created_at: string
   updated_at: string
+  deleted_at?: string | null
 }
 
 export interface InvoiceTotals {

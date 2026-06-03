@@ -10,6 +10,7 @@ import ConfirmDialog from './ConfirmDialog'
 import RecordEmailDialog from './RecordEmailDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import StatusBadge from './StatusBadge'
+import { deleteInvoice } from '@/app/(os)/invoicing/[id]/actions'
 
 function formatMoney(value: number) {
   return `£${value.toFixed(2)}`
@@ -21,17 +22,21 @@ export default function InvoiceDetailClient({
   workstream,
   subscriptionStatus,
   warning,
+  isAdmin = false,
 }: {
   invoice: Invoice
   contact: Contact | null
   workstream: Workstream | null
   subscriptionStatus: string | null
   warning?: string | null
+  isAdmin?: boolean
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [updatingStatus, setUpdatingStatus] = useState<InvoiceStatus | 'cancelled' | null>(null)
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [paymentLink, setPaymentLink] = useState(invoice.stripe_payment_link ?? '')
   const [subscriptionState, setSubscriptionState] = useState({
@@ -172,8 +177,26 @@ export default function InvoiceDetailClient({
     }
   }
 
+  async function handleDelete() {
+    setDeleting(true)
+    setError(null)
+    // On success this redirects to /invoicing (throws NEXT_REDIRECT); only an
+    // explicit { error } comes back.
+    const res = await deleteInvoice(invoice.id)
+    if (res?.error) {
+      setError(res.error)
+      setDeleting(false)
+      setDeleteConfirmOpen(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* Predictable back target — works from email links / bookmarks, unlike router.back(). */}
+      <Link href="/invoicing" className="inline-flex items-center gap-1 text-sm text-[color:var(--text-3)] transition hover:text-[color:var(--text)]">
+        ← Back to invoices
+      </Link>
+
       {isPaid ? (
         <div className="rounded-[1.75rem] border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-5 py-4 text-sm text-[color:var(--emerald-strong)]">
           Paid on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('en-GB') : '—'}
@@ -222,6 +245,15 @@ export default function InvoiceDetailClient({
               defaultMessage={`Hi,\n\nPlease find the attached invoice ${invoice.invoice_number}.\n\nThank you.`}
               buttonClassName="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             />
+            {isAdmin ? (
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmOpen(true)}
+                className="rounded-2xl border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red)] transition hover:bg-[var(--red-dim)]"
+              >
+                Delete
+              </button>
+            ) : null}
             {invoice.status === 'draft' ? (
               <Link
                 href={`/invoicing/${invoice.id}/edit`}
@@ -538,6 +570,17 @@ export default function InvoiceDetailClient({
         onConfirm={() => void cancelInvoice()}
         loading={updatingStatus === 'cancelled'}
         variant="warning"
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title={`Delete invoice ${invoice.invoice_number}?`}
+        description="This can be restored from the database if needed."
+        confirmLabel="Delete invoice"
+        onConfirm={() => void handleDelete()}
+        loading={deleting}
+        variant="destructive"
       />
     </div>
   )

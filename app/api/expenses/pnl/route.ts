@@ -18,6 +18,7 @@ export async function GET() {
       .from('invoices')
       .select('workstream_id, line_items, vat_rate, status')
       .eq('status', 'paid')
+      .is('deleted_at', null)
 
     if (invError) throw new Error(invError.message)
 
