@@ -26,8 +26,13 @@ export async function POST(request: NextRequest) {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
     if (!ok) return authResponse
     const body = await request.json()
-    if (!body.name || !body.end_client_account_id || !body.start_date) {
-      return NextResponse.json({ error: 'name, end_client_account_id and start_date are required' }, { status: 400 })
+    // Internal engagements have no end client; client engagements still require one.
+    const isInternal = body.engagement_type === 'internal_app_build' || body.engagement_type === 'internal_ops'
+    if (!body.name || !body.start_date || (!isInternal && !body.end_client_account_id)) {
+      return NextResponse.json(
+        { error: isInternal ? 'name and start_date are required' : 'name, end_client_account_id and start_date are required' },
+        { status: 400 }
+      )
     }
     const engagement = await engagements.upsertEngagement(body, supabase)
     return NextResponse.json({ engagement }, { status: 201 })
