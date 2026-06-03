@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import OsShell from '@/components/os/OsShell'
 import { getWorkstreams } from '@/lib/db/workstreams'
+import { getCurrentProfile } from '@/lib/auth/roles'
+import { getUnreadTaskCount } from '@/lib/notifications/unread'
 import { createClient } from '@/lib/supabase/server'
 import type { Workstream } from '@/lib/types'
 
@@ -24,11 +26,19 @@ export default async function OsLayout({
   let workstreams: Workstream[] = []
   let newEnquiryCount = 0
   let activeQuoteCount = 0
+  let unreadTaskCount = 0
 
   try {
     workstreams = await getWorkstreams(supabase)
   } catch {
     workstreams = []
+  }
+
+  try {
+    const profile = await getCurrentProfile(supabase)
+    if (profile?.person_id) unreadTaskCount = await getUnreadTaskCount(profile.person_id, supabase)
+  } catch {
+    unreadTaskCount = 0
   }
 
   try {
@@ -58,6 +68,7 @@ export default async function OsLayout({
       workstreams={workstreams}
       newEnquiryCount={newEnquiryCount}
       activeQuoteCount={activeQuoteCount}
+      unreadTaskCount={unreadTaskCount}
     >
       {children}
     </OsShell>

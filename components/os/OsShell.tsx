@@ -8,6 +8,7 @@ interface OsShellProps {
   workstreams: Workstream[]
   newEnquiryCount: number
   activeQuoteCount: number
+  unreadTaskCount?: number
   children: ReactNode
 }
 
@@ -15,6 +16,7 @@ export default function OsShell({
   workstreams,
   newEnquiryCount,
   activeQuoteCount,
+  unreadTaskCount = 0,
   children,
 }: OsShellProps) {
   const [collapsed, setCollapsed] = useState(false)
@@ -46,6 +48,7 @@ export default function OsShell({
         workstreams={workstreams}
         newEnquiryCount={newEnquiryCount}
         activeQuoteCount={activeQuoteCount}
+        unreadTaskCount={unreadTaskCount}
         collapsed={collapsed}
         onToggle={toggle}
       />

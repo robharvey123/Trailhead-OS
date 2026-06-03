@@ -365,6 +365,7 @@ export default function EngagementDetailClient({
                 <div className="panel-section-title">Quick actions</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/weekly-update/new`}>Generate weekly update</Link>
+                  <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/tasks`}>Task board</Link>
                   <Link className="btn btn-ghost btn-sm" href={`/timesheet`}>+ Log time on this engagement</Link>
                 </div>
               </div>

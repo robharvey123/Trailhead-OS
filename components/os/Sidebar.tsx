@@ -11,6 +11,7 @@ interface SidebarProps {
   workstreams: Workstream[]
   newEnquiryCount: number
   activeQuoteCount: number
+  unreadTaskCount?: number
   collapsed?: boolean
   onToggle?: () => void
 }
@@ -119,6 +120,7 @@ export default function Sidebar({
   workstreams,
   newEnquiryCount,
   activeQuoteCount,
+  unreadTaskCount = 0,
   collapsed = false,
   onToggle,
 }: SidebarProps) {
@@ -205,6 +207,14 @@ export default function Sidebar({
               active={pathname === '/tasks'}
               onClick={() => setMobileOpen(false)}
               collapsed={collapsed}
+            />
+            <NavLink
+              href="/my-work"
+              label="My work"
+              active={pathname === '/my-work' || pathname.startsWith('/my-work/')}
+              onClick={() => setMobileOpen(false)}
+              collapsed={collapsed}
+              badge={unreadTaskCount}
             />
             <NavLink
               href="/projects"

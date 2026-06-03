@@ -316,6 +316,74 @@ export interface Invite {
   created_at: string
 }
 
+// ── Engagement tasks (ticket board) ────────────────────
+
+export type EngagementTaskStatus = 'backlog' | 'in_progress' | 'review' | 'done' | 'cancelled'
+export type EngagementTaskPriority = 'low' | 'normal' | 'high' | 'urgent'
+
+export const ENGAGEMENT_TASK_STATUSES: EngagementTaskStatus[] = ['backlog', 'in_progress', 'review', 'done', 'cancelled']
+export const ENGAGEMENT_TASK_STATUS_LABELS: Record<EngagementTaskStatus, string> = {
+  backlog: 'Backlog', in_progress: 'In progress', review: 'Review', done: 'Done', cancelled: 'Cancelled',
+}
+// Columns shown on the kanban board (cancelled is reachable but not a board column).
+export const ENGAGEMENT_TASK_BOARD_COLUMNS: EngagementTaskStatus[] = ['backlog', 'in_progress', 'review', 'done']
+export const ENGAGEMENT_TASK_PRIORITIES: EngagementTaskPriority[] = ['urgent', 'high', 'normal', 'low']
+export const ENGAGEMENT_TASK_PRIORITY_LABELS: Record<EngagementTaskPriority, string> = {
+  low: 'Low', normal: 'Normal', high: 'High', urgent: 'Urgent',
+}
+/** For "priority desc" sorts. */
+export const ENGAGEMENT_TASK_PRIORITY_RANK: Record<EngagementTaskPriority, number> = {
+  urgent: 3, high: 2, normal: 1, low: 0,
+}
+
+export interface EngagementTask {
+  id: string
+  engagement_id: string | null
+  title: string
+  description: string | null
+  status: EngagementTaskStatus
+  priority: EngagementTaskPriority
+  assignee_person_id: string | null
+  reporter_person_id: string | null
+  due_date: string | null
+  labels: string[]
+  position: number
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  completed_at: string | null
+}
+
+type TaskPersonRef = { id: string; full_name: string } | null
+
+export interface EngagementTaskWithRelations extends EngagementTask {
+  assignee?: TaskPersonRef
+  reporter?: TaskPersonRef
+  engagement?: { id: string; name: string } | null
+}
+
+export interface EngagementTaskComment {
+  id: string
+  task_id: string
+  author_person_id: string | null
+  body: string
+  created_at: string
+  updated_at: string
+}
+
+export interface EngagementTaskCommentWithAuthor extends EngagementTaskComment {
+  author?: TaskPersonRef
+}
+
+export interface EngagementTaskActivity {
+  id: string
+  task_id: string
+  actor_user_id: string | null
+  kind: string
+  payload: Record<string, unknown>
+  created_at: string
+}
+
 // ── People & contributors ──────────────────────────────
 
 export interface Person {
