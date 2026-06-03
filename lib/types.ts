@@ -280,6 +280,42 @@ export interface EngagementInput {
   notes?: string | null
 }
 
+// ── Auth, roles & invites ──────────────────────────────
+
+export type UserRole = 'owner' | 'admin' | 'employee' | 'contractor'
+
+/** Roles an admin is allowed to assign via the invite UI (owner is DB-only). */
+export const ASSIGNABLE_ROLES: UserRole[] = ['admin', 'employee', 'contractor']
+
+export const USER_ROLE_LABELS: Record<UserRole, string> = {
+  owner: 'Owner',
+  admin: 'Admin',
+  employee: 'Employee',
+  contractor: 'Contractor',
+}
+
+export interface Profile {
+  id: string
+  person_id: string | null
+  role: UserRole
+  display_name: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Invite {
+  id: string
+  email: string
+  role: UserRole
+  person_id: string | null
+  token: string
+  invited_by: string | null
+  expires_at: string
+  claimed_at: string | null
+  claimed_by: string | null
+  created_at: string
+}
+
 // ── People & contributors ──────────────────────────────
 
 export interface Person {

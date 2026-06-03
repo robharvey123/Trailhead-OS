@@ -8,6 +8,8 @@ import { getCompanySettings } from '@/lib/company-settings'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { getPricingTiers } from '@/lib/db/pricing-tiers'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
+import ProfileSettingsForm from '@/components/os/ProfileSettingsForm'
 import type { PricingTier, Workstream } from '@/lib/types'
 
 export default async function SettingsPage() {
@@ -25,6 +27,14 @@ export default async function SettingsPage() {
   let pricingTiers: PricingTier[] = []
   let googleEmail: string | null = null
   const companySettings = await getCompanySettings(supabase)
+  const profile = await getCurrentProfile(supabase)
+  let linkedPersonName: string | null = null
+  if (profile?.person_id) {
+    try {
+      const { data } = await supabase.from('people').select('full_name').eq('id', profile.person_id).maybeSingle()
+      linkedPersonName = data?.full_name ?? null
+    } catch {}
+  }
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk').replace(/\/$/, '')
   const icalSecret = process.env.ICAL_SECRET ?? ''
 
@@ -96,6 +106,24 @@ export default async function SettingsPage() {
           A control panel for the core OS surfaces, live workspace settings, and the current signed-in account.
         </p>
       </div>
+
+      {profile ? (
+        <section className="os-card p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="os-eyebrow">Account</p>
+              <h2 className="mt-2 os-section-title">Your profile</h2>
+              <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">{user?.email ?? 'Unknown user'}</p>
+            </div>
+            {roleIsAdmin(profile.role) ? (
+              <Link href="/admin/invites" className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]">
+                Manage invites
+              </Link>
+            ) : null}
+          </div>
+          <ProfileSettingsForm displayName={profile.display_name ?? ''} role={profile.role} personName={linkedPersonName} />
+        </section>
+      ) : null}
 
       <SettingsIntegrations
         initialGoogleEmail={googleEmail}

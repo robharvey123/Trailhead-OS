@@ -35,3 +35,21 @@ export async function updateOsCompanySettings(
   revalidatePath('/settings')
   return { success: true }
 }
+
+export type ProfileState = { error?: string; success?: boolean }
+
+/**
+ * Updates the signed-in user's own display name. Role is intentionally NOT
+ * updatable here (RLS + a DB trigger also block self-elevation).
+ */
+export async function updateDisplayName(_prevState: ProfileState, formData: FormData): Promise<ProfileState> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const displayName = String(formData.get('display_name') ?? '').trim()
+  if (!displayName) return { error: 'Display name is required' }
+  const { error } = await supabase.from('profiles').update({ display_name: displayName }).eq('id', user.id)
+  if (error) return { error: error.message }
+  revalidatePath('/settings')
+  return { success: true }
+}

@@ -13,7 +13,7 @@ const publicRoutes = [
   '/api/auth/google',
   '/api/auth/google/callback',
 ]
-const publicRoutePrefixes = ['/report']
+const publicRoutePrefixes = ['/report', '/auth/claim']
 const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
@@ -145,6 +145,15 @@ export async function middleware(request: NextRequest) {
 
   if (user && pathname === '/login') {
     return NextResponse.redirect(new URL('/workspaces', request.url))
+  }
+
+  // Admin-only area: only owner/admin profiles may enter /admin/*.
+  if (user && (pathname === '/admin' || pathname.startsWith('/admin/'))) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+    const role = profile?.role
+    if (role !== 'owner' && role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
   }
 
   return response
