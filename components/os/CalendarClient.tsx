@@ -62,6 +62,8 @@ interface EventFormState {
   contact_id: string
   project_id: string
   colour: string
+  add_meet: boolean
+  attendees: string
 }
 
 function pad(value: number) {
@@ -151,6 +153,8 @@ function createDefaultFormState() {
     contact_id: '',
     project_id: '',
     colour: EVENT_COLOURS[0].value,
+    add_meet: false,
+    attendees: '',
   }
 }
 
@@ -176,6 +180,8 @@ function createFormStateFromSelection(selection: {
       contact_id: '',
       project_id: '',
       colour: EVENT_COLOURS[0].value,
+      add_meet: false,
+      attendees: '',
     }
   }
 
@@ -192,6 +198,8 @@ function createFormStateFromSelection(selection: {
     contact_id: '',
     project_id: '',
     colour: EVENT_COLOURS[0].value,
+    add_meet: false,
+    attendees: '',
   }
 }
 
@@ -213,7 +221,16 @@ function createFormStateFromEvent(event: CalendarEvent): EventFormState {
     contact_id: event.contact_id ?? '',
     project_id: event.project_id ?? '',
     colour: event.colour ?? EVENT_COLOURS[0].value,
+    add_meet: false,
+    attendees: '',
   }
+}
+
+function parseAttendees(raw: string): string[] {
+  return raw
+    .split(/[\s,;]+/)
+    .map((s) => s.trim())
+    .filter((s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))
 }
 
 function buildPayloadFromForm(form: EventFormState) {
@@ -339,10 +356,24 @@ function toEventInput(
     extendedProps: {
       type: 'event',
       data: event,
+      source: event.source,
+      meet: Boolean(event.meet_link),
     },
   }))
 
   return [...taskInputs, ...eventInputs]
+}
+
+/** Left-icon + ellipsised title for event chips: ✅ task, 🎥 Meet, 📅 default. */
+function renderEventContent(arg: { event: { title: string; extendedProps: Record<string, unknown> } }) {
+  const props = arg.event.extendedProps
+  const icon = props.type === 'task' ? '✅' : props.meet ? '🎥' : '📅'
+  return (
+    <span className="cal-chip" title={arg.event.title}>
+      <span className="cal-chip-icon">{icon}</span>
+      <span className="cal-chip-title">{arg.event.title}</span>
+    </span>
+  )
 }
 
 function buildEventPatchFromCalendarApi(event: {
@@ -394,6 +425,7 @@ export default function CalendarClient({
   const [form, setForm] = useState<EventFormState>(createDefaultFormState())
   const [formError, setFormError] = useState<string | null>(null)
   const [formSaving, setFormSaving] = useState(false)
+  const [meetToast, setMeetToast] = useState<string | null>(null)
   const [contactSearch, setContactSearch] = useState('')
   const [projectFilter, setProjectFilter] = useState('')
   const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>(
@@ -606,12 +638,16 @@ export default function CalendarClient({
         )
         setSelectedItem({ type: 'event', data: response.event })
       } else {
-        const response = await apiFetch<{ event: CalendarEvent }>(
+        const response = await apiFetch<{ event: CalendarEvent; meetLink: string | null }>(
           '/api/calendar',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({
+              ...payload,
+              add_meet: form.add_meet,
+              attendees: parseAttendees(form.attendees),
+            }),
           }
         )
 
@@ -623,6 +659,7 @@ export default function CalendarClient({
           )
         )
         setSelectedItem({ type: 'event', data: response.event })
+        if (response.meetLink) setMeetToast(response.meetLink)
       }
 
       closeForm()
@@ -793,6 +830,9 @@ export default function CalendarClient({
               height="auto"
               editable
               selectable
+              nowIndicator
+              dayMaxEvents={4}
+              eventContent={renderEventContent}
               events={fullCalendarEvents}
               datesSet={handleDatesSet}
               dateClick={handleDateClick}
@@ -954,6 +994,26 @@ export default function CalendarClient({
                 </dl>
 
                 <div className="flex flex-wrap gap-3">
+                  {selectedEvent.meet_link ? (
+                    <a
+                      href={selectedEvent.meet_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+                    >
+                      🎥 Join Meet
+                    </a>
+                  ) : null}
+                  {selectedEvent.html_link ? (
+                    <a
+                      href={selectedEvent.html_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                    >
+                      Open in Google Calendar
+                    </a>
+                  ) : null}
                   {!selectedEvent.read_only && (
                     <>
                       <button
@@ -1159,6 +1219,47 @@ export default function CalendarClient({
                 </label>
               </div>
 
+              {!editingEventId ? (
+                <div className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <label className="flex items-center gap-3 text-sm font-medium text-[color:var(--text)]">
+                    <input
+                      type="checkbox"
+                      checked={form.add_meet}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, add_meet: event.target.checked }))
+                      }
+                    />
+                    <span>🎥 Add Google Meet link</span>
+                  </label>
+                  <div>
+                    <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Attendees</span>
+                    <input
+                      value={form.attendees}
+                      onChange={(event) =>
+                        setForm((current) => ({ ...current, attendees: event.target.value }))
+                      }
+                      placeholder="comma-separated emails"
+                      className="os-input w-full px-4 py-3 text-sm"
+                    />
+                    {form.attendees.trim() ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {parseAttendees(form.attendees).map((email) => (
+                          <span
+                            key={email}
+                            className="rounded-full border border-[color:var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs text-[color:var(--text-2)]"
+                          >
+                            {email}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    <p className="mt-2 text-xs text-[color:var(--text-3)]">
+                      Adding attendees will send them a Google Calendar invite.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
                   Project
@@ -1287,6 +1388,21 @@ export default function CalendarClient({
               </button>
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {meetToast ? (
+        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 shadow-2xl">
+          <span className="text-sm text-[color:var(--text)]">🎥 Event created with a Meet link</span>
+          <a
+            href={meetToast}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xl bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+          >
+            Open Meet
+          </a>
+          <button type="button" onClick={() => setMeetToast(null)} className="text-[color:var(--text-3)] hover:text-[color:var(--text)]">✕</button>
         </div>
       ) : null}
 

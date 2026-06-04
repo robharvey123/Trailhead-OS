@@ -146,20 +146,41 @@ export async function POST(request: NextRequest) {
 
     const event = await createCalendarEvent(input, auth.supabase)
 
-    void (async () => {
-      const { data: googleTokens } = await auth.supabase
-        .from('google_tokens')
-        .select('id')
-        .limit(1)
+    // Google Meet + attendees, pushed to the shared Google Calendar.
+    const addMeet = body.add_meet === true
+    const attendees: string[] = Array.isArray(body.attendees)
+      ? (body.attendees as unknown[])
+          .map((a) => (typeof a === 'string' ? a.trim() : ''))
+          .filter((a) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a))
+      : []
 
-      if (!googleTokens?.length) {
-        return
+    const { data: googleTokens } = await auth.supabase.from('google_tokens').select('id').limit(1)
+    const googleConnected = !!googleTokens?.length
+
+    let meetLink: string | null = null
+    let htmlLink: string | null = null
+
+    if (googleConnected && (addMeet || attendees.length)) {
+      // Await so we can surface the Meet link and store it on the row. A Google
+      // failure must not fail the create — the local event already exists.
+      try {
+        const pushed = await pushEventToGoogle(event, { addMeet, attendees })
+        meetLink = pushed.meetLink
+        htmlLink = pushed.htmlLink
+        if (meetLink || htmlLink) {
+          await auth.supabase.from('calendar_events').update({ meet_link: meetLink, html_link: htmlLink }).eq('id', event.id)
+          event.meet_link = meetLink
+          event.html_link = htmlLink
+        }
+      } catch (pushErr) {
+        console.error('Calendar: push to Google failed', pushErr)
       }
+    } else if (googleConnected) {
+      // Plain event: keep the create snappy, push in the background.
+      void pushEventToGoogle(event).catch(() => {})
+    }
 
-      await pushEventToGoogle(event)
-    })().catch(() => {})
-
-    return NextResponse.json({ event }, { status: 201 })
+    return NextResponse.json({ event, meetLink, htmlLink }, { status: 201 })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create calendar event'
     const status = message.includes('must be an ISO datetime string') ? 400 : 500

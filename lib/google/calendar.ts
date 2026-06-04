@@ -45,9 +45,48 @@ function toLocalDateTime(
   return null
 }
 
-export async function pushEventToGoogle(event: CalendarEvent): Promise<string> {
+type PushEventOptions = {
+  /** Request a Google Meet link (conferenceData.createRequest). */
+  addMeet?: boolean
+  /** Attendee emails — Google sends each a calendar invite. */
+  attendees?: string[]
+}
+
+export type PushEventResult = {
+  gcalEventId: string
+  meetLink: string | null
+  htmlLink: string | null
+}
+
+/** Pull the video-conference (Meet) URL out of an event response. */
+function extractMeetLink(data: {
+  hangoutLink?: string | null
+  conferenceData?: { entryPoints?: Array<{ entryPointType?: string | null; uri?: string | null }> | null } | null
+}): string | null {
+  if (data.hangoutLink) return data.hangoutLink
+  const video = data.conferenceData?.entryPoints?.find((e) => e.entryPointType === 'video')
+  return video?.uri ?? null
+}
+
+export async function pushEventToGoogle(event: CalendarEvent, opts: PushEventOptions = {}): Promise<PushEventResult> {
   const calendar = await getCalendarClient()
-  const gcalEvent = toGoogleEventPayload(event)
+  const gcalEvent: Record<string, unknown> = { ...toGoogleEventPayload(event) }
+
+  if (opts.attendees?.length) {
+    gcalEvent.attendees = opts.attendees.map((email) => ({ email }))
+  }
+  if (opts.addMeet) {
+    gcalEvent.conferenceData = {
+      createRequest: {
+        // Idempotency token: a fresh UUID per request so each create gets its own Meet.
+        requestId: crypto.randomUUID(),
+        conferenceSolutionKey: { type: 'hangoutsMeet' },
+      },
+    }
+  }
+  // conferenceDataVersion=1 is MANDATORY when sending conferenceData — without it
+  // Google silently drops the Meet creation with no error.
+  const conferenceDataVersion = opts.addMeet ? 1 : undefined
 
   const { data: existing } = await supabaseService
     .from('gcal_sync')
@@ -56,10 +95,11 @@ export async function pushEventToGoogle(event: CalendarEvent): Promise<string> {
     .maybeSingle<GcalSync>()
 
   if (existing?.gcal_event_id) {
-    await calendar.events.update({
+    const updated = await calendar.events.update({
       calendarId: 'primary',
       eventId: existing.gcal_event_id,
       requestBody: gcalEvent,
+      conferenceDataVersion,
     })
 
     await supabaseService
@@ -70,12 +110,17 @@ export async function pushEventToGoogle(event: CalendarEvent): Promise<string> {
       })
       .eq('id', existing.id)
 
-    return existing.gcal_event_id
+    return {
+      gcalEventId: existing.gcal_event_id,
+      meetLink: extractMeetLink(updated.data),
+      htmlLink: updated.data.htmlLink ?? null,
+    }
   }
 
   const response = await calendar.events.insert({
     calendarId: 'primary',
     requestBody: gcalEvent,
+    conferenceDataVersion,
   })
 
   const gcalEventId = response.data.id
@@ -89,7 +134,11 @@ export async function pushEventToGoogle(event: CalendarEvent): Promise<string> {
     sync_direction: 'both',
   })
 
-  return gcalEventId
+  return {
+    gcalEventId,
+    meetLink: extractMeetLink(response.data),
+    htmlLink: response.data.htmlLink ?? null,
+  }
 }
 
 export async function pullEventsFromGoogle(timeMin: string, timeMax: string) {

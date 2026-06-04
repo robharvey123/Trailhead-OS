@@ -964,6 +964,8 @@ export interface CalendarEvent {
   feed_id: string | null
   external_uid: string | null
   read_only: boolean
+  meet_link: string | null
+  html_link: string | null
   created_at: string
   updated_at: string
 }

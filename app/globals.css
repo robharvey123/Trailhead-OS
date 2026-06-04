@@ -183,27 +183,34 @@ body {
 }
 
 .fc {
-  --fc-border-color: rgba(51, 65, 85, 0.7);
+  --fc-border-color: var(--border, rgba(51, 65, 85, 0.7));
   --fc-page-bg-color: transparent;
-  --fc-neutral-bg-color: rgba(15, 23, 42, 0.65);
-  --fc-list-event-hover-bg-color: rgba(30, 41, 59, 0.75);
-  --fc-today-bg-color: rgba(14, 165, 233, 0.14);
-  color: #e2e8f0;
+  --fc-neutral-bg-color: var(--surface-2, rgba(15, 23, 42, 0.65));
+  --fc-list-event-hover-bg-color: var(--surface-2, rgba(30, 41, 59, 0.75));
+  --fc-today-bg-color: color-mix(in srgb, var(--accent, #38bdf8) 10%, transparent);
+  color: var(--text, #e2e8f0);
 }
 
+/* Prominent month/year header — matches page titles elsewhere. */
 .fc .fc-toolbar-title {
-  color: #f8fafc;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  color: var(--text, #f8fafc);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 .fc .fc-col-header-cell-cushion,
-.fc .fc-daygrid-day-number,
 .fc .fc-timegrid-axis-cushion,
 .fc .fc-timegrid-slot-label-cushion {
-  color: #e2e8f0;
+  color: var(--text-2, #cbd5e1);
   font-weight: 600;
+}
+
+.fc .fc-daygrid-day-number {
+  color: var(--text-2, #cbd5e1);
+  padding: 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .fc .fc-col-header-cell-cushion {
@@ -212,33 +219,81 @@ body {
   letter-spacing: 0.01em;
 }
 
-.fc .fc-daygrid-day-number {
-  padding: 0.6rem;
-  font-size: 0.95rem;
+/* Today: accent the date number, not just the column header. */
+.fc .fc-day-today .fc-daygrid-day-number {
+  color: var(--accent, #38bdf8);
+  font-weight: 800;
+}
+
+/* Empty days a touch lighter so busy vs quiet weeks read at a glance. */
+.fc .fc-daygrid-day {
+  background: color-mix(in srgb, var(--surface, transparent) 35%, transparent);
+}
+.fc .fc-day-today {
+  background: var(--fc-today-bg-color);
 }
 
 .fc .fc-button-primary {
-  border-color: rgba(71, 85, 105, 0.9);
-  background: rgba(15, 23, 42, 0.9);
-  color: #f8fafc;
+  border-color: var(--border, rgba(71, 85, 105, 0.9));
+  background: var(--surface-2, rgba(15, 23, 42, 0.9));
+  color: var(--text, #f8fafc);
+  text-transform: capitalize;
+  font-weight: 600;
 }
 
 .fc .fc-button-primary:hover,
 .fc .fc-button-primary:focus {
-  border-color: rgba(125, 211, 252, 0.7);
-  background: rgba(30, 41, 59, 0.95);
+  border-color: var(--accent, rgba(125, 211, 252, 0.7));
+  background: var(--surface-3, rgba(30, 41, 59, 0.95));
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  border-color: rgba(56, 189, 248, 0.85);
-  background: rgba(14, 116, 144, 0.9);
+  border-color: var(--accent, rgba(56, 189, 248, 0.85));
+  background: var(--accent, rgba(14, 116, 144, 0.9));
+  color: #fff;
+}
+
+/* "Today" is the only context-resetting control — make it read as primary. */
+.fc .fc-today-button:not(:disabled) {
+  background: var(--accent, #0ea5e9);
+  border-color: var(--accent, #0ea5e9);
+  color: #fff;
+  opacity: 1;
+}
+.fc .fc-today-button:not(:disabled):hover {
+  background: var(--accent-hover, #0284c7);
+  border-color: var(--accent-hover, #0284c7);
 }
 
 .fc .fc-scrollgrid,
 .fc .fc-theme-standard td,
 .fc .fc-theme-standard th {
-  border-color: rgba(51, 65, 85, 0.7);
+  border-color: var(--border, rgba(51, 65, 85, 0.7));
+}
+
+/* Event chips: uniform height, single-line ellipsis, left icon. */
+.fc .fc-daygrid-event,
+.fc .fc-timegrid-event .fc-event-main {
+  font-weight: 600;
+}
+.cal-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 1px 2px;
+}
+.cal-chip-icon {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+.cal-chip-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ==========================================================================
