@@ -23,13 +23,21 @@ function monthBounds(d = new Date()) {
   return { from: iso(from), to: iso(to) }
 }
 
+// Terminal engagement statuses — excluded by `excludeTerminal`. Case-insensitive
+// variants included so this survives any future casing/value additions.
+const TERMINAL_ENGAGEMENT_STATUSES =
+  '("Completed","completed","Terminated","terminated","Cancelled","cancelled","Archived","archived")'
+
 export async function listEngagements(
-  filters: { status?: EngagementStatus; accountId?: string } = {},
+  filters: { status?: EngagementStatus; accountId?: string; excludeTerminal?: boolean } = {},
   client?: SupabaseClient
 ): Promise<EngagementWithRelations[]> {
   const supabase = await getSupabase(client)
   let query = supabase.from('engagements').select(ENGAGEMENT_SELECT).order('created_at', { ascending: false })
   if (filters.status) query = query.eq('status', filters.status)
+  // Prefer this over status='Active' for pickers: keeps Paused/Draft/future
+  // in-progress statuses selectable, only dropping terminal ones.
+  if (filters.excludeTerminal) query = query.not('status', 'in', TERMINAL_ENGAGEMENT_STATUSES)
   if (filters.accountId) query = query.eq('end_client_account_id', filters.accountId)
   const { data, error } = await query
   if (error) throw new Error(error.message || 'Failed to load engagements')

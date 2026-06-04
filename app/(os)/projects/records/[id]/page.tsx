@@ -29,7 +29,7 @@ export default async function ProjectDetailPage({
   const isAdmin = roleIsAdmin(profile?.role)
 
   // Status/engagement panel data.
-  const engagements = await listEngagements({ status: 'Active' }, supabase).catch(() => [])
+  const engagements = await listEngagements({ excludeTerminal: true }, supabase).catch(() => [])
   let linkedEngagement: { id: string; name: string } | null = null
   if (project.engagement_id) {
     const match = engagements.find((e) => e.id === project.engagement_id)

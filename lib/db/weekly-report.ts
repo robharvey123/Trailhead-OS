@@ -118,7 +118,9 @@ export async function getWeeklyReportData(
     supabase
       .from('projects')
       .select('id, name, workstream_id, status, workstreams(label, colour)')
-      .in('status', ['active', 'in_progress', 'planning'])
+      // Exclude terminal states (was an allowlist that dropped 'on_hold' and
+      // listed a nonexistent 'in_progress'). Survives future in-progress states.
+      .not('status', 'in', '("completed","cancelled")')
       .order('created_at', { ascending: false }),
   ])
 

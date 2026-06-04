@@ -21,7 +21,7 @@ export default async function NewProjectPage({
   const [workstreams, accounts, engagements] = await Promise.all([
     getWorkstreams(supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
-    listEngagements({ status: 'Active' }, supabase).catch(() => []),
+    listEngagements({ excludeTerminal: true }, supabase).catch(() => []),
   ])
 
   return (
