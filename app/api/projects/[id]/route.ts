@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { archiveProject, deleteProject, getProjectById, updateProject } from '@/lib/db/projects'
 import type { ProjectStatus } from '@/lib/types'
@@ -76,6 +77,10 @@ export async function PATCH(
     patch.account_id = typeof body.account_id === 'string' ? body.account_id : null
   }
 
+  if (body.engagement_id !== undefined) {
+    patch.engagement_id = typeof body.engagement_id === 'string' && body.engagement_id ? body.engagement_id : null
+  }
+
   if (body.owner_id !== undefined) {
     patch.owner_id = typeof body.owner_id === 'string' ? body.owner_id : null
   }
@@ -103,8 +108,25 @@ export async function PATCH(
     return NextResponse.json({ error: 'No changes supplied' }, { status: 400 })
   }
 
+  // Capture the old engagement so a link change can revalidate both sides' Projects lists.
+  let oldEngagementId: string | null = null
+  if (patch.engagement_id !== undefined) {
+    const { data: prev } = await auth.supabase.from('projects').select('engagement_id').eq('id', id).maybeSingle()
+    oldEngagementId = (prev?.engagement_id as string | null) ?? null
+  }
+
   try {
     const project = await updateProject(id, patch, auth.supabase)
+
+    revalidatePath('/projects')
+    revalidatePath(`/projects/records/${id}`)
+    if (patch.engagement_id !== undefined) {
+      const newEngagementId = (patch.engagement_id as string | null) ?? null
+      for (const eid of new Set([oldEngagementId, newEngagementId])) {
+        if (eid) revalidatePath(`/engagements/${eid}`)
+      }
+    }
+
     return NextResponse.json({ project })
   } catch (error) {
     return NextResponse.json(
