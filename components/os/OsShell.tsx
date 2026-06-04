@@ -10,6 +10,7 @@ interface OsShellProps {
   activeQuoteCount: number
   unreadTaskCount?: number
   unreadMailCount?: number
+  unreadMessageCount?: number
   children: ReactNode
 }
 
@@ -19,6 +20,7 @@ export default function OsShell({
   activeQuoteCount,
   unreadTaskCount = 0,
   unreadMailCount = 0,
+  unreadMessageCount = 0,
   children,
 }: OsShellProps) {
   const [collapsed, setCollapsed] = useState(false)
@@ -52,6 +54,7 @@ export default function OsShell({
         activeQuoteCount={activeQuoteCount}
         unreadTaskCount={unreadTaskCount}
         unreadMailCount={unreadMailCount}
+        unreadMessageCount={unreadMessageCount}
         collapsed={collapsed}
         onToggle={toggle}
       />

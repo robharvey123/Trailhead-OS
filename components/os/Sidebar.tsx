@@ -13,6 +13,7 @@ interface SidebarProps {
   activeQuoteCount: number
   unreadTaskCount?: number
   unreadMailCount?: number
+  unreadMessageCount?: number
   collapsed?: boolean
   onToggle?: () => void
 }
@@ -123,6 +124,7 @@ export default function Sidebar({
   activeQuoteCount,
   unreadTaskCount = 0,
   unreadMailCount = 0,
+  unreadMessageCount = 0,
   collapsed = false,
   onToggle,
 }: SidebarProps) {
@@ -217,6 +219,14 @@ export default function Sidebar({
               onClick={() => setMobileOpen(false)}
               collapsed={collapsed}
               badge={unreadTaskCount}
+            />
+            <NavLink
+              href="/messages"
+              label="Messages"
+              active={pathname === '/messages' || pathname.startsWith('/messages/')}
+              onClick={() => setMobileOpen(false)}
+              collapsed={collapsed}
+              badge={unreadMessageCount}
             />
             <NavLink
               href="/projects"
