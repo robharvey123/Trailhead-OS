@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { getEngagementTask, listTaskComments, listTaskActivity } from '@/lib/db/engagement-tasks'
+import { getRunningTimer, getTaskLoggedMinutes } from '@/lib/db/timesheet'
 import { listPeople } from '@/lib/db/people'
 import { markRead } from '../actions'
 import { mockupFontVars } from '@/lib/fonts'
@@ -10,6 +11,7 @@ import CommentThread from '@/components/tasks/CommentThread'
 import TaskDetailControls from '@/components/tasks/TaskDetailControls'
 import TaskTitleEditor from '@/components/tasks/TaskTitleEditor'
 import TaskDescriptionEditor from '@/components/tasks/TaskDescriptionEditor'
+import TaskTimer from '@/components/tasks/TaskTimer'
 import {
   ENGAGEMENT_TASK_PRIORITY_LABELS,
   ENGAGEMENT_TASK_STATUS_LABELS,
@@ -68,10 +70,12 @@ export default async function TaskDetailPage({
     (roleIsAdmin(profile.role) && task.engagement_id ? `/engagements/${task.engagement_id}/tasks` : '/my-work')
   const backLabel = !safeFrom || looksLikeBoard(safeFrom) ? '← Back to board' : '← Back'
 
-  const [comments, activity, people] = await Promise.all([
+  const [comments, activity, people, runningTimer, loggedMinutes] = await Promise.all([
     listTaskComments(id, supabase).catch(() => []),
     listTaskActivity(id, supabase).catch(() => []),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
+    getRunningTimer(supabase).catch(() => null),
+    getTaskLoggedMinutes(id, supabase).catch(() => 0),
   ])
 
   // Opening the detail clears the unread cursor for this person.
@@ -138,6 +142,17 @@ export default async function TaskDetailPage({
                   </>
                 ) : null}
               </dl>
+            </div>
+
+            <div className="card">
+              <div className="panel-section-title">Time</div>
+              <TaskTimer
+                taskId={task.id}
+                projectId={task.project_id ?? null}
+                engagementId={task.engagement_id ?? null}
+                initialRunning={runningTimer}
+                loggedMinutes={loggedMinutes}
+              />
             </div>
 
             <div className="card">

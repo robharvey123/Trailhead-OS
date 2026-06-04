@@ -1170,6 +1170,7 @@ export interface TimeEntry {
   account_id: string | null
   project_id: string | null
   engagement_id?: string | null
+  task_id?: string | null
   workstream?: string | null
   entry_date: string
   start_at: string | null

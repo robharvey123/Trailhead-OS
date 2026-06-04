@@ -253,6 +253,7 @@ export async function startTimer(
     account_id?: string | null
     project_id?: string | null
     engagement_id?: string | null
+    task_id?: string | null
     workstream?: string | null
     description?: string | null
   },
@@ -266,6 +267,10 @@ export async function startTimer(
   }
 
   const userId = auth.data.user.id
+
+  // Attribute the entry to the user's person row so stop can snapshot their rate.
+  const { data: prof } = await supabase.from('profiles').select('person_id').eq('id', userId).maybeSingle()
+  const personId = (prof?.person_id as string | null | undefined) ?? null
 
   // Check if a timer is already running
   const { data: runningEntry, error: selectError } = await supabase
@@ -291,9 +296,11 @@ export async function startTimer(
 
   const payload = {
     user_id: userId,
+    person_id: personId,
     account_id: data.account_id ?? null,
     project_id: data.project_id ?? null,
     engagement_id: data.engagement_id ?? null,
+    task_id: data.task_id ?? null,
     workstream,
     entry_date: entryDate,
     start_at: startAt,
@@ -352,8 +359,13 @@ export async function stopTimer(
   const durationMs = now.getTime() - startAt.getTime()
   const durationMinutes = Math.round(durationMs / 60000)
 
-  // If a rate snapshot is provided (e.g. from project/account), use it; else keep 0
-  const rate = rateSnapshot ?? (entry.rate_snapshot || 0)
+  // Rate snapshot precedence: an explicit rate wins; otherwise, for
+  // engagement+contributor work, snapshot the contributor's current rate at stop
+  // time; else fall back to whatever the entry already carried (usually 0).
+  let rate = rateSnapshot ?? (entry.rate_snapshot || 0)
+  if (rateSnapshot == null && !entry.rate_snapshot && entry.engagement_id && entry.person_id) {
+    rate = (await contributorRate(entry.engagement_id, entry.person_id, supabase)) ?? 0
+  }
 
   const { data: stopped, error: updateError } = await supabase
     .from('time_entries')
@@ -397,6 +409,26 @@ export async function getRunningTimer(
   }
 
   return (data as TimeEntry | null) ?? null
+}
+
+/**
+ * Total logged (stopped) minutes against a single engagement task. Under the
+ * own-scoped RLS this counts the viewer's own entries — in this single-tenant
+ * app that's effectively all of them.
+ */
+export async function getTaskLoggedMinutes(taskId: string, client?: SupabaseClient): Promise<number> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('time_entries')
+    .select('duration_minutes')
+    .eq('task_id', taskId)
+    .eq('is_running', false)
+
+  if (error) {
+    throw new Error(error.message || 'Failed to load task time')
+  }
+
+  return (data ?? []).reduce((sum, row) => sum + ((row.duration_minutes as number) || 0), 0)
 }
 
 interface WeeklyTotals {
