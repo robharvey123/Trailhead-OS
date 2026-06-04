@@ -102,18 +102,23 @@ export async function commitRoadmapImport(
 
   const { data: imp } = await supabase
     .from('roadmap_imports')
-    .select('id, project_id, engagement_id, status')
+    .select('id, project_id, status')
     .eq('id', importId)
     .maybeSingle()
   if (!imp) return { error: 'Import not found.' }
   if (imp.status === 'committed') return { error: 'This import has already been committed.' }
-  if (!imp.engagement_id) return { error: 'Link this project to an engagement before committing tasks.' }
+
+  // Engagement linkage is a live project property — re-read it at commit time
+  // rather than trusting the import-time snapshot (the link may have changed since).
+  const { data: proj } = await supabase.from('projects').select('engagement_id').eq('id', imp.project_id).maybeSingle()
+  const engagementId = (proj?.engagement_id as string | null) ?? null
+  if (!engagementId) return { error: 'Link this project to an engagement first.' }
 
   // Own bulk-insert (not the single-task action): admin-gated, milestone-as-label.
   let position = 0
   const rows = committed.milestones.flatMap((m) =>
     m.tasks.map((t) => ({
-      engagement_id: imp.engagement_id,
+      engagement_id: engagementId,
       project_id: imp.project_id,
       title: t.title,
       description: t.description ?? null,
@@ -137,10 +142,11 @@ export async function commitRoadmapImport(
       committed_json: committed,
       task_count_committed: rows.length,
       committed_at: new Date().toISOString(),
+      engagement_id: engagementId, // record the engagement actually committed to
     })
     .eq('id', importId)
 
   revalidatePath('/my-work')
-  revalidatePath(`/engagements/${imp.engagement_id}/tasks`)
-  redirect(`/engagements/${imp.engagement_id}/tasks`)
+  revalidatePath(`/engagements/${engagementId}/tasks`)
+  redirect(`/engagements/${engagementId}/tasks`)
 }

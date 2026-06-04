@@ -69,6 +69,15 @@ export async function setProjectEngagement(projectId: string, engagementId: stri
   const { error } = await supabase.from('projects').update({ engagement_id: engagementId }).eq('id', projectId)
   if (error) return { error: error.message }
 
+  // Keep pending roadmap imports' snapshot in step (commit re-reads the project
+  // anyway, but this keeps the audit row consistent). Committed imports are left
+  // as the historical record of what they actually committed to.
+  await supabase
+    .from('roadmap_imports')
+    .update({ engagement_id: engagementId })
+    .eq('project_id', projectId)
+    .eq('status', 'pending')
+
   revalidateProject(projectId, before?.engagement_id, engagementId)
   return {}
 }
