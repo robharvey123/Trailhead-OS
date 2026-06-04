@@ -405,11 +405,13 @@ export default function CalendarClient({
   contacts,
   projects,
   googleConnected,
+  feeds = [],
 }: {
   workstreams: Workstream[]
   contacts: Contact[]
   projects: ProjectListItem[]
   googleConnected: boolean
+  feeds?: Array<{ id: string; name: string; colour: string | null }>
 }) {
   const calendarRef = useRef<FullCalendar | null>(null)
 
@@ -428,17 +430,40 @@ export default function CalendarClient({
   const [meetToast, setMeetToast] = useState<string | null>(null)
   const [contactSearch, setContactSearch] = useState('')
   const [projectFilter, setProjectFilter] = useState('')
+  // Which "calendars" are visible. Empty set = all shown. Keys: 'tasks',
+  // 'events' (app/Google/Microsoft), and `feed:<id>` per subscribed feed.
+  const [hiddenCalendars, setHiddenCalendars] = useState<Set<string>>(new Set())
+  const [calMenuOpen, setCalMenuOpen] = useState(false)
   const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>(
     'idle'
   )
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
 
-  const filteredEvents = projectFilter
+  const calendarOptions = [
+    { key: 'tasks', label: 'Tasks', colour: 'var(--accent)' },
+    { key: 'events', label: 'My events', colour: '#3B82F6' },
+    ...feeds.map((feed) => ({ key: `feed:${feed.id}`, label: feed.name, colour: feed.colour || 'var(--text-3)' })),
+  ]
+  const calendarKeyForEvent = (event: CalendarEvent) =>
+    event.source === 'feed' && event.feed_id ? `feed:${event.feed_id}` : 'events'
+
+  function toggleCalendar(key: string) {
+    setHiddenCalendars((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const projectScopedEvents = projectFilter
     ? events.filter((event) => event.project_id === projectFilter)
     : events
-  const filteredTasksForCalendar = projectFilter
+  const filteredEvents = projectScopedEvents.filter((event) => !hiddenCalendars.has(calendarKeyForEvent(event)))
+  const projectScopedTasks = projectFilter
     ? tasks.filter((task) => task.project_id === projectFilter)
     : tasks
+  const filteredTasksForCalendar = hiddenCalendars.has('tasks') ? [] : projectScopedTasks
   const fullCalendarEvents = toEventInput(filteredEvents, filteredTasksForCalendar, workstreams)
   const selectedEvent =
     selectedItem?.type === 'event' ? selectedItem.data : null
@@ -758,6 +783,40 @@ export default function CalendarClient({
             ) : null}
           </div>
           <div className="flex flex-wrap gap-3">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setCalMenuOpen((open) => !open)}
+                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
+              >
+                Calendars{hiddenCalendars.size ? ` (${calendarOptions.length - hiddenCalendars.size}/${calendarOptions.length})` : ''}
+              </button>
+              {calMenuOpen ? (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Close calendars menu"
+                    className="fixed inset-0 z-40 cursor-default"
+                    onClick={() => setCalMenuOpen(false)}
+                  />
+                  <div className="absolute left-0 z-50 mt-2 w-60 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-2 shadow-2xl">
+                    {calendarOptions.map((option) => {
+                      const visible = !hiddenCalendars.has(option.key)
+                      return (
+                        <label
+                          key={option.key}
+                          className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)]"
+                        >
+                          <input type="checkbox" checked={visible} onChange={() => toggleCalendar(option.key)} />
+                          <span className="h-2.5 w-2.5 flex-none rounded-full" style={{ backgroundColor: option.colour }} />
+                          <span className="truncate">{option.label}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </>
+              ) : null}
+            </div>
             <select
               value={projectFilter}
               onChange={(event) => setProjectFilter(event.target.value)}

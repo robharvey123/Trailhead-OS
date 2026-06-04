@@ -296,6 +296,16 @@ body {
   white-space: nowrap;
 }
 
+/* Current-time indicator (week/day views) — clear accent line + arrow. */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: var(--red, #ef4444);
+  border-top-width: 2px;
+}
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: var(--red, #ef4444);
+  color: var(--red, #ef4444);
+}
+
 /* ==========================================================================
    Mockup design system — scoped to /crm, /timesheet, /inbox via .thmock
    Indigo accent, Inter (sans) + JetBrains Mono (loaded via @import at top).

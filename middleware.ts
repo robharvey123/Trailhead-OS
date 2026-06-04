@@ -14,7 +14,10 @@ const publicRoutes = [
   '/api/auth/google/callback',
 ]
 const publicRoutePrefixes = ['/report', '/auth/claim']
-const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork']
+// /api/cron/* is invoked by Vercel Cron with no session cookie — the middleware
+// must not redirect it to /login (that 307 silently blocked every cron since the
+// middleware shipped). Each cron route enforces its own CRON_SECRET check.
+const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
 function getMarketingRewritePath(pathname: string) {

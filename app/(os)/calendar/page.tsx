@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export default async function CalendarPage() {
   const supabase = await createClient()
-  const [workstreams, contacts, projects, googleTokenResult] = await Promise.all([
+  const [workstreams, contacts, projects, googleTokenResult, feedsResult] = await Promise.all([
     getWorkstreams(supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getProjects({}, supabase).catch(() => []),
@@ -17,6 +17,13 @@ export default async function CalendarPage() {
         return { data: null }
       }
     })(),
+    (async () => {
+      try {
+        return await supabase.from('calendar_feeds').select('id, name, colour').order('name')
+      } catch {
+        return { data: [] }
+      }
+    })(),
   ])
 
   return (
@@ -25,6 +32,7 @@ export default async function CalendarPage() {
       contacts={contacts}
       projects={projects}
       googleConnected={Boolean(googleTokenResult.data)}
+      feeds={(feedsResult.data ?? []) as Array<{ id: string; name: string; colour: string | null }>}
     />
   )
 }
