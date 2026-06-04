@@ -37,6 +37,28 @@ export async function endProject(input: {
   return {}
 }
 
+/**
+ * Change a project's *active-phase* status (planning → active → on_hold).
+ * Terminal states (completed / cancelled) are intentionally NOT settable here —
+ * those go through endProject so ended_at is stamped and open tasks are handled.
+ */
+const ACTIVE_PHASE_STATUSES = new Set(['planning', 'active', 'on_hold'])
+export async function setProjectStatus(id: string, status: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    return { error: 'Not authorised' }
+  }
+  if (!ACTIVE_PHASE_STATUSES.has(status)) {
+    return { error: 'Use “End project” to mark a project completed or cancelled.' }
+  }
+  const { error } = await supabase.from('projects').update({ status }).eq('id', id)
+  if (error) return { error: error.message }
+  revalidateProject(id)
+  return {}
+}
+
 /** Reopen an ended project. Does NOT un-cancel previously cancelled tasks (by design). */
 export async function reopenProject(id: string): Promise<{ error?: string }> {
   const supabase = await createClient()

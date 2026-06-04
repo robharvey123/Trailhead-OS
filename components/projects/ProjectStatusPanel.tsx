@@ -5,9 +5,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import EndProjectDialog from './EndProjectDialog'
 import EngagementPicker, { type EngagementOption } from './EngagementPicker'
-import { reopenProject, setProjectEngagement } from '@/app/(os)/projects/records/[id]/actions'
+import { reopenProject, setProjectEngagement, setProjectStatus } from '@/app/(os)/projects/records/[id]/actions'
 
 const ENDED = new Set(['completed', 'cancelled'])
+const ACTIVE_PHASE: Array<{ value: string; label: string }> = [
+  { value: 'planning', label: 'Planning' },
+  { value: 'active', label: 'Active' },
+  { value: 'on_hold', label: 'On hold' },
+]
 function fmtDate(v: string | null) {
   return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : ''
 }
@@ -52,6 +57,14 @@ export default function ProjectStatusPanel({
     if (res.error) { setError(res.error); setBusy(false); return }
     setChanging(false); setBusy(false); router.refresh()
   }
+  async function saveStatus(next: string) {
+    if (next === status) return
+    setBusy(true); setError('')
+    const res = await setProjectStatus(projectId, next)
+    if (res.error) setError(res.error)
+    else router.refresh()
+    setBusy(false)
+  }
 
   return (
     <div className="panel" style={{ padding: 20, display: 'grid', gap: 14 }}>
@@ -68,7 +81,13 @@ export default function ProjectStatusPanel({
           ) : null}
         </div>
       ) : isAdmin ? (
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="field-label">Status</span>
+            <select className="filter-select" value={status} onChange={(e) => saveStatus(e.target.value)} disabled={busy}>
+              {ACTIVE_PHASE.map((s) => (<option key={s.value} value={s.value}>{s.label}</option>))}
+            </select>
+          </div>
           <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)', borderColor: 'var(--red)' }} onClick={() => setEndOpen(true)}>
             End project
           </button>
