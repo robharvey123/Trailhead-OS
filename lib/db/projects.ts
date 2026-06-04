@@ -81,6 +81,7 @@ export interface ProjectFilters {
 export interface CreateProjectInput {
   workstream_id: string
   account_id?: string | null
+  engagement_id?: string | null
   owner_id?: string | null
   pricing_tier_id?: string | null
   name: string
@@ -199,6 +200,7 @@ function sanitizeProjectPayload(data: CreateProjectInput | UpdateProjectInput) {
 
   if ('workstream_id' in data) payload.workstream_id = data.workstream_id
   if ('account_id' in data) payload.account_id = data.account_id ?? null
+  if ('engagement_id' in data) payload.engagement_id = data.engagement_id ?? null
   if ('owner_id' in data) payload.owner_id = data.owner_id ?? null
   if ('pricing_tier_id' in data) payload.pricing_tier_id = data.pricing_tier_id ?? null
   if ('name' in data && data.name !== undefined) payload.name = data.name.trim()

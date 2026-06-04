@@ -832,6 +832,9 @@ export interface Project {
   ai_planned: boolean
   hourly_rate?: number
   currency?: string
+  engagement_id?: string | null
+  ended_at?: string | null
+  ended_reason?: string | null
   created_at: string
   updated_at: string
 }

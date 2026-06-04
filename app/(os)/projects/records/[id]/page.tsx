@@ -2,9 +2,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ProjectWorkspaceClient from '@/components/os/ProjectWorkspaceClient'
 import { getProjectById } from '@/lib/db/projects'
+import { listEngagements } from '@/lib/db/engagements'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { mockupFontVars } from '@/lib/fonts'
+import ProjectStatusPanel from '@/components/projects/ProjectStatusPanel'
 
 function fmtDate(v: string) {
   return new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -25,6 +27,24 @@ export default async function ProjectDetailPage({
 
   const profile = await getCurrentProfile(supabase).catch(() => null)
   const isAdmin = roleIsAdmin(profile?.role)
+
+  // Status/engagement panel data.
+  const engagements = await listEngagements({ status: 'Active' }, supabase).catch(() => [])
+  let linkedEngagement: { id: string; name: string } | null = null
+  if (project.engagement_id) {
+    const match = engagements.find((e) => e.id === project.engagement_id)
+    if (match) linkedEngagement = { id: match.id, name: match.name }
+    else {
+      const { data } = await supabase.from('engagements').select('id, name').eq('id', project.engagement_id).maybeSingle()
+      linkedEngagement = data ? { id: data.id, name: data.name } : null
+    }
+  }
+  const { count: openTaskCount } = await supabase
+    .from('engagement_tasks')
+    .select('id', { count: 'exact', head: true })
+    .eq('project_id', id)
+    .not('status', 'in', '(done,cancelled)')
+
   const imports = isAdmin
     ? (await supabase
         .from('roadmap_imports')
@@ -36,6 +56,19 @@ export default async function ProjectDetailPage({
 
   return (
     <>
+      <div className={`thmock ${mockupFontVars}`} style={{ marginBottom: 16 }}>
+        <ProjectStatusPanel
+          projectId={id}
+          status={project.status}
+          endedAt={project.ended_at ?? null}
+          endedReason={project.ended_reason ?? null}
+          linkedEngagement={linkedEngagement}
+          engagements={engagements.map((e) => ({ id: e.id, name: e.name, status: e.status }))}
+          openTaskCount={openTaskCount ?? 0}
+          isAdmin={isAdmin}
+        />
+      </div>
+
       <ProjectWorkspaceClient project={project} />
 
       {isAdmin ? (

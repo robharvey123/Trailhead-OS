@@ -6,6 +6,7 @@ import { apiFetch } from '@/lib/api-fetch'
 import type { Account, Project, ProjectStatus, Workstream } from '@/lib/types'
 import ConfirmDialog from './ConfirmDialog'
 import SearchSelect from './SearchSelect'
+import EngagementPicker, { type EngagementOption } from '@/components/projects/EngagementPicker'
 
 const PROJECT_STATUSES: ProjectStatus[] = [
   'planning',
@@ -18,16 +19,19 @@ const PROJECT_STATUSES: ProjectStatus[] = [
 export default function ProjectForm({
   workstreams,
   accounts,
+  engagements = [],
   initialProject = null,
   initialValues,
   cancelHref = '/projects',
 }: {
   workstreams: Workstream[]
   accounts: Account[]
+  engagements?: EngagementOption[]
   initialProject?: Project | null
   initialValues?: {
     workstream_id?: string
     account_id?: string
+    engagement_id?: string
     name?: string
     description?: string
     brief?: string
@@ -39,6 +43,7 @@ export default function ProjectForm({
     name: initialProject?.name ?? initialValues?.name ?? '',
     workstream_id: initialProject?.workstream_id ?? initialValues?.workstream_id ?? '',
     account_id: initialProject?.account_id ?? initialValues?.account_id ?? '',
+    engagement_id: initialProject?.engagement_id ?? initialValues?.engagement_id ?? '',
     status: initialProject?.status ?? ('planning' as ProjectStatus),
     start_date: initialProject?.start_date ?? '',
     end_date: initialProject?.end_date ?? '',
@@ -65,6 +70,11 @@ export default function ProjectForm({
   )
 
   async function handleSave() {
+    // Engagement is required when creating (mirrors the roadmap-import guard).
+    if (!initialProject && !form.engagement_id) {
+      setError('Select an engagement for this project.')
+      return
+    }
     setSaving(true)
     setError(null)
 
@@ -72,6 +82,7 @@ export default function ProjectForm({
       const payload = {
         ...form,
         account_id: form.account_id || null,
+        engagement_id: form.engagement_id || null,
         estimated_end_date: form.estimated_end_date || null,
         start_date: form.start_date || null,
         end_date: form.end_date || null,
@@ -186,6 +197,15 @@ export default function ProjectForm({
           placeholder="Search accounts"
           emptyLabel="No account"
         />
+
+        <label className="space-y-2">
+          <span className="text-sm text-[color:var(--text-2)]">Engagement{!initialProject ? ' *' : ''}</span>
+          <EngagementPicker
+            engagements={engagements}
+            value={form.engagement_id}
+            onChange={(value) => setForm({ ...form, engagement_id: value })}
+          />
+        </label>
 
         <label className="space-y-2">
           <span className="text-sm text-[color:var(--text-2)]">Status</span>

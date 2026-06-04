@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
   const name = sanitizeText(body.name) ?? ''
   const workstreamId = typeof body.workstream_id === 'string' ? body.workstream_id : ''
+  const engagementId = typeof body.engagement_id === 'string' && body.engagement_id ? body.engagement_id : null
   const status =
     typeof body.status === 'string' && PROJECT_STATUSES.has(body.status as ProjectStatus)
       ? (body.status as ProjectStatus)
@@ -74,11 +75,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'workstream_id is required' }, { status: 400 })
   }
 
+  if (!engagementId) {
+    return NextResponse.json({ error: 'engagement_id is required' }, { status: 400 })
+  }
+
   try {
     const project = await createProject(
       {
         name,
         workstream_id: workstreamId,
+        engagement_id: engagementId,
         account_id: typeof body.account_id === 'string' ? body.account_id : null,
         owner_id: typeof body.owner_id === 'string' ? body.owner_id : null,
         pricing_tier_id: typeof body.pricing_tier_id === 'string' ? body.pricing_tier_id : null,

@@ -102,7 +102,7 @@ export async function commitRoadmapImport(
 
   const { data: imp } = await supabase
     .from('roadmap_imports')
-    .select('id, engagement_id, status')
+    .select('id, project_id, engagement_id, status')
     .eq('id', importId)
     .maybeSingle()
   if (!imp) return { error: 'Import not found.' }
@@ -114,6 +114,7 @@ export async function commitRoadmapImport(
   const rows = committed.milestones.flatMap((m) =>
     m.tasks.map((t) => ({
       engagement_id: imp.engagement_id,
+      project_id: imp.project_id,
       title: t.title,
       description: t.description ?? null,
       status: 'backlog' as const,
