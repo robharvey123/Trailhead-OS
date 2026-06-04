@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import ProjectWorkspaceClient from '@/components/os/ProjectWorkspaceClient'
 import { getProjectById } from '@/lib/db/projects'
 import { listEngagements } from '@/lib/db/engagements'
 import { listProjectTasks } from '@/lib/db/engagement-tasks'
@@ -14,6 +13,13 @@ import MilestoneList from '@/components/projects/MilestoneList'
 
 function fmtDate(v: string) {
   return new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function fmtTimeline(start: string | null, end: string | null): string {
+  if (!start && !end) return 'No dates set'
+  const f = (v: string) => new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+  if (start && end) return `${f(start)} to ${f(end)}`
+  return start ? `From ${f(start)}` : `Until ${f(end as string)}`
 }
 
 export default async function ProjectDetailPage({
@@ -70,8 +76,32 @@ export default async function ProjectDetailPage({
         .limit(10)).data ?? []
     : []
 
+  const summary = project.description || project.brief
   return (
     <>
+      <div className={`thmock ${mockupFontVars}`} style={{ marginBottom: 16 }}>
+        <div className="panel" style={{ padding: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <div className="field-label">Project</div>
+              <h1 className="topbar-title" style={{ fontSize: 22, margin: '4px 0 0' }}>{project.title || project.name}</h1>
+              {summary ? <p style={{ fontSize: 13, color: 'var(--text-2)', margin: '6px 0 0', maxWidth: 640 }}>{summary}</p> : null}
+            </div>
+            <Link href={`/projects/records/${id}/edit`} className="btn btn-ghost btn-sm">Edit project</Link>
+          </div>
+          <div style={{ display: 'flex', gap: 28, marginTop: 14, flexWrap: 'wrap' }}>
+            <div>
+              <div className="field-label">Owner</div>
+              <div className="td-name">{project.owner || 'Unassigned'}</div>
+            </div>
+            <div>
+              <div className="field-label">Timeline</div>
+              <div className="td-name">{fmtTimeline(project.start_date, project.end_date ?? project.estimated_end_date)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className={`thmock ${mockupFontVars}`} style={{ marginBottom: 16 }}>
         <ProjectStatusPanel
           projectId={id}
@@ -84,8 +114,6 @@ export default async function ProjectDetailPage({
           isAdmin={isAdmin}
         />
       </div>
-
-      <ProjectWorkspaceClient project={project} />
 
       <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
         <div className="panel" style={{ padding: 20 }}>
