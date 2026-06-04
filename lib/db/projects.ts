@@ -125,6 +125,9 @@ function mapProjectRow(row: ProjectRow): Project {
     colour: row.colour ?? null,
     owner: row.owner ?? null,
     ai_planned: row.ai_planned,
+    engagement_id: row.engagement_id ?? null,
+    ended_at: row.ended_at ?? null,
+    ended_reason: row.ended_reason ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   }
