@@ -11,11 +11,14 @@ export default function TaskForm({
   people,
   engagements,
   fixedEngagementId,
+  fixedProjectId,
   onClose,
 }: {
   people: Named[]
   engagements: Named[]
   fixedEngagementId?: string
+  /** When created from a project page: stamps project_id (and uses the project's engagement). */
+  fixedProjectId?: string
   onClose: () => void
 }) {
   const router = useRouter()
@@ -39,6 +42,7 @@ export default function TaskForm({
       title,
       description: description || null,
       engagementId: engagementId || null,
+      projectId: fixedProjectId || null,
       assigneePersonId: assignee || null,
       priority,
       dueDate: dueDate || null,

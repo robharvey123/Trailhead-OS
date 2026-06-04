@@ -341,6 +341,7 @@ export const ENGAGEMENT_TASK_PRIORITY_RANK: Record<EngagementTaskPriority, numbe
 export interface EngagementTask {
   id: string
   engagement_id: string | null
+  project_id?: string | null
   title: string
   description: string | null
   status: EngagementTaskStatus
@@ -362,6 +363,7 @@ export interface EngagementTaskWithRelations extends EngagementTask {
   assignee?: TaskPersonRef
   reporter?: TaskPersonRef
   engagement?: { id: string; name: string } | null
+  project?: { id: string; name: string } | null
 }
 
 export interface EngagementTaskComment {

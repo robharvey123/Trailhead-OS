@@ -12,7 +12,7 @@ async function getSupabase(client?: SupabaseClient) {
 }
 
 const TASK_SELECT =
-  '*, assignee:people!assignee_person_id(id, full_name), reporter:people!reporter_person_id(id, full_name), engagement:engagements(id, name)'
+  '*, assignee:people!assignee_person_id(id, full_name), reporter:people!reporter_person_id(id, full_name), engagement:engagements(id, name), project:projects(id, name)'
 
 /** All tasks on one engagement (RLS scopes what the caller can see). For the kanban board. */
 export async function listEngagementTasks(
@@ -27,6 +27,22 @@ export async function listEngagementTasks(
     .order('status')
     .order('position', { ascending: true })
   if (error) throw new Error(error.message || 'Failed to load tasks')
+  return (data ?? []) as unknown as EngagementTaskWithRelations[]
+}
+
+/** Tasks scoped to a single project (project_id) — for the project detail board. */
+export async function listProjectTasks(
+  projectId: string,
+  client?: SupabaseClient
+): Promise<EngagementTaskWithRelations[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('engagement_tasks')
+    .select(TASK_SELECT)
+    .eq('project_id', projectId)
+    .order('status')
+    .order('position', { ascending: true })
+  if (error) throw new Error(error.message || 'Failed to load project tasks')
   return (data ?? []) as unknown as EngagementTaskWithRelations[]
 }
 

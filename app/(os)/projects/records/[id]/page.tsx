@@ -3,7 +3,10 @@ import Link from 'next/link'
 import ProjectWorkspaceClient from '@/components/os/ProjectWorkspaceClient'
 import { getProjectById } from '@/lib/db/projects'
 import { listEngagements } from '@/lib/db/engagements'
+import { listProjectTasks } from '@/lib/db/engagement-tasks'
+import { listPeople } from '@/lib/db/people'
 import { createClient } from '@/lib/supabase/server'
+import EngagementTasksClient from '@/app/(os)/engagements/[id]/tasks/EngagementTasksClient'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { mockupFontVars } from '@/lib/fonts'
 import ProjectStatusPanel from '@/components/projects/ProjectStatusPanel'
@@ -46,6 +49,11 @@ export default async function ProjectDetailPage({
     .eq('project_id', id)
     .not('status', 'in', '(done,cancelled)')
 
+  const [projectTasks, taskPeople] = await Promise.all([
+    listProjectTasks(id, supabase).catch(() => []),
+    listPeople({ activeOnly: true }, supabase).catch(() => []),
+  ])
+
   // Milestone dependents = tasks soft-linked via custom_fields.milestone_id (no FK).
   const milestoneDependentCounts: Record<string, number> = {}
   for (const t of project.tasks ?? []) {
@@ -78,6 +86,22 @@ export default async function ProjectDetailPage({
       </div>
 
       <ProjectWorkspaceClient project={project} />
+
+      <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
+        <div className="panel" style={{ padding: 20 }}>
+          <div className="panel-section-title">Tasks</div>
+          {project.engagement_id ? (
+            <EngagementTasksClient
+              engagementId={project.engagement_id}
+              projectId={id}
+              initialTasks={projectTasks}
+              people={taskPeople.map((p) => ({ id: p.id, name: p.full_name }))}
+            />
+          ) : (
+            <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Link this project to an engagement to manage its tasks.</p>
+          )}
+        </div>
+      </div>
 
       {isAdmin ? (
         <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>

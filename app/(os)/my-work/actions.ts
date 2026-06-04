@@ -20,6 +20,7 @@ export interface CreateTaskInput {
   title: string
   description?: string | null
   engagementId?: string | null
+  projectId?: string | null
   assigneePersonId?: string | null
   priority?: EngagementTaskPriority
   dueDate?: string | null
@@ -41,6 +42,7 @@ export async function createTask(input: CreateTaskInput): Promise<{ task?: Engag
       title: input.title.trim(),
       description: input.description?.trim() || null,
       engagement_id: input.engagementId || null,
+      project_id: input.projectId || null,
       assignee_person_id: input.assigneePersonId || null,
       reporter_person_id: personId,
       priority: input.priority ?? 'normal',
@@ -52,6 +54,7 @@ export async function createTask(input: CreateTaskInput): Promise<{ task?: Engag
     .single()
   if (error) return { error: error.message }
   revalidateTask(data.engagement_id, data.id)
+  if (input.projectId) revalidatePath(`/projects/records/${input.projectId}`)
   return { task: data as EngagementTask }
 }
 
