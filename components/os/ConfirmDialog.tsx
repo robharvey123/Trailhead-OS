@@ -25,6 +25,8 @@ interface ConfirmDialogProps {
   confirmPhrase?: string
   /** Label shown above the type-to-confirm input. */
   confirmPhraseLabel?: string
+  /** Hide the confirm button entirely (e.g. a blocked/informational dialog with only Close). */
+  hideConfirm?: boolean
 }
 
 export default function ConfirmDialog({
@@ -43,6 +45,7 @@ export default function ConfirmDialog({
   secondaryAction,
   confirmPhrase,
   confirmPhraseLabel,
+  hideConfirm = false,
 }: ConfirmDialogProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const [typed, setTyped] = useState('')
@@ -173,6 +176,7 @@ export default function ConfirmDialog({
               {secondaryAction.label}
             </button>
           ) : null}
+          {hideConfirm ? null : (
           <button
             type="button"
             onClick={onConfirm}
@@ -207,6 +211,7 @@ export default function ConfirmDialog({
               confirmLabel
             )}
           </button>
+          )}
         </div>
       </div>
     </div>,

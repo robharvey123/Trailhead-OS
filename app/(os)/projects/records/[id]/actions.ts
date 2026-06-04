@@ -72,3 +72,71 @@ export async function setProjectEngagement(projectId: string, engagementId: stri
   revalidateProject(projectId, before?.engagement_id, engagementId)
   return {}
 }
+
+// ── Milestone delete (single + bulk) ───────────────────────────────────────
+// Dependents are a SOFT link: tasks.custom_fields.milestone_id (no FK). We BLOCK
+// delete when linked tasks exist so the tag isn't silently orphaned. Hard delete
+// (milestones are plan items, not financial records).
+const MAX_BULK = 100
+
+async function milestoneTaskCount(supabase: Awaited<ReturnType<typeof createClient>>, id: string): Promise<number> {
+  const { count } = await supabase
+    .from('tasks')
+    .select('id', { count: 'exact', head: true })
+    .eq('custom_fields->>milestone_id', id)
+  return count ?? 0
+}
+
+export async function deleteMilestone(id: string): Promise<{ error?: string; blockedCount?: number }> {
+  const supabase = await createClient()
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    return { error: 'Not authorised' }
+  }
+  const blocked = await milestoneTaskCount(supabase, id)
+  if (blocked > 0) {
+    return { blockedCount: blocked, error: `This milestone has ${blocked} linked task${blocked === 1 ? '' : 's'}. Reassign or delete them first.` }
+  }
+  const { data: row } = await supabase.from('project_milestones').select('project_id').eq('id', id).maybeSingle()
+  const { error } = await supabase.from('project_milestones').delete().eq('id', id)
+  if (error) return { error: error.message }
+  if (row?.project_id) revalidatePath(`/projects/records/${row.project_id}`)
+  revalidatePath('/projects')
+  return {}
+}
+
+export async function deleteMilestones(
+  ids: string[]
+): Promise<{ error?: string; deleted?: number; blocked?: Record<string, number> }> {
+  const supabase = await createClient()
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    return { error: 'Not authorised' }
+  }
+  if (!Array.isArray(ids) || ids.length === 0) return { error: 'No milestones selected' }
+  if (ids.length > MAX_BULK) return { error: `Too many at once (max ${MAX_BULK})` }
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!ids.every((id) => UUID.test(id))) return { error: 'Invalid milestone id' }
+
+  // Single dependents query across all ids; block the whole batch if any have tasks.
+  const { data: linked } = await supabase
+    .from('tasks')
+    .select('custom_fields')
+    .in('custom_fields->>milestone_id', ids)
+  const blocked: Record<string, number> = {}
+  for (const row of (linked ?? []) as Array<{ custom_fields: Record<string, unknown> | null }>) {
+    const mid = (row.custom_fields?.milestone_id ?? row.custom_fields?.milestoneId) as string | undefined
+    if (mid && ids.includes(mid)) blocked[mid] = (blocked[mid] ?? 0) + 1
+  }
+  if (Object.keys(blocked).length > 0) return { blocked }
+
+  const { data: rows } = await supabase.from('project_milestones').select('project_id').in('id', ids).limit(1)
+  const { error } = await supabase.from('project_milestones').delete().in('id', ids)
+  if (error) return { error: error.message }
+  const projectId = rows?.[0]?.project_id
+  if (projectId) revalidatePath(`/projects/records/${projectId}`)
+  revalidatePath('/projects')
+  return { deleted: ids.length }
+}

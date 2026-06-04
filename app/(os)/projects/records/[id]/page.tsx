@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { mockupFontVars } from '@/lib/fonts'
 import ProjectStatusPanel from '@/components/projects/ProjectStatusPanel'
+import MilestoneList from '@/components/projects/MilestoneList'
 
 function fmtDate(v: string) {
   return new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -45,6 +46,13 @@ export default async function ProjectDetailPage({
     .eq('project_id', id)
     .not('status', 'in', '(done,cancelled)')
 
+  // Milestone dependents = tasks soft-linked via custom_fields.milestone_id (no FK).
+  const milestoneDependentCounts: Record<string, number> = {}
+  for (const t of project.tasks ?? []) {
+    const mid = (t.custom_fields?.milestone_id ?? t.custom_fields?.milestoneId) as string | undefined
+    if (mid) milestoneDependentCounts[mid] = (milestoneDependentCounts[mid] ?? 0) + 1
+  }
+
   const imports = isAdmin
     ? (await supabase
         .from('roadmap_imports')
@@ -70,6 +78,12 @@ export default async function ProjectDetailPage({
       </div>
 
       <ProjectWorkspaceClient project={project} />
+
+      {isAdmin ? (
+        <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
+          <MilestoneList milestones={project.milestones ?? []} dependentCounts={milestoneDependentCounts} />
+        </div>
+      ) : null}
 
       {isAdmin ? (
         <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
