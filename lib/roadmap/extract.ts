@@ -2,7 +2,10 @@ import mammoth from 'mammoth'
 import { anthropic, ANTHROPIC_MODELS } from '@/lib/anthropic/client'
 import { RoadmapExtractionSchema, type RoadmapExtraction } from './schema'
 
-export const MAX_INPUT_CHARS = 40_000
+// Input is cheap for Haiku (200k-token context ≈ ~800k chars); the real limit is
+// output truncation, governed by max_tokens below. 120k chars (~30k tokens) is a
+// generous ceiling for a roadmap; anything past it should be split/chunked.
+export const MAX_INPUT_CHARS = 120_000
 
 // mammoth's bundled types omit convertToMarkdown, though it exists at runtime.
 const mammothMd = mammoth as unknown as {
@@ -73,7 +76,8 @@ export async function extractRoadmap(markdown: string): Promise<RoadmapExtractio
     const nudge = attempt === 0 ? '' : '\n\nReturn ONLY the JSON object, no other text, no markdown fences.'
     const res = await anthropic.messages.create({
       model: ANTHROPIC_MODELS.HAIKU,
-      max_tokens: 8000,
+      max_tokens: 16000, // output headroom so larger roadmaps don't truncate mid-JSON
+
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: `Roadmap document:\n\n${markdown}\n\nReturn the JSON only.${nudge}` }],
     })
