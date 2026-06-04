@@ -5,11 +5,11 @@ import { updateDisplayName, type ProfileState } from '@/app/(os)/settings/action
 import { USER_ROLE_LABELS, type UserRole } from '@/lib/types'
 
 export default function ProfileSettingsForm({
-  displayName,
+  fullName,
   role,
   personName,
 }: {
-  displayName: string
+  fullName: string
   role: UserRole
   personName: string | null
 }) {
@@ -18,11 +18,11 @@ export default function ProfileSettingsForm({
   return (
     <form action={formAction} className="mt-5 grid gap-4 md:grid-cols-2">
       <div>
-        <label className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]" htmlFor="display_name">Display name</label>
+        <label className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]" htmlFor="full_name">Full name</label>
         <input
-          id="display_name"
-          name="display_name"
-          defaultValue={displayName}
+          id="full_name"
+          name="full_name"
+          defaultValue={fullName}
           className="mt-2 w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[color:var(--accent)]"
         />
       </div>

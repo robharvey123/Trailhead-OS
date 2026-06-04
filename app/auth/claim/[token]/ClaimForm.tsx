@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { claimInvite } from '../actions'
 
 export default function ClaimForm({ token, email }: { token: string; email: string }) {
+  const [fullName, setFullName] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [busy, setBusy] = useState(false)
@@ -13,12 +14,13 @@ export default function ClaimForm({ token, email }: { token: string; email: stri
   const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
 
   async function submit() {
+    if (!fullName.trim()) { setError('Please enter your full name.'); return }
     if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
     if (password !== confirm) { setError('Passwords do not match.'); return }
     setBusy(true); setError('')
     try {
       // On success the server action redirects to /settings (throws NEXT_REDIRECT).
-      const res = await claimInvite(token, password)
+      const res = await claimInvite(token, password, fullName.trim())
       if (res?.error) { setError(res.error); setBusy(false) }
     } catch (err) {
       // Re-throw Next.js redirect; surface anything else.
@@ -31,6 +33,7 @@ export default function ClaimForm({ token, email }: { token: string; email: stri
   return (
     <div style={{ display: 'grid', gap: 12 }}>
       <div><label className={label}>Email</label><input className={input} value={email} readOnly disabled /></div>
+      <div><label className={label}>Full name</label><input className={input} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="e.g. Rob Harvey" autoFocus /></div>
       <div><label className={label}>Password</label><input className={input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" /></div>
       <div><label className={label}>Confirm password</label><input className={input} type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></div>
       {error ? <p style={{ color: 'var(--red)', fontSize: 12 }}>{error}</p> : null}

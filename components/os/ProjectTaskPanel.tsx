@@ -168,8 +168,31 @@ export default function ProjectTaskPanel({
       const {
         data: { user },
       } = await supabase.auth.getUser()
+      if (!user) {
+        setCurrentUserLabel(null)
+        return
+      }
 
-      setCurrentUserLabel(user?.email ?? user?.id ?? null)
+      // Canonical display name: people.full_name is the source of truth, falling
+      // back to the profile display_name, then the auth email as a last resort.
+      let label: string | null = user.email ?? user.id ?? null
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, person_id')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (profile?.person_id) {
+        const { data: person } = await supabase
+          .from('people')
+          .select('full_name')
+          .eq('id', profile.person_id)
+          .maybeSingle()
+        if (person?.full_name) label = person.full_name
+        else if (profile.display_name) label = profile.display_name
+      } else if (profile?.display_name) {
+        label = profile.display_name
+      }
+      setCurrentUserLabel(label)
     }
 
     void loadCurrentUser()

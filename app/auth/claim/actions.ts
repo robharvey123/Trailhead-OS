@@ -23,7 +23,9 @@ export async function lookupClaimableInvite(token: string): Promise<{ email: str
   return { email: data.email as string }
 }
 
-export async function claimInvite(token: string, password: string): Promise<{ error: string } | void> {
+export async function claimInvite(token: string, password: string, fullName: string): Promise<{ error: string } | void> {
+  const name = (fullName ?? '').trim()
+  if (!name) return { error: 'Please enter your full name.' }
   if (!password || password.length < 8) return { error: 'Password must be at least 8 characters.' }
 
   const admin = createAdminClient()
@@ -38,19 +40,24 @@ export async function claimInvite(token: string, password: string): Promise<{ er
   const inv = invite as unknown as ClaimableInvite & { expires_at: string; claimed_at: string | null }
 
   // 1. Create the auth user (service role). Trigger auto-creates the profile.
+  // Seed full_name into auth user_metadata so the new-user trigger writes it to
+  // profiles.display_name too — one canonical name, no drift.
   const { data: created, error: createErr } = await admin.auth.admin.createUser({
     email: inv.email,
     password,
     email_confirm: true,
+    user_metadata: { full_name: name },
   })
   if (createErr || !created.user) {
     return { error: 'Could not create your account. It may already exist — try signing in.' }
   }
   const userId = created.user.id
 
-  // 2. Apply the invited role + person link; 3. mark the invite claimed.
-  await admin.from('profiles').update({ role: inv.role, person_id: inv.person_id }).eq('id', userId)
-  if (inv.person_id) await admin.from('people').update({ auth_user_id: userId }).eq('id', inv.person_id)
+  // 2. Apply the invited role + person link + display name; 3. mark the invite
+  // claimed. full_name is written to all three identity stores from one value:
+  // auth metadata (above), people.full_name (source of truth), profiles.display_name.
+  await admin.from('profiles').update({ role: inv.role, person_id: inv.person_id, display_name: name }).eq('id', userId)
+  if (inv.person_id) await admin.from('people').update({ auth_user_id: userId, full_name: name }).eq('id', inv.person_id)
   await admin.from('invites').update({ claimed_at: new Date().toISOString(), claimed_by: userId }).eq('id', inv.id)
 
   // 4. Sign in (sets the session cookies through the SSR client).

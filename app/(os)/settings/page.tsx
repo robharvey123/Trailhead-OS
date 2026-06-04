@@ -123,7 +123,7 @@ export default async function SettingsPage() {
               </Link>
             ) : null}
           </div>
-          <ProfileSettingsForm displayName={profile.display_name ?? ''} role={profile.role} personName={linkedPersonName} />
+          <ProfileSettingsForm fullName={linkedPersonName ?? profile.display_name ?? ''} role={profile.role} personName={linkedPersonName} />
         </section>
       ) : null}
 
