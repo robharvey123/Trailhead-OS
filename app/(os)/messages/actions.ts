@@ -76,20 +76,66 @@ export async function sendMessage(
   return { id: data.id as string, created_at: data.created_at as string }
 }
 
-export type DmMessage = { id: string; sender_id: string | null; body: string; created_at: string }
+export type DmMessage = {
+  id: string
+  sender_id: string | null
+  body: string
+  created_at: string
+  edited_at?: string | null
+  deleted_at?: string | null
+}
+
+const MSG_COLS = 'id, sender_id, body, created_at, edited_at, deleted_at'
 
 /** Older page of messages (50) before a cursor, ascending. RLS scopes to participants. */
 export async function loadOlderMessages(conversationId: string, beforeIso: string): Promise<{ messages: DmMessage[]; error?: string }> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('dm_messages')
-    .select('id, sender_id, body, created_at')
+    .select(MSG_COLS)
     .eq('conversation_id', conversationId)
     .lt('created_at', beforeIso)
     .order('created_at', { ascending: false })
     .limit(50)
   if (error) return { messages: [], error: error.message }
   return { messages: ((data ?? []) as DmMessage[]).reverse() }
+}
+
+/**
+ * Edit own message within the 5-minute window. The RLS UPDATE policy enforces
+ * sender + window server-side, so an out-of-window edit affects 0 rows.
+ */
+export async function editMessage(messageId: string, body: string): Promise<{ error?: string }> {
+  const trimmed = (body ?? '').trim()
+  if (!trimmed) return { error: 'Message is empty.' }
+  if (trimmed.length > 4000) return { error: 'Message is too long (max 4000 characters).' }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('dm_messages')
+    .update({ body: trimmed, edited_at: new Date().toISOString() })
+    .eq('id', messageId)
+    .is('deleted_at', null)
+    .select('id')
+  if (error) return { error: error.message }
+  if (!data || data.length === 0) return { error: 'Cannot edit — not yours, too old, or already deleted.' }
+  return {}
+}
+
+/**
+ * Soft-delete own message within the window. Body is BLANKED so the original
+ * content can't be recovered via cache, realtime, or a later RLS read.
+ */
+export async function deleteMessage(messageId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('dm_messages')
+    .update({ deleted_at: new Date().toISOString(), body: '' })
+    .eq('id', messageId)
+    .select('id')
+  if (error) return { error: error.message }
+  if (!data || data.length === 0) return { error: 'Cannot delete — not yours or too old.' }
+  return {}
 }
 
 /** Idempotent read-cursor bump. Safe to call on every conversation open. */

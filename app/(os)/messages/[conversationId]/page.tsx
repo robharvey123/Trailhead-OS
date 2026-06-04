@@ -28,11 +28,20 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
   // Last 50 messages, ascending for display.
   const { data: recent } = await supabase
     .from('dm_messages')
-    .select('id, sender_id, body, created_at')
+    .select('id, sender_id, body, created_at, edited_at, deleted_at')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: false })
     .limit(50)
   const initialMessages = ((recent ?? []) as DmMessage[]).reverse()
+
+  // Other participant's read cursor for the "Seen" receipt (readable via the
+  // participant SELECT policy added in brief 13).
+  const { data: otherRead } = await supabase
+    .from('dm_reads')
+    .select('last_read_at')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', otherId)
+    .maybeSingle()
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -42,7 +51,14 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
           <span className="topbar-title">{otherName}</span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <MessageClient conversationId={conversationId} meId={user.id} initialMessages={initialMessages} />
+          <MessageClient
+            conversationId={conversationId}
+            meId={user.id}
+            otherId={otherId}
+            otherName={otherName}
+            initialMessages={initialMessages}
+            initialOtherReadAt={(otherRead?.last_read_at as string | undefined) ?? null}
+          />
         </div>
       </div>
     </div>

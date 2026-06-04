@@ -3,7 +3,15 @@
 import { useState } from 'react'
 
 /** Textarea + Send. Enter sends, Shift+Enter inserts a newline. */
-export default function MessageComposer({ onSend, disabled }: { onSend: (body: string) => void; disabled?: boolean }) {
+export default function MessageComposer({
+  onSend,
+  onTyping,
+  disabled,
+}: {
+  onSend: (body: string) => void
+  onTyping?: () => void
+  disabled?: boolean
+}) {
   const [value, setValue] = useState('')
 
   function submit() {
@@ -20,7 +28,7 @@ export default function MessageComposer({ onSend, disabled }: { onSend: (body: s
         value={value}
         rows={1}
         placeholder="Write a message…"
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => { setValue(e.target.value); onTyping?.() }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
