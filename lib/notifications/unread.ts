@@ -52,16 +52,19 @@ export async function getUnreadMessagesCount(userId: string, client?: SupabaseCl
   if (!userId) return 0
   const supabase = client ?? (await createClient())
 
-  const { data: convs } = await supabase.from('dm_conversations').select('id')
-  const ids = (convs ?? []).map((c) => c.id as string)
+  // The caller's conversations + their per-conversation read cursor.
+  const { data: parts } = await supabase.from('chat_participants').select('conversation_id, last_read_at').eq('user_id', userId)
+  const readAt = new Map<string, string>((parts ?? []).map((p) => [p.conversation_id as string, p.last_read_at as string]))
+  const ids = [...readAt.keys()]
   if (ids.length === 0) return 0
 
-  const [{ data: msgs }, { data: reads }] = await Promise.all([
-    supabase.from('dm_messages').select('conversation_id, created_at').neq('sender_id', userId).in('conversation_id', ids),
-    supabase.from('dm_reads').select('conversation_id, last_read_at').eq('user_id', userId),
-  ])
+  const { data: msgs } = await supabase
+    .from('chat_messages')
+    .select('conversation_id, created_at')
+    .neq('sender_id', userId)
+    .is('deleted_at', null)
+    .in('conversation_id', ids)
 
-  const readAt = new Map<string, string>((reads ?? []).map((r) => [r.conversation_id as string, r.last_read_at as string]))
   let count = 0
   for (const m of msgs ?? []) {
     const last = readAt.get(m.conversation_id as string)

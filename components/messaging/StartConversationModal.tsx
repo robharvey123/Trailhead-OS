@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { startConversation } from '@/app/(os)/messages/actions'
+import { createDirectMessage } from '@/app/(os)/messages/actions'
 
 type DirectoryUser = { id: string; name: string }
 
@@ -23,7 +23,7 @@ export default function StartConversationModal({
   async function pick(userId: string) {
     setBusy(true)
     setError('')
-    const res = await startConversation(userId)
+    const res = await createDirectMessage(userId)
     if (res.error || !res.id) {
       setError(res.error || 'Could not start the conversation.')
       setBusy(false)
