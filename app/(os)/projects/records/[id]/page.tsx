@@ -96,6 +96,7 @@ export default async function ProjectDetailPage({
               projectId={id}
               initialTasks={projectTasks}
               people={taskPeople.map((p) => ({ id: p.id, name: p.full_name }))}
+              backHref={`/projects/records/${id}`}
             />
           ) : (
             <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Link this project to an engagement to manage its tasks.</p>

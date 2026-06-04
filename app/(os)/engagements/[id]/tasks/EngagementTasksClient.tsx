@@ -12,12 +12,15 @@ export default function EngagementTasksClient({
   projectId,
   initialTasks,
   people,
+  backHref,
 }: {
   engagementId: string
   /** When set, this is a project-scoped board: new tasks stamp project_id, no project filter shown. */
   projectId?: string
   initialTasks: EngagementTaskWithRelations[]
   people: Named[]
+  /** Source path stamped onto opened tasks so the detail page can offer "Back". */
+  backHref: string
 }) {
   const [showForm, setShowForm] = useState(false)
   // Engagement view only: 'all' | 'none' (engagement-level) | <projectId>.
@@ -49,7 +52,7 @@ export default function EngagementTasksClient({
         <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ New task</button>
       </div>
       {/* Board keeps its tasks in local state; re-key so a scope change re-seeds it. */}
-      <Board key={projectId ?? scope} initialTasks={visible} />
+      <Board key={projectId ?? scope} initialTasks={visible} fromPath={backHref} />
       {showForm ? (
         <TaskForm
           people={people}

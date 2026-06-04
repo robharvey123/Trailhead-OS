@@ -7,8 +7,10 @@ import { ENGAGEMENT_TASK_BOARD_COLUMNS, type EngagementTaskStatus, type Engageme
 import { moveTask } from '@/app/(os)/my-work/actions'
 import KanbanColumn from './Column'
 
-export default function Board({ initialTasks }: { initialTasks: EngagementTaskWithRelations[] }) {
+export default function Board({ initialTasks, fromPath }: { initialTasks: EngagementTaskWithRelations[]; fromPath?: string }) {
   const router = useRouter()
+  const openTask = (id: string) =>
+    router.push(`/my-work/${id}${fromPath ? `?from=${encodeURIComponent(fromPath)}` : ''}`)
   const [tasks, setTasks] = useState(initialTasks)
   const [error, setError] = useState('')
   // Small activation distance so a plain click opens the card instead of dragging.
@@ -58,7 +60,7 @@ export default function Board({ initialTasks }: { initialTasks: EngagementTaskWi
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 8 }}>{error}</p> : null}
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', overflowX: 'auto' }}>
         {ENGAGEMENT_TASK_BOARD_COLUMNS.map((status) => (
-          <KanbanColumn key={status} status={status} tasks={columnTasks(status)} onOpen={(id) => router.push(`/my-work/${id}`)} />
+          <KanbanColumn key={status} status={status} tasks={columnTasks(status)} onOpen={openTask} />
         ))}
       </div>
     </DndContext>

@@ -38,14 +38,35 @@ function activityText(a: EngagementTaskActivity): string {
   }
 }
 
-export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
+/** A board route gets "Back to board"; anything else (e.g. a project detail) gets "Back". */
+function looksLikeBoard(path: string): boolean {
+  return path === '/my-work' || path.endsWith('/tasks')
+}
+
+export default async function TaskDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ from?: string }>
+}) {
   const { id } = await params
+  const { from } = await searchParams
   const supabase = await createClient()
   const profile = await getCurrentProfile(supabase)
   if (!profile) redirect('/login')
 
   const task = await getEngagementTask(id, supabase).catch(() => null)
   if (!task) notFound()
+
+  // Where "Back" goes. Trust ?from only if it's an in-app absolute path (no
+  // open-redirect). Otherwise best-guess: admins live on engagement boards,
+  // everyone else on their personal board.
+  const safeFrom = from && from.startsWith('/') ? from : null
+  const backHref =
+    safeFrom ??
+    (roleIsAdmin(profile.role) && task.engagement_id ? `/engagements/${task.engagement_id}/tasks` : '/my-work')
+  const backLabel = !safeFrom || looksLikeBoard(safeFrom) ? '← Back to board' : '← Back'
 
   const [comments, activity, people] = await Promise.all([
     listTaskComments(id, supabase).catch(() => []),
@@ -65,7 +86,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
     <div className={`thmock ${mockupFontVars}`}>
       <div className="panel overflow-hidden">
         <div className="topbar">
-          <Link href="/my-work" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ My work</Link>
+          <Link href={backHref} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>{backLabel}</Link>
           {canEdit ? <TaskTitleEditor taskId={task.id} title={task.title} /> : <span className="topbar-title">{task.title}</span>}
           <span className="channel-tag">{ENGAGEMENT_TASK_STATUS_LABELS[task.status]}</span>
         </div>

@@ -36,6 +36,7 @@ export default async function EngagementTasksPage({ params }: { params: Promise<
             engagementId={id}
             initialTasks={tasks}
             people={people.map((p) => ({ id: p.id, name: p.full_name }))}
+            backHref={`/engagements/${id}/tasks`}
           />
         </div>
       </div>

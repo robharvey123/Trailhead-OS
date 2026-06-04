@@ -94,7 +94,7 @@ export default function MyWorkClient({
             <thead><tr><th>Title</th><th>Engagement</th><th>Status</th><th>Priority</th><th>Due</th></tr></thead>
             <tbody>
               {rows.map((t) => (
-                <tr key={t.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/my-work/${t.id}`)}>
+                <tr key={t.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/my-work/${t.id}?from=${encodeURIComponent('/my-work')}`)}>
                   <td className="td-name">{t.title}</td>
                   <td>{t.engagement?.name ?? '—'}</td>
                   <td><span className="channel-tag">{ENGAGEMENT_TASK_STATUS_LABELS[t.status]}</span></td>
