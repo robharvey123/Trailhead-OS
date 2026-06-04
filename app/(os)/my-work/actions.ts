@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile } from '@/lib/auth/roles'
+import { createTimeEntry } from '@/lib/db/timesheet'
+import { contributorRate } from '@/lib/db/contributors'
 import type { EngagementTask, EngagementTaskPriority, EngagementTaskStatus } from '@/lib/types'
 
 async function currentPersonId() {
@@ -112,6 +114,61 @@ export async function addComment(taskId: string, body: string): Promise<{ error?
     .insert({ task_id: taskId, author_person_id: personId, body: body.trim() })
   if (error) return { error: error.message }
   revalidatePath(`/my-work/${taskId}`)
+  return {}
+}
+
+/**
+ * Log a manual time entry against a task. Resolves engagement/project from the
+ * task, attributes the entry to the caller's person, and snapshots the rate from
+ * engagement_contributors (reusing createTimeEntry's rate logic — same as the
+ * timer stop flow). Logging against an engagement-linked task requires you to be
+ * an active contributor on that engagement.
+ */
+export async function logTaskTime(
+  taskId: string,
+  input: { hours: number; date: string; description?: string; billable: boolean }
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const personId = await currentPersonId()
+  if (!personId) return { error: 'Your login has no linked person record — cannot log time.' }
+
+  const minutes = Math.round((Number(input.hours) || 0) * 60)
+  if (minutes <= 0) return { error: 'Enter a number of hours greater than zero.' }
+
+  const { data: task } = await supabase
+    .from('engagement_tasks')
+    .select('id, engagement_id, project_id')
+    .eq('id', taskId)
+    .maybeSingle()
+  if (!task) return { error: 'Task not found.' }
+
+  // Contributor gate: an engagement-linked task can only be timed by an active
+  // contributor (the rate snapshot would otherwise be meaningless).
+  if (task.engagement_id) {
+    const rate = await contributorRate(task.engagement_id, personId, supabase)
+    if (rate == null) return { error: 'You must be a contributor on this engagement to log time against its tasks.' }
+  }
+
+  try {
+    await createTimeEntry(
+      {
+        task_id: taskId,
+        engagement_id: task.engagement_id,
+        project_id: task.project_id,
+        person_id: personId,
+        entry_date: input.date,
+        duration_minutes: minutes,
+        description: input.description?.trim() || null,
+        billable: input.billable,
+      },
+      supabase
+    )
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Failed to log time.' }
+  }
+
+  revalidatePath(`/my-work/${taskId}`)
+  if (task.project_id) revalidatePath(`/projects/records/${task.project_id}`)
   return {}
 }
 

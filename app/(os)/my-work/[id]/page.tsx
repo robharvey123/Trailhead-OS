@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { getEngagementTask, listTaskComments, listTaskActivity } from '@/lib/db/engagement-tasks'
-import { getRunningTimer, getTaskLoggedMinutes } from '@/lib/db/timesheet'
+import { getRunningTimer, getTaskTimeSummary, listTaskTimeEntries } from '@/lib/db/timesheet'
 import { listPeople } from '@/lib/db/people'
 import { markRead } from '../actions'
 import { mockupFontVars } from '@/lib/fonts'
@@ -12,6 +12,7 @@ import TaskDetailControls from '@/components/tasks/TaskDetailControls'
 import TaskTitleEditor from '@/components/tasks/TaskTitleEditor'
 import TaskDescriptionEditor from '@/components/tasks/TaskDescriptionEditor'
 import TaskTimer from '@/components/tasks/TaskTimer'
+import TaskTimeLog from '@/components/tasks/TaskTimeLog'
 import {
   ENGAGEMENT_TASK_PRIORITY_LABELS,
   ENGAGEMENT_TASK_STATUS_LABELS,
@@ -70,13 +71,21 @@ export default async function TaskDetailPage({
     (roleIsAdmin(profile.role) && task.engagement_id ? `/engagements/${task.engagement_id}/tasks` : '/my-work')
   const backLabel = !safeFrom || looksLikeBoard(safeFrom) ? '← Back to board' : '← Back'
 
-  const [comments, activity, people, runningTimer, loggedMinutes] = await Promise.all([
+  const [comments, activity, people, runningTimer, timeSummary, timeEntries] = await Promise.all([
     listTaskComments(id, supabase).catch(() => []),
     listTaskActivity(id, supabase).catch(() => []),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
     getRunningTimer(supabase).catch(() => null),
-    getTaskLoggedMinutes(id, supabase).catch(() => 0),
+    getTaskTimeSummary(id, supabase).catch(() => ({ totalMinutes: 0, billableMinutes: 0, people: [] })),
+    listTaskTimeEntries(id, supabase).catch(() => []),
   ])
+
+  // Default billable for the Log-time modal follows the engagement type.
+  let defaultBillable = true
+  if (task.engagement_id) {
+    const { data: eng } = await supabase.from('engagements').select('is_billable').eq('id', task.engagement_id).maybeSingle()
+    defaultBillable = eng?.is_billable ?? true
+  }
 
   // Opening the detail clears the unread cursor for this person.
   if (profile.person_id) await markRead(id).catch(() => {})
@@ -120,6 +129,17 @@ export default async function TaskDetailPage({
             </div>
 
             <div className="card">
+              <div className="panel-section-title">Time logged</div>
+              <TaskTimeLog
+                taskId={task.id}
+                defaultBillable={defaultBillable}
+                canLog={!!profile.person_id}
+                summary={timeSummary}
+                entries={timeEntries}
+              />
+            </div>
+
+            <div className="card">
               <div className="panel-section-title">Comments</div>
               <CommentThread taskId={task.id} comments={comments} canComment={!!profile.person_id} />
             </div>
@@ -151,7 +171,7 @@ export default async function TaskDetailPage({
                 projectId={task.project_id ?? null}
                 engagementId={task.engagement_id ?? null}
                 initialRunning={runningTimer}
-                loggedMinutes={loggedMinutes}
+                loggedMinutes={timeSummary.totalMinutes}
               />
             </div>
 

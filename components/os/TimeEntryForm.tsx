@@ -14,6 +14,7 @@ export type EngagementOption = {
   is_billable: boolean
 }
 type Named = { id: string; name: string }
+type TaskOpt = { id: string; title: string; engagement_id: string | null }
 
 interface Props {
   entry: TimeEntry | null
@@ -21,6 +22,8 @@ interface Props {
   projects: Array<Named & { account_id: string | null }>
   engagements: EngagementOption[]
   people: Named[]
+  /** Open engagement tasks, for the optional task picker (filtered by engagement). */
+  tasks?: TaskOpt[]
   /** Who to attribute new entries to by default (the logged-in owner's person row). */
   defaultPersonId?: string | null
   onClose: () => void
@@ -33,7 +36,7 @@ function fmtDur(min: number) {
   return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
-export default function TimeEntryForm({ entry, accounts, projects, engagements, people, defaultPersonId, onClose, onSaved, onDeleted }: Props) {
+export default function TimeEntryForm({ entry, accounts, projects, engagements, people, tasks = [], defaultPersonId, onClose, onSaved, onDeleted }: Props) {
   const editing = !!entry
   const [date, setDate] = useState(entry?.entry_date ?? new Date().toISOString().split('T')[0])
   const [personId, setPersonId] = useState(entry?.person_id ?? defaultPersonId ?? '')
@@ -41,6 +44,7 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
   const [engagementId, setEngagementId] = useState(entry?.engagement_id ?? '')
   const [workstream, setWorkstream] = useState(entry?.workstream ?? '')
   const [projectId, setProjectId] = useState(entry?.project_id ?? '')
+  const [taskId, setTaskId] = useState(entry?.task_id ?? '')
   const [hours, setHours] = useState(entry ? String(Math.floor(entry.duration_minutes / 60)) : '0')
   const [minutes, setMinutes] = useState(entry ? String(entry.duration_minutes % 60) : '0')
   const [description, setDescription] = useState(entry?.description ?? '')
@@ -54,12 +58,18 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
     () => (accountId ? projects.filter((p) => p.account_id === accountId) : projects),
     [projects, accountId]
   )
+  // Task picker only makes sense once an engagement is chosen; scope to its tasks.
+  const visibleTasks = useMemo(
+    () => (engagementId ? tasks.filter((t) => t.engagement_id === engagementId) : []),
+    [tasks, engagementId]
+  )
 
   const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
   const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
 
   function onPickEngagement(id: string) {
     setEngagementId(id)
+    setTaskId('') // a task belongs to one engagement; clear when the engagement changes
     const e = engagements.find((x) => x.id === id)
     if (e) {
       if (e.account_id && !accountId) setAccountId(e.account_id)
@@ -81,6 +91,7 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
       account_id: accountId || null,
       project_id: projectId || null,
       engagement_id: engagementId || null,
+      task_id: taskId || null,
       workstream: workstream || null,
       entry_date: date,
       duration_minutes: duration,
@@ -167,6 +178,14 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
               {visibleProjects.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
             </select>
           </div>
+          {engagementId && visibleTasks.length ? (
+            <div><label className={label}>Task</label>
+              <select className={input} value={taskId} onChange={(e) => setTaskId(e.target.value)}>
+                <option value="">— none</option>
+                {visibleTasks.map((t) => (<option key={t.id} value={t.id}>{t.title}</option>))}
+              </select>
+            </div>
+          ) : null}
           <div><label className={label}>Description</label><textarea className={`${input} min-h-[5rem] resize-y`} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
           <label className="flex items-center gap-2 text-sm text-[var(--text-2)]"><input type="checkbox" checked={billable} onChange={(e) => setBillable(e.target.checked)} /> Billable</label>
           {error ? <p className="text-sm text-[var(--red)]">{error}</p> : null}

@@ -108,6 +108,7 @@ export async function createTimeEntry(
     account_id?: string | null
     project_id?: string | null
     engagement_id?: string | null
+    task_id?: string | null
     person_id?: string | null
     workstream?: string | null
     entry_date?: string
@@ -142,6 +143,7 @@ export async function createTimeEntry(
     account_id: data.account_id ?? null,
     project_id: data.project_id ?? null,
     engagement_id: data.engagement_id ?? null,
+    task_id: data.task_id ?? null,
     workstream,
     entry_date: entryDate,
     start_at: null,
@@ -207,6 +209,10 @@ export async function updateTimeEntry(
     if (!('workstream' in data)) {
       patch.workstream = await resolveWorkstream(supabase, data.engagement_id ?? null, undefined)
     }
+  }
+
+  if ('task_id' in data) {
+    patch.task_id = data.task_id ?? null
   }
 
   if ('workstream' in data) {
@@ -411,24 +417,61 @@ export async function getRunningTimer(
   return (data as TimeEntry | null) ?? null
 }
 
+export interface TaskTimeSummary {
+  totalMinutes: number
+  billableMinutes: number
+  /** Per-person totals, minutes desc. personId is null for unattributed entries. */
+  people: Array<{ personId: string | null; fullName: string; minutes: number }>
+}
+
 /**
- * Total logged (stopped) minutes against a single engagement task. Under the
- * own-scoped RLS this counts the viewer's own entries — in this single-tenant
- * app that's effectively all of them.
+ * Aggregate time logged on a task ACROSS ALL USERS, via the SECURITY DEFINER
+ * task_time_summary() function (bypasses the own-scoped RLS). Use this for the
+ * headline total / per-person breakdown so non-admins don't see a number that
+ * silently omits other people's logged time. For the itemised list, use
+ * listTaskTimeEntries (RLS-scoped) instead.
  */
-export async function getTaskLoggedMinutes(taskId: string, client?: SupabaseClient): Promise<number> {
+export async function getTaskTimeSummary(taskId: string, client?: SupabaseClient): Promise<TaskTimeSummary> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase.rpc('task_time_summary', { p_task_id: taskId })
+  if (error) {
+    throw new Error(error.message || 'Failed to load task time summary')
+  }
+  const rows = (data ?? []) as Array<{ person_id: string | null; full_name: string; minutes: number; billable_minutes: number }>
+  return {
+    totalMinutes: rows.reduce((s, r) => s + Number(r.minutes), 0),
+    billableMinutes: rows.reduce((s, r) => s + Number(r.billable_minutes), 0),
+    people: rows.map((r) => ({ personId: r.person_id, fullName: r.full_name, minutes: Number(r.minutes) })),
+  }
+}
+
+export interface TaskTimeEntryRow {
+  id: string
+  entry_date: string
+  duration_minutes: number
+  description: string | null
+  billable: boolean
+  person: { full_name: string } | null
+}
+
+/**
+ * Itemised time entries for a task, RLS-scoped (the viewer's own entries only),
+ * newest first, joined to the attributed person's name. Pairs with the
+ * aggregate getTaskTimeSummary for the headline numbers.
+ */
+export async function listTaskTimeEntries(taskId: string, client?: SupabaseClient): Promise<TaskTimeEntryRow[]> {
   const supabase = await getSupabase(client)
   const { data, error } = await supabase
     .from('time_entries')
-    .select('duration_minutes')
+    .select('id, entry_date, duration_minutes, description, billable, person:people(full_name)')
     .eq('task_id', taskId)
     .eq('is_running', false)
-
+    .gt('duration_minutes', 0)
+    .order('entry_date', { ascending: false })
   if (error) {
-    throw new Error(error.message || 'Failed to load task time')
+    throw new Error(error.message || 'Failed to load task time entries')
   }
-
-  return (data ?? []).reduce((sum, row) => sum + ((row.duration_minutes as number) || 0), 0)
+  return (data ?? []) as unknown as TaskTimeEntryRow[]
 }
 
 interface WeeklyTotals {

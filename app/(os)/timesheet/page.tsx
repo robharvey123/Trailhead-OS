@@ -28,7 +28,7 @@ export default async function TimesheetPage() {
   }
 
   const monthStart = monthStartISO()
-  const [accounts, projects, runningTimer, engagements, hoursRows, people, ownPerson] = await Promise.all([
+  const [accounts, projects, runningTimer, engagements, hoursRows, people, ownPerson, taskRows] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getProjects({}, supabase).catch(() => []),
     getRunningTimer(supabase).catch(() => null),
@@ -36,6 +36,14 @@ export default async function TimesheetPage() {
     supabase.from('engagement_hours_by_month').select('engagement_id, hours_used').eq('period_month', monthStart),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
     getPersonByAuthUser(user.id, supabase).catch(() => null),
+    // Open engagement tasks for the optional task picker (filtered client-side by engagement).
+    supabase
+      .from('engagement_tasks')
+      .select('id, title, engagement_id')
+      .not('engagement_id', 'is', null)
+      .not('status', 'in', '(done,cancelled)')
+      .order('updated_at', { ascending: false })
+      .limit(500),
   ])
 
   const hoursMap: Record<string, number> = {}
@@ -61,6 +69,7 @@ export default async function TimesheetPage() {
         initialTimer={runningTimer}
         engagements={engagementOptions}
         people={people.map((p) => ({ id: p.id, name: p.full_name }))}
+        tasks={(taskRows.data ?? []) as Array<{ id: string; title: string; engagement_id: string | null }>}
         defaultPersonId={ownPerson?.id ?? null}
       />
     </div>
