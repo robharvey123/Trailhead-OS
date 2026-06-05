@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { normalizeMessage } from './normalize'
+import { dispatchMessagePush } from '@/lib/push/messaging'
 
 export type ChatAttachment = {
   id: string
@@ -207,6 +208,9 @@ export async function sendMessage(conversationId: string, body: string, messageI
       valid.map((personId) => ({ message_id: data.id, mentioned_person_id: personId, conversation_id: conversationId }))
     )
   }
+
+  // Fire-and-forget push (DM → other participant; channel → mentioned people).
+  void dispatchMessagePush({ conversationId, senderId: user.id, body: trimmed, mentionPersonIds: valid }).catch(() => {})
 
   return { id: data.id as string, created_at: data.created_at as string }
 }

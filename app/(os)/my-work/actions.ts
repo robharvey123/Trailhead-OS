@@ -5,7 +5,23 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile } from '@/lib/auth/roles'
 import { createTimeEntry } from '@/lib/db/timesheet'
 import { contributorRate } from '@/lib/db/contributors'
+import { pushToPerson } from '@/lib/push/server'
 import type { EngagementTask, EngagementTaskPriority, EngagementTaskStatus } from '@/lib/types'
+
+/** Fire-and-forget "task assigned to you" push, skipping self-assignment. */
+async function notifyAssignment(taskId: string, title: string, assigneePersonId: string, assignerUserId: string, assignerName: string) {
+  await pushToPerson(
+    assigneePersonId,
+    {
+      title: 'New task assigned',
+      body: `${assignerName} assigned “${title}” to you`,
+      url: `/my-work/${taskId}`,
+      tag: `task:${taskId}`,
+      category: 'push_task_assigned',
+    },
+    assignerUserId
+  )
+}
 
 async function currentPersonId() {
   const profile = await getCurrentProfile()
@@ -59,6 +75,11 @@ export async function createTask(input: CreateTaskInput): Promise<{ task?: Engag
   if (error) return { error: error.message }
   revalidateTask(data.engagement_id, data.id)
   if (input.projectId) revalidatePath(`/projects/records/${input.projectId}`)
+
+  if (input.assigneePersonId) {
+    const profile = await getCurrentProfile(supabase)
+    void notifyAssignment(data.id, data.title as string, input.assigneePersonId, user.id, profile?.display_name || 'Someone').catch(() => {})
+  }
   return { task: data as EngagementTask }
 }
 
@@ -95,14 +116,20 @@ export async function moveTask(id: string, status: EngagementTaskStatus, positio
 
 export async function assignTask(id: string, personId: string | null): Promise<{ error?: string }> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   const { data, error } = await supabase
     .from('engagement_tasks')
     .update({ assignee_person_id: personId })
     .eq('id', id)
-    .select('engagement_id')
+    .select('engagement_id, title')
     .single()
   if (error) return { error: error.message }
   revalidateTask(data?.engagement_id, id)
+
+  if (personId && user) {
+    const profile = await getCurrentProfile(supabase)
+    void notifyAssignment(id, data.title as string, personId, user.id, profile?.display_name || 'Someone').catch(() => {})
+  }
   return {}
 }
 

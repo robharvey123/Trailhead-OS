@@ -93,6 +93,7 @@ export default async function OsLayout({
       unreadMailCount={unreadMailCount}
       unreadMessageCount={unreadMessageCount}
       unreadMentionsCount={unreadMentionsCount}
+      userId={user.id}
     >
       {children}
     </OsShell>

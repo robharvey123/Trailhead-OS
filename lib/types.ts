@@ -296,11 +296,18 @@ export const USER_ROLE_LABELS: Record<UserRole, string> = {
   contractor: 'Contractor',
 }
 
+export interface NotificationSettings {
+  push_direct_message: boolean
+  push_mention: boolean
+  push_task_assigned: boolean
+}
+
 export interface Profile {
   id: string
   person_id: string | null
   role: UserRole
   display_name: string | null
+  notification_settings?: NotificationSettings | null
   created_at: string
   updated_at: string
 }

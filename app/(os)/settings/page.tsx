@@ -196,6 +196,9 @@ export default async function SettingsPage() {
             <Link href="/invoicing" className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
               Invoicing
             </Link>
+            <Link href="/settings/notifications" className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
+              Push notifications
+            </Link>
           </div>
         </section>
       </div>

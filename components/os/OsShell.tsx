@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import Sidebar from './Sidebar'
+import PushPromptBanner from '@/components/notifications/PushPromptBanner'
 import type { Workstream } from '@/lib/types'
 
 interface OsShellProps {
@@ -12,6 +13,7 @@ interface OsShellProps {
   unreadMailCount?: number
   unreadMessageCount?: number
   unreadMentionsCount?: number
+  userId?: string
   children: ReactNode
 }
 
@@ -23,6 +25,7 @@ export default function OsShell({
   unreadMailCount = 0,
   unreadMessageCount = 0,
   unreadMentionsCount = 0,
+  userId,
   children,
 }: OsShellProps) {
   const [collapsed, setCollapsed] = useState(false)
@@ -73,6 +76,7 @@ export default function OsShell({
           {children}
         </div>
       </main>
+      {userId ? <PushPromptBanner userId={userId} /> : null}
     </div>
   )
 }
