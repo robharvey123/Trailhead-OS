@@ -202,7 +202,7 @@ export default function TimesheetClient({
               <span className="timer-dot" />
               <div className="timer-meta">
                 <b>{timer.account_id ? accountName.get(timer.account_id) ?? 'No client' : 'No client'}</b><br />
-                <span>{timer.engagement_id ? engById.get(timer.engagement_id)?.name ?? '' : timer.workstream ?? 'No engagement'}</span>
+                <span>{timer.engagement_id ? engById.get(timer.engagement_id)?.name ?? '' : 'No engagement'}</span>
               </div>
               <div className="timer-clock">{fmtClock(elapsedSeconds)}</div>
               <button className="timer-stop" onClick={stopTimer} title="Stop">■</button>
@@ -273,14 +273,13 @@ export default function TimesheetClient({
       <div style={{ overflowX: 'auto' }}>
         {loading ? <div className="empty">Loading entries…</div> : entries.length === 0 && !timer ? <div className="empty">No time entries in this range.</div> : (
           <table className="data-table">
-            <thead><tr><th>Date</th><th>Account</th><th>Engagement</th><th>Workstream</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Amount</th><th></th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Account</th><th>Engagement</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Amount</th><th></th><th></th></tr></thead>
             <tbody>
               {timer ? (
                 <tr className="row-running">
                   <td className="td-mono">Now</td>
                   <td className="td-name">{timer.account_id ? accountName.get(timer.account_id) ?? '—' : '—'}</td>
                   <td className="td-mono">{timer.engagement_id ? engById.get(timer.engagement_id)?.name ?? '—' : '—'}</td>
-                  <td>{timer.workstream ? <span className="channel-tag">{timer.workstream}</span> : '—'}</td>
                   <td>{timer.description ?? 'Running timer'}</td>
                   <td style={{ textAlign: 'right' }} className="td-mono">{fmtClock(elapsedSeconds)} <span className="pill timer" style={{ marginLeft: 6 }}>● live</span></td>
                   <td style={{ textAlign: 'right' }} className="td-mono">—</td>
@@ -292,7 +291,6 @@ export default function TimesheetClient({
                   <td className="td-mono" style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{new Date(e.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
                   <td className="td-name" style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{e.account_id ? accountName.get(e.account_id) ?? '—' : '—'}</td>
                   <td className="td-mono">{e.engagement_id ? engById.get(e.engagement_id)?.name ?? '—' : '—'}</td>
-                  <td>{e.workstream ? <span className="channel-tag">{e.workstream}</span> : <span className="td-mono">—</span>}</td>
                   <td style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{e.description ?? '—'}</td>
                   <td style={{ textAlign: 'right' }} className="td-mono">{fmtDur(e.duration_minutes)}</td>
                   <td style={{ textAlign: 'right' }} className="td-mono">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
@@ -301,7 +299,7 @@ export default function TimesheetClient({
                 </tr>
               ))}
             </tbody>
-            <tfoot><tr><td className="total-label" colSpan={5}>Total · {RANGE_LABELS[range].replace('…', '')}</td><td className="total-val" style={{ textAlign: 'right' }}>{fmtDur(totals.minutes)}</td><td className="total-amount" style={{ textAlign: 'right' }}>{formatCurrency(totals.amount, 'GBP')}</td><td colSpan={2}></td></tr></tfoot>
+            <tfoot><tr><td className="total-label" colSpan={4}>Total · {RANGE_LABELS[range].replace('…', '')}</td><td className="total-val" style={{ textAlign: 'right' }}>{fmtDur(totals.minutes)}</td><td className="total-amount" style={{ textAlign: 'right' }}>{formatCurrency(totals.amount, 'GBP')}</td><td colSpan={2}></td></tr></tfoot>
           </table>
         )}
       </div>

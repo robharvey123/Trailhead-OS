@@ -7,7 +7,6 @@ import type { TimeEntry } from '@/lib/types'
 export type EngagementOption = {
   id: string
   name: string
-  workstreams: string[]
   included_hours_monthly: number | null
   account_id: string | null
   hours_used_mtd: number
@@ -42,7 +41,6 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
   const [personId, setPersonId] = useState(entry?.person_id ?? defaultPersonId ?? '')
   const [accountId, setAccountId] = useState(entry?.account_id ?? '')
   const [engagementId, setEngagementId] = useState(entry?.engagement_id ?? '')
-  const [workstream, setWorkstream] = useState(entry?.workstream ?? '')
   const [projectId, setProjectId] = useState(entry?.project_id ?? '')
   const [taskId, setTaskId] = useState(entry?.task_id ?? '')
   const [hours, setHours] = useState(entry ? String(Math.floor(entry.duration_minutes / 60)) : '0')
@@ -73,18 +71,14 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
     const e = engagements.find((x) => x.id === id)
     if (e) {
       if (e.account_id && !accountId) setAccountId(e.account_id)
-      if (!workstream && e.workstreams[0]) setWorkstream(e.workstreams[0])
       // Default billable from the engagement type (internal = non-billable); still overridable below.
       setBillable(e.is_billable)
-    } else {
-      setWorkstream('')
     }
   }
 
   async function save() {
     const duration = (Number(hours) || 0) * 60 + (Number(minutes) || 0)
     if (duration <= 0) { setError('Duration must be greater than zero.'); return }
-    if (engagementId && !workstream) { setError('Pick a workstream for this engagement.'); return }
     setBusy(true); setError('')
     const payload = {
       person_id: personId || null,
@@ -92,7 +86,6 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
       project_id: projectId || null,
       engagement_id: engagementId || null,
       task_id: taskId || null,
-      workstream: workstream || null,
       entry_date: date,
       duration_minutes: duration,
       description: description || null,
@@ -164,14 +157,6 @@ export default function TimeEntryForm({ entry, accounts, projects, engagements, 
               {engagements.map((e) => (<option key={e.id} value={e.id}>{e.name}</option>))}
             </select>
           </div>
-          {eng ? (
-            <div><label className={label}>Workstream *</label>
-              <select className={input} value={workstream} onChange={(e) => setWorkstream(e.target.value)}>
-                <option value="">— pick</option>
-                {eng.workstreams.map((w) => (<option key={w} value={w}>{w}</option>))}
-              </select>
-            </div>
-          ) : null}
           <div><label className={label}>Project</label>
             <select className={input} value={projectId} onChange={(e) => setProjectId(e.target.value)}>
               <option value="">—</option>

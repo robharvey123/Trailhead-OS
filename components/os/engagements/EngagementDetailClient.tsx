@@ -66,7 +66,6 @@ export default function EngagementDetailClient({
   const e = detail.engagement
   const [tab, setTab] = useState<Tab>('Overview')
   const [milestones, setMilestones] = useState<Tier1MilestoneWithAccount[]>(detail.tier1)
-  const [groupByWs, setGroupByWs] = useState(false)
   const [error, setError] = useState('')
   const [addAccountId, setAddAccountId] = useState('')
   const [approvals, setApprovals] = useState<ApprovalRequestWithRelations[]>(initialApprovals)
@@ -338,18 +337,6 @@ export default function EngagementDetailClient({
               ) : hours.over > 0 ? (
                 <p style={{ color: 'var(--amber)', fontSize: 12, marginTop: 6 }}>{hours.over.toFixed(1)}h over the included {e.included_hours_monthly}h.</p>
               ) : null}
-
-              <div className="panel-section-title" style={{ marginTop: 18 }}>Workstream split (this month)</div>
-              {detail.workstreamSplit.length === 0 ? <p className="field-label">No time logged this month.</p> : detail.workstreamSplit.map((w) => {
-                const total = detail.workstreamSplit.reduce((s, x) => s + x.hours, 0) || 1
-                const p = Math.round((w.hours / total) * 100)
-                return (
-                  <div key={w.workstream} style={{ marginBottom: 8 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}><span>{w.workstream}</span><span className="td-mono">{w.hours.toFixed(1)}h · {p}%</span></div>
-                    <div style={{ height: 6, background: 'var(--surface-3)', borderRadius: 999, marginTop: 3 }}><div style={{ width: `${p}%`, height: '100%', background: 'var(--accent)', borderRadius: 999 }} /></div>
-                  </div>
-                )
-              })}
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -376,21 +363,15 @@ export default function EngagementDetailClient({
         {/* TIME */}
         {tab === 'Time' ? (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-              <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 12, color: 'var(--text-2)' }}>
-                <input type="checkbox" checked={groupByWs} onChange={(ev) => setGroupByWs(ev.target.checked)} /> Group by workstream
-              </label>
-            </div>
             {timeEntries.length === 0 ? <div className="empty">No time logged on this engagement yet.</div> : (
               <table className="data-table">
-                <thead><tr><th>Date</th><th>Workstream</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th></th></tr></thead>
+                <thead><tr><th>Date</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th></th></tr></thead>
                 <tbody>
                   {[...timeEntries]
-                    .sort((a, b) => (groupByWs ? (a.workstream ?? '').localeCompare(b.workstream ?? '') : b.entry_date.localeCompare(a.entry_date)))
+                    .sort((a, b) => b.entry_date.localeCompare(a.entry_date))
                     .map((t) => (
                       <tr key={t.id}>
                         <td className="td-mono">{fmtDate(t.entry_date)}</td>
-                        <td>{t.workstream ? <span className="channel-tag">{t.workstream}</span> : <span className="td-mono">—</span>}</td>
                         <td>{t.description ?? '—'}</td>
                         <td style={{ textAlign: 'right' }} className="td-mono">{fmtDur(t.duration_minutes)}</td>
                         <td><span className={`pill ${t.billable ? 'billable' : 'nonbill'}`}>{t.billable ? 'Billable' : 'Non-bill'}</span></td>

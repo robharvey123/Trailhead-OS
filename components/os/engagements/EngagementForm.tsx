@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
-import { DEFAULT_WORKSTREAMS, ENGAGEMENT_TYPE_LABELS, type EngagementType, type EngagementWithRelations } from '@/lib/types'
+import { ENGAGEMENT_TYPE_LABELS, type EngagementType, type EngagementWithRelations } from '@/lib/types'
 
 type Named = { id: string; name: string }
 
@@ -39,8 +39,6 @@ export default function EngagementForm({
   const [perfFee, setPerfFee] = useState(num(initial?.performance_fee_default))
   const [startDate, setStartDate] = useState(initial?.start_date ?? new Date().toISOString().split('T')[0])
   const [endDate, setEndDate] = useState(initial?.end_date ?? '')
-  const [workstreams, setWorkstreams] = useState<string[]>(initial?.workstreams ?? [...DEFAULT_WORKSTREAMS])
-  const [wsInput, setWsInput] = useState('')
   const [hoursOverage, setHoursOverage] = useState(num(at?.hours_overage_hours) || '8')
   const [travelThreshold, setTravelThreshold] = useState(num(at?.travel_amount_gbp) || '250')
   const [slotting, setSlotting] = useState(at?.slotting_fees_required ?? true)
@@ -52,12 +50,6 @@ export default function EngagementForm({
   const input =
     'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
   const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
-
-  function addWorkstream() {
-    const v = wsInput.trim()
-    if (v && !workstreams.includes(v)) setWorkstreams((w) => [...w, v])
-    setWsInput('')
-  }
 
   async function submit() {
     if (!name.trim() || !startDate || (!isInternal && !endClient)) {
@@ -80,7 +72,6 @@ export default function EngagementForm({
       performance_fee_default: isInternal || !perfFee ? null : Number(perfFee),
       start_date: startDate,
       end_date: endDate || null,
-      workstreams,
       approval_thresholds: {
         hours_overage_hours: Number(hoursOverage) || 0,
         travel_amount_gbp: Number(travelThreshold) || 0,
@@ -159,22 +150,6 @@ export default function EngagementForm({
             <div><label className={label}>Default perf fee</label><input type="number" className={input} value={perfFee} onChange={(e) => setPerfFee(e.target.value)} placeholder="4000" /></div>
           </div>
         ) : null}
-
-        <div>
-          <label className={label}>Workstreams</label>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-            {workstreams.map((w) => (
-              <span key={w} className="tag-chip accent">
-                {w}
-                <button onClick={() => setWorkstreams((ws) => ws.filter((x) => x !== w))}>✕</button>
-              </span>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input className={input} value={wsInput} onChange={(e) => setWsInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWorkstream() } }} placeholder="Add a workstream…" />
-            <button className="btn btn-ghost btn-sm" onClick={addWorkstream}>Add</button>
-          </div>
-        </div>
 
         <div className="card">
           <div className="panel-section-title">Approval thresholds</div>

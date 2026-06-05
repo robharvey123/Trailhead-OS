@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
         project_id: body.project_id,
         engagement_id: body.engagement_id,
         task_id: body.task_id,
-        workstream: body.workstream,
         description: body.description,
       },
       supabase

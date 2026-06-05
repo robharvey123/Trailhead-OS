@@ -1,6 +1,5 @@
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { upsertEngagement, addTier1Account } from '@/lib/db/engagements'
-import { DEFAULT_WORKSTREAMS } from '@/lib/types'
 import { NextResponse } from 'next/server'
 
 const ENGAGEMENT_NAME = 'Qola - DRIVER GTM (via Wide Advocacy)'
@@ -73,7 +72,6 @@ export async function POST() {
         performance_fee_default: PERF_FEE,
         start_date: isoDate(today),
         end_date: isoDate(end),
-        workstreams: [...DEFAULT_WORKSTREAMS],
         status: 'Active',
         approval_thresholds: {
           hours_overage_hours: 8,

@@ -71,7 +71,6 @@ export interface EngagementDetail {
   engagement: EngagementWithRelations
   tier1: Tier1MilestoneWithAccount[]
   hoursThisMonth: { used: number; included: number | null; over: number; pct: number }
-  workstreamSplit: Array<{ workstream: string; hours: number }>
   milestoneSummary: Tier1MilestoneSummary | null
 }
 
@@ -82,35 +81,20 @@ export async function getEngagement(id: string, client?: SupabaseClient): Promis
   if (!data) return null
   const engagement = data as unknown as EngagementWithRelations
 
-  const { from, to } = monthBounds()
-  const [tier1Res, hoursThisMonth, splitRes, summaryRes] = await Promise.all([
+  const [tier1Res, hoursThisMonth, summaryRes] = await Promise.all([
     supabase
       .from('tier1_milestones')
       .select('*, account:accounts(id,name,channel)')
       .eq('engagement_id', id)
       .order('created_at', { ascending: true }),
     engagementHoursThisMonth(id, engagement.included_hours_monthly, supabase),
-    supabase
-      .from('time_entries')
-      .select('workstream, duration_minutes')
-      .eq('engagement_id', id)
-      .eq('is_running', false)
-      .gte('entry_date', from)
-      .lte('entry_date', to),
     supabase.from('tier1_milestone_summary').select('*').eq('engagement_id', id).maybeSingle(),
   ])
-
-  const splitMap = new Map<string, number>()
-  for (const r of (splitRes.data ?? []) as Array<{ workstream: string | null; duration_minutes: number }>) {
-    const ws = r.workstream || 'Unspecified'
-    splitMap.set(ws, (splitMap.get(ws) ?? 0) + (r.duration_minutes ?? 0) / 60)
-  }
 
   return {
     engagement,
     tier1: (tier1Res.data ?? []) as unknown as Tier1MilestoneWithAccount[],
     hoursThisMonth,
-    workstreamSplit: Array.from(splitMap.entries()).map(([workstream, hours]) => ({ workstream, hours })),
     milestoneSummary: (summaryRes.data as Tier1MilestoneSummary | null) ?? null,
   }
 }
@@ -121,7 +105,7 @@ export async function upsertEngagement(input: EngagementInput, client?: Supabase
   const fields: (keyof EngagementInput)[] = [
     'end_client_account_id', 'billed_via_account_id', 'engagement_type', 'name', 'code', 'status', 'currency',
     'retainer_amount_monthly', 'included_hours_monthly', 'day_rate', 'performance_fee_default',
-    'start_date', 'end_date', 'workstreams', 'approval_thresholds', 'notes',
+    'start_date', 'end_date', 'approval_thresholds', 'notes',
   ]
   for (const f of fields) if (f in input) patch[f] = (input as unknown as Record<string, unknown>)[f]
 
@@ -226,7 +210,6 @@ export interface WeeklyUpdateData {
   hoursMonth: number
   cap: number | null
   pctOfCap: number
-  workstreamSplit: Array<{ workstream: string; hours: number }>
   pipeline: Array<{ stage: string; deals: Array<{ name: string; account: string }> }>
   milestonesTouched: Array<{ account: string; condition: string; date: string }>
   tasks: Array<{ title: string; due: string | null }>
@@ -248,17 +231,14 @@ export async function weeklyClientUpdateData(
   const engagement = engRow as unknown as EngagementWithRelations
 
   const [weekEntries, monthHours, tier1Res] = await Promise.all([
-    supabase.from('time_entries').select('workstream, duration_minutes').eq('engagement_id', engagementId).eq('is_running', false).gte('entry_date', weekStart).lte('entry_date', weekEnd),
+    supabase.from('time_entries').select('duration_minutes').eq('engagement_id', engagementId).eq('is_running', false).gte('entry_date', weekStart).lte('entry_date', weekEnd),
     engagementHoursThisMonth(engagementId, engagement?.included_hours_monthly ?? null, supabase),
     supabase.from('tier1_milestones').select('account_id, range_review_decided_at, go_live_confirmed_at, first_po_received_at, account:accounts(name)').eq('engagement_id', engagementId),
   ])
 
   let weekMinutes = 0
-  const wsMap = new Map<string, number>()
-  for (const r of (weekEntries.data ?? []) as Array<{ workstream: string | null; duration_minutes: number }>) {
+  for (const r of (weekEntries.data ?? []) as Array<{ duration_minutes: number }>) {
     weekMinutes += r.duration_minutes ?? 0
-    const ws = r.workstream || 'Unspecified'
-    wsMap.set(ws, (wsMap.get(ws) ?? 0) + (r.duration_minutes ?? 0) / 60)
   }
 
   const milestones = (tier1Res.data ?? []) as unknown as Array<{
@@ -310,7 +290,6 @@ export async function weeklyClientUpdateData(
     hoursMonth: monthHours.used,
     cap: monthHours.included,
     pctOfCap: monthHours.pct,
-    workstreamSplit: Array.from(wsMap.entries()).map(([workstream, hours]) => ({ workstream, hours })),
     pipeline,
     milestonesTouched,
     tasks: ((tasks ?? []) as Array<{ title: string; due_date: string | null }>).map((t) => ({ title: t.title, due: t.due_date })),

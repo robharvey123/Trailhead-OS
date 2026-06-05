@@ -202,13 +202,6 @@ export const ENGAGEMENT_STATUSES: EngagementStatus[] = [
   'Draft', 'Active', 'Paused', 'Completed', 'Terminated',
 ]
 
-export const DEFAULT_WORKSTREAMS = [
-  'Market Development',
-  'Sales Growth',
-  'New Client Acquisition',
-  'Reporting & Governance',
-] as const
-
 export interface ApprovalThresholds {
   hours_overage_hours?: number
   travel_amount_gbp?: number
@@ -250,7 +243,6 @@ export interface Engagement {
   performance_fee_default: number | null
   start_date: string
   end_date: string | null
-  workstreams: string[]
   approval_thresholds: ApprovalThresholds
   notes: string | null
   created_at: string
@@ -277,7 +269,6 @@ export interface EngagementInput {
   performance_fee_default?: number | null
   start_date: string
   end_date?: string | null
-  workstreams?: string[]
   approval_thresholds?: ApprovalThresholds
   notes?: string | null
 }
@@ -448,13 +439,6 @@ export interface EngagementHoursByMonth {
   hours_included: number | null
   hours_over: number
   billable_hours: number
-}
-
-export interface EngagementWorkstreamSplit {
-  engagement_id: string
-  period_month: string
-  workstream: string
-  hours: number
 }
 
 export interface Tier1MilestoneSummary {
@@ -1180,7 +1164,6 @@ export interface TimeEntry {
   project_id: string | null
   engagement_id?: string | null
   task_id?: string | null
-  workstream?: string | null
   entry_date: string
   start_at: string | null
   end_at: string | null

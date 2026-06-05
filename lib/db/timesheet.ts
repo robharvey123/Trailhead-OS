@@ -8,19 +8,6 @@ async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
 }
 
-/** If an engagement is set but no workstream, default to its first workstream (or 'Unspecified'). */
-async function resolveWorkstream(
-  supabase: SupabaseClient,
-  engagementId: string | null | undefined,
-  workstream: string | null | undefined
-): Promise<string | null> {
-  if (workstream) return workstream
-  if (!engagementId) return null
-  const { data } = await supabase.from('engagements').select('workstreams').eq('id', engagementId).maybeSingle()
-  const list = (data?.workstreams as string[] | undefined) ?? []
-  return list[0] ?? 'Unspecified'
-}
-
 interface TimeEntryFilters {
   account_id?: string
   project_id?: string
@@ -110,7 +97,6 @@ export async function createTimeEntry(
     engagement_id?: string | null
     task_id?: string | null
     person_id?: string | null
-    workstream?: string | null
     entry_date?: string
     duration_minutes: number
     description?: string | null
@@ -128,7 +114,6 @@ export async function createTimeEntry(
 
   const userId = auth.data.user.id
   const entryDate = data.entry_date || new Date().toISOString().split('T')[0]
-  const workstream = await resolveWorkstream(supabase, data.engagement_id, data.workstream)
 
   // Rate snapshot: an explicit rate wins; otherwise, for engagement+contributor
   // work, snapshot the contributor's current engagement rate; else 0.
@@ -144,7 +129,6 @@ export async function createTimeEntry(
     project_id: data.project_id ?? null,
     engagement_id: data.engagement_id ?? null,
     task_id: data.task_id ?? null,
-    workstream,
     entry_date: entryDate,
     start_at: null,
     end_at: null,
@@ -205,18 +189,10 @@ export async function updateTimeEntry(
 
   if ('engagement_id' in data) {
     patch.engagement_id = data.engagement_id ?? null
-    // Keep workstream consistent with the engagement unless one is supplied.
-    if (!('workstream' in data)) {
-      patch.workstream = await resolveWorkstream(supabase, data.engagement_id ?? null, undefined)
-    }
   }
 
   if ('task_id' in data) {
     patch.task_id = data.task_id ?? null
-  }
-
-  if ('workstream' in data) {
-    patch.workstream = data.workstream ?? null
   }
 
   if ('entry_date' in data && data.entry_date) {
@@ -260,7 +236,6 @@ export async function startTimer(
     project_id?: string | null
     engagement_id?: string | null
     task_id?: string | null
-    workstream?: string | null
     description?: string | null
   },
   client?: SupabaseClient
@@ -298,7 +273,6 @@ export async function startTimer(
   const now = new Date()
   const startAt = now.toISOString()
   const entryDate = now.toISOString().split('T')[0]
-  const workstream = await resolveWorkstream(supabase, data.engagement_id, data.workstream)
 
   const payload = {
     user_id: userId,
@@ -307,7 +281,6 @@ export async function startTimer(
     project_id: data.project_id ?? null,
     engagement_id: data.engagement_id ?? null,
     task_id: data.task_id ?? null,
-    workstream,
     entry_date: entryDate,
     start_at: startAt,
     end_at: null,

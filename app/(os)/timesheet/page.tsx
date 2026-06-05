@@ -54,7 +54,6 @@ export default async function TimesheetPage() {
   const engagementOptions: EngagementOption[] = engagements.map((e) => ({
     id: e.id,
     name: e.name,
-    workstreams: e.workstreams ?? [],
     included_hours_monthly: e.included_hours_monthly,
     account_id: e.end_client_account_id,
     hours_used_mtd: hoursMap[e.id] ?? 0,

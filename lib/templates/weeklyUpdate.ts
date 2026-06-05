@@ -21,12 +21,7 @@ export function renderWeeklyUpdate(d: WeeklyUpdateData): string {
   if (d.cap != null && d.pctOfCap > 100) lines.push(`- ⚠️ Over the monthly cap — overage to be discussed per the engagement terms.`)
   lines.push('')
 
-  lines.push('## 2. Where the time went')
-  if (d.workstreamSplit.length === 0) lines.push('- No time logged this week.')
-  else for (const w of d.workstreamSplit.sort((a, b) => b.hours - a.hours)) lines.push(`- ${w.workstream}: ${w.hours.toFixed(1)}h`)
-  lines.push('')
-
-  lines.push('## 3. Pipeline')
+  lines.push('## 2. Pipeline')
   if (d.pipeline.length === 0) lines.push('- No active deals on tracked accounts.')
   else for (const stage of d.pipeline) {
     lines.push(`**${stage.stage}**`)
@@ -34,12 +29,12 @@ export function renderWeeklyUpdate(d: WeeklyUpdateData): string {
   }
   lines.push('')
 
-  lines.push('## 4. Tier-1 listing milestones')
+  lines.push('## 3. Tier-1 listing milestones')
   if (d.milestonesTouched.length === 0) lines.push('- No milestone changes this week.')
   else for (const m of d.milestonesTouched) lines.push(`- ${m.account}: ${m.condition} (${fmtDate(m.date)})`)
   lines.push('')
 
-  lines.push('## 5. Next 7 days')
+  lines.push('## 4. Next 7 days')
   if (d.tasks.length === 0) lines.push('- No scheduled actions.')
   else for (const t of d.tasks) lines.push(`- ${t.title}${t.due ? ` (due ${fmtDate(t.due)})` : ''}`)
   lines.push('')
