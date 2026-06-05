@@ -9,12 +9,16 @@ export default function ChannelManageButton({
   users,
   isAdmin,
   meId,
+  engagements,
+  defaultEngagementId,
 }: {
   conversationId: string
   members: Member[]
   users: Array<{ id: string; name: string }>
   isAdmin: boolean
   meId: string
+  engagements: Array<{ id: string; name: string }>
+  defaultEngagementId: string | null
 }) {
   const [open, setOpen] = useState(false)
   return (
@@ -29,6 +33,8 @@ export default function ChannelManageButton({
           users={users}
           isAdmin={isAdmin}
           meId={meId}
+          engagements={engagements}
+          defaultEngagementId={defaultEngagementId}
           onClose={() => setOpen(false)}
         />
       ) : null}

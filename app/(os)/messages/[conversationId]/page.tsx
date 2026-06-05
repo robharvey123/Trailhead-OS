@@ -5,6 +5,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import MessageClient from './MessageClient'
 import ChannelManageButton from '@/components/messaging/ChannelManageButton'
 import { listPeople } from '@/lib/db/people'
+import { listEngagements } from '@/lib/db/engagements'
 import { normalizeMessage } from '../normalize'
 import type { ChatMessage } from '../actions'
 
@@ -28,7 +29,7 @@ export default async function ConversationPage({
   // RLS returns the row only if the caller is a participant.
   const { data: conv } = await supabase
     .from('chat_conversations')
-    .select('id, kind, name')
+    .select('id, kind, name, default_engagement_id')
     .eq('id', conversationId)
     .maybeSingle()
   if (!conv) notFound()
@@ -84,6 +85,25 @@ export default async function ConversationPage({
   const people = (await listPeople({ activeOnly: true }, supabase).catch(() => []))
     .map((p) => ({ id: p.id, full_name: p.full_name }))
 
+  // Engagements for the convert-to-task modal (non-terminal only).
+  const engagements = (await listEngagements({ excludeTerminal: true }, supabase).catch(() => []))
+    .map((e) => ({ id: e.id, name: e.name }))
+
+  // Tasks already created from the loaded messages → "→ Created task" footers.
+  // Most-recently-created task wins per message.
+  const messageIds = initialMessages.map((m) => m.id)
+  const initialCreatedTasks: Record<string, { id: string; title: string }> = {}
+  if (messageIds.length > 0) {
+    const { data: sourced } = await supabase
+      .from('engagement_tasks')
+      .select('id, title, source_message_id, created_at')
+      .in('source_message_id', messageIds)
+      .order('created_at', { ascending: true })
+    for (const t of (sourced ?? []) as Array<{ id: string; title: string; source_message_id: string }>) {
+      initialCreatedTasks[t.source_message_id] = { id: t.id, title: t.title }
+    }
+  }
+
   return (
     <div className={`thmock ${mockupFontVars}`}>
       <div className="panel overflow-hidden" style={{ height: 'calc(100vh - 140px)', maxWidth: 720, display: 'flex', flexDirection: 'column' }}>
@@ -91,7 +111,7 @@ export default async function ConversationPage({
           <Link href="/messages" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Messages</Link>
           <span className="topbar-title" style={{ flex: 1 }}>{conv.kind === 'channel' ? `# ${title}` : title}</span>
           {conv.kind === 'channel' ? (
-            <ChannelManageButton conversationId={conversationId} members={members} users={usersDirectory} isAdmin={amAdmin} meId={user.id} />
+            <ChannelManageButton conversationId={conversationId} members={members} users={usersDirectory} isAdmin={amAdmin} meId={user.id} engagements={engagements} defaultEngagementId={(conv.default_engagement_id as string | null) ?? null} />
           ) : null}
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
@@ -102,6 +122,10 @@ export default async function ConversationPage({
             initialParticipants={others}
             initialMessages={initialMessages}
             people={people}
+            engagements={engagements}
+            defaultEngagementId={(conv.default_engagement_id as string | null) ?? null}
+            conversationTitle={conv.kind === 'channel' ? `# ${title}` : `DM with ${title}`}
+            initialCreatedTasks={initialCreatedTasks}
             highlightMessageId={target ? msg : undefined}
           />
         </div>

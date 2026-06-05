@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { addParticipants, removeParticipant, leaveConversation } from '@/app/(os)/messages/actions'
+import { addParticipants, removeParticipant, leaveConversation, setConversationDefaultEngagement } from '@/app/(os)/messages/actions'
 
 export type Member = { userId: string; name: string; role: string; joinedAt: string }
 type DirectoryUser = { id: string; name: string }
@@ -13,6 +13,8 @@ export default function ManageMembersModal({
   users,
   isAdmin,
   meId,
+  engagements,
+  defaultEngagementId,
   onClose,
 }: {
   conversationId: string
@@ -20,6 +22,8 @@ export default function ManageMembersModal({
   users: DirectoryUser[]
   isAdmin: boolean
   meId: string
+  engagements: Array<{ id: string; name: string }>
+  defaultEngagementId: string | null
   onClose: () => void
 }) {
   const router = useRouter()
@@ -28,6 +32,16 @@ export default function ManageMembersModal({
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [engagementId, setEngagementId] = useState(defaultEngagementId ?? '')
+
+  async function saveEngagement(next: string) {
+    setEngagementId(next)
+    setBusy(true); setError('')
+    const res = await setConversationDefaultEngagement(conversationId, next || null)
+    if (res.error) setError(res.error)
+    else router.refresh()
+    setBusy(false)
+  }
 
   const memberIds = new Set(members.map((m) => m.userId))
   const addable = users.filter((u) => !memberIds.has(u.id) && u.name.toLowerCase().includes(query.trim().toLowerCase()))
@@ -80,6 +94,25 @@ export default function ManageMembersModal({
                 </div>
               ))}
             </div>
+            {isAdmin ? (
+              <div style={{ display: 'grid', gap: 4, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+                <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-3)' }}>
+                  Default engagement
+                </label>
+                <select
+                  className={input}
+                  value={engagementId}
+                  disabled={busy}
+                  onChange={(e) => saveEngagement(e.target.value)}
+                >
+                  <option value="">— none</option>
+                  {engagements.map((en) => (<option key={en.id} value={en.id}>{en.name}</option>))}
+                </select>
+                <p style={{ fontSize: 11, color: 'var(--text-3)', margin: 0 }}>
+                  Pre-selected when converting a message here into a task.
+                </p>
+              </div>
+            ) : null}
             {error ? <p style={{ color: 'var(--red)', fontSize: 12, margin: 0 }}>{error}</p> : null}
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
               <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)' }} disabled={busy} onClick={() => run(() => leaveConversation(conversationId), true)}>Leave channel</button>

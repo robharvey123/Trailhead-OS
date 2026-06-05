@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import Attachment from './Attachment'
 import MentionToken from './MentionToken'
 import type { ChatAttachment, ChatMention } from '@/app/(os)/messages/actions'
@@ -51,8 +52,10 @@ export default function MessageBubble({
   editable,
   attachments,
   mentions,
+  createdTask,
   onEdit,
   onRequestDelete,
+  onConvert,
 }: {
   id: string
   body: string
@@ -65,8 +68,11 @@ export default function MessageBubble({
   editable?: boolean
   attachments?: ChatAttachment[]
   mentions?: ChatMention[]
+  /** The task already created from this message, if any — shows a "→ Created task" footer. */
+  createdTask?: { id: string; title: string } | null
   onEdit?: (id: string, body: string, mentionPersonIds: string[]) => void
   onRequestDelete?: (id: string) => void
+  onConvert?: (id: string) => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [editing, setEditing] = useState(false)
@@ -132,7 +138,7 @@ export default function MessageBubble({
               {edited && !deleted ? '(edited) ' : ''}{pending ? 'sending…' : fmtTime(at)}
             </span>
 
-            {editable && !deleted ? (
+            {!deleted && !pending ? (
               <button
                 type="button"
                 aria-label="Message actions"
@@ -150,11 +156,16 @@ export default function MessageBubble({
               <div
                 style={{
                   position: 'absolute', top: 22, [mine ? 'left' : 'right']: -8, zIndex: 20,
-                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 110, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
                 } as React.CSSProperties}
               >
-                <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); setDraft(body); setEditing(true) }}>Edit</button>
-                <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--red-strong)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onRequestDelete?.(id) }}>Delete</button>
+                <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onConvert?.(id) }}>Create task from message</button>
+                {editable ? (
+                  <>
+                    <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); setDraft(body); setEditing(true) }}>Edit</button>
+                    <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--red-strong)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onRequestDelete?.(id) }}>Delete</button>
+                  </>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -163,6 +174,20 @@ export default function MessageBubble({
           <div style={{ display: 'grid', gap: 6, marginTop: 6 }}>
             {attachments.map((a) => <Attachment key={a.id} attachment={a} />)}
           </div>
+        ) : null}
+        {createdTask ? (
+          <Link
+            href={`/my-work/${createdTask.id}`}
+            style={{
+              marginTop: 4, fontSize: 11, color: 'var(--accent-strong, #0369a1)', textDecoration: 'none',
+              display: 'inline-flex', alignItems: 'center', gap: 4, maxWidth: '100%',
+            }}
+          >
+            <span aria-hidden>→</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Created task: {createdTask.title}
+            </span>
+          </Link>
         ) : null}
       </div>
     </div>

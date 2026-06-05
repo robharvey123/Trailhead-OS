@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createTask } from '@/app/(os)/my-work/actions'
+import { convertMessageToTask } from '@/app/(os)/messages/actions'
 import { ENGAGEMENT_TASK_PRIORITIES, ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTaskPriority } from '@/lib/types'
 
 type Named = { id: string; name: string }
@@ -12,6 +13,12 @@ export default function TaskForm({
   engagements,
   fixedEngagementId,
   fixedProjectId,
+  initialTitle,
+  initialDescription,
+  initialAssigneeId,
+  initialEngagementId,
+  sourceMessageId,
+  onConverted,
   onClose,
 }: {
   people: Named[]
@@ -19,14 +26,22 @@ export default function TaskForm({
   fixedEngagementId?: string
   /** When created from a project page: stamps project_id (and uses the project's engagement). */
   fixedProjectId?: string
+  initialTitle?: string
+  initialDescription?: string
+  initialAssigneeId?: string
+  /** Pre-selects an engagement but leaves the picker editable (channel default). */
+  initialEngagementId?: string
+  /** When set, the task is created via convertMessageToTask (stamps source_message_id). */
+  sourceMessageId?: string
+  onConverted?: (taskId: string, title: string) => void
   onClose: () => void
 }) {
   const router = useRouter()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
+  const [title, setTitle] = useState(initialTitle ?? '')
+  const [description, setDescription] = useState(initialDescription ?? '')
   const [priority, setPriority] = useState<EngagementTaskPriority>('normal')
-  const [assignee, setAssignee] = useState('')
-  const [engagementId, setEngagementId] = useState(fixedEngagementId ?? '')
+  const [assignee, setAssignee] = useState(initialAssigneeId ?? '')
+  const [engagementId, setEngagementId] = useState(fixedEngagementId ?? initialEngagementId ?? '')
   const [dueDate, setDueDate] = useState('')
   const [labels, setLabels] = useState('')
   const [busy, setBusy] = useState(false)
@@ -38,6 +53,24 @@ export default function TaskForm({
   async function submit() {
     if (!title.trim()) { setError('Title is required.'); return }
     setBusy(true); setError('')
+
+    if (sourceMessageId) {
+      // Convert-from-message path: stamps source_message_id, reporter = me.
+      const res = await convertMessageToTask({
+        messageId: sourceMessageId,
+        title,
+        description,
+        assigneePersonId: assignee || null,
+        engagementId: (fixedEngagementId ?? engagementId) || null,
+        projectId: fixedProjectId || null,
+        priority,
+      })
+      if (res.error || !res.taskId) { setError(res.error ?? 'Could not create the task.'); setBusy(false); return }
+      onConverted?.(res.taskId, res.title ?? title)
+      onClose()
+      return
+    }
+
     const res = await createTask({
       title,
       description: description || null,
@@ -56,7 +89,7 @@ export default function TaskForm({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto" style={{ background: 'rgba(15,23,42,0.45)', padding: '60px 16px' }} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="panel" style={{ width: '100%', maxWidth: 480, padding: 20 }}>
-        <div className="panel-section-title">New task</div>
+        <div className="panel-section-title">{sourceMessageId ? 'New task from message' : 'New task'}</div>
         <div style={{ display: 'grid', gap: 12, marginTop: 8 }}>
           <div><label className={label}>Title *</label><input className={input} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
           <div><label className={label}>Description</label><textarea className={`${input} min-h-[4rem] resize-y`} value={description} onChange={(e) => setDescription(e.target.value)} /></div>

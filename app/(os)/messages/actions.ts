@@ -273,6 +273,67 @@ export async function markConversationRead(conversationId: string): Promise<{ er
   return {}
 }
 
+export type ConvertToTaskInput = {
+  messageId: string
+  title: string
+  description: string
+  assigneePersonId?: string | null
+  engagementId?: string | null
+  projectId?: string | null
+  priority: 'low' | 'normal' | 'high' | 'urgent'
+}
+
+/**
+ * Create an engagement task from a chat message. Reporter is the CONVERTER (the
+ * current user, not the message sender) — they're taking responsibility for it.
+ * Stamps source_message_id so the message can show "→ Created task X". The
+ * message must be visible to the caller (RLS select gate).
+ */
+export async function convertMessageToTask(input: ConvertToTaskInput): Promise<{ taskId?: string; title?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const profile = await getCurrentProfile()
+  const personId = profile?.person_id
+  if (!personId) return { error: 'Your login has no linked person record — ask an admin to link one.' }
+
+  const title = (input.title ?? '').trim()
+  if (!title) return { error: 'Title is required.' }
+
+  // Message must be visible to the caller (RLS returns it only to participants).
+  const { data: msg } = await supabase.from('chat_messages').select('id').eq('id', input.messageId).maybeSingle()
+  if (!msg) return { error: 'Message not found.' }
+
+  const { data, error } = await supabase
+    .from('engagement_tasks')
+    .insert({
+      title,
+      description: input.description?.trim() || null,
+      engagement_id: input.engagementId || null,
+      project_id: input.projectId || null,
+      assignee_person_id: input.assigneePersonId || null,
+      reporter_person_id: personId,
+      priority: input.priority ?? 'normal',
+      source_message_id: input.messageId,
+      created_by: user.id,
+    })
+    .select('id, title')
+    .single()
+  if (error) return { error: error.message }
+  return { taskId: data.id as string, title: data.title as string }
+}
+
+/** Set (or clear) a channel's default engagement. Admin-only. */
+export async function setConversationDefaultEngagement(conversationId: string, engagementId: string | null): Promise<{ error?: string }> {
+  const user = await authUser()
+  if (!user) return { error: 'Not signed in' }
+  if (!(await canManage(conversationId, user.id))) return { error: 'Only channel admins can set the engagement.' }
+  const admin = createAdminClient()
+  const { error } = await admin.from('chat_conversations').update({ default_engagement_id: engagementId || null }).eq('id', conversationId)
+  if (error) return { error: error.message }
+  return {}
+}
+
 /** Older page of messages (50) before a cursor, ascending. */
 export async function loadOlderMessages(conversationId: string, beforeIso: string): Promise<{ messages: ChatMessage[]; error?: string }> {
   const supabase = await createClient()

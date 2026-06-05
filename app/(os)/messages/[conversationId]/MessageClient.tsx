@@ -20,6 +20,23 @@ import MessageComposer from '@/components/messaging/MessageComposer'
 import TypingIndicator from '@/components/messaging/TypingIndicator'
 import ReadIndicator from '@/components/messaging/ReadIndicator'
 import ConfirmDialog from '@/components/os/ConfirmDialog'
+import TaskForm from '@/components/tasks/TaskForm'
+
+/** Prefill for the convert-to-task modal, derived from a message. */
+function taskPrefill(msg: Msg, conversationTitle: string) {
+  // Title: first 80 chars, with @{full_name} mentions de-@'d to plain names.
+  let title = msg.body
+  for (const m of msg.mentions ?? []) {
+    if (m.fullName) title = title.split(`@${m.fullName}`).join(m.fullName)
+  }
+  title = title.replace(/\s+/g, ' ').trim().slice(0, 80)
+  const when = new Date(msg.created_at).toLocaleString('en-GB')
+  const description = `${msg.body}\n\n— From message in ${conversationTitle}, ${when}`
+  // Default assignee: first mentioned person (sender→person mapping isn't on the
+  // client; mentions cover the common case). Editable in the form.
+  const assigneeId = msg.mentions?.[0]?.personId ?? ''
+  return { title, description, assigneeId }
+}
 
 type Msg = ChatMessage & { pending?: boolean }
 type Participant = { userId: string; name: string; lastReadAt: string }
@@ -52,6 +69,10 @@ export default function MessageClient({
   initialParticipants,
   initialMessages,
   people,
+  engagements,
+  defaultEngagementId,
+  conversationTitle,
+  initialCreatedTasks,
   highlightMessageId,
 }: {
   conversationId: string
@@ -60,6 +81,10 @@ export default function MessageClient({
   initialParticipants: Participant[]
   initialMessages: ChatMessage[]
   people: { id: string; full_name: string }[]
+  engagements: { id: string; name: string }[]
+  defaultEngagementId: string | null
+  conversationTitle: string
+  initialCreatedTasks: Record<string, { id: string; title: string }>
   highlightMessageId?: string
 }) {
   const router = useRouter()
@@ -73,6 +98,8 @@ export default function MessageClient({
   const [typingName, setTypingName] = useState<string | null>(null)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [convertMsg, setConvertMsg] = useState<Msg | null>(null)
+  const [createdTasks, setCreatedTasks] = useState<Record<string, { id: string; title: string }>>(initialCreatedTasks)
   const [now, setNow] = useState(0)
   const [flashId, setFlashId] = useState<string | null>(highlightMessageId ?? null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
@@ -296,7 +323,7 @@ export default function MessageClient({
             const editable = mine && !m.deleted_at && !m.pending && now - new Date(m.created_at).getTime() < EDIT_WINDOW_MS
             return (
               <div key={m.id} data-mid={m.id} style={{ borderRadius: 12, transition: 'background 0.4s', background: m.id === flashId ? 'var(--accent-dim)' : 'transparent', padding: m.id === flashId ? 4 : 0 }}>
-                <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} attachments={m.attachments} mentions={m.mentions} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} />
+                <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} attachments={m.attachments} mentions={m.mentions} createdTask={createdTasks[m.id] ?? null} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} onConvert={() => setConvertMsg(m)} />
                 {m.id === lastSentId && !m.deleted_at ? <ReadIndicator label={receiptLabel} /> : null}
               </div>
             )
@@ -318,6 +345,23 @@ export default function MessageClient({
         loading={deleting}
         variant="destructive"
       />
+
+      {convertMsg ? (() => {
+        const prefill = taskPrefill(convertMsg, conversationTitle)
+        return (
+          <TaskForm
+            people={people.map((p) => ({ id: p.id, name: p.full_name }))}
+            engagements={engagements}
+            initialTitle={prefill.title}
+            initialDescription={prefill.description}
+            initialAssigneeId={prefill.assigneeId}
+            initialEngagementId={defaultEngagementId ?? undefined}
+            sourceMessageId={convertMsg.id}
+            onConverted={(taskId, title) => setCreatedTasks((cur) => ({ ...cur, [convertMsg.id]: { id: taskId, title } }))}
+            onClose={() => setConvertMsg(null)}
+          />
+        )
+      })() : null}
     </div>
   )
 }
