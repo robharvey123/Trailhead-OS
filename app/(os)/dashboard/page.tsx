@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import ActiveProjectTasks from '@/components/os/ActiveProjectTasks'
 import DailyBriefClient from '@/components/os/DailyBriefClient'
 import { getDailyBriefData } from '@/lib/db/daily-brief'
 import { createClient } from '@/lib/supabase/server'
@@ -25,5 +26,12 @@ export default async function DashboardPage() {
   const todayLabel = formatDate(today)
   const dailyBrief = await getDailyBriefData(user.id, today, supabase)
 
-  return <DailyBriefClient today={todayLabel} initialData={dailyBrief} />
+  return (
+    <div className="space-y-6">
+      <div className="mx-auto max-w-[780px]">
+        <ActiveProjectTasks />
+      </div>
+      <DailyBriefClient today={todayLabel} initialData={dailyBrief} />
+    </div>
+  )
 }

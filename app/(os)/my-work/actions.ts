@@ -13,6 +13,8 @@ async function currentPersonId() {
 }
 
 function revalidateTask(engagementId?: string | null, taskId?: string) {
+  revalidatePath('/tasks') // canonical engagement_tasks views
+  revalidatePath('/dashboard') // active-project-tasks widget
   revalidatePath('/my-work')
   if (taskId) revalidatePath(`/my-work/${taskId}`)
   if (engagementId) revalidatePath(`/engagements/${engagementId}/tasks`)

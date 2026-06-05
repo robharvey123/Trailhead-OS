@@ -85,6 +85,71 @@ export async function listProjectEngagementTasks(
   return (data ?? []) as unknown as EngagementTaskWithRelations[]
 }
 
+/** A row for the dashboard "active project tasks" widget. */
+export interface ActiveProjectTaskRow {
+  id: string
+  title: string
+  status: EngagementTaskStatus
+  priority: EngagementTaskPriority
+  due_date: string | null
+  position: number
+  project_id: string
+  project_name: string
+}
+
+// "Ended" projects per brief 9 = status in (completed, cancelled). Everything
+// else (planning / active / on_hold) counts as active for the dashboard.
+const ENDED_PROJECT_STATUSES = new Set(['completed', 'cancelled'])
+
+/**
+ * Open engagement_tasks (status not done/cancelled) that belong to a still-active
+ * project. Backs the dashboard widget. RLS-scoped: pass the request-scoped
+ * (anon/cookie) client so the caller only sees what their role allows — never the
+ * service-role client here.
+ *
+ * The project-active check is done in JS after an inner join, so it doesn't
+ * depend on PostgREST embedded-filter behaviour.
+ */
+export async function listOpenEngagementTasksOnActiveProjects(
+  client?: SupabaseClient
+): Promise<ActiveProjectTaskRow[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('engagement_tasks')
+    .select('id, title, status, priority, due_date, position, project_id, projects!inner(id, name, status)')
+    .not('status', 'in', '(done,cancelled)')
+    .not('project_id', 'is', null)
+  if (error) throw new Error(error.message || 'Failed to load active project tasks')
+
+  type Row = {
+    id: string
+    title: string
+    status: EngagementTaskStatus
+    priority: EngagementTaskPriority
+    due_date: string | null
+    position: number
+    project_id: string
+    projects: { id: string; name: string; status: string } | { id: string; name: string; status: string }[] | null
+  }
+
+  return ((data ?? []) as unknown as Row[]).flatMap((row) => {
+    const project = Array.isArray(row.projects) ? row.projects[0] ?? null : row.projects
+    if (!project || ENDED_PROJECT_STATUSES.has(project.status)) return []
+    return [
+      {
+        id: row.id,
+        title: row.title,
+        status: row.status,
+        priority: row.priority,
+        due_date: row.due_date,
+        position: row.position,
+        project_id: project.id,
+        project_name: project.name,
+      },
+    ]
+  })
+}
+
 /** One row for {@link bulkCreateEngagementTasks}. */
 export interface BulkEngagementTaskInput {
   title: string

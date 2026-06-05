@@ -146,6 +146,8 @@ export async function commitRoadmapImport(
     })
     .eq('id', importId)
 
+  revalidatePath('/tasks')
+  revalidatePath('/dashboard')
   revalidatePath('/my-work')
   revalidatePath(`/engagements/${engagementId}/tasks`)
   redirect(`/engagements/${engagementId}/tasks`)

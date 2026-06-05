@@ -208,14 +208,7 @@ export default function Sidebar({
             <NavLink
               href="/tasks"
               label="Tasks"
-              active={pathname === '/tasks'}
-              onClick={() => setMobileOpen(false)}
-              collapsed={collapsed}
-            />
-            <NavLink
-              href="/my-work"
-              label="My work"
-              active={pathname === '/my-work' || pathname.startsWith('/my-work/')}
+              active={pathname === '/tasks' || pathname.startsWith('/my-work/')}
               onClick={() => setMobileOpen(false)}
               collapsed={collapsed}
               badge={unreadTaskCount}
