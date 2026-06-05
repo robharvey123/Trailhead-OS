@@ -72,3 +72,43 @@ export async function getUnreadMessagesCount(userId: string, client?: SupabaseCl
   }
   return count
 }
+
+/**
+ * Count of chat mentions of the current user that are still unread: the mention's
+ * message is newer than the caller's read cursor for that conversation and not
+ * deleted. Additive to {@link getUnreadMessagesCount} — a mention is also an
+ * unread message; the two are computed independently from the same state.
+ *
+ * Keyed on the auth user id; resolves the caller's person id via
+ * people.auth_user_id. Mentions RLS (is_chat_participant) already limits rows to
+ * the caller's conversations, so a mention in a conversation you're not in never
+ * counts. Self-mentions (you @yourself) don't count.
+ */
+export async function getUnreadMentionsCount(userId: string, client?: SupabaseClient): Promise<number> {
+  if (!userId) return 0
+  const supabase = client ?? (await createClient())
+
+  const { data: me } = await supabase.from('people').select('id').eq('auth_user_id', userId).maybeSingle()
+  const personId = me?.id as string | undefined
+  if (!personId) return 0
+
+  const { data: parts } = await supabase.from('chat_participants').select('conversation_id, last_read_at').eq('user_id', userId)
+  const readAt = new Map<string, string>((parts ?? []).map((p) => [p.conversation_id as string, p.last_read_at as string]))
+  if (readAt.size === 0) return 0
+
+  const { data: mentions } = await supabase
+    .from('chat_message_mentions')
+    .select('conversation_id, message:chat_messages(created_at, deleted_at, sender_id)')
+    .eq('mentioned_person_id', personId)
+
+  let count = 0
+  for (const row of mentions ?? []) {
+    const msg = (Array.isArray(row.message) ? row.message[0] : row.message) as
+      | { created_at: string; deleted_at: string | null; sender_id: string | null }
+      | undefined
+    if (!msg || msg.deleted_at || msg.sender_id === userId) continue
+    const last = readAt.get(row.conversation_id as string)
+    if (!last || new Date(last) < new Date(msg.created_at)) count++
+  }
+  return count
+}

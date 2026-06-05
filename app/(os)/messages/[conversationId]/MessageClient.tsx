@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -13,6 +13,7 @@ import {
   attachToMessage,
   type ChatMessage,
   type ChatAttachment,
+  type ChatMention,
 } from '@/app/(os)/messages/actions'
 import MessageBubble from '@/components/messaging/MessageBubble'
 import MessageComposer from '@/components/messaging/MessageComposer'
@@ -50,6 +51,7 @@ export default function MessageClient({
   kind,
   initialParticipants,
   initialMessages,
+  people,
   highlightMessageId,
 }: {
   conversationId: string
@@ -57,10 +59,12 @@ export default function MessageClient({
   kind: 'dm' | 'channel'
   initialParticipants: Participant[]
   initialMessages: ChatMessage[]
+  people: { id: string; full_name: string }[]
   highlightMessageId?: string
 }) {
   const router = useRouter()
   const [supabase] = useState(() => createClient())
+  const peopleById = useMemo(() => new Map(people.map((p) => [p.id, p.full_name])), [people])
   const [messages, setMessages] = useState<Msg[]>(initialMessages)
   const [participants, setParticipants] = useState<Participant[]>(initialParticipants)
   const [hasMore, setHasMore] = useState(initialMessages.length >= 50)
@@ -91,7 +95,12 @@ export default function MessageClient({
       .channel(`chat:${conversationId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         const incoming = payload.new as ChatMessage
-        setMessages((cur) => (cur.some((m) => m.id === incoming.id) ? cur.map((m) => (m.id === incoming.id ? { ...incoming } : m)) : [...cur, incoming]))
+        // The chat_messages realtime payload carries no attachments/mentions
+        // (separate tables) — preserve any we already have so the echo doesn't
+        // wipe them; their own realtime events fill them in.
+        setMessages((cur) => (cur.some((m) => m.id === incoming.id)
+          ? cur.map((m) => (m.id === incoming.id ? { ...incoming, attachments: incoming.attachments ?? m.attachments, mentions: m.mentions ?? incoming.mentions } : m))
+          : [...cur, incoming]))
         if (incoming.sender_id !== meId && typeof document !== 'undefined' && document.hasFocus()) markRead()
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
@@ -101,6 +110,22 @@ export default function MessageClient({
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_attachments', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         const att = payload.new as ChatAttachment
         setMessages((cur) => cur.map((m) => (m.id === att.message_id ? { ...m, attachments: [...(m.attachments ?? []).filter((a) => a.id !== att.id), att] } : m)))
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_message_mentions', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const row = payload.new as { message_id: string; mentioned_person_id: string }
+        const fullName = peopleById.get(row.mentioned_person_id) ?? ''
+        setMessages((cur) => cur.map((m) => {
+          if (m.id !== row.message_id) return m
+          const existing = m.mentions ?? []
+          if (existing.some((x) => x.personId === row.mentioned_person_id)) return m
+          return { ...m, mentions: [...existing, { personId: row.mentioned_person_id, fullName }] }
+        }))
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_message_mentions', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const row = payload.old as { message_id: string; mentioned_person_id: string }
+        setMessages((cur) => cur.map((m) => (
+          m.id === row.message_id ? { ...m, mentions: (m.mentions ?? []).filter((x) => x.personId !== row.mentioned_person_id) } : m
+        )))
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_participants', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         const row = (payload.new ?? payload.old) as { user_id?: string; last_read_at?: string }
@@ -113,7 +138,7 @@ export default function MessageClient({
       .subscribe()
 
     return () => { cancelled = true; void supabase.removeChannel(channel) }
-  }, [conversationId, supabase, meId, markRead, router])
+  }, [conversationId, supabase, meId, markRead, router, peopleById])
 
   // Typing: separate broadcast channel.
   useEffect(() => {
@@ -174,12 +199,13 @@ export default function MessageClient({
     return () => { clearTimeout(scroll); clearTimeout(unflash) }
   }, [highlightMessageId])
 
-  async function handleSend(body: string, files: File[] = []) {
+  async function handleSend(body: string, files: File[] = [], mentionIds: string[] = []) {
     setError('')
     const id = crypto.randomUUID()
-    const optimistic: Msg = { id, sender_id: meId, body, created_at: new Date().toISOString(), pending: true, attachments: [] }
+    const mentions: ChatMention[] = mentionIds.map((personId) => ({ personId, fullName: peopleById.get(personId) ?? '' }))
+    const optimistic: Msg = { id, sender_id: meId, body, created_at: new Date().toISOString(), pending: true, attachments: [], mentions }
     setMessages((cur) => [...cur, optimistic])
-    const res = await sendMessage(conversationId, body, id)
+    const res = await sendMessage(conversationId, body, id, mentionIds)
     if (res.error) { setMessages((cur) => cur.filter((m) => m.id !== id)); setError(res.error); return }
     setMessages((cur) => cur.map((m) => (m.id === id ? { ...m, pending: false, created_at: res.created_at ?? m.created_at } : m)))
 
@@ -207,11 +233,12 @@ export default function MessageClient({
     }
   }
 
-  async function handleEdit(id: string, newBody: string) {
+  async function handleEdit(id: string, newBody: string, mentionIds: string[] = []) {
     setError('')
     const prev = messages.find((m) => m.id === id)
-    setMessages((cur) => cur.map((m) => (m.id === id ? { ...m, body: newBody, edited_at: new Date().toISOString() } : m)))
-    const res = await editMessage(id, newBody)
+    const mentions: ChatMention[] = mentionIds.map((personId) => ({ personId, fullName: peopleById.get(personId) ?? '' }))
+    setMessages((cur) => cur.map((m) => (m.id === id ? { ...m, body: newBody, edited_at: new Date().toISOString(), mentions } : m)))
+    const res = await editMessage(id, newBody, mentionIds)
     if (res.error) { setError(res.error); if (prev) setMessages((cur) => cur.map((m) => (m.id === id ? prev : m))) }
   }
 
@@ -269,7 +296,7 @@ export default function MessageClient({
             const editable = mine && !m.deleted_at && !m.pending && now - new Date(m.created_at).getTime() < EDIT_WINDOW_MS
             return (
               <div key={m.id} data-mid={m.id} style={{ borderRadius: 12, transition: 'background 0.4s', background: m.id === flashId ? 'var(--accent-dim)' : 'transparent', padding: m.id === flashId ? 4 : 0 }}>
-                <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} attachments={m.attachments} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} />
+                <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} attachments={m.attachments} mentions={m.mentions} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} />
                 {m.id === lastSentId && !m.deleted_at ? <ReadIndicator label={receiptLabel} /> : null}
               </div>
             )
@@ -279,7 +306,7 @@ export default function MessageClient({
         <div ref={bottomRef} />
       </div>
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '0 16px' }}>{error}</p> : null}
-      <MessageComposer onSend={handleSend} onTyping={notifyTyping} />
+      <MessageComposer onSend={handleSend} onTyping={notifyTyping} people={people} />
 
       <ConfirmDialog
         open={deleteTargetId !== null}

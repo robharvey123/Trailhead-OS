@@ -2,10 +2,42 @@
 
 import { useState } from 'react'
 import Attachment from './Attachment'
-import type { ChatAttachment } from '@/app/(os)/messages/actions'
+import MentionToken from './MentionToken'
+import type { ChatAttachment, ChatMention } from '@/app/(os)/messages/actions'
 
 function fmtTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+}
+
+/**
+ * Render a message body, lighting up `@{full_name}` substrings for people who
+ * were explicitly mentioned (a mention row exists). Plain `@text` that nobody
+ * picked from the autocomplete stays plain — mentions are an explicit act.
+ */
+function renderBody(body: string, mentions?: ChatMention[]) {
+  const tokens = (mentions ?? [])
+    .filter((m) => m.fullName)
+    .map((m) => ({ text: `@${m.fullName}`, fullName: m.fullName }))
+    // Longest first so "@Rob Harvey" wins over a hypothetical "@Rob".
+    .sort((a, b) => b.text.length - a.text.length)
+  if (tokens.length === 0) return body
+
+  const nodes: React.ReactNode[] = []
+  let buffer = ''
+  let key = 0
+  for (let i = 0; i < body.length; ) {
+    const match = tokens.find((t) => body.startsWith(t.text, i))
+    if (match) {
+      if (buffer) { nodes.push(<span key={key++}>{buffer}</span>); buffer = '' }
+      nodes.push(<MentionToken key={key++} fullName={match.fullName} />)
+      i += match.text.length
+    } else {
+      buffer += body[i]
+      i += 1
+    }
+  }
+  if (buffer) nodes.push(<span key={key++}>{buffer}</span>)
+  return nodes
 }
 
 export default function MessageBubble({
@@ -18,6 +50,7 @@ export default function MessageBubble({
   deleted,
   editable,
   attachments,
+  mentions,
   onEdit,
   onRequestDelete,
 }: {
@@ -31,7 +64,8 @@ export default function MessageBubble({
   /** Within the edit/delete window AND mine — show the ⋯ actions. */
   editable?: boolean
   attachments?: ChatAttachment[]
-  onEdit?: (id: string, body: string) => void
+  mentions?: ChatMention[]
+  onEdit?: (id: string, body: string, mentionPersonIds: string[]) => void
   onRequestDelete?: (id: string) => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -45,7 +79,12 @@ export default function MessageBubble({
     const v = draft.trim()
     setEditing(false)
     if (!v || v === body) { setDraft(body); return }
-    onEdit?.(id, v)
+    // Keep only mentions whose token text survives the edit (removal supported;
+    // adding a new mention via the inline editor is not — there's no picker here).
+    const survivingIds = (mentions ?? [])
+      .filter((m) => m.fullName && v.includes(`@${m.fullName}`))
+      .map((m) => m.personId)
+    onEdit?.(id, v, survivingIds)
   }
 
   return (
@@ -88,7 +127,7 @@ export default function MessageBubble({
               position: 'relative',
             }}
           >
-            {deleted ? <span>Message deleted</span> : body ? <span>{body}</span> : null}
+            {deleted ? <span>Message deleted</span> : body ? <span>{renderBody(body, mentions)}</span> : null}
             <span style={{ display: 'block', fontSize: 10, opacity: 0.7, marginTop: 2, textAlign: 'right' }}>
               {edited && !deleted ? '(edited) ' : ''}{pending ? 'sending…' : fmtTime(at)}
             </span>

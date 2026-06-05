@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
+import { normalizeMessage } from './normalize'
 
 export type ChatAttachment = {
   id: string
@@ -15,6 +16,8 @@ export type ChatAttachment = {
   height: number | null
 }
 
+export type ChatMention = { personId: string; fullName: string }
+
 export type ChatMessage = {
   id: string
   sender_id: string | null
@@ -23,10 +26,23 @@ export type ChatMessage = {
   edited_at?: string | null
   deleted_at?: string | null
   attachments?: ChatAttachment[]
+  mentions?: ChatMention[]
 }
 
 const ATTACH_COLS = 'id, message_id, storage_path, file_name, mime_type, byte_size, width, height'
-const MSG_COLS = `id, sender_id, body, created_at, edited_at, deleted_at, attachments:chat_attachments(${ATTACH_COLS})`
+const MENTION_COLS = 'mentioned_person_id, person:people(id, full_name)'
+const MSG_COLS = `id, sender_id, body, created_at, edited_at, deleted_at, attachments:chat_attachments(${ATTACH_COLS}), mentions:chat_message_mentions(${MENTION_COLS})`
+
+/** Validate that the given person ids exist (RLS lets any authenticated user read people). */
+async function existingPersonIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ids: string[]
+): Promise<string[]> {
+  const unique = Array.from(new Set(ids.filter(Boolean)))
+  if (unique.length === 0) return []
+  const { data } = await supabase.from('people').select('id').in('id', unique)
+  return ((data ?? []) as Array<{ id: string }>).map((r) => r.id)
+}
 
 async function authUser() {
   const supabase = await createClient()
@@ -166,8 +182,13 @@ async function promoteIfNoAdmin(conversationId: string): Promise<void> {
   await admin.from('chat_participants').update({ role: 'admin' }).eq('conversation_id', conversationId).eq('user_id', members[0].user_id)
 }
 
-/** Insert a message. Client passes its optimistic id so the realtime echo dedupes. */
-export async function sendMessage(conversationId: string, body: string, messageId?: string): Promise<{ id?: string; created_at?: string; error?: string }> {
+/**
+ * Insert a message. Client passes its optimistic id so the realtime echo dedupes.
+ * `mentionPersonIds` are the people the composer explicitly tagged — the server
+ * validates they exist and persists one chat_message_mentions row each. The body
+ * is NOT parsed for mentions; the composer is the source of truth.
+ */
+export async function sendMessage(conversationId: string, body: string, messageId?: string, mentionPersonIds: string[] = []): Promise<{ id?: string; created_at?: string; error?: string }> {
   // Empty body is allowed (attachment-only messages); the UI prevents empty body
   // AND no attachments. DB check permits length 0..4000.
   const trimmed = (body ?? '').trim()
@@ -179,10 +200,18 @@ export async function sendMessage(conversationId: string, body: string, messageI
   if (messageId) payload.id = messageId
   const { data, error } = await supabase.from('chat_messages').insert(payload).select('id, created_at').single()
   if (error) return { error: error.message }
+
+  const valid = await existingPersonIds(supabase, mentionPersonIds)
+  if (valid.length > 0) {
+    await supabase.from('chat_message_mentions').insert(
+      valid.map((personId) => ({ message_id: data.id, mentioned_person_id: personId, conversation_id: conversationId }))
+    )
+  }
+
   return { id: data.id as string, created_at: data.created_at as string }
 }
 
-export async function editMessage(messageId: string, body: string): Promise<{ error?: string }> {
+export async function editMessage(messageId: string, body: string, mentionPersonIds: string[] = []): Promise<{ error?: string }> {
   const trimmed = (body ?? '').trim()
   if (!trimmed) return { error: 'Message is empty.' }
   if (trimmed.length > 4000) return { error: 'Message is too long (max 4000 characters).' }
@@ -192,9 +221,29 @@ export async function editMessage(messageId: string, body: string): Promise<{ er
     .update({ body: trimmed, edited_at: new Date().toISOString() })
     .eq('id', messageId)
     .is('deleted_at', null)
-    .select('id')
+    .select('id, conversation_id')
   if (error) return { error: error.message }
   if (!data || data.length === 0) return { error: 'Cannot edit — not yours, too old, or already deleted.' }
+
+  // Reconcile mentions: insert newly-added, delete ones the edit removed.
+  const conversationId = data[0].conversation_id as string
+  const wanted = new Set(await existingPersonIds(supabase, mentionPersonIds))
+  const { data: existing } = await supabase
+    .from('chat_message_mentions')
+    .select('mentioned_person_id')
+    .eq('message_id', messageId)
+  const current = new Set(((existing ?? []) as Array<{ mentioned_person_id: string }>).map((r) => r.mentioned_person_id))
+
+  const toAdd = [...wanted].filter((id) => !current.has(id))
+  const toRemove = [...current].filter((id) => !wanted.has(id))
+  if (toAdd.length > 0) {
+    await supabase.from('chat_message_mentions').insert(
+      toAdd.map((personId) => ({ message_id: messageId, mentioned_person_id: personId, conversation_id: conversationId }))
+    )
+  }
+  if (toRemove.length > 0) {
+    await supabase.from('chat_message_mentions').delete().eq('message_id', messageId).in('mentioned_person_id', toRemove)
+  }
   return {}
 }
 
@@ -235,7 +284,7 @@ export async function loadOlderMessages(conversationId: string, beforeIso: strin
     .order('created_at', { ascending: false })
     .limit(50)
   if (error) return { messages: [], error: error.message }
-  return { messages: ((data ?? []) as ChatMessage[]).reverse() }
+  return { messages: ((data ?? []) as unknown as ChatMessage[]).map(normalizeMessage).reverse() }
 }
 
 /** Record an uploaded file against a message. RLS enforces sender + participant. */

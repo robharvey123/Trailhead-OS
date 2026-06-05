@@ -4,11 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { mockupFontVars } from '@/lib/fonts'
 import MessageClient from './MessageClient'
 import ChannelManageButton from '@/components/messaging/ChannelManageButton'
+import { listPeople } from '@/lib/db/people'
+import { normalizeMessage } from '../normalize'
 import type { ChatMessage } from '../actions'
 
 export const dynamic = 'force-dynamic'
 
-const MSG_SELECT = 'id, sender_id, body, created_at, edited_at, deleted_at, attachments:chat_attachments(id, message_id, storage_path, file_name, mime_type, byte_size, width, height)'
+const MSG_SELECT = 'id, sender_id, body, created_at, edited_at, deleted_at, attachments:chat_attachments(id, message_id, storage_path, file_name, mime_type, byte_size, width, height), mentions:chat_message_mentions(mentioned_person_id, person:people(id, full_name))'
 
 export default async function ConversationPage({
   params,
@@ -65,7 +67,7 @@ export default async function ConversationPage({
       supabase.from('chat_messages').select(MSG_SELECT).eq('conversation_id', conversationId).lte('created_at', target.created_at).order('created_at', { ascending: false }).limit(26),
       supabase.from('chat_messages').select(MSG_SELECT).eq('conversation_id', conversationId).gt('created_at', target.created_at).order('created_at', { ascending: true }).limit(25),
     ])
-    initialMessages = [...((before ?? []) as ChatMessage[]).reverse(), ...((after ?? []) as ChatMessage[])]
+    initialMessages = [...((before ?? []) as unknown as ChatMessage[]).map(normalizeMessage).reverse(), ...((after ?? []) as unknown as ChatMessage[]).map(normalizeMessage)]
   } else {
     const { data: recent } = await supabase
       .from('chat_messages')
@@ -73,10 +75,14 @@ export default async function ConversationPage({
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: false })
       .limit(50)
-    initialMessages = ((recent ?? []) as ChatMessage[]).reverse()
+    initialMessages = ((recent ?? []) as unknown as ChatMessage[]).map(normalizeMessage).reverse()
   }
 
   const usersDirectory = ((directory ?? []) as Array<{ id: string; display_name: string }>).map((d) => ({ id: d.id, name: d.display_name }))
+
+  // Active people for the @mention autocomplete (people RLS lets any authenticated user read).
+  const people = (await listPeople({ activeOnly: true }, supabase).catch(() => []))
+    .map((p) => ({ id: p.id, full_name: p.full_name }))
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -95,6 +101,7 @@ export default async function ConversationPage({
             kind={conv.kind as 'dm' | 'channel'}
             initialParticipants={others}
             initialMessages={initialMessages}
+            people={people}
             highlightMessageId={target ? msg : undefined}
           />
         </div>

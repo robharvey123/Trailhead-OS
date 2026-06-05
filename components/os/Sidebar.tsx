@@ -14,6 +14,7 @@ interface SidebarProps {
   unreadTaskCount?: number
   unreadMailCount?: number
   unreadMessageCount?: number
+  unreadMentionsCount?: number
   collapsed?: boolean
   onToggle?: () => void
 }
@@ -25,6 +26,7 @@ function NavLink({
   onClick,
   dotColour,
   badge,
+  mentionBadge,
   collapsed,
 }: {
   href: string
@@ -33,6 +35,8 @@ function NavLink({
   onClick?: () => void
   dotColour?: string
   badge?: number
+  /** Distinct, attention-grabbing "@N" mention chip, additive to `badge`. */
+  mentionBadge?: number
   collapsed?: boolean
 }) {
   if (collapsed) {
@@ -52,6 +56,11 @@ function NavLink({
         ) : (
           <span className="text-xs font-semibold">{label.charAt(0)}</span>
         )}
+        {typeof mentionBadge === 'number' && mentionBadge > 0 ? (
+          <span className="absolute -left-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white" title={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}>
+            @{mentionBadge}
+          </span>
+        ) : null}
         {typeof badge === 'number' && badge > 0 ? (
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
             {badge}
@@ -77,17 +86,27 @@ function NavLink({
         ) : null}
         <span>{label}</span>
       </span>
-      {typeof badge === 'number' && badge > 0 ? (
-        <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-            active
-              ? 'bg-[#0EA5E9] text-white'
-              : 'bg-rose-100 text-rose-600'
-          }`}
-        >
-          {badge}
-        </span>
-      ) : null}
+      <span className="flex items-center gap-1.5">
+        {typeof mentionBadge === 'number' && mentionBadge > 0 ? (
+          <span
+            className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700"
+            title={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}
+          >
+            @{mentionBadge}
+          </span>
+        ) : null}
+        {typeof badge === 'number' && badge > 0 ? (
+          <span
+            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+              active
+                ? 'bg-[#0EA5E9] text-white'
+                : 'bg-rose-100 text-rose-600'
+            }`}
+          >
+            {badge}
+          </span>
+        ) : null}
+      </span>
     </Link>
   )
 }
@@ -125,6 +144,7 @@ export default function Sidebar({
   unreadTaskCount = 0,
   unreadMailCount = 0,
   unreadMessageCount = 0,
+  unreadMentionsCount = 0,
   collapsed = false,
   onToggle,
 }: SidebarProps) {
@@ -220,6 +240,7 @@ export default function Sidebar({
               onClick={() => setMobileOpen(false)}
               collapsed={collapsed}
               badge={unreadMessageCount}
+              mentionBadge={unreadMentionsCount}
             />
             <NavLink
               href="/projects"
