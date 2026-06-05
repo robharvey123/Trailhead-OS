@@ -17,7 +17,10 @@ const publicRoutePrefixes = ['/report', '/auth/claim']
 // /api/cron/* is invoked by Vercel Cron with no session cookie — the middleware
 // must not redirect it to /login (that 307 silently blocked every cron since the
 // middleware shipped). Each cron route enforces its own CRON_SECRET check.
-const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron']
+// /api/mcp is the MCP server — bearer-token authed in the route (same COWORK_API_KEY
+// as /api/cowork). It must be public to middleware or the 307-to-login breaks every
+// MCP call, exactly like the cron regression noted above.
+const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron', '/api/mcp']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
 function getMarketingRewritePath(pathname: string) {
