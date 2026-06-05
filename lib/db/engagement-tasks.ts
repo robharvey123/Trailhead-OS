@@ -155,6 +155,70 @@ export async function bulkCreateEngagementTasks(
   return (data ?? []) as EngagementTask[]
 }
 
+/** Partial-update payload for {@link updateEngagementTask}. Only supplied keys change. */
+export interface UpdateEngagementTaskInput {
+  title?: string
+  description?: string | null
+  status?: EngagementTaskStatus
+  priority?: EngagementTaskPriority
+  due_date?: string | null
+  labels?: string[]
+  position?: number
+}
+
+/**
+ * Patch a single engagement_task and return it with relations (same shape as
+ * {@link listProjectEngagementTasks}). Backs the MCP `update_engagement_task`
+ * tool. Throws if the row does not exist.
+ *
+ * NOTE: `completed_at` and `updated_at` are managed by DB triggers
+ * (`engagement_tasks_set_completed_at` stamps/clears completed_at on status
+ * transitions to/from `done`; `engagement_tasks_updated_at` bumps updated_at),
+ * so we deliberately do not set either column here.
+ */
+export async function updateEngagementTask(
+  id: string,
+  patch: UpdateEngagementTaskInput,
+  client?: SupabaseClient
+): Promise<EngagementTaskWithRelations> {
+  const supabase = await getSupabase(client)
+
+  // Fetch first so a missing row surfaces as a clean "not found" error.
+  const { data: existing, error: fetchError } = await supabase
+    .from('engagement_tasks')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle()
+  if (fetchError) throw new Error(fetchError.message || 'Failed to load task')
+  if (!existing) throw new Error(`Engagement task not found: ${id}`)
+
+  const update: Record<string, unknown> = {}
+  if (patch.title !== undefined) {
+    const title = patch.title.trim()
+    if (!title) throw new Error('title cannot be empty')
+    update.title = title
+  }
+  if (patch.description !== undefined) update.description = patch.description?.trim() || null
+  if (patch.status !== undefined) update.status = patch.status
+  if (patch.priority !== undefined) update.priority = patch.priority
+  if (patch.due_date !== undefined) update.due_date = patch.due_date || null
+  if (patch.labels !== undefined) update.labels = patch.labels
+  if (patch.position !== undefined) update.position = patch.position
+
+  if (Object.keys(update).length === 0) {
+    throw new Error('No changes supplied')
+  }
+
+  const { data, error } = await supabase
+    .from('engagement_tasks')
+    .update(update)
+    .eq('id', id)
+    .select(TASK_SELECT)
+    .single()
+  if (error) throw new Error(error.message || 'Failed to update task')
+  return data as unknown as EngagementTaskWithRelations
+}
+
 export type MyTaskMode = 'assigned' | 'reported' | 'engagements'
 
 /** Personal-board queries. RLS already restricts visibility; these scope further by mode. */

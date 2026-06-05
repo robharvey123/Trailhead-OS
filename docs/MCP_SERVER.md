@@ -64,7 +64,7 @@ claude mcp add trailhead-os \
 
 ## Tool surface (v1)
 
-12 tools. All inputs are validated server-side; a bad input or IO failure comes
+13 tools. All inputs are validated server-side; a bad input or IO failure comes
 back as a tool result with `isError: true` and a human-readable message.
 
 | Tool | Input (required **bold**) | Returns |
@@ -79,6 +79,7 @@ back as a tool result with `isError: true` and a human-readable message.
 | `complete_task` | **`id`** | task with `completed_at` set, moved to Done |
 | `list_engagement_tasks` | **`project_id`**, `status?`, `priority?` | engagement_task rows (with relations) |
 | `bulk_create_engagement_tasks` | **`project_id`**, **`tasks[]`** | created engagement_task rows |
+| `update_engagement_task` | **`id`**, + any of `title`, `description`, `status`, `priority`, `due_date`, `labels`, `position` | updated engagement_task row (with relations) |
 | `add_note` | `workstream?`, `task_id?`, `title?`, `body?` | created note |
 | `briefing` | — | today's brief (tasks, calendar, enquiries, invoices) |
 

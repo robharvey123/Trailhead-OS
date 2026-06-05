@@ -10,6 +10,7 @@ import {
 import {
   bulkCreateEngagementTasks,
   listProjectEngagementTasks,
+  updateEngagementTask,
 } from '@/lib/db/engagement-tasks'
 import { addNote } from '@/lib/db/notes'
 import { getProjectById, getProjects } from '@/lib/db/projects'
@@ -316,6 +317,38 @@ export const bulkCreateEngagementTasksTool = defineTool({
     ),
 })
 
+export const updateEngagementTaskTool = defineTool({
+  name: 'update_engagement_task',
+  description:
+    'Patch an engagement task (ticket board). Supply only the fields to change: title, description, status, priority, due_date, labels, position.',
+  inputSchema: z.object({
+    id: z.string().min(1),
+    title: z.string().optional(),
+    description: z.string().nullable().optional(),
+    status: engagementTaskStatus.optional(),
+    priority: engagementTaskPriority.optional(),
+    due_date: isoDate.nullable().optional(),
+    labels: z.array(z.string()).optional(),
+    position: z.number().optional(),
+  }),
+  handler: async (input) => {
+    const { id, ...patch } = input
+    return updateEngagementTask(
+      id,
+      {
+        title: patch.title,
+        description: patch.description,
+        status: patch.status as never,
+        priority: patch.priority as never,
+        due_date: patch.due_date,
+        labels: patch.labels,
+        position: patch.position,
+      },
+      db
+    )
+  },
+})
+
 export const addNoteTool = defineTool({
   name: 'add_note',
   description:
@@ -359,6 +392,7 @@ export const tools: McpTool[] = [
   completeTask,
   listEngagementTasks,
   bulkCreateEngagementTasksTool,
+  updateEngagementTaskTool,
   addNoteTool,
   briefing,
 ]
