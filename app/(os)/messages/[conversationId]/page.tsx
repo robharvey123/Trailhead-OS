@@ -8,8 +8,17 @@ import type { ChatMessage } from '../actions'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
+const MSG_SELECT = 'id, sender_id, body, created_at, edited_at, deleted_at, attachments:chat_attachments(id, message_id, storage_path, file_name, mime_type, byte_size, width, height)'
+
+export default async function ConversationPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ conversationId: string }>
+  searchParams: Promise<{ msg?: string }>
+}) {
   const { conversationId } = await params
+  const { msg } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -43,13 +52,29 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
 
   const title = conv.kind === 'channel' ? (conv.name ?? 'Channel') : (others[0]?.name ?? 'User')
 
-  const { data: recent } = await supabase
-    .from('chat_messages')
-    .select('id, sender_id, body, created_at, edited_at, deleted_at')
-    .eq('conversation_id', conversationId)
-    .order('created_at', { ascending: false })
-    .limit(50)
-  const initialMessages = ((recent ?? []) as ChatMessage[]).reverse()
+  // Default: last 50. If arriving via a search result (?msg=), load a window
+  // centred on that message so it's present to scroll to.
+  let initialMessages: ChatMessage[] = []
+  let target: { created_at: string } | null = null
+  if (msg) {
+    const { data: t } = await supabase.from('chat_messages').select('created_at').eq('id', msg).maybeSingle()
+    target = t as { created_at: string } | null
+  }
+  if (target) {
+    const [{ data: before }, { data: after }] = await Promise.all([
+      supabase.from('chat_messages').select(MSG_SELECT).eq('conversation_id', conversationId).lte('created_at', target.created_at).order('created_at', { ascending: false }).limit(26),
+      supabase.from('chat_messages').select(MSG_SELECT).eq('conversation_id', conversationId).gt('created_at', target.created_at).order('created_at', { ascending: true }).limit(25),
+    ])
+    initialMessages = [...((before ?? []) as ChatMessage[]).reverse(), ...((after ?? []) as ChatMessage[])]
+  } else {
+    const { data: recent } = await supabase
+      .from('chat_messages')
+      .select(MSG_SELECT)
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    initialMessages = ((recent ?? []) as ChatMessage[]).reverse()
+  }
 
   const usersDirectory = ((directory ?? []) as Array<{ id: string; display_name: string }>).map((d) => ({ id: d.id, name: d.display_name }))
 
@@ -70,6 +95,7 @@ export default async function ConversationPage({ params }: { params: Promise<{ c
             kind={conv.kind as 'dm' | 'channel'}
             initialParticipants={others}
             initialMessages={initialMessages}
+            highlightMessageId={target ? msg : undefined}
           />
         </div>
       </div>

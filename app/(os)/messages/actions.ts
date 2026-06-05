@@ -4,6 +4,17 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 
+export type ChatAttachment = {
+  id: string
+  message_id: string
+  storage_path: string
+  file_name: string
+  mime_type: string
+  byte_size: number
+  width: number | null
+  height: number | null
+}
+
 export type ChatMessage = {
   id: string
   sender_id: string | null
@@ -11,9 +22,11 @@ export type ChatMessage = {
   created_at: string
   edited_at?: string | null
   deleted_at?: string | null
+  attachments?: ChatAttachment[]
 }
 
-const MSG_COLS = 'id, sender_id, body, created_at, edited_at, deleted_at'
+const ATTACH_COLS = 'id, message_id, storage_path, file_name, mime_type, byte_size, width, height'
+const MSG_COLS = `id, sender_id, body, created_at, edited_at, deleted_at, attachments:chat_attachments(${ATTACH_COLS})`
 
 async function authUser() {
   const supabase = await createClient()
@@ -155,8 +168,9 @@ async function promoteIfNoAdmin(conversationId: string): Promise<void> {
 
 /** Insert a message. Client passes its optimistic id so the realtime echo dedupes. */
 export async function sendMessage(conversationId: string, body: string, messageId?: string): Promise<{ id?: string; created_at?: string; error?: string }> {
+  // Empty body is allowed (attachment-only messages); the UI prevents empty body
+  // AND no attachments. DB check permits length 0..4000.
   const trimmed = (body ?? '').trim()
-  if (!trimmed) return { error: 'Message is empty.' }
   if (trimmed.length > 4000) return { error: 'Message is too long (max 4000 characters).' }
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -222,4 +236,104 @@ export async function loadOlderMessages(conversationId: string, beforeIso: strin
     .limit(50)
   if (error) return { messages: [], error: error.message }
   return { messages: ((data ?? []) as ChatMessage[]).reverse() }
+}
+
+/** Record an uploaded file against a message. RLS enforces sender + participant. */
+export async function attachToMessage(input: {
+  messageId: string
+  conversationId: string
+  storagePath: string
+  fileName: string
+  mimeType: string
+  byteSize: number
+  width?: number | null
+  height?: number | null
+}): Promise<{ attachment?: ChatAttachment; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in' }
+  const { data, error } = await supabase
+    .from('chat_attachments')
+    .insert({
+      message_id: input.messageId,
+      conversation_id: input.conversationId,
+      storage_path: input.storagePath,
+      file_name: input.fileName,
+      mime_type: input.mimeType,
+      byte_size: input.byteSize,
+      width: input.width ?? null,
+      height: input.height ?? null,
+      uploaded_by: user.id,
+    })
+    .select(ATTACH_COLS)
+    .single()
+  if (error) return { error: error.message }
+  return { attachment: data as ChatAttachment }
+}
+
+/** Mint a 1-hour signed URL for an attachment. RLS gates both the row and the object. */
+export async function getAttachmentUrl(attachmentId: string): Promise<{ url?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data: att } = await supabase.from('chat_attachments').select('storage_path').eq('id', attachmentId).maybeSingle()
+  if (!att) return { error: 'Attachment not found.' }
+  const { data, error } = await supabase.storage.from('chat-attachments').createSignedUrl(att.storage_path as string, 3600)
+  if (error || !data) return { error: error?.message ?? 'Could not create link.' }
+  return { url: data.signedUrl }
+}
+
+export type SearchGroup = {
+  conversationId: string
+  kind: 'dm' | 'channel'
+  title: string
+  messages: Array<{ id: string; body: string; senderName: string; createdAt: string }>
+}
+
+/** Full-text search across the caller's conversations (RLS-scoped), grouped by conversation. */
+export async function searchMessages(q: string): Promise<{ groups: SearchGroup[]; error?: string }> {
+  const query = (q ?? '').trim()
+  if (!query || query.length > 100) return { groups: [] }
+
+  const supabase = await createClient()
+  const { data: hits, error } = await supabase
+    .from('chat_messages')
+    .select('id, conversation_id, sender_id, body, created_at')
+    .textSearch('body_tsv', query, { type: 'websearch', config: 'english' })
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(50)
+  if (error) return { groups: [], error: error.message }
+  if (!hits || hits.length === 0) return { groups: [] }
+
+  const convIds = [...new Set(hits.map((h) => h.conversation_id as string))]
+  const [{ data: convs }, { data: parts }, { data: directory }] = await Promise.all([
+    supabase.from('chat_conversations').select('id, kind, name').in('id', convIds),
+    supabase.from('chat_participants').select('conversation_id, user_id').in('conversation_id', convIds),
+    supabase.rpc('dm_directory'),
+  ])
+  const names = new Map<string, string>(((directory ?? []) as Array<{ id: string; display_name: string }>).map((d) => [d.id, d.display_name]))
+  const convMeta = new Map((convs ?? []).map((c) => [c.id as string, c]))
+  const { data: { user } } = await supabase.auth.getUser()
+  const dmOther = new Map<string, string>()
+  for (const p of parts ?? []) {
+    const c = convMeta.get(p.conversation_id as string)
+    if (c?.kind === 'dm' && p.user_id !== user?.id) dmOther.set(p.conversation_id as string, p.user_id as string)
+  }
+
+  const groups = new Map<string, SearchGroup>()
+  for (const h of hits) {
+    const cid = h.conversation_id as string
+    const c = convMeta.get(cid)
+    if (!c) continue
+    if (!groups.has(cid)) {
+      const title = c.kind === 'channel' ? (c.name ?? 'Channel') : `DM with ${names.get(dmOther.get(cid) ?? '') ?? 'User'}`
+      groups.set(cid, { conversationId: cid, kind: c.kind as 'dm' | 'channel', title, messages: [] })
+    }
+    groups.get(cid)!.messages.push({
+      id: h.id as string,
+      body: h.body as string,
+      senderName: names.get(h.sender_id as string) ?? 'User',
+      createdAt: h.created_at as string,
+    })
+  }
+  return { groups: [...groups.values()] }
 }

@@ -10,7 +10,9 @@ import {
   loadOlderMessages,
   editMessage,
   deleteMessage,
+  attachToMessage,
   type ChatMessage,
+  type ChatAttachment,
 } from '@/app/(os)/messages/actions'
 import MessageBubble from '@/components/messaging/MessageBubble'
 import MessageComposer from '@/components/messaging/MessageComposer'
@@ -26,18 +28,36 @@ function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
+/** Single helper for the storage path — path discipline is the whole RLS model. */
+function attachmentPath(conversationId: string, fileName: string): string {
+  return `${conversationId}/${crypto.randomUUID()}-${fileName.replace(/[^\w.\-]+/g, '_')}`
+}
+
+function imageDims(file: File): Promise<{ w: number; h: number } | null> {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) return resolve(null)
+    const url = URL.createObjectURL(file)
+    const img = new window.Image()
+    img.onload = () => { resolve({ w: img.naturalWidth, h: img.naturalHeight }); URL.revokeObjectURL(url) }
+    img.onerror = () => { resolve(null); URL.revokeObjectURL(url) }
+    img.src = url
+  })
+}
+
 export default function MessageClient({
   conversationId,
   meId,
   kind,
   initialParticipants,
   initialMessages,
+  highlightMessageId,
 }: {
   conversationId: string
   meId: string
   kind: 'dm' | 'channel'
   initialParticipants: Participant[]
   initialMessages: ChatMessage[]
+  highlightMessageId?: string
 }) {
   const router = useRouter()
   const [supabase] = useState(() => createClient())
@@ -50,6 +70,7 @@ export default function MessageClient({
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [now, setNow] = useState(0)
+  const [flashId, setFlashId] = useState<string | null>(highlightMessageId ?? null)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const typingChannelRef = useRef<RealtimeChannel | null>(null)
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -76,6 +97,10 @@ export default function MessageClient({
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         const updated = payload.new as ChatMessage
         setMessages((cur) => cur.map((m) => (m.id === updated.id ? { ...m, ...updated } : m)))
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_attachments', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        const att = payload.new as ChatAttachment
+        setMessages((cur) => cur.map((m) => (m.id === att.message_id ? { ...m, attachments: [...(m.attachments ?? []).filter((a) => a.id !== att.id), att] } : m)))
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_participants', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         const row = (payload.new ?? payload.old) as { user_id?: string; last_read_at?: string }
@@ -133,16 +158,53 @@ export default function MessageClient({
   }, [])
 
   const lastId = messages[messages.length - 1]?.id
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'auto' }) }, [lastId, typingName])
+  useEffect(() => {
+    // When arriving via a search result, scroll to + flash that message instead
+    // of jumping to the bottom.
+    if (highlightMessageId) return
+    bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+  }, [lastId, typingName, highlightMessageId])
 
-  async function handleSend(body: string) {
+  useEffect(() => {
+    if (!highlightMessageId) return
+    const scroll = setTimeout(() => {
+      document.querySelector(`[data-mid="${highlightMessageId}"]`)?.scrollIntoView({ block: 'center' })
+    }, 60)
+    const unflash = setTimeout(() => setFlashId(null), 2200)
+    return () => { clearTimeout(scroll); clearTimeout(unflash) }
+  }, [highlightMessageId])
+
+  async function handleSend(body: string, files: File[] = []) {
     setError('')
     const id = crypto.randomUUID()
-    const optimistic: Msg = { id, sender_id: meId, body, created_at: new Date().toISOString(), pending: true }
+    const optimistic: Msg = { id, sender_id: meId, body, created_at: new Date().toISOString(), pending: true, attachments: [] }
     setMessages((cur) => [...cur, optimistic])
     const res = await sendMessage(conversationId, body, id)
-    if (res.error) { setMessages((cur) => cur.filter((m) => m.id !== id)); setError(res.error) }
-    else setMessages((cur) => cur.map((m) => (m.id === id ? { ...m, pending: false, created_at: res.created_at ?? m.created_at } : m)))
+    if (res.error) { setMessages((cur) => cur.filter((m) => m.id !== id)); setError(res.error); return }
+    setMessages((cur) => cur.map((m) => (m.id === id ? { ...m, pending: false, created_at: res.created_at ?? m.created_at } : m)))
+
+    // Upload files AFTER the message exists, then record each attachment.
+    for (const file of files) {
+      const path = attachmentPath(conversationId, file.name)
+      const { error: upErr } = await supabase.storage.from('chat-attachments').upload(path, file, { contentType: file.type, upsert: false })
+      if (upErr) { setError(`Upload failed for ${file.name}. Reattach to retry.`); continue }
+      const dims = await imageDims(file).catch(() => null)
+      const att = await attachToMessage({
+        messageId: id,
+        conversationId,
+        storagePath: path,
+        fileName: file.name,
+        mimeType: file.type,
+        byteSize: file.size,
+        width: dims?.w ?? null,
+        height: dims?.h ?? null,
+      })
+      if (att.error) { setError(`Couldn't attach ${file.name}.`); continue }
+      if (att.attachment) {
+        const created = att.attachment
+        setMessages((cur) => cur.map((m) => (m.id === id ? { ...m, attachments: [...(m.attachments ?? []).filter((a) => a.id !== created.id), created] } : m)))
+      }
+    }
   }
 
   async function handleEdit(id: string, newBody: string) {
@@ -206,8 +268,8 @@ export default function MessageClient({
             const mine = m.sender_id === meId
             const editable = mine && !m.deleted_at && !m.pending && now - new Date(m.created_at).getTime() < EDIT_WINDOW_MS
             return (
-              <div key={m.id}>
-                <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} />
+              <div key={m.id} data-mid={m.id} style={{ borderRadius: 12, transition: 'background 0.4s', background: m.id === flashId ? 'var(--accent-dim)' : 'transparent', padding: m.id === flashId ? 4 : 0 }}>
+                <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} attachments={m.attachments} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} />
                 {m.id === lastSentId && !m.deleted_at ? <ReadIndicator label={receiptLabel} /> : null}
               </div>
             )

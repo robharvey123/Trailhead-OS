@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { mockupFontVars } from '@/lib/fonts'
-import ConversationList, { type ConversationRow } from '@/components/messaging/ConversationList'
+import type { ConversationRow } from '@/components/messaging/ConversationList'
+import MessagesScreen from '@/components/messaging/MessagesScreen'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,7 +79,7 @@ export default async function MessagesPage() {
   return (
     <div className={`thmock ${mockupFontVars}`}>
       <div className="panel overflow-hidden" style={{ height: 'calc(100vh - 140px)', maxWidth: 560 }}>
-        <ConversationList conversations={conversations} users={users} />
+        <MessagesScreen conversations={conversations} users={users} />
       </div>
     </div>
   )

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Attachment from './Attachment'
+import type { ChatAttachment } from '@/app/(os)/messages/actions'
 
 function fmtTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
@@ -15,6 +17,7 @@ export default function MessageBubble({
   edited,
   deleted,
   editable,
+  attachments,
   onEdit,
   onRequestDelete,
 }: {
@@ -27,6 +30,7 @@ export default function MessageBubble({
   deleted?: boolean
   /** Within the edit/delete window AND mine — show the ⋯ actions. */
   editable?: boolean
+  attachments?: ChatAttachment[]
   onEdit?: (id: string, body: string) => void
   onRequestDelete?: (id: string) => void
 }) {
@@ -84,7 +88,7 @@ export default function MessageBubble({
               position: 'relative',
             }}
           >
-            <span>{deleted ? 'Message deleted' : body}</span>
+            {deleted ? <span>Message deleted</span> : body ? <span>{body}</span> : null}
             <span style={{ display: 'block', fontSize: 10, opacity: 0.7, marginTop: 2, textAlign: 'right' }}>
               {edited && !deleted ? '(edited) ' : ''}{pending ? 'sending…' : fmtTime(at)}
             </span>
@@ -116,6 +120,11 @@ export default function MessageBubble({
             ) : null}
           </div>
         )}
+        {!deleted && attachments && attachments.length ? (
+          <div style={{ display: 'grid', gap: 6, marginTop: 6 }}>
+            {attachments.map((a) => <Attachment key={a.id} attachment={a} />)}
+          </div>
+        ) : null}
       </div>
     </div>
   )
