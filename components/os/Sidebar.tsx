@@ -4,11 +4,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { getWorkstreamColourClasses } from '@/lib/os'
-import type { Workstream } from '@/lib/types'
 
 interface SidebarProps {
-  workstreams: Workstream[]
   newEnquiryCount: number
   activeQuoteCount: number
   unreadTaskCount?: number
@@ -138,7 +135,6 @@ function CollapseToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 }
 
 export default function Sidebar({
-  workstreams,
   newEnquiryCount,
   activeQuoteCount,
   unreadTaskCount = 0,
@@ -249,28 +245,6 @@ export default function Sidebar({
               onClick={() => setMobileOpen(false)}
               collapsed={collapsed}
             />
-          </div>
-
-          <div className={collapsed ? 'flex flex-col items-center' : ''}>
-            {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
-                Workstreams
-              </p>
-            )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
-            <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
-              {workstreams.map((workstream) => (
-                <NavLink
-                  key={workstream.id}
-                  href={`/projects/${workstream.slug}`}
-                  label={workstream.label}
-                  active={pathname === `/projects/${workstream.slug}`}
-                  onClick={() => setMobileOpen(false)}
-                  dotColour={getWorkstreamColourClasses(workstream.colour).dot}
-                  collapsed={collapsed}
-                />
-              ))}
-            </div>
           </div>
 
           <div className={collapsed ? 'flex flex-col items-center' : ''}>

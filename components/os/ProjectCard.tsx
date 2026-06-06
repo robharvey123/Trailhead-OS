@@ -3,11 +3,9 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
-import { getWorkstreamColourClasses } from '@/lib/os'
 import type { ProjectListItem } from '@/lib/types'
 import ConfirmDialog from './ConfirmDialog'
 import ProjectStatusBadge from './ProjectStatusBadge'
-import WorkstreamBadge from './WorkstreamBadge'
 
 export default function ProjectCard({
   project,
@@ -18,10 +16,6 @@ export default function ProjectCard({
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-
-  const wsHex = project.workstream
-    ? getWorkstreamColourClasses(project.workstream.colour ?? project.workstream.slug).hex
-    : '#E2E8F0'
 
   const hasLinkedTasks = project.task_count > 0
 
@@ -43,7 +37,6 @@ export default function ProjectCard({
         <Link
           href={`/projects/records/${project.id}`}
           className="os-card block rounded-[1.75rem] p-5 transition hover:bg-[var(--surface-2)]"
-          style={{ borderTop: `3px solid ${wsHex}` }}
         >
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -56,13 +49,6 @@ export default function ProjectCard({
           </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {project.workstream ? (
-          <WorkstreamBadge
-            label={project.workstream.label}
-            slug={project.workstream.slug}
-            colour={project.workstream.colour}
-          />
-        ) : null}
         {project.account ? (
           <span className="rounded-full border border-[color:var(--border)] px-2.5 py-1 text-[11px] font-medium text-[color:var(--text-2)]">
             {project.account.name}

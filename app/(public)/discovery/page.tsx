@@ -4,9 +4,7 @@ import DiscoveryOSClient, {
   type DiscoveryEnquiryRow,
 } from '@/components/os/DiscoveryOSClient'
 import PublicDiscoveryForm from '@/components/discovery/PublicDiscoveryForm'
-import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
-import type { Workstream } from '@/lib/types'
 
 export default async function DiscoveryPage({
   searchParams,
@@ -27,15 +25,8 @@ export default async function DiscoveryPage({
     return <PublicDiscoveryForm />
   }
 
-  let workstreams: Workstream[] = []
   let newEnquiryCount = 0
   let enquiries: DiscoveryEnquiryRow[] = []
-
-  try {
-    workstreams = await getWorkstreams(supabase)
-  } catch {
-    workstreams = []
-  }
 
   try {
     const { count } = await supabase
@@ -64,7 +55,7 @@ export default async function DiscoveryPage({
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <Sidebar workstreams={workstreams} newEnquiryCount={newEnquiryCount} activeQuoteCount={0} />
+      <Sidebar newEnquiryCount={newEnquiryCount} activeQuoteCount={0} />
       <main className="min-h-screen md:pl-72">
         <div className="mx-auto min-h-screen max-w-screen-2xl px-4 pb-8 pt-20 md:px-8 md:pt-8">
           <DiscoveryOSClient enquiries={enquiries} />

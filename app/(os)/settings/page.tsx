@@ -3,7 +3,6 @@ import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
 import CompanySettingsForm from '@/components/os/CompanySettingsForm'
 import PricingTierSettings from '@/components/os/PricingTierSettings'
-import WorkstreamSettings from '@/components/os/WorkstreamSettings'
 import { getCompanySettings } from '@/lib/company-settings'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { getPricingTiers } from '@/lib/db/pricing-tiers'
@@ -153,8 +152,6 @@ export default async function SettingsPage() {
         icalSecret={icalSecret}
         workstreams={workstreams}
       />
-
-      <WorkstreamSettings initialWorkstreams={workstreams} />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
         <section className="os-card p-6">

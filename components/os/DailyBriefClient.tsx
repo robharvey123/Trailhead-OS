@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
-import { getPriorityClasses, getWorkstreamColourClasses } from '@/lib/os'
+import { getPriorityClasses } from '@/lib/os'
 import StatusBadge from './StatusBadge'
 import type {
   DailyBriefCalendarEvent,
@@ -61,11 +61,7 @@ function pluralize(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`
 }
 
-function getTaskHref(task: Pick<DailyBriefTask, 'workstream_slug'>) {
-  if (task.workstream_slug) {
-    return `/projects/${task.workstream_slug}`
-  }
-
+function getTaskHref() {
   return '/tasks'
 }
 
@@ -95,20 +91,6 @@ function getAccentClasses(priority: DailyBriefTask['priority']) {
   }
 }
 
-function WorkstreamInline({
-  task,
-}: {
-  task: Pick<DailyBriefTask, 'workstream_colour' | 'workstream_label' | 'workstream_slug'>
-}) {
-  const classes = getWorkstreamColourClasses(task.workstream_colour ?? task.workstream_slug)
-
-  return (
-    <span className="inline-flex items-center gap-2 text-[color:var(--text-2)]">
-      <span className={`h-2 w-2 rounded-full ${classes.dot}`} />
-      <span>{task.workstream_label ?? 'Unassigned'}</span>
-    </span>
-  )
-}
 
 function PriorityPill({ priority }: { priority: DailyBriefTask['priority'] }) {
   return (
@@ -128,7 +110,7 @@ function ActionRequiredRow({ task, todayKey }: { task: DailyBriefTask; todayKey:
 
   return (
     <Link
-      href={getTaskHref(task)}
+      href={getTaskHref()}
       className={`block os-card p-4 transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)] border-l-4 ${accent.border}`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -138,8 +120,6 @@ function ActionRequiredRow({ task, todayKey }: { task: DailyBriefTask; todayKey:
           </p>
           <p className="font-medium text-[color:var(--text)]">{task.title}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-            <WorkstreamInline task={task} />
-            <span className="text-[color:var(--text-3)]">·</span>
             <span className={overdue ? 'font-medium text-[color:var(--red-strong)]' : 'text-[color:var(--text-2)]'}>
               {overdue ? `Overdue · ${formatShortDate(task.due_date ?? todayKey)}` : 'Due today'}
             </span>
@@ -176,7 +156,6 @@ function QuoteAttentionCard({ quote }: { quote: DailyBriefQuote }) {
 function TimelineTask({ task }: { task: DailyBriefTask }) {
   return (
     <div className="flex items-center gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text-2)]">
-      <WorkstreamInline task={task} />
       <span className="truncate text-[color:var(--text-2)]">{task.title}</span>
     </div>
   )
@@ -375,13 +354,11 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
-                      <Link href={getTaskHref(task)} className="font-medium text-[color:var(--text)] transition hover:text-[color:var(--accent-strong)]">
+                      <Link href={getTaskHref()} className="font-medium text-[color:var(--text)] transition hover:text-[color:var(--accent-strong)]">
                         {task.title}
                       </Link>
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[color:var(--text-2)]">
                         <span>Due today</span>
-                        <span className="text-[color:var(--text-3)]">·</span>
-                        <WorkstreamInline task={task} />
                       </div>
                     </div>
                     {task.priority !== 'low' ? <PriorityPill priority={task.priority} /> : null}

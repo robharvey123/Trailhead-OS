@@ -1,12 +1,5 @@
 import { z } from 'zod'
-import { getWorkstreamBySlug } from '@/lib/cowork-api'
 import { getCoworkBriefing } from '@/lib/cowork-briefing'
-import {
-  completeCoworkTask,
-  createCoworkTask,
-  listCoworkTasks,
-  updateCoworkTask,
-} from '@/lib/cowork-tasks'
 import {
   bulkCreateEngagementTasks,
   listProjectEngagementTasks,
@@ -41,24 +34,6 @@ const db = supabaseService as unknown as DbClient
 
 // ── Shared enums (kept in sync with lib/types.ts and the Cowork API) ──────────
 
-// The fixed workstreams (the 5 in CLAUDE.md plus the live `personal` stream).
-// getWorkstreamBySlug still validates, but the enum makes the surface
-// self-describing to Claude.
-const WORKSTREAM_SLUGS = [
-  'brand-sales',
-  'ecommerce',
-  'app-dev',
-  'mvp-cricket',
-  'consulting',
-  'personal',
-] as const
-const workstreamSlug = z.enum(WORKSTREAM_SLUGS)
-
-// OS task priorities accepted by the Cowork API (note: not the full TaskPriority
-// union — 'critical' is not accepted by the REST contract, so we mirror it).
-const osTaskPriority = z.enum(['low', 'medium', 'high', 'urgent'])
-const taskColumn = z.enum(['backlog', 'in-progress', 'review', 'done'])
-const taskDueFilter = z.enum(['today', 'overdue', 'this_week', 'all'])
 const projectStatus = z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled'])
 const engagementTaskStatus = z.enum(ENGAGEMENT_TASK_STATUSES as [string, ...string[]])
 const engagementTaskPriority = z.enum(ENGAGEMENT_TASK_PRIORITIES as [string, ...string[]])
@@ -107,38 +82,15 @@ export const whoami = defineTool({
   }),
 })
 
-export const listWorkstreams = defineTool({
-  name: 'list_workstreams',
-  description: 'List the five fixed Trailhead OS workstreams (id, slug, label, colour).',
-  inputSchema: z.object({}),
-  handler: async () => {
-    const { data, error } = await supabaseService
-      .from('workstreams')
-      .select('id, slug, label, colour, sort_order')
-      .order('sort_order', { ascending: true })
-    if (error) throw new Error(error.message || 'Failed to load workstreams')
-    return data ?? []
-  },
-})
-
 export const listProjects = defineTool({
   name: 'list_projects',
   description:
-    'List projects, optionally filtered by workstream slug and/or status. Returns summary rows with task counts and next milestone.',
+    'List projects, optionally filtered by status. Returns summary rows with task counts and next milestone.',
   inputSchema: z.object({
-    workstream: workstreamSlug.optional(),
     status: projectStatus.optional(),
   }),
-  handler: async (input) => {
-    const workstream = input.workstream ? await getWorkstreamBySlug(input.workstream) : null
-    return getProjects(
-      {
-        workstream_id: workstream?.id,
-        status: input.status as ProjectStatus | undefined,
-      },
-      db
-    )
-  },
+  handler: async (input) =>
+    getProjects({ status: input.status as ProjectStatus | undefined }, db),
 })
 
 export const getProject = defineTool({
@@ -188,78 +140,6 @@ export const getProject = defineTool({
       },
     }
   },
-})
-
-export const listTasks = defineTool({
-  name: 'list_tasks',
-  description:
-    'List OS kanban tasks (the `tasks` table). Filter by workstream slug, project_id, priority, due window, and master-todo flag.',
-  inputSchema: z.object({
-    workstream: workstreamSlug.optional(),
-    project_id: z.string().optional(),
-    priority: osTaskPriority.optional(),
-    due: taskDueFilter.optional(),
-    master: z.boolean().optional(),
-    limit: z.number().int().min(1).max(200).optional(),
-  }),
-  handler: async (input) =>
-    listCoworkTasks({
-      workstreamSlug: input.workstream ?? null,
-      projectId: input.project_id ?? null,
-      priority: input.priority ?? null,
-      due: input.due,
-      master: input.master,
-      limit: input.limit,
-    }),
-})
-
-export const createTask = defineTool({
-  name: 'create_task',
-  description:
-    'Create a single OS task in the given workstream (lands in Backlog). Returns the created task.',
-  inputSchema: z.object({
-    title: z.string().min(1),
-    workstream: workstreamSlug,
-    priority: osTaskPriority.optional(),
-    due_date: isoDate.optional(),
-    start_date: isoDate.optional(),
-    description: z.string().optional(),
-    is_master_todo: z.boolean().optional(),
-    project_id: z.string().optional(),
-    contact_id: z.string().optional(),
-    account_id: z.string().optional(),
-  }),
-  handler: async (input) => createCoworkTask(input),
-})
-
-export const updateTask = defineTool({
-  name: 'update_task',
-  description:
-    'Patch an OS task. Supply only the fields to change: title, description, priority, due/start date, master flag, completed_at (ISO), or board column.',
-  inputSchema: z.object({
-    id: z.string().min(1),
-    title: z.string().optional(),
-    description: z.string().nullable().optional(),
-    priority: osTaskPriority.optional(),
-    due_date: isoDate.nullable().optional(),
-    start_date: isoDate.nullable().optional(),
-    is_master_todo: z.boolean().optional(),
-    completed_at: z.string().nullable().optional(),
-    column: taskColumn.optional(),
-  }),
-  handler: async (input) => {
-    const { id, ...patch } = input
-    return updateCoworkTask(id, patch)
-  },
-})
-
-export const completeTask = defineTool({
-  name: 'complete_task',
-  description: 'Mark an OS task done: stamps completed_at and moves it to the Done column.',
-  inputSchema: z.object({
-    id: z.string().min(1),
-  }),
-  handler: async (input) => completeCoworkTask(input.id),
 })
 
 export const listEngagementTasks = defineTool({
@@ -352,25 +232,21 @@ export const updateEngagementTaskTool = defineTool({
 export const addNoteTool = defineTool({
   name: 'add_note',
   description:
-    'Add a note attached to a workstream and/or a task. (Project-scoped notes are not supported — the notes table has no project_id.) Provide a workstream slug or a task_id, plus a title and/or body.',
+    'Add a note attached to a task. Provide a task_id, plus a title and/or body.',
   inputSchema: z.object({
-    workstream: workstreamSlug.optional(),
-    task_id: z.string().optional(),
+    task_id: z.string().min(1),
     title: z.string().optional(),
     body: z.string().optional(),
   }),
-  handler: async (input) => {
-    const workstream = input.workstream ? await getWorkstreamBySlug(input.workstream) : null
-    return addNote(
+  handler: async (input) =>
+    addNote(
       {
-        workstream_id: workstream?.id ?? null,
-        task_id: input.task_id ?? null,
+        task_id: input.task_id,
         title: input.title,
         body: input.body,
       },
       db
-    )
-  },
+    ),
 })
 
 export const briefing = defineTool({
@@ -383,13 +259,8 @@ export const briefing = defineTool({
 
 export const tools: McpTool[] = [
   whoami,
-  listWorkstreams,
   listProjects,
   getProject,
-  listTasks,
-  createTask,
-  updateTask,
-  completeTask,
   listEngagementTasks,
   bulkCreateEngagementTasksTool,
   updateEngagementTaskTool,

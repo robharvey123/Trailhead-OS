@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import OsShell from '@/components/os/OsShell'
-import { getWorkstreams } from '@/lib/db/workstreams'
 import { getCurrentProfile } from '@/lib/auth/roles'
 import { getUnreadTaskCount, getUnreadMailCount, getUnreadMessagesCount, getUnreadMentionsCount } from '@/lib/notifications/unread'
 import { createClient } from '@/lib/supabase/server'
-import type { Workstream } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,19 +21,12 @@ export default async function OsLayout({
     redirect('/login')
   }
 
-  let workstreams: Workstream[] = []
   let newEnquiryCount = 0
   let activeQuoteCount = 0
   let unreadTaskCount = 0
   let unreadMailCount = 0
   let unreadMessageCount = 0
   let unreadMentionsCount = 0
-
-  try {
-    workstreams = await getWorkstreams(supabase)
-  } catch {
-    workstreams = []
-  }
 
   try {
     const profile = await getCurrentProfile(supabase)
@@ -86,7 +77,6 @@ export default async function OsLayout({
 
   return (
     <OsShell
-      workstreams={workstreams}
       newEnquiryCount={newEnquiryCount}
       activeQuoteCount={activeQuoteCount}
       unreadTaskCount={unreadTaskCount}

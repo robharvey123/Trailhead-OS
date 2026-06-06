@@ -79,7 +79,7 @@ export interface ProjectFilters {
 }
 
 export interface CreateProjectInput {
-  workstream_id: string
+  workstream_id?: string | null
   account_id?: string | null
   engagement_id?: string | null
   owner_id?: string | null
@@ -521,9 +521,7 @@ export async function createProject(
     throw new Error('name is required')
   }
 
-  if (!payload.workstream_id) {
-    throw new Error('workstream_id is required')
-  }
+  // workstream_id is retired (brief 19) — projects are no longer workstream-scoped.
 
   const { data, error } = await supabase
     .from('projects')

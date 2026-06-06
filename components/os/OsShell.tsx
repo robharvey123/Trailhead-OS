@@ -3,10 +3,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import PushPromptBanner from '@/components/notifications/PushPromptBanner'
-import type { Workstream } from '@/lib/types'
 
 interface OsShellProps {
-  workstreams: Workstream[]
   newEnquiryCount: number
   activeQuoteCount: number
   unreadTaskCount?: number
@@ -18,7 +16,6 @@ interface OsShellProps {
 }
 
 export default function OsShell({
-  workstreams,
   newEnquiryCount,
   activeQuoteCount,
   unreadTaskCount = 0,
@@ -54,7 +51,6 @@ export default function OsShell({
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A]">
       <Sidebar
-        workstreams={workstreams}
         newEnquiryCount={newEnquiryCount}
         activeQuoteCount={activeQuoteCount}
         unreadTaskCount={unreadTaskCount}

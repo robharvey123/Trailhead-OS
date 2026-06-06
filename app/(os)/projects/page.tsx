@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import ProjectCard from '@/components/os/ProjectCard'
 import { getProjects } from '@/lib/db/projects'
-import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import type { ProjectStatus } from '@/lib/types'
 
@@ -16,32 +15,27 @@ const PROJECT_TABS: Array<{ value: 'all' | ProjectStatus; label: string }> = [
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string; search?: string; workstream_id?: string; account_id?: string }>
+  searchParams?: Promise<{ status?: string; search?: string; account_id?: string }>
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const activeStatus = resolvedSearchParams?.status ?? 'all'
   const search = resolvedSearchParams?.search ?? ''
-  const workstreamId = resolvedSearchParams?.workstream_id ?? ''
   const supabase = await createClient()
 
-  const [projects, workstreams] = await Promise.all([
-    getProjects(
-      {
-        status:
-          activeStatus === 'planning' ||
-          activeStatus === 'active' ||
-          activeStatus === 'on_hold' ||
-          activeStatus === 'completed' ||
-          activeStatus === 'cancelled'
-            ? activeStatus
-            : undefined,
-        search: search || undefined,
-        workstream_id: workstreamId || undefined,
-      },
-      supabase
-    ).catch(() => []),
-    getWorkstreams(supabase).catch(() => []),
-  ])
+  const projects = await getProjects(
+    {
+      status:
+        activeStatus === 'planning' ||
+        activeStatus === 'active' ||
+        activeStatus === 'on_hold' ||
+        activeStatus === 'completed' ||
+        activeStatus === 'cancelled'
+          ? activeStatus
+          : undefined,
+      search: search || undefined,
+    },
+    supabase
+  ).catch(() => [])
 
   return (
     <div className="space-y-6">
@@ -60,7 +54,7 @@ export default async function ProjectsPage({
         </Link>
       </div>
 
-      <form className="os-card grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <form className="os-card grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_auto]">
         <input
           type="text"
           name="search"
@@ -68,18 +62,6 @@ export default async function ProjectsPage({
           placeholder="Search by project name or summary"
           className="os-input rounded-2xl px-4 py-3 text-sm"
         />
-        <select
-          name="workstream_id"
-          defaultValue={workstreamId}
-          className="os-select rounded-2xl px-4 py-3 text-sm"
-        >
-          <option value="">All workstreams</option>
-          {workstreams.map((workstream) => (
-            <option key={workstream.id} value={workstream.id}>
-              {workstream.label}
-            </option>
-          ))}
-        </select>
         <button
           type="submit"
           className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
@@ -96,9 +78,6 @@ export default async function ProjectsPage({
           }
           if (search) {
             params.set('search', search)
-          }
-          if (workstreamId) {
-            params.set('workstream_id', workstreamId)
           }
 
           const href = params.toString() ? `/projects?${params}` : '/projects'

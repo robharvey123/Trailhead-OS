@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
-import type { Account, Project, ProjectStatus, Workstream } from '@/lib/types'
+import type { Account, Project, ProjectStatus } from '@/lib/types'
 import ConfirmDialog from './ConfirmDialog'
 import SearchSelect from './SearchSelect'
 import EngagementPicker, { type EngagementOption } from '@/components/projects/EngagementPicker'
@@ -17,19 +17,16 @@ const PROJECT_STATUSES: ProjectStatus[] = [
 ]
 
 export default function ProjectForm({
-  workstreams,
   accounts,
   engagements = [],
   initialProject = null,
   initialValues,
   cancelHref = '/projects',
 }: {
-  workstreams: Workstream[]
   accounts: Account[]
   engagements?: EngagementOption[]
   initialProject?: Project | null
   initialValues?: {
-    workstream_id?: string
     account_id?: string
     engagement_id?: string
     name?: string
@@ -41,7 +38,6 @@ export default function ProjectForm({
   const router = useRouter()
   const [form, setForm] = useState({
     name: initialProject?.name ?? initialValues?.name ?? '',
-    workstream_id: initialProject?.workstream_id ?? initialValues?.workstream_id ?? '',
     account_id: initialProject?.account_id ?? initialValues?.account_id ?? '',
     engagement_id: initialProject?.engagement_id ?? initialValues?.engagement_id ?? '',
     status: initialProject?.status ?? ('planning' as ProjectStatus),
@@ -173,22 +169,6 @@ export default function ProjectForm({
           />
         </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
-          <select
-            value={form.workstream_id}
-            onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="os-select w-full"
-          >
-            <option value="">Select workstream</option>
-            {workstreams.map((workstream) => (
-              <option key={workstream.id} value={workstream.id}>
-                {workstream.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <SearchSelect
           label="Account"
           value={form.account_id}
@@ -292,7 +272,7 @@ export default function ProjectForm({
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving || archiving || deleting || !form.name.trim() || !form.workstream_id}
+          disabled={saving || archiving || deleting || !form.name.trim()}
           className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}

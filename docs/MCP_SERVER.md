@@ -64,31 +64,26 @@ claude mcp add trailhead-os \
 
 ## Tool surface (v1)
 
-13 tools. All inputs are validated server-side; a bad input or IO failure comes
+8 tools. All inputs are validated server-side; a bad input or IO failure comes
 back as a tool result with `isError: true` and a human-readable message.
+
+> The workstream-scoped OS-task tools (`list_workstreams`, `list_tasks`,
+> `create_task`, `update_task`, `complete_task`) were removed in brief 19 — the OS
+> task system now runs on `engagement_tasks`. Use the `*_engagement_task(s)`
+> tools below.
 
 | Tool | Input (required **bold**) | Returns |
 |---|---|---|
 | `whoami` | — | `{ server, version, status, message, identity }` |
-| `list_workstreams` | — | array of `{ id, slug, label, colour, sort_order }` |
-| `list_projects` | `workstream?`, `status?` | project summary rows (task counts, next milestone) |
+| `list_projects` | `status?` | project summary rows (task counts, next milestone) |
 | `get_project` | **`id`** | project + phases + milestones + counts |
-| `list_tasks` | `workstream?`, `project_id?`, `priority?`, `due?`, `master?`, `limit?` | OS task rows (`formatTask` shape) |
-| `create_task` | **`title`**, **`workstream`**, `priority?`, `due_date?`, `start_date?`, `description?`, `is_master_todo?`, `project_id?`, `contact_id?`, `account_id?` | created task |
-| `update_task` | **`id`**, + any of `title`, `description`, `priority`, `due_date`, `start_date`, `is_master_todo`, `completed_at`, `column` | updated task |
-| `complete_task` | **`id`** | task with `completed_at` set, moved to Done |
 | `list_engagement_tasks` | **`project_id`**, `status?`, `priority?` | engagement_task rows (with relations) |
 | `bulk_create_engagement_tasks` | **`project_id`**, **`tasks[]`** | created engagement_task rows |
 | `update_engagement_task` | **`id`**, + any of `title`, `description`, `status`, `priority`, `due_date`, `labels`, `position` | updated engagement_task row (with relations) |
-| `add_note` | `workstream?`, `task_id?`, `title?`, `body?` | created note |
+| `add_note` | **`task_id`**, `title?`, `body?` | created note |
 | `briefing` | — | today's brief (tasks, calendar, enquiries, invoices) |
 
 ### Enums
-
-- `workstream` (slug): `brand-sales` · `ecommerce` · `app-dev` · `mvp-cricket` · `consulting` · `personal`
-- OS task `priority`: `low` · `medium` · `high` · `urgent`
-- task board `column`: `backlog` · `in-progress` · `review` · `done`
-- `due` window: `today` · `overdue` · `this_week` · `all`
 - project `status`: `planning` · `active` · `on_hold` · `completed` · `cancelled`
 - engagement task `status`: `backlog` · `in_progress` · `review` · `done` · `cancelled`
 - engagement task `priority`: `low` · `normal` · `high` · `urgent`
@@ -112,13 +107,7 @@ curl -X POST https://app.trailheadholdings.uk/api/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call",
-       "params":{"name":"list_tasks","arguments":{"workstream":"app-dev","due":"overdue"}}}'
-```
-
-Create a task:
-```sh
-... "params":{"name":"create_task","arguments":{
-      "title":"Draft Q3 plan","workstream":"app-dev","priority":"high","due_date":"2026-06-30"}}
+       "params":{"name":"list_engagement_tasks","arguments":{"project_id":"<uuid>","status":"in_progress"}}}'
 ```
 
 Import a roadmap (bulk):
@@ -137,9 +126,8 @@ Import a roadmap (bulk):
 
 ## Notes & limits
 
-- **Project-scoped notes are not supported.** The `notes` table has only
-  `workstream_id` and `task_id` columns — no `project_id`. `add_note` therefore
-  takes a workstream slug and/or a `task_id`. (See `KNOWN_HARDENING.md`.)
+- **`add_note` attaches to a task** (`task_id`). (Project-scoped notes aren't
+  supported — the `notes` table has no `project_id`. See `KNOWN_HARDENING.md`.)
 - **`bulk_create_engagement_tasks`** derives the engagement from the project
   (`projects.engagement_id`) and appends `position` after any existing tasks,
   mirroring the roadmap-import commit flow.

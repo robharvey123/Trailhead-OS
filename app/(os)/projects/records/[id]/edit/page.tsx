@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import ProjectForm from '@/components/os/ProjectForm'
 import { getAccounts } from '@/lib/db/accounts'
 import { getProjectById } from '@/lib/db/projects'
-import { getWorkstreams } from '@/lib/db/workstreams'
 import { listEngagements } from '@/lib/db/engagements'
 import { createClient } from '@/lib/supabase/server'
 
@@ -13,9 +12,8 @@ export default async function EditProjectPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
-  const [project, workstreams, accounts, engagements] = await Promise.all([
+  const [project, accounts, engagements] = await Promise.all([
     getProjectById(id, supabase).catch(() => null),
-    getWorkstreams(supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
     listEngagements({ excludeTerminal: true }, supabase).catch(() => []),
   ])
@@ -34,7 +32,6 @@ export default async function EditProjectPage({
 
   return (
     <ProjectForm
-      workstreams={workstreams}
       accounts={accounts}
       engagements={options}
       initialProject={project}
