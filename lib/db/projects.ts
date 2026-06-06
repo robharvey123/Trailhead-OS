@@ -14,7 +14,6 @@ import type {
   ProjectStatus,
   QuoteScope,
   TaskTimeLog,
-  TaskWithWorkstream,
   Workstream,
 } from '@/lib/types'
 import { getTasks } from './tasks'
@@ -29,38 +28,6 @@ type ProjectRow = Project & {
 
 type RelationValue<T> = T | T[] | null
 
-type TaskProjectRow = {
-  id: string
-  workstream_id: string | null
-  column_id: string | null
-  account_id: string | null
-  contact_id: string | null
-  project_id: string | null
-  phase_id: string | null
-  parent_task_id: string | null
-  owner_user_id: string | null
-  title: string
-  description: string | null
-  status: TaskWithWorkstream['status']
-  priority: TaskWithWorkstream['priority']
-  owner: string | null
-  start_date: string | null
-  due_date: string | null
-  due_time: string | null
-  estimated_hours: number | null
-  actual_hours: number | null
-  is_master_todo: boolean
-  tags: string[] | null
-  sort_order: number
-  order_index: number
-  custom_fields: TaskWithWorkstream['custom_fields'] | null
-  completed_at: string | null
-  created_at: string
-  updated_at: string
-  workstreams: RelationValue<Pick<Workstream, 'slug' | 'label' | 'colour'>>
-  projects: RelationValue<{ name: string; title: string | null }>
-  project_phases: RelationValue<{ name: string }>
-}
 
 type ProjectContactRow = {
   project_id?: string
@@ -135,11 +102,10 @@ function mapProjectRow(row: ProjectRow): Project {
 
 function mapProjectListItem(
   row: ProjectRow,
-  tasks: TaskWithWorkstream[],
+  taskCounts: { total: number; completed: number },
   contacts: Contact[],
   milestones: ProjectMilestone[]
 ): ProjectListItem {
-  const completedTaskCount = tasks.filter((task) => Boolean(task.completed_at)).length
   const nextMilestone =
     milestones.find(
       (milestone) => !milestone.completed && milestone.date >= new Date().toISOString().slice(0, 10)
@@ -149,54 +115,13 @@ function mapProjectListItem(
     ...mapProjectRow(row),
     workstream: row.workstreams,
     account: row.accounts,
-    task_count: tasks.length,
-    completed_task_count: completedTaskCount,
+    task_count: taskCounts.total,
+    completed_task_count: taskCounts.completed,
     contact_count: contacts.length,
     next_milestone: nextMilestone,
   }
 }
 
-function mapTaskRow(row: TaskProjectRow): TaskWithWorkstream {
-  const workstream = firstRelation(row.workstreams)
-  const project = firstRelation(row.projects)
-  const phase = firstRelation(row.project_phases)
-
-  return {
-    id: row.id,
-    workstream_id: row.workstream_id,
-    column_id: row.column_id,
-    account_id: row.account_id,
-    contact_id: row.contact_id,
-    project_id: row.project_id,
-    phase_id: row.phase_id,
-    parent_task_id: row.parent_task_id,
-    owner_user_id: row.owner_user_id,
-    title: row.title,
-    description: row.description,
-    status: row.status,
-    priority: row.priority,
-    owner: row.owner,
-    start_date: row.start_date,
-    due_date: row.due_date,
-    due_time: row.due_time,
-    estimated_hours: row.estimated_hours,
-    actual_hours: row.actual_hours,
-    is_master_todo: row.is_master_todo,
-    tags: row.tags ?? [],
-    sort_order: row.sort_order,
-    order_index: row.order_index,
-    custom_fields: row.custom_fields ?? {},
-    completed_at: row.completed_at,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    workstream_slug: workstream?.slug ?? null,
-    workstream_label: workstream?.label ?? null,
-    workstream_colour: workstream?.colour ?? null,
-    project_name: project?.name ?? null,
-    project_title: project?.title ?? project?.name ?? null,
-    phase_name: phase?.name ?? null,
-  }
-}
 
 function sanitizeProjectPayload(data: CreateProjectInput | UpdateProjectInput) {
   const payload: Record<string, unknown> = {}
@@ -259,9 +184,11 @@ export async function getProjects(
 
   const projectIds = rows.map((row) => row.id)
   const [tasksResult, contactsResult, milestonesResult] = await Promise.all([
+    // Project work lives in engagement_tasks (the OS `tasks` table is retired);
+    // the card tally counts those. 'done' = completed.
     supabase
-      .from('tasks')
-      .select('id, workstream_id, column_id, account_id, contact_id, project_id, phase_id, parent_task_id, owner_user_id, title, description, status, priority, owner, start_date, due_date, due_time, estimated_hours, actual_hours, is_master_todo, tags, sort_order, order_index, custom_fields, completed_at, created_at, updated_at, workstreams(slug, label, colour), projects(name, title), project_phases(name)')
+      .from('engagement_tasks')
+      .select('project_id, status')
       .in('project_id', projectIds),
     supabase
       .from('project_contacts')
@@ -295,14 +222,22 @@ export async function getProjects(
     rows = rows.filter((row) => matchingProjectIds.has(row.id))
   }
 
-  const tasks = ((tasksResult.data ?? []) as TaskProjectRow[]).map(mapTaskRow)
+  const taskRows = (tasksResult.data ?? []) as Array<{ project_id: string | null; status: string }>
+  const taskCounts = new Map<string, { total: number; completed: number }>()
+  for (const t of taskRows) {
+    if (!t.project_id) continue
+    const c = taskCounts.get(t.project_id) ?? { total: 0, completed: 0 }
+    c.total += 1
+    if (t.status === 'done') c.completed += 1
+    taskCounts.set(t.project_id, c)
+  }
   const contacts = (contactsResult.data ?? []) as ProjectContactRow[]
   const milestones = (milestonesResult.data ?? []) as ProjectMilestone[]
 
   return rows.map((row) =>
     mapProjectListItem(
       row,
-      tasks.filter((task) => task.project_id === row.id),
+      taskCounts.get(row.id) ?? { total: 0, completed: 0 },
       contacts.filter((contact) => contact.project_id === row.id).flatMap((contact) =>
         firstRelation(contact.contacts) ? [firstRelation(contact.contacts) as Contact] : []
       ),
