@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/auth/roles'
 import { gatherReportData } from '@/lib/reports/data'
 import { generateNarrative, NarrativeSchema, EMPTY_NARRATIVE, type Narrative } from '@/lib/reports/narrative'
 import { generateEngagementReport, rerenderReportPdf, type ReportKind } from '@/lib/reports/generate'
+import { sendReport } from '@/lib/reports/send'
 
 const VALID_KINDS: ReportKind[] = ['weekly_client', 'monthly_client', 'weekly_internal']
 
@@ -87,6 +88,19 @@ export async function regenerateFullAction(reportId: string): Promise<{ error?: 
     return {}
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Failed to regenerate' }
+  }
+}
+
+/** Send the report to its recipients (PDF + XLSX attached). Requires a human click. */
+export async function sendReportAction(reportId: string): Promise<{ error?: string; sent?: boolean }> {
+  try {
+    const { report } = await loadReport(reportId) // also blocks if already sent
+    await sendReport(reportId)
+    revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
+    revalidatePath(`/engagements/${report.engagement_id}/reports`)
+    return { sent: true }
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Failed to send' }
   }
 }
 

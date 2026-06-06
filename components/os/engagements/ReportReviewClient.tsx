@@ -8,6 +8,7 @@ import {
   regenerateSectionAction,
   regenerateFullAction,
   setRecipientsAction,
+  sendReportAction,
 } from '@/app/(os)/engagements/[id]/reports/actions'
 
 type SectionKey = 'executive_summary' | 'highlights' | 'work_completed' | 'hours_commentary' | 'next_period' | 'risks_or_blockers'
@@ -98,6 +99,10 @@ export default function ReportReviewClient(props: {
     if (!e || recipients.includes(e)) return
     saveRecipients([...recipients, e])
     setRecipientInput('')
+  }
+  function send() {
+    if (!recipients.length || !confirm(`Send this report to ${recipients.length} recipient(s)? This cannot be undone.`)) return
+    run(() => sendReportAction(props.reportId))
   }
 
   const input = 'w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
@@ -222,11 +227,12 @@ export default function ReportReviewClient(props: {
             {!readOnly ? (
               <button
                 type="button"
-                disabled
-                title="Sending is wired in the next update"
-                className="mt-3 w-full rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white opacity-50"
+                disabled={pending || recipients.length === 0}
+                onClick={send}
+                title={recipients.length === 0 ? 'Add a recipient first' : 'Send with PDF + timesheet attached'}
+                className="mt-3 w-full rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Send {recipients.length ? `to ${recipients.length}` : ''} (coming next)
+                {pending ? 'Sending…' : `Send${recipients.length ? ` to ${recipients.length}` : ''}`}
               </button>
             ) : null}
           </div>
