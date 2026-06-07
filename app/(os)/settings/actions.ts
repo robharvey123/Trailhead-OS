@@ -3,6 +3,25 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/roles'
+import { disconnectFreeAgent } from '@/lib/freeagent/client'
+
+/** Disconnect the FreeAgent accounting connection (admin only). */
+export async function disconnectFreeAgentAction(): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    return { error: 'Not authorised' }
+  }
+  try {
+    await disconnectFreeAgent()
+    revalidatePath('/settings')
+    return {}
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Failed to disconnect' }
+  }
+}
 
 export type CompanySettingsState = {
   error?: string

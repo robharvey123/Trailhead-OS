@@ -8,6 +8,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { getPricingTiers } from '@/lib/db/pricing-tiers'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
+import { getFreeAgentStatus } from '@/lib/freeagent/client'
+import FreeAgentSettings from '@/components/os/FreeAgentSettings'
 import ProfileSettingsForm from '@/components/os/ProfileSettingsForm'
 import type { PricingTier, Workstream } from '@/lib/types'
 
@@ -87,6 +89,13 @@ export default async function SettingsPage() {
   try {
     workstreams = await getWorkstreams(supabase)
   } catch {}
+
+  let freeAgentStatus: Awaited<ReturnType<typeof getFreeAgentStatus>> | null = null
+  if (roleIsAdmin(profile?.role)) {
+    try {
+      freeAgentStatus = await getFreeAgentStatus()
+    } catch {}
+  }
 
   try {
     const { data } = await supabase
@@ -199,6 +208,14 @@ export default async function SettingsPage() {
           </div>
         </section>
       </div>
+
+      {freeAgentStatus ? (
+        <FreeAgentSettings
+          connected={freeAgentStatus.connected}
+          connectedAt={freeAgentStatus.connectedAt}
+          configured={freeAgentStatus.configured}
+        />
+      ) : null}
 
       <section className="os-card p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">

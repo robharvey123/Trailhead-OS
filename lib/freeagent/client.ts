@@ -113,6 +113,26 @@ export async function freeAgentConnected(): Promise<boolean> {
   return Boolean(data)
 }
 
+/** Connection status for the settings UI: connected flag + when it was last set. */
+export async function getFreeAgentStatus(): Promise<{ connected: boolean; connectedAt: string | null; configured: boolean }> {
+  const configured = Boolean(CLIENT_ID && CLIENT_SECRET && REDIRECT_URI)
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('freeagent_credentials')
+    .select('created_at, updated_at')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  return { connected: Boolean(data), connectedAt: (data?.updated_at ?? data?.created_at ?? null) as string | null, configured }
+}
+
+/** Remove the stored connection (admin disconnect). Service-role only table. */
+export async function disconnectFreeAgent(): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase.from('freeagent_credentials').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  if (error) throw new Error(error.message || 'Failed to disconnect FreeAgent')
+}
+
 /**
  * Return a valid access token, refreshing (and re-storing) when it's within the
  * skew window of expiry. Throws if FreeAgent isn't connected.
