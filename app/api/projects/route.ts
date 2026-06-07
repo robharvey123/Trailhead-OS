@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => ({}))
   const name = sanitizeText(body.name) ?? ''
-  const workstreamId = typeof body.workstream_id === 'string' ? body.workstream_id : ''
+  // workstream_id is retired (brief 19) — projects are no longer workstream-scoped.
+  const workstreamId = typeof body.workstream_id === 'string' && body.workstream_id ? body.workstream_id : null
   const engagementId = typeof body.engagement_id === 'string' && body.engagement_id ? body.engagement_id : null
   const status =
     typeof body.status === 'string' && PROJECT_STATUSES.has(body.status as ProjectStatus)
@@ -69,10 +70,6 @@ export async function POST(request: NextRequest) {
 
   if (!name) {
     return NextResponse.json({ error: 'name is required' }, { status: 400 })
-  }
-
-  if (!workstreamId) {
-    return NextResponse.json({ error: 'workstream_id is required' }, { status: 400 })
   }
 
   if (!engagementId) {
@@ -85,6 +82,7 @@ export async function POST(request: NextRequest) {
         name,
         workstream_id: workstreamId,
         engagement_id: engagementId,
+        // (workstream_id is null now; kept in the payload for the optional column)
         account_id: typeof body.account_id === 'string' ? body.account_id : null,
         owner_id: typeof body.owner_id === 'string' ? body.owner_id : null,
         pricing_tier_id: typeof body.pricing_tier_id === 'string' ? body.pricing_tier_id : null,
