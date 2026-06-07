@@ -661,6 +661,8 @@ export interface Invoice {
   bill_to_email: string | null
   bill_to_phone: string | null
   notes: string | null
+  freeagent_invoice_url?: string | null
+  freeagent_synced_at?: string | null
   created_at: string
   updated_at: string
   deleted_at?: string | null

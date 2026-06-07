@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type InvoiceStatus, type Workstream } from '@/lib/types'
@@ -10,7 +10,7 @@ import ConfirmDialog from './ConfirmDialog'
 import RecordEmailDialog from './RecordEmailDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import StatusBadge from './StatusBadge'
-import { deleteInvoice } from '@/app/(os)/invoicing/[id]/actions'
+import { deleteInvoice, sendInvoiceToFreeAgent } from '@/app/(os)/invoicing/[id]/actions'
 
 function formatMoney(value: number) {
   return `£${value.toFixed(2)}`
@@ -38,6 +38,19 @@ export default function InvoiceDetailClient({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [faUrl, setFaUrl] = useState<string | null>(invoice.freeagent_invoice_url ?? null)
+  const [faPending, startFa] = useTransition()
+
+  function sendToFreeAgent() {
+    startFa(async () => {
+      const res = await sendInvoiceToFreeAgent(invoice.id)
+      if (res.error) toast.error(res.error)
+      else {
+        setFaUrl(res.url ?? null)
+        toast.success('Sent to FreeAgent as a draft invoice')
+      }
+    })
+  }
   const [paymentLink, setPaymentLink] = useState(invoice.stripe_payment_link ?? '')
   const [subscriptionState, setSubscriptionState] = useState({
     isRecurring: invoice.is_recurring ?? false,
@@ -245,6 +258,27 @@ export default function InvoiceDetailClient({
               defaultMessage={`Hi,\n\nPlease find the attached invoice ${invoice.invoice_number}.\n\nThank you.`}
               buttonClassName="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             />
+            {isAdmin ? (
+              faUrl ? (
+                <a
+                  href={faUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                >
+                  In FreeAgent ↗
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={sendToFreeAgent}
+                  disabled={faPending}
+                  className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-60"
+                >
+                  {faPending ? 'Sending…' : 'Send to FreeAgent'}
+                </button>
+              )
+            ) : null}
             {isAdmin ? (
               <button
                 type="button"
