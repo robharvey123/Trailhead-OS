@@ -1272,6 +1272,7 @@ export interface Deal {
 export interface DealWithRelations extends Deal {
   account?: { id: string; name: string } | null
   primary_contact?: { id: string; name: string } | null
+  projects?: Array<{ id: string; name: string }>
 }
 
 export interface DealInput {
@@ -1286,6 +1287,8 @@ export interface DealInput {
   expected_close_date?: string | null
   source?: string | null
   notes?: string | null
+  /** When provided, the deal's linked projects are reconciled to exactly this set. */
+  project_ids?: string[]
 }
 
 export interface PipelineStageSummary {

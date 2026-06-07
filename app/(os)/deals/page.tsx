@@ -18,15 +18,17 @@ export default async function DealsPage() {
     redirect('/login')
   }
 
-  const [deals, accounts] = await Promise.all([
+  const [deals, accounts, projectsRes] = await Promise.all([
     listDeals({}, supabase),
     getAccounts({}, supabase),
+    supabase.from('projects').select('id, name').order('name'),
   ])
 
   return (
     <DealsClient
       initialDeals={deals}
       accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
+      projects={(projectsRes.data ?? []).map((p) => ({ id: p.id, name: p.name }))}
     />
   )
 }

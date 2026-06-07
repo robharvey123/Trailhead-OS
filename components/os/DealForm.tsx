@@ -8,19 +8,34 @@ import {
   type DealStage,
   type DealWithRelations,
 } from '@/lib/types'
+import AccountCombobox from './AccountCombobox'
+import ProjectMultiSelect from './ProjectMultiSelect'
 
 interface DealFormProps {
   deal: DealWithRelations | null
   accounts: Array<{ id: string; name: string }>
   contacts?: Array<{ id: string; name: string }>
+  projects?: Array<{ id: string; name: string }>
   onClose: () => void
   onSave: (input: DealInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
 }
 
-export default function DealForm({ deal, accounts, contacts = [], onClose, onSave, onDelete }: DealFormProps) {
+export default function DealForm({
+  deal,
+  accounts,
+  contacts = [],
+  projects = [],
+  onClose,
+  onSave,
+  onDelete,
+}: DealFormProps) {
   const [name, setName] = useState(deal?.name ?? '')
   const [accountId, setAccountId] = useState(deal?.account_id ?? accounts[0]?.id ?? '')
+  const [accountName, setAccountName] = useState(
+    deal?.account?.name ?? accounts.find((a) => a.id === (deal?.account_id ?? accounts[0]?.id))?.name ?? ''
+  )
+  const [projectIds, setProjectIds] = useState<string[]>(deal?.projects?.map((p) => p.id) ?? [])
   const [primaryContactId, setPrimaryContactId] = useState(deal?.primary_contact_id ?? '')
   const [stage, setStage] = useState<DealStage>(deal?.stage ?? 'New')
   const [valueAmount, setValueAmount] = useState(
@@ -52,6 +67,7 @@ export default function DealForm({ deal, accounts, contacts = [], onClose, onSav
         expected_close_date: expectedClose || null,
         source: source || null,
         notes: notes || null,
+        project_ids: projectIds,
       })
       onClose()
     } catch (err) {
@@ -89,16 +105,22 @@ export default function DealForm({ deal, accounts, contacts = [], onClose, onSav
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Account</label>
-            <select className={inputClass} value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <AccountCombobox
+            label="Account"
+            value={accountId}
+            selectedName={accountName}
+            onChange={(account) => {
+              setAccountId(account.id)
+              setAccountName(account.name)
+            }}
+          />
+
+          <ProjectMultiSelect
+            label="Projects"
+            options={projects}
+            value={projectIds}
+            onChange={setProjectIds}
+          />
 
           {contacts.length > 0 ? (
             <div>

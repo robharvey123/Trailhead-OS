@@ -14,7 +14,8 @@ async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
 }
 
-const DEAL_SELECT = '*, account:accounts(id,name), primary_contact:contacts(id,name)'
+const DEAL_SELECT =
+  '*, account:accounts(id,name), primary_contact:contacts(id,name), deal_projects(project:projects(id,name))'
 
 const TERMINAL_STAGES: DealStage[] = ['Won', 'Lost']
 
@@ -22,10 +23,24 @@ function isTerminal(stage: DealStage) {
   return TERMINAL_STAGES.includes(stage)
 }
 
+type RawDealRow = Record<string, unknown> & {
+  deal_projects?: Array<{ project: { id: string; name: string } | null }> | null
+}
+
+/** Flatten the nested `deal_projects(project:projects(...))` join into a `projects` array. */
+function normalizeDeal(row: RawDealRow): DealWithRelations {
+  const { deal_projects, ...rest } = row
+  const projects = (deal_projects ?? [])
+    .map((dp) => dp.project)
+    .filter((p): p is { id: string; name: string } => Boolean(p))
+  return { ...(rest as unknown as DealWithRelations), projects }
+}
+
 export interface DealFilters {
   account_id?: string
   stage?: DealStage
   owner_id?: string
+  project_id?: string
   search?: string
 }
 
@@ -34,6 +49,30 @@ export async function listDeals(
   client?: SupabaseClient
 ): Promise<DealWithRelations[]> {
   const supabase = await getSupabase(client)
+
+  // Project filter joins through deal_projects; restrict to deals that have a matching link.
+  if (filters.project_id) {
+    const { data: links, error: linkError } = await supabase
+      .from('deal_projects')
+      .select('deal_id')
+      .eq('project_id', filters.project_id)
+    if (linkError) throw new Error(linkError.message || 'Failed to filter deals by project')
+    const dealIds = (links ?? []).map((l) => l.deal_id)
+    if (dealIds.length === 0) return []
+    let query = supabase
+      .from('deals')
+      .select(DEAL_SELECT)
+      .in('id', dealIds)
+      .order('updated_at', { ascending: false })
+    if (filters.account_id) query = query.eq('account_id', filters.account_id)
+    if (filters.stage) query = query.eq('stage', filters.stage)
+    if (filters.owner_id) query = query.eq('owner_id', filters.owner_id)
+    if (filters.search) query = query.ilike('name', `%${filters.search}%`)
+    const { data, error } = await query
+    if (error) throw new Error(error.message || 'Failed to load deals')
+    return (data ?? []).map((row) => normalizeDeal(row as RawDealRow))
+  }
+
   let query = supabase.from('deals').select(DEAL_SELECT).order('updated_at', { ascending: false })
 
   if (filters.account_id) query = query.eq('account_id', filters.account_id)
@@ -43,7 +82,7 @@ export async function listDeals(
 
   const { data, error } = await query
   if (error) throw new Error(error.message || 'Failed to load deals')
-  return (data ?? []) as unknown as DealWithRelations[]
+  return (data ?? []).map((row) => normalizeDeal(row as RawDealRow))
 }
 
 export async function getDeal(
@@ -53,7 +92,32 @@ export async function getDeal(
   const supabase = await getSupabase(client)
   const { data, error } = await supabase.from('deals').select(DEAL_SELECT).eq('id', id).maybeSingle()
   if (error) throw new Error(error.message || 'Failed to load deal')
-  return (data as unknown as DealWithRelations | null) ?? null
+  return data ? normalizeDeal(data as RawDealRow) : null
+}
+
+/**
+ * Reconcile a deal's project links to exactly `projectIds`.
+ * Delete-then-insert within the single server-side call so a save can't leave a
+ * half-updated set. RLS (authenticated) governs both statements.
+ */
+async function syncDealProjects(
+  supabase: SupabaseClient,
+  dealId: string,
+  projectIds: string[]
+): Promise<void> {
+  const { error: deleteError } = await supabase
+    .from('deal_projects')
+    .delete()
+    .eq('deal_id', dealId)
+  if (deleteError) throw new Error(deleteError.message || 'Failed to update deal projects')
+
+  const unique = Array.from(new Set(projectIds.filter(Boolean)))
+  if (unique.length === 0) return
+
+  const { error: insertError } = await supabase
+    .from('deal_projects')
+    .insert(unique.map((project_id) => ({ deal_id: dealId, project_id })))
+  if (insertError) throw new Error(insertError.message || 'Failed to update deal projects')
 }
 
 /** Insert (no id) or update (with id) a deal. Stamps closed_at on terminal stages. */
@@ -85,6 +149,7 @@ export async function upsertDeal(input: DealInput, client?: SupabaseClient): Pro
       .select('*')
       .single()
     if (error) throw new Error(error.message || 'Failed to update deal')
+    if (input.project_ids) await syncDealProjects(supabase, input.id, input.project_ids)
     return data as Deal
   }
 
@@ -99,7 +164,9 @@ export async function upsertDeal(input: DealInput, client?: SupabaseClient): Pro
 
   const { data, error } = await supabase.from('deals').insert(payload).select('*').single()
   if (error) throw new Error(error.message || 'Failed to create deal')
-  return data as Deal
+  const created = data as Deal
+  if (input.project_ids) await syncDealProjects(supabase, created.id, input.project_ids)
+  return created
 }
 
 export async function moveDealStage(

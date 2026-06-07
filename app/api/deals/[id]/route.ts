@@ -27,7 +27,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     const { id } = await params
     const body = await request.json()
-    const deal = await deals.upsertDeal({ ...body, id }, supabase)
+    const saved = await deals.upsertDeal({ ...body, id }, supabase)
+    const deal = (await deals.getDeal(saved.id, supabase)) ?? saved
 
     return NextResponse.json({ deal })
   } catch (error) {

@@ -16,6 +16,7 @@ import StageBadge from './StageBadge'
 interface DealsClientProps {
   initialDeals: DealWithRelations[]
   accounts: Array<{ id: string; name: string }>
+  projects?: Array<{ id: string; name: string }>
 }
 
 type View = 'kanban' | 'table'
@@ -29,15 +30,32 @@ function formatDate(value: string | null) {
   })
 }
 
-export default function DealsClient({ initialDeals, accounts }: DealsClientProps) {
+export default function DealsClient({ initialDeals, accounts, projects = [] }: DealsClientProps) {
   const [deals, setDeals] = useState<DealWithRelations[]>(initialDeals)
   const [view, setView] = useState<View>('kanban')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<DealWithRelations | null>(null)
   const [showForecast, setShowForecast] = useState(false)
+  const [projectFilter, setProjectFilter] = useState('')
   const [error, setError] = useState('')
 
   const accountName = useMemo(() => new Map(accounts.map((a) => [a.id, a.name])), [accounts])
+  const projectsById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects])
+
+  // Map submitted project_ids back to {id,name} so chips render without a refetch.
+  function resolveProjects(ids?: string[]): Array<{ id: string; name: string }> {
+    return (ids ?? [])
+      .map((id) => projectsById.get(id))
+      .filter((p): p is { id: string; name: string } => Boolean(p))
+  }
+
+  const visibleDeals = useMemo(
+    () =>
+      projectFilter
+        ? deals.filter((d) => d.projects?.some((p) => p.id === projectFilter))
+        : deals,
+    [deals, projectFilter]
+  )
 
   const openTotal = useMemo(
     () =>
@@ -76,6 +94,7 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
   }
 
   async function handleSave(input: DealInput) {
+    const linkedProjects = resolveProjects(input.project_ids)
     if (input.id) {
       const { deal } = await apiFetch<{ deal: DealWithRelations }>(`/api/deals/${input.id}`, {
         method: 'PATCH',
@@ -85,7 +104,12 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
       setDeals((current) =>
         current.map((d) =>
           d.id === input.id
-            ? { ...d, ...deal, account: { id: deal.account_id, name: accountName.get(deal.account_id) ?? '' } }
+            ? {
+                ...d,
+                ...deal,
+                account: deal.account ?? { id: deal.account_id, name: accountName.get(deal.account_id) ?? d.account?.name ?? '' },
+                projects: deal.projects ?? linkedProjects,
+              }
             : d
         )
       )
@@ -96,7 +120,11 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
         body: JSON.stringify(input),
       })
       setDeals((current) => [
-        { ...deal, account: { id: deal.account_id, name: accountName.get(deal.account_id) ?? '' } },
+        {
+          ...deal,
+          account: deal.account ?? { id: deal.account_id, name: accountName.get(deal.account_id) ?? '' },
+          projects: deal.projects ?? linkedProjects,
+        },
         ...current,
       ])
     }
@@ -172,6 +200,20 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
             {toggleBtn('kanban', 'Kanban')}
             {toggleBtn('table', 'Table')}
           </div>
+          {projects.length > 0 ? (
+            <select
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="rounded-xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+            >
+              <option value="">All projects</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <button
             type="button"
             onClick={() => setShowForecast(true)}
@@ -192,7 +234,7 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
       {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       {view === 'kanban' ? (
-        <DealKanban deals={deals} onMove={handleMove} onSelect={openEdit} />
+        <DealKanban deals={visibleDeals} onMove={handleMove} onSelect={openEdit} />
       ) : (
         <div className="os-card overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -200,6 +242,7 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Account</th>
+                <th className="px-4 py-3">Projects</th>
                 <th className="px-4 py-3">Stage</th>
                 <th className="px-4 py-3 text-right">Value</th>
                 <th className="px-4 py-3 text-right">Prob.</th>
@@ -208,14 +251,14 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
               </tr>
             </thead>
             <tbody>
-              {deals.length === 0 ? (
+              {visibleDeals.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-[color:var(--text-3)]">
-                    No deals yet. Create your first deal.
+                  <td colSpan={8} className="px-4 py-8 text-center text-[color:var(--text-3)]">
+                    {projectFilter ? 'No deals linked to this project.' : 'No deals yet. Create your first deal.'}
                   </td>
                 </tr>
               ) : (
-                deals.map((d) => (
+                visibleDeals.map((d) => (
                   <tr
                     key={d.id}
                     onClick={() => openEdit(d)}
@@ -223,6 +266,22 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
                   >
                     <td className="px-4 py-3 font-medium text-[color:var(--text)]">{d.name}</td>
                     <td className="px-4 py-3 text-[color:var(--text-2)]">{d.account?.name ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      {d.projects && d.projects.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {d.projects.map((p) => (
+                            <span
+                              key={p.id}
+                              className="inline-flex rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-xs font-medium text-[color:var(--accent-strong)]"
+                            >
+                              {p.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[color:var(--text-3)]">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <StageBadge stage={d.stage} />
                     </td>
@@ -248,6 +307,7 @@ export default function DealsClient({ initialDeals, accounts }: DealsClientProps
         <DealForm
           deal={editing}
           accounts={accounts}
+          projects={projects}
           onClose={() => setFormOpen(false)}
           onSave={handleSave}
           onDelete={editing ? handleDelete : undefined}

@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'account_id and name are required' }, { status: 400 })
     }
 
-    const deal = await deals.upsertDeal(body, supabase)
+    const saved = await deals.upsertDeal(body, supabase)
+    const deal = (await deals.getDeal(saved.id, supabase)) ?? saved
     return NextResponse.json({ deal }, { status: 201 })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create deal'
