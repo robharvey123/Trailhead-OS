@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/service'
 import type { LineItem } from '@/lib/types'
 import { faFetch } from './client'
-import { ensureContact } from './contacts'
+import { resolveInvoiceContactUrl } from './contacts'
 
 // Consulting/dev work — quantity × price. Configurable later if needed.
 const ITEM_TYPE = 'Services'
@@ -20,19 +20,29 @@ export async function pushInvoiceToFreeAgent(invoiceId: string): Promise<string>
 
   const { data: invoice, error } = await supabase
     .from('invoices')
-    .select('id, account_id, issue_date, due_date, line_items, vat_rate, freeagent_invoice_url, deleted_at')
+    .select('id, account_id, contact_id, bill_to_name, bill_to_email, bill_to_address, bill_to_city, bill_to_postcode, bill_to_country, issue_date, due_date, line_items, vat_rate, freeagent_invoice_url, deleted_at')
     .eq('id', invoiceId)
     .maybeSingle()
   if (error) throw new Error(error.message || 'Failed to load invoice')
   if (!invoice) throw new Error('Invoice not found')
   if (invoice.deleted_at) throw new Error('Invoice has been deleted')
   if (invoice.freeagent_invoice_url) return invoice.freeagent_invoice_url as string
-  if (!invoice.account_id) throw new Error('Invoice has no client account to map to a FreeAgent contact.')
 
-  const contactUrl = await ensureContact(invoice.account_id as string)
+  // Resolve a FreeAgent contact: account → contact → bill-to (handles account-less invoices).
+  const contactUrl = await resolveInvoiceContactUrl({
+    account_id: (invoice.account_id as string | null) ?? null,
+    contact_id: (invoice.contact_id as string | null) ?? null,
+    bill_to_name: (invoice.bill_to_name as string | null) ?? null,
+    bill_to_email: (invoice.bill_to_email as string | null) ?? null,
+    bill_to_address: (invoice.bill_to_address as string | null) ?? null,
+    bill_to_city: (invoice.bill_to_city as string | null) ?? null,
+    bill_to_postcode: (invoice.bill_to_postcode as string | null) ?? null,
+    bill_to_country: (invoice.bill_to_country as string | null) ?? null,
+  })
 
-  const { data: account } = await supabase.from('accounts').select('currency').eq('id', invoice.account_id).maybeSingle()
-  const currency = (account?.currency as string | null) ?? 'GBP'
+  const currency = invoice.account_id
+    ? ((await supabase.from('accounts').select('currency').eq('id', invoice.account_id).maybeSingle()).data?.currency as string | null) ?? 'GBP'
+    : 'GBP'
   const vatRate = Number(invoice.vat_rate ?? 0)
   const lineItems = (invoice.line_items ?? []) as LineItem[]
   if (lineItems.length === 0) throw new Error('Invoice has no line items.')
