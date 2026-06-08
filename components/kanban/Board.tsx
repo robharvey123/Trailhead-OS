@@ -7,7 +7,31 @@ import { ENGAGEMENT_TASK_BOARD_COLUMNS, type EngagementTaskStatus, type Engageme
 import { moveTask } from '@/app/(os)/my-work/actions'
 import KanbanColumn from './Column'
 
-export default function Board({ initialTasks, fromPath }: { initialTasks: EngagementTaskWithRelations[]; fromPath?: string }) {
+export type BoardSortMode = 'manual' | 'due_asc' | 'due_desc'
+
+/** due_date compare with nulls always last, regardless of direction. */
+function compareDue(a: string | null, b: string | null, dir: 1 | -1) {
+  if (a === b) return 0
+  if (!a) return 1
+  if (!b) return -1
+  return a.localeCompare(b) * dir
+}
+
+export default function Board({
+  initialTasks,
+  fromPath,
+  sortMode = 'manual',
+  dueFrom = '',
+  dueTo = '',
+}: {
+  initialTasks: EngagementTaskWithRelations[]
+  fromPath?: string
+  /** 'manual' = position order (drag-drop). Date modes order each column by due_date. */
+  sortMode?: BoardSortMode
+  /** Inclusive due_date range (YYYY-MM-DD). Cards outside it — or undated — are hidden. */
+  dueFrom?: string
+  dueTo?: string
+}) {
   const router = useRouter()
   const openTask = (id: string) =>
     router.push(`/my-work/${id}${fromPath ? `?from=${encodeURIComponent(fromPath)}` : ''}`)
@@ -16,8 +40,16 @@ export default function Board({ initialTasks, fromPath }: { initialTasks: Engage
   // Small activation distance so a plain click opens the card instead of dragging.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
 
-  const columnTasks = (s: EngagementTaskStatus) =>
-    tasks.filter((t) => t.status === s).sort((a, b) => a.position - b.position)
+  const columnTasks = (s: EngagementTaskStatus) => {
+    let list = tasks.filter((t) => t.status === s)
+    if (dueFrom) list = list.filter((t) => t.due_date != null && t.due_date >= dueFrom)
+    if (dueTo) list = list.filter((t) => t.due_date != null && t.due_date <= dueTo)
+    if (sortMode === 'due_asc' || sortMode === 'due_desc') {
+      const dir = sortMode === 'due_desc' ? -1 : 1
+      return list.sort((a, b) => compareDue(a.due_date, b.due_date, dir) || a.position - b.position)
+    }
+    return list.sort((a, b) => a.position - b.position)
+  }
 
   async function onDragEnd(e: DragEndEvent) {
     const { active, over } = e
