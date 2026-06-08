@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await syncMailbox({ sinceDays: 1 })
+    const result = await syncMailbox({ sinceDays: 1, notify: true })
     return NextResponse.json(result)
   } catch (error) {
     return NextResponse.json(

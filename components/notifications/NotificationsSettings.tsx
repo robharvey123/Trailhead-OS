@@ -11,6 +11,7 @@ const CATEGORIES: { key: keyof NotificationSettings; label: string }[] = [
   { key: 'push_direct_message', label: 'Direct messages' },
   { key: 'push_mention', label: 'Mentions' },
   { key: 'push_task_assigned', label: 'Tasks assigned to me' },
+  { key: 'push_new_email', label: 'New emails' },
 ]
 
 export default function NotificationsSettings({ initialSettings }: { initialSettings: NotificationSettings }) {

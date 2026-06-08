@@ -291,6 +291,7 @@ export interface NotificationSettings {
   push_direct_message: boolean
   push_mention: boolean
   push_task_assigned: boolean
+  push_new_email: boolean
 }
 
 export interface Profile {

@@ -11,7 +11,7 @@
     },
     {
       "path": "/api/cron/gmail-sync",
-      "schedule": "*/2 * * * *"
+      "schedule": "* * * * *"
     }
   ],
   "redirects": [

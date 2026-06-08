@@ -3,6 +3,7 @@ import { getAllGoogleTokens } from './oauth'
 import { listMessageIds, getFullMessage, extractBodies } from './gmail'
 import { buildAutolinkMaps, determineLink, parseAddress, parseAddressList } from './autolink'
 import { applyInboundApprovalReplies } from '@/lib/db/approvals'
+import { dispatchNewMailPush, type NewMailPushItem } from '@/lib/push/email'
 
 export interface SyncResult {
   scanned: number
@@ -15,7 +16,11 @@ export interface SyncResult {
  * Idempotent: messages already present (by gmail_message_id) are skipped.
  * Runs with the service-role client (used by both the on-demand button and the cron).
  */
-export async function syncMailbox({ sinceDays = 7, max = 300 }: { sinceDays?: number; max?: number } = {}): Promise<SyncResult> {
+export async function syncMailbox({
+  sinceDays = 7,
+  max = 300,
+  notify = false,
+}: { sinceDays?: number; max?: number; notify?: boolean } = {}): Promise<SyncResult> {
   const supabase = createClient()
 
   // Self identity (the connected Workspace mailbox).
@@ -40,6 +45,7 @@ export async function syncMailbox({ sinceDays = 7, max = 300 }: { sinceDays?: nu
   const toFetch = ids.filter((id) => !existing.has(id))
   let inserted = 0
   const inboundReplies: Array<{ gmail_thread_id: string; body_text: string | null }> = []
+  const newInbound: NewMailPushItem[] = []
 
   for (const id of toFetch) {
     try {
@@ -82,7 +88,12 @@ export async function syncMailbox({ sinceDays = 7, max = 300 }: { sinceDays?: nu
         received_at: direction === 'inbound' ? ts : null,
         sent_at: direction === 'outbound' ? ts : null,
       })
-      if (!error) inserted++
+      if (!error) {
+        inserted++
+        if (direction === 'inbound') {
+          newInbound.push({ from_name: from.name, from_address: from.email, subject: header('Subject') })
+        }
+      }
       if (direction === 'inbound' && msg.threadId) inboundReplies.push({ gmail_thread_id: msg.threadId, body_text: text })
     } catch {
       // skip individual message failures; continue the batch
@@ -92,6 +103,12 @@ export async function syncMailbox({ sinceDays = 7, max = 300 }: { sinceDays?: nu
   // Flip any Open approval requests whose linked thread got an approve/decline reply.
   if (inboundReplies.length > 0) {
     try { await applyInboundApprovalReplies(inboundReplies, supabase) } catch { /* non-fatal */ }
+  }
+
+  // Push a "new email" notification (cron path only — the on-demand button/backfill
+  // pass notify:false so a 90-day backfill doesn't fire hundreds of alerts).
+  if (notify && newInbound.length > 0) {
+    try { await dispatchNewMailPush(newInbound) } catch { /* non-fatal */ }
   }
 
   return { scanned: ids.length, inserted, skipped: ids.length - toFetch.length }

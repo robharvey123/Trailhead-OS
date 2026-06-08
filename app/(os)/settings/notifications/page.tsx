@@ -10,6 +10,7 @@ const DEFAULTS: NotificationSettings = {
   push_direct_message: true,
   push_mention: true,
   push_task_assigned: true,
+  push_new_email: true,
 }
 
 export default async function NotificationSettingsPage() {

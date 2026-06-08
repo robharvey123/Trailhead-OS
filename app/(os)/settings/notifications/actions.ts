@@ -9,6 +9,7 @@ const DEFAULTS: NotificationSettings = {
   push_direct_message: true,
   push_mention: true,
   push_task_assigned: true,
+  push_new_email: true,
 }
 const VALID = new Set(Object.keys(DEFAULTS))
 
