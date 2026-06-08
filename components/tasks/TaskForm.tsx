@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createTask } from '@/app/(os)/my-work/actions'
 import { convertMessageToTask } from '@/app/(os)/messages/actions'
-import { ENGAGEMENT_TASK_PRIORITIES, ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTaskPriority } from '@/lib/types'
+import { ENGAGEMENT_TASK_PRIORITIES, ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTask, type EngagementTaskPriority } from '@/lib/types'
 
 type Named = { id: string; name: string }
 
@@ -19,6 +19,7 @@ export default function TaskForm({
   initialEngagementId,
   sourceMessageId,
   onConverted,
+  onCreated,
   onClose,
 }: {
   people: Named[]
@@ -34,6 +35,8 @@ export default function TaskForm({
   /** When set, the task is created via convertMessageToTask (stamps source_message_id). */
   sourceMessageId?: string
   onConverted?: (taskId: string, title: string) => void
+  /** Fires after a normal task create with the new row, so the caller can reveal it. */
+  onCreated?: (task: EngagementTask) => void
   onClose: () => void
 }) {
   const router = useRouter()
@@ -82,6 +85,7 @@ export default function TaskForm({
       labels: labels.split(',').map((l) => l.trim()).filter(Boolean),
     })
     if (res.error) { setError(res.error); setBusy(false); return }
+    if (res.task) onCreated?.(res.task)
     onClose()
     router.refresh()
   }

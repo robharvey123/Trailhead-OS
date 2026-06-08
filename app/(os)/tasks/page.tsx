@@ -42,6 +42,7 @@ export default async function TasksPage() {
   return (
     <div className={`thmock ${mockupFontVars}`}>
       <MyWorkClient
+        currentPersonId={personId}
         assigned={assigned}
         reported={reported}
         engagementTasks={engagementTasks}

@@ -8,6 +8,7 @@ import {
   ENGAGEMENT_TASK_PRIORITY_RANK,
   ENGAGEMENT_TASK_STATUSES,
   ENGAGEMENT_TASK_STATUS_LABELS,
+  type EngagementTask,
   type EngagementTaskPriority,
   type EngagementTaskStatus,
   type EngagementTaskWithRelations,
@@ -21,17 +22,35 @@ const TABS = [
 ] as const
 type TabKey = (typeof TABS)[number]['key']
 
+const SORTS = [
+  { key: 'due_asc', label: 'Due date ↑ (soonest)' },
+  { key: 'due_desc', label: 'Due date ↓ (latest)' },
+  { key: 'created_desc', label: 'Newest first' },
+  { key: 'created_asc', label: 'Oldest first' },
+] as const
+type SortKey = (typeof SORTS)[number]['key']
+
+/** due_date compare with nulls always sorted last, regardless of direction. */
+function compareDue(a: string | null, b: string | null, dir: 1 | -1) {
+  if (a === b) return 0
+  if (!a) return 1
+  if (!b) return -1
+  return a.localeCompare(b) * dir
+}
+
 function fmtDate(v: string | null) {
   return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }) : '—'
 }
 
 export default function MyWorkClient({
+  currentPersonId,
   assigned,
   reported,
   engagementTasks,
   people,
   engagements,
 }: {
+  currentPersonId: string
   assigned: EngagementTaskWithRelations[]
   reported: EngagementTaskWithRelations[]
   engagementTasks: EngagementTaskWithRelations[]
@@ -42,24 +61,36 @@ export default function MyWorkClient({
   const [tab, setTab] = useState<TabKey>('assigned')
   const [statusFilter, setStatusFilter] = useState<EngagementTaskStatus | ''>('')
   const [priorityFilter, setPriorityFilter] = useState<EngagementTaskPriority | ''>('')
+  const [sort, setSort] = useState<SortKey>('due_asc')
+  const [dueFrom, setDueFrom] = useState('')
+  const [dueTo, setDueTo] = useState('')
   const [showForm, setShowForm] = useState(false)
 
   const source = tab === 'assigned' ? assigned : tab === 'reported' ? reported : engagementTasks
 
+  // A new task's reporter is always me; if I also self-assigned it, reveal the
+  // tab where it actually lands so it never looks like the create silently failed.
+  function handleCreated(task: EngagementTask) {
+    setTab(task.assignee_person_id === currentPersonId ? 'assigned' : 'reported')
+  }
+
   const rows = useMemo(() => {
-    const filtered = source.filter(
-      (t) => (!statusFilter || t.status === statusFilter) && (!priorityFilter || t.priority === priorityFilter)
-    )
-    // due_date asc nulls last, then priority desc.
+    const filtered = source.filter((t) => {
+      if (statusFilter && t.status !== statusFilter) return false
+      if (priorityFilter && t.priority !== priorityFilter) return false
+      if (dueFrom && (!t.due_date || t.due_date < dueFrom)) return false
+      if (dueTo && (!t.due_date || t.due_date > dueTo)) return false
+      return true
+    })
     return filtered.sort((a, b) => {
-      if (a.due_date !== b.due_date) {
-        if (!a.due_date) return 1
-        if (!b.due_date) return -1
-        return a.due_date.localeCompare(b.due_date)
-      }
+      if (sort === 'created_desc') return b.created_at.localeCompare(a.created_at)
+      if (sort === 'created_asc') return a.created_at.localeCompare(b.created_at)
+      // Due-date sorts: nulls last, ties broken by priority desc.
+      const due = compareDue(a.due_date, b.due_date, sort === 'due_desc' ? -1 : 1)
+      if (due !== 0) return due
       return ENGAGEMENT_TASK_PRIORITY_RANK[b.priority] - ENGAGEMENT_TASK_PRIORITY_RANK[a.priority]
     })
-  }, [source, statusFilter, priorityFilter])
+  }, [source, statusFilter, priorityFilter, sort, dueFrom, dueTo])
 
   return (
     <div className="panel overflow-hidden">
@@ -86,6 +117,20 @@ export default function MyWorkClient({
           <option value="">All priorities</option>
           {(Object.keys(ENGAGEMENT_TASK_PRIORITY_LABELS) as EngagementTaskPriority[]).map((p) => (<option key={p} value={p}>{ENGAGEMENT_TASK_PRIORITY_LABELS[p]}</option>))}
         </select>
+        <select className="filter-select" value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+          {SORTS.map((s) => (<option key={s.key} value={s.key}>{s.label}</option>))}
+        </select>
+        <label className="filter-date">
+          Due from
+          <input type="date" className="filter-select" value={dueFrom} max={dueTo || undefined} onChange={(e) => setDueFrom(e.target.value)} />
+        </label>
+        <label className="filter-date">
+          to
+          <input type="date" className="filter-select" value={dueTo} min={dueFrom || undefined} onChange={(e) => setDueTo(e.target.value)} />
+        </label>
+        {dueFrom || dueTo ? (
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setDueFrom(''); setDueTo('') }}>Clear dates</button>
+        ) : null}
       </div>
 
       <div style={{ padding: 24, paddingTop: 12 }}>
@@ -107,7 +152,15 @@ export default function MyWorkClient({
         )}
       </div>
 
-      {showForm ? <TaskForm people={people} engagements={engagements} onClose={() => setShowForm(false)} /> : null}
+      {showForm ? (
+        <TaskForm
+          people={people}
+          engagements={engagements}
+          initialAssigneeId={currentPersonId}
+          onCreated={handleCreated}
+          onClose={() => setShowForm(false)}
+        />
+      ) : null}
     </div>
   )
 }
