@@ -23,6 +23,8 @@ export default function Board({
   sortMode = 'manual',
   dueFrom = '',
   dueTo = '',
+  activeLabels,
+  onToggleLabel,
 }: {
   initialTasks: EngagementTaskWithRelations[]
   fromPath?: string
@@ -31,6 +33,9 @@ export default function Board({
   /** Inclusive due_date range (YYYY-MM-DD). Cards outside it — or undated — are hidden. */
   dueFrom?: string
   dueTo?: string
+  /** Show only cards carrying every active label (AND). Empty/undefined = no label filter. */
+  activeLabels?: string[]
+  onToggleLabel?: (label: string) => void
 }) {
   const router = useRouter()
   const openTask = (id: string) =>
@@ -42,6 +47,9 @@ export default function Board({
 
   const columnTasks = (s: EngagementTaskStatus) => {
     let list = tasks.filter((t) => t.status === s)
+    if (activeLabels && activeLabels.length > 0) {
+      list = list.filter((t) => activeLabels.every((l) => t.labels.includes(l)))
+    }
     if (dueFrom) list = list.filter((t) => t.due_date != null && t.due_date >= dueFrom)
     if (dueTo) list = list.filter((t) => t.due_date != null && t.due_date <= dueTo)
     if (sortMode === 'due_asc' || sortMode === 'due_desc') {
@@ -92,7 +100,14 @@ export default function Board({
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 8 }}>{error}</p> : null}
       <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', overflowX: 'auto' }}>
         {ENGAGEMENT_TASK_BOARD_COLUMNS.map((status) => (
-          <KanbanColumn key={status} status={status} tasks={columnTasks(status)} onOpen={openTask} />
+          <KanbanColumn
+            key={status}
+            status={status}
+            tasks={columnTasks(status)}
+            onOpen={openTask}
+            activeLabels={activeLabels}
+            onToggleLabel={onToggleLabel}
+          />
         ))}
       </div>
     </DndContext>

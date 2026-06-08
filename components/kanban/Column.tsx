@@ -9,10 +9,14 @@ export default function KanbanColumn({
   status,
   tasks,
   onOpen,
+  activeLabels,
+  onToggleLabel,
 }: {
   status: EngagementTaskStatus
   tasks: EngagementTaskWithRelations[]
   onOpen: (id: string) => void
+  activeLabels?: string[]
+  onToggleLabel?: (label: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
   return (
@@ -26,7 +30,7 @@ export default function KanbanColumn({
       </div>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div style={{ minHeight: 40, flex: 1 }}>
-          {tasks.map((t) => (<TaskCard key={t.id} task={t} onOpen={onOpen} />))}
+          {tasks.map((t) => (<TaskCard key={t.id} task={t} onOpen={onOpen} activeLabels={activeLabels} onToggleLabel={onToggleLabel} />))}
           {tasks.length === 0 ? <div style={{ fontSize: 12, color: 'var(--text-3)', padding: 8 }}>—</div> : null}
         </div>
       </SortableContext>

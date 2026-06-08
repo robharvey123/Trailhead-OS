@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Board, { type BoardSortMode } from '@/components/kanban/Board'
 import TaskForm from '@/components/tasks/TaskForm'
+import { labelColor } from '@/lib/tags'
 import type { EngagementTaskWithRelations } from '@/lib/types'
 
 type Named = { id: string; name: string }
@@ -34,6 +35,9 @@ export default function EngagementTasksClient({
   const [sortMode, setSortMode] = useState<BoardSortMode>('manual')
   const [dueFrom, setDueFrom] = useState('')
   const [dueTo, setDueTo] = useState('')
+  const [activeLabels, setActiveLabels] = useState<string[]>([])
+  const [labelsOpen, setLabelsOpen] = useState(false)
+  const labelsRef = useRef<HTMLDivElement>(null)
 
   const projects = useMemo(() => {
     const map = new Map<string, string>()
@@ -47,6 +51,28 @@ export default function EngagementTasksClient({
     if (scope === 'none') return initialTasks.filter((t) => !t.project_id)
     return initialTasks.filter((t) => t.project_id === scope)
   }, [initialTasks, projectId, scope])
+
+  // Distinct labels present in the current scope, for the filter dropdown.
+  const allLabels = useMemo(() => {
+    const set = new Set<string>()
+    for (const t of visible) for (const l of t.labels) set.add(l)
+    return Array.from(set).sort((a, b) => a.localeCompare(b))
+  }, [visible])
+
+  function toggleLabel(label: string) {
+    setActiveLabels((current) =>
+      current.includes(label) ? current.filter((l) => l !== label) : [...current, label]
+    )
+  }
+
+  // Close the labels dropdown on outside click.
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (labelsRef.current && !labelsRef.current.contains(e.target as Node)) setLabelsOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [])
 
   return (
     <div>
@@ -73,11 +99,63 @@ export default function EngagementTasksClient({
           {dueFrom || dueTo ? (
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setDueFrom(''); setDueTo('') }}>Clear dates</button>
           ) : null}
+
+          {allLabels.length > 0 ? (
+            <div ref={labelsRef} style={{ position: 'relative' }}>
+              <button type="button" className="filter-select" style={{ cursor: 'pointer' }} onClick={() => setLabelsOpen((o) => !o)}>
+                Labels{activeLabels.length > 0 ? ` (${activeLabels.length})` : ''} ▾
+              </button>
+              {labelsOpen ? (
+                <div style={{ position: 'absolute', zIndex: 20, marginTop: 4, maxHeight: 280, minWidth: 200, overflowY: 'auto', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 12px 40px rgba(15,23,42,0.12)', padding: 6 }}>
+                  {allLabels.map((l) => {
+                    const c = labelColor(l)
+                    const active = activeLabels.includes(l)
+                    return (
+                      <button
+                        key={l}
+                        type="button"
+                        onClick={() => toggleLabel(l)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '6px 8px', borderRadius: 6, background: active ? 'var(--surface-2)' : 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--text)' }}
+                      >
+                        <span style={{ width: 10, height: 10, borderRadius: 999, background: c.solidBg, flexShrink: 0 }} />
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l}</span>
+                        {active ? <span style={{ color: 'var(--accent-strong)' }}>✓</span> : null}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {activeLabels.map((l) => {
+            const c = labelColor(l)
+            return (
+              <button
+                key={l}
+                type="button"
+                onClick={() => toggleLabel(l)}
+                title={`Remove filter: ${l}`}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', background: c.solidBg, color: '#fff', border: 'none', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              >
+                {l} ✕
+              </button>
+            )
+          })}
         </div>
         <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ New task</button>
       </div>
       {/* Board keeps its tasks in local state; re-key so a scope change re-seeds it. */}
-      <Board key={projectId ?? scope} initialTasks={visible} fromPath={backHref} sortMode={sortMode} dueFrom={dueFrom} dueTo={dueTo} />
+      <Board
+        key={projectId ?? scope}
+        initialTasks={visible}
+        fromPath={backHref}
+        sortMode={sortMode}
+        dueFrom={dueFrom}
+        dueTo={dueTo}
+        activeLabels={activeLabels}
+        onToggleLabel={toggleLabel}
+      />
       {showForm ? (
         <TaskForm
           people={people}

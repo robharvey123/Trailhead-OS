@@ -3,6 +3,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTaskPriority, type EngagementTaskWithRelations } from '@/lib/types'
+import { labelColor } from '@/lib/tags'
 
 const PRIORITY_COLOR: Record<EngagementTaskPriority, string> = {
   urgent: 'var(--red)', high: 'var(--amber)', normal: 'var(--text-3)', low: 'var(--text-3)',
@@ -16,7 +17,17 @@ function fmtDate(v: string | null) {
   return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : null
 }
 
-export default function TaskCard({ task, onOpen }: { task: EngagementTaskWithRelations; onOpen: (id: string) => void }) {
+export default function TaskCard({
+  task,
+  onOpen,
+  activeLabels,
+  onToggleLabel,
+}: {
+  task: EngagementTaskWithRelations
+  onOpen: (id: string) => void
+  activeLabels?: string[]
+  onToggleLabel?: (label: string) => void
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -38,7 +49,37 @@ export default function TaskCard({ task, onOpen }: { task: EngagementTaskWithRel
       </div>
       {task.labels.length > 0 ? (
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
-          {task.labels.map((l) => (<span key={l} className="channel-tag" style={{ fontSize: 10 }}>{l}</span>))}
+          {task.labels.map((l) => {
+            const c = labelColor(l)
+            const active = activeLabels?.includes(l) ?? false
+            return (
+              <button
+                key={l}
+                type="button"
+                // Stop the dnd-kit sensor + card click so tapping a tag filters, not drags/opens.
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onToggleLabel?.(l) }}
+                title={active ? `Remove filter: ${l}` : `Filter by “${l}”`}
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  lineHeight: 1.4,
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  cursor: onToggleLabel ? 'pointer' : 'default',
+                  maxWidth: 180,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  background: active ? c.solidBg : c.bg,
+                  color: active ? '#fff' : c.fg,
+                  border: `1px solid ${active ? c.solidBg : c.border}`,
+                }}
+              >
+                {l}
+              </button>
+            )
+          })}
         </div>
       ) : null}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
