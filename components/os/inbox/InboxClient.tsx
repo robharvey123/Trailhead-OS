@@ -1,9 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/api-fetch'
+import { createClient } from '@/lib/supabase/client'
 import type { EmailLog, EmailThread } from '@/lib/types'
+
+type LiveStatus = 'connecting' | 'live' | 'offline'
 import ComposeModal from './ComposeModal'
 import SafeEmailHtml from '../SafeEmailHtml'
 
@@ -58,6 +61,9 @@ export default function InboxClient({
   const [reply, setReply] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting')
+  const supabase = useMemo(() => createClient(), [])
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const counts = useMemo(() => ({
     inbox: threads.filter((t) => t.in_inbox).length,
@@ -85,10 +91,53 @@ export default function InboxClient({
 
   const active = threads.find((t) => t.gmail_thread_id === activeId) ?? null
 
-  async function refreshThreads() {
+  const refreshThreads = useCallback(async () => {
     const { threads: fresh } = await apiFetch<{ threads: EmailThread[] }>('/api/inbox?folder=all')
     setThreads(fresh)
-  }
+  }, [])
+
+  // Coalesce bursts (a single sync writes many rows) into one refresh.
+  const scheduleRefresh = useCallback(() => {
+    if (refreshTimer.current) clearTimeout(refreshTimer.current)
+    refreshTimer.current = setTimeout(() => { void refreshThreads() }, 600)
+  }, [refreshThreads])
+
+  // Push inbox: live-update the thread list as the gmail-sync cron writes mail.
+  useEffect(() => {
+    if (!connected) return
+    let cancelled = false
+    void (async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (cancelled) return
+      if (session?.access_token) supabase.realtime.setAuth(session.access_token)
+    })()
+
+    const channel = supabase
+      .channel('inbox:email_logs')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'email_logs' }, scheduleRefresh)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'email_logs' }, scheduleRefresh)
+      .subscribe((status) => {
+        setLiveStatus(status === 'SUBSCRIBED' ? 'live' : status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED' ? 'offline' : 'connecting')
+      })
+
+    return () => {
+      cancelled = true
+      if (refreshTimer.current) clearTimeout(refreshTimer.current)
+      void supabase.removeChannel(channel)
+    }
+  }, [connected, supabase, scheduleRefresh])
+
+  // Refresh on return to the tab so it's fresh even if a realtime event was missed.
+  useEffect(() => {
+    if (!connected) return
+    function onVisible() { if (document.visibilityState === 'visible') scheduleRefresh() }
+    window.addEventListener('focus', onVisible)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('focus', onVisible)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [connected, scheduleRefresh])
 
   async function openThread(t: EmailThread) {
     setActiveId(t.gmail_thread_id)
@@ -180,6 +229,15 @@ export default function InboxClient({
       <div className="topbar">
         <span className="topbar-title">Inbox</span>
         <span className="topbar-count">{counts.unread} unread</span>
+        {connected ? (
+          <span
+            title={liveStatus === 'live' ? 'Live — inbox updates automatically' : liveStatus === 'connecting' ? 'Connecting to live updates…' : 'Live updates offline — will refresh on focus'}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-3)', marginLeft: 8 }}
+          >
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: liveStatus === 'live' ? 'var(--green, #16a34a)' : liveStatus === 'connecting' ? 'var(--amber, #d97706)' : 'var(--text-3)' }} />
+            {liveStatus === 'live' ? 'Live' : liveStatus === 'connecting' ? 'Connecting…' : 'Offline'}
+          </span>
+        ) : null}
         <div className="topbar-actions">
           {!connected ? (
             <Link className="btn btn-primary btn-sm" href="/api/auth/google">Connect Gmail</Link>
