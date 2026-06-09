@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import AccountForm from './AccountForm'
 import ActivityTimeline from './ActivityTimeline'
+import MeetingNotesTimeline from './MeetingNotesTimeline'
 import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TouchpointTimeline from './TouchpointTimeline'
@@ -25,6 +26,7 @@ import type {
   Workstream,
 } from '@/lib/types'
 import type { AccountDetail } from '@/lib/db/accounts'
+import type { MeetingNoteWithRelations } from '@/lib/db/meeting-notes'
 
 const TABS = [
   'Overview',
@@ -62,6 +64,7 @@ export default function AccountDetailClient({
   timeEntries,
   tags,
   emailThreads = [],
+  meetingNotes = [],
   selfEmail = '',
   signature = '',
 }: {
@@ -73,6 +76,7 @@ export default function AccountDetailClient({
   timeEntries: TimeEntry[]
   tags: Tag[]
   emailThreads?: EmailThread[]
+  meetingNotes?: MeetingNoteWithRelations[]
   selfEmail?: string
   signature?: string
 }) {
@@ -395,6 +399,7 @@ export default function AccountDetailClient({
               title="Touchpoints"
               description="Log calls, emails, messages, meetings, and notes."
             />
+            <MeetingNotesTimeline notes={meetingNotes} />
             <ActivityTimeline initialActivities={initialActivities} accountId={account.id} />
           </div>
         ) : null}

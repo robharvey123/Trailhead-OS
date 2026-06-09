@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import ContactDetailClient from '@/components/os/ContactDetailClient'
 import { getAccounts } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
+import { listMeetingNotesForContact } from '@/lib/db/meeting-notes'
 import { listProjectsByContact } from '@/lib/db/projects'
 import { getQuotes } from '@/lib/db/quotes'
 import { getTasks } from '@/lib/db/tasks'
@@ -28,7 +29,7 @@ export default async function ContactDetailPage({
     .order('occurred_at', { ascending: false })
     .order('created_at', { ascending: false })
 
-  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult, projects, quotes] = await Promise.all([
+  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult, projects, quotes, meetingNotes] = await Promise.all([
     getContactById(id, supabase).catch(() => null),
     getWorkstreams(supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
@@ -37,6 +38,7 @@ export default async function ContactDetailPage({
     touchpointsPromise,
     listProjectsByContact(id, supabase).catch(() => []),
     getQuotes({ contact_id: id }, supabase).catch(() => []),
+    listMeetingNotesForContact(id, supabase).catch(() => []),
   ])
 
   if (!contact) {
@@ -56,6 +58,7 @@ export default async function ContactDetailPage({
       linkedQuotes={quotes}
       sourceEnquiryId={enquiryResult.data?.id ?? null}
       initialTouchpoints={touchpointsResult.data ?? []}
+      meetingNotes={meetingNotes}
       projects={projects}
     />
   )

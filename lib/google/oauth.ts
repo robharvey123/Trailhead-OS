@@ -32,6 +32,12 @@ const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/gmail.send',
   'https://www.googleapis.com/auth/gmail.modify',
+  // Meet conference records + transcripts, and the Gemini "take notes for me"
+  // summary Doc (in the organiser's Drive). Incremental consent (include_granted_scopes
+  // + prompt:'consent' below) means reconnecting Google once grants these additively.
+  'https://www.googleapis.com/auth/meetings.space.readonly',
+  'https://www.googleapis.com/auth/drive.readonly',
+  'https://www.googleapis.com/auth/documents.readonly',
 ]
 
 // Restrict the OAuth flow to the Trailhead Workspace identity.

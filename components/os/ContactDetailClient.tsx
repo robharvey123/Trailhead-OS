@@ -8,7 +8,9 @@ import ProjectsSection from './ProjectsSection'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
+import MeetingNotesTimeline from './MeetingNotesTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
+import type { MeetingNoteWithRelations } from '@/lib/db/meeting-notes'
 import { formatTaskSchedule } from '@/lib/os'
 import { calculateTotals } from '@/lib/types'
 import type {
@@ -37,6 +39,7 @@ export default function ContactDetailClient({
   linkedQuotes,
   sourceEnquiryId,
   initialTouchpoints,
+  meetingNotes,
   projects,
 }: {
   initialContact: ContactWithRelations
@@ -46,6 +49,7 @@ export default function ContactDetailClient({
   linkedQuotes: QuoteListItem[]
   sourceEnquiryId: string | null
   initialTouchpoints: Touchpoint[]
+  meetingNotes: MeetingNoteWithRelations[]
   projects: ProjectListItem[]
 }) {
   const router = useRouter()
@@ -564,6 +568,8 @@ export default function ContactDetailClient({
         title="Touchpoints"
         description="Log calls, emails, messages, meetings, and notes for this contact."
       />
+
+      <MeetingNotesTimeline notes={meetingNotes} />
 
       <EmailThread
         title="Emails"
