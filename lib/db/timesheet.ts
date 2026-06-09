@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { TimeEntry } from '@/lib/types'
 import { contributorRate } from '@/lib/db/contributors'
+import { summariseTicket } from '@/lib/tickets/summarise'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -274,6 +275,23 @@ export async function startTimer(
   const startAt = now.toISOString()
   const entryDate = now.toISOString().split('T')[0]
 
+  // If the user didn't type a description and this timer is on a task (our
+  // "ticket" board), pre-fill the description with a stripped-down summary of
+  // the ticket. Runs server-side under the authed client so RLS applies.
+  let description = data.description?.trim() || null
+  if (!description && data.task_id) {
+    const { data: ticket } = await supabase
+      .from('engagement_tasks')
+      .select('title, description')
+      .eq('id', data.task_id)
+      .maybeSingle()
+
+    if (ticket) {
+      const summary = summariseTicket({ title: ticket.title, body: ticket.description })
+      description = summary || null
+    }
+  }
+
   const payload = {
     user_id: userId,
     person_id: personId,
@@ -285,7 +303,7 @@ export async function startTimer(
     start_at: startAt,
     end_at: null,
     duration_minutes: 0,
-    description: data.description?.trim() || null,
+    description,
     billable: true,
     rate_snapshot: 0, // Will be stamped on stop
     currency_snapshot: 'GBP',
