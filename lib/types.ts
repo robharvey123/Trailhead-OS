@@ -188,6 +188,10 @@ export interface GoogleTokens {
   scope: string
   email: string
   label: string | null
+  /** Set when Google rejects the refresh token (invalid_grant); cleared on reconnect. */
+  needs_reconnect?: boolean
+  auth_error?: string | null
+  auth_error_at?: string | null
   created_at: string
   updated_at: string
 }

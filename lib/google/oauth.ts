@@ -111,6 +111,31 @@ export async function getAuthenticatedClient(tokenId?: string) {
   return client
 }
 
+/**
+ * True when an error is Google's `invalid_grant` — the stored refresh token is
+ * revoked / expired / superseded and the account must be reconnected. googleapis
+ * surfaces it on `err.response.data.error` (gaxios) or in the message.
+ */
+export function isInvalidGrant(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false
+  const e = err as { response?: { data?: { error?: string } }; message?: string }
+  return e.response?.data?.error === 'invalid_grant' || /invalid_grant/i.test(e.message ?? '')
+}
+
+/** Flag a Google account as needing reconnection (service-role write). Never throws. */
+export async function markTokenNeedsReconnect(tokenId: string, reason = 'invalid_grant'): Promise<void> {
+  try {
+    const { createClient } = await import('@/lib/supabase/service')
+    const supabase = createClient()
+    await supabase
+      .from('google_tokens')
+      .update({ needs_reconnect: true, auth_error: reason, auth_error_at: new Date().toISOString() })
+      .eq('id', tokenId)
+  } catch {
+    /* best-effort flag — don't let it mask the original error */
+  }
+}
+
 export async function getAllGoogleTokens(): Promise<GoogleTokens[]> {
   const { createClient } = await import('@/lib/supabase/service')
   const supabase = createClient()

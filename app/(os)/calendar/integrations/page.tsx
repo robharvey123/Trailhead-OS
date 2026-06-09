@@ -11,7 +11,7 @@ export default async function CalendarIntegrationsPage() {
     (async () => {
       const { data } = await supabase
         .from('google_tokens')
-        .select('id, email, label, created_at')
+        .select('id, email, label, created_at, needs_reconnect')
         .order('created_at')
       return data ?? []
     })(),

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/service'
-import { getAllGoogleTokens } from './oauth'
+import { getAllGoogleTokens, isInvalidGrant, markTokenNeedsReconnect } from './oauth'
 import { listMessageIds, getFullMessage, extractBodies } from './gmail'
 import { buildAutolinkMaps, determineLink, parseAddress, parseAddressList } from './autolink'
 import { applyInboundApprovalReplies } from '@/lib/db/approvals'
@@ -9,6 +9,8 @@ export interface SyncResult {
   scanned: number
   inserted: number
   skipped: number
+  /** Set when the Google account's refresh token is dead — sync did nothing; reconnect needed. */
+  reconnectRequired?: boolean
 }
 
 /**
@@ -34,8 +36,20 @@ export async function syncMailbox({
   ])
   const maps = buildAutolinkMaps(contacts ?? [], accounts ?? [], selfEmails)
 
-  // Which messages do we already have?
-  const ids = await listMessageIds(`(in:inbox OR in:sent) newer_than:${sinceDays}d`, max)
+  // Which messages do we already have? This is the first Gmail call, so a dead
+  // refresh token surfaces here as invalid_grant — flag the account (the newest
+  // token, which getAuthenticatedClient uses) and bail cleanly instead of 500ing.
+  let ids: string[]
+  try {
+    ids = await listMessageIds(`(in:inbox OR in:sent) newer_than:${sinceDays}d`, max)
+  } catch (err) {
+    if (isInvalidGrant(err)) {
+      const newest = tokens[tokens.length - 1]
+      if (newest) await markTokenNeedsReconnect(newest.id)
+      return { scanned: 0, inserted: 0, skipped: 0, reconnectRequired: true }
+    }
+    throw err
+  }
   const { data: existingRows } = await supabase
     .from('email_logs')
     .select('gmail_message_id')

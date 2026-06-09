@@ -9,6 +9,7 @@ interface GoogleAccount {
   email: string
   label: string | null
   created_at: string
+  needs_reconnect?: boolean
 }
 
 interface GoogleCalendarItem {
@@ -349,6 +350,16 @@ export default function CalendarIntegrationsClient({
 
   return (
     <div className="space-y-8">
+      {googleAccounts.some((a) => a.needs_reconnect) && (
+        <div className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-5 py-4">
+          <p className="text-sm font-semibold text-[color:var(--red-strong)]">A Google account needs reconnecting</p>
+          <p className="mt-1 text-sm text-[color:var(--text-2)]">
+            Google rejected the stored access for one or more accounts (token expired or revoked), so
+            calendar and inbox sync are paused for them. Use the Reconnect button on the affected account below.
+          </p>
+        </div>
+      )}
+
       {/* Sync all button */}
       <section className="os-card p-6">
         <div className="flex items-center justify-between">
@@ -434,8 +445,13 @@ export default function CalendarIntegrationsClient({
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-[color:var(--text)]">
+                      <p className="flex items-center gap-2 font-medium text-[color:var(--text)]">
                         {account.email}
+                        {account.needs_reconnect && (
+                          <span className="rounded-full border border-[color:var(--red)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--red-strong)]">
+                            Reconnect required
+                          </span>
+                        )}
                       </p>
                       <p className="text-xs text-[color:var(--text-3)]">
                         {account.label && account.label !== account.email
@@ -458,6 +474,20 @@ export default function CalendarIntegrationsClient({
                     />
                   </svg>
                 </button>
+
+                {account.needs_reconnect && (
+                  <div className="flex items-center justify-between gap-3 border-t border-[color:var(--border)] bg-[var(--red-dim)] px-5 py-3">
+                    <span className="text-xs text-[color:var(--red-strong)]">
+                      Google rejected this account&apos;s access — sync is paused until you reconnect.
+                    </span>
+                    <a
+                      href="/api/auth/google"
+                      className="shrink-0 rounded-xl bg-[var(--accent)] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[var(--accent-hover)]"
+                    >
+                      Reconnect
+                    </a>
+                  </div>
+                )}
 
                 {expandedAccount === account.id && (
                   <div className="border-t border-[color:var(--border)] px-5 py-4">

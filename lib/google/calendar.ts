@@ -1,7 +1,13 @@
 import { google, type calendar_v3 } from 'googleapis'
 import { supabaseService } from '@/lib/supabase/service'
 import type { CalendarEvent, GcalSync, GoogleTokens } from '@/lib/types'
-import { getAuthenticatedClient, getAuthenticatedClientForToken, getAllGoogleTokens } from './oauth'
+import {
+  getAuthenticatedClient,
+  getAuthenticatedClientForToken,
+  getAllGoogleTokens,
+  isInvalidGrant,
+  markTokenNeedsReconnect,
+} from './oauth'
 
 export async function getCalendarClient(tokenId?: string) {
   const auth = await getAuthenticatedClient(tokenId)
@@ -502,6 +508,7 @@ export async function syncAllGoogleAccounts(
   const accounts: Array<{
     email: string
     calendars: Array<{ name: string; synced: number; created: number }>
+    error?: string
   }> = []
   let totalPushed = 0
   let totalPulled = 0
@@ -511,6 +518,9 @@ export async function syncAllGoogleAccounts(
     const enabledSelections = selections.filter((s) => s.enabled)
 
     const calendarResults: Array<{ name: string; synced: number; created: number; error?: string }> = []
+    // A dead refresh token (invalid_grant) flags this account + skips it — the
+    // sweep continues for the rest instead of failing the whole run.
+    let reconnect = false
 
     // If no selections configured, sync primary by default
     const calendarsToSync =
@@ -566,6 +576,11 @@ export async function syncAllGoogleAccounts(
           }
         }
       } catch (calError) {
+        if (isInvalidGrant(calError)) {
+          reconnect = true
+          calendarResults.push({ name: cal.name, synced: 0, created: 0, error: 'Reconnect required' })
+          break // stop hitting Google with a dead token for this account
+        }
         calendarResults.push({
           name: cal.name,
           synced: 0,
@@ -575,9 +590,12 @@ export async function syncAllGoogleAccounts(
       }
     }
 
+    if (reconnect) await markTokenNeedsReconnect(tokenRow.id)
+
     accounts.push({
       email: tokenRow.email ?? 'Unknown',
       calendars: calendarResults,
+      error: reconnect ? 'Reconnect required' : undefined,
     })
   }
 

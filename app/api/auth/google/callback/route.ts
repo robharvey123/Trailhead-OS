@@ -42,6 +42,10 @@ export async function GET(request: NextRequest) {
           token_type: tokens.token_type ?? 'Bearer',
           expiry_date: tokens.expiry_date ?? null,
           scope: tokens.scope ?? null,
+          // Fresh grant clears any prior invalid_grant reconnect flag.
+          needs_reconnect: false,
+          auth_error: null,
+          auth_error_at: null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', existing.id)
