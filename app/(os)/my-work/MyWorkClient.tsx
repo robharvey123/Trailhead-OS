@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
+import Board from '@/components/kanban/Board'
 import TaskForm from '@/components/tasks/TaskForm'
 import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
 import {
@@ -30,6 +31,29 @@ const SORTS = [
   { key: 'created_asc', label: 'Oldest first' },
 ] as const
 type SortKey = (typeof SORTS)[number]['key']
+
+type ViewMode = 'list' | 'board'
+const VIEW_STORAGE_KEY = 'tasks:view'
+
+// View preference is UI-only and lives in localStorage. Read it through
+// useSyncExternalStore so the SSR/hydration render uses the 'list' server
+// snapshot (no hydration mismatch) and reconciles to the stored value after.
+const viewListeners = new Set<() => void>()
+function subscribeView(cb: () => void) {
+  viewListeners.add(cb)
+  window.addEventListener('storage', cb) // sync across tabs
+  return () => { viewListeners.delete(cb); window.removeEventListener('storage', cb) }
+}
+function getViewSnapshot(): ViewMode {
+  return localStorage.getItem(VIEW_STORAGE_KEY) === 'board' ? 'board' : 'list'
+}
+function getViewServerSnapshot(): ViewMode {
+  return 'list'
+}
+function setStoredView(v: ViewMode) {
+  localStorage.setItem(VIEW_STORAGE_KEY, v)
+  viewListeners.forEach((cb) => cb())
+}
 
 /** due_date compare with nulls always sorted last, regardless of direction. */
 function compareDue(a: string | null, b: string | null, dir: 1 | -1) {
@@ -60,6 +84,7 @@ export default function MyWorkClient({
 }) {
   const router = useRouter()
   const [tab, setTab] = useState<TabKey>('assigned')
+  const view = useSyncExternalStore(subscribeView, getViewSnapshot, getViewServerSnapshot)
   const [statusFilter, setStatusFilter] = useState<EngagementTaskStatus | ''>('')
   const [priorityFilter, setPriorityFilter] = useState<EngagementTaskPriority | ''>('')
   const [sort, setSort] = useState<SortKey>('due_asc')
@@ -75,15 +100,22 @@ export default function MyWorkClient({
     setTab(task.assignee_person_id === currentPersonId ? 'assigned' : 'reported')
   }
 
+  // Shared base: priority + due-range filters apply to both views. Status and
+  // sort are list-only (on the board, columns ARE the statuses and order is manual).
+  const base = useMemo(
+    () =>
+      source.filter((t) => {
+        if (priorityFilter && t.priority !== priorityFilter) return false
+        if (dueFrom && (!t.due_date || t.due_date < dueFrom)) return false
+        if (dueTo && (!t.due_date || t.due_date > dueTo)) return false
+        return true
+      }),
+    [source, priorityFilter, dueFrom, dueTo]
+  )
+
   const rows = useMemo(() => {
-    const filtered = source.filter((t) => {
-      if (statusFilter && t.status !== statusFilter) return false
-      if (priorityFilter && t.priority !== priorityFilter) return false
-      if (dueFrom && (!t.due_date || t.due_date < dueFrom)) return false
-      if (dueTo && (!t.due_date || t.due_date > dueTo)) return false
-      return true
-    })
-    return filtered.sort((a, b) => {
+    const filtered = statusFilter ? base.filter((t) => t.status === statusFilter) : base
+    return [...filtered].sort((a, b) => {
       if (sort === 'created_desc') return b.created_at.localeCompare(a.created_at)
       if (sort === 'created_asc') return a.created_at.localeCompare(b.created_at)
       // Due-date sorts: nulls last, ties broken by priority desc.
@@ -91,14 +123,18 @@ export default function MyWorkClient({
       if (due !== 0) return due
       return ENGAGEMENT_TASK_PRIORITY_RANK[b.priority] - ENGAGEMENT_TASK_PRIORITY_RANK[a.priority]
     })
-  }, [source, statusFilter, priorityFilter, sort, dueFrom, dueTo])
+  }, [base, statusFilter, sort])
 
   return (
     <div className="panel overflow-hidden">
       <div className="topbar">
         <span className="topbar-title">My work</span>
-        <span className="topbar-count">{rows.length}</span>
+        <span className="topbar-count">{view === 'board' ? base.length : rows.length}</span>
         <div className="topbar-actions">
+          <div className="tabbar" style={{ border: 'none', padding: 0 }}>
+            <button className={`tab ${view === 'list' ? 'active' : ''}`} onClick={() => setStoredView('list')}>List</button>
+            <button className={`tab ${view === 'board' ? 'active' : ''}`} onClick={() => setStoredView('board')}>Board</button>
+          </div>
           <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ New task</button>
         </div>
       </div>
@@ -110,16 +146,20 @@ export default function MyWorkClient({
       </div>
 
       <div className="filterbar">
-        <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as EngagementTaskStatus | '')}>
-          <option value="">All statuses</option>
-          {ENGAGEMENT_TASK_STATUSES.map((s) => (<option key={s} value={s}>{ENGAGEMENT_TASK_STATUS_LABELS[s]}</option>))}
-        </select>
+        {view === 'list' ? (
+          <>
+            <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as EngagementTaskStatus | '')}>
+              <option value="">All statuses</option>
+              {ENGAGEMENT_TASK_STATUSES.map((s) => (<option key={s} value={s}>{ENGAGEMENT_TASK_STATUS_LABELS[s]}</option>))}
+            </select>
+            <select className="filter-select" value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+              {SORTS.map((s) => (<option key={s.key} value={s.key}>{s.label}</option>))}
+            </select>
+          </>
+        ) : null}
         <select className="filter-select" value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value as EngagementTaskPriority | '')}>
           <option value="">All priorities</option>
           {(Object.keys(ENGAGEMENT_TASK_PRIORITY_LABELS) as EngagementTaskPriority[]).map((p) => (<option key={p} value={p}>{ENGAGEMENT_TASK_PRIORITY_LABELS[p]}</option>))}
-        </select>
-        <select className="filter-select" value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
-          {SORTS.map((s) => (<option key={s.key} value={s.key}>{s.label}</option>))}
         </select>
         <label className="filter-date">
           Due from
@@ -135,7 +175,18 @@ export default function MyWorkClient({
       </div>
 
       <div style={{ padding: 24, paddingTop: 12 }}>
-        {rows.length === 0 ? <div className="empty">No tasks.</div> : (
+        {view === 'board' ? (
+          // Re-key so the board re-seeds its local state when the tab or a shared
+          // filter changes. The key stays stable across the post-move router.refresh(),
+          // so the optimistic drag state (now the server truth) doesn't flash/revert.
+          <Board
+            key={`${tab}|${priorityFilter}|${dueFrom}|${dueTo}`}
+            initialTasks={base}
+            fromPath="/tasks"
+          />
+        ) : rows.length === 0 ? (
+          <div className="empty">No tasks.</div>
+        ) : (
           <table className="data-table">
             <thead><tr><th>Title</th><th>Engagement</th><th>Status</th><th>Priority</th><th>Due</th></tr></thead>
             <tbody>
