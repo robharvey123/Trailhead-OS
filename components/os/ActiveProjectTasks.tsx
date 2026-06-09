@@ -7,9 +7,9 @@ import {
 import {
   ENGAGEMENT_TASK_PRIORITY_LABELS,
   ENGAGEMENT_TASK_PRIORITY_RANK,
-  ENGAGEMENT_TASK_STATUS_LABELS,
   type EngagementTaskPriority,
 } from '@/lib/types'
+import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
 
 const VISIBLE_CAP = 10
 
@@ -115,9 +115,7 @@ export default async function ActiveProjectTasks() {
                         {task.title}
                       </span>
                       <span className="flex shrink-0 items-center gap-2 text-xs">
-                        <span className="rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[color:var(--text-2)]">
-                          {ENGAGEMENT_TASK_STATUS_LABELS[task.status]}
-                        </span>
+                        <TaskStatusBadge status={task.status} />
                         <span
                           className={`rounded-full border px-2 py-0.5 font-semibold uppercase tracking-[0.14em] ${priorityClasses(task.priority)}`}
                         >

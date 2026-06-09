@@ -59,6 +59,14 @@ export default function EngagementTasksClient({
     return Array.from(set).sort((a, b) => a.localeCompare(b))
   }, [visible])
 
+  // Distinct labels across the whole board (scope-independent), offered when
+  // creating a task so the picker isn't affected by the active filter.
+  const pickerLabels = useMemo(() => {
+    const set = new Set<string>()
+    for (const t of initialTasks) for (const l of t.labels) set.add(l)
+    return Array.from(set).sort((a, b) => a.localeCompare(b))
+  }, [initialTasks])
+
   function toggleLabel(label: string) {
     setActiveLabels((current) =>
       current.includes(label) ? current.filter((l) => l !== label) : [...current, label]
@@ -160,6 +168,7 @@ export default function EngagementTasksClient({
         <TaskForm
           people={people}
           engagements={[]}
+          availableLabels={pickerLabels}
           fixedEngagementId={engagementId}
           fixedProjectId={projectId}
           onClose={() => setShowForm(false)}

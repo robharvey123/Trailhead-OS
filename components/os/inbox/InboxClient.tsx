@@ -103,27 +103,33 @@ export default function InboxClient({
   }, [refreshThreads])
 
   // Push inbox: live-update the thread list as the gmail-sync cron writes mail.
+  // email_logs is RLS-locked to is_admin(), and Realtime evaluates RLS against the
+  // socket's JWT — so the realtime client must be authenticated with the user's
+  // access token BEFORE we subscribe, or every change event is silently dropped
+  // (the channel still reports SUBSCRIBED; only per-row delivery is denied).
   useEffect(() => {
     if (!connected) return
     let cancelled = false
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
     void (async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (cancelled) return
       if (session?.access_token) supabase.realtime.setAuth(session.access_token)
-    })()
 
-    const channel = supabase
-      .channel('inbox:email_logs')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'email_logs' }, scheduleRefresh)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'email_logs' }, scheduleRefresh)
-      .subscribe((status) => {
-        setLiveStatus(status === 'SUBSCRIBED' ? 'live' : status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED' ? 'offline' : 'connecting')
-      })
+      channel = supabase
+        .channel('inbox:email_logs')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'email_logs' }, scheduleRefresh)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'email_logs' }, scheduleRefresh)
+        .subscribe((status) => {
+          setLiveStatus(status === 'SUBSCRIBED' ? 'live' : status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED' ? 'offline' : 'connecting')
+        })
+    })()
 
     return () => {
       cancelled = true
       if (refreshTimer.current) clearTimeout(refreshTimer.current)
-      void supabase.removeChannel(channel)
+      if (channel) void supabase.removeChannel(channel)
     }
   }, [connected, supabase, scheduleRefresh])
 

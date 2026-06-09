@@ -2,7 +2,8 @@
 
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { ENGAGEMENT_TASK_STATUS_LABELS, type EngagementTaskStatus, type EngagementTaskWithRelations } from '@/lib/types'
+import { type EngagementTaskStatus, type EngagementTaskWithRelations } from '@/lib/types'
+import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
 import TaskCard from './Card'
 
 export default function KanbanColumn({
@@ -25,7 +26,7 @@ export default function KanbanColumn({
       style={{ flex: '1 1 0', minWidth: 240, background: isOver ? 'var(--surface-2)' : 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: 10, padding: 10, display: 'flex', flexDirection: 'column' }}
     >
       <div className="panel-section-title" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span>{ENGAGEMENT_TASK_STATUS_LABELS[status]}</span>
+        <TaskStatusBadge status={status} />
         <span className="td-mono" style={{ color: 'var(--text-3)' }}>{tasks.length}</span>
       </div>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>

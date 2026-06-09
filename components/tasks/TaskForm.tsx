@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createTask } from '@/app/(os)/my-work/actions'
 import { convertMessageToTask } from '@/app/(os)/messages/actions'
+import LabelPicker from '@/components/tasks/LabelPicker'
 import { ENGAGEMENT_TASK_PRIORITIES, ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTask, type EngagementTaskPriority } from '@/lib/types'
 
 type Named = { id: string; name: string }
@@ -11,6 +12,7 @@ type Named = { id: string; name: string }
 export default function TaskForm({
   people,
   engagements,
+  availableLabels = [],
   fixedEngagementId,
   fixedProjectId,
   initialTitle,
@@ -24,6 +26,8 @@ export default function TaskForm({
 }: {
   people: Named[]
   engagements: Named[]
+  /** Labels already present in the project, offered in the label picker. */
+  availableLabels?: string[]
   fixedEngagementId?: string
   /** When created from a project page: stamps project_id (and uses the project's engagement). */
   fixedProjectId?: string
@@ -46,7 +50,7 @@ export default function TaskForm({
   const [assignee, setAssignee] = useState(initialAssigneeId ?? '')
   const [engagementId, setEngagementId] = useState(fixedEngagementId ?? initialEngagementId ?? '')
   const [dueDate, setDueDate] = useState('')
-  const [labels, setLabels] = useState('')
+  const [labels, setLabels] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -82,7 +86,7 @@ export default function TaskForm({
       assigneePersonId: assignee || null,
       priority,
       dueDate: dueDate || null,
-      labels: labels.split(',').map((l) => l.trim()).filter(Boolean),
+      labels,
     })
     if (res.error) { setError(res.error); setBusy(false); return }
     if (res.task) onCreated?.(res.task)
@@ -121,7 +125,7 @@ export default function TaskForm({
               </div>
             ) : null}
           </div>
-          <div><label className={label}>Labels (comma-separated)</label><input className={input} value={labels} onChange={(e) => setLabels(e.target.value)} placeholder="bug, frontend" /></div>
+          <div><label className={label}>Labels</label><LabelPicker available={availableLabels} selected={labels} onChange={setLabels} /></div>
           {error ? <p style={{ color: 'var(--red)', fontSize: 12 }}>{error}</p> : null}
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <button className="btn btn-ghost btn-sm" onClick={onClose} disabled={busy}>Cancel</button>

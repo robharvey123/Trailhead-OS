@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import TaskForm from '@/components/tasks/TaskForm'
+import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
 import {
   ENGAGEMENT_TASK_PRIORITY_LABELS,
   ENGAGEMENT_TASK_PRIORITY_RANK,
@@ -142,7 +143,7 @@ export default function MyWorkClient({
                 <tr key={t.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/my-work/${t.id}?from=${encodeURIComponent('/my-work')}`)}>
                   <td className="td-name">{t.title}</td>
                   <td>{t.engagement?.name ?? '—'}</td>
-                  <td><span className="channel-tag">{ENGAGEMENT_TASK_STATUS_LABELS[t.status]}</span></td>
+                  <td><TaskStatusBadge status={t.status} /></td>
                   <td>{ENGAGEMENT_TASK_PRIORITY_LABELS[t.priority]}</td>
                   <td className="td-mono">{fmtDate(t.due_date)}</td>
                 </tr>

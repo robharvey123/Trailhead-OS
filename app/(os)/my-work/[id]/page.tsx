@@ -13,6 +13,7 @@ import TaskTitleEditor from '@/components/tasks/TaskTitleEditor'
 import TaskDescriptionEditor from '@/components/tasks/TaskDescriptionEditor'
 import TaskTimer from '@/components/tasks/TaskTimer'
 import TaskTimeLog from '@/components/tasks/TaskTimeLog'
+import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
 import {
   ENGAGEMENT_TASK_PRIORITY_LABELS,
   ENGAGEMENT_TASK_STATUS_LABELS,
@@ -101,7 +102,7 @@ export default async function TaskDetailPage({
         <div className="topbar">
           <Link href={backHref} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>{backLabel}</Link>
           {canEdit ? <TaskTitleEditor taskId={task.id} title={task.title} /> : <span className="topbar-title">{task.title}</span>}
-          <span className="channel-tag">{ENGAGEMENT_TASK_STATUS_LABELS[task.status]}</span>
+          <TaskStatusBadge status={task.status} />
         </div>
 
         <div style={{ padding: 24, display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)' }}>

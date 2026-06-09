@@ -326,6 +326,11 @@ export const ENGAGEMENT_TASK_STATUSES: EngagementTaskStatus[] = ['backlog', 'in_
 export const ENGAGEMENT_TASK_STATUS_LABELS: Record<EngagementTaskStatus, string> = {
   backlog: 'Backlog', in_progress: 'In progress', review: 'Review', done: 'Done', cancelled: 'Cancelled',
 }
+// Colour is part of the status definition — rendered as status chips everywhere
+// via <TaskStatusBadge>. Hex (not Tailwind classes) so it can be applied inline.
+export const ENGAGEMENT_TASK_STATUS_COLOURS: Record<EngagementTaskStatus, string> = {
+  backlog: '#6B7280', in_progress: '#3B82F6', review: '#F59E0B', done: '#10B981', cancelled: '#EF4444',
+}
 // Columns shown on the kanban board (cancelled is reachable but not a board column).
 export const ENGAGEMENT_TASK_BOARD_COLUMNS: EngagementTaskStatus[] = ['backlog', 'in_progress', 'review', 'done']
 export const ENGAGEMENT_TASK_PRIORITIES: EngagementTaskPriority[] = ['urgent', 'high', 'normal', 'low']
