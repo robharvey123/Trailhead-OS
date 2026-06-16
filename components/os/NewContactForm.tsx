@@ -86,7 +86,7 @@ export default function NewContactForm({
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
             required
           />
         </label>
@@ -95,7 +95,7 @@ export default function NewContactForm({
           <input
             value={company}
             onChange={(event) => setCompany(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2">
@@ -104,7 +104,7 @@ export default function NewContactForm({
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2">
@@ -112,7 +112,7 @@ export default function NewContactForm({
           <input
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2">
@@ -120,7 +120,7 @@ export default function NewContactForm({
           <input
             value={role}
             onChange={(event) => setRole(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2">
@@ -129,7 +129,7 @@ export default function NewContactForm({
             value={channel}
             onChange={(event) => setChannel(event.target.value)}
             placeholder="e.g. Online Pouch Retailers"
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2">
@@ -138,7 +138,7 @@ export default function NewContactForm({
             value={website}
             onChange={(event) => setWebsite(event.target.value)}
             placeholder="e.g. example.com"
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2 md:col-span-2">
@@ -146,7 +146,7 @@ export default function NewContactForm({
           <input
             value={addressLine1}
             onChange={(event) => setAddressLine1(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2 md:col-span-2">
@@ -154,7 +154,7 @@ export default function NewContactForm({
           <input
             value={addressLine2}
             onChange={(event) => setAddressLine2(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2">
@@ -162,7 +162,7 @@ export default function NewContactForm({
           <input
             value={city}
             onChange={(event) => setCity(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2">
@@ -170,7 +170,7 @@ export default function NewContactForm({
           <input
             value={postcode}
             onChange={(event) => setPostcode(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <label className="space-y-2 md:col-span-2">
@@ -178,7 +178,7 @@ export default function NewContactForm({
           <input
             value={country}
             onChange={(event) => setCountry(event.target.value)}
-            className="os-input"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
         <div className="space-y-2">
@@ -201,7 +201,7 @@ export default function NewContactForm({
           <select
             value={workstreamId}
             onChange={(event) => setWorkstreamId(event.target.value)}
-            className="os-select"
+            className="os-select w-full px-4 py-3 text-sm"
           >
             <option value="">None</option>
             {workstreams.map((workstream) => (
@@ -216,7 +216,7 @@ export default function NewContactForm({
           <select
             value={status}
             onChange={(event) => setStatus(event.target.value as ContactStatus)}
-            className="os-select"
+            className="os-select w-full px-4 py-3 text-sm"
           >
             {CONTACT_STATUSES.map((value) => (
               <option key={value} value={value}>
@@ -231,7 +231,7 @@ export default function NewContactForm({
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             rows={6}
-            className="os-textarea"
+            className="os-textarea w-full px-4 py-3 text-sm"
           />
         </label>
       </div>
