@@ -120,7 +120,7 @@ export default function AccountForm({
           <input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
             required
           />
         </label>
@@ -130,7 +130,7 @@ export default function AccountForm({
           <input
             value={form.website}
             onChange={(event) => setForm({ ...form, website: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -139,7 +139,7 @@ export default function AccountForm({
           <select
             value={form.industry}
             onChange={(event) => setForm({ ...form, industry: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             <option value="">Select industry</option>
             {ACCOUNT_INDUSTRY_OPTIONS.map((option) => (
@@ -155,7 +155,7 @@ export default function AccountForm({
           <select
             value={form.size}
             onChange={(event) => setForm({ ...form, size: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             <option value="">Select size</option>
             {ACCOUNT_SIZE_OPTIONS.map((option) => (
@@ -171,7 +171,7 @@ export default function AccountForm({
           <select
             value={form.workstream_id}
             onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             <option value="">None</option>
             {workstreams.map((workstream) => (
@@ -187,7 +187,7 @@ export default function AccountForm({
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value as AccountStatus })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             {ACCOUNT_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -202,7 +202,7 @@ export default function AccountForm({
             value={form.channel}
             onChange={(event) => setForm({ ...form, channel: event.target.value })}
             placeholder="e.g. Major UK Retailers"
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -211,7 +211,7 @@ export default function AccountForm({
           <input
             value={form.source}
             onChange={(event) => setForm({ ...form, source: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -221,7 +221,7 @@ export default function AccountForm({
             type="email"
             value={form.email_contact}
             onChange={(event) => setForm({ ...form, email_contact: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -230,7 +230,7 @@ export default function AccountForm({
           <input
             value={form.hq_address}
             onChange={(event) => setForm({ ...form, hq_address: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
         <label className="space-y-2 md:col-span-2">
@@ -238,7 +238,7 @@ export default function AccountForm({
           <input
             value={form.address_line1}
             onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -247,7 +247,7 @@ export default function AccountForm({
           <input
             value={form.address_line2}
             onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -256,7 +256,7 @@ export default function AccountForm({
           <input
             value={form.city}
             onChange={(event) => setForm({ ...form, city: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -265,7 +265,7 @@ export default function AccountForm({
           <input
             value={form.postcode}
             onChange={(event) => setForm({ ...form, postcode: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -274,7 +274,7 @@ export default function AccountForm({
           <input
             value={form.country}
             onChange={(event) => setForm({ ...form, country: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -284,7 +284,7 @@ export default function AccountForm({
             value={form.notes}
             onChange={(event) => setForm({ ...form, notes: event.target.value })}
             rows={6}
-            className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+            className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
       </div>
