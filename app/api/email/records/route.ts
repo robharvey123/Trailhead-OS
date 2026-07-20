@@ -180,7 +180,7 @@ export async function POST(request: Request) {
       getWorkstreams(auth.supabase).catch(() => []),
     ])
     const workstream = workstreams.find((item) => item.id === invoice.workstream_id) ?? null
-    const buffer = await renderInvoicePdf(invoice, contact, workstream)
+    const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings)
 
     await resend.emails.send({
       from: fromAddress,

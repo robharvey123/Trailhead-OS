@@ -10,6 +10,7 @@ import {
 } from '@react-pdf/renderer'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type Workstream } from '@/lib/types'
+import type { CompanySettings } from '@/lib/company-settings'
 
 const styles = StyleSheet.create({
   page: {
@@ -147,13 +148,16 @@ function InvoiceDocument({
   invoice,
   contact,
   workstream,
+  companySettings,
 }: {
   invoice: Invoice
   contact: Contact | null
   workstream: Workstream | null
+  companySettings: CompanySettings | null
 }) {
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
   const billTo = getInvoiceBillToDisplay(invoice, contact)
+  const showPayment = Boolean(companySettings?.bank_account_number)
 
   return (
     <Document>
@@ -236,29 +240,54 @@ function InvoiceDocument({
           </View>
         </View>
 
-        <View style={styles.bankDetails}>
-          <Text style={styles.sectionTitle}>Payment Details</Text>
-          <View style={styles.bankGrid}>
-            <View style={styles.bankColumn}>
-              <Text style={styles.bankLabel}>Account name</Text>
-              <Text style={styles.bankValue}>Trailhead Holdings LTD</Text>
-              <Text style={styles.bankLabel}>Sort code</Text>
-              <Text style={styles.bankValue}>04-06-05</Text>
-              <Text style={styles.bankLabel}>Account number</Text>
-              <Text style={styles.bankValue}>29684482</Text>
-              <Text style={styles.bankLabel}>IBAN</Text>
-              <Text style={styles.bankValue}>GB75 CLRB 0406 0529 6844 82</Text>
-              <Text style={styles.bankLabel}>SWIFT</Text>
-              <Text style={styles.bankValue}>CLRBGB22</Text>
+        {showPayment && companySettings ? (
+          <View style={styles.bankDetails}>
+            <Text style={styles.sectionTitle}>Payment Details</Text>
+            <View style={styles.bankGrid}>
+              <View style={styles.bankColumn}>
+                {companySettings.bank_name ? (
+                  <>
+                    <Text style={styles.bankLabel}>Bank</Text>
+                    <Text style={styles.bankValue}>{companySettings.bank_name}</Text>
+                  </>
+                ) : null}
+                {companySettings.bank_account_name ? (
+                  <>
+                    <Text style={styles.bankLabel}>Account name</Text>
+                    <Text style={styles.bankValue}>{companySettings.bank_account_name}</Text>
+                  </>
+                ) : null}
+                {companySettings.bank_sort_code ? (
+                  <>
+                    <Text style={styles.bankLabel}>Sort code</Text>
+                    <Text style={styles.bankValue}>{companySettings.bank_sort_code}</Text>
+                  </>
+                ) : null}
+                <Text style={styles.bankLabel}>Account number</Text>
+                <Text style={styles.bankValue}>{companySettings.bank_account_number}</Text>
+              </View>
+              {companySettings.bank_iban || companySettings.bank_bic ? (
+                <View style={styles.bankColumn}>
+                  {companySettings.bank_iban ? (
+                    <>
+                      <Text style={styles.bankLabel}>IBAN</Text>
+                      <Text style={styles.bankValue}>{companySettings.bank_iban}</Text>
+                    </>
+                  ) : null}
+                  {companySettings.bank_bic ? (
+                    <>
+                      <Text style={styles.bankLabel}>BIC</Text>
+                      <Text style={styles.bankValue}>{companySettings.bank_bic}</Text>
+                    </>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
-            <View style={styles.bankColumn}>
-              <Text style={styles.bankLabel}>EUR Account IBAN</Text>
-              <Text style={styles.bankValue}>GB18 TCCL 0099 7927 9655 89</Text>
-              <Text style={styles.bankLabel}>BIC</Text>
-              <Text style={styles.bankValue}>TCCLGB31</Text>
-            </View>
+            {companySettings.payment_terms ? (
+              <Text style={{ ...styles.muted, marginTop: 4 }}>{companySettings.payment_terms}</Text>
+            ) : null}
           </View>
-        </View>
+        ) : null}
 
         {invoice.notes ? (
           <View style={styles.notes}>
@@ -276,13 +305,15 @@ function InvoiceDocument({
 export async function renderInvoicePdf(
   invoice: Invoice,
   contact: Contact | null,
-  workstream: Workstream | null
+  workstream: Workstream | null,
+  companySettings: CompanySettings | null = null
 ) {
   return renderToBuffer(
     <InvoiceDocument
       invoice={invoice}
       contact={contact}
       workstream={workstream}
+      companySettings={companySettings}
     />
   )
 }

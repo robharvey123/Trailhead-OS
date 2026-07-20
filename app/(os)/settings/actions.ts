@@ -56,6 +56,61 @@ export async function updateOsCompanySettings(
   return { success: true }
 }
 
+export type PaymentSettingsState = {
+  error?: string
+  success?: boolean
+}
+
+const SORT_CODE_RE = /^\d{2}-?\d{2}-?\d{2}$/
+const ACCOUNT_NUMBER_RE = /^\d{8}$/
+
+/**
+ * Upserts the bank/payment details onto the single settings row. Only the
+ * payment columns are written, so the company/email-footer fields on the same
+ * row are left untouched. Blanks are stored as null so the invoice PDF can omit
+ * the payment block cleanly when nothing is set.
+ */
+export async function updateOsPaymentSettings(
+  _prevState: PaymentSettingsState,
+  formData: FormData
+): Promise<PaymentSettingsState> {
+  const supabase = await createClient()
+
+  const sortCode = String(formData.get('bank_sort_code') ?? '').trim()
+  const accountNumber = String(formData.get('bank_account_number') ?? '').trim()
+
+  if (sortCode && !SORT_CODE_RE.test(sortCode)) {
+    return { error: 'Sort code must be 6 digits, e.g. 12-34-56.' }
+  }
+  if (accountNumber && !ACCOUNT_NUMBER_RE.test(accountNumber)) {
+    return { error: 'Account number must be 8 digits.' }
+  }
+
+  const { error } = await supabase
+    .from('os_company_settings')
+    .upsert(
+      {
+        key: 'default',
+        bank_name: String(formData.get('bank_name') ?? '').trim() || null,
+        bank_account_name: String(formData.get('bank_account_name') ?? '').trim() || null,
+        bank_sort_code: sortCode || null,
+        bank_account_number: accountNumber || null,
+        bank_iban: String(formData.get('bank_iban') ?? '').trim() || null,
+        bank_bic: String(formData.get('bank_bic') ?? '').trim() || null,
+        payment_terms: String(formData.get('payment_terms') ?? '').trim() || null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'key' }
+    )
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/settings')
+  return { success: true }
+}
+
 export type ProfileState = { error?: string; success?: boolean }
 
 /**

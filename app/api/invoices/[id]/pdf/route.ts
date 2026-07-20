@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getContactById } from '@/lib/db/contacts'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getWorkstreams } from '@/lib/db/workstreams'
+import { getCompanySettings } from '@/lib/company-settings'
 import { renderInvoicePdf } from '@/lib/pdf/InvoicePDF'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 
@@ -25,13 +26,14 @@ export async function GET(
     return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
   }
 
-  const [contact, workstreams] = await Promise.all([
+  const [contact, workstreams, companySettings] = await Promise.all([
     invoice.contact_id ? getContactById(invoice.contact_id, supabase).catch(() => null) : null,
     getWorkstreams(supabase).catch(() => []),
+    getCompanySettings(supabase).catch(() => null),
   ])
   const workstream =
     workstreams.find((item) => item.id === invoice.workstream_id) ?? null
-  const buffer = await renderInvoicePdf(invoice, contact, workstream)
+  const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings)
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

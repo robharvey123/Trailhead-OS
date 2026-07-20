@@ -10,6 +10,13 @@ export type CompanySettings = {
   company_email: string | null
   company_number: string | null
   email_signature: string | null
+  bank_name: string | null
+  bank_account_name: string | null
+  bank_sort_code: string | null
+  bank_account_number: string | null
+  bank_iban: string | null
+  bank_bic: string | null
+  payment_terms: string | null
 }
 
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
@@ -22,10 +29,17 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   company_email: 'info@trailheadholdings.uk',
   company_number: '16910286',
   email_signature: null,
+  bank_name: null,
+  bank_account_name: null,
+  bank_sort_code: null,
+  bank_account_number: null,
+  bank_iban: null,
+  bank_bic: null,
+  payment_terms: null,
 }
 
 const COMPANY_SETTINGS_FIELDS =
-  'company_name, address_line1, address_line2, city, postcode, country, company_email, company_number, email_signature'
+  'company_name, address_line1, address_line2, city, postcode, country, company_email, company_number, email_signature, bank_name, bank_account_name, bank_sort_code, bank_account_number, bank_iban, bank_bic, payment_terms'
 
 function escapeHtml(value: string) {
   return value
@@ -62,6 +76,13 @@ export async function getCompanySettings(supabase: SupabaseClient): Promise<Comp
     company_email: withFallback(data.company_email, DEFAULT_COMPANY_SETTINGS.company_email),
     company_number: withFallback(data.company_number, DEFAULT_COMPANY_SETTINGS.company_number),
     email_signature: withFallback(data.email_signature, null),
+    bank_name: withFallback(data.bank_name, null),
+    bank_account_name: withFallback(data.bank_account_name, null),
+    bank_sort_code: withFallback(data.bank_sort_code, null),
+    bank_account_number: withFallback(data.bank_account_number, null),
+    bank_iban: withFallback(data.bank_iban, null),
+    bank_bic: withFallback(data.bank_bic, null),
+    payment_terms: withFallback(data.payment_terms, null),
   }
 }
 

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
 import CompanySettingsForm from '@/components/os/CompanySettingsForm'
+import PaymentDetailsForm from '@/components/os/PaymentDetailsForm'
 import PricingTierSettings from '@/components/os/PricingTierSettings'
 import { getCompanySettings } from '@/lib/company-settings'
 import { getWorkstreams } from '@/lib/db/workstreams'
@@ -257,6 +258,22 @@ export default async function SettingsPage() {
       </section>
 
       <PricingTierSettings pricingTiers={pricingTiers} />
+
+      <section className="os-card p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="os-eyebrow">Finance</p>
+            <h2 className="mt-2 os-section-title">Payment details</h2>
+            <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
+              Bank details pulled into the footer of every invoice PDF at generation time.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <PaymentDetailsForm company={companySettings} />
+        </div>
+      </section>
     </div>
   )
 }
