@@ -98,6 +98,8 @@ export async function updateOsPaymentSettings(
         bank_iban: String(formData.get('bank_iban') ?? '').trim() || null,
         bank_bic: String(formData.get('bank_bic') ?? '').trim() || null,
         payment_terms: String(formData.get('payment_terms') ?? '').trim() || null,
+        vat_registered: formData.get('vat_registered') === 'on',
+        vat_number: String(formData.get('vat_number') ?? '').trim() || null,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'key' }

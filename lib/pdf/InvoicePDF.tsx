@@ -176,6 +176,9 @@ function InvoiceDocument({
               <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
               <Text style={styles.muted}>Registered in England &amp; Wales</Text>
               <Text style={styles.muted}>rob@trailheadholdings.com</Text>
+              {companySettings?.vat_registered && companySettings.vat_number ? (
+                <Text style={styles.muted}>VAT: {companySettings.vat_number}</Text>
+              ) : null}
             </View>
           </View>
           <View>
@@ -230,10 +233,12 @@ function InvoiceDocument({
             <Text>Subtotal</Text>
             <Text>{formatMoney(totals.subtotal)}</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text>VAT ({invoice.vat_rate}%)</Text>
-            <Text>{formatMoney(totals.vat_amount)}</Text>
-          </View>
+          {invoice.vat_rate > 0 ? (
+            <View style={styles.summaryRow}>
+              <Text>VAT ({invoice.vat_rate}%)</Text>
+              <Text>{formatMoney(totals.vat_amount)}</Text>
+            </View>
+          ) : null}
           <View style={styles.totalRow}>
             <Text>Total</Text>
             <Text>{formatMoney(totals.total)}</Text>

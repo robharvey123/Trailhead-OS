@@ -1186,6 +1186,8 @@ export interface TimeEntry {
   currency_snapshot: string
   source: TimeEntrySource
   is_running: boolean
+  invoice_id?: string | null
+  billed?: boolean
   created_at: string
   updated_at: string
 }
@@ -1193,6 +1195,18 @@ export interface TimeEntry {
 export interface TimeEntryWithRelations extends TimeEntry {
   account?: Account | null
   project?: { id: string; name: string } | null
+}
+
+/** A group of unbilled billable time for one project (or general time),
+ *  surfaced on the invoice form so hours can be pulled onto an invoice. */
+export interface UnbilledTimeGroup {
+  project_id: string | null
+  project_name: string
+  engagement_id: string | null
+  minutes: number
+  amount: number
+  rate: number
+  entry_ids: string[]
 }
 
 export interface RunningTimer extends TimeEntry {

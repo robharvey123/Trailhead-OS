@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import PricingTierSelector from './PricingTierSelector'
 import UnbilledExpensesWidget from './UnbilledExpensesWidget'
+import UnbilledTimeWidget from './UnbilledTimeWidget'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import {
   calculateTotals,
@@ -13,6 +14,7 @@ import {
   type Invoice,
   type LineItem,
   type PricingTier,
+  type UnbilledTimeGroup,
   type Workstream,
 } from '@/lib/types'
 
@@ -88,6 +90,7 @@ export default function InvoiceForm({
   initialInvoice,
   initialAccountId = '',
   initialPricingTierId = '',
+  vatRegistered = true,
 }: {
   accounts: Account[]
   contacts: Contact[]
@@ -95,6 +98,7 @@ export default function InvoiceForm({
   initialInvoice?: Invoice
   initialAccountId?: string
   initialPricingTierId?: string
+  vatRegistered?: boolean
 }) {
   const router = useRouter()
   const initialContact =
@@ -115,7 +119,7 @@ export default function InvoiceForm({
     initialInvoice?.issue_date ?? new Date().toISOString().slice(0, 10)
   )
   const [dueDate, setDueDate] = useState(initialInvoice?.due_date ?? '')
-  const [vatRate, setVatRate] = useState(String(initialInvoice?.vat_rate ?? 20))
+  const [vatRate, setVatRate] = useState(String(initialInvoice?.vat_rate ?? (vatRegistered ? 20 : 0)))
   const [notes, setNotes] = useState(initialInvoice?.notes ?? '')
   const [lineItems, setLineItems] = useState<LineItem[]>(
     initialInvoice?.line_items.length
@@ -129,6 +133,7 @@ export default function InvoiceForm({
   )
   const [showTierNotice, setShowTierNotice] = useState(false)
   const [billedExpenseIds, setBilledExpenseIds] = useState<string[]>([])
+  const [billedTimeEntryIds, setBilledTimeEntryIds] = useState<string[]>([])
   const [billToName, setBillToName] = useState(initialInvoice?.bill_to_name ?? initialDerivedBillTo.bill_to_name ?? '')
   const [billToAddress, setBillToAddress] = useState(initialInvoice?.bill_to_address ?? initialDerivedBillTo.bill_to_address ?? '')
   const [billToCity, setBillToCity] = useState(initialInvoice?.bill_to_city ?? initialDerivedBillTo.bill_to_city ?? '')
@@ -199,6 +204,18 @@ export default function InvoiceForm({
     }))
     setLineItems((current) => [...current, ...expenseLineItems])
     setBilledExpenseIds((current) => [...current, ...expenses.map((e) => e.id)])
+  }
+
+  function handleTimeSelected(groups: UnbilledTimeGroup[]) {
+    const timeLineItems: LineItem[] = groups.map((g) => ({
+      id: crypto.randomUUID(),
+      description: `${g.project_name} — ${(g.minutes / 60).toFixed(2)}h @ £${g.rate.toFixed(2)}/h`,
+      qty: 1,
+      // Round to 2dp at creation so the OS total, PDF, and Stripe pence agree.
+      unit_price: Math.round(g.amount * 100) / 100,
+    }))
+    setLineItems((current) => [...current, ...timeLineItems])
+    setBilledTimeEntryIds((current) => [...current, ...groups.flatMap((g) => g.entry_ids)])
   }
 
   async function submitInvoice(nextStatus: 'draft' | 'sent' | 'edit') {
@@ -280,6 +297,17 @@ export default function InvoiceForm({
           })
         }
 
+        if (billedTimeEntryIds.length > 0) {
+          await fetch('/api/timesheet/mark-billed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              time_entry_ids: billedTimeEntryIds,
+              invoice_id: data.invoice.id,
+            }),
+          })
+        }
+
         router.push(`/invoicing/${data.invoice.id}`)
         router.refresh()
         return
@@ -302,6 +330,17 @@ export default function InvoiceForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             expense_ids: billedExpenseIds,
+            invoice_id: data.invoice.id,
+          }),
+        })
+      }
+
+      if (billedTimeEntryIds.length > 0) {
+        await fetch('/api/timesheet/mark-billed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            time_entry_ids: billedTimeEntryIds,
             invoice_id: data.invoice.id,
           }),
         })
@@ -555,7 +594,14 @@ export default function InvoiceForm({
         </div>
       </div>
 
-      {/* Unbilled expenses for this account */}
+      {/* Unbilled time and expenses for this account */}
+      {accountId && (
+        <UnbilledTimeWidget
+          accountId={accountId}
+          onSelect={handleTimeSelected}
+        />
+      )}
+
       {accountId && (
         <UnbilledExpensesWidget
           accountId={accountId}

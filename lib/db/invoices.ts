@@ -107,9 +107,24 @@ export async function updateInvoice(
 }
 
 /** Soft-delete: stamp deleted_at. Never hard-deletes (invoices are referenced
- *  by payments/ledgers/stripe). Restore by setting deleted_at back to null. */
+ *  by payments/ledgers/stripe). Restore by setting deleted_at back to null.
+ *  Any billed time entries and expenses linked to the invoice are released back
+ *  to unbilled first, so the hours/expenses reappear on the invoice form. */
 export async function softDeleteInvoice(id: string, client?: SupabaseClient): Promise<void> {
   const supabase = await getSupabase(client)
+
+  const { error: timeError } = await supabase
+    .from('time_entries')
+    .update({ billed: false, invoice_id: null })
+    .eq('invoice_id', id)
+  if (timeError) throw new Error(timeError.message || 'Failed to release billed time entries')
+
+  const { error: expenseError } = await supabase
+    .from('expenses')
+    .update({ billed: false, invoice_id: null })
+    .eq('invoice_id', id)
+  if (expenseError) throw new Error(expenseError.message || 'Failed to release billed expenses')
+
   const { error } = await supabase
     .from('invoices')
     .update({ deleted_at: new Date().toISOString() })

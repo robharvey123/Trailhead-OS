@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { TimeEntry } from '@/lib/types'
+import type { TimeEntry, UnbilledTimeGroup } from '@/lib/types'
 import { contributorRate } from '@/lib/db/contributors'
 import { summariseTicket } from '@/lib/tickets/summarise'
 
@@ -512,48 +512,115 @@ export async function getWeeklyTotals(
   return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date))
 }
 
+/**
+ * Unbilled billable time for an account, grouped by project, for the invoice
+ * form's "pull hours onto invoice" widget. Only stopped, billable, not-yet-billed
+ * entries count (end_at is not null). Each group carries the entry ids so the
+ * invoice-save step can mark exactly those entries billed. Amount and the blended
+ * hourly rate are rounded to 2dp so the invoice line, PDF, and Stripe pence agree.
+ */
 export async function getInvoiceableSummary(
   accountId: string,
-  fromDate: string,
-  toDate: string,
   client?: SupabaseClient
-): Promise<
-  Array<{
-    project_id: string | null
-    project_name?: string
-    billable_minutes: number
-    billable_amount: number
-  }>
-> {
-  const entries = await listTimeEntries(
-    {
-      account_id: accountId,
-      date_from: fromDate,
-      date_to: toDate,
-      billable: true,
-      limit: 1000,
-    },
-    client
-  )
+): Promise<UnbilledTimeGroup[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('time_entries')
+    .select('id, project_id, engagement_id, duration_minutes, rate_snapshot')
+    .eq('account_id', accountId)
+    .eq('is_running', false)
+    .eq('billable', true)
+    .eq('billed', false)
+    .not('end_at', 'is', null)
+    .gt('duration_minutes', 0)
 
-  const byProject = new Map<string | null, { minutes: number; amount: number; name?: string }>()
-
-  for (const entry of entries) {
-    const projectId = entry.project_id ?? 'no-project'
-    const existing = byProject.get(projectId) ?? {
-      minutes: 0,
-      amount: 0,
-    }
-
-    existing.minutes += entry.duration_minutes
-    existing.amount += (entry.duration_minutes / 60) * entry.rate_snapshot
-
-    byProject.set(projectId, existing)
+  if (error) {
+    throw new Error(error.message || 'Failed to load unbilled time')
   }
 
-  return Array.from(byProject.entries()).map(([projectId, totals]) => ({
-    project_id: projectId === 'no-project' ? null : projectId,
-    billable_minutes: totals.minutes,
-    billable_amount: totals.amount,
+  const rows = (data ?? []) as Array<{
+    id: string
+    project_id: string | null
+    engagement_id: string | null
+    duration_minutes: number
+    rate_snapshot: number
+  }>
+
+  // Resolve project names in one round-trip.
+  const projectIds = Array.from(new Set(rows.map((r) => r.project_id).filter(Boolean))) as string[]
+  const names = new Map<string, string>()
+  if (projectIds.length) {
+    const { data: projects } = await supabase.from('projects').select('id, name').in('id', projectIds)
+    for (const p of (projects ?? []) as Array<{ id: string; name: string }>) {
+      names.set(p.id, p.name)
+    }
+  }
+
+  const byProject = new Map<
+    string,
+    { project_id: string | null; project_name: string; engagement_id: string | null; minutes: number; amount: number; entry_ids: string[] }
+  >()
+
+  for (const row of rows) {
+    const key = row.project_id ?? 'general'
+    const existing =
+      byProject.get(key) ?? {
+        project_id: row.project_id,
+        project_name: row.project_id ? names.get(row.project_id) ?? 'Project' : 'General time',
+        engagement_id: row.engagement_id,
+        minutes: 0,
+        amount: 0,
+        entry_ids: [],
+      }
+
+    existing.minutes += row.duration_minutes
+    existing.amount += (row.duration_minutes / 60) * Number(row.rate_snapshot)
+    existing.entry_ids.push(row.id)
+    byProject.set(key, existing)
+  }
+
+  return Array.from(byProject.values()).map((g) => ({
+    project_id: g.project_id,
+    project_name: g.project_name,
+    engagement_id: g.engagement_id,
+    minutes: g.minutes,
+    amount: Math.round(g.amount * 100) / 100,
+    rate: g.minutes > 0 ? Math.round((g.amount / (g.minutes / 60)) * 100) / 100 : 0,
+    entry_ids: g.entry_ids,
   }))
+}
+
+/** Mark specific time entries billed and link them to the invoice. */
+export async function markTimeEntriesAsBilled(
+  entryIds: string[],
+  invoiceId: string,
+  client?: SupabaseClient
+): Promise<void> {
+  if (entryIds.length === 0) return
+  const supabase = await getSupabase(client)
+  const { error } = await supabase
+    .from('time_entries')
+    .update({ billed: true, invoice_id: invoiceId })
+    .in('id', entryIds)
+
+  if (error) {
+    throw new Error(error.message || 'Failed to mark time entries as billed')
+  }
+}
+
+/** Release every time entry linked to an invoice back to unbilled (used when an
+ *  invoice is deleted/soft-deleted so the hours reappear on the widget). */
+export async function unmarkTimeEntriesForInvoice(
+  invoiceId: string,
+  client?: SupabaseClient
+): Promise<void> {
+  const supabase = await getSupabase(client)
+  const { error } = await supabase
+    .from('time_entries')
+    .update({ billed: false, invoice_id: null })
+    .eq('invoice_id', invoiceId)
+
+  if (error) {
+    throw new Error(error.message || 'Failed to release billed time entries')
+  }
 }

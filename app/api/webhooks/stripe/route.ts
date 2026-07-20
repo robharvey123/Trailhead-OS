@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = createAdminClient()
+  const notes: string[] = []
 
   try {
     if (event.type === 'checkout.session.completed') {
@@ -82,6 +83,41 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (event.type === 'invoice.payment_succeeded') {
+      // Recurring subscription payment. The OS invoice id lives in the
+      // subscription's metadata (set in createSubscription), not on the Stripe
+      // invoice, so fetch the subscription to read it when it isn't inlined.
+      const stripeInvoice = event.data.object as {
+        id: string
+        subscription?: string | { id: string; metadata?: Record<string, string> } | null
+        subscription_details?: { metadata?: Record<string, string> } | null
+        payment_intent?: string | { id: string } | null
+      }
+
+      const subId =
+        typeof stripeInvoice.subscription === 'string'
+          ? stripeInvoice.subscription
+          : stripeInvoice.subscription?.id ?? null
+
+      let osInvoiceId = stripeInvoice.subscription_details?.metadata?.invoice_id ?? null
+      if (!osInvoiceId && subId) {
+        const subscription = await stripe.subscriptions.retrieve(subId)
+        osInvoiceId = subscription.metadata?.invoice_id ?? null
+      }
+
+      if (osInvoiceId) {
+        await markInvoicePaidById(
+          osInvoiceId,
+          typeof stripeInvoice.payment_intent === 'string' ? stripeInvoice.payment_intent : null
+        )
+      } else {
+        // Don't silently drop it — surface the unmatched payment for review.
+        const note = `Unmatched subscription payment: stripe_invoice=${stripeInvoice.id}, subscription=${subId ?? 'none'}`
+        console.warn(note)
+        notes.push(note)
+      }
+    }
+
     if (event.type === 'customer.subscription.updated') {
       const subscription = event.data.object
       await admin
@@ -106,7 +142,7 @@ export async function POST(request: NextRequest) {
         .eq('stripe_customer_id', String(subscription.customer))
     }
 
-    return NextResponse.json({ received: true })
+    return NextResponse.json({ received: true, notes: notes.length ? notes : undefined })
   } catch (err) {
     // Surface the failure so Stripe retries rather than silently dropping it.
     console.error('Stripe webhook handler failed:', err)

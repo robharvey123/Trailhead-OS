@@ -100,6 +100,26 @@ export default function PaymentDetailsForm({ company }: { company: CompanySettin
             className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
         </label>
+
+        <label className="flex items-center gap-3 text-sm md:col-span-2">
+          <input
+            type="checkbox"
+            name="vat_registered"
+            defaultChecked={company.vat_registered}
+            className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+          />
+          <span className="font-medium text-[color:var(--text-2)]">VAT registered</span>
+        </label>
+
+        <label className="space-y-2 text-sm md:col-span-2">
+          <span className="font-medium text-[color:var(--text-2)]">VAT number</span>
+          <input
+            name="vat_number"
+            defaultValue={company.vat_number ?? ''}
+            placeholder="e.g. GB123456789"
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+          />
+        </label>
       </div>
 
       <p className="text-sm text-[color:var(--text-2)]">

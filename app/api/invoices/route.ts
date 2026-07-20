@@ -5,6 +5,7 @@ import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { createInvoice, getInvoices } from '@/lib/db/invoices'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
+import { getCompanySettings } from '@/lib/company-settings'
 import { calculateTotals, type Invoice, type InvoiceStatus, type LineItem } from '@/lib/types'
 
 const INVOICE_STATUSES = new Set<InvoiceStatus>([
@@ -148,6 +149,18 @@ export async function POST(request: NextRequest) {
   ])
   const derivedBillTo = deriveInvoiceBillTo(account, contact)
 
+  // When the caller doesn't specify a VAT rate, default from registration
+  // status: 20% if VAT-registered, otherwise 0% (don't charge VAT unregistered).
+  let defaultVatRate = 0
+  if (!Number.isFinite(Number(body.vat_rate))) {
+    try {
+      const settings = await getCompanySettings(auth.supabase)
+      defaultVatRate = settings.vat_registered ? 20 : 0
+    } catch {
+      defaultVatRate = 0
+    }
+  }
+
   const payload: Omit<Invoice, 'id' | 'invoice_number' | 'created_at' | 'updated_at'> = {
     account_id: accountId,
     contact_id: contactId,
@@ -175,7 +188,7 @@ export async function POST(request: NextRequest) {
           ? body.due_date
           : null,
     line_items: lineItems,
-    vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : 20,
+    vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : defaultVatRate,
       bill_to_name: sanitizeText(body.bill_to_name) ?? derivedBillTo.bill_to_name,
       bill_to_address: sanitizeText(body.bill_to_address) ?? derivedBillTo.bill_to_address,
       bill_to_city: sanitizeText(body.bill_to_city) ?? derivedBillTo.bill_to_city,

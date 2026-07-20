@@ -2,6 +2,7 @@ import InvoiceForm from '@/components/os/InvoiceForm'
 import { getAccounts } from '@/lib/db/accounts'
 import { getContacts } from '@/lib/db/contacts'
 import { getWorkstreams } from '@/lib/db/workstreams'
+import { getCompanySettings } from '@/lib/company-settings'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function NewInvoicePage({
@@ -11,10 +12,11 @@ export default async function NewInvoicePage({
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const supabase = await createClient()
-  const [accounts, contacts, workstreams] = await Promise.all([
+  const [accounts, contacts, workstreams, companySettings] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getWorkstreams(supabase).catch(() => []),
+    getCompanySettings(supabase).catch(() => null),
   ])
 
   return (
@@ -24,6 +26,7 @@ export default async function NewInvoicePage({
       workstreams={workstreams}
       initialAccountId={resolvedSearchParams?.account_id ?? ''}
       initialPricingTierId={resolvedSearchParams?.pricing_tier_id ?? ''}
+      vatRegistered={companySettings?.vat_registered ?? false}
     />
   )
 }
