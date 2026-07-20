@@ -14,6 +14,8 @@ export default function ContactForm() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
+  // Honeypot — hidden from users, tempting to bots. Non-empty on submit → spam.
+  const [website, setWebsite] = useState('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -32,6 +34,7 @@ export default function ContactForm() {
           company: company || undefined,
           interest,
           message,
+          website,
         }),
       })
 
@@ -73,6 +76,20 @@ export default function ContactForm() {
       onSubmit={handleSubmit}
       className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-6 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.28)] md:p-8"
     >
+      {/* Honeypot: hidden off-screen (not display:none, which some bots skip). */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+        <label htmlFor="contact-website">Website</label>
+        <input
+          id="contact-website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(event) => setWebsite(event.target.value)}
+        />
+      </div>
+
       <div className="grid gap-5">
         <div>
           <label

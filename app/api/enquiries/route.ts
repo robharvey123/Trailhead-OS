@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { getApiKeyAuth } from '@/lib/api/auth'
 import { DEFAULT_RESEND_FROM, resend } from '@/lib/email/resend'
 import { newEnquiryEmail } from '@/lib/email/templates/new-enquiry'
-import type { Enquiry, EnquiryFormState, EnquiryStatus } from '@/lib/types'
+import type { Enquiry, EnquiryStatus } from '@/lib/types'
 import { getEnquiries } from '@/lib/db/enquiries'
 
 const ENQUIRY_STATUSES = new Set<EnquiryStatus>([
@@ -17,91 +16,75 @@ const ENQUIRY_STATUSES = new Set<EnquiryStatus>([
   'closed',
 ])
 
-function sanitizeText(value: unknown): string | null {
+// Reject anything larger than this before doing any parsing work.
+const MAX_BODY_BYTES = 50_000
+// Newly-created enquiries allowed per rolling hour before the endpoint 429s.
+const HOURLY_ENQUIRY_LIMIT = 20
+
+// Per-field caps so a bot can't stuff megabytes into a text column.
+const MAX_NAME = 200
+const MAX_SHORT = 200
+const MAX_PHONE = 50
+const MAX_TEXTAREA = 2_000
+const MAX_ARRAY_ITEMS = 50
+
+function cappedText(value: unknown, max: number): string | null {
   if (typeof value !== 'string') {
     return null
   }
-
   const trimmed = value.trim()
-  return trimmed ? trimmed : null
+  return trimmed ? trimmed.slice(0, max) : null
 }
 
-function sanitizeStringArray(value: unknown): string[] {
+function cappedStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return []
   }
-
   return value
     .filter((item): item is string => typeof item === 'string')
-    .map((item) => item.trim())
+    .map((item) => item.trim().slice(0, MAX_SHORT))
     .filter(Boolean)
+    .slice(0, MAX_ARRAY_ITEMS)
 }
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
-function mapEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 'created_at'> {
-  const statusValue = typeof body.status === 'string' ? body.status : 'new'
-  const status = ENQUIRY_STATUSES.has(statusValue as EnquiryStatus)
-    ? statusValue as EnquiryStatus
-    : 'new'
-
+/**
+ * Build an enquiry insert from an explicit whitelist of PUBLIC form fields only.
+ * Internal CRM fields (account_id, project_id, internal_notes*, converted_contact_id)
+ * are never accepted here — they are settable solely via the authenticated PATCH
+ * path. status is forced to 'new'; the caller cannot set it.
+ */
+function mapPublicEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 'created_at'> {
   return {
-    biz_name: sanitizeText(body.biz_name) ?? '',
-    contact_name: sanitizeText(body.contact_name) ?? '',
-    contact_email: sanitizeText(body.contact_email),
-    contact_phone: sanitizeText(body.contact_phone),
-    biz_type: sanitizeText(body.biz_type),
-    project_type: sanitizeText(body.project_type),
-    team_size: sanitizeText(body.team_size),
-    team_split: sanitizeText(body.team_split),
-    top_features: sanitizeStringArray(body.top_features),
-    calendar_detail: sanitizeText(body.calendar_detail),
-    forms_detail: sanitizeText(body.forms_detail),
-    devices: sanitizeStringArray(body.devices),
-    offline_capability: sanitizeText(body.offline_capability),
-    existing_tools: sanitizeText(body.existing_tools),
-    pain_points: sanitizeText(body.pain_points),
-    timeline: sanitizeText(body.timeline),
-    referral_source: sanitizeText(body.referral_source),
-    budget: sanitizeText(body.budget),
-    extra: sanitizeText(body.extra),
-    status,
-    account_id:
-      body.account_id === null || body.account_id === undefined
-        ? null
-        : typeof body.account_id === 'string'
-          ? body.account_id
-          : null,
-    project_id:
-      body.project_id === null || body.project_id === undefined
-        ? null
-        : typeof body.project_id === 'string'
-          ? body.project_id
-          : null,
-    internal_notes:
-      body.internal_notes === null || body.internal_notes === undefined
-        ? null
-        : typeof body.internal_notes === 'string'
-          ? body.internal_notes
-          : null,
-    internal_notes_updated_at:
-      typeof body.internal_notes_updated_at === 'string'
-        ? body.internal_notes_updated_at
-        : null,
-    internal_notes_author_id:
-      body.internal_notes_author_id === null || body.internal_notes_author_id === undefined
-        ? null
-        : typeof body.internal_notes_author_id === 'string'
-          ? body.internal_notes_author_id
-          : null,
-    converted_contact_id:
-      body.converted_contact_id === null || body.converted_contact_id === undefined
-        ? null
-        : typeof body.converted_contact_id === 'string'
-          ? body.converted_contact_id
-          : null,
+    biz_name: cappedText(body.biz_name, MAX_NAME) ?? '',
+    contact_name: cappedText(body.contact_name, MAX_NAME) ?? '',
+    contact_email: cappedText(body.contact_email, MAX_SHORT),
+    contact_phone: cappedText(body.contact_phone, MAX_PHONE),
+    biz_type: cappedText(body.biz_type, MAX_SHORT),
+    project_type: cappedText(body.project_type, MAX_SHORT),
+    team_size: cappedText(body.team_size, MAX_SHORT),
+    team_split: cappedText(body.team_split, MAX_SHORT),
+    top_features: cappedStringArray(body.top_features),
+    calendar_detail: cappedText(body.calendar_detail, MAX_TEXTAREA),
+    forms_detail: cappedText(body.forms_detail, MAX_TEXTAREA),
+    devices: cappedStringArray(body.devices),
+    offline_capability: cappedText(body.offline_capability, MAX_SHORT),
+    existing_tools: cappedText(body.existing_tools, MAX_TEXTAREA),
+    pain_points: cappedText(body.pain_points, MAX_TEXTAREA),
+    timeline: cappedText(body.timeline, MAX_SHORT),
+    referral_source: cappedText(body.referral_source, MAX_SHORT),
+    budget: cappedText(body.budget, MAX_SHORT),
+    extra: cappedText(body.extra, MAX_TEXTAREA),
+    status: 'new',
+    account_id: null,
+    project_id: null,
+    internal_notes: null,
+    internal_notes_updated_at: null,
+    internal_notes_author_id: null,
+    converted_contact_id: null,
   }
 }
 
@@ -154,9 +137,37 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({})) as Partial<EnquiryFormState>
-  const admin = createAdminClient()
-  const payload = mapEnquiryPayload(body as Record<string, unknown>)
+  // Reject oversized bodies before doing any parsing work.
+  const raw = await request.text()
+  if (raw.length > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
+  }
+
+  let body: Record<string, unknown>
+  try {
+    body = JSON.parse(raw) as Record<string, unknown>
+  } catch {
+    body = {}
+  }
+
+  // Honeypot: a real user never fills the hidden `website` field. If it's
+  // populated, pretend success and insert nothing — no signal to the bot.
+  if (cappedText(body.website, MAX_SHORT)) {
+    return NextResponse.json({ id: crypto.randomUUID() }, { status: 201 })
+  }
+
+  // Public endpoint runs as the anon role — the "public can insert enquiries"
+  // RLS policy is the authorisation boundary, not a service-role key.
+  const supabase = await createSupabaseClient()
+
+  // Rolling hourly cap. anon can't SELECT enquiries, so a SECURITY DEFINER
+  // function returns the count without exposing any row data.
+  const { data: recentCount, error: countError } = await supabase.rpc('count_recent_enquiries')
+  if (!countError && typeof recentCount === 'number' && recentCount >= HOURLY_ENQUIRY_LIMIT) {
+    return NextResponse.json({ error: 'Too many requests, please try again later' }, { status: 429 })
+  }
+
+  const payload = mapPublicEnquiryPayload(body)
 
   if (!payload.biz_name || !payload.contact_name || !payload.contact_email || !payload.contact_phone) {
     return NextResponse.json(
@@ -172,15 +183,14 @@ export async function POST(request: Request) {
     )
   }
 
-  const { data, error } = await admin
-    .from('enquiries')
-    .insert(payload)
-    .select('*')
-    .single()
+  // Generate the id client-side so we don't need a RETURNING select (anon has
+  // no SELECT policy on enquiries).
+  const id = crypto.randomUUID()
+  const { error } = await supabase.from('enquiries').insert({ id, ...payload })
 
-  if (error || !data) {
+  if (error) {
     return NextResponse.json(
-      { error: error?.message || 'Failed to create enquiry' },
+      { error: error.message || 'Failed to create enquiry' },
       { status: 500 }
     )
   }
@@ -188,7 +198,7 @@ export async function POST(request: Request) {
   try {
     const notificationEmail = process.env.NOTIFICATION_EMAIL
     if (notificationEmail && resend) {
-      const email = newEnquiryEmail(data as Enquiry)
+      const email = newEnquiryEmail({ ...payload, id, created_at: new Date().toISOString() } as Enquiry)
       await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL ?? DEFAULT_RESEND_FROM,
         to: [notificationEmail],
@@ -202,5 +212,5 @@ export async function POST(request: Request) {
     console.error('Failed to send enquiry notification email', emailError)
   }
 
-  return NextResponse.json({ id: data.id }, { status: 201 })
+  return NextResponse.json({ id }, { status: 201 })
 }

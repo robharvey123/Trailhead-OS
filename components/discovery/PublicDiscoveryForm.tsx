@@ -304,6 +304,8 @@ export default function PublicDiscoveryForm() {
   const [submitError, setSubmitError] = useState('')
   const [isComplete, setIsComplete] = useState(false)
   const [bizTypeSelection, setBizTypeSelection] = useState('')
+  // Honeypot — hidden from users, tempting to bots. Non-empty on submit → spam.
+  const [website, setWebsite] = useState('')
 
   const step = STEPS[currentStep]
   const isLastStep = currentStep === STEPS.length - 1
@@ -331,7 +333,7 @@ export default function PublicDiscoveryForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(nextForm),
+        body: JSON.stringify({ ...nextForm, website }),
       })
 
       if (!response.ok) {
@@ -636,6 +638,19 @@ export default function PublicDiscoveryForm() {
           onSubmit={handleSubmit}
           className="rounded-[2rem] border border-[#dccfbf] bg-white/90 p-5 shadow-[0_28px_90px_rgba(148,163,184,0.18)] backdrop-blur sm:p-8"
         >
+          {/* Honeypot: hidden off-screen (not display:none, which some bots skip). */}
+          <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+            <label htmlFor="website">Website</label>
+            <input
+              id="website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(event) => setWebsite(event.target.value)}
+            />
+          </div>
           <div
             key={currentStep}
             className="animate-os-step-enter flex min-h-[56svh] flex-col justify-between gap-8"
