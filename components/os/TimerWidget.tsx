@@ -70,7 +70,7 @@ export default function TimerWidget() {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rate_snapshot: running.rate_snapshot }),
+          body: JSON.stringify({}),
         }
       )
       setRunning(null)

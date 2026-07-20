@@ -156,7 +156,7 @@ export default function TimesheetClient({
     if (!timer) return
     const engId = timer.engagement_id
     try {
-      await apiFetch(`/api/timesheet/timer/${timer.id}/stop`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rate_snapshot: timer.rate_snapshot || 0 }) })
+      await apiFetch(`/api/timesheet/timer/${timer.id}/stop`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
       setTimer(null)
       await loadEntries()
       if (engId) await refreshEngagement(engId)

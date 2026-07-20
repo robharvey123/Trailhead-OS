@@ -80,9 +80,9 @@ export async function GET(request: Request) {
         bill_to_email: source.bill_to_email,
         bill_to_phone: source.bill_to_phone,
         notes: source.notes,
-        is_recurring: true,
+        is_recurring: false,
         recurring_interval: source.recurring_interval,
-        next_invoice_date: followingDate,
+        next_invoice_date: null,
       })
 
     if (insertError) {
@@ -90,11 +90,15 @@ export async function GET(request: Request) {
       continue
     }
 
-    // Advance the source invoice's next_invoice_date
-    await supabaseService
+    // Advance the source invoice's next_invoice_date. Only the source recurs.
+    const { error: advanceError } = await supabaseService
       .from('invoices')
       .update({ next_invoice_date: followingDate })
       .eq('id', source.id)
+
+    if (advanceError) {
+      errors.push(`Invoice ${source.id} date advance: ${advanceError.message}`)
+    }
 
     created++
   }

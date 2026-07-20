@@ -173,6 +173,14 @@ export async function PATCH(
     }
 
     patch.status = body.status
+
+    // Keep paid_at consistent with manual status changes: stamp it when moving
+    // into 'paid' (if not already set), clear it when moving out of 'paid'.
+    if (body.status === 'paid' && !existing.paid_at) {
+      patch.paid_at = new Date().toISOString()
+    } else if (body.status !== 'paid' && existing.paid_at) {
+      patch.paid_at = null
+    }
   }
 
   if (body.issue_date !== undefined) {

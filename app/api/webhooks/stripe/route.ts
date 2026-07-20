@@ -11,12 +11,17 @@ async function markInvoicePaidById(invoiceId: string, paymentIntentId?: string |
     .eq('id', invoiceId)
     .maybeSingle<{ id: string; invoice_number: string; status: string }>()
 
-  if (error || !invoice) {
+  // A query failure is transient — throw so the caller returns 500 and Stripe
+  // retries. A genuinely missing invoice is not retryable, so return quietly.
+  if (error) {
+    throw new Error(`Failed to look up invoice ${invoiceId}: ${error.message}`)
+  }
+  if (!invoice) {
     return
   }
 
   if (invoice.status !== 'paid') {
-    await admin
+    const { error: updateError } = await admin
       .from('invoices')
       .update({
         status: 'paid',
@@ -24,6 +29,10 @@ async function markInvoicePaidById(invoiceId: string, paymentIntentId?: string |
         stripe_payment_intent_id: paymentIntentId ?? undefined,
       })
       .eq('id', invoice.id)
+
+    if (updateError) {
+      throw new Error(`Failed to mark invoice ${invoice.id} paid: ${updateError.message}`)
+    }
 
     await sendInvoicePaidNotification(invoice.id, invoice.invoice_number)
   }
@@ -98,7 +107,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ received: true })
-  } catch {
-    return NextResponse.json({ received: true })
+  } catch (err) {
+    // Surface the failure so Stripe retries rather than silently dropping it.
+    console.error('Stripe webhook handler failed:', err)
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }
