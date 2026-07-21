@@ -284,6 +284,22 @@ export async function getFullMessage(id: string): Promise<gmail_v1.Schema$Messag
   return res.data
 }
 
+/**
+ * Metadata-only fetch of a message's current Gmail labels (UNREAD/STARRED/INBOX…).
+ * Cheap relative to a full fetch — used to refresh read/archive state on messages
+ * already ingested into email_logs.
+ */
+export async function getMessageLabels(id: string): Promise<string[]> {
+  const gmail = await getGmailClient()
+  const res = await gmail.users.messages.get({
+    userId: 'me',
+    id,
+    format: 'metadata',
+    metadataHeaders: [],
+  })
+  return res.data.labelIds ?? []
+}
+
 export function parseGmailMessage(msg: gmail_v1.Schema$Message): Partial<EmailLog> {
   const headers = msg.payload?.headers || []
   const get = (name: string) =>

@@ -15,7 +15,7 @@
     },
     {
       "path": "/api/cron/gmail-sync",
-      "schedule": "* * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/meet-sync",

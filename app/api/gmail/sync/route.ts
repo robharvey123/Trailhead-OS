@@ -11,7 +11,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}))
     const sinceDays = Number(body.sinceDays) > 0 ? Number(body.sinceDays) : 7
-    const result = await syncMailbox({ sinceDays })
+    // Refresh read/label state on normal syncs, but keep the long backfill
+    // (e.g. first-connect 90-day) insert-only so it doesn't time out.
+    const result = await syncMailbox({ sinceDays, refreshLabels: sinceDays <= 30 })
     return NextResponse.json(result)
   } catch (error) {
     return NextResponse.json(
