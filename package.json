@@ -28,6 +28,7 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.91.0",
     "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.14.7",
     "@types/sanitize-html": "^2.16.1",
     "exceljs": "^4.4.0",
     "googleapis": "^171.4.0",

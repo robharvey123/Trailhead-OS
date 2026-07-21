@@ -26,17 +26,29 @@ export async function listThreads(
   const supabase = await getSupabase(client)
   let query = supabase.from('email_logs').select(SELECT).order('created_at', { ascending: false }).limit(800)
 
-  // SQL pre-filter only for non-label folders. inbox/archived/unread depend on
-  // per-thread label state, so they're filtered after grouping (below).
+  // SQL pre-filter only for non-label folders. inbox/archived/unread/sent depend
+  // on per-thread state, so they're filtered after grouping (below). In
+  // particular 'sent' means "the thread has an outbound message" (has_outbound),
+  // not "this row is outbound" — so it must be a post-group filter to match the
+  // client-side definition.
   switch (opts.folder) {
     case 'starred': query = query.eq('is_starred', true); break
     case 'unmatched': query = query.is('account_id', null); break
-    case 'sent': query = query.eq('direction', 'outbound'); break
     default: break
   }
   if (opts.accountId) query = query.eq('account_id', opts.accountId)
   if (opts.contactId) query = query.eq('contact_id', opts.contactId)
-  if (opts.search) query = query.ilike('subject', `%${opts.search}%`)
+  if (opts.search) {
+    // Match across the headline text columns. Sanitise chars that would break
+    // PostgREST's or() grammar (commas/parens); body_text is intentionally
+    // excluded — too heavy for ilike (full-body search is a later brief).
+    const s = opts.search.replace(/[,()]/g, ' ').trim()
+    if (s) {
+      query = query.or(
+        `subject.ilike.%${s}%,from_name.ilike.%${s}%,from_address.ilike.%${s}%,snippet.ilike.%${s}%`
+      )
+    }
+  }
 
   const { data, error } = await query
   if (error) throw new Error(error.message || 'Failed to load threads')
@@ -79,6 +91,7 @@ export async function listThreads(
   if (opts.folder === 'inbox') result = result.filter((t) => t.in_inbox)
   else if (opts.folder === 'archived') result = result.filter((t) => !t.in_inbox)
   else if (opts.folder === 'unread') result = result.filter((t) => t.is_unread && t.in_inbox)
+  else if (opts.folder === 'sent') result = result.filter((t) => t.has_outbound)
 
   result.sort((a, b) => b.last_at.localeCompare(a.last_at))
   return result
