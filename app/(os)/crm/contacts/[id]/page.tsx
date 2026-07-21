@@ -4,6 +4,8 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { listMeetingNotesForContact } from '@/lib/db/meeting-notes'
 import { listMeetingsForContact } from '@/lib/db/meetings'
+import { listThreads } from '@/lib/db/inbox'
+import { getCompanySettings } from '@/lib/company-settings'
 import { listProjectsByContact } from '@/lib/db/projects'
 import { getQuotes } from '@/lib/db/quotes'
 import { getTasks } from '@/lib/db/tasks'
@@ -30,7 +32,7 @@ export default async function ContactDetailPage({
     .order('occurred_at', { ascending: false })
     .order('created_at', { ascending: false })
 
-  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult, projects, quotes, meetingNotes, meetings] = await Promise.all([
+  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult, projects, quotes, meetingNotes, meetings, emailThreads, companySettings, userResult] = await Promise.all([
     getContactById(id, supabase).catch(() => null),
     getWorkstreams(supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
@@ -41,6 +43,9 @@ export default async function ContactDetailPage({
     getQuotes({ contact_id: id }, supabase).catch(() => []),
     listMeetingNotesForContact(id, supabase).catch(() => []),
     listMeetingsForContact(id, supabase).catch(() => []),
+    listThreads({ contactId: id }, supabase).catch(() => []),
+    getCompanySettings(supabase).catch(() => null),
+    supabase.auth.getUser(),
   ])
 
   if (!contact) {
@@ -62,6 +67,9 @@ export default async function ContactDetailPage({
       initialTouchpoints={touchpointsResult.data ?? []}
       meetingNotes={meetingNotes}
       meetings={meetings}
+      emailThreads={emailThreads}
+      selfEmail={userResult.data.user?.email ?? ''}
+      signature={companySettings?.email_signature ?? ''}
       projects={projects}
     />
   )

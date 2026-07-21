@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import EmailThread from './EmailThread'
+import ComposeModal from './inbox/ComposeModal'
+import SyncMailButton from './SyncMailButton'
 import ProjectsSection from './ProjectsSection'
 import SearchSelect from './SearchSelect'
 import StatusBadge from './StatusBadge'
@@ -19,12 +20,18 @@ import type {
   Account,
   Contact,
   ContactStatus,
+  EmailThread,
   ProjectListItem,
   QuoteListItem,
   TaskWithWorkstream,
   Touchpoint,
   Workstream,
 } from '@/lib/types'
+
+function fmtThreadDate(value: string | null) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
 
 const CONTACT_STATUSES: ContactStatus[] = ['lead', 'active', 'inactive', 'archived']
 
@@ -43,6 +50,9 @@ export default function ContactDetailClient({
   initialTouchpoints,
   meetingNotes,
   meetings = [],
+  emailThreads = [],
+  selfEmail = '',
+  signature = '',
   projects,
 }: {
   initialContact: ContactWithRelations
@@ -54,11 +64,15 @@ export default function ContactDetailClient({
   initialTouchpoints: Touchpoint[]
   meetingNotes: MeetingNoteWithRelations[]
   meetings?: MeetingWithRelations[]
+  emailThreads?: EmailThread[]
+  selfEmail?: string
+  signature?: string
   projects: ProjectListItem[]
 }) {
   const router = useRouter()
   const [contact, setContact] = useState(initialContact)
   const [editing, setEditing] = useState(false)
+  const [composeOpen, setComposeOpen] = useState(false)
   const [linkingAccount, setLinkingAccount] = useState(false)
   const [form, setForm] = useState({
     name: initialContact.name,
@@ -576,12 +590,66 @@ export default function ContactDetailClient({
       <MeetingNotesTimeline notes={meetingNotes} />
       <MeetingsTimeline meetings={meetings} />
 
-      <EmailThread
-        title="Emails"
-        contact_id={contact.id}
-        contact_email={contact.email}
-        account_id={contact.account_id}
-      />
+      <div className="os-card rounded-[2rem] p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-[color:var(--text)]">Emails</h2>
+            <p className="text-sm text-[color:var(--text-2)]">Gmail threads linked to this contact.</p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <SyncMailButton />
+            <button
+              className="btn btn-primary btn-sm"
+              disabled={!contact.email}
+              onClick={() => setComposeOpen(true)}
+            >
+              + New email
+            </button>
+          </div>
+        </div>
+
+        {emailThreads.length === 0 ? (
+          <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-center text-sm text-[color:var(--text-3)]">
+            No email threads linked to this contact yet.
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+              <SyncMailButton />
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4">
+            <table className="data-table">
+              <thead>
+                <tr><th>From</th><th>Subject</th><th>When</th><th></th></tr>
+              </thead>
+              <tbody>
+                {emailThreads.map((t) => (
+                  <tr key={t.gmail_thread_id} style={{ cursor: 'pointer' }} onClick={() => router.push('/inbox')}>
+                    <td className="td-name">{t.from_name}</td>
+                    <td>
+                      <div>{t.subject}</div>
+                      <div className="td-sub">{t.snippet}</div>
+                    </td>
+                    <td className="td-mono">{fmtThreadDate(t.last_at)}</td>
+                    <td>{t.is_unread ? <span className="pill timer">unread</span> : null}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {composeOpen ? (
+        <ComposeModal
+          contacts={[{ id: contact.id, name: contact.name, email: contact.email ?? null, account_id: contact.account_id }]}
+          accounts={contact.account ? [{ id: contact.account.id, name: contact.account.name }] : []}
+          initialTo={contact.email ? [contact.email] : []}
+          initialCc={selfEmail ? [selfEmail] : []}
+          signature={signature}
+          onClose={() => setComposeOpen(false)}
+          onSent={() => router.refresh()}
+        />
+      ) : null}
 
       <div className="os-card rounded-[2rem] p-6">
         <div className="flex items-center justify-between gap-3">

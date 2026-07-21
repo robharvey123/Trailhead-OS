@@ -7,6 +7,7 @@ import AccountForm from './AccountForm'
 import ActivityTimeline from './ActivityTimeline'
 import MeetingNotesTimeline from './MeetingNotesTimeline'
 import MeetingsTimeline from './MeetingsTimeline'
+import SyncMailButton from './SyncMailButton'
 import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TouchpointTimeline from './TouchpointTimeline'
@@ -253,13 +254,17 @@ export default function AccountDetailClient({
         {/* EMAILS */}
         {tab === 'Emails' ? (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 12 }}>
+              <SyncMailButton />
               <button className="btn btn-primary btn-sm" onClick={() => setComposeOpen(true)}>+ New email</button>
             </div>
             {emailThreads.length === 0 ? (
               <div className="empty">
                 No email threads linked to this account yet. New mail auto-links by contact/domain;
                 you can also link threads from the <Link href="/inbox" className="acct-chip" style={{ display: 'inline-flex' }}>Inbox</Link>.
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+                  <SyncMailButton />
+                </div>
               </div>
             ) : (
               <table className="data-table">

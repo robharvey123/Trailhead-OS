@@ -20,7 +20,7 @@ function tsOf(r: Row): string {
 }
 
 export async function listThreads(
-  opts: { folder?: InboxFolder; accountId?: string; search?: string } = {},
+  opts: { folder?: InboxFolder; accountId?: string; contactId?: string; search?: string } = {},
   client?: SupabaseClient
 ): Promise<EmailThread[]> {
   const supabase = await getSupabase(client)
@@ -35,6 +35,7 @@ export async function listThreads(
     default: break
   }
   if (opts.accountId) query = query.eq('account_id', opts.accountId)
+  if (opts.contactId) query = query.eq('contact_id', opts.contactId)
   if (opts.search) query = query.ilike('subject', `%${opts.search}%`)
 
   const { data, error } = await query
