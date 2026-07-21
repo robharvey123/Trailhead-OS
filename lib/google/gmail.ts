@@ -93,44 +93,37 @@ export interface OutboundAttachment {
   dataBase64: string // raw base64 (no data: prefix)
 }
 
-export async function sendEmail({
-  to,
-  cc,
-  bcc,
-  subject,
-  body,
-  replyToMessageId,
-  inReplyTo,
-  references,
-  attachments,
-}: {
+export interface OutboundMessage {
   to: string
   cc?: string
   bcc?: string
   subject: string
   body: string
-  replyToMessageId?: string
   /** RFC822 Message-ID of the message being replied to (for In-Reply-To/References). */
   inReplyTo?: string
   references?: string
   attachments?: OutboundAttachment[]
-}) {
-  const gmail = await getGmailClient()
+}
 
+/**
+ * Build a base64url-encoded RFC822 message from an outbound payload. Shared by
+ * the send path AND the drafts path so both produce identical MIME.
+ */
+export function buildRawMessage(opts: OutboundMessage): { raw: string; html: string; text: string } {
   // For replies, prefix "Re: " (if absent) and emit threading headers so the
   // message threads on the Gmail side AND in the recipient's mail client.
-  const isReply = Boolean(inReplyTo)
-  const finalSubject = isReply && !/^re:\s/i.test(subject) ? `Re: ${subject}` : subject
+  const isReply = Boolean(opts.inReplyTo)
+  const finalSubject = isReply && !/^re:\s/i.test(opts.subject) ? `Re: ${opts.subject}` : opts.subject
 
-  const headers = [`To: ${to}`]
-  if (cc && cc.trim()) headers.push(`Cc: ${cc}`)
-  if (bcc && bcc.trim()) headers.push(`Bcc: ${bcc}`)
+  const headers = [`To: ${opts.to}`]
+  if (opts.cc && opts.cc.trim()) headers.push(`Cc: ${opts.cc}`)
+  if (opts.bcc && opts.bcc.trim()) headers.push(`Bcc: ${opts.bcc}`)
   headers.push(`Subject: ${finalSubject}`, 'MIME-Version: 1.0')
-  if (inReplyTo) headers.push(`In-Reply-To: ${inReplyTo}`)
-  if (references) headers.push(`References: ${references}`)
+  if (opts.inReplyTo) headers.push(`In-Reply-To: ${opts.inReplyTo}`)
+  if (opts.references) headers.push(`References: ${opts.references}`)
 
   // Single clean HTML document + plain-text alternative.
-  const { html, text } = composeOutboundEmail(body)
+  const { html, text } = composeOutboundEmail(opts.body)
 
   // text/plain + text/html as a multipart/alternative block (clients pick HTML,
   // spam filters + accessibility get the text version).
@@ -150,6 +143,7 @@ export async function sendEmail({
   ]
 
   let message: string
+  const attachments = opts.attachments
   if (attachments && attachments.length > 0) {
     // multipart/mixed [ multipart/alternative, ...attachments ]
     const mixed = `mix_${randomUUID()}`
@@ -176,30 +170,126 @@ export async function sendEmail({
     message = [...headers, ...altBlock].join('\n')
   }
 
-  const encoded = Buffer.from(message)
+  const raw = Buffer.from(message)
     .toString('base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '')
 
-  const params: {
-    userId: string
-    requestBody: {
-      raw: string
-      threadId?: string
-    }
-  } = {
-    userId: 'me',
-    requestBody: { raw: encoded },
-  }
+  return { raw, html, text }
+}
 
-  if (replyToMessageId) {
-    params.requestBody.threadId = replyToMessageId
-  }
-
-  const res = await gmail.users.messages.send(params)
+export async function sendEmail(opts: OutboundMessage & { replyToMessageId?: string }) {
+  const gmail = await getGmailClient()
+  const { raw, html, text } = buildRawMessage(opts)
+  const requestBody: { raw: string; threadId?: string } = { raw }
+  if (opts.replyToMessageId) requestBody.threadId = opts.replyToMessageId
+  const res = await gmail.users.messages.send({ userId: 'me', requestBody })
   // Return the composed html/text too so callers can store the clean versions.
   return { data: res.data, html, text }
+}
+
+// --- Drafts (Gmail's own drafts API, so they sync everywhere) ---------------
+
+export interface DraftSummary {
+  id: string
+  message_id?: string
+  thread_id?: string
+  to: string
+  subject: string
+  snippet: string
+}
+
+/** Create a Gmail draft from an outbound payload; returns the draft id. */
+export async function createDraft(opts: OutboundMessage & { threadId?: string }): Promise<{ id: string; thread_id?: string }> {
+  const gmail = await getGmailClient()
+  const { raw } = buildRawMessage(opts)
+  const res = await gmail.users.drafts.create({
+    userId: 'me',
+    requestBody: { message: { raw, threadId: opts.threadId } },
+  })
+  return { id: res.data.id!, thread_id: res.data.message?.threadId ?? undefined }
+}
+
+export async function updateDraft(draftId: string, opts: OutboundMessage & { threadId?: string }): Promise<void> {
+  const gmail = await getGmailClient()
+  const { raw } = buildRawMessage(opts)
+  await gmail.users.drafts.update({
+    userId: 'me',
+    id: draftId,
+    requestBody: { message: { raw, threadId: opts.threadId } },
+  })
+}
+
+export async function deleteDraft(draftId: string): Promise<void> {
+  const gmail = await getGmailClient()
+  await gmail.users.drafts.delete({ userId: 'me', id: draftId })
+}
+
+/** Send an existing draft — Gmail removes the draft itself once it's sent. */
+export async function sendDraft(draftId: string): Promise<gmail_v1.Schema$Message> {
+  const gmail = await getGmailClient()
+  const res = await gmail.users.drafts.send({ userId: 'me', requestBody: { id: draftId } })
+  return res.data
+}
+
+export async function listDrafts(): Promise<DraftSummary[]> {
+  const gmail = await getGmailClient()
+  const { data } = await gmail.users.drafts.list({ userId: 'me', maxResults: 50 })
+  const drafts = data.drafts ?? []
+  return Promise.all(
+    drafts.map(async (d) => {
+      const full = await gmail.users.drafts.get({ userId: 'me', id: d.id!, format: 'metadata' })
+      const msg = full.data.message
+      const headers = msg?.payload?.headers ?? []
+      const h = (n: string) => headers.find((x) => x.name?.toLowerCase() === n.toLowerCase())?.value ?? ''
+      return {
+        id: d.id!,
+        message_id: msg?.id ?? undefined,
+        thread_id: msg?.threadId ?? undefined,
+        to: h('To'),
+        subject: h('Subject'),
+        snippet: msg?.snippet ?? '',
+      }
+    })
+  )
+}
+
+/** Full draft content for editing (to/cc/subject/body). */
+export async function getDraft(draftId: string): Promise<{
+  id: string
+  thread_id?: string
+  to: string[]
+  cc: string[]
+  subject: string
+  body_html: string | null
+  body_text: string | null
+}> {
+  const gmail = await getGmailClient()
+  const { data } = await gmail.users.drafts.get({ userId: 'me', id: draftId, format: 'full' })
+  const msg = data.message
+  const headers = msg?.payload?.headers ?? []
+  const h = (n: string) => headers.find((x) => x.name?.toLowerCase() === n.toLowerCase())?.value ?? ''
+  const splitAddrs = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean)
+  const { html, text } = extractBodies(msg?.payload)
+  return {
+    id: draftId,
+    thread_id: msg?.threadId ?? undefined,
+    to: splitAddrs(h('To')),
+    cc: splitAddrs(h('Cc')),
+    subject: h('Subject'),
+    body_html: html,
+    body_text: text,
+  }
+}
+
+/** Search the whole mailbox by Gmail query; returns {id, threadId} refs (max). */
+export async function searchMessageRefs(query: string, max = 50): Promise<Array<{ id: string; threadId: string }>> {
+  const gmail = await getGmailClient()
+  const res = await gmail.users.messages.list({ userId: 'me', q: query, maxResults: max })
+  const out: Array<{ id: string; threadId: string }> = []
+  for (const m of res.data.messages ?? []) if (m.id && m.threadId) out.push({ id: m.id, threadId: m.threadId })
+  return out
 }
 
 /** Raw HTML body (unsanitised) for the reader. */

@@ -8,12 +8,28 @@ import { createClient } from '@/lib/supabase/client'
 import type { EmailLog, EmailThread } from '@/lib/types'
 
 type LiveStatus = 'connecting' | 'live' | 'offline'
-import ComposeModal from './ComposeModal'
+import ComposeModal, { type ComposePayload } from './ComposeModal'
 import SafeEmailHtml from '../SafeEmailHtml'
 
 type Named = { id: string; name: string }
 type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
-type Folder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived' | 'trash'
+type Folder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived' | 'trash' | 'drafts' | 'scheduled'
+type RemoteThread = EmailThread & { remote?: boolean }
+type DraftSummary = { id: string; thread_id?: string; to: string; subject: string; snippet: string }
+type ScheduledRow = { id: string; send_at: string; payload: { to?: string; subject?: string } }
+type ComposeConfig = {
+  title?: string
+  to?: string[]
+  cc?: string[]
+  subject?: string
+  body?: string
+  attachments?: Array<{ filename: string; contentType: string; dataBase64: string }>
+  threadId?: string
+  inReplyTo?: string
+  accountId?: string | null
+  draftId?: string
+  signature?: string
+}
 
 const FOLDERS: Array<{ key: Folder; label: string; icon: string }> = [
   { key: 'inbox', label: 'Inbox', icon: '📥' },
@@ -22,9 +38,54 @@ const FOLDERS: Array<{ key: Folder; label: string; icon: string }> = [
   { key: 'starred', label: 'Starred', icon: '★' },
   { key: 'unmatched', label: 'Unmatched', icon: '⚠' },
   { key: 'sent', label: 'Sent', icon: '↗' },
+  { key: 'drafts', label: 'Drafts', icon: '📝' },
+  { key: 'scheduled', label: 'Scheduled', icon: '⏰' },
   { key: 'archived', label: 'Archived', icon: '🗄' },
   { key: 'trash', label: 'Trash', icon: '🗑' },
 ]
+
+// --- Undo send (client-side 10s delay) --------------------------------------
+// The timer lives at MODULE scope so navigating away from /inbox within the app
+// doesn't cancel a pending send. A beforeunload warning covers a real tab close.
+const UNDO_MS = 10_000
+let pendingSend: { payload: ComposePayload; timer: ReturnType<typeof setTimeout> } | null = null
+let notifyAfterSend: (() => void) | null = null
+
+function warnUnload(e: BeforeUnloadEvent) { e.preventDefault(); e.returnValue = '' }
+
+async function firePendingSend(payload: ComposePayload) {
+  const json = (b: unknown) => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) })
+  try {
+    if (payload.draftId) {
+      // Make sure the draft holds the final content (incl. attachments), then
+      // send via drafts.send so Gmail cleans up the draft itself.
+      await fetch(`/api/gmail/drafts/${payload.draftId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: payload.to, cc: payload.cc, bcc: payload.bcc, subject: payload.subject, body: payload.body, attachments: payload.attachments, thread_id: payload.thread_id, in_reply_to: payload.in_reply_to }),
+      }).catch(() => {})
+      await fetch(`/api/gmail/drafts/${payload.draftId}`, json({ to: payload.to, cc: payload.cc, bcc: payload.bcc, subject: payload.subject, body: payload.body, account_id: payload.account_id }))
+    } else {
+      await fetch('/api/gmail/send', json({ to: payload.to, cc: payload.cc, bcc: payload.bcc, subject: payload.subject, body: payload.body, attachments: payload.attachments, reply_to_message_id: payload.thread_id, account_id: payload.account_id }))
+    }
+  } finally {
+    pendingSend = null
+    if (typeof window !== 'undefined') window.removeEventListener('beforeunload', warnUnload)
+    notifyAfterSend?.()
+  }
+}
+function startUndoSend(payload: ComposePayload) {
+  if (pendingSend) { clearTimeout(pendingSend.timer); void firePendingSend(pendingSend.payload) }
+  window.addEventListener('beforeunload', warnUnload)
+  pendingSend = { payload, timer: setTimeout(() => { void firePendingSend(payload) }, UNDO_MS) }
+}
+function cancelUndoSend(): ComposePayload | null {
+  if (!pendingSend) return null
+  clearTimeout(pendingSend.timer)
+  window.removeEventListener('beforeunload', warnUnload)
+  const p = pendingSend.payload
+  pendingSend = null
+  return p
+}
 
 // Bulk actions and their labels for the selection bar.
 const BULK_ACTIONS: Array<{ action: string; label: string }> = [
@@ -99,7 +160,13 @@ export default function InboxClient({
   selfEmails?: string[]
   signature?: string
 }) {
-  const [composeOpen, setComposeOpen] = useState(false)
+  const [composeConfig, setComposeConfig] = useState<ComposeConfig | null>(null)
+  const [undoPayload, setUndoPayload] = useState<ComposePayload | null>(null)
+  const [drafts, setDrafts] = useState<DraftSummary[]>([])
+  const [scheduled, setScheduled] = useState<ScheduledRow[]>([])
+  const [remoteResults, setRemoteResults] = useState<RemoteThread[]>([])
+  const [remoteActive, setRemoteActive] = useState<RemoteThread | null>(null)
+  const [searchingAll, setSearchingAll] = useState(false)
   const [threads, setThreads] = useState(initialThreads)
   const [folder, setFolder] = useState<Folder>('inbox')
   const [search, setSearch] = useState('')
@@ -114,7 +181,6 @@ export default function InboxClient({
   const [cursorIndex, setCursorIndex] = useState(0)
   const [showHelp, setShowHelp] = useState(false)
   const [replyAllMode, setReplyAllMode] = useState(false)
-  const [forwardData, setForwardData] = useState<{ subject: string; body: string; attachments: Array<{ filename: string; contentType: string; dataBase64: string }> } | null>(null)
   const supabase = useMemo(() => createClient(), [])
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const replyRef = useRef<HTMLTextAreaElement>(null)
@@ -185,9 +251,13 @@ export default function InboxClient({
     sent: threads.filter((t) => t.has_outbound && !t.in_trash).length,
     archived: threads.filter((t) => !t.in_inbox && !t.in_trash).length,
     trash: threads.filter((t) => t.in_trash).length,
-  }), [threads])
+    drafts: drafts.length,
+    scheduled: scheduled.length,
+  }), [threads, drafts.length, scheduled.length])
 
   const visible = useMemo(() => {
+    // Drafts/Scheduled are their own lists (not email_logs threads).
+    if (folder === 'drafts' || folder === 'scheduled') return []
     const q = search.trim().toLowerCase()
     return threads.filter((t) => {
       if (folder === 'trash') {
@@ -206,8 +276,10 @@ export default function InboxClient({
     })
   }, [threads, folder, search])
   useEffect(() => { visibleRef.current = visible }, [visible])
+  // Reset Gmail-search results whenever the query text changes.
+  useEffect(() => { setRemoteResults([]) }, [search])
 
-  const active = threads.find((t) => t.gmail_thread_id === activeId) ?? null
+  const active: RemoteThread | null = threads.find((t) => t.gmail_thread_id === activeId) ?? remoteActive
 
   const rowVirtualizer = useVirtualizer({
     count: visible.length,
@@ -301,10 +373,14 @@ export default function InboxClient({
     }
   }, [connected, scheduleRefresh])
 
-  function openThread(t: EmailThread) {
+  function openThread(t: RemoteThread) {
     const id = t.gmail_thread_id
     setActiveId(id)
     setReply('')
+    // Remote (Gmail-search) results aren't in email_logs — fetch live and keep a
+    // synthesized active thread so the reader can render them.
+    setRemoteActive(t.remote ? t : null)
+    const endpoint = t.remote ? `/api/gmail/thread/${id}` : `/api/inbox/${id}`
 
     // Render cached messages instantly; only show the skeleton on a cold open.
     const cached = messageCacheRef.current.get(id)
@@ -318,12 +394,12 @@ export default function InboxClient({
 
     // Mark read locally the moment it's clicked; fire the read PATCH in the
     // background (with the same optimistic/revert machinery as other actions).
-    if (t.is_unread) void runOptimistic(id, { is_unread: false }, 'read')
+    if (t.is_unread && !t.remote) void runOptimistic(id, { is_unread: false }, 'read')
 
     // Refetch in the background, update cache + view if still the active thread.
     void (async () => {
       try {
-        const { messages: msgs } = await apiFetch<{ messages: EmailLog[] }>(`/api/inbox/${id}`)
+        const { messages: msgs } = await apiFetch<{ messages: EmailLog[] }>(endpoint)
         messageCacheRef.current.set(id, msgs)
         if (activeIdRef.current === id) setMessages(msgs)
       } catch (err) {
@@ -332,6 +408,114 @@ export default function InboxClient({
         if (activeIdRef.current === id) setLoadingMessages(false)
       }
     })()
+  }
+
+  // --- Undo send + schedule + drafts + full search --------------------------
+
+  function composePayloadToConfig(p: ComposePayload): ComposeConfig {
+    return {
+      to: p.to ? p.to.split(',').map((x) => x.trim()).filter(Boolean) : [],
+      cc: p.cc ? p.cc.split(',').map((x) => x.trim()).filter(Boolean) : [],
+      subject: p.subject,
+      body: p.body, // already includes signature; pass signature:'' so it isn't doubled
+      attachments: p.attachments,
+      threadId: p.thread_id,
+      inReplyTo: p.in_reply_to,
+      accountId: p.account_id,
+      draftId: p.draftId ?? undefined,
+      signature: '',
+      title: 'Edit before sending',
+    }
+  }
+
+  // ComposeModal hands us the resolved payload; defer the real send by 10s.
+  function handleUndoSend(payload: ComposePayload) {
+    startUndoSend(payload)
+    setUndoPayload(payload)
+  }
+  function undoSend() {
+    const p = cancelUndoSend()
+    setUndoPayload(null)
+    if (p) setComposeConfig(composePayloadToConfig(p))
+  }
+  // Auto-dismiss the toast when the send actually fires (UI only; timer is module-level).
+  useEffect(() => {
+    if (!undoPayload) return
+    const h = setTimeout(() => setUndoPayload(null), UNDO_MS)
+    return () => clearTimeout(h)
+  }, [undoPayload])
+  // Let a module-level send refresh the list while we're mounted.
+  useEffect(() => {
+    notifyAfterSend = () => { void refreshThreads() }
+    return () => { notifyAfterSend = null }
+  }, [refreshThreads])
+
+  async function handleSchedule(payload: ComposePayload, sendAtIso: string) {
+    try {
+      const { error: insErr } = await supabase.from('scheduled_emails').insert({
+        payload: {
+          to: payload.to, cc: payload.cc, bcc: payload.bcc, subject: payload.subject,
+          body_html: payload.body, attachments: payload.attachments,
+          in_reply_to: payload.thread_id, account_id: payload.account_id,
+        },
+        send_at: sendAtIso,
+      })
+      if (insErr) throw new Error(insErr.message)
+      void loadScheduled()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to schedule')
+    }
+  }
+
+  const loadDrafts = useCallback(async () => {
+    try {
+      const { drafts: d } = await apiFetch<{ drafts: DraftSummary[] }>('/api/gmail/drafts')
+      setDrafts(d)
+    } catch { /* ignore */ }
+  }, [])
+  const loadScheduled = useCallback(async () => {
+    try {
+      const { data } = await supabase.from('scheduled_emails').select('id, send_at, payload').eq('status', 'pending').order('send_at', { ascending: true })
+      setScheduled((data ?? []) as ScheduledRow[])
+    } catch { /* ignore */ }
+  }, [supabase])
+  useEffect(() => {
+    if (folder === 'drafts') void loadDrafts()
+    if (folder === 'scheduled') void loadScheduled()
+  }, [folder, loadDrafts, loadScheduled])
+
+  async function openDraft(id: string) {
+    try {
+      const { draft } = await apiFetch<{ draft: { id: string; thread_id?: string; to: string[]; cc: string[]; subject: string; body_html: string | null } }>(`/api/gmail/drafts/${id}`)
+      setComposeConfig({
+        title: 'Edit draft', to: draft.to, cc: draft.cc, subject: draft.subject,
+        body: draft.body_html ?? '', threadId: draft.thread_id, draftId: draft.id, signature: '',
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to open draft')
+    }
+  }
+  async function cancelScheduled(id: string) {
+    setScheduled((prev) => prev.filter((s) => s.id !== id))
+    try {
+      await supabase.from('scheduled_emails').update({ status: 'cancelled' }).eq('id', id)
+    } catch { void loadScheduled() }
+  }
+
+  async function searchAllMail() {
+    const q = search.trim()
+    if (!q) return
+    setSearchingAll(true)
+    try {
+      const { threads: found } = await apiFetch<{ threads: RemoteThread[] }>(`/api/gmail/search?q=${encodeURIComponent(q)}`)
+      // Drop any that are already visible locally.
+      const localIds = new Set(threadsRef.current.map((t) => t.gmail_thread_id))
+      setRemoteResults(found.filter((t) => !localIds.has(t.gmail_thread_id)))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gmail search failed')
+    } finally {
+      setSearchingAll(false)
+    }
   }
 
   function patchFor(action: string, extra?: Record<string, unknown>): Partial<EmailThread> | null {
@@ -484,12 +668,28 @@ export default function InboxClient({
           return { filename: a.filename, contentType: a.mime_type, dataBase64: arrayBufferToBase64(buf) }
         })
       )
-      setForwardData({ subject, body: quoted, attachments })
+      setComposeConfig({ title: 'Forward', subject, body: quoted, attachments, accountId: active.account_id })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to prepare forward')
     } finally {
       setBusy(false)
     }
+  }
+
+  /** Pop the plain-text reply out into the rich-text ComposeModal (threading preserved). */
+  function popOutReply() {
+    if (!active) return
+    const last = messages[messages.length - 1]
+    const primaryTo = last ? (last.direction === 'inbound' ? last.from_address : (last.to_addresses?.[0] ?? '')) : ''
+    setComposeConfig({
+      title: 'Reply',
+      to: primaryTo ? [primaryTo] : [],
+      subject: active.subject.startsWith('Re:') ? active.subject : `Re: ${active.subject}`,
+      body: reply,
+      threadId: active.gmail_thread_id,
+      accountId: active.account_id,
+    })
+    setReply('')
   }
 
   // Latest-ref pattern: the listener is attached once but always runs the freshest
@@ -521,7 +721,7 @@ export default function InboxClient({
       case 'f': if (active) { e.preventDefault(); void startForward() } break
       case 'x': if (cursorThread) { e.preventDefault(); toggleSelect(cursorThread.gmail_thread_id) } break
       case '/': e.preventDefault(); searchRef.current?.focus(); break
-      case 'c': e.preventDefault(); setComposeOpen(true); break
+      case 'c': e.preventDefault(); setComposeConfig({}); break
       case '?': e.preventDefault(); setShowHelp((s) => !s); break
       case 'Escape':
         if (showHelp) setShowHelp(false)
@@ -563,7 +763,7 @@ export default function InboxClient({
             <Link className="btn btn-primary btn-sm" href="/api/auth/google">Connect Gmail</Link>
           ) : (
             <>
-              <button className="btn btn-primary btn-sm" onClick={() => setComposeOpen(true)}>✎ Compose</button>
+              <button className="btn btn-primary btn-sm" onClick={() => setComposeConfig({})}>✎ Compose</button>
               <button className="btn btn-ghost btn-sm" onClick={() => syncNow(7)} disabled={busy}>{busy ? 'Syncing…' : '↻ Sync now'}</button>
               <button className="btn btn-ghost btn-sm" onClick={() => syncNow(90)} disabled={busy}>Backfill 90d</button>
               <button className="btn btn-ghost btn-sm" title="Keyboard shortcuts" onClick={() => setShowHelp(true)}>⌨ ?</button>
@@ -574,28 +774,34 @@ export default function InboxClient({
 
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '6px 16px' }}>{error}</p> : null}
 
-      {composeOpen ? (
+      {composeConfig ? (
         <ComposeModal
           contacts={contacts}
           accounts={accounts}
-          signature={signature}
-          onClose={() => setComposeOpen(false)}
-          onSent={() => refreshThreads()}
+          title={composeConfig.title}
+          signature={composeConfig.signature ?? signature}
+          initialTo={composeConfig.to}
+          initialCc={composeConfig.cc}
+          initialSubject={composeConfig.subject}
+          initialBody={composeConfig.body}
+          initialAttachments={composeConfig.attachments}
+          threadId={composeConfig.threadId}
+          inReplyTo={composeConfig.inReplyTo}
+          accountId={composeConfig.accountId}
+          draftId={composeConfig.draftId}
+          onSend={handleUndoSend}
+          onSchedule={handleSchedule}
+          onClose={() => { setComposeConfig(null); void refreshThreads() }}
+          onSent={() => { setComposeConfig(null); void refreshThreads(); if (folder === 'scheduled') void loadScheduled() }}
         />
       ) : null}
 
-      {forwardData ? (
-        <ComposeModal
-          contacts={contacts}
-          accounts={accounts}
-          title="Forward"
-          initialSubject={forwardData.subject}
-          initialBody={forwardData.body}
-          initialAttachments={forwardData.attachments}
-          signature={signature}
-          onClose={() => setForwardData(null)}
-          onSent={() => { setForwardData(null); void refreshThreads() }}
-        />
+      {undoPayload ? (
+        <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 80 }}
+          className="flex items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[var(--text)] px-4 py-2.5 text-sm text-white shadow-lg">
+          <span>Sending…</span>
+          <button className="font-semibold underline" onClick={undoSend}>Undo</button>
+        </div>
       ) : null}
 
       {showHelp ? (
@@ -634,7 +840,7 @@ export default function InboxClient({
           <div className="threads-search">
             <div className="search-wrap">
               <span className="search-icon">⌕</span>
-              <input ref={searchRef} className="search-input" placeholder="Search inbox…" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <input ref={searchRef} className="search-input" placeholder="Search inbox… (Enter for all mail)" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void searchAllMail() } }} />
             </div>
             {selected.size > 0 ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 8 }}>
@@ -656,57 +862,116 @@ export default function InboxClient({
             )}
           </div>
           <div className="threads-list" ref={listRef}>
-            {visible.length === 0 ? (
+            {folder === 'drafts' ? (
+              drafts.length === 0 ? (
+                <div className="empty">No drafts. They sync from Gmail everywhere.</div>
+              ) : (
+                drafts.map((d) => (
+                  <div key={d.id} className="thread" onClick={() => void openDraft(d.id)}>
+                    <div className="thread-row"><div className="thread-from">To: {d.to || '—'}</div></div>
+                    <div className="thread-subj">{d.subject || '(no subject)'}</div>
+                    <div className="thread-snippet">{d.snippet}</div>
+                  </div>
+                ))
+              )
+            ) : folder === 'scheduled' ? (
+              scheduled.length === 0 ? (
+                <div className="empty">Nothing scheduled.</div>
+              ) : (
+                scheduled.map((s) => (
+                  <div key={s.id} className="thread" style={{ cursor: 'default' }}>
+                    <div className="thread-row">
+                      <div className="thread-from">To: {s.payload?.to || '—'}</div>
+                      <div className="thread-time">{new Date(s.send_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                    <div className="thread-subj">{s.payload?.subject || '(no subject)'}</div>
+                    <div className="thread-tags">
+                      <button className="btn btn-ghost btn-sm" onClick={() => void cancelScheduled(s.id)}>Cancel</button>
+                    </div>
+                  </div>
+                ))
+              )
+            ) : visible.length === 0 && remoteResults.length === 0 ? (
               connected && threads.length === 0 && busy ? (
                 <ThreadListSkeleton />
               ) : (
-                <div className="empty">{!connected ? 'Connect Gmail to load your inbox.' : folder === 'trash' ? 'Trash shows locally trashed mail (Gmail purges it after 30 days).' : 'No threads. Try “Sync now”.'}</div>
+                <div className="empty">
+                  {!connected ? 'Connect Gmail to load your inbox.' : folder === 'trash' ? 'Trash shows locally trashed mail (Gmail purges it after 30 days).' : 'No threads. Try “Sync now”.'}
+                  {connected && search.trim() ? (
+                    <div style={{ marginTop: 12 }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => void searchAllMail()} disabled={searchingAll}>{searchingAll ? 'Searching…' : '🔍 Search all mail'}</button>
+                    </div>
+                  ) : null}
+                </div>
               )
             ) : (
-              <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
-                {rowVirtualizer.getVirtualItems().map((vi) => {
-                  const t = visible[vi.index]
-                  if (!t) return null
-                  return (
-                    <div
-                      key={vi.key}
-                      data-index={vi.index}
-                      ref={rowVirtualizer.measureElement}
-                      className={`thread ${t.gmail_thread_id === activeId ? 'active' : ''} ${t.is_unread ? 'unread' : ''}`}
-                      onClick={() => openThread(t)}
-                      style={{
-                        position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vi.start}px)`,
-                        outline: vi.index === cursorIndex ? '2px solid var(--accent)' : undefined,
-                        outlineOffset: -2,
-                      }}
-                    >
-                      <div className="thread-row">
-                        <input
-                          type="checkbox"
-                          checked={selected.has(t.gmail_thread_id)}
-                          onChange={() => toggleSelect(t.gmail_thread_id)}
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ marginRight: 6 }}
-                          aria-label="Select thread"
-                        />
-                        <div className="thread-from">{t.is_starred ? '★ ' : ''}{t.from_name}</div>
-                        <div className="thread-time">{t.has_attachments ? '📎 ' : ''}{timeLabel(t.last_at)}</div>
+              <>
+                <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
+                  {rowVirtualizer.getVirtualItems().map((vi) => {
+                    const t = visible[vi.index]
+                    if (!t) return null
+                    return (
+                      <div
+                        key={vi.key}
+                        data-index={vi.index}
+                        ref={rowVirtualizer.measureElement}
+                        className={`thread ${t.gmail_thread_id === activeId ? 'active' : ''} ${t.is_unread ? 'unread' : ''}`}
+                        onClick={() => openThread(t)}
+                        style={{
+                          position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vi.start}px)`,
+                          outline: vi.index === cursorIndex ? '2px solid var(--accent)' : undefined,
+                          outlineOffset: -2,
+                        }}
+                      >
+                        <div className="thread-row">
+                          <input
+                            type="checkbox"
+                            checked={selected.has(t.gmail_thread_id)}
+                            onChange={() => toggleSelect(t.gmail_thread_id)}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ marginRight: 6 }}
+                            aria-label="Select thread"
+                          />
+                          <div className="thread-from">{t.is_starred ? '★ ' : ''}{t.from_name}</div>
+                          <div className="thread-time">{t.has_attachments ? '📎 ' : ''}{timeLabel(t.last_at)}</div>
+                        </div>
+                        <div className="thread-subj">{t.subject}</div>
+                        <div className="thread-snippet">{t.snippet}</div>
+                        <div className="thread-tags">
+                          {t.account_id ? (
+                            <span className="acct-pill matched">◈ {t.account_name ?? 'Linked'}</span>
+                          ) : (
+                            <span className="acct-pill unmatched">⚠ Unmatched</span>
+                          )}
+                          {t.has_outbound ? <span className="acct-pill outbound">↗ Sent</span> : null}
+                          {t.message_count > 1 ? <span className="thread-time">{t.message_count}</span> : null}
+                        </div>
                       </div>
-                      <div className="thread-subj">{t.subject}</div>
-                      <div className="thread-snippet">{t.snippet}</div>
-                      <div className="thread-tags">
-                        {t.account_id ? (
-                          <span className="acct-pill matched">◈ {t.account_name ?? 'Linked'}</span>
-                        ) : (
-                          <span className="acct-pill unmatched">⚠ Unmatched</span>
-                        )}
-                        {t.has_outbound ? <span className="acct-pill outbound">↗ Sent</span> : null}
-                        {t.message_count > 1 ? <span className="thread-time">{t.message_count}</span> : null}
-                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Full-mailbox Gmail search results (not in email_logs). */}
+                {search.trim() ? (
+                  <div className="thread" style={{ cursor: 'default', textAlign: 'center' }} onClick={() => void searchAllMail()}>
+                    <button className="btn btn-ghost btn-sm" disabled={searchingAll}>{searchingAll ? 'Searching…' : '🔍 Search all mail'}</button>
+                  </div>
+                ) : null}
+                {remoteResults.length > 0 ? (
+                  <div className="folder-label" style={{ padding: '8px 14px' }}>From Gmail</div>
+                ) : null}
+                {remoteResults.map((t) => (
+                  <div key={`remote-${t.gmail_thread_id}`} className={`thread ${t.gmail_thread_id === activeId ? 'active' : ''} ${t.is_unread ? 'unread' : ''}`} onClick={() => openThread(t)}>
+                    <div className="thread-row">
+                      <div className="thread-from">{t.from_name}</div>
+                      <div className="thread-time">{t.has_attachments ? '📎 ' : ''}{timeLabel(t.last_at)}</div>
                     </div>
-                  )
-                })}
-              </div>
+                    <div className="thread-subj">{t.subject}</div>
+                    <div className="thread-snippet">{t.snippet}</div>
+                    <div className="thread-tags"><span className="acct-pill outbound">from Gmail</span></div>
+                  </div>
+                ))}
+              </>
             )}
           </div>
         </div>
@@ -792,7 +1057,8 @@ export default function InboxClient({
                 <textarea ref={replyRef} className="reply-input" placeholder={replyAllMode ? 'Reply all…' : 'Reply…'} value={reply} onChange={(e) => setReply(e.target.value)} />
                 <div className="reply-actions">
                   <span className="meta-chip">Sends from {selfEmail || 'your Workspace mailbox'}</span>
-                  <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={() => sendReply(true)} disabled={busy || !reply.trim()}>↗ Reply all</button>
+                  <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={popOutReply} title="Rich-text compose" disabled={!active}>⤢ Pop out</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => sendReply(true)} disabled={busy || !reply.trim()}>↗ Reply all</button>
                   <button className="btn btn-primary btn-sm" onClick={() => sendReply(false)} disabled={busy || !reply.trim()}>↗ Send reply</button>
                 </div>
               </div>

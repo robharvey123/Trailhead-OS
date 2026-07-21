@@ -1,13 +1,27 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import RichTextEditor from './RichTextEditor'
 
 type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
 type Named = { id: string; name: string }
 type Recipient = { email: string; name?: string; inCrm: boolean; accountId?: string | null }
 type Field = 'to' | 'cc' | 'bcc'
 type PreAttachment = { filename: string; contentType: string; dataBase64: string }
+
+export type ComposePayload = {
+  to: string
+  cc: string
+  bcc: string
+  subject: string
+  body: string
+  attachments: PreAttachment[]
+  thread_id?: string
+  in_reply_to?: string
+  account_id?: string | null
+  draftId?: string | null
+}
 
 function suggestAccountName(email: string) {
   const base = (email.split('@')[1] || '').split('.')[0] || ''
@@ -21,10 +35,33 @@ function readAsBase64(file: File): Promise<string> {
     r.readAsDataURL(file)
   })
 }
+function stripHtml(html: string) {
+  return html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').trim()
+}
+function at8am(base: Date) {
+  const d = new Date(base)
+  d.setHours(8, 0, 0, 0)
+  return d
+}
+function nextTomorrow8() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return at8am(d)
+}
+function nextMonday8() {
+  const d = new Date()
+  const add = ((1 - d.getDay() + 7) % 7) || 7
+  d.setDate(d.getDate() + add)
+  return at8am(d)
+}
+function labelFor(d: Date) {
+  return d.toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })
+}
 
 export default function ComposeModal({
   contacts, accounts, initialTo = [], initialCc = [], initialSubject = '', initialBody = '',
-  initialAttachments = [], title = 'New email', signature = '', onClose, onSent,
+  initialAttachments = [], title = 'New email', signature = '', threadId, inReplyTo, accountId = null,
+  draftId, onSend, onSchedule, onClose, onSent,
 }: {
   contacts: ContactOpt[]
   accounts: Named[]
@@ -35,6 +72,12 @@ export default function ComposeModal({
   initialAttachments?: PreAttachment[]
   title?: string
   signature?: string
+  threadId?: string
+  inReplyTo?: string
+  accountId?: string | null
+  draftId?: string
+  onSend?: (payload: ComposePayload) => void
+  onSchedule?: (payload: ComposePayload, sendAtIso: string) => void
   onClose: () => void
   onSent: () => void
 }) {
@@ -50,12 +93,26 @@ export default function ComposeModal({
   const [queries, setQueries] = useState<Record<Field, string>>({ to: '', cc: '', bcc: '' })
   const [showBcc, setShowBcc] = useState(false)
   const [subject, setSubject] = useState(initialSubject)
-  const [bodyText, setBodyText] = useState(initialBody)
+  // Seed the rich-text editor: forward/reply pass plain text, convert to HTML paras.
+  const initialHtml = useMemo(() => {
+    if (!initialBody) return ''
+    if (/<[a-z][\s\S]*>/i.test(initialBody)) return initialBody
+    return initialBody.split('\n').map((l) => `<p>${l ? l.replace(/&/g, '&amp;').replace(/</g, '&lt;') : '<br>'}</p>`).join('')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const [bodyHtml, setBodyHtml] = useState(initialHtml)
   const [files, setFiles] = useState<File[]>([])
   const [preAttachments, setPreAttachments] = useState<PreAttachment[]>(initialAttachments)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [addList, setAddList] = useState<Array<{ email: string; add: boolean; name: string; account: string }> | null>(null)
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [pickTime, setPickTime] = useState('')
+  const [draftSaved, setDraftSaved] = useState(false)
+
+  const draftsEnabled = Boolean(onSend)
+  const draftIdRef = useRef<string | null>(draftId ?? null)
+  const saveChainRef = useRef<Promise<void>>(Promise.resolve())
 
   const value = (f: Field) => (f === 'to' ? to : f === 'cc' ? cc : bcc)
   const set = (f: Field) => (f === 'to' ? setTo : f === 'cc' ? setCc : setBcc)
@@ -71,6 +128,43 @@ export default function ComposeModal({
     const c = byEmail.get(e.toLowerCase())
     addRecipient(f, c ? { email: e, name: c.name, inCrm: true, accountId: c.account_id } : { email: e, inCrm: false })
   }
+
+  // --- Draft autosave: 2s debounce; serialized so update never races create ---
+  function draftBody(): Omit<ComposePayload, 'account_id' | 'draftId'> {
+    return {
+      to: to.map((r) => r.email).join(','),
+      cc: cc.map((r) => r.email).join(','),
+      bcc: bcc.map((r) => r.email).join(','),
+      subject,
+      body: bodyHtml,
+      attachments: preAttachments,
+      thread_id: threadId,
+      in_reply_to: inReplyTo,
+    }
+  }
+  function saveDraftNow() {
+    const payload = draftBody()
+    saveChainRef.current = saveChainRef.current.then(async () => {
+      try {
+        if (draftIdRef.current) {
+          await apiFetch(`/api/gmail/drafts/${draftIdRef.current}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        } else {
+          const res = await apiFetch<{ id: string }>('/api/gmail/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+          draftIdRef.current = res.id
+        }
+        setDraftSaved(true)
+      } catch { /* autosave is best-effort */ }
+    })
+  }
+  useEffect(() => {
+    if (!draftsEnabled) return
+    const empty = to.length === 0 && cc.length === 0 && bcc.length === 0 && !subject.trim() && !stripHtml(bodyHtml)
+    if (empty && !draftIdRef.current) return
+    setDraftSaved(false)
+    const handle = setTimeout(saveDraftNow, 2000)
+    return () => clearTimeout(handle)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [to, cc, bcc, subject, bodyHtml, draftsEnabled])
 
   function renderField(f: Field, label: string) {
     const recips = value(f)
@@ -111,7 +205,6 @@ export default function ComposeModal({
     )
   }
 
-  // Fold any uncommitted typed address in each field into the recipient list.
   function withPending(recips: Recipient[], q: string): Recipient[] {
     const e = q.trim().toLowerCase()
     if (!e || !e.includes('@') || recips.some((r) => r.email.toLowerCase() === e)) return recips
@@ -119,9 +212,29 @@ export default function ComposeModal({
     return [...recips, c ? { email: e, name: c.name, inCrm: true, accountId: c.account_id } : { email: e, inCrm: false }]
   }
 
+  async function resolveAttachments(): Promise<PreAttachment[]> {
+    const fileAttachments = await Promise.all(files.map(async (file) => ({
+      filename: file.name, contentType: file.type || 'application/octet-stream', dataBase64: await readAsBase64(file),
+    })))
+    return [...preAttachments, ...fileAttachments]
+  }
+  function payloadFrom(L: { to: Recipient[]; cc: Recipient[]; bcc: Recipient[] }, attachments: PreAttachment[]): ComposePayload {
+    return {
+      to: L.to.map((r) => r.email).join(','),
+      cc: L.cc.map((r) => r.email).join(','),
+      bcc: L.bcc.map((r) => r.email).join(','),
+      subject,
+      body: bodyHtml + (signature ? `<br><br>${signature}` : ''),
+      attachments,
+      thread_id: threadId,
+      in_reply_to: inReplyTo,
+      account_id: accountId,
+      draftId: draftIdRef.current,
+    }
+  }
+
   function doSendCheck() {
     const eff = { to: withPending(to, queries.to), cc: withPending(cc, queries.cc), bcc: withPending(bcc, queries.bcc) }
-    // Commit flushed recipients to state + clear inputs so the chips render.
     setTo(eff.to); setCc(eff.cc); setBcc(eff.bcc); setQueries({ to: '', cc: '', bcc: '' })
     if (eff.to.length === 0) { setError('Add at least one recipient.'); return }
     const unknown = [...eff.to, ...eff.cc, ...eff.bcc].filter((r) => !r.inCrm)
@@ -142,17 +255,23 @@ export default function ComposeModal({
       if (createRecipients && createRecipients.length > 0) {
         await apiFetch('/api/contacts/quick-create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipients: createRecipients }) })
       }
-      const fileAttachments = await Promise.all(files.map(async (file) => ({ filename: file.name, contentType: file.type || 'application/octet-stream', dataBase64: await readAsBase64(file) })))
-      const attachments = [...preAttachments, ...fileAttachments]
+      const attachments = await resolveAttachments()
+      const payload = payloadFrom(L, attachments)
+
+      if (onSend) {
+        // Undo-send path: hand the fully-resolved payload to the inbox, which
+        // defers the actual API call and closes the modal now.
+        onSend(payload)
+        onClose()
+        return
+      }
+
+      // Direct send (account/contact pages — no undo/draft machinery).
       await apiFetch('/api/gmail/send', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: L.to.map((r) => r.email).join(','),
-          cc: L.cc.map((r) => r.email).join(','),
-          bcc: L.bcc.map((r) => r.email).join(','),
-          subject,
-          body: bodyText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>') + (signature ? `<br><br>${signature}` : ''),
-          attachments,
+          to: payload.to, cc: payload.cc, bcc: payload.bcc, subject: payload.subject, body: payload.body,
+          attachments: payload.attachments, reply_to_message_id: payload.thread_id, account_id: payload.account_id,
         }),
       })
       onSent(); onClose()
@@ -161,6 +280,25 @@ export default function ComposeModal({
       setBusy(false); setAddList(null)
     }
   }
+
+  async function schedule(sendAtIso: string) {
+    const eff = { to: withPending(to, queries.to), cc: withPending(cc, queries.cc), bcc: withPending(bcc, queries.bcc) }
+    setTo(eff.to); setCc(eff.cc); setBcc(eff.bcc); setQueries({ to: '', cc: '', bcc: '' })
+    setScheduleOpen(false)
+    if (eff.to.length === 0) { setError('Add at least one recipient.'); return }
+    setBusy(true); setError('')
+    try {
+      const attachments = await resolveAttachments()
+      onSchedule?.(payloadFrom(eff, attachments), sendAtIso)
+      onSent(); onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to schedule')
+      setBusy(false)
+    }
+  }
+
+  const tomorrow = nextTomorrow8()
+  const monday = nextMonday8()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={onClose}>
@@ -178,7 +316,7 @@ export default function ComposeModal({
           </div>
           {showBcc ? renderField('bcc', 'Bcc') : null}
           <input className={`${input} w-full`} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" />
-          <textarea className={`${input} w-full`} style={{ minHeight: 220, resize: 'vertical' }} value={bodyText} onChange={(e) => setBodyText(e.target.value)} placeholder="Write your message…" />
+          <RichTextEditor initialHTML={initialHtml} onChange={setBodyHtml} />
           <div className="flex flex-wrap items-center gap-2">
             <label className="btn btn-ghost btn-sm cursor-pointer">📎 Attach<input type="file" multiple className="hidden" onChange={(e) => setFiles((f) => [...f, ...Array.from(e.target.files ?? [])])} /></label>
             {preAttachments.map((a, i) => (
@@ -198,8 +336,31 @@ export default function ComposeModal({
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border)] px-5 py-3">
-          <span className="font-mono text-[11px] text-[var(--text-3)]">Sends from your Workspace mailbox</span>
-          <button className="btn btn-primary btn-sm" onClick={doSendCheck} disabled={busy}>{busy ? 'Sending…' : '↗ Send'}</button>
+          <span className="font-mono text-[11px] text-[var(--text-3)]">
+            {draftsEnabled && draftSaved ? 'Draft saved' : 'Sends from your Workspace mailbox'}
+          </span>
+          <div className="relative flex items-center gap-1">
+            <button className="btn btn-primary btn-sm" onClick={doSendCheck} disabled={busy}>{busy ? 'Working…' : '↗ Send'}</button>
+            {onSchedule ? (
+              <>
+                <button className="btn btn-primary btn-sm" onClick={() => setScheduleOpen((o) => !o)} disabled={busy} title="Schedule send">▾</button>
+                {scheduleOpen ? (
+                  <div className="panel" style={{ position: 'absolute', bottom: 'calc(100% + 4px)', right: 0, zIndex: 70, minWidth: 220, padding: 6 }}>
+                    <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-[var(--surface-2)]" onClick={() => schedule(tomorrow.toISOString())}>
+                      Send tomorrow 8am <span className="text-[11px] text-[var(--text-3)]">{labelFor(tomorrow)}</span>
+                    </button>
+                    <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-[var(--surface-2)]" onClick={() => schedule(monday.toISOString())}>
+                      Send Monday 8am <span className="text-[11px] text-[var(--text-3)]">{labelFor(monday)}</span>
+                    </button>
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      <input type="datetime-local" className={input} value={pickTime} onChange={(e) => setPickTime(e.target.value)} />
+                      <button className="btn btn-ghost btn-sm" disabled={!pickTime} onClick={() => { if (pickTime) schedule(new Date(pickTime).toISOString()) }}>Set</button>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
 
