@@ -285,6 +285,13 @@ export default function Sidebar({
                 collapsed={collapsed}
               />
               <NavLink
+                href="/crm/meetings"
+                label="Meetings"
+                active={pathname.startsWith('/crm/meetings')}
+                onClick={() => setMobileOpen(false)}
+                collapsed={collapsed}
+              />
+              <NavLink
                 href="/deals"
                 label="Deals"
                 active={pathname.startsWith('/deals')}

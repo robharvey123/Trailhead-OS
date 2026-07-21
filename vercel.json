@@ -20,6 +20,10 @@
     {
       "path": "/api/cron/meet-sync",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/granola-sync",
+      "schedule": "0 * * * *"
     }
   ],
   "redirects": [

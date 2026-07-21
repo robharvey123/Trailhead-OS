@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import AccountForm from './AccountForm'
 import ActivityTimeline from './ActivityTimeline'
 import MeetingNotesTimeline from './MeetingNotesTimeline'
+import MeetingsTimeline from './MeetingsTimeline'
 import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TouchpointTimeline from './TouchpointTimeline'
@@ -27,6 +28,7 @@ import type {
 } from '@/lib/types'
 import type { AccountDetail } from '@/lib/db/accounts'
 import type { MeetingNoteWithRelations } from '@/lib/db/meeting-notes'
+import type { MeetingWithRelations } from '@/lib/db/meetings'
 
 const TABS = [
   'Overview',
@@ -65,6 +67,7 @@ export default function AccountDetailClient({
   tags,
   emailThreads = [],
   meetingNotes = [],
+  meetings = [],
   selfEmail = '',
   signature = '',
 }: {
@@ -77,6 +80,7 @@ export default function AccountDetailClient({
   tags: Tag[]
   emailThreads?: EmailThread[]
   meetingNotes?: MeetingNoteWithRelations[]
+  meetings?: MeetingWithRelations[]
   selfEmail?: string
   signature?: string
 }) {
@@ -400,6 +404,7 @@ export default function AccountDetailClient({
               description="Log calls, emails, messages, meetings, and notes."
             />
             <MeetingNotesTimeline notes={meetingNotes} />
+            <MeetingsTimeline meetings={meetings} />
             <ActivityTimeline initialActivities={initialActivities} accountId={account.id} />
           </div>
         ) : null}

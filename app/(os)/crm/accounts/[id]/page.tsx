@@ -6,6 +6,7 @@ import { listProjectsByAccount } from '@/lib/db/projects'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { listDeals } from '@/lib/db/deals'
 import { listMeetingNotesForAccount } from '@/lib/db/meeting-notes'
+import { listMeetingsForAccount } from '@/lib/db/meetings'
 import { listTimeEntries } from '@/lib/db/timesheet'
 import { tagsForAccount } from '@/lib/db/tags'
 import { listThreads } from '@/lib/db/inbox'
@@ -21,7 +22,7 @@ export default async function AccountDetailPage({
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const [account, workstreams, projects, activities, deals, timeEntries, tags, emailThreads, meetingNotes] =
+  const [account, workstreams, projects, activities, deals, timeEntries, tags, emailThreads, meetingNotes, meetings] =
     await Promise.all([
       getAccountById(id, supabase).catch(() => null),
       getWorkstreams(supabase).catch(() => []),
@@ -32,6 +33,7 @@ export default async function AccountDetailPage({
       tagsForAccount(id, supabase).catch(() => []),
       listThreads({ accountId: id }, supabase).catch(() => []),
       listMeetingNotesForAccount(id, supabase).catch(() => []),
+      listMeetingsForAccount(id, supabase).catch(() => []),
     ])
   const settings = await getCompanySettings(supabase).catch(() => null)
 
@@ -51,6 +53,7 @@ export default async function AccountDetailPage({
         tags={tags}
         emailThreads={emailThreads}
         meetingNotes={meetingNotes}
+        meetings={meetings}
         selfEmail={user?.email ?? ''}
         signature={settings?.email_signature ?? ''}
       />

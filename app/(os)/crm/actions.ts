@@ -1,8 +1,10 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { matchMeeting } from '@/lib/meetings/match'
 import { getMeetingNote, updateMeetingNoteLinks } from '@/lib/db/meeting-notes'
+import { syncGranolaMeetings } from '@/lib/granola-sync'
 
 /**
  * Re-run matching for a meeting note against the current CRM data, using the
@@ -33,5 +35,26 @@ export async function rematchMeetingNote(noteId: string): Promise<{ error?: stri
     return {}
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Re-match failed' }
+  }
+}
+
+/**
+ * Manually trigger a Granola sync from the Meetings page ("Sync now"). Runs the
+ * same shared logic as the hourly cron. The sync itself uses the service role,
+ * so we gate on an authenticated user here as the authorisation boundary.
+ */
+export async function syncGranolaNow(): Promise<{ error?: string; synced?: number; linked?: number; rateLimited?: boolean }> {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { error: 'Not authorised' }
+
+    const result = await syncGranolaMeetings()
+    revalidatePath('/crm/meetings')
+    return { synced: result.synced, linked: result.linked, rateLimited: result.rateLimited }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Sync failed' }
   }
 }
