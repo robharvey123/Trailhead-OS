@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/service'
 import { getAllGoogleTokens, isInvalidGrant, markTokenNeedsReconnect } from './oauth'
-import { listMessageIds, getFullMessage, getMessageLabels, extractBodies } from './gmail'
+import { listMessageIds, getFullMessage, getMessageLabels, extractBodies, collectAttachments } from './gmail'
 import { buildAutolinkMaps, determineLink, parseAddress, parseAddressList } from './autolink'
 import { applyInboundApprovalReplies } from '@/lib/db/approvals'
 import { dispatchNewMailPush, type NewMailPushItem } from '@/lib/push/email'
@@ -89,6 +89,7 @@ export async function syncMailbox({
       const labels = msg.labelIds ?? []
       const direction = labels.includes('SENT') ? 'outbound' : 'inbound'
       const { html, text } = extractBodies(msg.payload)
+      const attachments = collectAttachments(msg.payload)
       const ts = msg.internalDate ? new Date(Number.parseInt(msg.internalDate, 10)).toISOString() : null
 
       const participants = [from.email, ...to, ...cc].filter(Boolean)
@@ -113,6 +114,7 @@ export async function syncMailbox({
         is_unread: labels.includes('UNREAD'),
         is_starred: labels.includes('STARRED'),
         labels,
+        attachments,
         received_at: direction === 'inbound' ? ts : null,
         sent_at: direction === 'outbound' ? ts : null,
       })

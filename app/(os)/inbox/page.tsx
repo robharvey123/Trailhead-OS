@@ -34,6 +34,7 @@ export default async function InboxPage() {
         contacts={(contactsRes.data ?? []) as Array<{ id: string; name: string; email: string | null; account_id: string | null }>}
         connected={tokens.length > 0}
         selfEmail={user.email ?? ''}
+        selfEmails={Array.from(new Set([user.email, ...tokens.map((t) => t.email)].filter((e): e is string => Boolean(e))))}
         signature={settings?.email_signature ?? ''}
       />
     </div>

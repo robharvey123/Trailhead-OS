@@ -13,7 +13,7 @@ import SafeEmailHtml from '../SafeEmailHtml'
 
 type Named = { id: string; name: string }
 type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
-type Folder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived'
+type Folder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived' | 'trash'
 
 const FOLDERS: Array<{ key: Folder; label: string; icon: string }> = [
   { key: 'inbox', label: 'Inbox', icon: '📥' },
@@ -23,7 +23,51 @@ const FOLDERS: Array<{ key: Folder; label: string; icon: string }> = [
   { key: 'unmatched', label: 'Unmatched', icon: '⚠' },
   { key: 'sent', label: 'Sent', icon: '↗' },
   { key: 'archived', label: 'Archived', icon: '🗄' },
+  { key: 'trash', label: 'Trash', icon: '🗑' },
 ]
+
+// Bulk actions and their labels for the selection bar.
+const BULK_ACTIONS: Array<{ action: string; label: string }> = [
+  { action: 'archive', label: '🗄 Archive' },
+  { action: 'read', label: 'Mark read' },
+  { action: 'unread', label: 'Mark unread' },
+  { action: 'star', label: '★ Star' },
+  { action: 'trash', label: '🗑 Trash' },
+]
+
+const SHORTCUTS: Array<{ keys: string; desc: string }> = [
+  { keys: 'j / k', desc: 'Move down / up' },
+  { keys: 'Enter / o', desc: 'Open thread' },
+  { keys: 'e', desc: 'Archive' },
+  { keys: 's', desc: 'Star' },
+  { keys: 'r', desc: 'Reply' },
+  { keys: 'a', desc: 'Reply all' },
+  { keys: 'f', desc: 'Forward' },
+  { keys: 'Shift + U', desc: 'Mark unread' },
+  { keys: '#', desc: 'Trash' },
+  { keys: 'x', desc: 'Select / deselect' },
+  { keys: '/', desc: 'Search' },
+  { keys: 'c', desc: 'Compose' },
+  { keys: 'Esc', desc: 'Close / deselect' },
+  { keys: '?', desc: 'This help' },
+]
+
+function formatSize(bytes: number) {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function arrayBufferToBase64(buf: ArrayBuffer) {
+  const bytes = new Uint8Array(buf)
+  let binary = ''
+  const chunk = 0x8000
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
+  return btoa(binary)
+}
 
 function timeLabel(iso: string) {
   const d = new Date(iso)
@@ -44,6 +88,7 @@ export default function InboxClient({
   contacts,
   connected,
   selfEmail,
+  selfEmails = [],
   signature = '',
 }: {
   initialThreads: EmailThread[]
@@ -51,6 +96,7 @@ export default function InboxClient({
   contacts: ContactOpt[]
   connected: boolean
   selfEmail: string
+  selfEmails?: string[]
   signature?: string
 }) {
   const [composeOpen, setComposeOpen] = useState(false)
@@ -64,8 +110,19 @@ export default function InboxClient({
   const [error, setError] = useState('')
   const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting')
   const [loadingMessages, setLoadingMessages] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [cursorIndex, setCursorIndex] = useState(0)
+  const [showHelp, setShowHelp] = useState(false)
+  const [replyAllMode, setReplyAllMode] = useState(false)
+  const [forwardData, setForwardData] = useState<{ subject: string; body: string; attachments: Array<{ filename: string; contentType: string; dataBase64: string }> } | null>(null)
   const supabase = useMemo(() => createClient(), [])
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const replyRef = useRef<HTMLTextAreaElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const visibleRef = useRef<EmailThread[]>([])
+  const cursorIndexRef = useRef(0)
+  useEffect(() => { cursorIndexRef.current = cursorIndex }, [cursorIndex])
+  const keyHandlerRef = useRef<(e: KeyboardEvent) => void>(() => {})
 
   // Mirror of `threads`/`activeId` for reading current values inside async
   // callbacks without stale closures.
@@ -120,28 +177,35 @@ export default function InboxClient({
   }
 
   const counts = useMemo(() => ({
-    inbox: threads.filter((t) => t.in_inbox).length,
-    unread: threads.filter((t) => t.is_unread && t.in_inbox).length,
-    all: threads.length,
-    starred: threads.filter((t) => t.is_starred).length,
-    unmatched: threads.filter((t) => !t.account_id).length,
-    sent: threads.filter((t) => t.has_outbound).length,
-    archived: threads.filter((t) => !t.in_inbox).length,
+    inbox: threads.filter((t) => t.in_inbox && !t.in_trash).length,
+    unread: threads.filter((t) => t.is_unread && t.in_inbox && !t.in_trash).length,
+    all: threads.filter((t) => !t.in_trash).length,
+    starred: threads.filter((t) => t.is_starred && !t.in_trash).length,
+    unmatched: threads.filter((t) => !t.account_id && !t.in_trash).length,
+    sent: threads.filter((t) => t.has_outbound && !t.in_trash).length,
+    archived: threads.filter((t) => !t.in_inbox && !t.in_trash).length,
+    trash: threads.filter((t) => t.in_trash).length,
   }), [threads])
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
     return threads.filter((t) => {
-      if (folder === 'inbox' && !t.in_inbox) return false
-      if (folder === 'archived' && t.in_inbox) return false
-      if (folder === 'unread' && !(t.is_unread && t.in_inbox)) return false
-      if (folder === 'starred' && !t.is_starred) return false
-      if (folder === 'unmatched' && t.account_id) return false
-      if (folder === 'sent' && !t.has_outbound) return false
+      if (folder === 'trash') {
+        if (!t.in_trash) return false
+      } else {
+        if (t.in_trash) return false
+        if (folder === 'inbox' && !t.in_inbox) return false
+        if (folder === 'archived' && t.in_inbox) return false
+        if (folder === 'unread' && !(t.is_unread && t.in_inbox)) return false
+        if (folder === 'starred' && !t.is_starred) return false
+        if (folder === 'unmatched' && t.account_id) return false
+        if (folder === 'sent' && !t.has_outbound) return false
+      }
       if (q && !(`${t.subject} ${t.from_name} ${t.snippet}`.toLowerCase().includes(q))) return false
       return true
     })
   }, [threads, folder, search])
+  useEffect(() => { visibleRef.current = visible }, [visible])
 
   const active = threads.find((t) => t.gmail_thread_id === activeId) ?? null
 
@@ -270,22 +334,68 @@ export default function InboxClient({
     })()
   }
 
+  function patchFor(action: string, extra?: Record<string, unknown>): Partial<EmailThread> | null {
+    switch (action) {
+      case 'star': return { is_starred: true }
+      case 'unstar': return { is_starred: false }
+      case 'unread': return { is_unread: true }
+      case 'read': return { is_unread: false }
+      case 'archive': return { in_inbox: false }
+      case 'unarchive': return { in_inbox: true }
+      case 'trash': return { in_trash: true, in_inbox: false }
+      case 'untrash': return { in_trash: false, in_inbox: true }
+      case 'link': return { account_id: String(extra?.account_id), account_name: accounts.find((a) => a.id === extra?.account_id)?.name ?? null, match_method: 'manual' }
+      case 'unlink': return { account_id: null, account_name: null, match_method: 'unmatched' }
+      default: return null
+    }
+  }
+  function actOnThread(id: string, action: string, extra?: Record<string, unknown>) {
+    const patch = patchFor(action, extra)
+    if (!patch) return
+    void runOptimistic(id, patch, action, extra)
+  }
   function threadAction(action: string, extra?: Record<string, unknown>) {
     if (!active) return
-    const id = active.gmail_thread_id
-    let patch: Partial<EmailThread>
-    switch (action) {
-      case 'star': patch = { is_starred: true }; break
-      case 'unstar': patch = { is_starred: false }; break
-      case 'unread': patch = { is_unread: true }; break
-      case 'read': patch = { is_unread: false }; break
-      case 'archive': patch = { in_inbox: false }; break
-      case 'unarchive': patch = { in_inbox: true }; break
-      case 'link': patch = { account_id: String(extra?.account_id), account_name: accounts.find((a) => a.id === extra?.account_id)?.name ?? null, match_method: 'manual' }; break
-      case 'unlink': patch = { account_id: null, account_name: null, match_method: 'unmatched' }; break
-      default: return
+    actOnThread(active.gmail_thread_id, action, extra)
+  }
+
+  /** Bulk-apply an action across the selected threads via /api/inbox/bulk. */
+  async function bulkAction(action: string) {
+    const ids = Array.from(selected)
+    if (ids.length === 0) return
+    const patch = patchFor(action)
+    if (!patch) return
+    const snapshots = new Map<string, EmailThread>()
+    for (const id of ids) {
+      const snap = threadsRef.current.find((t) => t.gmail_thread_id === id)
+      if (snap) { snapshots.set(id, snap); mergePending(id, patch); applyOverride(id, patch) }
     }
-    void runOptimistic(id, patch, action, extra)
+    setSelected(new Set())
+    function revert(id: string) {
+      clearPending(id, patch!)
+      const snap = snapshots.get(id)
+      if (snap) setThreads((prev) => prev.map((x) => (x.gmail_thread_id === id ? snap : x)))
+    }
+    try {
+      const res = await apiFetch<{ failures?: Array<{ thread_id: string }> }>('/api/inbox/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ thread_ids: ids, action }),
+      })
+      for (const id of ids) clearPending(id, patch)
+      const failures = res.failures ?? []
+      failures.forEach((f) => revert(f.thread_id))
+      if (failures.length) setError(`${failures.length} thread(s) failed`)
+    } catch (err) {
+      ids.forEach(revert)
+      setError(err instanceof Error ? err.message : 'Bulk action failed')
+    }
+  }
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
   }
 
   async function syncNow(sinceDays = 7) {
@@ -303,11 +413,23 @@ export default function InboxClient({
     }
   }
 
-  async function sendReply() {
+  async function sendReply(replyAll = false) {
     if (!active || !reply.trim() || messages.length === 0) return
     const last = messages[messages.length - 1]
-    const to = last.direction === 'inbound' ? last.from_address : last.to_addresses?.[0]
-    if (!to) { setError('No recipient found for reply'); return }
+    const primaryTo = last.direction === 'inbound' ? last.from_address : (last.to_addresses?.[0] ?? '')
+    if (!primaryTo) { setError('No recipient found for reply'); return }
+
+    // Reply-all: everyone on the latest message (From + To + Cc) minus our own
+    // addresses and the primary recipient.
+    let cc: string | undefined
+    if (replyAll) {
+      const self = new Set(selfEmails.map((e) => e.toLowerCase()))
+      const everyone = [last.from_address, ...(last.to_addresses ?? []), ...(last.cc_addresses ?? [])]
+      const ccList = Array.from(new Set(everyone.map((e) => e.trim().toLowerCase())))
+        .filter((e) => e && e !== primaryTo.toLowerCase() && !self.has(e))
+      cc = ccList.join(',') || undefined
+    }
+
     setBusy(true)
     setError('')
     try {
@@ -315,7 +437,8 @@ export default function InboxClient({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to,
+          to: primaryTo,
+          cc,
           subject: active.subject.startsWith('Re:') ? active.subject : `Re: ${active.subject}`,
           body: reply.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>') + (signature ? `<br><br>${signature}` : ''),
           reply_to_message_id: active.gmail_thread_id,
@@ -332,6 +455,94 @@ export default function InboxClient({
       setBusy(false)
     }
   }
+
+  /** Open ComposeModal pre-filled to forward the latest message, re-attaching its files. */
+  async function startForward() {
+    if (!active || messages.length === 0) return
+    const last = messages[messages.length - 1]
+    const when = last.received_at || last.sent_at || last.created_at
+    const quoted = [
+      '', '',
+      '---------- Forwarded message ----------',
+      `From: ${last.from_name || last.from_address} <${last.from_address}>`,
+      `Date: ${when ? new Date(when).toLocaleString('en-GB') : ''}`,
+      `Subject: ${active.subject}`,
+      `To: ${(last.to_addresses ?? []).join(', ')}`,
+      '',
+      last.body_text || last.snippet || '',
+    ].join('\n')
+    const subject = active.subject.startsWith('Fwd:') ? active.subject : `Fwd: ${active.subject}`
+
+    setBusy(true)
+    setError('')
+    try {
+      const attachments = await Promise.all(
+        (last.attachments ?? []).map(async (a) => {
+          const res = await fetch(`/api/gmail/attachments/${last.gmail_message_id}/${a.attachment_id}`)
+          if (!res.ok) throw new Error('Failed to fetch attachment')
+          const buf = await res.arrayBuffer()
+          return { filename: a.filename, contentType: a.mime_type, dataBase64: arrayBufferToBase64(buf) }
+        })
+      )
+      setForwardData({ subject, body: quoted, attachments })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to prepare forward')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Latest-ref pattern: the listener is attached once but always runs the freshest
+  // closure, so shortcuts see current `active`/`reply`/selection without re-binding.
+  keyHandlerRef.current = (e: KeyboardEvent) => {
+    // Never swallow browser/OS shortcuts.
+    if (e.metaKey || e.ctrlKey || e.altKey) return
+    const el = e.target as HTMLElement | null
+    const typing = !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)
+    if (typing) {
+      if (e.key === 'Escape') el!.blur()
+      return
+    }
+    const list = visibleRef.current
+    const cursorThread = list[cursorIndexRef.current] ?? null
+    // Actions target the open thread if there is one, else the cursor row.
+    const target = active ?? cursorThread
+
+    switch (e.key) {
+      case 'j': e.preventDefault(); setCursorIndex((i) => Math.min(list.length - 1, i + 1)); break
+      case 'k': e.preventDefault(); setCursorIndex((i) => Math.max(0, i - 1)); break
+      case 'o': case 'Enter': if (cursorThread) { e.preventDefault(); openThread(cursorThread) } break
+      case 'e': if (target) { e.preventDefault(); actOnThread(target.gmail_thread_id, target.in_inbox ? 'archive' : 'unarchive') } break
+      case 's': if (target) { e.preventDefault(); actOnThread(target.gmail_thread_id, target.is_starred ? 'unstar' : 'star') } break
+      case '#': if (target) { e.preventDefault(); actOnThread(target.gmail_thread_id, target.in_trash ? 'untrash' : 'trash') } break
+      case 'U': if (e.shiftKey && target) { e.preventDefault(); actOnThread(target.gmail_thread_id, 'unread') } break
+      case 'r': if (active) { e.preventDefault(); setReplyAllMode(false); replyRef.current?.focus() } break
+      case 'a': if (active) { e.preventDefault(); setReplyAllMode(true); replyRef.current?.focus() } break
+      case 'f': if (active) { e.preventDefault(); void startForward() } break
+      case 'x': if (cursorThread) { e.preventDefault(); toggleSelect(cursorThread.gmail_thread_id) } break
+      case '/': e.preventDefault(); searchRef.current?.focus(); break
+      case 'c': e.preventDefault(); setComposeOpen(true); break
+      case '?': e.preventDefault(); setShowHelp((s) => !s); break
+      case 'Escape':
+        if (showHelp) setShowHelp(false)
+        else if (active) setActiveId(null)
+        else if (selected.size) setSelected(new Set())
+        break
+      default: break
+    }
+  }
+
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => keyHandlerRef.current(e)
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
+  }, [])
+
+  // Keep the keyboard cursor row scrolled into view (virtualizer, not DOM scroll).
+  useEffect(() => {
+    if (visible.length > 0) rowVirtualizer.scrollToIndex(Math.min(cursorIndex, visible.length - 1))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cursorIndex])
 
   return (
     <div className="panel overflow-hidden">
@@ -355,6 +566,7 @@ export default function InboxClient({
               <button className="btn btn-primary btn-sm" onClick={() => setComposeOpen(true)}>✎ Compose</button>
               <button className="btn btn-ghost btn-sm" onClick={() => syncNow(7)} disabled={busy}>{busy ? 'Syncing…' : '↻ Sync now'}</button>
               <button className="btn btn-ghost btn-sm" onClick={() => syncNow(90)} disabled={busy}>Backfill 90d</button>
+              <button className="btn btn-ghost btn-sm" title="Keyboard shortcuts" onClick={() => setShowHelp(true)}>⌨ ?</button>
             </>
           )}
         </div>
@@ -370,6 +582,39 @@ export default function InboxClient({
           onClose={() => setComposeOpen(false)}
           onSent={() => refreshThreads()}
         />
+      ) : null}
+
+      {forwardData ? (
+        <ComposeModal
+          contacts={contacts}
+          accounts={accounts}
+          title="Forward"
+          initialSubject={forwardData.subject}
+          initialBody={forwardData.body}
+          initialAttachments={forwardData.attachments}
+          signature={signature}
+          onClose={() => setForwardData(null)}
+          onSent={() => { setForwardData(null); void refreshThreads() }}
+        />
+      ) : null}
+
+      {showHelp ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={() => setShowHelp(false)}>
+          <div className="rounded-[8px] border border-[var(--border)] bg-white p-5" style={{ minWidth: 340 }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-[var(--text)]">Keyboard shortcuts</h2>
+              <button onClick={() => setShowHelp(false)} className="text-[var(--text-3)] hover:text-[var(--text)]">✕</button>
+            </div>
+            <div className="mt-3 space-y-1.5">
+              {SHORTCUTS.map((s) => (
+                <div key={s.keys} className="flex items-center justify-between gap-6">
+                  <span className="text-sm text-[var(--text-2)]">{s.desc}</span>
+                  <kbd className="meta-chip">{s.keys}</kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       ) : null}
 
       <div className="inbox">
@@ -389,15 +634,33 @@ export default function InboxClient({
           <div className="threads-search">
             <div className="search-wrap">
               <span className="search-icon">⌕</span>
-              <input className="search-input" placeholder="Search inbox…" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <input ref={searchRef} className="search-input" placeholder="Search inbox…" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
+            {selected.size > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                <span className="meta-chip">{selected.size} selected</span>
+                {BULK_ACTIONS.map((b) => (
+                  <button key={b.action} className="btn btn-ghost btn-sm" disabled={busy} onClick={() => bulkAction(b.action)}>{b.label}</button>
+                ))}
+                <button className="btn btn-ghost btn-sm" onClick={() => setSelected(new Set())}>Clear</button>
+              </div>
+            ) : (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 11, color: 'var(--text-3)' }}>
+                <input
+                  type="checkbox"
+                  checked={visible.length > 0 && visible.every((t) => selected.has(t.gmail_thread_id))}
+                  onChange={(e) => setSelected(e.target.checked ? new Set(visible.map((t) => t.gmail_thread_id)) : new Set())}
+                />
+                Select all visible
+              </label>
+            )}
           </div>
           <div className="threads-list" ref={listRef}>
             {visible.length === 0 ? (
               connected && threads.length === 0 && busy ? (
                 <ThreadListSkeleton />
               ) : (
-                <div className="empty">{connected ? 'No threads. Try “Sync now”.' : 'Connect Gmail to load your inbox.'}</div>
+                <div className="empty">{!connected ? 'Connect Gmail to load your inbox.' : folder === 'trash' ? 'Trash shows locally trashed mail (Gmail purges it after 30 days).' : 'No threads. Try “Sync now”.'}</div>
               )
             ) : (
               <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
@@ -411,11 +674,23 @@ export default function InboxClient({
                       ref={rowVirtualizer.measureElement}
                       className={`thread ${t.gmail_thread_id === activeId ? 'active' : ''} ${t.is_unread ? 'unread' : ''}`}
                       onClick={() => openThread(t)}
-                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vi.start}px)` }}
+                      style={{
+                        position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vi.start}px)`,
+                        outline: vi.index === cursorIndex ? '2px solid var(--accent)' : undefined,
+                        outlineOffset: -2,
+                      }}
                     >
                       <div className="thread-row">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(t.gmail_thread_id)}
+                          onChange={() => toggleSelect(t.gmail_thread_id)}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ marginRight: 6 }}
+                          aria-label="Select thread"
+                        />
                         <div className="thread-from">{t.is_starred ? '★ ' : ''}{t.from_name}</div>
-                        <div className="thread-time">{timeLabel(t.last_at)}</div>
+                        <div className="thread-time">{t.has_attachments ? '📎 ' : ''}{timeLabel(t.last_at)}</div>
                       </div>
                       <div className="thread-subj">{t.subject}</div>
                       <div className="thread-snippet">{t.snippet}</div>
@@ -461,11 +736,17 @@ export default function InboxClient({
                   <span className="meta-chip">{active.message_count} message{active.message_count > 1 ? 's' : ''}</span>
                 </div>
                 <div className="reader-actions">
-                  <button className="btn btn-ghost btn-sm" onClick={() => threadAction(active.in_inbox ? 'archive' : 'unarchive')}>
-                    {active.in_inbox ? '🗄 Archive' : '↩ Move to inbox'}
-                  </button>
+                  {active.in_trash ? (
+                    <button className="btn btn-ghost btn-sm" onClick={() => threadAction('untrash')}>↩ Restore</button>
+                  ) : (
+                    <button className="btn btn-ghost btn-sm" onClick={() => threadAction(active.in_inbox ? 'archive' : 'unarchive')}>
+                      {active.in_inbox ? '🗄 Archive' : '↩ Move to inbox'}
+                    </button>
+                  )}
+                  <button className="btn btn-ghost btn-sm" onClick={() => threadAction('trash')} disabled={active.in_trash}>🗑 Trash</button>
                   <button className="btn btn-ghost btn-sm" onClick={() => threadAction(active.is_unread ? 'read' : 'unread')}>{active.is_unread ? 'Mark read' : 'Mark unread'}</button>
                   <button className="btn btn-ghost btn-sm" onClick={() => threadAction(active.is_starred ? 'unstar' : 'star')}>★ {active.is_starred ? 'Unstar' : 'Star'}</button>
+                  <button className="btn btn-ghost btn-sm" onClick={startForward} disabled={busy || messages.length === 0}>➦ Forward</button>
                   {active.account_id ? <button className="btn btn-ghost btn-sm" onClick={() => threadAction('unlink')}>⚲ Unlink</button> : null}
                 </div>
               </div>
@@ -489,15 +770,30 @@ export default function InboxClient({
                           ? <pre className="whitespace-pre-wrap">{m.body_text}</pre>
                           : <span className="text-[color:var(--text-3)]">{m.snippet || '(no content)'}</span>}
                     </div>
+                    {(m.attachments ?? []).length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                        {m.attachments!.map((a) => (
+                          <a
+                            key={a.attachment_id}
+                            className="tag-chip grey"
+                            href={`/api/gmail/attachments/${m.gmail_message_id}/${a.attachment_id}`}
+                            download={a.filename}
+                          >
+                            📎 {a.filename}{a.size_bytes ? ` · ${formatSize(a.size_bytes)}` : ''}
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>
 
               <div className="reader-reply">
-                <textarea className="reply-input" placeholder={`Reply…`} value={reply} onChange={(e) => setReply(e.target.value)} />
+                <textarea ref={replyRef} className="reply-input" placeholder={replyAllMode ? 'Reply all…' : 'Reply…'} value={reply} onChange={(e) => setReply(e.target.value)} />
                 <div className="reply-actions">
                   <span className="meta-chip">Sends from {selfEmail || 'your Workspace mailbox'}</span>
-                  <button className="btn btn-primary btn-sm" style={{ marginLeft: 'auto' }} onClick={sendReply} disabled={busy || !reply.trim()}>↗ Send reply</button>
+                  <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={() => sendReply(true)} disabled={busy || !reply.trim()}>↗ Reply all</button>
+                  <button className="btn btn-primary btn-sm" onClick={() => sendReply(false)} disabled={busy || !reply.trim()}>↗ Send reply</button>
                 </div>
               </div>
             </>

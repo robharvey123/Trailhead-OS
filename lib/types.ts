@@ -496,6 +496,14 @@ export interface ApprovalRequestWithRelations extends ApprovalRequest {
 
 export type EmailMatchMethod = 'contact_email' | 'domain' | 'unmatched' | 'manual'
 
+/** One captured Gmail attachment part (metadata only; bytes fetched on demand). */
+export interface EmailAttachmentMeta {
+  filename: string
+  mime_type: string
+  attachment_id: string
+  size_bytes: number
+}
+
 export interface EmailLog {
   id: string
   gmail_message_id?: string
@@ -517,6 +525,7 @@ export interface EmailLog {
   is_unread?: boolean
   is_starred?: boolean
   labels?: string[]
+  attachments?: EmailAttachmentMeta[]
   match_method?: EmailMatchMethod | null
   received_at?: string
   sent_at?: string
@@ -540,6 +549,7 @@ export interface EmailThread {
   match_method: EmailMatchMethod | null
   has_attachments: boolean
   has_outbound: boolean
+  in_trash: boolean
 }
 
 export interface GcalSync {

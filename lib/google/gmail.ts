@@ -1,7 +1,7 @@
 import { google, type gmail_v1 } from 'googleapis'
 import { randomUUID } from 'crypto'
 import { convert as htmlToText } from 'html-to-text'
-import type { EmailLog } from '@/lib/types'
+import type { EmailLog, EmailAttachmentMeta } from '@/lib/types'
 import { getAuthenticatedClient } from './oauth'
 import { stripDocumentWrappers } from '@/lib/email/strip-document'
 
@@ -227,6 +227,34 @@ export function messageHasAttachments(payload?: gmail_v1.Schema$MessagePart): bo
   if (!payload) return false
   if (payload.filename && payload.filename.length > 0 && payload.body?.attachmentId) return true
   return (payload.parts ?? []).some((p) => messageHasAttachments(p))
+}
+
+/** Recursively collect attachment metadata (parts with a filename + attachmentId). */
+export function collectAttachments(payload?: gmail_v1.Schema$MessagePart): EmailAttachmentMeta[] {
+  const out: EmailAttachmentMeta[] = []
+  function walk(part?: gmail_v1.Schema$MessagePart) {
+    if (!part) return
+    if (part.filename && part.filename.length > 0 && part.body?.attachmentId) {
+      out.push({
+        filename: part.filename,
+        mime_type: part.mimeType ?? 'application/octet-stream',
+        attachment_id: part.body.attachmentId,
+        size_bytes: part.body.size ?? 0,
+      })
+    }
+    for (const p of part.parts ?? []) walk(p)
+  }
+  walk(payload)
+  return out
+}
+
+/** Fetch a single attachment's raw bytes (base64url-decoded) for streaming back. */
+export async function getAttachmentBytes(messageId: string, attachmentId: string): Promise<Buffer> {
+  const gmail = await getGmailClient()
+  const res = await gmail.users.messages.attachments.get({ userId: 'me', messageId, id: attachmentId })
+  const data = res.data.data ?? ''
+  const normalized = data.replace(/-/g, '+').replace(/_/g, '/')
+  return Buffer.from(normalized, 'base64')
 }
 
 /** Add/remove Gmail labels on a whole thread (e.g. archive = remove INBOX). */

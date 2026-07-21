@@ -8,10 +8,10 @@ async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
 }
 
-export type InboxFolder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived'
+export type InboxFolder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived' | 'trash'
 
 const SELECT =
-  'id, gmail_message_id, gmail_thread_id, account_id, contact_id, direction, from_address, from_name, to_addresses, cc_addresses, bcc_addresses, subject, snippet, body_html, body_text, is_unread, is_starred, labels, match_method, received_at, sent_at, created_at, account:accounts(id,name)'
+  'id, gmail_message_id, gmail_thread_id, account_id, contact_id, direction, from_address, from_name, to_addresses, cc_addresses, bcc_addresses, subject, snippet, body_html, body_text, is_unread, is_starred, labels, attachments, match_method, received_at, sent_at, created_at, account:accounts(id,name)'
 
 type Row = EmailLog & { account?: { id: string; name: string } | null }
 
@@ -67,6 +67,8 @@ export async function listThreads(
     const account = msgs.find((m) => m.account)?.account ?? null
     // A thread is "in inbox" if any of its messages still carries the INBOX label.
     const inInbox = msgs.some((m) => (m.labels ?? []).includes('INBOX'))
+    const inTrash = msgs.some((m) => (m.labels ?? []).includes('TRASH'))
+    const hasAttachments = msgs.some((m) => (m.attachments ?? []).length > 0)
     threads.push({
       gmail_thread_id: key,
       account_id: account?.id ?? latest.account_id ?? null,
@@ -81,17 +83,24 @@ export async function listThreads(
       is_starred: msgs.some((m) => m.is_starred),
       in_inbox: inInbox,
       match_method: (latest.match_method as EmailMatchMethod) ?? null,
-      has_attachments: false,
+      has_attachments: hasAttachments,
       has_outbound: msgs.some((m) => m.direction === 'outbound'),
+      in_trash: inTrash,
     })
   }
 
-  // Per-thread label folders.
+  // Per-thread label folders. Trash is its own world: it shows only trashed
+  // threads, and every other folder excludes them.
   let result = threads
-  if (opts.folder === 'inbox') result = result.filter((t) => t.in_inbox)
-  else if (opts.folder === 'archived') result = result.filter((t) => !t.in_inbox)
-  else if (opts.folder === 'unread') result = result.filter((t) => t.is_unread && t.in_inbox)
-  else if (opts.folder === 'sent') result = result.filter((t) => t.has_outbound)
+  if (opts.folder === 'trash') {
+    result = result.filter((t) => t.in_trash)
+  } else {
+    result = result.filter((t) => !t.in_trash)
+    if (opts.folder === 'inbox') result = result.filter((t) => t.in_inbox)
+    else if (opts.folder === 'archived') result = result.filter((t) => !t.in_inbox)
+    else if (opts.folder === 'unread') result = result.filter((t) => t.is_unread && t.in_inbox)
+    else if (opts.folder === 'sent') result = result.filter((t) => t.has_outbound)
+  }
 
   result.sort((a, b) => b.last_at.localeCompare(a.last_at))
   return result
@@ -145,6 +154,18 @@ export async function unarchiveThread(threadId: string, client?: SupabaseClient)
   await modifyThread(threadId, { addLabelIds: ['INBOX'] })
   const supabase = await getSupabase(client)
   await applyThreadLabels(threadId, { add: ['INBOX'] }, {}, supabase)
+}
+
+export async function trashThread(threadId: string, client?: SupabaseClient): Promise<void> {
+  await modifyThread(threadId, { addLabelIds: ['TRASH'], removeLabelIds: ['INBOX'] })
+  const supabase = await getSupabase(client)
+  await applyThreadLabels(threadId, { add: ['TRASH'], remove: ['INBOX'] }, {}, supabase)
+}
+
+export async function untrashThread(threadId: string, client?: SupabaseClient): Promise<void> {
+  await modifyThread(threadId, { addLabelIds: ['INBOX'], removeLabelIds: ['TRASH'] })
+  const supabase = await getSupabase(client)
+  await applyThreadLabels(threadId, { add: ['INBOX'], remove: ['TRASH'] }, {}, supabase)
 }
 
 export async function setThreadStarred(threadId: string, isStarred: boolean, client?: SupabaseClient): Promise<void> {

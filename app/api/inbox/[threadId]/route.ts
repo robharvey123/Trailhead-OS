@@ -7,6 +7,8 @@ import {
   unlinkThread,
   archiveThread,
   unarchiveThread,
+  trashThread,
+  untrashThread,
 } from '@/lib/db/inbox'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-// PATCH { action: 'read'|'unread'|'star'|'unstar'|'link'|'unlink'|'archive'|'unarchive', account_id? }
+// PATCH { action: 'read'|'unread'|'star'|'unstar'|'link'|'unlink'|'archive'|'unarchive'|'trash'|'untrash', account_id? }
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ threadId: string }> }) {
   try {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
@@ -40,6 +42,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       case 'unstar': await setThreadStarred(threadId, false, supabase); break
       case 'archive': await archiveThread(threadId, supabase); break
       case 'unarchive': await unarchiveThread(threadId, supabase); break
+      case 'trash': await trashThread(threadId, supabase); break
+      case 'untrash': await untrashThread(threadId, supabase); break
       case 'link':
         if (!body.account_id) return NextResponse.json({ error: 'account_id required' }, { status: 400 })
         await linkThread(threadId, body.account_id, supabase)

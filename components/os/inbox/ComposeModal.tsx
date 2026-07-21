@@ -7,6 +7,7 @@ type ContactOpt = { id: string; name: string; email: string | null; account_id: 
 type Named = { id: string; name: string }
 type Recipient = { email: string; name?: string; inCrm: boolean; accountId?: string | null }
 type Field = 'to' | 'cc' | 'bcc'
+type PreAttachment = { filename: string; contentType: string; dataBase64: string }
 
 function suggestAccountName(email: string) {
   const base = (email.split('@')[1] || '').split('.')[0] || ''
@@ -22,12 +23,17 @@ function readAsBase64(file: File): Promise<string> {
 }
 
 export default function ComposeModal({
-  contacts, accounts, initialTo = [], initialCc = [], signature = '', onClose, onSent,
+  contacts, accounts, initialTo = [], initialCc = [], initialSubject = '', initialBody = '',
+  initialAttachments = [], title = 'New email', signature = '', onClose, onSent,
 }: {
   contacts: ContactOpt[]
   accounts: Named[]
   initialTo?: string[]
   initialCc?: string[]
+  initialSubject?: string
+  initialBody?: string
+  initialAttachments?: PreAttachment[]
+  title?: string
   signature?: string
   onClose: () => void
   onSent: () => void
@@ -43,9 +49,10 @@ export default function ComposeModal({
   const [bcc, setBcc] = useState<Recipient[]>([])
   const [queries, setQueries] = useState<Record<Field, string>>({ to: '', cc: '', bcc: '' })
   const [showBcc, setShowBcc] = useState(false)
-  const [subject, setSubject] = useState('')
-  const [bodyText, setBodyText] = useState('')
+  const [subject, setSubject] = useState(initialSubject)
+  const [bodyText, setBodyText] = useState(initialBody)
   const [files, setFiles] = useState<File[]>([])
+  const [preAttachments, setPreAttachments] = useState<PreAttachment[]>(initialAttachments)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [addList, setAddList] = useState<Array<{ email: string; add: boolean; name: string; account: string }> | null>(null)
@@ -135,7 +142,8 @@ export default function ComposeModal({
       if (createRecipients && createRecipients.length > 0) {
         await apiFetch('/api/contacts/quick-create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipients: createRecipients }) })
       }
-      const attachments = await Promise.all(files.map(async (file) => ({ filename: file.name, contentType: file.type || 'application/octet-stream', dataBase64: await readAsBase64(file) })))
+      const fileAttachments = await Promise.all(files.map(async (file) => ({ filename: file.name, contentType: file.type || 'application/octet-stream', dataBase64: await readAsBase64(file) })))
+      const attachments = [...preAttachments, ...fileAttachments]
       await apiFetch('/api/gmail/send', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -158,7 +166,7 @@ export default function ComposeModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={onClose}>
       <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-[8px] border border-[var(--border)] bg-white" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3">
-          <h2 className="text-base font-semibold text-[var(--text)]">New email</h2>
+          <h2 className="text-base font-semibold text-[var(--text)]">{title}</h2>
           <button onClick={onClose} className="text-[var(--text-3)] hover:text-[var(--text)]">✕</button>
         </div>
 
@@ -173,6 +181,9 @@ export default function ComposeModal({
           <textarea className={`${input} w-full`} style={{ minHeight: 220, resize: 'vertical' }} value={bodyText} onChange={(e) => setBodyText(e.target.value)} placeholder="Write your message…" />
           <div className="flex flex-wrap items-center gap-2">
             <label className="btn btn-ghost btn-sm cursor-pointer">📎 Attach<input type="file" multiple className="hidden" onChange={(e) => setFiles((f) => [...f, ...Array.from(e.target.files ?? [])])} /></label>
+            {preAttachments.map((a, i) => (
+              <span key={`pre-${i}`} className="tag-chip grey">📎 {a.filename}<button onClick={() => setPreAttachments((p) => p.filter((_, j) => j !== i))}>✕</button></span>
+            ))}
             {files.map((file, i) => (
               <span key={i} className="tag-chip grey">{file.name}<button onClick={() => setFiles((f) => f.filter((_, j) => j !== i))}>✕</button></span>
             ))}
