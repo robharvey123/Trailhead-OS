@@ -19,7 +19,7 @@ export default async function PrivacyPage() {
 
       <p className="mt-6">
         <strong className="font-semibold text-[var(--marketing-text)]">
-          Last updated: March 2026
+          Last updated: July 2026
         </strong>
       </p>
 
@@ -28,7 +28,9 @@ export default async function PrivacyPage() {
         &quot;our&quot;) is committed to protecting your personal data. This
         policy explains how we collect, use, and protect information when you
         use our website at trailheadholdings.uk, submit enquiries, or engage
-        with our services.
+        with our services. It also covers people whose business contact details
+        we collected from public sources, for example to tell them about our
+        software, even where they have never contacted us.
       </p>
 
       <p className="mt-6">
@@ -38,7 +40,11 @@ export default async function PrivacyPage() {
         <br />
         Trailhead Holdings Ltd
         <br />
-        Brentwood, Essex, United Kingdom
+        12 Lindsey Close, Brentwood, Essex, CM14 4PN
+        <br />
+        United Kingdom
+        <br />
+        Company number 16910286
         <br />
         info@trailheadholdings.uk
       </p>
@@ -186,7 +192,95 @@ export default async function PrivacyPage() {
       </p>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-        4. Data retention
+        4. Prospect and business contact data
+      </h2>
+      <p className="mt-4">
+        If you received a marketing email from us and you never gave us your
+        details, this section explains where they came from and what you can do
+        about it.
+      </p>
+      <p className="mt-4">
+        <strong className="font-semibold text-[var(--marketing-text)]">
+          What we hold.
+        </strong>{' '}
+        Your name and job title, your business email address, your business
+        telephone number, and information about your employer: company name,
+        website, trading location, sector, and any publicly stated information
+        about the size of the business. We also record the web address where we
+        found each detail.
+      </p>
+      <p className="mt-4">
+        <strong className="font-semibold text-[var(--marketing-text)]">
+          Where we got it.
+        </strong>{' '}
+        Not from you. We collected it from your employer&apos;s own public
+        website and from public registers, principally Companies House. We do
+        not buy contact lists and we do not use data brokers.
+      </p>
+      <p className="mt-4">
+        <strong className="font-semibold text-[var(--marketing-text)]">
+          Why we hold it.
+        </strong>{' '}
+        To tell you about Engineer OS, our job management software for field
+        service businesses, because your company appears to run a team of
+        engineers who work on site.
+      </p>
+      <p className="mt-4">
+        <strong className="font-semibold text-[var(--marketing-text)]">
+          Our lawful basis.
+        </strong>{' '}
+        Legitimate interests, under Article 6(1)(f) of the UK GDPR. Our
+        legitimate interest is marketing business software to organisations
+        likely to benefit from it. We have assessed this against your interests
+        and rights and concluded that a small volume of relevant business email
+        to a work address, with a one-click opt out, is a proportionate way to
+        reach businesses in our market. You can ask us for a copy of that
+        assessment.
+      </p>
+      <p className="mt-4">
+        <strong className="font-semibold text-[var(--marketing-text)]">
+          Marketing rules.
+        </strong>{' '}
+        We only send marketing email of this kind to corporate subscribers,
+        meaning limited companies and limited liability partnerships, as
+        permitted by the Privacy and Electronic Communications Regulations.
+        Before making any marketing telephone call we screen the number against
+        the Telephone Preference Service and the Corporate Telephone Preference
+        Service and do not call registered numbers.
+      </p>
+      <p className="mt-4">
+        <strong className="font-semibold text-[var(--marketing-text)]">
+          How long we keep it.
+        </strong>{' '}
+        We review prospect records at least every 24 months and delete those
+        that are no longer relevant. If you object or unsubscribe we stop
+        contacting you immediately. We keep a minimal suppression record,
+        normally just your email address, indefinitely, because it is the only
+        way to guarantee we do not contact you again by mistake. That record is
+        used for nothing else.
+      </p>
+      <p className="mt-4">
+        <strong className="font-semibold text-[var(--marketing-text)]">
+          Your rights.
+        </strong>{' '}
+        You can object to this processing at any time and we will stop. For
+        direct marketing this right is absolute and we do not have to weigh it
+        against anything. You can also ask us for a copy of what we hold, ask us
+        to correct it, or ask us to delete it. Use the unsubscribe link in any
+        email we send you, or email info@trailheadholdings.uk. We will respond
+        within 30 days. If you are unhappy with how we have handled it you can
+        complain to the Information Commissioner&apos;s Office at{' '}
+        <a href="https://ico.org.uk" target="_blank" rel="noreferrer">
+          ico.org.uk
+        </a>
+        .
+      </p>
+      <p className="mt-4">
+        We do not sell, rent or share this information with anyone else.
+      </p>
+
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+        5. Data retention
       </h2>
       <p className="mt-4">
         We retain your data for as long as necessary to fulfil the purpose it
@@ -204,7 +298,7 @@ export default async function PrivacyPage() {
       </ul>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-        5. Your rights
+        6. Your rights
       </h2>
       <p className="mt-4">Under UK GDPR you have the right to:</p>
       <ul className="mt-4 list-disc space-y-3 pl-6">
@@ -266,7 +360,7 @@ export default async function PrivacyPage() {
       </p>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-        6. Data security
+        7. Data security
       </h2>
       <p className="mt-4">
         We take reasonable technical and organisational measures to protect
@@ -283,7 +377,7 @@ export default async function PrivacyPage() {
       </ul>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-        7. International transfers
+        8. International transfers
       </h2>
       <p className="mt-4">
         Our data is stored on servers in the European Economic Area via
@@ -293,7 +387,7 @@ export default async function PrivacyPage() {
       </p>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-        8. Third-party processors
+        9. Third-party processors
       </h2>
       <div className="mt-6 overflow-x-auto">
         <table className="min-w-[640px] w-full border-collapse text-left text-sm leading-6">
@@ -377,7 +471,7 @@ export default async function PrivacyPage() {
       </div>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-        9. Changes to this policy
+        10. Changes to this policy
       </h2>
       <p className="mt-4">
         We may update this policy from time to time. The &quot;last updated&quot;
@@ -386,7 +480,7 @@ export default async function PrivacyPage() {
       </p>
 
       <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-        10. Contact
+        11. Contact
       </h2>
       <p className="mt-4">For any privacy-related queries or to exercise your rights:</p>
       <p className="mt-6">
@@ -394,7 +488,11 @@ export default async function PrivacyPage() {
           Trailhead Holdings Ltd
         </strong>
         <br />
-        Brentwood, Essex, United Kingdom
+        12 Lindsey Close, Brentwood, Essex, CM14 4PN
+        <br />
+        United Kingdom
+        <br />
+        Company number 16910286
         <br />
         info@trailheadholdings.uk
       </p>
