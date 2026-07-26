@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Webhook } from 'svix'
 import { supabaseService } from '@/lib/supabase/service'
+import { addSuppression } from '@/lib/outreach/suppression'
 
 // Resend delivery-event webhook. Signed with Svix (Resend uses Svix under the
 // hood); verify against RESEND_WEBHOOK_SECRET. No user session here — service role.
-// Only events that match an outreach_sends row are recorded; other Resend emails
-// (invoices, notifications) share this webhook and are acked and ignored.
 
 type ResendEvent = {
   type: string
@@ -34,35 +33,37 @@ export async function POST(request: NextRequest) {
 
   const db = supabaseService
   const resendId = evt.data?.email_id
+  const toAddr = Array.isArray(evt.data?.to) ? evt.data.to[0] : evt.data?.to
+  const now = new Date().toISOString()
+  const occurredAt = evt.data?.created_at ?? evt.created_at ?? now
+
+  // Compliance-critical: a bounce or complaint ALWAYS suppresses the address,
+  // regardless of whether a matching outreach_sends row exists — this webhook is
+  // shared with invoice/notification mail, and a bounce can race the send insert.
+  if (evt.type === 'email.bounced' && toAddr) await addSuppression(db, toAddr, 'bounced', 'resend')
+  if (evt.type === 'email.complained' && toAddr) await addSuppression(db, toAddr, 'complained', 'resend')
+
   if (!resendId) return NextResponse.json({ ok: true })
 
   const { data: sendRow } = await db.from('outreach_sends').select('*').eq('resend_email_id', resendId).maybeSingle<{
     id: string; recipient_id: string; status: string; first_opened_at: string | null; first_clicked_at: string | null
   }>()
-  // Not an outreach email — ack and ignore.
+  // Not an outreach email (or the send row hasn't landed yet) — the suppression
+  // above already ran; nothing more to update.
   if (!sendRow) return NextResponse.json({ ok: true })
   const send = sendRow
-
-  const now = new Date().toISOString()
-  const occurredAt = evt.data?.created_at ?? evt.created_at ?? now
 
   // Raw landing record (never updated).
   await db.from('outreach_events').insert({
     send_id: send.id, resend_email_id: resendId, type: evt.type, payload: evt as unknown as Record<string, unknown>, occurred_at: occurredAt,
   })
 
-  // Suppress the address + stop the recipient's sequence (bounce/complaint).
-  const stopRecipient = async (reason: 'bounced' | 'complained') => {
-    const to = Array.isArray(evt.data.to) ? evt.data.to[0] : evt.data.to
-    if (to) {
-      await db.from('email_suppressions').insert({ email: to, reason, source: 'resend' }).then(() => {}, () => {})
-    }
-    await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: reason, stopped_at: now }).eq('id', send.recipient_id)
-  }
-
   const patch: Record<string, unknown> = {}
   const advanceStatus = (next: string) => {
     if ((RANK[next] ?? -1) > (RANK[send.status] ?? -1)) patch.status = next
+  }
+  const stopRecipient = async (reason: 'bounced' | 'complained') => {
+    await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: reason, stopped_at: now }).eq('id', send.recipient_id)
   }
 
   switch (evt.type) {

@@ -1,37 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseService } from '@/lib/supabase/service'
+import { applyUnsubscribe } from '@/lib/outreach/unsubscribe'
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk').replace(/\/$/, '')
 
-// Suppress the address, flag the contact do_not_email, and stop the sequence.
-// Never signals whether the token was valid — always succeeds, so the endpoint
-// can't be used to enumerate recipients.
-async function applyUnsubscribe(token: string) {
-  const db = supabaseService
-  const { data: recipient } = await db
-    .from('outreach_recipients')
-    .select('id, contact_id')
-    .eq('unsubscribe_token', token)
-    .maybeSingle<{ id: string; contact_id: string }>()
-  if (!recipient) return
-
-  const { data: contact } = await db.from('contacts').select('email').eq('id', recipient.contact_id).maybeSingle<{ email: string | null }>()
-  if (contact?.email) {
-    await db.from('email_suppressions').insert({ email: contact.email, reason: 'unsubscribed', source: 'unsubscribe-link' }).then(() => {}, () => {})
-    await db.from('contacts').update({ do_not_email: true }).eq('id', recipient.contact_id)
-  }
-  await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: 'unsubscribed', stopped_at: new Date().toISOString() }).eq('id', recipient.id)
-}
-
+// GET is RENDER-ONLY — it must not mutate, because mail-security scanners
+// (Mimecast, Barracuda, Outlook Safe Links) prefetch every link in an inbound
+// message. It just sends the recipient to the confirmation page.
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
-  await applyUnsubscribe(token).catch(() => {})
-  return NextResponse.redirect(new URL('/unsubscribed', APP_URL))
+  return NextResponse.redirect(new URL(`/unsubscribe?token=${encodeURIComponent(token)}`, APP_URL))
 }
 
-// One-click unsubscribe (List-Unsubscribe-Post). Always 200.
+// POST is a genuine user action: the confirm-page button and RFC 8058 one-click.
+// Always 200 even for an unknown token, so the endpoint can't enumerate recipients.
 export async function POST(_request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
-  await applyUnsubscribe(token).catch(() => {})
+  await applyUnsubscribe(supabaseService, token).catch(() => {})
   return NextResponse.json({ ok: true })
 }

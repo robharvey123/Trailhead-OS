@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { getCallQueue } from '@/lib/db/outreach'
+import { getCallQueue, getUnscreenedCallCount } from '@/lib/db/outreach'
 import { mockupFontVars } from '@/lib/fonts'
 import { logCallOutcome } from './actions'
 
@@ -10,7 +10,10 @@ const OUTCOMES = ['no_answer', 'voicemail', 'connected', 'interested', 'not_inte
 
 export default async function CallQueuePage() {
   const supabase = await createClient()
-  const queue = await getCallQueue(supabase).catch(() => [])
+  const [queue, unscreened] = await Promise.all([
+    getCallQueue(supabase).catch(() => []),
+    getUnscreenedCallCount(supabase).catch(() => 0),
+  ])
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -19,9 +22,16 @@ export default async function CallQueuePage() {
           <Link href="/outreach" className="text-sm text-[var(--muted)] hover:text-white">← Outreach</Link>
           <h1 className="mt-3 text-2xl font-semibold text-white">Call queue</h1>
           <p className="text-sm text-[var(--muted)]">
-            Delivered prospects, earliest first. CTPS-registered and do-not-call numbers are excluded.
+            Delivered prospects, earliest first. Only CTPS-screened, non-registered, callable numbers appear.
           </p>
         </div>
+
+        {unscreened > 0 ? (
+          <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 text-sm text-[color:var(--amber-strong)]">
+            ⚠ {unscreened} delivered {unscreened === 1 ? 'prospect is' : 'prospects are'} not yet CTPS-screened and are hidden from this queue.
+            Screen the numbers and set <code>ctps_checked_at</code> (and <code>ctps_registered</code>) before calling them.
+          </div>
+        ) : null}
 
         {queue.length === 0 ? (
           <div className="empty">No callable prospects yet. Emails need to deliver first.</div>

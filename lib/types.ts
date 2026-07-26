@@ -1392,10 +1392,10 @@ export const OUTREACH_RECIPIENT_STATUS_LABELS: Record<OutreachRecipientStatus, s
   pending: 'Pending', active: 'Active', completed: 'Completed', stopped: 'Stopped',
 }
 
-export type OutreachStoppedReason = 'replied' | 'unsubscribed' | 'bounced' | 'complained' | 'manual' | 'converted'
-export const OUTREACH_STOPPED_REASONS: OutreachStoppedReason[] = ['replied', 'unsubscribed', 'bounced', 'complained', 'manual', 'converted']
+export type OutreachStoppedReason = 'replied' | 'unsubscribed' | 'bounced' | 'complained' | 'manual' | 'converted' | 'error'
+export const OUTREACH_STOPPED_REASONS: OutreachStoppedReason[] = ['replied', 'unsubscribed', 'bounced', 'complained', 'manual', 'converted', 'error']
 export const OUTREACH_STOPPED_REASON_LABELS: Record<OutreachStoppedReason, string> = {
-  replied: 'Replied', unsubscribed: 'Unsubscribed', bounced: 'Bounced', complained: 'Complained', manual: 'Manual', converted: 'Converted',
+  replied: 'Replied', unsubscribed: 'Unsubscribed', bounced: 'Bounced', complained: 'Complained', manual: 'Manual', converted: 'Converted', error: 'Error',
 }
 
 export type OutreachSendStatus = 'queued' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'complained' | 'failed'

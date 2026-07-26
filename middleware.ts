@@ -10,6 +10,7 @@ const publicRoutes = [
   '/privacy',
   '/terms',
   '/contact',
+  '/unsubscribe',
   '/unsubscribed',
   '/api/auth/google',
   '/api/auth/google/callback',

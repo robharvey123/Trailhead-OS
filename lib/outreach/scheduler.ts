@@ -1,5 +1,6 @@
 import { supabaseService } from '@/lib/supabase/service'
 import { sendCampaignEmail } from './send'
+import { isSuppressed } from './suppression'
 import type { OutreachCampaign, OutreachCampaignStep, OutreachStoppedReason } from '@/lib/types'
 
 const DAY_MS = 86_400_000
@@ -103,70 +104,87 @@ export async function runOutreachTick(): Promise<OutreachTickResult> {
       id: string; contact_id: string; status: string; current_step: number; created_at: string
       contact: { email: string | null; do_not_email: boolean | null } | null
     }>) {
-      const email = r.contact?.email?.trim() ?? ''
+      // Per-recipient guard: one bad recipient (e.g. a render throw) must never
+      // abort the tick or leave a claimed recipient stuck with a null next_send_at.
+      try {
+        const email = r.contact?.email?.trim() ?? ''
 
-      // Stop checks, in order. Any hit stops the recipient and skips the send.
-      let stop: OutreachStoppedReason | null = null
-      if (email) {
-        const { data: sup } = await db.from('email_suppressions').select('id').ilike('email', email).maybeSingle()
-        if (sup) stop = 'unsubscribed'
-      }
-      if (!stop && r.contact?.do_not_email) stop = 'unsubscribed'
-      if (!stop) {
-        const { data: reply } = await db
-          .from('email_logs')
-          .select('id')
-          .eq('direction', 'inbound')
-          .eq('contact_id', r.contact_id)
-          .gte('received_at', r.created_at)
-          .limit(1)
-          .maybeSingle()
-        if (reply) stop = 'replied'
-      }
-      if (stop) {
-        await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: stop, stopped_at: new Date().toISOString() }).eq('id', r.id)
-        result.stopped++
-        continue
-      }
-
-      // Optimistic claim — only proceed if we win the status transition.
-      const { data: claimed } = await db
-        .from('outreach_recipients')
-        .update({ status: 'active', next_send_at: null })
-        .eq('id', r.id)
-        .eq('status', r.status)
-        .select('id')
-      if (!claimed || claimed.length === 0) continue
-
-      const send = await sendCampaignEmail({ recipientId: r.id })
-
-      if (!send.ok) {
-        if ('skipped' in send) {
-          await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: 'unsubscribed', stopped_at: new Date().toISOString() }).eq('id', r.id)
-          result.stopped++
-        } else {
-          // Transient failure — retry on a later tick rather than getting stuck.
-          await db.from('outreach_recipients').update({ next_send_at: new Date(Date.now() + 60 * 60 * 1000).toISOString() }).eq('id', r.id)
-          result.skipped++
+        // Stop checks, in order. Any hit stops the recipient and skips the send.
+        let stop: OutreachStoppedReason | null = null
+        if (email && await isSuppressed(db, email)) stop = 'unsubscribed'
+        if (!stop && r.contact?.do_not_email) stop = 'unsubscribed'
+        if (!stop) {
+          const { data: reply } = await db
+            .from('email_logs')
+            .select('id')
+            .eq('direction', 'inbound')
+            .eq('contact_id', r.contact_id)
+            .gte('received_at', r.created_at)
+            .limit(1)
+            .maybeSingle()
+          if (reply) stop = 'replied'
         }
-        await sleep(THROTTLE_MS)
-        continue
-      }
+        if (stop) {
+          await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: stop, stopped_at: new Date().toISOString() }).eq('id', r.id)
+          result.stopped++
+          continue
+        }
 
-      // Advance: next step (delay from that step) or complete.
-      const nextIndex = r.current_step + 1
-      const nextStep = steps[nextIndex]
-      if (nextStep) {
-        await db.from('outreach_recipients').update({
-          current_step: nextIndex,
-          next_send_at: new Date(Date.now() + (nextStep.delay_days ?? 0) * DAY_MS).toISOString(),
-          status: 'active',
-        }).eq('id', r.id)
-      } else {
-        await db.from('outreach_recipients').update({ current_step: nextIndex, status: 'completed', next_send_at: null }).eq('id', r.id)
+        // Optimistic claim (the outreach_sends unique index is the real backstop).
+        const { data: claimed } = await db
+          .from('outreach_recipients')
+          .update({ status: 'active', next_send_at: null })
+          .eq('id', r.id)
+          .eq('status', r.status)
+          .select('id')
+        if (!claimed || claimed.length === 0) continue
+
+        const send = await sendCampaignEmail({ recipientId: r.id })
+
+        if (!send.ok) {
+          if ('skipped' in send) {
+            if (send.reason === 'already_claimed') {
+              // A concurrent tick won the (recipient_id, step_id) slot (unique
+              // index). That tick owns advancing current_step/next_send_at — leave
+              // this recipient's row completely untouched or we'd race the winner.
+              result.skipped++
+            } else {
+              // suppressed / do_not_email — a genuine reason to stop the sequence.
+              await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: 'unsubscribed', stopped_at: new Date().toISOString() }).eq('id', r.id)
+              result.stopped++
+            }
+          } else if (send.kind === 'render') {
+            // Bad template token — stop with a terminal reason so it surfaces.
+            await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: 'error', stopped_at: new Date().toISOString() }).eq('id', r.id)
+            result.stopped++
+          } else {
+            // Transient failure — retry on a later tick rather than getting stuck.
+            await db.from('outreach_recipients').update({ next_send_at: new Date(Date.now() + 60 * 60 * 1000).toISOString() }).eq('id', r.id)
+            result.skipped++
+          }
+          await sleep(THROTTLE_MS)
+          continue
+        }
+
+        // Advance: next step (delay measured from the previous step) or complete.
+        const nextIndex = r.current_step + 1
+        const nextStep = steps[nextIndex]
+        if (nextStep) {
+          await db.from('outreach_recipients').update({
+            current_step: nextIndex,
+            next_send_at: new Date(Date.now() + (nextStep.delay_days ?? 0) * DAY_MS).toISOString(),
+            status: 'active',
+          }).eq('id', r.id)
+        } else {
+          await db.from('outreach_recipients').update({ current_step: nextIndex, status: 'completed', next_send_at: null }).eq('id', r.id)
+        }
+        result.sent++
+        await sleep(THROTTLE_MS)
+      } catch {
+        // Never leave a claimed recipient live-but-unreachable — terminate it loudly.
+        await db.from('outreach_recipients').update({ status: 'stopped', stopped_reason: 'error', stopped_at: new Date().toISOString() }).eq('id', r.id).then(() => {}, () => {})
+        result.stopped++
       }
-      result.sent++
-      await sleep(THROTTLE_MS)
     }
   }
 

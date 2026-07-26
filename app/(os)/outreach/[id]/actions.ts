@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { validateCampaignForSend } from '@/lib/outreach/validate'
 import type { OutreachCampaignStatus } from '@/lib/types'
 
 async function setStatus(id: string, status: OutreachCampaignStatus): Promise<void> {
@@ -10,6 +11,10 @@ async function setStatus(id: string, status: OutreachCampaignStatus): Promise<vo
   const supabase = await createClient()
   const patch: Record<string, unknown> = { status }
   if (status === 'running') {
+    // Gate the button: don't let a campaign with placeholder or invalid-token
+    // templates go live and email placeholder text to real businesses.
+    const error = await validateCampaignForSend(supabase, id)
+    if (error) redirect(`/outreach/${id}?error=${encodeURIComponent(error)}`)
     const { data: existing } = await supabase.from('outreach_campaigns').select('started_at').eq('id', id).maybeSingle<{ started_at: string | null }>()
     if (existing && !existing.started_at) patch.started_at = new Date().toISOString()
   }

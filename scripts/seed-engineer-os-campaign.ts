@@ -11,11 +11,11 @@
  * Prerequisite: import the 100-firm CSV first (contacts tagged
  * "Engineer OS outreach 2026-07" with a non-empty email).
  *
- * NOTE ON TEMPLATES: the engine is a single linear sequence — one template per
- * step, sent to every recipient. This seed creates four sector first-touch
- * templates and wires the first three to the 3 steps as PLACEHOLDERS. Before
- * starting the campaign, Rob should finalise the step copy and decide sector
- * routing (either edit the wired templates, or split into per-sector campaigns).
+ * TEMPLATES: one linear campaign. Step 1 uses a default first-touch template with
+ * per-channel overrides (one per distinct contact.channel) so each sector gets its
+ * own cold open; steps 2 and 3 are generic follow-ups. All bodies are placeholders
+ * containing "[Replace" — the campaign is blocked from going `running` until Rob
+ * writes real copy (validateCampaignForSend enforces this at the Start button).
  */
 
 import { readFileSync } from 'fs'
@@ -54,17 +54,19 @@ if (!url || !serviceKey) {
 }
 const db = createClient(url, serviceKey)
 
-const SECTOR_TEMPLATES = [
-  { name: 'Engineer OS — Construction & building', subject: 'A quick idea for {{company}}' },
-  { name: 'Engineer OS — Electrical, plumbing & HVAC', subject: 'A quick idea for {{company}}' },
-  { name: 'Engineer OS — Facilities management', subject: 'A quick idea for {{company}}' },
-  { name: 'Engineer OS — Fire & security', subject: 'A quick idea for {{company}}' },
-]
+const DEFAULT_FIRST_TOUCH = 'Engineer OS — first touch (default)'
+const FOLLOWUP_1 = 'Engineer OS — follow-up 1'
+const FOLLOWUP_2 = 'Engineer OS — follow-up 2'
 
-const PLACEHOLDER_BODY = `<p>Hi {{email_greeting}},</p>
-<p>I build software for field-service teams like {{company}}{{size_signal}}. [Replace this placeholder copy before starting the campaign.]</p>
+// Placeholder bodies deliberately keep the "[Replace" marker: the campaign cannot
+// go to `running` while any template still contains it (validateCampaignForSend),
+// so Rob must write real copy first. Note the separator inside the parentheses.
+function placeholderBody(kind: string) {
+  return `<p>Hi {{email_greeting}},</p>
+<p>I build software for field-service teams like {{company}} ({{size_signal}}). [Replace this ${kind} copy before starting the campaign.]</p>
 <p>Worth a short call?</p>
 <p>Rob</p>`
+}
 
 async function findOrCreate<T extends { id: string }>(
   table: string,
@@ -94,7 +96,7 @@ async function main() {
   const audience = await findOrCreate<{ id: string }>('outreach_audiences', 'name', AUDIENCE_NAME, {
     name: AUDIENCE_NAME, description: 'Cold outreach list imported July 2026',
   })
-  const { data: contacts } = await db.from('contacts').select('id, email, tags').contains('tags', [AUDIENCE_TAG])
+  const { data: contacts } = await db.from('contacts').select('id, email, channel, tags').contains('tags', [AUDIENCE_TAG])
   const withEmail = (contacts ?? []).filter((c) => c.email && String(c.email).trim())
   if (withEmail.length > 0) {
     await db.from('outreach_audience_members')
@@ -102,14 +104,26 @@ async function main() {
   }
   console.log(`Audience: ${audience.id} — ${withEmail.length} members with email`)
 
-  // Templates (four sectors).
-  const templates: Array<{ id: string }> = []
-  for (const t of SECTOR_TEMPLATES) {
-    templates.push(await findOrCreate<{ id: string }>('outreach_templates', 'name', t.name, {
-      name: t.name, subject: t.subject, body_html: PLACEHOLDER_BODY, body_text: null,
-    }))
+  // Templates: one default first-touch (step-1 fallback), one per distinct
+  // sector (channel) for the step-1 override, and two generic follow-ups.
+  const channels = [...new Set(withEmail.map((c) => String(c.channel ?? '').trim()).filter(Boolean))]
+  const firstTouch = await findOrCreate<{ id: string }>('outreach_templates', 'name', DEFAULT_FIRST_TOUCH, {
+    name: DEFAULT_FIRST_TOUCH, subject: 'A quick idea for {{company}}', body_html: placeholderBody('default first-touch'), body_text: null,
+  })
+  const followup1 = await findOrCreate<{ id: string }>('outreach_templates', 'name', FOLLOWUP_1, {
+    name: FOLLOWUP_1, subject: 'Re: a quick idea for {{company}}', body_html: placeholderBody('follow-up'), body_text: null,
+  })
+  const followup2 = await findOrCreate<{ id: string }>('outreach_templates', 'name', FOLLOWUP_2, {
+    name: FOLLOWUP_2, subject: 'Re: a quick idea for {{company}}', body_html: placeholderBody('final follow-up'), body_text: null,
+  })
+  const sectorTemplates = new Map<string, string>()
+  for (const channel of channels) {
+    const t = await findOrCreate<{ id: string }>('outreach_templates', 'name', `Engineer OS — ${channel}`, {
+      name: `Engineer OS — ${channel}`, subject: 'A quick idea for {{company}}', body_html: placeholderBody(`${channel} first-touch`), body_text: null,
+    })
+    sectorTemplates.set(channel, t.id)
   }
-  console.log(`Templates: ${templates.length}`)
+  console.log(`Templates: ${3 + sectorTemplates.size} (default + ${sectorTemplates.size} sectors + 2 follow-ups)`)
 
   // Campaign (draft).
   const campaign = await findOrCreate<{ id: string }>('outreach_campaigns', 'name', CAMPAIGN_NAME, {
@@ -124,15 +138,33 @@ async function main() {
   })
   console.log(`Campaign: ${campaign.id} (draft)`)
 
-  // Three steps at delays 0, 3, 8 (placeholder template wiring — see file header).
-  const stepDelays = [0, 3, 8]
-  for (let i = 0; i < stepDelays.length; i++) {
+  // Steps. delay_days = days AFTER the previous step, so [0, 3, 5] => days 0, 3, 8.
+  // Step 1 uses the default first-touch; sector overrides swap it per channel.
+  const stepSpec = [
+    { step_number: 1, template_id: firstTouch.id, delay_days: 0 },
+    { step_number: 2, template_id: followup1.id, delay_days: 3 },
+    { step_number: 3, template_id: followup2.id, delay_days: 5 },
+  ]
+  const stepIds: Record<number, string> = {}
+  for (const s of stepSpec) {
     await db.from('outreach_campaign_steps').upsert(
-      { campaign_id: campaign.id, step_number: i + 1, template_id: templates[i].id, delay_days: stepDelays[i] },
+      { campaign_id: campaign.id, step_number: s.step_number, template_id: s.template_id, delay_days: s.delay_days },
       { onConflict: 'campaign_id,step_number', ignoreDuplicates: false }
     )
+    const { data: row } = await db.from('outreach_campaign_steps').select('id').eq('campaign_id', campaign.id).eq('step_number', s.step_number).single()
+    stepIds[s.step_number] = row!.id
   }
-  console.log(`Steps: ${stepDelays.length}`)
+  console.log(`Steps: ${stepSpec.length}`)
+
+  // Step-1 per-channel overrides: a fire & security firm gets the fire & security
+  // first-touch, not another sector's. Follow-ups stay generic.
+  if (sectorTemplates.size > 0) {
+    await db.from('outreach_step_template_overrides').upsert(
+      [...sectorTemplates.entries()].map(([channel, templateId]) => ({ step_id: stepIds[1], channel, template_id: templateId })),
+      { onConflict: 'step_id,channel', ignoreDuplicates: false }
+    )
+  }
+  console.log(`Sector overrides on step 1: ${sectorTemplates.size}`)
 
   // Recipients (pending, due now) for each audience member.
   if (withEmail.length > 0) {

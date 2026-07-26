@@ -29,6 +29,15 @@ function sanitizeText(value: unknown): string | null {
   return trimmed || null
 }
 
+/** Parse a CSV truthy/falsy cell → boolean, or null when blank/unrecognised. */
+function parseBool(value: unknown): boolean | null {
+  if (typeof value !== 'string') return null
+  const v = value.trim().toLowerCase()
+  if (['true', 'yes', 'y', '1', 'registered'].includes(v)) return true
+  if (['false', 'no', 'n', '0', 'not registered', 'unregistered'].includes(v)) return false
+  return null
+}
+
 type ImportRow = {
   name?: string
   company?: string
@@ -45,6 +54,8 @@ type ImportRow = {
   website?: string
   sub_trade?: string
   size_signal?: string
+  ctps_registered?: string
+  ctps_checked_at?: string
   status?: string
   notes?: string
   tags?: string
@@ -147,6 +158,8 @@ export async function POST(request: NextRequest) {
         website: sanitizeText(row.website),
         sub_trade: sanitizeText(row.sub_trade),
         size_signal: sanitizeText(row.size_signal),
+        ctps_registered: parseBool(row.ctps_registered),
+        ctps_checked_at: sanitizeText(row.ctps_checked_at),
         status,
         notes: sanitizeText(row.notes),
         tags,

@@ -1,24 +1,38 @@
 import { supabaseService } from '@/lib/supabase/service'
 import { resend } from '@/lib/email/resend'
-import { getCompanySettings } from '@/lib/company-settings'
+import { getCompanySettings, renderCompanyEmailFooterHtml } from '@/lib/company-settings'
 import { renderTemplate } from './render'
+import { isSuppressed } from './suppression'
 import type { Contact, OutreachCampaign, OutreachCampaignStep, OutreachRecipient, OutreachTemplate } from '@/lib/types'
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk').replace(/\/$/, '')
 
+export type SendSkipReason = 'suppressed' | 'do_not_email' | 'already_claimed'
+
 export type SendResult =
   | { ok: true; sendId: string; resendId: string | null }
-  | { ok: false; skipped: true; reason: string }
-  | { ok: false; error: string }
+  | { ok: false; skipped: true; reason: SendSkipReason }
+  | { ok: false; error: string; kind?: 'render' }
 
-function escapeHtml(v: string) {
-  return v.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+/** Merge vars for one contact — always all seven keys so render() never throws on a missing key. */
+export function contactVars(contact: Pick<Contact, 'email_greeting' | 'company' | 'name' | 'city' | 'channel' | 'sub_trade' | 'size_signal'>): Record<string, string> {
+  return {
+    email_greeting: (contact.email_greeting ?? '').trim() || 'there',
+    company: contact.company ?? '',
+    name: contact.name ?? '',
+    city: contact.city ?? '',
+    channel: contact.channel ?? '',
+    sub_trade: contact.sub_trade ?? '',
+    size_signal: contact.size_signal ?? '',
+  }
 }
 
 /**
  * Send the current step's email for one recipient through Resend, from the
- * campaign's own sending identity, and record an outreach_sends row. Refuses to
- * send when the address is suppressed or the contact is do_not_email.
+ * campaign's own identity. The outreach_sends row is inserted BEFORE the Resend
+ * call and is guarded by unique(recipient_id, step_id), so a concurrent tick (or
+ * a retry after a lost response) can't double-deliver a step. Refuses to send
+ * when the address is suppressed or the contact is do_not_email.
  */
 export async function sendCampaignEmail({ recipientId }: { recipientId: string }): Promise<SendResult> {
   if (!resend) return { ok: false, error: 'RESEND_API_KEY is not configured' }
@@ -34,41 +48,64 @@ export async function sendCampaignEmail({ recipientId }: { recipientId: string }
   const { data: campaign } = await db.from('outreach_campaigns').select('*').eq('id', recipient.campaign_id).maybeSingle<OutreachCampaign>()
   if (!campaign || !campaign.from_email) return { ok: false, error: 'Campaign missing sending identity' }
 
-  // Compliance guards — refuse rather than send.
+  // Compliance guards — refuse rather than send (suppression fails closed).
   if (contact.do_not_email) return { ok: false, skipped: true, reason: 'do_not_email' }
-  const { data: suppressed } = await db.from('email_suppressions').select('id').ilike('email', email).maybeSingle()
-  if (suppressed) return { ok: false, skipped: true, reason: 'suppressed' }
+  if (await isSuppressed(db, email)) return { ok: false, skipped: true, reason: 'suppressed' }
 
-  // Current step (0-indexed into the ordered step list) + its template.
+  // Current step (0-indexed into the ordered list) + its template, honouring a
+  // per-channel override so one campaign can do sector-tailored first touches.
   const { data: steps } = await db.from('outreach_campaign_steps').select('*').eq('campaign_id', campaign.id).order('step_number', { ascending: true })
   const step = ((steps ?? []) as OutreachCampaignStep[])[recipient.current_step]
   if (!step) return { ok: false, error: `No step at index ${recipient.current_step}` }
-  const { data: template } = await db.from('outreach_templates').select('*').eq('id', step.template_id ?? '').maybeSingle<OutreachTemplate>()
+
+  let templateId = step.template_id
+  if (contact.channel) {
+    const { data: override } = await db.from('outreach_step_template_overrides').select('template_id').eq('step_id', step.id).eq('channel', contact.channel).maybeSingle<{ template_id: string }>()
+    if (override) templateId = override.template_id
+  }
+  const { data: template } = await db.from('outreach_templates').select('*').eq('id', templateId ?? '').maybeSingle<OutreachTemplate>()
   if (!template) return { ok: false, error: 'Template not found' }
 
-  const vars: Record<string, string> = {
-    email_greeting: (contact.email_greeting ?? '').trim() || 'there',
-    company: contact.company ?? '',
-    name: contact.name ?? '',
-    city: contact.city ?? '',
-    channel: contact.channel ?? '',
-    sub_trade: contact.sub_trade ?? '',
-    size_signal: contact.size_signal ?? '',
+  // Claim the (recipient, step) slot by inserting the send row first. The unique
+  // index makes this the exclusive claim: a concurrent tick gets 23505.
+  let sendRowId: string
+  const { data: claim, error: claimErr } = await db
+    .from('outreach_sends')
+    .insert({ campaign_id: campaign.id, recipient_id: recipient.id, step_id: step.id, status: 'queued' })
+    .select('id')
+    .single()
+  if (claimErr) {
+    if (claimErr.code === '23505') {
+      // Slot already exists — only re-send if the prior attempt genuinely failed.
+      const { data: existing } = await db.from('outreach_sends').select('id, status').eq('recipient_id', recipient.id).eq('step_id', step.id).maybeSingle<{ id: string; status: string }>()
+      if (!existing || existing.status !== 'failed') return { ok: false, skipped: true, reason: 'already_claimed' }
+      sendRowId = existing.id
+    } else {
+      return { ok: false, error: claimErr.message }
+    }
+  } else {
+    sendRowId = claim!.id
   }
-  const subject = renderTemplate(template.subject ?? '', vars, { escape: false })
-  let bodyHtml = renderTemplate(template.body_html ?? '', vars)
 
-  // Legally-required + deliverability footer: registered address + unsubscribe.
-  const settings = await getCompanySettings(db).catch(() => null)
-  const unsubUrl = `${APP_URL}/api/outreach/unsubscribe/${recipient.unsubscribe_token}`
-  const address = settings
-    ? [settings.company_name, settings.address_line1, settings.city, settings.postcode, settings.country].filter(Boolean).join(', ')
-    : 'Trailhead Holdings Ltd'
-  bodyHtml += `
-    <div style="margin-top:32px;padding-top:12px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:12px;line-height:1.6">
-      <p style="margin:0">${escapeHtml(address)}</p>
-      <p style="margin:6px 0 0"><a href="${unsubUrl}" style="color:#94a3b8;text-decoration:underline">Unsubscribe from these emails</a></p>
-    </div>`
+  // Render (throws on an unresolved token — caught so the slot lands as failed).
+  let subject: string
+  let bodyHtml: string
+  try {
+    const vars = contactVars(contact)
+    subject = renderTemplate(template.subject ?? '', vars, { escape: false })
+    bodyHtml = renderTemplate(template.body_html ?? '', vars)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Template render failed'
+    await db.from('outreach_sends').update({ status: 'failed', error: message }).eq('id', sendRowId)
+    return { ok: false, error: message, kind: 'render' }
+  }
+
+  // Legally-required footer (company details incl. registered number) + unsubscribe.
+  const settings = await getCompanySettings(db)
+  const confirmUnsubUrl = `${APP_URL}/unsubscribe?token=${recipient.unsubscribe_token}`
+  const oneClickUnsubUrl = `${APP_URL}/api/outreach/unsubscribe/${recipient.unsubscribe_token}`
+  bodyHtml += renderCompanyEmailFooterHtml(settings)
+  bodyHtml += `<p style="margin:8px 0 0;color:#94a3b8;font-size:12px"><a href="${confirmUnsubUrl}" style="color:#94a3b8;text-decoration:underline">Unsubscribe from these emails</a></p>`
 
   const { data: sent, error: sendErr } = await resend.emails.send({
     from: `${campaign.from_name ?? 'Trailhead'} <${campaign.from_email}>`,
@@ -77,7 +114,7 @@ export async function sendCampaignEmail({ recipientId }: { recipientId: string }
     subject,
     html: bodyHtml,
     headers: {
-      'List-Unsubscribe': `<${unsubUrl}>`,
+      'List-Unsubscribe': `<${oneClickUnsubUrl}>`,
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     },
     tags: [
@@ -87,17 +124,10 @@ export async function sendCampaignEmail({ recipientId }: { recipientId: string }
   })
 
   if (sendErr || !sent) {
-    await db.from('outreach_sends').insert({
-      campaign_id: campaign.id, recipient_id: recipient.id, step_id: step.id,
-      subject, status: 'failed', error: sendErr?.message ?? 'send failed',
-    })
+    await db.from('outreach_sends').update({ status: 'failed', subject, error: sendErr?.message ?? 'send failed' }).eq('id', sendRowId)
     return { ok: false, error: sendErr?.message ?? 'send failed' }
   }
 
-  const { data: sendRow } = await db.from('outreach_sends').insert({
-    campaign_id: campaign.id, recipient_id: recipient.id, step_id: step.id,
-    resend_email_id: sent.id, subject, status: 'sent', sent_at: new Date().toISOString(),
-  }).select('id').single()
-
-  return { ok: true, sendId: sendRow?.id ?? '', resendId: sent.id }
+  await db.from('outreach_sends').update({ resend_email_id: sent.id, subject, status: 'sent', sent_at: new Date().toISOString() }).eq('id', sendRowId)
+  return { ok: true, sendId: sendRowId, resendId: sent.id }
 }

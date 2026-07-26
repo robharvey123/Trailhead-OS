@@ -14,11 +14,12 @@ export default async function CampaignDetailPage({
   params, searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams?: Promise<{ status?: string }>
+  searchParams?: Promise<{ status?: string; error?: string }>
 }) {
   const { id } = await params
   const sp = searchParams ? await searchParams : undefined
   const statusFilter = OUTREACH_RECIPIENT_STATUSES.includes(sp?.status as OutreachRecipientStatus) ? (sp!.status as OutreachRecipientStatus) : undefined
+  const startError = sp?.error ?? null
 
   const supabase = await createClient()
   const campaign = await getCampaign(id, supabase).catch(() => null)
@@ -58,6 +59,12 @@ export default async function CampaignDetailPage({
             </div>
           </div>
         </div>
+
+        {startError ? (
+          <div className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] p-4 text-sm text-[color:var(--red-strong)]">
+            Can’t start: {startError}
+          </div>
+        ) : null}
 
         {/* Steps */}
         <div className="os-card rounded-[2rem] p-6">
