@@ -120,6 +120,11 @@ export interface Contact {
   website: string | null
   notes: string | null
   tags: string[]
+  email_greeting?: string | null
+  do_not_email?: boolean
+  do_not_call?: boolean
+  ctps_registered?: boolean | null
+  ctps_checked_at?: string | null
   created_at: string
   updated_at: string
 }
@@ -1367,4 +1372,141 @@ export interface SavedViewInput {
   filters?: Record<string, unknown>
   sort?: Record<string, unknown> | null
   is_pinned?: boolean
+}
+
+// ============================================================================
+// Outreach engine (campaigns, recipients, sends, suppressions)
+// ============================================================================
+
+export type OutreachCampaignStatus = 'draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'cancelled'
+export const OUTREACH_CAMPAIGN_STATUSES: OutreachCampaignStatus[] = ['draft', 'scheduled', 'running', 'paused', 'completed', 'cancelled']
+export const OUTREACH_CAMPAIGN_STATUS_LABELS: Record<OutreachCampaignStatus, string> = {
+  draft: 'Draft', scheduled: 'Scheduled', running: 'Running', paused: 'Paused', completed: 'Completed', cancelled: 'Cancelled',
+}
+
+export type OutreachRecipientStatus = 'pending' | 'active' | 'completed' | 'stopped'
+export const OUTREACH_RECIPIENT_STATUSES: OutreachRecipientStatus[] = ['pending', 'active', 'completed', 'stopped']
+export const OUTREACH_RECIPIENT_STATUS_LABELS: Record<OutreachRecipientStatus, string> = {
+  pending: 'Pending', active: 'Active', completed: 'Completed', stopped: 'Stopped',
+}
+
+export type OutreachStoppedReason = 'replied' | 'unsubscribed' | 'bounced' | 'complained' | 'manual' | 'converted'
+export const OUTREACH_STOPPED_REASONS: OutreachStoppedReason[] = ['replied', 'unsubscribed', 'bounced', 'complained', 'manual', 'converted']
+export const OUTREACH_STOPPED_REASON_LABELS: Record<OutreachStoppedReason, string> = {
+  replied: 'Replied', unsubscribed: 'Unsubscribed', bounced: 'Bounced', complained: 'Complained', manual: 'Manual', converted: 'Converted',
+}
+
+export type OutreachSendStatus = 'queued' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'complained' | 'failed'
+export const OUTREACH_SEND_STATUSES: OutreachSendStatus[] = ['queued', 'sent', 'delivered', 'opened', 'clicked', 'bounced', 'complained', 'failed']
+export const OUTREACH_SEND_STATUS_LABELS: Record<OutreachSendStatus, string> = {
+  queued: 'Queued', sent: 'Sent', delivered: 'Delivered', opened: 'Opened', clicked: 'Clicked', bounced: 'Bounced', complained: 'Complained', failed: 'Failed',
+}
+
+export type EmailSuppressionReason = 'unsubscribed' | 'bounced' | 'complained' | 'manual'
+export const EMAIL_SUPPRESSION_REASONS: EmailSuppressionReason[] = ['unsubscribed', 'bounced', 'complained', 'manual']
+
+export interface OutreachAudience {
+  id: string
+  name: string
+  description: string | null
+  created_at: string
+}
+
+export interface OutreachTemplate {
+  id: string
+  name: string
+  subject: string
+  body_html: string
+  body_text: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OutreachCampaign {
+  id: string
+  name: string
+  project_id: string | null
+  audience_id: string | null
+  status: OutreachCampaignStatus
+  from_name: string | null
+  from_email: string | null
+  reply_to: string | null
+  daily_send_cap: number
+  send_window_start: string
+  send_window_end: string
+  send_days: number[]
+  timezone: string
+  started_at: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface OutreachCampaignStep {
+  id: string
+  campaign_id: string
+  step_number: number
+  template_id: string | null
+  delay_days: number
+}
+
+export interface OutreachRecipient {
+  id: string
+  campaign_id: string
+  contact_id: string
+  status: OutreachRecipientStatus
+  current_step: number
+  next_send_at: string | null
+  stopped_reason: OutreachStoppedReason | null
+  stopped_at: string | null
+  call_status: string | null
+  call_last_at: string | null
+  unsubscribe_token: string
+  created_at: string
+}
+
+export interface OutreachSend {
+  id: string
+  campaign_id: string
+  recipient_id: string
+  step_id: string | null
+  resend_email_id: string | null
+  subject: string | null
+  status: OutreachSendStatus
+  sent_at: string | null
+  delivered_at: string | null
+  first_opened_at: string | null
+  first_clicked_at: string | null
+  error: string | null
+  created_at: string
+}
+
+export interface OutreachEvent {
+  id: string
+  send_id: string | null
+  resend_email_id: string | null
+  type: string | null
+  payload: Record<string, unknown> | null
+  occurred_at: string | null
+  created_at: string
+}
+
+export interface EmailSuppression {
+  id: string
+  email: string
+  reason: EmailSuppressionReason | null
+  source: string | null
+  notes: string | null
+  created_at: string
+}
+
+export interface OutreachCampaignStats {
+  campaign_id: string
+  audience_size: number
+  recipients: number
+  stopped: number
+  replied: number
+  sent: number
+  delivered: number
+  opened: number
 }
