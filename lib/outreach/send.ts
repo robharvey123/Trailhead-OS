@@ -1,7 +1,8 @@
 import { supabaseService } from '@/lib/supabase/service'
 import { resend } from '@/lib/email/resend'
-import { getCompanySettings, renderCompanyEmailFooterHtml } from '@/lib/company-settings'
+import { getCompanySettings } from '@/lib/company-settings'
 import { renderTemplate } from './render'
+import { renderOutreachFooterHtml } from './footer'
 import { isSuppressed } from './suppression'
 import type { Contact, OutreachCampaign, OutreachCampaignStep, OutreachRecipient, OutreachTemplate } from '@/lib/types'
 
@@ -100,12 +101,12 @@ export async function sendCampaignEmail({ recipientId }: { recipientId: string }
     return { ok: false, error: message, kind: 'render' }
   }
 
-  // Legally-required footer (company details incl. registered number) + unsubscribe.
+  // Outreach footer: reduced address (no street/postcode — see footer.ts) plus the
+  // unsubscribe + privacy links that discharge the Article 14 duty.
   const settings = await getCompanySettings(db)
   const confirmUnsubUrl = `${APP_URL}/unsubscribe?token=${recipient.unsubscribe_token}`
   const oneClickUnsubUrl = `${APP_URL}/api/outreach/unsubscribe/${recipient.unsubscribe_token}`
-  bodyHtml += renderCompanyEmailFooterHtml(settings)
-  bodyHtml += `<p style="margin:8px 0 0;color:#94a3b8;font-size:12px"><a href="${confirmUnsubUrl}" style="color:#94a3b8;text-decoration:underline">Unsubscribe from these emails</a></p>`
+  bodyHtml += renderOutreachFooterHtml(settings, { confirmUnsubUrl })
 
   const { data: sent, error: sendErr } = await resend.emails.send({
     from: `${campaign.from_name ?? 'Trailhead'} <${campaign.from_email}>`,
