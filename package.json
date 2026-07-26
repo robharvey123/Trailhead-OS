@@ -10,7 +10,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,css,json}\"",
     "typecheck": "NODE_OPTIONS=--max-old-space-size=4096 tsc --noEmit",
     "seed": "node scripts/seed.js",
-    "crm:import": "tsx scripts/import-crm-master.ts"
+    "crm:import": "tsx scripts/import-crm-master.ts",
+    "seed:engineer-os": "tsx scripts/seed-engineer-os-campaign.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",

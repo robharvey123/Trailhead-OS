@@ -33,6 +33,7 @@ type ImportRow = {
   name?: string
   company?: string
   email?: string
+  email_greeting?: string
   phone?: string
   role?: string
   address_line1?: string
@@ -42,6 +43,8 @@ type ImportRow = {
   country?: string
   channel?: string
   website?: string
+  sub_trade?: string
+  size_signal?: string
   status?: string
   notes?: string
   tags?: string
@@ -88,6 +91,12 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Duplicate guard: pre-load existing contact emails (lowercased). Rows whose
+  // email already exists are rejected rather than inserted a second time; the set
+  // also grows as we insert, so duplicates within the same file are caught too.
+  const { data: existingContacts } = await auth.supabase.from('contacts').select('email').not('email', 'is', null)
+  const existingEmails = new Set((existingContacts ?? []).map((c) => (c.email as string).toLowerCase()))
+
   const inserted: Array<{ row: number; name: string; id: string }> = []
   const rejected: Array<{ row: number; reason: string }> = []
 
@@ -97,6 +106,12 @@ export async function POST(request: NextRequest) {
 
     if (!name) {
       rejected.push({ row: i + 1, reason: 'Name is required' })
+      continue
+    }
+
+    const emailLower = sanitizeText(row.email)?.toLowerCase() ?? null
+    if (emailLower && existingEmails.has(emailLower)) {
+      rejected.push({ row: i + 1, reason: 'duplicate email' })
       continue
     }
 
@@ -120,6 +135,7 @@ export async function POST(request: NextRequest) {
         name,
         company: sanitizeText(row.company),
         email: sanitizeText(row.email),
+        email_greeting: sanitizeText(row.email_greeting),
         phone: sanitizeText(row.phone),
         role: sanitizeText(row.role),
         address_line1: sanitizeText(row.address_line1),
@@ -129,6 +145,8 @@ export async function POST(request: NextRequest) {
         country: sanitizeText(row.country),
         channel: sanitizeText(row.channel),
         website: sanitizeText(row.website),
+        sub_trade: sanitizeText(row.sub_trade),
+        size_signal: sanitizeText(row.size_signal),
         status,
         notes: sanitizeText(row.notes),
         tags,
@@ -142,6 +160,7 @@ export async function POST(request: NextRequest) {
       rejected.push({ row: i + 1, reason: error.message })
     } else {
       inserted.push({ row: i + 1, name, id: contact.id })
+      if (emailLower) existingEmails.add(emailLower)
     }
   }
 
