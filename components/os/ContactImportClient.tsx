@@ -9,9 +9,12 @@ const CONTACT_FIELDS = [
   { key: 'name', label: 'Name', required: true },
   { key: 'company', label: 'Company' },
   { key: 'email', label: 'Email' },
+  { key: 'email_greeting', label: 'Email greeting (first name or "there")' },
   { key: 'phone', label: 'Phone' },
   { key: 'role', label: 'Role' },
   { key: 'channel', label: 'Channel' },
+  { key: 'sub_trade', label: 'Sub-trade' },
+  { key: 'size_signal', label: 'Size signal' },
   { key: 'website', label: 'Website' },
   { key: 'workstream', label: 'Workstream (slug)' },
   { key: 'address_line1', label: 'Address line 1' },
@@ -22,6 +25,8 @@ const CONTACT_FIELDS = [
   { key: 'status', label: 'Status' },
   { key: 'notes', label: 'Notes' },
   { key: 'tags', label: 'Tags (comma-separated)' },
+  { key: 'ctps_registered', label: 'CTPS registered (true/false)' },
+  { key: 'ctps_checked_at', label: 'CTPS checked date (YYYY-MM-DD)' },
 ] as const
 
 type FieldKey = (typeof CONTACT_FIELDS)[number]['key']
@@ -39,6 +44,8 @@ function autoMap(csvHeader: string): FieldKey | '' {
     organization: 'company',
     email: 'email',
     emailaddress: 'email',
+    emailgreeting: 'email_greeting',
+    greeting: 'email_greeting',
     phone: 'phone',
     telephone: 'phone',
     phonenumber: 'phone',
@@ -63,10 +70,16 @@ function autoMap(csvHeader: string): FieldKey | '' {
     notes: 'notes',
     tags: 'tags',
     channel: 'channel',
+    subtrade: 'sub_trade',
+    sizesignal: 'size_signal',
     website: 'website',
     site: 'website',
     url: 'website',
     workstream: 'workstream',
+    ctpsregistered: 'ctps_registered',
+    ctps: 'ctps_registered',
+    ctpscheckedat: 'ctps_checked_at',
+    ctpschecked: 'ctps_checked_at',
   }
   return map[h] ?? ''
 }
