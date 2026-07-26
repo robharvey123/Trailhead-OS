@@ -10,6 +10,7 @@ const publicRoutes = [
   '/privacy',
   '/terms',
   '/contact',
+  '/unsubscribed',
   '/api/auth/google',
   '/api/auth/google/callback',
 ]
@@ -20,7 +21,11 @@ const publicRoutePrefixes = ['/report', '/auth/claim']
 // /api/mcp is the MCP server — bearer-token authed in the route (same COWORK_API_KEY
 // as /api/cowork). It must be public to middleware or the 307-to-login breaks every
 // MCP call, exactly like the cron regression noted above.
-const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron', '/api/mcp']
+// /api/webhooks/resend is Svix-signature-verified in the route (RESEND_WEBHOOK_SECRET);
+// /api/outreach/unsubscribe is public by design (List-Unsubscribe one-click). Both
+// must be public to middleware or the 307-to-login makes Resend record every event
+// as failed — the same regression the cron/MCP comment above describes.
+const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron', '/api/mcp', '/api/webhooks/resend', '/api/outreach/unsubscribe']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
 function getMarketingRewritePath(pathname: string) {

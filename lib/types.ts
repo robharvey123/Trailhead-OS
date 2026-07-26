@@ -125,6 +125,8 @@ export interface Contact {
   do_not_call?: boolean
   ctps_registered?: boolean | null
   ctps_checked_at?: string | null
+  sub_trade?: string | null
+  size_signal?: string | null
   created_at: string
   updated_at: string
 }
