@@ -7,7 +7,7 @@ Production-ready, multi-tenant analytics for sell-in and sell-out performance. B
 - Next.js (App Router) + TypeScript + Tailwind
 - Supabase (Postgres + Auth, RLS)
 - Recharts + TanStack Table
-- Netlify deployment (SSR)
+- Vercel deployment (SSR)
 
 ## Local development
 
@@ -38,7 +38,7 @@ Visit `http://localhost:3000`.
 1) Create a Supabase project.
 2) Run the SQL migrations from `supabase/migrations` in order.
 3) Enable email/password auth in Supabase Auth settings (and disable magic links if not needed).
-4) Add the following env vars locally and in Netlify:
+4) Add the following env vars locally and in Vercel:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
@@ -75,11 +75,11 @@ Open `/workspace/:id/settings` to configure:
 - SQL rollups live in `supabase/migrations/*_analytics_views.sql`.
 - Pivoting and grouping (per workspace and filter set) are completed server-side in Next.js pages.
 
-## Netlify deployment
+## Vercel deployment
 
-1) Create a Netlify site from the GitHub repo.
-2) Set environment variables (same as local).
-3) Netlify picks up `netlify.toml` for build settings.
+1) Import the GitHub repo as a Vercel project (framework preset: Next.js).
+2) Set environment variables (same as local) in the Vercel project settings.
+3) Cron schedules are read from `vercel.json`; pushes to `main` deploy automatically.
 
 ## Conventional commits
 

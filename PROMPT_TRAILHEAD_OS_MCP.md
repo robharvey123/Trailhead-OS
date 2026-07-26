@@ -11,7 +11,7 @@ Reuse the existing Cowork helpers internally. Do not duplicate task / project / 
 You are the agent described in `CLAUDE.md` at the repo root. Read it first.
 
 ## Stack
-Next.js 16 App Router, TypeScript strict, Tailwind CSS, Supabase, Netlify.
+Next.js 16 App Router, TypeScript strict, Tailwind CSS, Supabase, Vercel.
 Single user (Rob only). Auth is via `COWORK_API_KEY` env var, single bearer token. Same as the existing Cowork API.
 
 ## What you are building
@@ -62,7 +62,7 @@ Report back:
 - The exact shape of the POST body the existing `/api/cowork/tasks` route accepts (you'll mirror this in the `create_task` MCP tool)
 - The exact filter params the GET route accepts (mirror in `list_tasks`)
 - Whether any task / project mutation logic lives inside the route handlers vs in `lib/db/*` (so we know how much to factor out)
-- Whether the project supports running both Cowork API and MCP server on the same Netlify deployment (it should, both are just Next.js routes)
+- Whether the project supports running both Cowork API and MCP server on the same Vercel deployment (it should, both are just Next.js routes)
 
 Compile and confirm: `npm run typecheck && npm run lint`
 
@@ -241,8 +241,8 @@ Auth negative test:
 
 ## STEP 8 — Deploy
 
-1. Confirm `COWORK_API_KEY` is set in Netlify production env (it should already be there, the Cowork API uses the same key).
-2. Push and let Netlify deploy.
+1. Confirm `COWORK_API_KEY` is set in Vercel production env (it should already be there, the Cowork API uses the same key).
+2. Push and let Vercel deploy.
 3. Re-run the smoke tests against production: same curl commands with the production URL.
 4. From Cowork on Rob's machine: connect the new MCP server. Confirm `whoami` returns ok.
 5. Open the Engineer OS project in Trailhead OS. From Cowork ask Claude to "list open M1 tasks on Engineer OS" via the MCP. Confirm it returns the right rows.
@@ -258,7 +258,7 @@ Note any deviations from this brief and the reasons.
 ## Out of scope (do not build in v1)
 
 - Multi-user / per-user tokens. Single token, Rob only.
-- Token rotation UI. Edit `COWORK_API_KEY` in Netlify and redeploy when needed.
+- Token rotation UI. Edit `COWORK_API_KEY` in Vercel and redeploy when needed.
 - Rate limiting.
 - Per-tool audit log.
 - Webhook / subscription tools (for Claude to be notified when tasks change). Not yet, save for v2.

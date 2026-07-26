@@ -359,9 +359,9 @@ export default async function PrivacyPage() {
             </tr>
             <tr className="align-top">
               <td className="px-0 py-4 font-medium text-[var(--marketing-text)]">
-                Vercel / Netlify
+                Vercel
               </td>
-              <td className="px-4 py-4">Website hosting</td>
+              <td className="px-4 py-4">Website and application hosting</td>
               <td className="px-4 py-4">
                 <a
                   href="https://vercel.com/legal/privacy-policy"

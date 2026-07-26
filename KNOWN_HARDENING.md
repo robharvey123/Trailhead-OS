@@ -10,7 +10,7 @@ Shipped: `/api/mcp` Streamable HTTP server with 12 tools, bearer-auth via
 Deferred to v2:
 
 - **Per-user / per-token auth.** Single shared token only (Rob). No scoping.
-- **Token rotation UI.** Rotate by editing `COWORK_API_KEY` in Netlify and
+- **Token rotation UI.** Rotate by editing `COWORK_API_KEY` in Vercel and
   redeploying.
 - **Rate limiting.** No limits on `/api/mcp` (or `/api/cowork/*`).
 - **Per-tool audit log.** Tool calls are not recorded. Consider a lightweight

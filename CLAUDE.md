@@ -19,7 +19,7 @@ The app has two distinct surfaces:
 
 ## Current codebase state
 
-- **Stack**: Next.js 14 App Router · TypeScript · Tailwind CSS · Supabase (Postgres + Auth + RLS) · Recharts · TanStack Table · Netlify deployment
+- **Stack**: Next.js 14 App Router · TypeScript · Tailwind CSS · Supabase (Postgres + Auth + RLS) · Recharts · TanStack Table · Vercel deployment
 - **Existing features**: Multi-workspace sell-in/sell-out analytics, CSV/XLSX import, workspace settings, customer mappings
 - **Repo**: `rush-analytics` — rename mentally to `trailhead-os` throughout. Do not rename the GitHub repo unless Rob explicitly asks.
 - **Auth**: Supabase email/password. Rob is the only user. Keep it single-tenant for now — do not engineer for multi-user unless asked.

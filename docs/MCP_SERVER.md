@@ -35,7 +35,7 @@ single-user (Rob only).
 Authorization: Bearer ${COWORK_API_KEY}
 ```
 
-Missing or wrong token → `401 Unauthorised`. The key lives in Netlify production
+Missing or wrong token → `401 Unauthorised`. The key lives in Vercel production
 env (already set for the Cowork API) and in your local `.env.local`.
 
 > **Middleware note:** `/api/mcp` is whitelisted in `middleware.ts`

@@ -1,8 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-// Remember to add ANTHROPIC_API_KEY to Netlify environment
+// Remember to add ANTHROPIC_API_KEY to Vercel environment
 // variables if not already there.
-// Netlify: Site config -> Environment variables -> Add variable
+// Vercel: Project settings -> Environment Variables -> Add
 export const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 })

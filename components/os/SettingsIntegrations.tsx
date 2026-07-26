@@ -250,15 +250,15 @@ export default function SettingsIntegrations({
             ) : (
               <>
                 <p className="text-sm text-[color:var(--text-2)]">
-                  Add Stripe keys in Netlify environment variables.
+                  Add Stripe keys in Vercel environment variables.
                 </p>
                 <Link
-                  href="https://docs.netlify.com/environment-variables/overview/"
+                  href="https://vercel.com/docs/environment-variables"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex text-sm text-[color:var(--accent-strong)] transition hover:text-[color:var(--accent-hover)]"
                 >
-                  Open Netlify docs
+                  Open Vercel docs
                 </Link>
               </>
             )}
