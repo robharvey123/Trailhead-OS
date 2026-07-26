@@ -299,6 +299,13 @@ export default function Sidebar({
                 collapsed={collapsed}
               />
               <NavLink
+                href="/outreach"
+                label="Outreach"
+                active={pathname.startsWith('/outreach')}
+                onClick={() => setMobileOpen(false)}
+                collapsed={collapsed}
+              />
+              <NavLink
                 href="/inbox"
                 label="Inbox"
                 active={pathname.startsWith('/inbox')}
