@@ -66,8 +66,10 @@ const FOLLOWUP_2 = 'Engineer OS — follow-up 2'
 // has clean values for all three. {{name}}, {{sub_trade}} and {{size_signal}} are
 // deliberately never dropped into a sentence: name falls back to the company for
 // firms with no published director, and the other two hold research notes / comma
-// lists that read badly mid-sentence. No footer or links here — sendCampaignEmail
-// appends the company footer and unsubscribe link automatically.
+// lists that read badly mid-sentence. No footer here — sendCampaignEmail appends
+// the company footer and unsubscribe link automatically. The first touch and the
+// sector overrides carry no links (the ask is a reply); only the two follow-ups
+// do, as bare URLs so mail clients auto-link them while they still read as typed.
 
 type Copy = { subject: string; body: string }
 
@@ -144,7 +146,9 @@ const FOLLOWUP_1_COPY: Copy = {
 
 <p>The thing that surprised me most building this: the firms that got the most out of it were not the ones with the worst systems. They were the ones already trying to do it properly with tools that fought them. A spreadsheet per client, a Word template per form, a WhatsApp group per job.</p>
 
-<p>If that is not {{company}}, say so and I will leave you alone. If it is, I would be interested to hear what you have tried.</p>
+<p>I am taking on ten founding customers at the moment. Three months free, no card, and I do the setup myself: your customers and jobs imported, your forms rebuilt. The detail is at engineeros.uk/founding.</p>
+
+<p>If that is not {{company}}, say so and I will leave you alone. If it is, I would still rather hear what you have tried than send you to a web page.</p>
 
 <p>Rob</p>`,
 }
@@ -157,7 +161,7 @@ const FOLLOWUP_2_COPY: Copy = {
 
 <p>All three are fine. I will not chase again.</p>
 
-<p>If it is the third one and you want to pick it up later, reply to this and I will come back whenever suits.</p>
+<p>If it is the third one, reply whenever suits and I will pick it up then. If you would rather just have a look in your own time, it is engineeros.uk.</p>
 
 <p>Rob</p>`,
 }
