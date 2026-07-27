@@ -599,6 +599,12 @@ body {
 .thmock .data-table tbody tr:hover { background: var(--surface-2); }
 .thmock .data-table tbody tr.selected { background: var(--accent-dim); }
 .thmock .data-table tbody tr.selected td:first-child { box-shadow: inset 2px 0 0 0 var(--accent); }
+/* Full-row click target (opt-in via .row-link). The row is the positioning
+   context; the name-cell link stretches a transparent ::after across the whole
+   row, so a click on any cell opens the row's link. It stays a real <a>, so
+   Tab/Enter and cmd/middle-click (open in new tab) all still work. */
+.thmock .data-table tbody tr.row-link { position: relative; cursor: pointer; }
+.thmock .data-table tbody tr.row-link .td-name a::after { content: ''; position: absolute; inset: 0; }
 .thmock .data-table td { padding: 11px 16px; font-size: 14px; color: var(--text); vertical-align: middle; }
 .thmock .td-name { font-weight: 600; }
 .thmock .td-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }

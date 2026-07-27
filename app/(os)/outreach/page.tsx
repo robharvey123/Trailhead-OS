@@ -40,7 +40,7 @@ export default async function OutreachPage() {
             </thead>
             <tbody>
               {campaigns.map((c) => (
-                <tr key={c.id} style={{ cursor: 'pointer' }}>
+                <tr key={c.id} className="row-link">
                   <td className="td-name">
                     <Link href={`/outreach/${c.id}`}>{c.name}</Link>
                     <div className="td-sub">{c.audience_name ?? 'No audience'}</div>
