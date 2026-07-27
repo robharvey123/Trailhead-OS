@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { supabaseService } from '@/lib/supabase/service'
 import { resend } from '@/lib/email/resend'
 import { getCompanySettings } from '@/lib/company-settings'
@@ -131,4 +132,95 @@ export async function sendCampaignEmail({ recipientId }: { recipientId: string }
 
   await db.from('outreach_sends').update({ resend_email_id: sent.id, subject, status: 'sent', sent_at: new Date().toISOString() }).eq('id', sendRowId)
   return { ok: true, sendId: sendRowId, resendId: sent.id }
+}
+
+export type TestSendResult = { ok: true } | { ok: false; error: string }
+
+/**
+ * Send a one-off TEST of a campaign step to an arbitrary address, rendered exactly
+ * as a real send would be — INCLUDING the per-channel override resolved from the
+ * chosen contact's channel (the override is the bit most likely to be misconfigured,
+ * so a test with a fixed sample contact would miss it).
+ *
+ * A test is a deliberate human action, so it ignores the send window, send days and
+ * daily cap. It deliberately writes NOTHING: no outreach_recipients row, no
+ * outreach_sends row (which would corrupt the stats view and burn the unique
+ * (recipient_id, step_id) slot a real send needs). It refuses — visibly — for a
+ * suppressed or do-not-email destination rather than looking like a send failure,
+ * and lets a bad-merge-tag render error surface, which is most of the point.
+ */
+export async function sendTestEmail({ campaignId, contactId, toEmail, stepNumber }: {
+  campaignId: string
+  contactId: string
+  toEmail: string
+  stepNumber: number
+}): Promise<TestSendResult> {
+  if (!resend) return { ok: false, error: 'RESEND_API_KEY is not configured' }
+  const db = supabaseService
+  const dest = toEmail.trim()
+  if (!dest) return { ok: false, error: 'Enter a destination address for the test.' }
+
+  const { data: campaign } = await db.from('outreach_campaigns').select('*').eq('id', campaignId).maybeSingle<OutreachCampaign>()
+  if (!campaign || !campaign.from_email) return { ok: false, error: 'Campaign is missing its sending identity (from email).' }
+
+  const { data: contact } = await db.from('contacts').select('*').eq('id', contactId).maybeSingle<Contact>()
+  if (!contact) return { ok: false, error: 'Pick a sample contact to render the test against.' }
+
+  // Compliance guards on the DESTINATION (not the sample contact): a test must
+  // never reach a suppressed or do-not-email address, and must say so out loud.
+  if (await isSuppressed(db, dest)) return { ok: false, error: `${dest} is on the suppression list, so the test was not sent.` }
+  const { data: destContacts } = await db.from('contacts').select('do_not_email').ilike('email', dest)
+  if ((destContacts ?? []).some((c) => c.do_not_email)) return { ok: false, error: `${dest} is marked do-not-email, so the test was not sent.` }
+
+  // Resolve the step by its step_number, then its template, honouring the
+  // per-channel override for the chosen contact's channel.
+  const { data: steps } = await db.from('outreach_campaign_steps').select('*').eq('campaign_id', campaign.id).order('step_number', { ascending: true })
+  const stepList = (steps ?? []) as OutreachCampaignStep[]
+  if (stepList.length === 0) return { ok: false, error: 'This campaign has no steps to test yet.' }
+  const step = stepList.find((s) => s.step_number === stepNumber) ?? stepList[0]
+
+  let templateId = step.template_id
+  if (contact.channel) {
+    const { data: override } = await db.from('outreach_step_template_overrides').select('template_id').eq('step_id', step.id).eq('channel', contact.channel).maybeSingle<{ template_id: string }>()
+    if (override) templateId = override.template_id
+  }
+  const { data: template } = await db.from('outreach_templates').select('*').eq('id', templateId ?? '').maybeSingle<OutreachTemplate>()
+  if (!template) return { ok: false, error: `Step ${step.step_number} has no template for this contact's channel.` }
+
+  // Render exactly as a real send would (a render error is surfaced, not swallowed).
+  let subject: string
+  let bodyHtml: string
+  try {
+    const vars = contactVars(contact)
+    subject = renderTemplate(template.subject ?? '', vars, { escape: false })
+    bodyHtml = renderTemplate(template.body_html ?? '', vars)
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Template render failed.' }
+  }
+
+  // Fresh throwaway unsubscribe token: unknown tokens already no-op and return 200,
+  // so the links in a test are safe to click and can't suppress anyone.
+  const token = randomUUID()
+  const settings = await getCompanySettings(db)
+  const confirmUnsubUrl = `${APP_URL}/unsubscribe?token=${token}`
+  const oneClickUnsubUrl = `${APP_URL}/api/outreach/unsubscribe/${token}`
+  bodyHtml += renderOutreachFooterHtml(settings, { confirmUnsubUrl })
+
+  const { error: sendErr } = await resend.emails.send({
+    from: `${campaign.from_name ?? 'Trailhead'} <${campaign.from_email}>`,
+    to: dest,
+    replyTo: campaign.reply_to ?? undefined,
+    subject: `[TEST] ${subject}`,
+    html: bodyHtml,
+    headers: {
+      'List-Unsubscribe': `<${oneClickUnsubUrl}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
+    tags: [
+      { name: 'campaign', value: campaign.id },
+      { name: 'test', value: 'true' },
+    ],
+  })
+  if (sendErr) return { ok: false, error: sendErr.message }
+  return { ok: true }
 }

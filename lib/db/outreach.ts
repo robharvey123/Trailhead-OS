@@ -92,6 +92,28 @@ export async function listTemplates(client?: SupabaseClient): Promise<OutreachTe
   return (data ?? []) as OutreachTemplate[]
 }
 
+export interface AudienceContact {
+  id: string
+  name: string
+  company: string | null
+  email: string | null
+  channel: string | null
+}
+
+/** Contacts (with an email) in an audience — for the "send test" contact picker. */
+export async function listAudienceContacts(audienceId: string, client?: SupabaseClient): Promise<AudienceContact[]> {
+  const supabase = await getSupabase(client)
+  const { data } = await supabase
+    .from('outreach_audience_members')
+    .select('contact:contacts(id, name, company, email, channel)')
+    .eq('audience_id', audienceId)
+  const rows = ((data ?? []) as unknown as Array<{ contact: AudienceContact | null }>)
+    .map((r) => r.contact)
+    .filter((c): c is AudienceContact => Boolean(c && c.email))
+  rows.sort((a, b) => (a.company ?? a.name).localeCompare(b.company ?? b.name))
+  return rows
+}
+
 export interface AudienceListItem {
   id: string
   name: string
