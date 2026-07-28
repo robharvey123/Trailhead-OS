@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
       {
         account_id: searchParams.get('account_id') ?? undefined,
         contact_id: searchParams.get('contact_id') ?? undefined,
+        engagement_id: searchParams.get('engagement_id') ?? undefined,
       },
       auth.supabase
     )
@@ -64,10 +65,11 @@ export async function POST(request: NextRequest) {
 
   if (
     (typeof body.account_id !== 'string' || !body.account_id) &&
-    (typeof body.contact_id !== 'string' || !body.contact_id)
+    (typeof body.contact_id !== 'string' || !body.contact_id) &&
+    (typeof body.engagement_id !== 'string' || !body.engagement_id)
   ) {
     return NextResponse.json(
-      { error: 'account_id or contact_id is required' },
+      { error: 'account_id, contact_id or engagement_id is required' },
       { status: 400 }
     )
   }
@@ -79,6 +81,8 @@ export async function POST(request: NextRequest) {
           typeof body.account_id === 'string' && body.account_id ? body.account_id : null,
         contact_id:
           typeof body.contact_id === 'string' && body.contact_id ? body.contact_id : null,
+        engagement_id:
+          typeof body.engagement_id === 'string' && body.engagement_id ? body.engagement_id : null,
         type,
         subject,
         body: sanitizeText(body.body),

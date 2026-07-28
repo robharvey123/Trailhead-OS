@@ -45,6 +45,7 @@ export interface Touchpoint {
   id: string
   account_id?: string | null
   contact_id?: string | null
+  engagement_id?: string | null
   type: TouchpointType
   subject: string
   body?: string | null

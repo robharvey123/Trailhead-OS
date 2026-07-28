@@ -21,16 +21,22 @@ const TOUCHPOINT_ICONS: Record<TouchpointType, string> = {
   note: 'Note',
 }
 
+type TimelineTouchpoint = Touchpoint & { link?: 'direct' | 'account' }
+
 export default function TouchpointTimeline({
   initialTouchpoints,
   accountId,
   contactId,
+  engagementId,
+  readOnly = false,
   title = 'Touchpoints',
   description = 'Log calls, emails, meetings, and messages.',
 }: {
-  initialTouchpoints: Touchpoint[]
+  initialTouchpoints: TimelineTouchpoint[]
   accountId?: string | null
   contactId?: string | null
+  engagementId?: string | null
+  readOnly?: boolean
   title?: string
   description?: string
 }) {
@@ -69,6 +75,7 @@ export default function TouchpointTimeline({
         body: JSON.stringify({
           account_id: accountId ?? null,
           contact_id: contactId ?? null,
+          engagement_id: engagementId ?? null,
           type,
           subject,
           body,
@@ -115,21 +122,23 @@ export default function TouchpointTimeline({
           <h2 className="text-lg font-semibold text-white">{title}</h2>
           <p className="text-sm text-[var(--muted)]">{description}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            if (showForm) {
-              resetForm()
-            }
-            setShowForm((current) => !current)
-          }}
-          className="rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:border-[var(--lime)]/40"
-        >
-          {showForm ? 'Cancel' : 'Log touchpoint'}
-        </button>
+        {readOnly ? null : (
+          <button
+            type="button"
+            onClick={() => {
+              if (showForm) {
+                resetForm()
+              }
+              setShowForm((current) => !current)
+            }}
+            className="rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:border-[var(--lime)]/40"
+          >
+            {showForm ? 'Cancel' : 'Log touchpoint'}
+          </button>
+        )}
       </div>
 
-      {showForm ? (
+      {showForm && !readOnly ? (
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--card-alt)] p-4">
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
@@ -209,6 +218,11 @@ export default function TouchpointTimeline({
                     <span className="rounded-full bg-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">
                       {TOUCHPOINT_LABELS[touchpoint.type]}
                     </span>
+                    {touchpoint.link === 'account' ? (
+                      <span className="rounded-full border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]" title="Logged against a related account, not this engagement directly">
+                        via account
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-2 text-xs text-white0">
                     {new Date(touchpoint.occurred_at).toLocaleString('en-GB')}
@@ -219,13 +233,15 @@ export default function TouchpointTimeline({
                     </p>
                   ) : null}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(touchpoint.id)}
-                  className="rounded-full border border-rose-500/20 px-3 py-1 text-xs text-rose-200 transition hover:border-rose-400"
-                >
-                  Delete
-                </button>
+                {readOnly ? null : (
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(touchpoint.id)}
+                    className="rounded-full border border-rose-500/20 px-3 py-1 text-xs text-rose-200 transition hover:border-rose-400"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}

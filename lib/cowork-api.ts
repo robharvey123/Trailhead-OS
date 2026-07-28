@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { sendInvoicePaidNotification } from '@/lib/stripe/notifications'
 import { supabaseService } from '@/lib/supabase/service'
-import { calculateTotals, type InvoiceStatus, type LineItem, type TaskPriority } from '@/lib/types'
+import { calculateTotals, type InvoiceStatus, type LineItem, type TaskPriority, type TouchpointType } from '@/lib/types'
 
 const TASK_PRIORITIES = new Set<TaskPriority>(['low', 'medium', 'high', 'urgent'])
 const CONTACT_STATUSES = new Set(['lead', 'active', 'inactive', 'archived'])
@@ -134,6 +134,18 @@ type AccountRow = {
   created_at: string
   updated_at: string
   workstreams?: RelationValue<WorkstreamShape>
+}
+
+type TouchpointRow = {
+  id: string
+  type: TouchpointType
+  subject: string
+  body: string | null
+  occurred_at: string
+  created_at: string
+  account?: RelationValue<NamedRelation>
+  contact?: RelationValue<NamedRelation>
+  engagement?: RelationValue<{ id: string; code: string | null; name: string }>
 }
 
 type TimeEntryRow = {
@@ -293,6 +305,13 @@ export const ACCOUNT_SELECT = `
   created_at,
   updated_at,
   workstreams(id, slug, label)
+`
+
+export const TOUCHPOINT_SELECT = `
+  id, type, subject, body, occurred_at, created_at,
+  account:accounts(id,name),
+  contact:contacts(id,name),
+  engagement:engagements(id,code,name)
 `
 
 export const TIME_ENTRY_SELECT = `
@@ -989,6 +1008,34 @@ export function formatAccount(row: AccountRow, counts: { contacts: number; open_
     open_task_count: counts.open_tasks,
     created_at: row.created_at,
     updated_at: row.updated_at,
+  }
+}
+
+const TOUCHPOINT_TYPES = new Set<TouchpointType>(['call', 'email', 'message', 'meeting', 'note'])
+
+/** Validate a touchpoint type — throws on an unknown value (no silent fallback). */
+export function parseTouchpointType(value: unknown, fallback: TouchpointType = 'note'): TouchpointType {
+  if (value === null || value === undefined || value === '') return fallback
+  if (typeof value !== 'string' || !TOUCHPOINT_TYPES.has(value as TouchpointType)) {
+    throw new CoworkApiError('type must be one of call, email, message, meeting, note', 400)
+  }
+  return value as TouchpointType
+}
+
+export function formatTouchpoint(row: TouchpointRow) {
+  const account = firstRelation(row.account)
+  const contact = firstRelation(row.contact)
+  const engagement = firstRelation(row.engagement)
+  return {
+    id: row.id,
+    type: row.type,
+    subject: row.subject,
+    body: row.body,
+    occurred_at: row.occurred_at,
+    account: account ? { id: account.id, name: account.name } : null,
+    contact: contact ? { id: contact.id, name: contact.name } : null,
+    engagement: engagement ? { id: engagement.id, code: engagement.code, name: engagement.name } : null,
+    created_at: row.created_at,
   }
 }
 

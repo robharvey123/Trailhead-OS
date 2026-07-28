@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
 import type { EngagementDetail, EngagementLinkCounts } from '@/lib/db/engagements'
+import type { EngagementTouchpoint } from '@/lib/db/touchpoints'
 import ConfirmDialog from '@/components/os/ConfirmDialog'
 import EngagementForm from '@/components/os/engagements/EngagementForm'
+import TouchpointTimeline from '@/components/os/TouchpointTimeline'
 import {
   APPROVAL_TYPE_LABELS,
   type ApprovalRequestWithRelations,
@@ -19,7 +21,7 @@ import {
 } from '@/lib/types'
 
 type Named = { id: string; name: string }
-const TABS = ['Overview', 'Time', 'Contributors', 'Tier 1', 'Milestones', 'Projects', 'Approvals', 'Weekly Updates', 'Documents'] as const
+const TABS = ['Overview', 'Time', 'Timeline', 'Contributors', 'Tier 1', 'Milestones', 'Projects', 'Approvals', 'Weekly Updates', 'Documents'] as const
 type Tab = (typeof TABS)[number]
 
 const APPROVAL_STATUS_CLASS: Record<string, string> = {
@@ -66,6 +68,7 @@ export default function EngagementDetailClient({
   linkCounts,
   contributors: initialContributors = [],
   people = [],
+  touchpoints = [],
 }: {
   detail: EngagementDetail
   timeEntries: TimeEntry[]
@@ -76,6 +79,7 @@ export default function EngagementDetailClient({
   linkCounts: EngagementLinkCounts
   contributors?: EngagementContributorWithPerson[]
   people?: Person[]
+  touchpoints?: EngagementTouchpoint[]
 }) {
   const router = useRouter()
   const e = detail.engagement
@@ -420,6 +424,12 @@ export default function EngagementDetailClient({
               </div>
               <div className="card">
                 <div className="panel-section-title">Quick actions</div>
+                <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 10 }}>
+                  Last interaction:{' '}
+                  {touchpoints[0]
+                    ? `${touchpoints[0].type} — ${touchpoints[0].subject} (${fmtDate(touchpoints[0].occurred_at.slice(0, 10))})`
+                    : 'none logged'}
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/reports`}>Reports</Link>
                   <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/weekly-update/new`}>Generate weekly update</Link>
@@ -549,6 +559,15 @@ export default function EngagementDetailClient({
         ) : null}
 
         {/* PROJECTS */}
+        {tab === 'Timeline' ? (
+          <TouchpointTimeline
+            initialTouchpoints={touchpoints}
+            engagementId={e.id}
+            title="Interactions"
+            description="Calls, emails and meetings on this engagement."
+          />
+        ) : null}
+
         {tab === 'Projects' ? (
           projects.length === 0 ? <div className="empty">No projects linked. Link projects from /settings/engagements or the project page.</div> : (
             <table className="data-table">

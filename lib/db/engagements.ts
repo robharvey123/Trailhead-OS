@@ -139,6 +139,13 @@ export interface EngagementLinkCounts {
   milestones: number // cascade-deleted — engagement_id is NOT NULL, cannot be unlinked
   approvals: number // cascade-deleted
   documents: number // cascade-deleted
+  touchpoints: number // unlinked (engagement_id set null) — records kept
+}
+
+/** Non-null account ids attached to an engagement (end client + billed via). */
+export function engagementAccountIds(detail: EngagementDetail): string[] {
+  const e = detail.engagement
+  return [e.end_client_account_id, e.billed_via_account_id].filter((x): x is string => Boolean(x))
 }
 
 /** Counts of records linked to an engagement, for the delete-confirmation UI. */
@@ -148,14 +155,15 @@ export async function engagementLinkCounts(id: string, client?: SupabaseClient):
     const { count } = await supabase.from(table).select('id', { count: 'exact', head: true }).eq('engagement_id', id)
     return count ?? 0
   }
-  const [projects, timeEntries, milestones, approvals, documents] = await Promise.all([
+  const [projects, timeEntries, milestones, approvals, documents, touchpoints] = await Promise.all([
     head('projects'),
     head('time_entries'),
     head('tier1_milestones'),
     head('approval_requests'),
     head('engagement_documents'),
+    head('touchpoints'),
   ])
-  return { projects, timeEntries, milestones, approvals, documents }
+  return { projects, timeEntries, milestones, approvals, documents, touchpoints }
 }
 
 /**
