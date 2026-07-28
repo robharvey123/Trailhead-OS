@@ -47,7 +47,14 @@ function daysUntil(d: string | null | undefined): number | null {
   return Math.round((Date.parse(`${d}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
 }
 
-type EngagementDoc = { id: string; type: string; title: string | null; week_start: string | null; created_at: string }
+type EngagementDoc = { id: string; type: string; title: string | null; week_start: string | null; created_at: string; file_path: string | null; file_name: string | null; mime_type: string | null; size_bytes: number | null }
+
+function fmtBytes(n: number | null) {
+  if (!n) return ''
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`
+}
 
 export default function EngagementDetailClient({
   detail,
@@ -85,6 +92,34 @@ export default function EngagementDetailClient({
   const [terminateOpen, setTerminateOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  async function uploadDoc(file: File) {
+    setError('')
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch(`/api/engagements/${e.id}/documents`, { method: 'POST', body: fd })
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Upload failed')
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function deleteDoc(docId: string) {
+    setError('')
+    try {
+      const res = await fetch(`/api/engagements/${e.id}/documents/${docId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Delete failed')
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Delete failed')
+    }
+  }
 
   // Contributors
   const [contributors, setContributors] = useState<EngagementContributorWithPerson[]>(initialContributors)
@@ -608,22 +643,53 @@ export default function EngagementDetailClient({
 
         {/* DOCUMENTS */}
         {tab === 'Documents' ? (
-          documents.length === 0 ? (
-            <div className="empty">Engagement documents (weekly updates, Annex A/B, Tier-1 sub-schedule, signed copies) will live here.</div>
-          ) : (
-            <table className="data-table">
-              <thead><tr><th>Title</th><th>Type</th><th>Created</th></tr></thead>
-              <tbody>
-                {documents.map((d) => (
-                  <tr key={d.id}>
-                    <td className="td-name">{d.title ?? '—'}</td>
-                    <td><span className="channel-tag">{d.type}</span></td>
-                    <td className="td-mono">{fmtDate(d.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+              <label className="btn btn-primary btn-sm" style={{ cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}>
+                {uploading ? 'Uploading…' : '＋ Upload document'}
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  disabled={uploading}
+                  onChange={(ev) => {
+                    const file = ev.target.files?.[0]
+                    if (file) uploadDoc(file)
+                    ev.target.value = '' // allow re-selecting the same file
+                  }}
+                />
+              </label>
+              <span className="td-mono" style={{ color: 'var(--text-3)', fontSize: 12 }}>PDF, Word, Excel, images — up to 25 MB.</span>
+            </div>
+
+            {documents.length === 0 ? (
+              <div className="empty">No documents yet. Upload signed copies, Annex A/B, Tier-1 sub-schedules — anything for this engagement.</div>
+            ) : (
+              <table className="data-table">
+                <thead><tr><th>Title</th><th>Type</th><th>Size</th><th>Created</th><th style={{ textAlign: 'right' }}></th></tr></thead>
+                <tbody>
+                  {documents.map((d) => (
+                    <tr key={d.id}>
+                      <td className="td-name">
+                        {d.file_path ? (
+                          <a href={`/api/engagements/${e.id}/documents/${d.id}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
+                            {d.title ?? d.file_name ?? 'Untitled'}
+                          </a>
+                        ) : (
+                          d.title ?? '—'
+                        )}
+                      </td>
+                      <td><span className="channel-tag">{d.type}</span></td>
+                      <td className="td-mono">{fmtBytes(d.size_bytes)}</td>
+                      <td className="td-mono">{fmtDate(d.created_at)}</td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button className="btn btn-ghost btn-sm" onClick={() => deleteDoc(d.id)}>Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         ) : null}
       </div>
 
