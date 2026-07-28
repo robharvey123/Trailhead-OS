@@ -203,36 +203,47 @@ body {
   --fc-page-bg-color: transparent;
   --fc-neutral-bg-color: var(--surface-2, rgba(15, 23, 42, 0.65));
   --fc-list-event-hover-bg-color: var(--surface-2, rgba(30, 41, 59, 0.75));
-  --fc-today-bg-color: color-mix(in srgb, var(--accent, #38bdf8) 10%, transparent);
+  --fc-today-bg-color: color-mix(in srgb, var(--accent, #38bdf8) 9%, transparent);
   color: var(--text, #e2e8f0);
+  /* Inherit the app's body font (Inter) rather than FullCalendar defaults. */
+  font-family: var(--sans);
 }
+.fc .fc-toolbar.fc-header-toolbar { margin-bottom: 1rem; }
 
-/* Prominent month/year header — matches page titles elsewhere. */
+/* Month/year header — serif, matching the app's section titles. */
 .fc .fc-toolbar-title {
   color: var(--text, #f8fafc);
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.025em;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.fc .fc-col-header-cell-cushion,
+/* Time-axis + slot labels — muted mono, like the app's field labels. */
 .fc .fc-timegrid-axis-cushion,
 .fc .fc-timegrid-slot-label-cushion {
-  color: var(--text-2, #cbd5e1);
-  font-weight: 600;
+  color: var(--text-3, #94a3b8);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 500;
 }
 
 .fc .fc-daygrid-day-number {
   color: var(--text-2, #cbd5e1);
-  padding: 0.6rem;
-  font-size: 0.95rem;
+  padding: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 500;
 }
 
+/* Day-of-week headers — small uppercase mono, like the app's labels. */
 .fc .fc-col-header-cell-cushion {
-  padding: 0.85rem 0.25rem;
-  font-size: 0.9rem;
-  letter-spacing: 0.01em;
+  padding: 0.75rem 0.25rem;
+  color: var(--text-3, #94a3b8);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* Today: accent the date number, not just the column header. */
@@ -249,25 +260,33 @@ body {
   background: var(--fc-today-bg-color);
 }
 
+.fc .fc-button {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm, 8px);
+  padding: 0.4rem 0.8rem;
+  box-shadow: none;
+  text-transform: capitalize;
+}
 .fc .fc-button-primary {
   border-color: var(--border, rgba(71, 85, 105, 0.9));
-  background: var(--surface-2, rgba(15, 23, 42, 0.9));
-  color: var(--text, #f8fafc);
-  text-transform: capitalize;
-  font-weight: 600;
+  background: #ffffff;
+  color: var(--text-2, #cbd5e1);
 }
 
 .fc .fc-button-primary:hover,
 .fc .fc-button-primary:focus {
-  border-color: var(--accent, rgba(125, 211, 252, 0.7));
-  background: var(--surface-3, rgba(30, 41, 59, 0.95));
+  border-color: var(--border-light, var(--accent));
+  background: var(--surface-2, rgba(30, 41, 59, 0.95));
+  color: var(--text, #f8fafc);
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
   border-color: var(--accent, rgba(56, 189, 248, 0.85));
-  background: var(--accent, rgba(14, 116, 144, 0.9));
-  color: #fff;
+  background: var(--accent-dim, rgba(14, 116, 144, 0.9));
+  color: var(--accent-strong, var(--accent));
 }
 
 /* "Today" is the only context-resetting control — make it read as primary. */
@@ -286,6 +305,11 @@ body {
 .fc .fc-theme-standard td,
 .fc .fc-theme-standard th {
   border-color: var(--border, rgba(51, 65, 85, 0.7));
+}
+/* Soft rounded grid, matching the app's cards. */
+.fc .fc-scrollgrid {
+  border-radius: var(--radius, 14px);
+  overflow: hidden;
 }
 
 /* Event chips: uniform height, single-line ellipsis, left icon. */
