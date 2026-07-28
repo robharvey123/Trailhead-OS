@@ -130,6 +130,7 @@ type AccountRow = {
   tags: string[] | null
   workstream_id: string | null
   default_hourly_rate: number | string | null
+  hq_address: string | null
   created_at: string
   updated_at: string
   workstreams?: RelationValue<WorkstreamShape>
@@ -288,6 +289,7 @@ export const ACCOUNT_SELECT = `
   tags,
   workstream_id,
   default_hourly_rate,
+  hq_address,
   created_at,
   updated_at,
   workstreams(id, slug, label)
@@ -625,6 +627,7 @@ export async function getInvoiceById(id: string) {
     .from('invoices')
     .select(INVOICE_SELECT)
     .eq('id', id)
+    .is('deleted_at', null)
     .maybeSingle()
 
   if (error) {
@@ -981,6 +984,7 @@ export function formatAccount(row: AccountRow, counts: { contacts: number; open_
     tags: row.tags ?? [],
     workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
     default_hourly_rate: row.default_hourly_rate != null ? Number(row.default_hourly_rate) : null,
+    hq_address: row.hq_address,
     contact_count: counts.contacts,
     open_task_count: counts.open_tasks,
     created_at: row.created_at,

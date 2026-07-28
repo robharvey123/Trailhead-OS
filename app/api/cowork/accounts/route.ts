@@ -7,6 +7,7 @@ import {
   formatAccount,
   getWorkstreamBySlug,
   jsonError,
+  optionalNumber,
   optionalString,
   parseAccountStatus,
   parseLimit,
@@ -104,6 +105,8 @@ export async function POST(request: NextRequest) {
         country: optionalString(body.country),
         notes: optionalString(body.notes),
         tags: parseTags(body.tags) ?? [],
+        default_hourly_rate: optionalNumber(body.default_hourly_rate, 'default_hourly_rate'),
+        hq_address: optionalString(body.hq_address),
         workstream_id: workstream?.id ?? null,
       })
       .select(ACCOUNT_SELECT)

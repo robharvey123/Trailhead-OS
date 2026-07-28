@@ -44,6 +44,8 @@ export async function PATCH(
 
   try {
     const { id } = await params
+    // PATCH on a soft-deleted invoice 404s, consistent with GET: getInvoiceById
+    // filters deleted_at, so `existing` is never a deleted row.
     const existing = await getInvoiceById(id)
     const body = await request.json().catch(() => ({}))
     const patch: Record<string, unknown> = {}

@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     let query = supabaseService
       .from('invoices')
       .select(INVOICE_SELECT)
+      .is('deleted_at', null)
       .order('issue_date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)

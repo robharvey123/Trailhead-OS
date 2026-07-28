@@ -7,6 +7,7 @@ import {
   getAccountById,
   getWorkstreamBySlug,
   jsonError,
+  optionalNumber,
   optionalString,
   parseAccountStatus,
   parseTags,
@@ -56,6 +57,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.country !== undefined) patch.country = optionalString(body.country)
     if (body.notes !== undefined) patch.notes = optionalString(body.notes)
     if (body.tags !== undefined) patch.tags = parseTags(body.tags) ?? []
+    if (body.default_hourly_rate !== undefined) patch.default_hourly_rate = optionalNumber(body.default_hourly_rate, 'default_hourly_rate')
+    if (body.hq_address !== undefined) patch.hq_address = optionalString(body.hq_address)
     if (body.workstream !== undefined) {
       const slug = optionalString(body.workstream)
       patch.workstream_id = slug ? (await getWorkstreamBySlug(slug)).id : null
@@ -74,5 +77,68 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     )
   } catch (error) {
     return jsonError(error, 'Failed to update account')
+  }
+}
+
+// DELETE — hard-delete an account, but only when nothing references it. Every
+// reference is an EXPLICIT count (service role bypasses RLS, and a try/catch on an
+// FK error can't be trusted: some of these FKs are ON DELETE SET NULL and would
+// silently orphan the row rather than error). Blocked references return 409 with a
+// blocked_by breakdown; the delete only proceeds when every count is zero. This is
+// the cleanup path for a duplicate created in error.
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!validateCoworkToken(request)) {
+    return Response.json({ error: 'Unauthorised' }, { status: 401 })
+  }
+  try {
+    const { id } = await params
+    await getAccountById(id) // 404 if missing
+
+    const count = async (table: string, column: string, selectCol = 'id') => {
+      const { count: n, error } = await supabaseService
+        .from(table)
+        .select(selectCol, { count: 'exact', head: true })
+        .eq(column, id)
+      if (error) throw error
+      return n ?? 0
+    }
+
+    // Invoices are counted regardless of soft-delete: even a soft-deleted invoice
+    // still references the account, and this must never be able to orphan one.
+    const [invoices, contacts, projects, tasks, timeEntries, engEnd, engBilled, tier1] = await Promise.all([
+      count('invoices', 'account_id'),
+      count('contacts', 'account_id'),
+      count('projects', 'account_id'),
+      count('tasks', 'account_id'),
+      count('time_entries', 'account_id'),
+      count('engagements', 'end_client_account_id'),
+      count('engagements', 'billed_via_account_id'),
+      count('engagement_tier1_accounts', 'account_id', 'account_id'),
+    ])
+
+    const allBlockers: Record<string, number> = {
+      invoices,
+      contacts,
+      projects,
+      tasks,
+      time_entries: timeEntries,
+      engagements_end_client: engEnd,
+      engagements_billed_via: engBilled,
+      tier1_accounts: tier1,
+    }
+    const blocked_by = Object.fromEntries(Object.entries(allBlockers).filter(([, n]) => n > 0))
+
+    if (Object.keys(blocked_by).length > 0) {
+      return Response.json(
+        { error: 'Account is referenced and cannot be deleted', blocked_by },
+        { status: 409 }
+      )
+    }
+
+    const { error } = await supabaseService.from('accounts').delete().eq('id', id)
+    if (error) throw error
+    return Response.json({ ok: true, deleted: id })
+  } catch (error) {
+    return jsonError(error, 'Failed to delete account')
   }
 }
