@@ -166,6 +166,10 @@ export async function pullEventsFromGoogle(timeMin: string, timeMax: string) {
     if (!gcalEvent.id || !gcalEvent.summary) {
       continue
     }
+    // Skip Google "Working location" (Home/Office) all-day markers — calendar noise.
+    if (gcalEvent.eventType === 'workingLocation') {
+      continue
+    }
 
     const start_at = toLocalDateTime(gcalEvent.start)
     const end_at = toLocalDateTime(gcalEvent.end)
@@ -417,6 +421,9 @@ export async function pullEventsFromGoogleCalendar(
 
   for (const gcalEvent of events) {
     if (!gcalEvent.id || !gcalEvent.summary) continue
+    // Skip Google "Working location" events (the daily all-day Home/Office markers)
+    // — they're noise on a work calendar, not real meetings.
+    if (gcalEvent.eventType === 'workingLocation') continue
 
     const start_at = toLocalDateTime(gcalEvent.start)
     const end_at = toLocalDateTime(gcalEvent.end)
