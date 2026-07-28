@@ -13,14 +13,6 @@ const TOUCHPOINT_LABELS: Record<TouchpointType, string> = {
   note: 'Note',
 }
 
-const TOUCHPOINT_ICONS: Record<TouchpointType, string> = {
-  call: 'Call',
-  email: 'Email',
-  message: 'Msg',
-  meeting: 'Meet',
-  note: 'Note',
-}
-
 type TimelineTouchpoint = Touchpoint & { link?: 'direct' | 'account' }
 
 export default function TouchpointTimeline({
@@ -116,11 +108,11 @@ export default function TouchpointTimeline({
   }
 
   return (
-    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
-      <div className="flex items-center justify-between gap-3">
+    <div className="os-card p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <p className="text-sm text-[var(--muted)]">{description}</p>
+          <h2 className="os-section-title">{title}</h2>
+          <p className="mt-1 text-sm text-[color:var(--text-2)]">{description}</p>
         </div>
         {readOnly ? null : (
           <button
@@ -131,22 +123,23 @@ export default function TouchpointTimeline({
               }
               setShowForm((current) => !current)
             }}
-            className="rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:border-[var(--lime)]/40"
+            className="btn btn-ghost btn-sm"
           >
-            {showForm ? 'Cancel' : 'Log touchpoint'}
+            {showForm ? 'Cancel' : '+ Log touchpoint'}
           </button>
         )}
       </div>
 
       {showForm && !readOnly ? (
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--card-alt)] p-4">
+        <form onSubmit={handleSubmit} className="card mt-4 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Type</span>
+            <label className="block space-y-1">
+              <span className="field-label">Type</span>
               <select
                 value={type}
                 onChange={(event) => setType(event.target.value as TouchpointType)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+                className="filter-select"
+                style={{ width: '100%' }}
               >
                 {TOUCHPOINT_TYPES.map((entry) => (
                   <option key={entry} value={entry}>
@@ -155,90 +148,75 @@ export default function TouchpointTimeline({
                 ))}
               </select>
             </label>
-            <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">When</span>
+            <label className="block space-y-1">
+              <span className="field-label">When</span>
               <input
                 type="datetime-local"
                 value={occurredAt}
                 onChange={(event) => setOccurredAt(event.target.value)}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+                className="filter-select"
+                style={{ width: '100%' }}
               />
             </label>
           </div>
 
-          <label className="space-y-2">
-            <span className="text-sm text-[var(--muted)]">Subject</span>
+          <label className="block space-y-1">
+            <span className="field-label">Subject</span>
             <input
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+              className="filter-select"
+              style={{ width: '100%' }}
             />
           </label>
 
-          <label className="space-y-2">
-            <span className="text-sm text-[var(--muted)]">Details</span>
+          <label className="block space-y-1">
+            <span className="field-label">Details</span>
             <textarea
               value={body}
               onChange={(event) => setBody(event.target.value)}
               rows={3}
-              className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-white"
+              className="os-textarea"
+              style={{ width: '100%' }}
             />
           </label>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--lime)]/90 disabled:opacity-60"
-          >
-            {saving ? 'Saving...' : 'Save touchpoint'}
+          <button type="submit" disabled={saving} className="btn btn-primary btn-sm">
+            {saving ? 'Saving…' : 'Save touchpoint'}
           </button>
         </form>
       ) : null}
 
-      {error ? <p className="mt-4 text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       {touchpoints.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[var(--border)] px-4 py-8 text-sm text-white0">
-          No touchpoints logged yet.
-        </div>
+        <div className="empty mt-4">No touchpoints logged yet.</div>
       ) : (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-2">
           {touchpoints.map((touchpoint) => (
-            <div
-              key={touchpoint.id}
-              className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)] p-4"
-            >
+            <div key={touchpoint.id} className="card">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">
-                      {TOUCHPOINT_ICONS[touchpoint.type]}
-                    </span>
-                    <p className="font-medium text-white">{touchpoint.subject}</p>
-                    <span className="rounded-full bg-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">
-                      {TOUCHPOINT_LABELS[touchpoint.type]}
-                    </span>
+                    <span className="channel-tag">{TOUCHPOINT_LABELS[touchpoint.type]}</span>
+                    <p className="text-sm font-semibold text-[color:var(--text)]">{touchpoint.subject}</p>
                     {touchpoint.link === 'account' ? (
-                      <span className="rounded-full border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]" title="Logged against a related account, not this engagement directly">
+                      <span className="meta-chip" title="Logged against a related account, not this engagement directly">
                         via account
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-2 text-xs text-white0">
+                  <p className="mt-1 text-xs text-[color:var(--text-3)]">
                     {new Date(touchpoint.occurred_at).toLocaleString('en-GB')}
                   </p>
                   {touchpoint.body ? (
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--muted)]">
+                    <p className="mt-2 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">
                       {touchpoint.body}
                     </p>
                   ) : null}
                 </div>
                 {readOnly ? null : (
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(touchpoint.id)}
-                    className="rounded-full border border-rose-500/20 px-3 py-1 text-xs text-rose-200 transition hover:border-rose-400"
-                  >
+                  <button type="button" onClick={() => handleDelete(touchpoint.id)} className="btn btn-ghost btn-sm">
                     Delete
                   </button>
                 )}

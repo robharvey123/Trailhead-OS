@@ -152,6 +152,66 @@ GET /api/cowork/projects/[id] — full project with phases,
 
 PATCH /api/cowork/projects/[id] — update name, status, dates
 
+### Accounts
+
+GET /api/cowork/accounts
+Query params: search (name ilike), status, workstream (slug), tag, limit (default 50, max 200). Returns contact + open-task counts.
+
+POST /api/cowork/accounts
+{ "name": "required", "website", "industry", "status", "channel", "source", "address_line1", "address_line2", "city", "postcode", "country", "notes", "tags": [], "workstream": "slug", "default_hourly_rate": 0, "hq_address": "" }
+Duplicate-safe: a case-insensitive name match returns 409 with the existing row and creates nothing. Search first.
+
+GET /api/cowork/accounts/[id]
+PATCH /api/cowork/accounts/[id] — same fields
+DELETE /api/cowork/accounts/[id] — only if nothing references it; else 409 with a blocked_by breakdown (invoices/contacts/etc.)
+
+### Engagements, tier-1, milestones, time
+
+The engagement id in any path accepts the CODE (e.g. QOLA-UKEU-26) as well as the uuid.
+
+GET /api/cowork/engagements — filters: status, account, limit. Summary rows (hours used this month, tier-1 complete/tracked, outstanding invoice total).
+POST /api/cowork/engagements
+{ "name": "required", "start_date": "YYYY-MM-DD required", "end_client_account_name" or "end_client_account_id", "billed_via_account_name" or "..._id", "engagement_type": "client_consulting", "retainer_amount_monthly", "included_hours_monthly", "day_rate", "performance_fee_default", "end_date", "code", "currency", "notes", "notice_period_days", "auto_renews", "renewal_term_months" }
+GET /api/cowork/engagements/[id] — full detail (hours this month, contributors, tier-1 summary, billing, projects, renewal/notice).
+PATCH /api/cowork/engagements/[id] — any settable field + status.
+
+GET/POST/DELETE /api/cowork/engagements/[id]/tier1 — list / attach / detach target accounts. POST accepts account_name + create_if_missing.
+GET /api/cowork/engagements/[id]/milestones — three gate dates, is_complete, performance_fee, invoiced.
+PATCH /api/cowork/engagements/[id]/milestones/[accountId] — { "gate": "range_review_decided|go_live_confirmed|first_po_received", "date": "YYYY-MM-DD" } (null clears). is_complete is stamped by the DB, never sent.
+POST /api/cowork/engagements/[id]/milestones/[accountId]/invoice — raise the Tier-1 performance-fee invoice.
+
+GET /api/cowork/time — filters: engagement (code/uuid), project, from, to, billable. Returns entries + a summary (hours, billable, amount, month vs cap).
+POST /api/cowork/time — { "duration_minutes": required, one of "engagement_id"/"project_id"/"task_id" required, "entry_date": "YYYY-MM-DD (default today)", "description", "billable", "rate_snapshot", "account_id" }. Rate is snapshotted automatically; response carries a `warning` block if it crosses the monthly cap.
+
+### Touchpoints (interactions: calls, emails, meetings, notes)
+
+GET /api/cowork/touchpoints
+Query params: engagement (code/uuid), account_id, contact_id, type, from, to, limit (default 50, max 200).
+
+POST /api/cowork/touchpoints
+{ "subject": "required", "type": "call|email|message|meeting|note (default note — unknown values 400, no silent fallback)", "engagement": "code or uuid — optional", "account_id" or "account_name", "contact_id" or "contact_name", "body": "optional", "occurred_at": "ISO datetime (default now)" }
+At least one of engagement / account / contact is required. Log an interaction whenever Rob mentions a call/email/meeting with a client. No DELETE.
+
+### Engagement documents
+
+GET /api/cowork/engagements/[id]/documents — list.
+POST /api/cowork/engagements/[id]/documents — { "file_name": "required", one of "content_base64" (any file) or "content" (utf-8 text), "title", "mime_type" }. 25 MB cap.
+
+### Outreach (cold email campaigns)
+
+GET/POST /api/cowork/outreach/audiences ; POST /api/cowork/outreach/audiences/[id]/members ({ contact_ids: [] } or { filter: { workstream, account_id, sub_trade, tag } } — suppressed / do-not-email skipped and counted).
+GET/POST /api/cowork/outreach/templates (unknown merge tags warned, not rejected).
+GET/POST /api/cowork/outreach/campaigns ; GET /api/cowork/outreach/campaigns/[id] (stats).
+POST /api/cowork/outreach/campaigns/[id] { "action": "start|pause|resume|cancel" }.
+Campaigns ALWAYS land in draft. Never start one without Rob's explicit go-ahead — cold email only sends after he approves.
+
+### Activity log (what Claude changed)
+
+GET /api/cowork/activity — filters: engagement, entity, from, to, limit. Every write above is recorded here for Rob to review.
+POST /api/cowork/activity/[id]/revert — reverses the reversible cases only (invoice status change, time-entry create, milestone gate).
+
+> MCP: the same operations are available as MCP tools at /api/mcp (list_engagements, get_engagement, log_time, set_milestone_gate, raise_listing_invoice, list_invoices, raise_invoice, mark_invoice_paid, find_account, create_account, add_tier1_account, upload_engagement_document, list/get outreach, engagement_hours_check, recent_cowork_activity). REST and MCP share the same logic.
+
 ## Workstream routing rules
 
 brand-sales: DRIVER, RUSH, caffeine pouches, Haypp, VSL, Perry

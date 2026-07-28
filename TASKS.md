@@ -277,6 +277,24 @@ create policy "authenticated full access" on invoices
 
 ---
 
+## Consulting engine & Cowork operator (Jul 2026) ✅ SHIPPED
+
+- [x] Cowork API v2 — accounts, engagements, tier-1, milestones, time (rate snapshot + over-cap warning)
+- [x] Cowork activity log — every write recorded, revert for reversible cases; Settings panel + dashboard strip
+- [x] Outreach API — audiences (suppression-aware), templates, campaigns (draft-only, explicit start)
+- [x] MCP operator tools (log_time, set_milestone_gate, raise_listing_invoice, upload_engagement_document, …) + per-engagement briefing block
+- [x] Engagement notice periods — flag on the notice date (end_date − notice_period_days), computed in DB, never stored
+- [x] Engagement document uploads — UI + Cowork API/MCP, `engagement-docs` bucket
+- [x] Calendar — work-only (personal iCloud feeds removed), week-first + Schedule view, themed to the app, working-location "Home" noise filtered
+- [x] Touchpoints linked to engagements — Timeline tab, "via account" surfacing, `/api/cowork/touchpoints`; timeline restyled to thmock
+- [x] Cowork skill doc (`docs/cowork-skill.md`) brought current with the v2 surface
+- [ ] Auto-create a touchpoint when a Granola meeting matches an engagement's account — briefed in `docs/brief-auto-touchpoint-from-meetings.md`
+- [ ] Gmail threads → touchpoints (needs its own matching/throttling design — see the same brief's follow-up)
+
+> User actions still outstanding (cannot be done server-side): reconnect `rob@` Google (refresh token dead — sync is down until then); connect `info@` Google; add Supabase build vars to the Vercel Preview scope so preview deploys build; rotate is done (key rotated + live).
+
+---
+
 ## Notes & decisions log
 
 > Agent: add timestamped notes here when you make a significant architectural decision or hit a blocker.
