@@ -37,7 +37,7 @@ type ServerClient = Awaited<ReturnType<typeof createServerClient>>
 const svc = supabaseService as unknown as ServerClient
 
 const ENGAGEMENT_SELECT =
-  '*, end_client:accounts!end_client_account_id(id,name), billed_via:accounts!billed_via_account_id(id,name)'
+  '*, notice_date, end_client:accounts!end_client_account_id(id,name), billed_via:accounts!billed_via_account_id(id,name)'
 
 const ENGAGEMENT_TYPES = new Set<EngagementType>([
   'client_consulting', 'client_app_build', 'internal_app_build', 'internal_ops',
@@ -72,6 +72,10 @@ type EngRow = {
   performance_fee_default: number | string | null
   start_date: string
   end_date: string | null
+  notice_period_days: number | null
+  auto_renews: boolean | null
+  renewal_term_months: number | null
+  notice_date: string | null
   approval_thresholds: unknown
   notes: string | null
   created_at: string
@@ -219,6 +223,10 @@ export function formatEngagement(e: EngRow) {
     performance_fee_default: num(e.performance_fee_default),
     start_date: e.start_date,
     end_date: e.end_date,
+    notice_period_days: e.notice_period_days,
+    auto_renews: Boolean(e.auto_renews),
+    renewal_term_months: e.renewal_term_months,
+    notice_date: e.notice_date ?? null,
     approval_thresholds: e.approval_thresholds ?? {},
     notes: e.notes,
     created_at: e.created_at,
@@ -383,6 +391,9 @@ export async function createEngagement(body: Record<string, unknown>) {
     day_rate: optionalNumber(body.day_rate, 'day_rate'),
     performance_fee_default: optionalNumber(body.performance_fee_default, 'performance_fee_default'),
     end_date: optionalDate(body.end_date, 'end_date'),
+    notice_period_days: optionalNumber(body.notice_period_days, 'notice_period_days'),
+    auto_renews: body.auto_renews === true,
+    renewal_term_months: optionalNumber(body.renewal_term_months, 'renewal_term_months'),
     approval_thresholds: parseApprovalThresholds(body.approval_thresholds) ?? {},
     notes: optionalString(body.notes),
   }
@@ -405,6 +416,9 @@ export async function updateEngagement(ref: string, body: Record<string, unknown
   if (body.day_rate !== undefined) patch.day_rate = optionalNumber(body.day_rate, 'day_rate')
   if (body.performance_fee_default !== undefined) patch.performance_fee_default = optionalNumber(body.performance_fee_default, 'performance_fee_default')
   if (body.end_date !== undefined) patch.end_date = optionalDate(body.end_date, 'end_date')
+  if (body.notice_period_days !== undefined) patch.notice_period_days = optionalNumber(body.notice_period_days, 'notice_period_days')
+  if (body.auto_renews !== undefined) patch.auto_renews = body.auto_renews === true
+  if (body.renewal_term_months !== undefined) patch.renewal_term_months = optionalNumber(body.renewal_term_months, 'renewal_term_months')
   if (body.notes !== undefined) patch.notes = optionalString(body.notes)
   if (body.approval_thresholds !== undefined) patch.approval_thresholds = parseApprovalThresholds(body.approval_thresholds) ?? {}
 

@@ -35,8 +35,16 @@ function fmtDur(min: number) {
   const h = Math.floor(min / 60), m = min % 60
   return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
-function fmtDate(v: string | null) {
-  return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+
+function fmtDate(v: string | null | undefined) {
+  return v ? new Date(`${v}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '—'
+}
+
+/** Days from today (UTC) to a date-only string; positive = future. */
+function daysUntil(d: string | null | undefined): number | null {
+  if (!d) return null
+  const today = new Date().toISOString().slice(0, 10)
+  return Math.round((Date.parse(`${d}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
 }
 
 type EngagementDoc = { id: string; type: string; title: string | null; week_start: string | null; created_at: string }
@@ -347,6 +355,33 @@ export default function EngagementDetailClient({
                   <div><div className="stat-value" style={{ fontSize: 22, color: 'var(--green)' }}>{summary.completed}</div><div className="field-label">complete</div></div>
                   <div><div className="stat-value" style={{ fontSize: 22, color: 'var(--emerald)' }}>{formatCurrency(summary.uninvoiced, e.currency)}</div><div className="field-label">uninvoiced</div></div>
                 </div>
+              </div>
+              <div className="card">
+                <div className="panel-section-title">Term &amp; renewal</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
+                  <span className="field-label">Term</span>
+                  <span className="td-mono">{fmtDate(e.start_date)} → {fmtDate(e.end_date)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
+                  <span className="field-label">Notice due</span>
+                  <span className="td-mono">{e.notice_date ? fmtDate(e.notice_date) : e.notice_period_days ? '—' : 'no notice period set'}</span>
+                </div>
+                {(() => {
+                  const days = daysUntil(e.notice_date)
+                  if (days === null) return null
+                  if (days < 0) {
+                    return <p style={{ fontSize: 12, marginTop: 6, color: e.auto_renews ? 'var(--amber)' : 'var(--text-3)' }}>
+                      Notice date passed{e.auto_renews ? ` — auto-renews for ${e.renewal_term_months ?? 12} months` : ''}.
+                    </p>
+                  }
+                  if (days <= 45) {
+                    return <p style={{ fontSize: 12, marginTop: 6, color: days <= 14 ? 'var(--red)' : 'var(--amber)' }}>
+                      Notice due in {days} day{days === 1 ? '' : 's'}{days <= 14 ? ' — act now' : ''}.
+                    </p>
+                  }
+                  return null
+                })()}
+                {e.auto_renews ? <p style={{ fontSize: 11, marginTop: 6, color: 'var(--text-3)' }}>Auto-renews for {e.renewal_term_months ?? 12}-month terms.</p> : null}
               </div>
               <div className="card">
                 <div className="panel-section-title">Quick actions</div>

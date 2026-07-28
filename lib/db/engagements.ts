@@ -14,7 +14,7 @@ async function getSupabase(client?: SupabaseClient) {
 }
 
 const ENGAGEMENT_SELECT =
-  '*, end_client:accounts!end_client_account_id(id,name), billed_via:accounts!billed_via_account_id(id,name)'
+  '*, notice_date, end_client:accounts!end_client_account_id(id,name), billed_via:accounts!billed_via_account_id(id,name)'
 
 function monthBounds(d = new Date()) {
   const from = new Date(d.getFullYear(), d.getMonth(), 1)
@@ -105,7 +105,8 @@ export async function upsertEngagement(input: EngagementInput, client?: Supabase
   const fields: (keyof EngagementInput)[] = [
     'end_client_account_id', 'billed_via_account_id', 'engagement_type', 'name', 'code', 'status', 'currency',
     'retainer_amount_monthly', 'included_hours_monthly', 'day_rate', 'performance_fee_default',
-    'start_date', 'end_date', 'approval_thresholds', 'notes',
+    'start_date', 'end_date', 'notice_period_days', 'auto_renews', 'renewal_term_months',
+    'approval_thresholds', 'notes',
   ]
   for (const f of fields) if (f in input) patch[f] = (input as unknown as Record<string, unknown>)[f]
 

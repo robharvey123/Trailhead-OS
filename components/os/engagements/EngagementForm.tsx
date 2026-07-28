@@ -39,6 +39,9 @@ export default function EngagementForm({
   const [perfFee, setPerfFee] = useState(num(initial?.performance_fee_default))
   const [startDate, setStartDate] = useState(initial?.start_date ?? new Date().toISOString().split('T')[0])
   const [endDate, setEndDate] = useState(initial?.end_date ?? '')
+  const [noticeDays, setNoticeDays] = useState(num(initial?.notice_period_days))
+  const [autoRenews, setAutoRenews] = useState(initial?.auto_renews ?? false)
+  const [renewalTerm, setRenewalTerm] = useState(num(initial?.renewal_term_months))
   const [hoursOverage, setHoursOverage] = useState(num(at?.hours_overage_hours) || '8')
   const [travelThreshold, setTravelThreshold] = useState(num(at?.travel_amount_gbp) || '250')
   const [slotting, setSlotting] = useState(at?.slotting_fees_required ?? true)
@@ -72,6 +75,9 @@ export default function EngagementForm({
       performance_fee_default: isInternal || !perfFee ? null : Number(perfFee),
       start_date: startDate,
       end_date: endDate || null,
+      notice_period_days: noticeDays ? Number(noticeDays) : null,
+      auto_renews: autoRenews,
+      renewal_term_months: renewalTerm ? Number(renewalTerm) : null,
       approval_thresholds: {
         hours_overage_hours: Number(hoursOverage) || 0,
         travel_amount_gbp: Number(travelThreshold) || 0,
@@ -141,6 +147,11 @@ export default function EngagementForm({
           <div><label className={label}>Currency</label><input className={input} value={currency} onChange={(e) => setCurrency(e.target.value)} /></div>
           <div><label className={label}>Start date *</label><input type="date" className={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} /></div>
           <div><label className={label}>End date</label><input type="date" className={input} value={endDate} onChange={(e) => setEndDate(e.target.value)} /></div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'end' }}>
+          <div><label className={label}>Notice period (days)</label><input type="number" className={input} value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} placeholder="30" /></div>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13, paddingBottom: 8 }}><input type="checkbox" checked={autoRenews} onChange={(e) => setAutoRenews(e.target.checked)} /> Auto-renews</label>
+          <div><label className={label}>Renewal term (months)</label><input type="number" className={input} value={renewalTerm} onChange={(e) => setRenewalTerm(e.target.value)} placeholder="12" /></div>
         </div>
         {!isInternal ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>

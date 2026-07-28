@@ -254,6 +254,10 @@ export interface Engagement {
   performance_fee_default: number | null
   start_date: string
   end_date: string | null
+  notice_period_days: number | null
+  auto_renews: boolean
+  renewal_term_months: number | null
+  notice_date?: string | null // computed in Postgres (end_date - notice_period_days), never stored
   approval_thresholds: ApprovalThresholds
   notes: string | null
   created_at: string
@@ -280,6 +284,9 @@ export interface EngagementInput {
   performance_fee_default?: number | null
   start_date: string
   end_date?: string | null
+  notice_period_days?: number | null
+  auto_renews?: boolean
+  renewal_term_months?: number | null
   approval_thresholds?: ApprovalThresholds
   notes?: string | null
 }

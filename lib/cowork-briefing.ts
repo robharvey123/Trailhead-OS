@@ -35,7 +35,36 @@ async function activeEngagementBriefs() {
       ])
 
       const b = billing as { total_outstanding?: number | string; next_due_date?: string | null; overdue_count?: number } | null
-      const renewalDays = e.end_date ? Math.ceil((new Date(e.end_date).getTime() - now.getTime()) / 86_400_000) : null
+
+      // Flag on the NOTICE date (end_date - notice_period_days, computed in Postgres),
+      // falling back to end_date when no notice period is set. Both are date-only, so
+      // compare at UTC midnight to avoid timezone drift. Escalate as the date nears;
+      // an auto-renewing engagement past its notice date reports "renewed", never
+      // silently disappears.
+      const basis: 'notice_date' | 'end_date' = e.notice_date ? 'notice_date' : 'end_date'
+      const effective = e.notice_date ?? e.end_date
+      let renewal: {
+        notice_date: string | null; days_until_notice: number; end_date: string | null
+        auto_renews: boolean; renewal_term_months: number | null; basis: string; level: string
+      } | null = null
+      if (effective) {
+        const daysUntilNotice = Math.round((Date.parse(`${effective}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
+        let level: string | null = null
+        if (daysUntilNotice < 0) level = e.auto_renews ? 'renewed' : 'overdue'
+        else if (daysUntilNotice <= 14) level = 'urgent'
+        else if (daysUntilNotice <= RENEWAL_WINDOW_DAYS) level = 'informational'
+        if (level) {
+          renewal = {
+            notice_date: e.notice_date ?? null,
+            days_until_notice: daysUntilNotice,
+            end_date: e.end_date,
+            auto_renews: Boolean(e.auto_renews),
+            renewal_term_months: e.renewal_term_months ?? null,
+            basis,
+            level,
+          }
+        }
+      }
 
       return {
         id: e.id,
@@ -57,10 +86,7 @@ async function activeEngagementBriefs() {
           next_due_date: b?.next_due_date ?? null,
           overdue_count: Number(b?.overdue_count ?? 0),
         },
-        renewal:
-          renewalDays !== null && renewalDays <= RENEWAL_WINDOW_DAYS && renewalDays >= 0 && e.end_date
-            ? { date: e.end_date, days_until: renewalDays, note: `Renewal/notice deadline in ${renewalDays} days` }
-            : null,
+        renewal,
       }
     })
   ).then((rows) => ({ rows, today }))
