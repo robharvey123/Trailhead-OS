@@ -8,6 +8,7 @@ import interactionPlugin, {
   type EventResizeDoneArg,
 } from '@fullcalendar/interaction'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import listPlugin from '@fullcalendar/list'
 import type {
   DateSelectArg,
   DatesSetArg,
@@ -15,7 +16,7 @@ import type {
   EventDropArg,
   EventInput,
 } from '@fullcalendar/core'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import { getWorkstreamAccentHex } from '@/lib/os'
 import { formatDateTime, formatTaskSchedule } from '@/lib/os'
@@ -414,6 +415,13 @@ export default function CalendarClient({
   feeds?: Array<{ id: string; name: string; colour: string | null }>
 }) {
   const calendarRef = useRef<FullCalendar | null>(null)
+
+  // Open the time grid scrolled to ~now, so the current time is on screen (the
+  // nowIndicator red line sits just below the top).
+  const initialScrollTime = useMemo(() => {
+    const now = new Date()
+    return `${String(Math.max(0, now.getHours() - 1)).padStart(2, '0')}:00:00`
+  }, [])
 
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [tasks, setTasks] = useState<TaskWithWorkstream[]>([])
@@ -879,20 +887,20 @@ export default function CalendarClient({
           <div className={loading ? 'hidden' : 'block'}>
             <FullCalendar
               ref={calendarRef}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
               initialView="timeGridWeek"
               firstDay={1}
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
-                right: 'timeGridDay,timeGridWeek,dayGridMonth',
+                right: 'listWeek,timeGridDay,timeGridWeek,dayGridMonth',
               }}
-              buttonText={{ today: 'Today', month: 'Month', week: 'Week', day: 'Day' }}
-              // Contained, internally-scrolling week grid — opens at 8am, nothing hidden.
+              buttonText={{ today: 'Today', month: 'Month', week: 'Week', day: 'Day', list: 'Schedule' }}
+              // Contained, internally-scrolling week grid; opens scrolled to ~now.
               height={720}
               expandRows
               stickyHeaderDates
-              scrollTime="08:00:00"
+              scrollTime={initialScrollTime}
               slotDuration="00:30:00"
               slotLabelInterval="01:00"
               slotLabelFormat={{ hour: 'numeric', minute: '2-digit', omitZeroMinute: true, meridiem: 'short' }}

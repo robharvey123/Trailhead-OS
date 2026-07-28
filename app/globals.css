@@ -362,6 +362,48 @@ body {
   color: var(--red, #ef4444);
 }
 
+/* Event text — the app's body font (Inter), matching everything else. */
+.fc .fc-event-title,
+.fc .fc-event-title-container,
+.fc .cal-chip,
+.fc .cal-chip-title,
+.fc .fc-list-event-title {
+  font-family: var(--sans);
+  font-weight: 600;
+}
+.fc .fc-event-time,
+.fc .fc-list-event-time {
+  font-family: var(--sans);
+  font-weight: 500;
+}
+
+/* Schedule (list) view — themed to the app. */
+.fc .fc-list {
+  border-color: var(--border);
+  border-radius: var(--radius, 14px);
+  overflow: hidden;
+}
+.fc .fc-list-day-cushion {
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.fc .fc-list-event:hover td {
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface, transparent));
+}
+.fc .fc-list-event-title { color: var(--text); }
+.fc .fc-list-event-time { color: var(--text-3); }
+.fc .fc-list-event-dot { border-color: var(--accent); }
+.fc .fc-list-empty {
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--sans);
+}
+
 /* ==========================================================================
    Mockup design system — scoped to /crm, /timesheet, /inbox via .thmock
    Indigo accent, Inter (sans) + JetBrains Mono (loaded via @import at top).
