@@ -23,10 +23,12 @@ import {
   getEngagementDetail,
   getEngagementRow,
   getMilestones,
+  listEngagementDocuments,
   listEngagements as listEngagementsFn,
   logTime,
   raiseMilestoneInvoiceByAccount,
   setMilestone,
+  uploadEngagementDocument,
 } from '@/lib/cowork-engagements'
 import { createCoworkInvoice, listCoworkInvoices, setInvoiceStatus } from '@/lib/cowork-invoices'
 import { getCampaignDetail, listCampaigns } from '@/lib/cowork-outreach'
@@ -530,6 +532,35 @@ export const engagementHoursCheckTool = defineTool({
   },
 })
 
+export const uploadEngagementDocumentTool = defineTool({
+  name: 'upload_engagement_document',
+  description: 'Upload a document to an engagement. Provide file_name plus content_base64 (any file) or content (utf-8 text, e.g. a markdown note). Optional title and mime_type.',
+  inputSchema: z.object({
+    engagement: engagementRef,
+    file_name: z.string().min(1),
+    content_base64: z.string().optional(),
+    content: z.string().optional(),
+    title: z.string().optional(),
+    mime_type: z.string().optional(),
+  }),
+  handler: async (input) => {
+    const { document, engagement } = await uploadEngagementDocument(input.engagement, input as Record<string, unknown>)
+    void recordCoworkWrite({
+      action: 'create', entity: 'engagement_document', entityId: document.id, entityLabel: document.file_name, engagementId: engagement.id,
+      summary: `Uploaded document "${document.title ?? document.file_name}" to ${engagement.name}`,
+      payload: { file_name: document.file_name, mime_type: document.mime_type, size_bytes: document.size_bytes },
+    })
+    return document
+  },
+})
+
+export const listEngagementDocumentsTool = defineTool({
+  name: 'list_engagement_documents',
+  description: 'List documents on an engagement (uploaded files and markdown docs).',
+  inputSchema: z.object({ engagement: engagementRef }),
+  handler: async (input) => listEngagementDocuments(input.engagement),
+})
+
 export const recentCoworkActivityTool = defineTool({
   name: 'recent_cowork_activity',
   description: 'Recent Cowork writes (the change log), newest first. Filter by engagement/entity.',
@@ -563,5 +594,7 @@ export const tools: McpTool[] = [
   listOutreachCampaignsTool,
   getCampaignStatsTool,
   engagementHoursCheckTool,
+  uploadEngagementDocumentTool,
+  listEngagementDocumentsTool,
   recentCoworkActivityTool,
 ]

@@ -632,6 +632,92 @@ export async function raiseMilestoneInvoiceByAccount(ref: string, accountId: str
   return raiseMilestoneInvoice(milestone.id, svc)
 }
 
+// ── Documents ────────────────────────────────────────────────────────────────
+
+const MIME_BY_EXT: Record<string, string> = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp',
+  txt: 'text/plain', md: 'text/markdown', csv: 'text/csv', json: 'application/json',
+}
+function guessMime(name: string): string {
+  return MIME_BY_EXT[name.split('.').pop()?.toLowerCase() ?? ''] ?? 'application/octet-stream'
+}
+
+const MAX_DOC_BYTES = 25 * 1024 * 1024
+
+export async function listEngagementDocuments(ref: string) {
+  const e = await getEngagementRow(ref)
+  const { data, error } = await supabaseService
+    .from('engagement_documents')
+    .select('id, type, title, file_name, mime_type, size_bytes, week_start, created_at')
+    .eq('engagement_id', e.id)
+    .order('created_at', { ascending: false })
+  if (error) throw new CoworkApiError(error.message || 'Failed to load documents', 500)
+  return data ?? []
+}
+
+/**
+ * Upload a document to an engagement from the Cowork API / MCP. Content is JSON:
+ * either `content_base64` (any file) or `content` (utf-8 text). Stored in the
+ * engagement-docs bucket via the service role; a failed row insert rolls the
+ * object back so nothing orphans.
+ */
+export async function uploadEngagementDocument(
+  ref: string,
+  body: { file_name?: unknown; content_base64?: unknown; content?: unknown; mime_type?: unknown; title?: unknown }
+) {
+  const e = await getEngagementRow(ref)
+  const fileName = optionalString(body.file_name)
+  if (!fileName) throw new CoworkApiError('file_name is required', 400)
+
+  let bytes: Buffer
+  if (body.content_base64 !== undefined && body.content_base64 !== null) {
+    const b64 = String(body.content_base64).replace(/^data:[^;]+;base64,/, '') // tolerate data URLs
+    bytes = Buffer.from(b64, 'base64')
+    if (bytes.length === 0 && b64.length > 0) throw new CoworkApiError('content_base64 is not valid base64', 400)
+  } else if (body.content !== undefined && body.content !== null) {
+    bytes = Buffer.from(String(body.content), 'utf-8')
+  } else {
+    throw new CoworkApiError('Provide content_base64 (any file) or content (text)', 400)
+  }
+  if (bytes.length === 0) throw new CoworkApiError('Document is empty', 400)
+  if (bytes.length > MAX_DOC_BYTES) throw new CoworkApiError('Document exceeds the 25 MB limit', 400)
+
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120) || 'file'
+  const path = `${e.id}/${Date.now()}-${safeName}`
+  const mime = optionalString(body.mime_type) ?? guessMime(safeName)
+
+  const { error: upErr } = await supabaseService.storage
+    .from('engagement-docs')
+    .upload(path, bytes, { contentType: mime, upsert: false })
+  if (upErr) throw new CoworkApiError(upErr.message || 'Upload failed', 500)
+
+  const { data: doc, error: insErr } = await supabaseService
+    .from('engagement_documents')
+    .insert({
+      engagement_id: e.id,
+      type: 'upload',
+      title: optionalString(body.title) ?? fileName,
+      file_path: path,
+      file_name: fileName,
+      mime_type: mime,
+      size_bytes: bytes.length,
+    })
+    .select('id, type, title, file_name, mime_type, size_bytes, created_at')
+    .single()
+  if (insErr) {
+    await supabaseService.storage.from('engagement-docs').remove([path]).then(() => {}, () => {})
+    throw new CoworkApiError(insErr.message || 'Failed to save document', 500)
+  }
+  return { document: doc as { id: string; title: string | null; file_name: string | null; mime_type: string | null; size_bytes: number | null; type: string; created_at: string }, engagement: { id: e.id, name: e.name } }
+}
+
 /** Current-month hours used vs included for an engagement (by uuid or code). */
 export async function engagementMonthUsage(ref: string) {
   const e = await getEngagementRow(ref)
