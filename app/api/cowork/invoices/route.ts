@@ -16,6 +16,7 @@ import {
   parseVatRate,
   todayDate,
 } from '@/lib/cowork-api'
+import { getEngagementRow } from '@/lib/cowork-engagements'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     const contact = contactName ? await findContactByName(contactName) : null
-    const account = accountName
+    let account = accountName
       ? await findAccountByName(accountName)
       : contact?.account_id
         ? { id: contact.account_id, name: '' }
@@ -92,12 +93,22 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: `Account not found: ${accountName}` }, { status: 400 })
     }
 
+    // Engagement link (validated). When engagement_id is supplied and no account was
+    // resolved, default the account to the engagement's billed_via, then end client.
+    const engagementRef = optionalString(body.engagement_id)
+    const engagement = engagementRef ? await getEngagementRow(engagementRef) : null
+    if (engagement && !account) {
+      const defaultAccountId = engagement.billed_via_account_id ?? engagement.end_client_account_id
+      if (defaultAccountId) account = { id: defaultAccountId, name: '' }
+    }
+
     const { data, error } = await supabaseService
       .from('invoices')
       .insert({
         contact_id: contact?.id ?? null,
         account_id: account?.id ?? null,
         workstream_id: workstream?.id ?? null,
+        engagement_id: engagement?.id ?? null,
         pricing_tier_id: pricingTier?.id ?? null,
         issue_date: todayDate(),
         due_date: optionalDate(body.due_date, 'due_date'),

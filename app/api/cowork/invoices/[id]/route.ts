@@ -14,6 +14,7 @@ import {
   parseVatRate,
   sendCoworkInvoicePaidNotification,
 } from '@/lib/cowork-api'
+import { getEngagementRow } from '@/lib/cowork-engagements'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(
@@ -62,6 +63,11 @@ export async function PATCH(
     if (body.vat_rate !== undefined) patch.vat_rate = parseVatRate(body.vat_rate)
     if (body.account_id !== undefined) patch.account_id = optionalString(body.account_id)
     if (body.contact_id !== undefined) patch.contact_id = optionalString(body.contact_id)
+
+    if (body.engagement_id !== undefined) {
+      const ref = optionalString(body.engagement_id)
+      patch.engagement_id = ref ? (await getEngagementRow(ref)).id : null
+    }
     if (body.stripe_payment_link !== undefined) patch.stripe_payment_link = optionalString(body.stripe_payment_link)
 
     if (body.workstream !== undefined) {

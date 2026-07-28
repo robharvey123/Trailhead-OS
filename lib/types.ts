@@ -665,6 +665,7 @@ export interface Invoice {
   account_id: string | null
   contact_id: string | null
   workstream_id: string | null
+  engagement_id?: string | null
   pricing_tier_id?: string
   pricing_tier?: PricingTier
   status: InvoiceStatus
@@ -1183,7 +1184,7 @@ export interface ExpenseWithRelations extends Expense {
 
 // ── Timesheet & Time Tracking ──────────────────────────
 
-export type TimeEntrySource = 'manual' | 'timer'
+export type TimeEntrySource = 'manual' | 'timer' | 'cowork'
 
 export interface TimeEntry {
   id: string

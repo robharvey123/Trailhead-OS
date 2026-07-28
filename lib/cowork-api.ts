@@ -8,6 +8,9 @@ const CONTACT_STATUSES = new Set(['lead', 'active', 'inactive', 'archived'])
 const ENQUIRY_STATUSES = new Set(['new', 'reviewed', 'converted'])
 const INVOICE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'paid', 'overdue', 'cancelled'])
 const PROJECT_STATUSES = new Set(['planning', 'active', 'on_hold', 'completed', 'cancelled'])
+const ACCOUNT_STATUSES = new Set([
+  'prospect', 'contacted', 'active', 'listed', 'declined', 'on_hold', 'inactive', 'archived',
+])
 const COWORK_COLUMNS = {
   backlog: 'Backlog',
   'in-progress': 'In progress',
@@ -91,6 +94,7 @@ type InvoiceRow = {
   account_id: string | null
   contact_id: string | null
   workstream_id: string | null
+  engagement_id: string | null
   pricing_tier_id: string | null
   status: InvoiceStatus
   issue_date: string
@@ -105,7 +109,49 @@ type InvoiceRow = {
   accounts?: RelationValue<NamedRelation>
   contacts?: RelationValue<NamedRelation>
   workstreams?: RelationValue<WorkstreamShape>
+  engagements?: RelationValue<{ id: string; name: string; code: string | null }>
   pricing_tiers?: RelationValue<{ id: string; slug: string; name: string }>
+}
+
+type AccountRow = {
+  id: string
+  name: string
+  status: string
+  industry: string | null
+  channel: string | null
+  source: string | null
+  website: string | null
+  country: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  postcode: string | null
+  notes: string | null
+  tags: string[] | null
+  workstream_id: string | null
+  default_hourly_rate: number | string | null
+  created_at: string
+  updated_at: string
+  workstreams?: RelationValue<WorkstreamShape>
+}
+
+type TimeEntryRow = {
+  id: string
+  entry_date: string
+  duration_minutes: number
+  description: string | null
+  billable: boolean
+  rate_snapshot: number | string | null
+  currency_snapshot: string
+  source: string
+  engagement_id: string | null
+  project_id: string | null
+  task_id: string | null
+  account_id: string | null
+  created_at: string
+  engagements?: RelationValue<{ id: string; name: string; code: string | null }>
+  projects?: RelationValue<NamedRelation>
+  accounts?: RelationValue<NamedRelation>
 }
 
 type EnquiryRow = {
@@ -206,6 +252,7 @@ export const INVOICE_SELECT = `
   account_id,
   contact_id,
   workstream_id,
+  engagement_id,
   pricing_tier_id,
   status,
   issue_date,
@@ -220,7 +267,49 @@ export const INVOICE_SELECT = `
   accounts(id, name),
   contacts(id, name),
   workstreams(id, slug, label),
+  engagements(id, name, code),
   pricing_tiers(id, slug, name)
+`
+
+export const ACCOUNT_SELECT = `
+  id,
+  name,
+  status,
+  industry,
+  channel,
+  source,
+  website,
+  country,
+  address_line1,
+  address_line2,
+  city,
+  postcode,
+  notes,
+  tags,
+  workstream_id,
+  default_hourly_rate,
+  created_at,
+  updated_at,
+  workstreams(id, slug, label)
+`
+
+export const TIME_ENTRY_SELECT = `
+  id,
+  entry_date,
+  duration_minutes,
+  description,
+  billable,
+  rate_snapshot,
+  currency_snapshot,
+  source,
+  engagement_id,
+  project_id,
+  task_id,
+  account_id,
+  created_at,
+  engagements(id, name, code),
+  projects(id, name),
+  accounts(id, name)
 `
 
 export const PROJECT_SELECT = `
@@ -667,6 +756,80 @@ export function parseVatRate(value: unknown, fallback = 20) {
   return vatRate
 }
 
+/** Optional numeric field: null when unset, else a finite number (>= 0 unless allowNegative). */
+export function optionalNumber(value: unknown, field: string, { allowNegative = false } = {}) {
+  if (value === null || value === undefined || value === '') return null
+  const num = Number(value)
+  if (!Number.isFinite(num) || (!allowNegative && num < 0)) {
+    throw new CoworkApiError(`${field} must be a ${allowNegative ? '' : 'non-negative '}number`, 400)
+  }
+  return num
+}
+
+/** Required positive integer (e.g. duration_minutes). */
+export function requiredPositiveInt(value: unknown, field: string) {
+  const num = Number(value)
+  if (!Number.isInteger(num) || num <= 0) {
+    throw new CoworkApiError(`${field} must be a positive integer`, 400)
+  }
+  return num
+}
+
+export function parseBooleanBody(value: unknown, field: string) {
+  if (value === null || value === undefined) return undefined
+  if (typeof value !== 'boolean') {
+    throw new CoworkApiError(`${field} must be a boolean`, 400)
+  }
+  return value
+}
+
+/** Tags: an array of non-empty strings, or null to leave unset. */
+export function parseTags(value: unknown) {
+  if (value === null || value === undefined) return null
+  if (!Array.isArray(value)) {
+    throw new CoworkApiError('tags must be an array of strings', 400)
+  }
+  return value.map((t) => String(t).trim()).filter(Boolean)
+}
+
+export function parseAccountStatus(value: unknown, fallback = 'prospect') {
+  if (value === null || value === undefined || value === '') return fallback
+  if (typeof value !== 'string' || !ACCOUNT_STATUSES.has(value)) {
+    throw new CoworkApiError(
+      `status must be one of ${[...ACCOUNT_STATUSES].join(', ')}`,
+      400
+    )
+  }
+  return value
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+export function isUuid(value: string) {
+  return UUID_RE.test(value)
+}
+
+export async function getAccountById(id: string) {
+  const { data, error } = await supabaseService
+    .from('accounts')
+    .select(ACCOUNT_SELECT)
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new CoworkApiError(error.message || 'Failed to load account', 500)
+  if (!data) throw new CoworkApiError('Account not found', 404)
+  return data as unknown as AccountRow
+}
+
+/** Exact (case-insensitive) name match used for the create-account dedup. */
+export async function findAccountByExactName(name: string) {
+  const { data, error } = await supabaseService
+    .from('accounts')
+    .select(ACCOUNT_SELECT)
+    .ilike('name', name)
+  if (error) throw new CoworkApiError(error.message || 'Failed to load account', 500)
+  const lower = name.trim().toLowerCase()
+  return ((data ?? []) as unknown as AccountRow[]).find((a) => a.name.trim().toLowerCase() === lower) ?? null
+}
+
 export function formatTask(row: TaskRow) {
   const workstream = firstRelation(row.workstreams)
   const project = firstRelation(row.projects)
@@ -746,6 +909,7 @@ export function formatInvoice(row: InvoiceRow) {
   const account = firstRelation(row.accounts)
   const contact = firstRelation(row.contacts)
   const workstream = firstRelation(row.workstreams)
+  const engagement = firstRelation(row.engagements)
   const pricingTier = firstRelation(row.pricing_tiers)
   const vatRate = Number(row.vat_rate ?? 0)
   const lineItems = row.line_items ?? []
@@ -758,6 +922,7 @@ export function formatInvoice(row: InvoiceRow) {
     account: account ? { id: account.id, name: account.name } : null,
     contact: contact ? { id: contact.id, name: contact.name } : null,
     workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
+    engagement: engagement ? { id: engagement.id, name: engagement.name, code: engagement.code } : null,
     pricing_tier: pricingTier
       ? { id: pricingTier.id, slug: pricingTier.slug, name: pricingTier.name }
       : null,
@@ -793,6 +958,75 @@ export function formatEnquiry(row: EnquiryRow) {
     status: row.status,
     created_at: row.created_at,
   }
+}
+
+export function formatAccount(row: AccountRow, counts: { contacts: number; open_tasks: number }) {
+  const workstream = firstRelation(row.workstreams)
+  return {
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    industry: row.industry,
+    channel: row.channel,
+    source: row.source,
+    country: row.country,
+    website: row.website,
+    address: {
+      line1: row.address_line1,
+      line2: row.address_line2,
+      city: row.city,
+      postcode: row.postcode,
+    },
+    notes: row.notes,
+    tags: row.tags ?? [],
+    workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
+    default_hourly_rate: row.default_hourly_rate != null ? Number(row.default_hourly_rate) : null,
+    contact_count: counts.contacts,
+    open_task_count: counts.open_tasks,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  }
+}
+
+export function formatTimeEntry(row: TimeEntryRow) {
+  const engagement = firstRelation(row.engagements)
+  const project = firstRelation(row.projects)
+  const account = firstRelation(row.accounts)
+  const rate = row.rate_snapshot != null ? Number(row.rate_snapshot) : 0
+  const hours = row.duration_minutes / 60
+  return {
+    id: row.id,
+    entry_date: row.entry_date,
+    duration_minutes: row.duration_minutes,
+    hours: Math.round(hours * 100) / 100,
+    description: row.description,
+    billable: row.billable,
+    rate_snapshot: rate,
+    currency: row.currency_snapshot,
+    amount: Math.round(hours * rate * 100) / 100,
+    source: row.source,
+    engagement: engagement ? { id: engagement.id, name: engagement.name, code: engagement.code } : null,
+    project: project ? { id: project.id, name: project.name } : null,
+    account: account ? { id: account.id, name: account.name } : null,
+    task_id: row.task_id,
+    created_at: row.created_at,
+  }
+}
+
+/** Counts of contacts and open (incomplete) tasks for a set of account ids. */
+export async function accountCounts(accountIds: string[]) {
+  const empty = { contacts: new Map<string, number>(), openTasks: new Map<string, number>() }
+  if (accountIds.length === 0) return empty
+  const [contactsRes, tasksRes] = await Promise.all([
+    supabaseService.from('contacts').select('account_id').in('account_id', accountIds),
+    supabaseService.from('tasks').select('account_id').in('account_id', accountIds).is('completed_at', null),
+  ])
+  const tally = (rows: Array<{ account_id: string | null }> | null) => {
+    const m = new Map<string, number>()
+    for (const r of rows ?? []) if (r.account_id) m.set(r.account_id, (m.get(r.account_id) ?? 0) + 1)
+    return m
+  }
+  return { contacts: tally(contactsRes.data), openTasks: tally(tasksRes.data) }
 }
 
 export async function sendCoworkTaskNotification(task: { id: string; title: string }) {
