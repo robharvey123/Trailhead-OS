@@ -880,17 +880,26 @@ export default function CalendarClient({
             <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
+              initialView="timeGridWeek"
+              firstDay={1}
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay',
+                right: 'timeGridDay,timeGridWeek,dayGridMonth',
               }}
-              height="auto"
-              editable
-              selectable
+              buttonText={{ today: 'Today', month: 'Month', week: 'Week', day: 'Day' }}
+              // Contained, internally-scrolling week grid — opens at 8am, nothing hidden.
+              height={720}
+              expandRows
+              stickyHeaderDates
+              scrollTime="08:00:00"
+              slotDuration="00:30:00"
+              slotLabelInterval="01:00"
+              slotLabelFormat={{ hour: 'numeric', minute: '2-digit', omitZeroMinute: true, meridiem: 'short' }}
               nowIndicator
               dayMaxEvents={4}
+              editable
+              selectable
               eventContent={renderEventContent}
               events={fullCalendarEvents}
               datesSet={handleDatesSet}
