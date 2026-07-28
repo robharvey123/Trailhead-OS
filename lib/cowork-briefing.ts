@@ -1,6 +1,70 @@
 import { TASK_SELECT, addDays, formatTask, startOfDayIso, todayDate } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
+import { listEngagements, engagementHoursThisMonth } from '@/lib/db/engagements'
 import { calculateTotals, type LineItem } from '@/lib/types'
+
+type ServerClient = Parameters<typeof listEngagements>[1]
+const svc = supabaseService as unknown as ServerClient
+
+const RENEWAL_WINDOW_DAYS = 45
+
+/**
+ * Per active engagement: hours used vs included with days left in the month,
+ * tier-1 milestones moved this week, invoices outstanding + due dates, and a
+ * renewal flag when the term end is within 45 days — the bit that stops a notice
+ * deadline slipping past.
+ */
+async function activeEngagementBriefs() {
+  const engagements = await listEngagements({ excludeTerminal: true }, svc).catch(() => [])
+  const now = new Date()
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const daysLeftInMonth = Math.max(0, Math.ceil((monthEnd.getTime() - now.getTime()) / 86_400_000))
+  const weekAgo = new Date(now.getTime() - 7 * 86_400_000).toISOString()
+  const today = todayDate()
+
+  return Promise.all(
+    engagements.map(async (e) => {
+      const [hours, { data: milestones }, { data: billing }] = await Promise.all([
+        engagementHoursThisMonth(e.id, e.included_hours_monthly, svc),
+        supabaseService
+          .from('tier1_milestones')
+          .select('completed_at, is_complete, account:accounts(name)')
+          .eq('engagement_id', e.id)
+          .gte('completed_at', weekAgo),
+        supabaseService.from('engagement_billing_summary').select('*').eq('engagement_id', e.id).maybeSingle(),
+      ])
+
+      const b = billing as { total_outstanding?: number | string; next_due_date?: string | null; overdue_count?: number } | null
+      const renewalDays = e.end_date ? Math.ceil((new Date(e.end_date).getTime() - now.getTime()) / 86_400_000) : null
+
+      return {
+        id: e.id,
+        code: e.code,
+        name: e.name,
+        end_client: e.end_client?.name ?? null,
+        hours: {
+          used: Math.round(hours.used * 100) / 100,
+          included: hours.included,
+          over: Math.round(hours.over * 100) / 100,
+          days_left_in_month: daysLeftInMonth,
+        },
+        milestones_moved_this_week: ((milestones ?? []) as Array<{ completed_at: string | null; is_complete: boolean; account: { name: string } | { name: string }[] | null }>).map((m) => ({
+          account: Array.isArray(m.account) ? m.account[0]?.name ?? null : m.account?.name ?? null,
+          completed_at: m.completed_at,
+        })),
+        invoices_outstanding: {
+          total: Number(b?.total_outstanding ?? 0),
+          next_due_date: b?.next_due_date ?? null,
+          overdue_count: Number(b?.overdue_count ?? 0),
+        },
+        renewal:
+          renewalDays !== null && renewalDays <= RENEWAL_WINDOW_DAYS && renewalDays >= 0 && e.end_date
+            ? { date: e.end_date, days_until: renewalDays, note: `Renewal/notice deadline in ${renewalDays} days` }
+            : null,
+      }
+    })
+  ).then((rows) => ({ rows, today }))
+}
 
 type InvoiceSummaryRow = {
   line_items: LineItem[] | null
@@ -99,8 +163,11 @@ export async function getCoworkBriefing() {
     throw firstError
   }
 
+  const engagements = await activeEngagementBriefs().then((r) => r.rows).catch(() => [])
+
   return {
     date: today,
+    engagements,
     tasks: {
       due_today: (dueTodayResult.data ?? []).map((row) => formatTask(row as never)),
       overdue: (overdueResult.data ?? []).map((row) => formatTask(row as never)),

@@ -8,6 +8,7 @@ import {
   parseTaskDueFilter,
 } from '@/lib/cowork-api'
 import { createCoworkTask, listCoworkTasks } from '@/lib/cowork-tasks'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 
 export async function GET(request: NextRequest) {
   if (!validateCoworkToken(request)) {
@@ -41,6 +42,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}))
     const task = await createCoworkTask(body)
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'task',
+      entityId: task.id,
+      entityLabel: task.title,
+      summary: `Created task "${task.title}"${task.workstream ? ` in ${task.workstream.label}` : ''}`,
+      payload: body,
+    })
     return Response.json(task, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create task')

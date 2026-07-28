@@ -13,6 +13,7 @@ import {
   todayDate,
 } from '@/lib/cowork-api'
 import { pushEventToGoogle } from '@/lib/google/calendar'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -110,7 +111,16 @@ export async function POST(request: NextRequest) {
       await pushEventToGoogle(data as never)
     })().catch(() => {})
 
-    return Response.json(formatCalendarEvent(data as never), { status: 201 })
+    const event = formatCalendarEvent(data as never)
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'calendar_event',
+      entityId: event.id,
+      entityLabel: event.title,
+      summary: `Added calendar event "${event.title}" on ${event.start_at.slice(0, 16).replace('T', ' ')}`,
+      payload: body,
+    })
+    return Response.json(event, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create calendar event')
   }

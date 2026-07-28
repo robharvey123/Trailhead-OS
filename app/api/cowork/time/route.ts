@@ -9,6 +9,7 @@ import {
   TIME_ENTRY_SELECT,
 } from '@/lib/cowork-api'
 import { engagementMonthUsage, getEngagementRow, logTime } from '@/lib/cowork-engagements'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 // GET /api/cowork/time — list completed entries with a summary.
@@ -76,6 +77,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}))
     const { entry, warning } = await logTime(body)
+    const label = entry.engagement?.code ?? entry.project?.name ?? entry.account?.name ?? 'general'
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'time_entry',
+      entityId: entry.id,
+      entityLabel: `${entry.hours}h on ${label}`,
+      engagementId: entry.engagement?.id ?? null,
+      summary: `Logged ${entry.hours}h on ${label} at £${entry.rate_snapshot}/h${warning ? ` — over cap by ${warning.over_by_hours}h` : ''}`,
+      payload: body,
+    })
     return Response.json(warning ? { ...entry, warning } : entry, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to log time')

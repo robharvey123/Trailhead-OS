@@ -15,6 +15,7 @@ import {
   sendCoworkInvoicePaidNotification,
 } from '@/lib/cowork-api'
 import { getEngagementRow } from '@/lib/cowork-engagements'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(
@@ -108,7 +109,21 @@ export async function PATCH(
       }).catch(() => {})
     }
 
-    return Response.json(formatInvoice(data as never))
+    const updated = formatInvoice(data as never)
+    // Record the status change with `before` so it can be reverted from the log.
+    if (patch.status !== undefined && existing.status !== updated.status) {
+      void recordCoworkWrite({
+        action: 'update',
+        entity: 'invoice',
+        entityId: updated.id,
+        entityLabel: updated.invoice_number,
+        engagementId: (data as { engagement_id?: string | null }).engagement_id ?? null,
+        summary: `Marked invoice ${updated.invoice_number} ${updated.status} (was ${existing.status})`,
+        before: { status: existing.status },
+        payload: { status: updated.status },
+      })
+    }
+    return Response.json(updated)
   } catch (error) {
     return jsonError(error, 'Failed to update invoice')
   }

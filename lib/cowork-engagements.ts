@@ -229,6 +229,7 @@ export function formatEngagement(e: EngRow) {
 export function formatMilestone(m: Tier1MilestoneWithAccount) {
   const account = firstRel(m.account)
   return {
+    id: m.id,
     account: account ? { id: account.id, name: account.name, channel: account.channel } : null,
     account_id: m.account_id,
     range_review_decided_at: m.range_review_decided_at,

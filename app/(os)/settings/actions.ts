@@ -3,8 +3,20 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { requireAdmin } from '@/lib/auth/roles'
+import { getCurrentProfile, requireAdmin, roleIsEmployee } from '@/lib/auth/roles'
 import { disconnectFreeAgent } from '@/lib/freeagent/client'
+import { revertCoworkActivity } from '@/lib/cowork-audit'
+
+/** Revert a reversible Cowork activity row (invoice status, time entry, milestone gate). */
+export async function revertCoworkActivityAction(formData: FormData): Promise<void> {
+  const supabase = await createClient()
+  const profile = await getCurrentProfile(supabase)
+  if (!roleIsEmployee(profile?.role)) return
+  const id = String(formData.get('id') ?? '')
+  if (!id) return
+  await revertCoworkActivity(id)
+  revalidatePath('/settings')
+}
 
 /** Disconnect the FreeAgent accounting connection (admin only). */
 export async function disconnectFreeAgentAction(): Promise<{ error?: string }> {

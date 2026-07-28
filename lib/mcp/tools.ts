@@ -10,6 +10,28 @@ import { getProjectById, getProjects } from '@/lib/db/projects'
 import type { createClient as createServerClient } from '@/lib/supabase/server'
 import { supabaseService } from '@/lib/supabase/service'
 import {
+  ACCOUNT_SELECT,
+  accountCounts,
+  findAccountByExactName,
+  formatAccount,
+  optionalString,
+  parseAccountStatus,
+} from '@/lib/cowork-api'
+import {
+  addTier1,
+  engagementMonthUsage,
+  getEngagementDetail,
+  getEngagementRow,
+  getMilestones,
+  listEngagements as listEngagementsFn,
+  logTime,
+  raiseMilestoneInvoiceByAccount,
+  setMilestone,
+} from '@/lib/cowork-engagements'
+import { createCoworkInvoice, listCoworkInvoices, setInvoiceStatus } from '@/lib/cowork-invoices'
+import { getCampaignDetail, listCampaigns } from '@/lib/cowork-outreach'
+import { listCoworkActivity, recordCoworkWrite } from '@/lib/cowork-audit'
+import {
   ENGAGEMENT_TASK_PRIORITIES,
   ENGAGEMENT_TASK_STATUSES,
   type ProjectStatus,
@@ -98,11 +120,14 @@ export const getProject = defineTool({
   description:
     'Get one project by id with its phases, milestones, and counts (tasks, completed tasks, contacts).',
   inputSchema: z.object({
-    id: z.string().min(1),
+    id: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
   }),
   handler: async (input) => {
-    const project = await getProjectById(input.id, db)
-    if (!project) throw new Error(`Project not found: ${input.id}`)
+    const projectId = input.id ?? input.project_id
+    if (!projectId) throw new Error('id (or project_id) is required')
+    const project = await getProjectById(projectId, db)
+    if (!project) throw new Error(`Project not found: ${projectId}`)
     return {
       id: project.id,
       name: project.name,
@@ -257,6 +282,264 @@ export const briefing = defineTool({
   handler: async () => getCoworkBriefing(),
 })
 
+// ── Engagements / time / milestones / invoices (delegate to shared modules) ───
+
+const engagementRef = z.string().min(1) // uuid or code
+
+export const listEngagementsTool = defineTool({
+  name: 'list_engagements',
+  description: 'Active engagements with hours used this month and billing position. Filter by status/account.',
+  inputSchema: z.object({ status: z.string().optional(), account: z.string().optional(), limit: z.number().optional() }),
+  handler: async (input) => listEngagementsFn({ status: input.status as never, accountId: undefined, limit: input.limit }),
+})
+
+export const getEngagementTool = defineTool({
+  name: 'get_engagement',
+  description: 'Full engagement detail (hours, tier-1, billing, contributors, projects). Accepts the code or the uuid.',
+  inputSchema: z.object({ id: engagementRef }),
+  handler: async (input) => getEngagementDetail(input.id),
+})
+
+export const logTimeTool = defineTool({
+  name: 'log_time',
+  description: 'Log completed time against an engagement, project or task. Snapshots a rate; warns if it takes the engagement past its monthly cap. e.g. "log 90 minutes on the Bestway pitch".',
+  inputSchema: z.object({
+    engagement_id: z.string().optional(),
+    project_id: z.string().optional(),
+    task_id: z.string().optional(),
+    account_id: z.string().optional(),
+    duration_minutes: z.number().int().positive(),
+    entry_date: isoDate.optional(),
+    description: z.string().nullable().optional(),
+    billable: z.boolean().optional(),
+    rate_snapshot: z.number().optional(),
+  }),
+  handler: async (input) => {
+    const { entry, warning } = await logTime(input as Record<string, unknown>)
+    const label = entry.engagement?.code ?? entry.project?.name ?? entry.account?.name ?? 'general'
+    void recordCoworkWrite({
+      action: 'create', entity: 'time_entry', entityId: entry.id, entityLabel: `${entry.hours}h on ${label}`,
+      engagementId: entry.engagement?.id ?? null,
+      summary: `Logged ${entry.hours}h on ${label} at £${entry.rate_snapshot}/h${warning ? ` — over cap by ${warning.over_by_hours}h` : ''}`,
+      payload: input as Record<string, unknown>,
+    })
+    return warning ? { ...entry, warning } : entry
+  },
+})
+
+export const setMilestoneGateTool = defineTool({
+  name: 'set_milestone_gate',
+  description: 'Set or clear a Tier 1 gate (range_review_decided | go_live_confirmed | first_po_received) for an account on an engagement. e.g. "Booker range review decided today". Pass date:null to clear.',
+  inputSchema: z.object({
+    engagement: engagementRef,
+    account_id: z.string().optional(),
+    account_name: z.string().optional(),
+    gate: z.enum(['range_review_decided', 'go_live_confirmed', 'first_po_received']),
+    date: isoDate.nullable(),
+  }),
+  handler: async (input) => {
+    const engagement = await getEngagementRow(input.engagement)
+    let accountId = input.account_id
+    if (!accountId && input.account_name) {
+      const acc = await findAccountByExactName(input.account_name)
+      if (!acc) throw new Error(`Account not found: ${input.account_name}`)
+      accountId = acc.id
+    }
+    if (!accountId) throw new Error('account_id or account_name is required')
+    const prior = (await getMilestones(input.engagement)).find((m) => m.account_id === accountId)
+    const milestone = await setMilestone(input.engagement, accountId, { gate: input.gate, date: input.date })
+    void recordCoworkWrite({
+      action: 'update', entity: 'tier1_milestone', entityId: milestone.id,
+      entityLabel: `${milestone.account?.name ?? 'account'} — Tier 1`, engagementId: engagement.id,
+      summary: `Set ${input.gate} for ${milestone.account?.name ?? 'an account'} on ${engagement.name}${milestone.is_complete ? ' — all three gates now complete' : ''}`,
+      before: {
+        range_review_decided_at: prior?.range_review_decided_at ?? null,
+        go_live_confirmed_at: prior?.go_live_confirmed_at ?? null,
+        first_po_received_at: prior?.first_po_received_at ?? null,
+      },
+      payload: input as Record<string, unknown>,
+    })
+    return milestone
+  },
+})
+
+export const raiseListingInvoiceTool = defineTool({
+  name: 'raise_listing_invoice',
+  description: 'Raise the Tier 1 performance-fee invoice from a completed milestone (engagement + account).',
+  inputSchema: z.object({ engagement: engagementRef, account_id: z.string().min(1) }),
+  handler: async (input) => {
+    const engagement = await getEngagementRow(input.engagement)
+    const invoice = await raiseMilestoneInvoiceByAccount(input.engagement, input.account_id)
+    const fee = invoice.line_items?.[0]?.unit_price ?? 0
+    void recordCoworkWrite({
+      action: 'create', entity: 'invoice', entityId: invoice.id, entityLabel: invoice.invoice_number, engagementId: engagement.id,
+      summary: `Raised ${invoice.invoice_number}, £${Number(fee).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}, Tier 1 listing fee, ${engagement.name}`,
+      payload: input as Record<string, unknown>,
+    })
+    return invoice
+  },
+})
+
+export const listInvoicesTool = defineTool({
+  name: 'list_invoices',
+  description: 'List invoices, filterable by status and engagement. Excludes soft-deleted.',
+  inputSchema: z.object({ status: z.string().optional(), engagement: z.string().optional(), limit: z.number().optional() }),
+  handler: async (input) => {
+    const engagementId = input.engagement ? (await getEngagementRow(input.engagement)).id : null
+    return listCoworkInvoices({ status: input.status, engagementId, limit: input.limit })
+  },
+})
+
+export const raiseInvoiceTool = defineTool({
+  name: 'raise_invoice',
+  description: 'Create a retainer/overage invoice. line_items:[{description,qty,unit_price}]; engagement_id links it and defaults the account.',
+  inputSchema: z.object({
+    line_items: z.array(z.object({ description: z.string(), qty: z.number(), unit_price: z.number() })).min(1),
+    engagement_id: z.string().optional(),
+    account_name: z.string().optional(),
+    status: z.enum(['draft', 'sent']).optional(),
+    due_date: isoDate.optional(),
+    vat_rate: z.number().optional(),
+    notes: z.string().optional(),
+  }),
+  handler: async (input) => {
+    const { invoice, engagement } = await createCoworkInvoice(input as Record<string, unknown>)
+    const gbp = `£${invoice.total.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    void recordCoworkWrite({
+      action: 'create', entity: 'invoice', entityId: invoice.id, entityLabel: invoice.invoice_number, engagementId: engagement?.id ?? null,
+      summary: `Raised ${invoice.status} invoice ${invoice.invoice_number}, ${gbp}, ${invoice.title}${invoice.account ? `, ${invoice.account.name}` : ''}${engagement ? ` (${engagement.name})` : ''}`,
+      payload: input as Record<string, unknown>,
+    })
+    return invoice
+  },
+})
+
+export const markInvoicePaidTool = defineTool({
+  name: 'mark_invoice_paid',
+  description: 'Mark an invoice paid (or set another status). id is the invoice uuid.',
+  inputSchema: z.object({ id: z.string().min(1), status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).optional() }),
+  handler: async (input) => {
+    const { invoice, before } = await setInvoiceStatus(input.id, input.status ?? 'paid')
+    void recordCoworkWrite({
+      action: 'update', entity: 'invoice', entityId: invoice.id, entityLabel: invoice.invoice_number,
+      summary: `Marked invoice ${invoice.invoice_number} ${invoice.status} (was ${before.status})`,
+      before, payload: { status: invoice.status },
+    })
+    return invoice
+  },
+})
+
+export const findAccountTool = defineTool({
+  name: 'find_account',
+  description: 'Find an account by exact (case-insensitive) name. Returns the row or null — use before creating to avoid duplicates.',
+  inputSchema: z.object({ name: z.string().min(1) }),
+  handler: async (input) => {
+    const acc = await findAccountByExactName(input.name)
+    if (!acc) return null
+    const { contacts, openTasks } = await accountCounts([acc.id])
+    return formatAccount(acc as never, { contacts: contacts.get(acc.id) ?? 0, open_tasks: openTasks.get(acc.id) ?? 0 })
+  },
+})
+
+export const createAccountTool = defineTool({
+  name: 'create_account',
+  description: 'Create an account, duplicate-safe: on a name match it returns the existing row (existing:true) and creates nothing.',
+  inputSchema: z.object({
+    name: z.string().min(1),
+    website: z.string().nullable().optional(),
+    industry: z.string().nullable().optional(),
+    status: z.string().optional(),
+    channel: z.string().nullable().optional(),
+    notes: z.string().nullable().optional(),
+  }),
+  handler: async (input) => {
+    const existing = await findAccountByExactName(input.name)
+    if (existing) {
+      const { contacts, openTasks } = await accountCounts([existing.id])
+      return { existing: true, account: formatAccount(existing as never, { contacts: contacts.get(existing.id) ?? 0, open_tasks: openTasks.get(existing.id) ?? 0 }) }
+    }
+    const { data, error } = await supabaseService
+      .from('accounts')
+      .insert({
+        name: input.name,
+        website: optionalString(input.website),
+        industry: optionalString(input.industry),
+        status: parseAccountStatus(input.status),
+        channel: optionalString(input.channel),
+        notes: optionalString(input.notes),
+      })
+      .select(ACCOUNT_SELECT)
+      .single()
+    if (error) throw new Error(error.message || 'Failed to create account')
+    const account = formatAccount(data as never, { contacts: 0, open_tasks: 0 })
+    void recordCoworkWrite({
+      action: 'create', entity: 'account', entityId: account.id, entityLabel: account.name,
+      summary: `Created account "${account.name}"`, payload: input as Record<string, unknown>,
+    })
+    return { existing: false, account }
+  },
+})
+
+export const addTier1AccountTool = defineTool({
+  name: 'add_tier1_account',
+  description: 'Attach a target account to an engagement as a Tier 1 listing. account_name with create_if_missing creates it.',
+  inputSchema: z.object({
+    engagement: engagementRef,
+    account_id: z.string().optional(),
+    account_name: z.string().optional(),
+    create_if_missing: z.boolean().optional(),
+    notes: z.string().optional(),
+  }),
+  handler: async (input) => {
+    const engagement = await getEngagementRow(input.engagement)
+    const tier1 = await addTier1(input.engagement, input as Record<string, unknown>)
+    void recordCoworkWrite({
+      action: 'create', entity: 'tier1_account', engagementId: engagement.id,
+      summary: `Attached a Tier 1 target account to ${engagement.name} (${tier1.length} tracked)`, payload: input as Record<string, unknown>,
+    })
+    return tier1
+  },
+})
+
+export const listOutreachCampaignsTool = defineTool({
+  name: 'list_outreach_campaigns',
+  description: 'List outreach campaigns with their stats (pipeline reporting).',
+  inputSchema: z.object({}),
+  handler: async () => listCampaigns(),
+})
+
+export const getCampaignStatsTool = defineTool({
+  name: 'get_campaign_stats',
+  description: 'Campaign stats: sends/deliveries/opens/replies, per-recipient status counts, recent replies. id is the campaign uuid.',
+  inputSchema: z.object({ id: z.string().min(1) }),
+  handler: async (input) => getCampaignDetail(input.id),
+})
+
+export const engagementHoursCheckTool = defineTool({
+  name: 'engagement_hours_check',
+  description: 'Hours used vs included for an engagement this month (or a given YYYY-MM month).',
+  inputSchema: z.object({ engagement: engagementRef, month: z.string().regex(/^\d{4}-\d{2}$/).optional() }),
+  handler: async (input) => {
+    if (!input.month) return engagementMonthUsage(input.engagement)
+    const e = await getEngagementRow(input.engagement)
+    const period = `${input.month}-01`
+    const { data } = await supabaseService.from('engagement_hours_by_month').select('*').eq('engagement_id', e.id).eq('period_month', period).maybeSingle()
+    const row = data as { hours_used?: number | string; billable_hours?: number | string } | null
+    const used = Number(row?.hours_used ?? 0)
+    return { engagement_id: e.id, month: input.month, used, included: e.included_hours_monthly, over: used - (e.included_hours_monthly ?? 0) }
+  },
+})
+
+export const recentCoworkActivityTool = defineTool({
+  name: 'recent_cowork_activity',
+  description: 'Recent Cowork writes (the change log), newest first. Filter by engagement/entity.',
+  inputSchema: z.object({ engagement: z.string().optional(), entity: z.string().optional(), limit: z.number().optional() }),
+  handler: async (input) => {
+    const engagementId = input.engagement ? (await getEngagementRow(input.engagement)).id : undefined
+    return listCoworkActivity({ engagementId, entity: input.entity, limit: input.limit })
+  },
+})
+
 export const tools: McpTool[] = [
   whoami,
   listProjects,
@@ -266,4 +549,19 @@ export const tools: McpTool[] = [
   updateEngagementTaskTool,
   addNoteTool,
   briefing,
+  listEngagementsTool,
+  getEngagementTool,
+  logTimeTool,
+  setMilestoneGateTool,
+  raiseListingInvoiceTool,
+  listInvoicesTool,
+  raiseInvoiceTool,
+  markInvoicePaidTool,
+  findAccountTool,
+  createAccountTool,
+  addTier1AccountTool,
+  listOutreachCampaignsTool,
+  getCampaignStatsTool,
+  engagementHoursCheckTool,
+  recentCoworkActivityTool,
 ]

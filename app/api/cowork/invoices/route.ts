@@ -2,21 +2,14 @@ import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
   INVOICE_SELECT,
-  findAccountByName,
-  findContactByName,
-  findPricingTierBySlug,
   formatInvoice,
   getWorkstreamBySlug,
   jsonError,
-  optionalDate,
-  optionalString,
   parseInvoiceListStatus,
-  parseLineItems,
   parseLimit,
-  parseVatRate,
-  todayDate,
 } from '@/lib/cowork-api'
-import { getEngagementRow } from '@/lib/cowork-engagements'
+import { createCoworkInvoice } from '@/lib/cowork-invoices'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -66,66 +59,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json().catch(() => ({}))
-    const workstreamSlug = optionalString(body.workstream)
-    const contactName = optionalString(body.contact_name)
-    const accountName = optionalString(body.account_name)
-    const tierSlug = optionalString(body.tier)
-    const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
-    const lineItems = parseLineItems(body.line_items)
-    const status = body.status === undefined ? 'draft' : optionalString(body.status)
-
-    if (status !== 'draft' && status !== 'sent') {
-      return Response.json({ error: 'status must be draft or sent' }, { status: 400 })
-    }
-
-    const contact = contactName ? await findContactByName(contactName) : null
-    let account = accountName
-      ? await findAccountByName(accountName)
-      : contact?.account_id
-        ? { id: contact.account_id, name: '' }
-        : null
-    const pricingTier = tierSlug ? await findPricingTierBySlug(tierSlug) : null
-
-    if (contactName && !contact) {
-      return Response.json({ error: `Contact not found: ${contactName}` }, { status: 400 })
-    }
-
-    if (accountName && !account) {
-      return Response.json({ error: `Account not found: ${accountName}` }, { status: 400 })
-    }
-
-    // Engagement link (validated). When engagement_id is supplied and no account was
-    // resolved, default the account to the engagement's billed_via, then end client.
-    const engagementRef = optionalString(body.engagement_id)
-    const engagement = engagementRef ? await getEngagementRow(engagementRef) : null
-    if (engagement && !account) {
-      const defaultAccountId = engagement.billed_via_account_id ?? engagement.end_client_account_id
-      if (defaultAccountId) account = { id: defaultAccountId, name: '' }
-    }
-
-    const { data, error } = await supabaseService
-      .from('invoices')
-      .insert({
-        contact_id: contact?.id ?? null,
-        account_id: account?.id ?? null,
-        workstream_id: workstream?.id ?? null,
-        engagement_id: engagement?.id ?? null,
-        pricing_tier_id: pricingTier?.id ?? null,
-        issue_date: todayDate(),
-        due_date: optionalDate(body.due_date, 'due_date'),
-        vat_rate: parseVatRate(body.vat_rate),
-        line_items: lineItems,
-        notes: optionalString(body.notes),
-        status,
-      })
-      .select(INVOICE_SELECT)
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    return Response.json(formatInvoice(data as never), { status: 201 })
+    const { invoice, engagement } = await createCoworkInvoice(body)
+    const gbp = `£${invoice.total.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'invoice',
+      entityId: invoice.id,
+      entityLabel: invoice.invoice_number,
+      engagementId: engagement?.id ?? null,
+      summary: `Raised ${invoice.status} invoice ${invoice.invoice_number}, ${gbp}, ${invoice.title}${invoice.account ? `, ${invoice.account.name}` : ''}${engagement ? ` (${engagement.name})` : ''}`,
+      payload: { line_items: invoice.line_items, status: invoice.status, engagement_id: engagement?.id ?? null },
+    })
+    return Response.json(invoice, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create invoice')
   }

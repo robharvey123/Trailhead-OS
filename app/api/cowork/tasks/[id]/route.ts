@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
 import { formatTask, getTaskById, jsonError } from '@/lib/cowork-api'
 import { updateCoworkTask } from '@/lib/cowork-tasks'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(
@@ -33,6 +34,14 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json().catch(() => ({}))
     const task = await updateCoworkTask(id, body)
+    void recordCoworkWrite({
+      action: 'update',
+      entity: 'task',
+      entityId: task.id,
+      entityLabel: task.title,
+      summary: `Updated task "${task.title}" (${Object.keys(body).join(', ')})`,
+      payload: body,
+    })
     return Response.json(task)
   } catch (error) {
     return jsonError(error, 'Failed to update task')
@@ -49,7 +58,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await getTaskById(id)
+    const existing = await getTaskById(id)
 
     const { error } = await supabaseService
       .from('tasks')
@@ -60,6 +69,13 @@ export async function DELETE(
       throw error
     }
 
+    void recordCoworkWrite({
+      action: 'delete',
+      entity: 'task',
+      entityId: id,
+      entityLabel: existing.title,
+      summary: `Deleted task "${existing.title}"`,
+    })
     return Response.json({ deleted: true })
   } catch (error) {
     return jsonError(error, 'Failed to delete task')

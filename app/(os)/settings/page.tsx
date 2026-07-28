@@ -12,6 +12,7 @@ import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { getFreeAgentStatus } from '@/lib/freeagent/client'
 import FreeAgentSettings from '@/components/os/FreeAgentSettings'
 import ProfileSettingsForm from '@/components/os/ProfileSettingsForm'
+import CoworkActivityPanel, { type CoworkActivityRow } from '@/components/os/CoworkActivityPanel'
 import type { PricingTier, Workstream } from '@/lib/types'
 
 export default async function SettingsPage() {
@@ -108,6 +109,16 @@ export default async function SettingsPage() {
     googleEmail = data?.email ?? null
   } catch {}
 
+  let coworkActivity: CoworkActivityRow[] = []
+  try {
+    const { data } = await supabase
+      .from('cowork_activity')
+      .select('id, action, entity, entity_id, entity_label, summary, reverted_at, created_at, before')
+      .order('created_at', { ascending: false })
+      .limit(50)
+    coworkActivity = (data ?? []) as CoworkActivityRow[]
+  } catch {}
+
   return (
     <div className="os-narrow space-y-6">
       <div>
@@ -140,6 +151,8 @@ export default async function SettingsPage() {
         initialGoogleEmail={googleEmail}
         paidInvoicesThisMonth={paidInvoicesThisMonth}
       />
+
+      <CoworkActivityPanel activity={coworkActivity} />
 
       <section className="os-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">

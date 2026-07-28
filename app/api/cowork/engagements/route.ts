@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
 import { findAccountByExactName, isUuid, jsonError, parseLimit } from '@/lib/cowork-api'
 import { createEngagement, listEngagements } from '@/lib/cowork-engagements'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import type { EngagementStatus } from '@/lib/types'
 
 const STATUSES = new Set<EngagementStatus>(['Draft', 'Active', 'Paused', 'Completed', 'Terminated'])
@@ -42,7 +43,17 @@ export async function POST(request: NextRequest) {
   }
   try {
     const body = await request.json().catch(() => ({}))
-    return Response.json(await createEngagement(body), { status: 201 })
+    const engagement = await createEngagement(body)
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'engagement',
+      entityId: engagement.id,
+      entityLabel: engagement.code ?? engagement.name,
+      engagementId: engagement.id,
+      summary: `Created engagement "${engagement.name}"${engagement.code ? ` (${engagement.code})` : ''}, end client ${engagement.end_client?.name ?? '—'}, status ${engagement.status}`,
+      payload: body,
+    })
+    return Response.json(engagement, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create engagement')
   }

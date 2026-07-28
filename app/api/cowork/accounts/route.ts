@@ -14,6 +14,7 @@ import {
   parseTags,
   requiredString,
 } from '@/lib/cowork-api'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 // GET /api/cowork/accounts — list accounts with contact + open-task counts.
@@ -113,7 +114,16 @@ export async function POST(request: NextRequest) {
       .single()
     if (error) throw error
 
-    return Response.json(formatAccount(data as never, { contacts: 0, open_tasks: 0 }), { status: 201 })
+    const account = formatAccount(data as never, { contacts: 0, open_tasks: 0 })
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'account',
+      entityId: account.id,
+      entityLabel: account.name,
+      summary: `Created account "${account.name}"${account.status ? ` (${account.status})` : ''}`,
+      payload: body,
+    })
+    return Response.json(account, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create account')
   }

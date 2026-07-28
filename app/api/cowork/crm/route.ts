@@ -10,6 +10,7 @@ import {
   parseLimit,
   requiredString,
 } from '@/lib/cowork-api'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -90,7 +91,16 @@ export async function POST(request: NextRequest) {
       throw error
     }
 
-    return Response.json(formatContact(data as never), { status: 201 })
+    const contact = formatContact(data as never)
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'contact',
+      entityId: contact.id,
+      entityLabel: contact.name,
+      summary: `Created contact "${contact.name}"${contact.company ? ` at ${contact.company}` : ''}`,
+      payload: body,
+    })
+    return Response.json(contact, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create contact')
   }

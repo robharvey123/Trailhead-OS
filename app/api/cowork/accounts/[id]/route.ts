@@ -12,6 +12,7 @@ import {
   parseAccountStatus,
   parseTags,
 } from '@/lib/cowork-api'
+import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -72,9 +73,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (error) throw error
 
     const { contacts, openTasks } = await accountCounts([id])
-    return Response.json(
-      formatAccount(data as never, { contacts: contacts.get(id) ?? 0, open_tasks: openTasks.get(id) ?? 0 })
-    )
+    const account = formatAccount(data as never, { contacts: contacts.get(id) ?? 0, open_tasks: openTasks.get(id) ?? 0 })
+    void recordCoworkWrite({
+      action: 'update',
+      entity: 'account',
+      entityId: account.id,
+      entityLabel: account.name,
+      summary: `Updated account "${account.name}" (${Object.keys(patch).join(', ')})`,
+      payload: body,
+    })
+    return Response.json(account)
   } catch (error) {
     return jsonError(error, 'Failed to update account')
   }
@@ -92,7 +100,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   }
   try {
     const { id } = await params
-    await getAccountById(id) // 404 if missing
+    const account = await getAccountById(id) // 404 if missing
 
     const count = async (table: string, column: string, selectCol = 'id') => {
       const { count: n, error } = await supabaseService
@@ -137,6 +145,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     const { error } = await supabaseService.from('accounts').delete().eq('id', id)
     if (error) throw error
+    void recordCoworkWrite({
+      action: 'delete',
+      entity: 'account',
+      entityId: id,
+      entityLabel: account.name,
+      summary: `Deleted account "${account.name}" (had no references)`,
+    })
     return Response.json({ ok: true, deleted: id })
   } catch (error) {
     return jsonError(error, 'Failed to delete account')
