@@ -6,7 +6,7 @@ import { useState } from 'react'
 import ComposeModal from './inbox/ComposeModal'
 import SyncMailButton from './SyncMailButton'
 import ProjectsSection from './ProjectsSection'
-import SearchSelect from './SearchSelect'
+import EntityCombobox from './EntityCombobox'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
 import MeetingNotesTimeline from './MeetingNotesTimeline'
@@ -357,17 +357,13 @@ export default function ContactDetailClient({
                   ))}
                 </select>
               </label>
-              <SearchSelect
+              <EntityCombobox
                 label="Account"
+                entity="account"
                 value={form.account_id}
-                options={accounts.map((account) => ({
-                  value: account.id,
-                  label: account.name,
-                  meta: account.website ?? account.industry ?? null,
-                }))}
-                onChange={(value) => setForm({ ...form, account_id: value })}
-                placeholder="Search accounts"
-                emptyLabel="No account"
+                selectedLabel={accounts.find((a) => a.id === form.account_id)?.name}
+                onChange={(opt) => setForm({ ...form, account_id: opt.id })}
+                clearable
               />
               <label className="space-y-2 md:col-span-2">
                 <span className="text-sm text-[color:var(--text-2)]">Status</span>
@@ -443,17 +439,13 @@ export default function ContactDetailClient({
                     </Link>
                   ) : linkingAccount ? (
                     <div className="space-y-3">
-                      <SearchSelect
-                        label=""
+                      <EntityCombobox
+                        label="Account"
+                        entity="account"
                         value={form.account_id}
-                        options={accounts.map((account) => ({
-                          value: account.id,
-                          label: account.name,
-                          meta: account.website ?? account.industry ?? null,
-                        }))}
-                        onChange={(value) => setForm({ ...form, account_id: value })}
-                        placeholder="Search accounts"
-                        emptyLabel="No account"
+                        selectedLabel={accounts.find((a) => a.id === form.account_id)?.name}
+                        onChange={(opt) => setForm({ ...form, account_id: opt.id })}
+                        clearable
                       />
                       <button
                         type="button"

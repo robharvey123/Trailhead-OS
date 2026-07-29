@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
-import SearchSelect from './SearchSelect'
+import EntityCombobox from './EntityCombobox'
 import type { Account, Contact, ContactStatus, Workstream } from '@/lib/types'
 
 const CONTACT_STATUSES: ContactStatus[] = ['lead', 'active', 'inactive', 'archived']
@@ -181,21 +181,14 @@ export default function NewContactForm({
             className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
-        <div className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Account</span>
-          <SearchSelect
-            label=""
-            value={accountId}
-            options={accounts.map((account) => ({
-              value: account.id,
-              label: account.name,
-              meta: account.website ?? account.industry ?? null,
-            }))}
-            onChange={setAccountId}
-            placeholder="Search accounts"
-            emptyLabel="No account"
-          />
-        </div>
+        <EntityCombobox
+          label="Account"
+          entity="account"
+          value={accountId}
+          selectedLabel={accounts.find((a) => a.id === accountId)?.name}
+          onChange={(opt) => setAccountId(opt.id)}
+          clearable
+        />
         <label className="space-y-2">
           <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
           <select

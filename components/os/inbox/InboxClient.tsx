@@ -10,6 +10,7 @@ import type { EmailLog, EmailThread } from '@/lib/types'
 type LiveStatus = 'connecting' | 'live' | 'offline'
 import ComposeModal, { type ComposePayload } from './ComposeModal'
 import SafeEmailHtml from '../SafeEmailHtml'
+import EntityCombobox from '../EntityCombobox'
 
 type Named = { id: string; name: string }
 type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
@@ -528,7 +529,7 @@ export default function InboxClient({
       case 'unarchive': return { in_inbox: true }
       case 'trash': return { in_trash: true, in_inbox: false }
       case 'untrash': return { in_trash: false, in_inbox: true }
-      case 'link': return { account_id: String(extra?.account_id), account_name: accounts.find((a) => a.id === extra?.account_id)?.name ?? null, match_method: 'manual' }
+      case 'link': return { account_id: String(extra?.account_id), account_name: (extra?.account_name as string | undefined) ?? accounts.find((a) => a.id === extra?.account_id)?.name ?? null, match_method: 'manual' }
       case 'unlink': return { account_id: null, account_name: null, match_method: 'unmatched' }
       default: return null
     }
@@ -988,14 +989,15 @@ export default function InboxClient({
                   {active.account_id ? (
                     <Link className="acct-chip" href={`/crm/accounts/${active.account_id}`}>◈ {active.account_name ?? 'Account'}</Link>
                   ) : (
-                    <select
-                      className="filter-select"
-                      defaultValue=""
-                      onChange={(e) => { if (e.target.value) threadAction('link', { account_id: e.target.value }) }}
-                    >
-                      <option value="">⚠ Unmatched — link to account…</option>
-                      {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
-                    </select>
+                    <div style={{ minWidth: 280 }}>
+                      <EntityCombobox
+                        label=""
+                        entity="account"
+                        value=""
+                        placeholder="⚠ Unmatched — link to account…"
+                        onChange={(opt) => { if (opt.id) threadAction('link', { account_id: opt.id, account_name: opt.label }) }}
+                      />
+                    </div>
                   )}
                   <span className="meta-chip">{active.match_method ?? 'unmatched'}</span>
                   <span className="meta-chip">{active.message_count} message{active.message_count > 1 ? 's' : ''}</span>
