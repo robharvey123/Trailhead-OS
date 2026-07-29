@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import type { Account, Project, ProjectStatus } from '@/lib/types'
 import ConfirmDialog from './ConfirmDialog'
-import SearchSelect from './SearchSelect'
+import EntityCombobox from './EntityCombobox'
 import EngagementPicker, { type EngagementOption } from '@/components/projects/EngagementPicker'
 
 const PROJECT_STATUSES: ProjectStatus[] = [
@@ -169,13 +169,13 @@ export default function ProjectForm({
           />
         </label>
 
-        <SearchSelect
+        <EntityCombobox
           label="Account"
+          entity="account"
           value={form.account_id}
-          options={accountOptions}
-          onChange={(value) => setForm({ ...form, account_id: value })}
-          placeholder="Search accounts"
-          emptyLabel="No account"
+          selectedLabel={accountOptions.find((o) => o.value === form.account_id)?.label}
+          onChange={(opt) => setForm({ ...form, account_id: opt.id })}
+          clearable
         />
 
         <label className="space-y-2">

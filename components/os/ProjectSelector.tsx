@@ -1,14 +1,15 @@
 'use client'
 
 import type { ProjectListItem } from '@/lib/types'
-import SearchSelect from './SearchSelect'
+import EntityCombobox from './EntityCombobox'
 
+// Thin wrapper over EntityCombobox that keeps the (value: string) API its callers
+// use. `projects` is only needed to resolve the current selection's label.
 export default function ProjectSelector({
   label,
   value,
   projects,
   onChange,
-  emptyLabel = 'No project',
   disabled = false,
 }: {
   label: string
@@ -19,19 +20,14 @@ export default function ProjectSelector({
   disabled?: boolean
 }) {
   return (
-    <SearchSelect
+    <EntityCombobox
       label={label}
+      entity="project"
       value={value}
-      options={projects.map((project) => ({
-        value: project.id,
-        label: project.name,
-        meta: project.account?.name ?? project.workstream?.label ?? null,
-      }))}
-      onChange={onChange}
-      placeholder="Search projects"
-      emptyLabel={emptyLabel}
+      selectedLabel={projects.find((project) => project.id === value)?.name}
+      onChange={(opt) => onChange(opt.id)}
       disabled={disabled}
-      maxVisibleOptions={12}
+      clearable
     />
   )
 }

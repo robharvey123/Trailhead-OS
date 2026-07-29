@@ -7,7 +7,7 @@ import { apiFetch } from '@/lib/api-fetch'
 import EmailThread from './EmailThread'
 import EnquiryDetailActions from './EnquiryDetailActions'
 import RecordEmailDialog from './RecordEmailDialog'
-import SearchSelect from './SearchSelect'
+import EntityCombobox from './EntityCombobox'
 import StatusBadge from './StatusBadge'
 import type { Account, Enquiry, EnquiryStatus, ProjectDetail, ProjectListItem } from '@/lib/types'
 
@@ -487,40 +487,22 @@ export default function EnquiryDetailClient({
                   </select>
                 </label>
 
-                <SearchSelect
+                <EntityCombobox
                   label="Linked account"
+                  entity="account"
                   value={form.account_id}
-                  options={accounts.map((account) => ({
-                    value: account.id,
-                    label: account.name,
-                    meta: account.website ?? account.industry ?? null,
-                  }))}
-                  onChange={(value) =>
-                    setForm((current) => ({
-                      ...current,
-                      account_id: value,
-                    }))
-                  }
-                  placeholder="Search accounts"
-                  emptyLabel="No account"
+                  selectedLabel={accounts.find((a) => a.id === form.account_id)?.name}
+                  onChange={(opt) => setForm((current) => ({ ...current, account_id: opt.id }))}
+                  clearable
                 />
 
-                <SearchSelect
+                <EntityCombobox
                   label="Linked project"
+                  entity="project"
                   value={form.project_id}
-                  options={projects.map((project) => ({
-                    value: project.id,
-                    label: project.name,
-                    meta: project.account?.name ?? project.workstream?.label ?? null,
-                  }))}
-                  onChange={(value) =>
-                    setForm((current) => ({
-                      ...current,
-                      project_id: value,
-                    }))
-                  }
-                  placeholder="Search projects"
-                  emptyLabel="No project"
+                  selectedLabel={projects.find((p) => p.id === form.project_id)?.name}
+                  onChange={(opt) => setForm((current) => ({ ...current, project_id: opt.id }))}
+                  clearable
                 />
               </div>
             ) : (

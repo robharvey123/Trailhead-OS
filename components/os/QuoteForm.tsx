@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import PricingTierSelector from './PricingTierSelector'
-import SearchSelect from './SearchSelect'
+import EntityCombobox from './EntityCombobox'
 import { apiFetch } from '@/lib/api-fetch'
 import { calculateTotals } from '@/lib/types'
 import type {
@@ -418,48 +418,38 @@ export default function QuoteForm({
           />
         </label>
 
-        <SearchSelect
+        <EntityCombobox
           label="Account"
+          entity="account"
           value={accountId}
-          options={accounts.map((account) => ({
-            value: account.id,
-            label: account.name,
-            meta: account.website ?? account.industry ?? null,
-          }))}
-          onChange={(value) => {
-            setAccountId(value)
-            if (value && contacts.every((contact) => contact.id !== contactId || contact.account_id !== value)) {
+          selectedLabel={accounts.find((a) => a.id === accountId)?.name}
+          onChange={(opt) => {
+            setAccountId(opt.id)
+            if (opt.id && contacts.every((contact) => contact.id !== contactId || contact.account_id !== opt.id)) {
               setContactId('')
             }
           }}
-          placeholder="Search accounts"
-          emptyLabel="No account"
+          clearable
         />
 
-        <SearchSelect
+        <EntityCombobox
           label="Contact"
+          entity="contact"
           value={contactId}
-          options={filteredContacts.map((contact) => ({
-            value: contact.id,
-            label: contact.name,
-            meta: contact.company ?? contact.email ?? null,
-          }))}
-          onChange={setContactId}
-          placeholder="Search contacts"
-          emptyLabel="No contact"
+          selectedLabel={filteredContacts.find((c) => c.id === contactId)?.name}
+          filters={accountId ? { account_id: accountId } : undefined}
+          onChange={(opt) => setContactId(opt.id)}
+          clearable
         />
 
-        <SearchSelect
+        <EntityCombobox
           label="Project"
+          entity="project"
           value={projectId}
-          options={projects.map((project) => ({
-            value: project.id,
-            label: project.name,
-            meta: project.account?.name ?? project.workstream?.label ?? null,
-          }))}
-          onChange={(value) => {
-            setProjectId(value)
-            const project = projectsById.get(value)
+          selectedLabel={projects.find((p) => p.id === projectId)?.name}
+          onChange={(opt) => {
+            setProjectId(opt.id)
+            const project = projectsById.get(opt.id)
             if (project?.account_id && !accountId) {
               setAccountId(project.account_id)
             }
@@ -467,8 +457,7 @@ export default function QuoteForm({
               setWorkstreamId(project.workstream_id)
             }
           }}
-          placeholder="Search projects"
-          emptyLabel="No project"
+          clearable
         />
 
         <label className="space-y-2">

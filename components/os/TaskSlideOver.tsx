@@ -16,7 +16,7 @@ import type {
 } from '@/lib/types'
 import PriorityBadge from './PriorityBadge'
 import ProjectSelector from './ProjectSelector'
-import SearchSelect, { type SearchSelectOption } from './SearchSelect'
+import EntityCombobox from './EntityCombobox'
 import TaskEmailModal from './TaskEmailModal'
 import WorkstreamBadge from './WorkstreamBadge'
 
@@ -257,21 +257,14 @@ export default function TaskSlideOver({
   const currentWorkstream = workstreams.find(
     (entry) => entry.id === (workstreamId || task?.workstream_id)
   )
-  const accountOptions: SearchSelectOption[] = accounts.map((account) => ({
+  const accountOptions = accounts.map((account) => ({
     value: account.id,
     label: account.name,
-    meta:
-      workstreams.find((workstream) => workstream.id === account.workstream_id)?.label ??
-      account.industry ??
-      null,
   }))
-  const contactOptions: SearchSelectOption[] = contacts
-    .filter((contact) => !accountId || contact.account_id === accountId)
-    .map((contact) => ({
-      value: contact.id,
-      label: contact.name,
-      meta: contact.company ?? contact.email ?? null,
-    }))
+  const contactOptions = contacts.map((contact) => ({
+    value: contact.id,
+    label: contact.name,
+  }))
   const projectOptions = projects.filter(
     (project) => !workstreamId || project.workstream_id === workstreamId
   )
@@ -398,23 +391,22 @@ export default function TaskSlideOver({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <SearchSelect
+            <EntityCombobox
               label="Account"
+              entity="account"
               value={accountId}
-              options={accountOptions}
-              onChange={setAccountId}
-              placeholder="Search accounts"
-              emptyLabel="No account"
-              maxVisibleOptions={100}
+              selectedLabel={accountOptions.find((o) => o.value === accountId)?.label}
+              onChange={(opt) => setAccountId(opt.id)}
+              clearable
             />
-            <SearchSelect
+            <EntityCombobox
               label="Contact"
+              entity="contact"
               value={contactId}
-              options={contactOptions}
-              onChange={setContactId}
-              placeholder="Search contacts"
-              emptyLabel="No contact"
-              maxVisibleOptions={100}
+              selectedLabel={contactOptions.find((o) => o.value === contactId)?.label}
+              filters={accountId ? { account_id: accountId } : undefined}
+              onChange={(opt) => setContactId(opt.id)}
+              clearable
             />
           </div>
 
