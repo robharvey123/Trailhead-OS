@@ -26,7 +26,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-// PATCH { action: 'read'|'unread'|'star'|'unstar'|'link'|'unlink'|'archive'|'unarchive'|'trash'|'untrash', account_id? }
+// PATCH { action: 'read'|'unread'|'star'|'unstar'|'link'|'unlink'|'archive'|'unarchive'|'trash'|'untrash', account_id?, contact_id? }
+// For 'link': contact_id omitted leaves the contact as-is, null clears it, a string sets it.
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ threadId: string }> }) {
   try {
     const { ok, response: authResponse, supabase } = await getAuthenticatedSupabase()
@@ -44,10 +45,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       case 'unarchive': await unarchiveThread(threadId, supabase); break
       case 'trash': await trashThread(threadId, supabase); break
       case 'untrash': await untrashThread(threadId, supabase); break
-      case 'link':
+      case 'link': {
         if (!body.account_id) return NextResponse.json({ error: 'account_id required' }, { status: 400 })
-        await linkThread(threadId, body.account_id, supabase)
+        const contactId = typeof body.contact_id === 'string' ? body.contact_id : body.contact_id === null ? null : undefined
+        await linkThread(threadId, body.account_id, contactId, supabase)
         break
+      }
       case 'unlink': await unlinkThread(threadId, supabase); break
       default: return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
     }

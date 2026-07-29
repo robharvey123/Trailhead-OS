@@ -529,8 +529,20 @@ export default function InboxClient({
       case 'unarchive': return { in_inbox: true }
       case 'trash': return { in_trash: true, in_inbox: false }
       case 'untrash': return { in_trash: false, in_inbox: true }
-      case 'link': return { account_id: String(extra?.account_id), account_name: (extra?.account_name as string | undefined) ?? accounts.find((a) => a.id === extra?.account_id)?.name ?? null, match_method: 'manual' }
-      case 'unlink': return { account_id: null, account_name: null, match_method: 'unmatched' }
+      case 'link': {
+        const p: Partial<EmailThread> = {
+          account_id: String(extra?.account_id),
+          account_name: (extra?.account_name as string | undefined) ?? accounts.find((a) => a.id === extra?.account_id)?.name ?? null,
+          match_method: 'manual',
+        }
+        // Only touch the contact when the caller specifies one (set or clear).
+        if (extra && 'contact_id' in extra) {
+          p.contact_id = (extra.contact_id as string | null) ?? null
+          p.contact_name = p.contact_id ? ((extra.contact_name as string | undefined) ?? null) : null
+        }
+        return p
+      }
+      case 'unlink': return { account_id: null, account_name: null, contact_id: null, contact_name: null, match_method: 'unmatched' }
       default: return null
     }
   }
@@ -999,6 +1011,30 @@ export default function InboxClient({
                       />
                     </div>
                   )}
+                  {active.account_id ? (
+                    active.contact_id ? (
+                      <span className="acct-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <Link href={`/crm/contacts/${active.contact_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>◇ {active.contact_name ?? 'Contact'}</Link>
+                        <button
+                          className="td-mono"
+                          title="Clear contact"
+                          style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 0 }}
+                          onClick={() => threadAction('link', { account_id: active.account_id, account_name: active.account_name, contact_id: null })}
+                        >✕</button>
+                      </span>
+                    ) : (
+                      <div style={{ minWidth: 220 }}>
+                        <EntityCombobox
+                          label=""
+                          entity="contact"
+                          value=""
+                          placeholder="Link a contact…"
+                          filters={{ account_id: active.account_id }}
+                          onChange={(opt) => { if (opt.id) threadAction('link', { account_id: active.account_id, account_name: active.account_name, contact_id: opt.id, contact_name: opt.label }) }}
+                        />
+                      </div>
+                    )
+                  ) : null}
                   <span className="meta-chip">{active.match_method ?? 'unmatched'}</span>
                   <span className="meta-chip">{active.message_count} message{active.message_count > 1 ? 's' : ''}</span>
                 </div>

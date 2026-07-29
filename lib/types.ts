@@ -552,6 +552,8 @@ export interface EmailThread {
   gmail_thread_id: string
   account_id: string | null
   account_name?: string | null
+  contact_id?: string | null
+  contact_name?: string | null
   subject: string
   snippet: string
   from_name: string

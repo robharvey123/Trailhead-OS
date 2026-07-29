@@ -11,9 +11,9 @@ async function getSupabase(client?: SupabaseClient) {
 export type InboxFolder = 'inbox' | 'unread' | 'all' | 'starred' | 'unmatched' | 'sent' | 'archived' | 'trash'
 
 const SELECT =
-  'id, gmail_message_id, gmail_thread_id, account_id, contact_id, direction, from_address, from_name, to_addresses, cc_addresses, bcc_addresses, subject, snippet, body_html, body_text, is_unread, is_starred, labels, attachments, match_method, received_at, sent_at, created_at, account:accounts(id,name)'
+  'id, gmail_message_id, gmail_thread_id, account_id, contact_id, direction, from_address, from_name, to_addresses, cc_addresses, bcc_addresses, subject, snippet, body_html, body_text, is_unread, is_starred, labels, attachments, match_method, received_at, sent_at, created_at, account:accounts(id,name), contact:contacts(id,name)'
 
-type Row = EmailLog & { account?: { id: string; name: string } | null }
+type Row = EmailLog & { account?: { id: string; name: string } | null; contact?: { id: string; name: string } | null }
 
 function tsOf(r: Row): string {
   return r.received_at || r.sent_at || r.created_at
@@ -65,6 +65,7 @@ export async function listThreads(
     msgs.sort((a, b) => tsOf(b).localeCompare(tsOf(a)))
     const latest = msgs[0]
     const account = msgs.find((m) => m.account)?.account ?? null
+    const contact = msgs.find((m) => m.contact)?.contact ?? null
     // A thread is "in inbox" if any of its messages still carries the INBOX label.
     const inInbox = msgs.some((m) => (m.labels ?? []).includes('INBOX'))
     const inTrash = msgs.some((m) => (m.labels ?? []).includes('TRASH'))
@@ -73,6 +74,8 @@ export async function listThreads(
       gmail_thread_id: key,
       account_id: account?.id ?? latest.account_id ?? null,
       account_name: account?.name ?? null,
+      contact_id: contact?.id ?? latest.contact_id ?? null,
+      contact_name: contact?.name ?? null,
       subject: latest.subject || '(no subject)',
       snippet: latest.snippet || '',
       from_name: latest.from_name || latest.from_address,
@@ -174,12 +177,22 @@ export async function setThreadStarred(threadId: string, isStarred: boolean, cli
   if (error) throw new Error(error.message || 'Failed to star thread')
 }
 
-export async function linkThread(threadId: string, accountId: string, client?: SupabaseClient): Promise<void> {
+// Link a thread to an account and, optionally, a specific contact. A contact
+// without an account borrows its account so the two never drift apart; passing
+// contactId === null clears the contact while keeping the account.
+export async function linkThread(
+  threadId: string,
+  accountId: string,
+  contactId?: string | null,
+  client?: SupabaseClient,
+): Promise<void> {
   const supabase = await getSupabase(client)
-  const { error } = await supabase
-    .from('email_logs')
-    .update({ account_id: accountId, match_method: 'manual' })
-    .eq('gmail_thread_id', threadId)
+  const patch: { account_id: string; match_method: 'manual'; contact_id?: string | null } = {
+    account_id: accountId,
+    match_method: 'manual',
+  }
+  if (contactId !== undefined) patch.contact_id = contactId
+  const { error } = await supabase.from('email_logs').update(patch).eq('gmail_thread_id', threadId)
   if (error) throw new Error(error.message || 'Failed to link thread')
 }
 
@@ -187,7 +200,7 @@ export async function unlinkThread(threadId: string, client?: SupabaseClient): P
   const supabase = await getSupabase(client)
   const { error } = await supabase
     .from('email_logs')
-    .update({ account_id: null, match_method: 'unmatched' })
+    .update({ account_id: null, contact_id: null, match_method: 'unmatched' })
     .eq('gmail_thread_id', threadId)
   if (error) throw new Error(error.message || 'Failed to unlink thread')
 }
