@@ -122,7 +122,7 @@ export default function ContactsClient({ contacts, accounts, channels }: Contact
                     <div className="td-name">{c.name}</div>
                     {c.company ? <div className="td-sub">{c.company}</div> : null}
                   </td>
-                  <td className="td-mono">{c.account_id ? accountName.get(c.account_id) ?? '—' : '—'}</td>
+                  <td className="td-mono">{c.account_id ? accountName.get(c.account_id) ?? '—' : <span className="meta-chip" style={{ color: 'var(--amber-strong)', background: 'var(--amber-dim)' }}>unlinked</span>}</td>
                   <td style={{ color: 'var(--text-2)', fontSize: 12 }}>{c.role ?? '—'}</td>
                   <td>
                     {c.email ? (

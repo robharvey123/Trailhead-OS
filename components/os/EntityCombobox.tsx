@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import { crmNormaliseName } from '@/lib/crm/normalise'
 
 export type EntityKind = 'account' | 'contact' | 'project' | 'engagement'
 
@@ -124,6 +125,13 @@ export default function EntityCombobox({
   const term = query.trim()
   const exactMatch = results.some((r) => r.label.toLowerCase() === term.toLowerCase())
   const showCreate = canCreate && Boolean(term) && !exactMatch
+  // A near-duplicate: a result whose normalised name equals the typed one (but not
+  // an exact string match). Nudge "link instead?" before offering to create.
+  const normalisedDupe = useMemo(() => {
+    if (!showCreate || (entity !== 'account' && entity !== 'contact')) return undefined
+    const n = crmNormaliseName(term)
+    return n ? results.find((r) => crmNormaliseName(r.label) === n) : undefined
+  }, [showCreate, entity, term, results])
   // Navigable items: the results plus, when shown, the create row (last index).
   const itemCount = results.length + (showCreate ? 1 : 0)
 
@@ -228,6 +236,16 @@ export default function EntityCombobox({
           ) : (
             <p className="px-3 py-2 text-sm text-[color:var(--text-3)]">{term ? `No matching ${entity}s.` : `Type to search ${entity}s.`}</p>
           )}
+
+          {normalisedDupe ? (
+            <button
+              type="button"
+              onClick={() => select(normalisedDupe)}
+              className="block w-full border-t border-[color:var(--border)] bg-[var(--amber-dim)] px-3 py-2 text-left text-xs font-medium text-[color:var(--amber-strong)]"
+            >
+              “{normalisedDupe.label}” already exists — link instead?
+            </button>
+          ) : null}
 
           {showCreate ? (
             <button

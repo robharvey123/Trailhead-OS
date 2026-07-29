@@ -20,6 +20,7 @@ export default function NewContactForm({
   const router = useRouter()
   const [name, setName] = useState('')
   const [company, setCompany] = useState('')
+  const [showCompany, setShowCompany] = useState(false)
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [role, setRole] = useState('')
@@ -90,14 +91,25 @@ export default function NewContactForm({
             required
           />
         </label>
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Company</span>
-          <input
-            value={company}
-            onChange={(event) => setCompany(event.target.value)}
-            className="os-input w-full px-4 py-3 text-sm"
-          />
-        </label>
+        {accountId ? null : showCompany ? (
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Company (unlinked)</span>
+            <input
+              value={company}
+              onChange={(event) => setCompany(event.target.value)}
+              className="os-input w-full px-4 py-3 text-sm"
+              placeholder="Prefer to link or create an account below"
+            />
+          </label>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowCompany(true)}
+            className="text-left text-xs text-[color:var(--text-3)] transition hover:text-[color:var(--text)]"
+          >
+            ＋ record a company name without linking an account
+          </button>
+        )}
         <label className="space-y-2">
           <span className="text-sm text-[color:var(--text-2)]">Email</span>
           <input
