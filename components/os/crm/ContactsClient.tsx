@@ -64,6 +64,7 @@ export default function ContactsClient({ contacts, accounts, channels }: Contact
         <span className="topbar-title">Contacts</span>
         <span className="topbar-count">{contacts.length} contacts</span>
         <div className="topbar-actions">
+          <Link className="btn btn-ghost btn-sm" href="/crm/link">⚲ Linking backlog</Link>
           <Link className="btn btn-ghost btn-sm" href="/crm/contacts/import">↑ Import</Link>
           <Link className="btn btn-primary btn-sm" href="/crm/contacts/new">+ Add contact</Link>
         </div>
