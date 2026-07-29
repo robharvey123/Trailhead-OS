@@ -4,6 +4,11 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Papa from 'papaparse'
 
+type AccountSuggestion = { account: { id: string; name: string }; score: number; reason: 'exact' | 'normalised' | 'domain' | 'fuzzy' }
+type CompanyMatch = { norm: string; company: string; suggestions: AccountSuggestion[] }
+// Per-company decision: link to an existing account, create one, or leave unlinked.
+type Choice = { action: 'link' | 'create' | 'skip'; account_id?: string; account_name?: string }
+
 /* ─── Column mapping config ─── */
 const CONTACT_FIELDS = [
   { key: 'name', label: 'Name', required: true },
@@ -104,12 +109,15 @@ export default function ContactImportClient({
   const [csvRows, setCsvRows] = useState<Record<string, string>[]>([])
   const [mapping, setMapping] = useState<Record<string, FieldKey | ''>>({})
   const [fileName, setFileName] = useState('')
-  const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'result'>('upload')
+  const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'accounts' | 'result'>('upload')
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
   const [error, setError] = useState('')
   const [globalWorkstreamId, setGlobalWorkstreamId] = useState('')
   const [globalProjectId, setGlobalProjectId] = useState('')
+  const [matches, setMatches] = useState<CompanyMatch[]>([])
+  const [choices, setChoices] = useState<Record<string, Choice>>({})
+  const [matching, setMatching] = useState(false)
 
   /* ─── Parse file ─── */
   const handleFile = useCallback((file: File) => {
@@ -188,7 +196,55 @@ export default function ContactImportClient({
   }, [csvRows, mapping])
 
   const nameIsMapped = Object.values(mapping).includes('name')
+  const companyIsMapped = Object.values(mapping).includes('company')
   const validRowCount = mappedRows.filter((r) => r.name?.trim()).length
+
+  /* ─── Account matching (review step) ─── */
+  // Fetch account suggestions for each distinct company, then pick sensible
+  // defaults: link when a suggestion is ≥ 90%, otherwise offer to create.
+  const goToAccounts = async () => {
+    setMatching(true)
+    setError('')
+    try {
+      const items = mappedRows
+        .filter((r) => r.name?.trim() && r.company?.trim())
+        .map((r) => ({ company: r.company, email: r.email, website: r.website }))
+      if (items.length === 0) {
+        setMatches([])
+        setChoices({})
+        setStep('accounts')
+        return
+      }
+      const res = await fetch('/api/contacts/import/suggest-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Could not match accounts'); return }
+      const results: CompanyMatch[] = data.results ?? []
+      const defaults: Record<string, Choice> = {}
+      for (const m of results) {
+        const top = m.suggestions[0]
+        defaults[m.norm] = top && top.score >= 0.9
+          ? { action: 'link', account_id: top.account.id }
+          : { action: 'create', account_name: m.company }
+      }
+      setMatches(results)
+      setChoices(defaults)
+      setStep('accounts')
+    } catch {
+      setError('Network error while matching accounts')
+    } finally {
+      setMatching(false)
+    }
+  }
+
+  const setChoice = (norm: string, choice: Choice) => setChoices((c) => ({ ...c, [norm]: choice }))
+
+  const linkCount = Object.values(choices).filter((c) => c.action === 'link').length
+  const createCount = Object.values(choices).filter((c) => c.action === 'create').length
+  const skipCount = Object.values(choices).filter((c) => c.action === 'skip').length
 
   /* ─── Submit import ─── */
   const handleImport = async () => {
@@ -196,6 +252,7 @@ export default function ContactImportClient({
     setError('')
 
     try {
+      const account_decisions = matches.map((m) => ({ company_norm: m.norm, ...(choices[m.norm] ?? { action: 'skip' }) }))
       const res = await fetch('/api/contacts/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -203,6 +260,7 @@ export default function ContactImportClient({
           rows: mappedRows,
           workstream_id: globalWorkstreamId || null,
           project_id: globalProjectId || null,
+          account_decisions,
         }),
       })
 
@@ -233,6 +291,8 @@ export default function ContactImportClient({
     setError('')
     setGlobalWorkstreamId('')
     setGlobalProjectId('')
+    setMatches([])
+    setChoices({})
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -478,6 +538,94 @@ export default function ContactImportClient({
               className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
             >
               Back to mapping
+            </button>
+            {companyIsMapped ? (
+              <button
+                disabled={matching || validRowCount === 0}
+                onClick={goToAccounts}
+                className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              >
+                {matching ? 'Matching accounts…' : 'Match accounts →'}
+              </button>
+            ) : (
+              <button
+                disabled={importing || validRowCount === 0}
+                onClick={handleImport}
+                className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              >
+                {importing ? 'Importing…' : `Import ${validRowCount} contact${validRowCount !== 1 ? 's' : ''}`}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Step 3b: Account matching */}
+      {step === 'accounts' && (
+        <div className="space-y-6">
+          <div className="os-card p-6">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-[color:var(--text)]">Match to accounts</h2>
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">
+                {matches.length} distinct compan{matches.length === 1 ? 'y' : 'ies'} found.{' '}
+                <span className="text-[color:var(--text-3)]">
+                  {linkCount} linked · {createCount} new · {skipCount} unlinked
+                </span>
+              </p>
+            </div>
+
+            {matches.length === 0 ? (
+              <p className="text-sm text-[color:var(--text-2)]">No companies to match — contacts will import unlinked.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+                    <tr><th className="pb-3 pr-4">Company</th><th className="pb-3 pr-4">Account</th></tr>
+                  </thead>
+                  <tbody>
+                    {matches.map((m) => {
+                      const choice = choices[m.norm] ?? { action: 'skip' }
+                      const value =
+                        choice.action === 'link' ? `link:${choice.account_id}` :
+                        choice.action === 'create' ? 'create' : 'skip'
+                      return (
+                        <tr key={m.norm} className="border-t border-[color:var(--border)]">
+                          <td className="py-3 pr-4 text-[color:var(--text)]">{m.company}</td>
+                          <td className="py-3 pr-4">
+                            <select
+                              className="os-select"
+                              value={value}
+                              onChange={(e) => {
+                                const v = e.target.value
+                                if (v === 'create') setChoice(m.norm, { action: 'create', account_name: m.company })
+                                else if (v === 'skip') setChoice(m.norm, { action: 'skip' })
+                                else setChoice(m.norm, { action: 'link', account_id: v.slice(5) })
+                              }}
+                            >
+                              {m.suggestions.map((s) => (
+                                <option key={s.account.id} value={`link:${s.account.id}`}>
+                                  Link → {s.account.name} ({Math.round(s.score * 100)}%)
+                                </option>
+                              ))}
+                              <option value="create">Create new account “{m.company}”</option>
+                              <option value="skip">Leave unlinked</option>
+                            </select>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setStep('preview')}
+              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+            >
+              Back to preview
             </button>
             <button
               disabled={importing || validRowCount === 0}

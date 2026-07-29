@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { getApiKeyAuth } from '@/lib/api/auth'
+import { crmNormaliseName } from '@/lib/crm/normalise'
 import type { ContactStatus } from '@/lib/types'
+
+/** Per-company account decision from the import review step, keyed by normalised company. */
+type AccountDecision = { company_norm: string; action: 'link' | 'create' | 'skip'; account_id?: string; account_name?: string }
 
 const CONTACT_STATUSES = new Set<ContactStatus>(['lead', 'active', 'inactive', 'archived'])
 
@@ -102,6 +106,42 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Account decisions from the review step (link to an existing account, create a
+  // new one, or leave unlinked), keyed by normalised company. New accounts are
+  // created lazily and once per company.
+  const decisionByNorm = new Map<string, AccountDecision>()
+  if (Array.isArray(body.account_decisions)) {
+    for (const d of body.account_decisions as AccountDecision[]) {
+      if (d && typeof d.company_norm === 'string' && d.company_norm) decisionByNorm.set(d.company_norm, d)
+    }
+  }
+  const createdByNorm = new Map<string, string>()
+
+  async function resolveAccountId(row: ImportRow, workstreamId: string | null): Promise<string | null> {
+    const explicit = sanitizeText(row.account_id)
+    if (explicit) return explicit
+    const norm = crmNormaliseName(sanitizeText(row.company) ?? '')
+    if (!norm) return null
+    const decision = decisionByNorm.get(norm)
+    if (!decision) return null
+    if (decision.action === 'link') return decision.account_id ?? null
+    if (decision.action === 'create') {
+      const cached = createdByNorm.get(norm)
+      if (cached) return cached
+      const name = sanitizeText(decision.account_name) ?? sanitizeText(row.company)
+      if (!name) return null
+      const { data: acc, error } = await auth.supabase
+        .from('accounts')
+        .insert({ name, status: 'prospect', workstream_id: workstreamId })
+        .select('id')
+        .single()
+      if (error || !acc) return null
+      createdByNorm.set(norm, acc.id)
+      return acc.id
+    }
+    return null
+  }
+
   // Duplicate guard: pre-load existing contact emails (lowercased). Rows whose
   // email already exists are rejected rather than inserted a second time; the set
   // also grows as we insert, so duplicates within the same file are caught too.
@@ -140,6 +180,8 @@ export async function POST(request: NextRequest) {
       : null
     const workstreamId = rowWorkstreamId || globalWorkstreamId
 
+    const resolvedAccountId = await resolveAccountId(row, workstreamId)
+
     const { data: contact, error } = await auth.supabase
       .from('contacts')
       .insert({
@@ -163,7 +205,7 @@ export async function POST(request: NextRequest) {
         status,
         notes: sanitizeText(row.notes),
         tags,
-        account_id: sanitizeText(row.account_id) || null,
+        account_id: resolvedAccountId,
         workstream_id: workstreamId,
       })
       .select('id')
