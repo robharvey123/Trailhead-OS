@@ -11,7 +11,8 @@
     "typecheck": "NODE_OPTIONS=--max-old-space-size=4096 tsc --noEmit",
     "seed": "node scripts/seed.js",
     "crm:import": "tsx scripts/import-crm-master.ts",
-    "seed:engineer-os": "tsx scripts/seed-engineer-os-campaign.ts"
+    "seed:engineer-os": "tsx scripts/seed-engineer-os-campaign.ts",
+    "crm:promote-placeholders": "tsx scripts/promote-placeholder-contacts.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
