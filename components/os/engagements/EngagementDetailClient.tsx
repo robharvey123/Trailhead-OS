@@ -12,9 +12,11 @@ import EngagementForm from '@/components/os/engagements/EngagementForm'
 import TouchpointTimeline from '@/components/os/TouchpointTimeline'
 import {
   APPROVAL_TYPE_LABELS,
+  ENGAGEMENT_STATUSES,
   type ApprovalRequestWithRelations,
   type ApprovalType,
   type EngagementContributorWithPerson,
+  type EngagementStatus,
   type Person,
   type Tier1MilestoneWithAccount,
   type TimeEntry,
@@ -198,6 +200,28 @@ export default function EngagementDetailClient({
     }
   }
 
+  // Change status directly. Pause/resume go through the dedicated actions (they
+  // also stamp/clear dates); Terminated has its own dialog (it needs an end date).
+  async function changeStatus(next: EngagementStatus) {
+    setBusy(true)
+    setError('')
+    try {
+      const body =
+        next === 'Paused' ? { action: 'pause' } :
+        next === 'Active' ? { action: 'resume' } :
+        { status: next }
+      await apiFetch(`/api/engagements/${e.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to change status')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function doDelete() {
     setBusy(true)
     setError('')
@@ -328,6 +352,21 @@ export default function EngagementDetailClient({
               <>
                 <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
                 <div role="menu" style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 41, minWidth: 210, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.16)', overflow: 'hidden', padding: 4 }}>
+                  <div style={{ padding: '6px 10px 4px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)' }}>Set status</div>
+                  {ENGAGEMENT_STATUSES.filter((s) => s !== e.status && s !== 'Terminated').map((s) => (
+                    <button
+                      key={s}
+                      role="menuitem"
+                      disabled={busy}
+                      onClick={() => { setMenuOpen(false); void changeStatus(s) }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 4, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
+                      onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
+                      onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                  <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
                   {e.status !== 'Terminated' ? (
                     <button
                       role="menuitem"
