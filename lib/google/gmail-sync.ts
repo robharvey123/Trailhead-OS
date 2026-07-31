@@ -42,7 +42,9 @@ export async function syncMailbox({
 
   // Build the auto-link lookup once.
   const [{ data: contacts }, { data: accounts }] = await Promise.all([
-    supabase.from('contacts').select('id, email, account_id'),
+    // Archived contacts (e.g. merge losers, retired duplicates) must not capture
+    // mail — a live email should attach to the contact still in use.
+    supabase.from('contacts').select('id, email, account_id').neq('status', 'archived'),
     supabase.from('accounts').select('id, website, email_contact'),
   ])
   const maps = buildAutolinkMaps(contacts ?? [], accounts ?? [], selfEmails)

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import ComposeModal from './inbox/ComposeModal'
 import SyncMailButton from './SyncMailButton'
-import ProjectsSection from './ProjectsSection'
 import EntityCombobox from './EntityCombobox'
 import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
@@ -54,6 +53,8 @@ export default function ContactDetailClient({
   selfEmail = '',
   signature = '',
   projects,
+  linkedProjectIds = [],
+  engagements = [],
 }: {
   initialContact: ContactWithRelations
   workstreams: Workstream[]
@@ -68,11 +69,38 @@ export default function ContactDetailClient({
   selfEmail?: string
   signature?: string
   projects: ProjectListItem[]
+  linkedProjectIds?: string[]
+  engagements?: Array<{ id: string; name: string; status: string; code: string | null; end_client_name: string | null }>
 }) {
   const router = useRouter()
   const [contact, setContact] = useState(initialContact)
   const [editing, setEditing] = useState(false)
   const [composeOpen, setComposeOpen] = useState(false)
+  const [projBusy, setProjBusy] = useState(false)
+
+  const linkedIds = new Set(linkedProjectIds)
+  async function linkProject(projectId: string) {
+    if (!projectId) return
+    setProjBusy(true)
+    try {
+      await fetch(`/api/contacts/${contact.id}/projects`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_id: projectId }),
+      })
+      router.refresh()
+    } finally { setProjBusy(false) }
+  }
+  async function unlinkProject(projectId: string) {
+    setProjBusy(true)
+    try {
+      await fetch(`/api/contacts/${contact.id}/projects?project_id=${projectId}`, { method: 'DELETE' })
+      router.refresh()
+    } finally { setProjBusy(false) }
+  }
+
+  const ENG_STATUS_CLASS: Record<string, string> = {
+    Active: 'status-active', Draft: 'status-on_hold', Paused: 'status-contacted',
+    Completed: 'status-listed', Terminated: 'status-declined',
+  }
   const [linkingAccount, setLinkingAccount] = useState(false)
   const [form, setForm] = useState({
     name: initialContact.name,
@@ -501,12 +529,80 @@ export default function ContactDetailClient({
         </div>
       ) : null}
 
-      <ProjectsSection
-        title="Projects"
-        description="Projects this contact is actively involved in."
-        projects={projects}
-        emptyMessage="No projects linked to this contact yet."
-      />
+      {contact.account_id ? (
+        <section className="os-card rounded-[2rem] p-6">
+          <div>
+            <h2 className="os-section-title">Engagements</h2>
+            <p className="text-sm text-[color:var(--text-2)]">Engagements for {contact.account?.name ?? 'this contact’s account'} — synced automatically.</p>
+          </div>
+          {engagements.length === 0 ? (
+            <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+              No engagements on this account yet.
+            </div>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="data-table">
+                <thead><tr><th>Engagement</th><th>Code</th><th>Status</th></tr></thead>
+                <tbody>
+                  {engagements.map((e) => (
+                    <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/engagements/${e.id}`)}>
+                      <td className="td-name">{e.name}</td>
+                      <td className="td-mono">{e.code ?? '—'}</td>
+                      <td><span className={`status-badge ${ENG_STATUS_CLASS[e.status] ?? 'status-on_hold'}`}>{e.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      ) : null}
+
+      <section className="os-card rounded-[2rem] p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="os-section-title">Projects</h2>
+            <p className="text-sm text-[color:var(--text-2)]">The account’s projects appear automatically; link one directly below.</p>
+          </div>
+          <div style={{ minWidth: 260 }}>
+            <EntityCombobox
+              label=""
+              entity="project"
+              value=""
+              disabled={projBusy}
+              placeholder="Link a project…"
+              onChange={(opt) => { if (opt.id) void linkProject(opt.id) }}
+            />
+          </div>
+        </div>
+
+        {projects.length === 0 ? (
+          <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+            No projects on this contact or its account yet.
+          </div>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="data-table">
+              <thead><tr><th>Project</th><th>Status</th><th>Link</th><th></th></tr></thead>
+              <tbody>
+                {projects.map((p) => {
+                  const direct = linkedIds.has(p.id)
+                  return (
+                    <tr key={p.id}>
+                      <td className="td-name"><Link href={`/projects/records/${p.id}`}>{p.name}</Link></td>
+                      <td className="td-mono">{p.status}</td>
+                      <td>{direct ? <span className="channel-tag">direct</span> : <span className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>via account</span>}</td>
+                      <td style={{ textAlign: 'right' }}>
+                        {direct ? <button className="btn btn-ghost btn-sm" disabled={projBusy} onClick={() => void unlinkProject(p.id)}>Unlink</button> : null}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <div className="os-card rounded-[2rem] p-6">
         <div className="flex items-center justify-between gap-3">

@@ -6,7 +6,8 @@ import { listMeetingNotesForContact } from '@/lib/db/meeting-notes'
 import { listMeetingsForContact } from '@/lib/db/meetings'
 import { listThreads } from '@/lib/db/inbox'
 import { getCompanySettings } from '@/lib/company-settings'
-import { listProjectsByContact } from '@/lib/db/projects'
+import { listProjectsByContact, listProjectsByAccount } from '@/lib/db/projects'
+import { listEngagements } from '@/lib/db/engagements'
 import { getQuotes } from '@/lib/db/quotes'
 import { getTasks } from '@/lib/db/tasks'
 import { getWorkstreams } from '@/lib/db/workstreams'
@@ -52,6 +53,20 @@ export default async function ContactDetailPage({
     notFound()
   }
 
+  // A contact belongs to an account, so the account's engagements and projects
+  // surface here automatically — alongside any project linked directly to the
+  // contact. Fetched after the contact so we know its account.
+  const accountId = contact.account_id
+  const [accountEngagements, accountProjects] = await Promise.all([
+    accountId ? listEngagements({ accountId }, supabase).catch(() => []) : [],
+    accountId ? listProjectsByAccount(accountId, supabase).catch(() => []) : [],
+  ])
+  // Merge explicit (contact-linked) + account projects, dedup by id, explicit first.
+  const projectsById = new Map<string, (typeof projects)[number]>()
+  for (const p of [...projects, ...accountProjects]) if (!projectsById.has(p.id)) projectsById.set(p.id, p)
+  const allProjects = [...projectsById.values()]
+  const linkedProjectIds = new Set(projects.map((p) => p.id))
+
   const workstream =
     workstreams.find((item: Workstream) => item.id === contact.workstream_id) ?? null
   const account = accounts.find((item) => item.id === contact.account_id) ?? null
@@ -70,7 +85,15 @@ export default async function ContactDetailPage({
       emailThreads={emailThreads}
       selfEmail={userResult.data.user?.email ?? ''}
       signature={companySettings?.email_signature ?? ''}
-      projects={projects}
+      projects={allProjects}
+      linkedProjectIds={[...linkedProjectIds]}
+      engagements={accountEngagements.map((e) => ({
+        id: e.id,
+        name: e.name,
+        status: e.status,
+        code: e.code ?? null,
+        end_client_name: e.end_client?.name ?? null,
+      }))}
     />
   )
 }
