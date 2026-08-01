@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm run test:reports-leakage",
     "build": "NODE_OPTIONS=--max-old-space-size=4096 next build",
+    "test:reports-leakage": "tsx scripts/reports-leakage-guard.ts",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,md,css,json}\"",
@@ -71,6 +73,7 @@
     "eslint-config-next": "16.1.4",
     "prettier": "^3.8.1",
     "tailwindcss": "^4",
+    "tsx": "^4.20.3",
     "typescript": "^5"
   }
 }

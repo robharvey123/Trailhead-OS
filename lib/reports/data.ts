@@ -73,6 +73,7 @@ export interface ReportTimeEntry {
   work_date: string
   hours: number
   notes: string | null
+  client_description: string | null
   billable: boolean
   rate: number
   value: number
@@ -100,6 +101,7 @@ export interface ReportData {
     id: string
     title: string
     description: string | null
+    client_description: string | null
     completed_at: string | null
     assignee_full_name: string | null
     project_name: string | null
@@ -121,7 +123,7 @@ export interface ReportData {
 }
 
 const TE_SELECT =
-  'entry_date, duration_minutes, billable, rate_snapshot, description, person:people(full_name), project:projects(id, name), task:engagement_tasks(id, title)'
+  'entry_date, duration_minutes, billable, rate_snapshot, description, client_description, person:people(full_name), project:projects(id, name), task:engagement_tasks(id, title)'
 
 /**
  * One query bundle of everything a report (PDF, XLSX, LLM) needs for an
@@ -157,7 +159,7 @@ export async function gatherReportData(
       .order('entry_date', { ascending: true }),
     supabase
       .from('engagement_tasks')
-      .select('id, title, description, completed_at, project:projects(name), assignee:people!assignee_person_id(full_name)')
+      .select('id, title, description, client_description, completed_at, project:projects(name), assignee:people!assignee_person_id(full_name)')
       .eq('engagement_id', engagementId)
       .eq('status', 'done')
       .gte('completed_at', `${periodStart}T00:00:00`)
@@ -172,6 +174,7 @@ export async function gatherReportData(
     billable: boolean
     rate_snapshot: number | null
     description: string | null
+    client_description: string | null
     person: { full_name: string } | { full_name: string }[] | null
     project: { id: string; name: string } | { id: string; name: string }[] | null
     task: { id: string; title: string } | { id: string; title: string }[] | null
@@ -187,6 +190,7 @@ export async function gatherReportData(
       work_date: r.entry_date,
       hours,
       notes: r.description,
+      client_description: r.client_description,
       billable: r.billable,
       rate,
       value: r.billable ? Math.round(hours * rate * 100) / 100 : 0,
@@ -200,6 +204,7 @@ export async function gatherReportData(
     id: string
     title: string
     description: string | null
+    client_description: string | null
     completed_at: string | null
     project: { name: string } | { name: string }[] | null
     assignee: { full_name: string } | { full_name: string }[] | null
@@ -208,6 +213,7 @@ export async function gatherReportData(
     id: t.id,
     title: t.title,
     description: t.description,
+    client_description: t.client_description,
     completed_at: t.completed_at,
     assignee_full_name: firstRelation(t.assignee)?.full_name ?? null,
     project_name: firstRelation(t.project)?.name ?? null,

@@ -34,9 +34,6 @@ const styles = StyleSheet.create({
 function fmtDate(iso: string): string {
   return new Date(`${iso}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 }
-function money(value: number, currency: string): string {
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency, maximumFractionDigits: 2 }).format(value)
-}
 function h(n: number): string {
   return `${n.toFixed(1)}h`
 }
@@ -71,7 +68,6 @@ function Footer() {
 
 function ReportDocument({ data, narrative, kind }: { data: ReportData; narrative: Narrative; kind: string }) {
   const { engagement: e, period, hours_summary: hs } = data
-  const showValue = e.is_billable
   const client = e.end_client ?? e.name
 
   return (
@@ -121,27 +117,27 @@ function ReportDocument({ data, narrative, kind }: { data: ReportData; narrative
           </>
         ) : null}
 
+        {/* Hours are aggregate only — no per-person breakdown (contributor
+            identities) and no monetary value. A client artefact carries time,
+            not billing. */}
         <Text style={styles.sectionHeading}>Hours</Text>
         <View style={styles.tr}>
-          <Text style={[styles.th, { flex: 1 }]}>Person</Text>
-          <Text style={[styles.th, styles.right, { width: 80 }]}>Hours</Text>
+          <Text style={[styles.cell, { flex: 1 }]}>Total hours in period</Text>
+          <Text style={[styles.cell, styles.right, { width: 90, fontFamily: 'Helvetica-Bold' }]}>{h(hs.total)}</Text>
         </View>
-        {hs.by_person.map((p, i) => (
-          <View style={styles.tr} key={i}>
-            <Text style={[styles.cell, { flex: 1 }]}>{p.name}</Text>
-            <Text style={[styles.cell, styles.right, { width: 80 }]}>{h(p.hours)}</Text>
-          </View>
-        ))}
-        <View style={styles.tr}>
-          <Text style={[styles.cell, { flex: 1, fontFamily: 'Helvetica-Bold' }]}>Total</Text>
-          <Text style={[styles.cell, styles.right, { width: 80, fontFamily: 'Helvetica-Bold' }]}>{h(hs.total)}</Text>
-        </View>
-        <Text style={[styles.para, { marginTop: 8, color: MUTED }]}>
-          {hs.billable.toFixed(1)}h billable
-          {showValue ? ` · ${money(data.totals.value_gbp, e.currency)}` : ''}
-          {e.included_hours != null ? ` · ${hs.total.toFixed(1)} of ${e.included_hours} retainer hours (${data.totals.vs_retainer_pct}%)` : ''}
-        </Text>
-        {narrative.hours_commentary ? <Text style={styles.para}>{narrative.hours_commentary}</Text> : null}
+        {e.included_hours != null ? (
+          <>
+            <View style={styles.tr}>
+              <Text style={[styles.cell, { flex: 1 }]}>Hours included (monthly allowance)</Text>
+              <Text style={[styles.cell, styles.right, { width: 90 }]}>{h(e.included_hours)}</Text>
+            </View>
+            <View style={styles.tr}>
+              <Text style={[styles.cell, { flex: 1 }]}>Allowance used</Text>
+              <Text style={[styles.cell, styles.right, { width: 90 }]}>{data.totals.vs_retainer_pct}%</Text>
+            </View>
+          </>
+        ) : null}
+        {narrative.hours_commentary ? <Text style={[styles.para, { marginTop: 8 }]}>{narrative.hours_commentary}</Text> : null}
 
         {narrative.next_period.length ? (
           <>
