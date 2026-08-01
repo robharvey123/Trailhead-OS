@@ -31,8 +31,10 @@ export async function buildReportXlsx(data: ReportData): Promise<Buffer> {
       toClientSafeTimeEntry({
         entry_date: e.work_date,
         hours: e.hours,
-        description: e.notes,
-        client_description: e.client_description,
+        entry_client_description: e.client_description,
+        entry_description: e.notes,
+        task_client_description: e.engagement_task?.client_description ?? null,
+        task_title: e.engagement_task?.title ?? null,
       })
     )
     .sort((a, b) => a.entry_date.localeCompare(b.entry_date))

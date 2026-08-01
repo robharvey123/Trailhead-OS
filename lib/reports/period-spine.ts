@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { toClientSafeTask, type ClientSafeTask } from '@/lib/engagements/client-safe'
+import { toClientSafeTask, resolveTimeEntryDescription, type ClientSafeTask } from '@/lib/engagements/client-safe'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 async function getSupabase(client?: SupabaseClient) {
@@ -28,7 +28,14 @@ export type EngagementPeriodSpine = {
   in_progress: SpineInProgressTask[]
   scheduled_next: ClientSafeTask[]
   slipped: ClientSafeTask[]
-  hours: { used_in_period: number; used_in_month: number; included_monthly: number | null; over: number }
+  unattributed: { count: number; hours: number }
+  hours: {
+    used_in_period: number
+    // One row per calendar month the period touches, so a week straddling a
+    // month end reports each month against its own allowance rather than
+    // collapsing to the month of periodEnd.
+    months: Array<{ month: string; used: number; included: number | null; over: number }>
+  }
   tier1_movements: { account_name: string; gate: string; date: string }[]
   tier1_position: { account_name: string; gates_set: number; is_complete: boolean }[]
   meetings: { date: string; title: string; attendees_summary: string }[]
@@ -193,33 +200,31 @@ export async function buildEngagementPeriodReport(
   if (!eng) throw new Error(`Engagement not found: ${engagementRef}`)
   const e = eng as EngRow
 
-  const monthStart = `${dateOf(periodEnd).slice(0, 7)}-01`
-  const monthEnd = addDaysIso(addDaysIso(`${dateOf(periodEnd).slice(0, 7)}-01`, 32).slice(0, 7) + '-01', -1)
+  // Fetch time entries from the start of the period's first calendar month
+  // through periodEnd. That covers every month the period touches, bounded by
+  // periodEnd so the figures stay time-invariant (no hours logged after the
+  // period can move a past report).
+  const firstMonthStart = `${periodStart.slice(0, 7)}-01`
 
   // Client accounts for the Granola join. Empty in.() is a 400, so fall back to a
   // no-match sentinel when the engagement has neither account set.
   const clientAccountIds = [e.end_client_account_id, e.billed_via_account_id].filter(Boolean) as string[]
   const granolaAccounts = clientAccountIds.length ? clientAccountIds : ['00000000-0000-0000-0000-000000000000']
 
-  const [tasksRes, entriesRes, monthEntriesRes, tier1Res, calRes, granolaRes, risksRes] = await Promise.all([
+  const [tasksRes, entriesRes, tier1Res, calRes, granolaRes, risksRes] = await Promise.all([
+    // Client-visible tasks only — internal rows never enter a client report.
     supabase
       .from('engagement_tasks')
       .select('id, title, description, client_description, due_date, created_at')
-      .eq('engagement_id', e.id),
+      .eq('engagement_id', e.id)
+      .eq('client_visible', true),
     supabase
       .from('time_entries')
-      .select('duration_minutes')
+      .select('entry_date, duration_minutes, client_description, description, task:engagement_tasks(title, client_description)')
       .eq('engagement_id', e.id)
       .eq('is_running', false)
-      .gte('entry_date', periodStart)
+      .gte('entry_date', firstMonthStart)
       .lte('entry_date', periodEnd),
-    supabase
-      .from('time_entries')
-      .select('duration_minutes')
-      .eq('engagement_id', e.id)
-      .eq('is_running', false)
-      .gte('entry_date', monthStart)
-      .lte('entry_date', monthEnd),
     supabase
       .from('tier1_milestones')
       .select('account_id, range_review_decided_at, go_live_confirmed_at, first_po_received_at, is_complete, account:accounts(name)')
@@ -262,13 +267,52 @@ export async function buildEngagementPeriodReport(
 
   const buckets = deriveTaskBuckets(tasks, transitionsByTask, periodStart, periodEnd, opts.lookaheadDays)
 
-  // Hours (no money).
-  const sumHours = (rows: Array<{ duration_minutes: number | null }> | null) =>
-    round2((rows ?? []).reduce((s, r) => s + (r.duration_minutes ?? 0) / 60, 0))
-  const used_in_period = sumHours(entriesRes.data)
-  const used_in_month = sumHours(monthEntriesRes.data)
+  // Hours (no money). One fetch covers used_in_period, the per-month breakdown and
+  // the unattributed tally.
+  type EntryRow = {
+    entry_date: string
+    duration_minutes: number | null
+    client_description: string | null
+    description: string | null
+    task: { title: string | null; client_description: string | null } | { title: string | null; client_description: string | null }[] | null
+  }
+  const entryRows = (entriesRes.data ?? []) as unknown as EntryRow[]
   const included_monthly = e.included_hours_monthly
-  const over = included_monthly != null ? round2(Math.max(0, used_in_month - included_monthly)) : 0
+
+  const monthUsed = new Map<string, number>()
+  let periodMinutes = 0
+  let unattributedCount = 0
+  let unattributedMinutes = 0
+  for (const r of entryRows) {
+    const mins = r.duration_minutes ?? 0
+    monthUsed.set(r.entry_date.slice(0, 7), (monthUsed.get(r.entry_date.slice(0, 7)) ?? 0) + mins)
+    if (r.entry_date >= periodStart && r.entry_date <= periodEnd) {
+      periodMinutes += mins
+      const task = Array.isArray(r.task) ? r.task[0] : r.task
+      const attributed = resolveTimeEntryDescription({
+        entry_client_description: r.client_description,
+        entry_description: r.description,
+        task_client_description: task?.client_description ?? null,
+        task_title: task?.title ?? null,
+      }) !== null
+      if (!attributed) {
+        unattributedCount += 1
+        unattributedMinutes += mins
+      }
+    }
+  }
+  const used_in_period = round2(periodMinutes / 60)
+  // Every calendar month from the period's first month to periodEnd's month.
+  const months: EngagementPeriodSpine['hours']['months'] = []
+  let cursor = `${periodStart.slice(0, 7)}-01`
+  const endMonth = periodEnd.slice(0, 7)
+  while (cursor.slice(0, 7) <= endMonth) {
+    const m = cursor.slice(0, 7)
+    const used = round2((monthUsed.get(m) ?? 0) / 60)
+    const over = included_monthly != null ? round2(Math.max(0, used - included_monthly)) : 0
+    months.push({ month: m, used, included: included_monthly, over })
+    cursor = addDaysIso(addDaysIso(cursor, 32).slice(0, 7) + '-01', 0)
+  }
 
   // Tier 1.
   type Tier1 = {
@@ -332,7 +376,8 @@ export async function buildEngagementPeriodReport(
     in_progress: buckets.in_progress,
     scheduled_next: buckets.scheduled_next,
     slipped: buckets.slipped,
-    hours: { used_in_period, used_in_month, included_monthly, over },
+    unattributed: { count: unattributedCount, hours: round2(unattributedMinutes / 60) },
+    hours: { used_in_period, months },
     tier1_movements,
     tier1_position,
     meetings,

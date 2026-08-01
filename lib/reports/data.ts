@@ -78,7 +78,7 @@ export interface ReportTimeEntry {
   rate: number
   value: number
   person_full_name: string | null
-  engagement_task: { id: string; title: string } | null
+  engagement_task: { id: string; title: string; client_description: string | null } | null
   project: { id: string; name: string } | null
 }
 
@@ -123,7 +123,7 @@ export interface ReportData {
 }
 
 const TE_SELECT =
-  'entry_date, duration_minutes, billable, rate_snapshot, description, client_description, person:people(full_name), project:projects(id, name), task:engagement_tasks(id, title)'
+  'entry_date, duration_minutes, billable, rate_snapshot, description, client_description, person:people(full_name), project:projects(id, name), task:engagement_tasks(id, title, client_description)'
 
 /**
  * One query bundle of everything a report (PDF, XLSX, LLM) needs for an
@@ -177,7 +177,7 @@ export async function gatherReportData(
     client_description: string | null
     person: { full_name: string } | { full_name: string }[] | null
     project: { id: string; name: string } | { id: string; name: string }[] | null
-    task: { id: string; title: string } | { id: string; title: string }[] | null
+    task: { id: string; title: string; client_description: string | null } | { id: string; title: string; client_description: string | null }[] | null
   }
 
   const time_entries: ReportTimeEntry[] = (entriesRes.data as unknown as RawEntry[]).map((r) => {
@@ -195,7 +195,7 @@ export async function gatherReportData(
       rate,
       value: r.billable ? Math.round(hours * rate * 100) / 100 : 0,
       person_full_name: person?.full_name ?? null,
-      engagement_task: task ? { id: task.id, title: task.title } : null,
+      engagement_task: task ? { id: task.id, title: task.title, client_description: task.client_description } : null,
       project: project ? { id: project.id, name: project.name } : null,
     }
   })

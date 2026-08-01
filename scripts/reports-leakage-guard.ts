@@ -44,7 +44,7 @@ const LEAKY: ReportData = {
       rate: 150,
       value: 450,
       person_full_name: 'Rob Harvey',
-      engagement_task: { id: 't1', title: 'Distributor outreach' },
+      engagement_task: { id: 't1', title: 'Distributor outreach', client_description: null },
       project: { id: 'p1', name: 'Listings' },
     },
     {
@@ -100,7 +100,14 @@ async function main() {
   // 1. The projection layer output — this is what "re-adding rate_snapshot to the
   //    projection" would leak into.
   const projectedEntries = LEAKY.time_entries.map((e) =>
-    toClientSafeTimeEntry({ entry_date: e.work_date, hours: e.hours, description: e.notes, client_description: e.client_description })
+    toClientSafeTimeEntry({
+      entry_date: e.work_date,
+      hours: e.hours,
+      entry_client_description: e.client_description,
+      entry_description: e.notes,
+      task_client_description: e.engagement_task?.client_description ?? null,
+      task_title: e.engagement_task?.title ?? null,
+    })
   )
   const projectedTasks = LEAKY.tasks_completed.map(toClientSafeTask)
   scan('projection:time_entries', JSON.stringify(projectedEntries))
