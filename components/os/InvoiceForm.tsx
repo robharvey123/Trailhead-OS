@@ -17,6 +17,7 @@ import {
   type UnbilledTimeGroup,
   type Workstream,
 } from '@/lib/types'
+import { formatMoney } from '@/lib/money'
 
 function createEmptyLineItem(): LineItem {
   return {
@@ -25,10 +26,6 @@ function createEmptyLineItem(): LineItem {
     qty: 1,
     unit_price: 0,
   }
-}
-
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
 }
 
 function buildStarterLineItems(tier: PricingTier): LineItem[] {
@@ -121,6 +118,9 @@ export default function InvoiceForm({
   const [dueDate, setDueDate] = useState(initialInvoice?.due_date ?? '')
   const [vatRate, setVatRate] = useState(String(initialInvoice?.vat_rate ?? (vatRegistered ? 20 : 0)))
   const [notes, setNotes] = useState(initialInvoice?.notes ?? '')
+  // Display currency for money in this form. New OS-form invoices are GBP; a
+  // non-GBP invoice is raised via the Cowork API (which captures the FX snapshot).
+  const displayCurrency = initialInvoice?.currency ?? 'GBP'
   const [lineItems, setLineItems] = useState<LineItem[]>(
     initialInvoice?.line_items.length
       ? initialInvoice.line_items
@@ -209,6 +209,9 @@ export default function InvoiceForm({
   function handleTimeSelected(groups: UnbilledTimeGroup[]) {
     const timeLineItems: LineItem[] = groups.map((g) => ({
       id: crypto.randomUUID(),
+      // Intentionally GBP: this is the hourly RATE, which comes from the
+      // engagement, not the invoice. Rates are not multi-currency, so do not
+      // "fix" this to the invoice currency — it would break the audit trail.
       description: `${g.project_name} — ${(g.minutes / 60).toFixed(2)}h @ £${g.rate.toFixed(2)}/h`,
       qty: 1,
       // Round to 2dp at creation so the OS total, PDF, and Stripe pence agree.
@@ -681,7 +684,7 @@ export default function InvoiceForm({
                 className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
               <div className="flex items-center rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
-                {formatMoney(item.qty * item.unit_price)}
+                {formatMoney(item.qty * item.unit_price, displayCurrency)}
               </div>
               <button
                 type="button"
@@ -711,15 +714,15 @@ export default function InvoiceForm({
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex items-center justify-between gap-4">
               <dt className="text-[color:var(--text-2)]">Subtotal</dt>
-              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</dd>
+              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal, displayCurrency)}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-[color:var(--text-2)]">VAT ({Number(vatRate) || 0}%)</dt>
-              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</dd>
+              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount, displayCurrency)}</dd>
             </div>
             <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
               <dt className="text-base font-semibold text-[color:var(--text)]">Total</dt>
-              <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total)}</dd>
+              <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, displayCurrency)}</dd>
             </div>
           </dl>
         </div>

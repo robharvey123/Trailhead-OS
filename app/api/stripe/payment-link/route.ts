@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     const { data: invoice, error } = await auth.supabase
       .from('invoices')
-      .select('id, invoice_number, account_id, line_items, vat_rate, accounts(id, name), contacts(id, email)')
+      .select('id, invoice_number, account_id, currency, line_items, vat_rate, accounts(id, name), contacts(id, email)')
       .eq('id', invoiceId)
       .maybeSingle<InvoiceWithRelations>()
 
@@ -39,6 +39,17 @@ export async function POST(request: NextRequest) {
 
     if (!invoice) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
+    }
+
+    // The Stripe price is created in GBP; a non-GBP invoice would charge the
+    // customer a different amount than the invoice states. Block it rather than
+    // silently mismatch — take a non-GBP invoice's payment by bank transfer.
+    const invoiceCurrency = (invoice as { currency?: string | null }).currency ?? 'GBP'
+    if (invoiceCurrency !== 'GBP') {
+      return NextResponse.json(
+        { error: `Stripe payment links are GBP-only; this invoice is ${invoiceCurrency}. Collect payment by bank transfer.` },
+        { status: 400 }
+      )
     }
 
     const totals = calculateTotals(invoice.line_items, invoice.vat_rate)

@@ -9,6 +9,7 @@ import {
   jsonError,
   optionalDate,
   optionalString,
+  parseInvoiceCurrencyFields,
   parseInvoiceStatus,
   parseLineItems,
   parseVatRate,
@@ -85,6 +86,28 @@ export async function PATCH(
 
     if (body.line_items !== undefined) {
       patch.line_items = parseLineItems(body.line_items)
+    }
+
+    // Currency + FX snapshot. Frozen once sent (409). While draft, the FX rate can
+    // be corrected, but the currency itself cannot be switched: line-item prices do
+    // not convert themselves, so relabelling 3500 GBP as $3500 would misprice the
+    // invoice. Blocking is safer than repricing — raise a new invoice instead.
+    if (body.currency !== undefined || body.fx_rate_to_gbp !== undefined) {
+      if (existing.status !== 'draft') {
+        return Response.json({ error: 'Currency and FX rate are frozen once an invoice leaves draft.' }, { status: 409 })
+      }
+      const cf = parseInvoiceCurrencyFields({ ...body, currency: body.currency ?? existing.currency })
+      const existingCurrency = (existing.currency as string | null) ?? 'GBP'
+      if (cf.currency !== existingCurrency) {
+        return Response.json(
+          { error: `Cannot change an invoice from ${existingCurrency} to ${cf.currency}; line items do not convert. Raise a new ${cf.currency} invoice instead.` },
+          { status: 409 }
+        )
+      }
+      patch.currency = cf.currency
+      patch.fx_rate_to_gbp = cf.fx_rate_to_gbp
+      patch.fx_rate_date = cf.fx_rate_date
+      patch.fx_rate_source = cf.fx_rate_source
     }
 
     if (Object.keys(patch).length === 0) {

@@ -683,6 +683,11 @@ export interface Invoice {
   due_date: string | null
   line_items: LineItem[]
   vat_rate: number
+  // Optional on write (DB defaults to GBP @ 1.0); always present on read.
+  currency?: string
+  fx_rate_to_gbp?: number
+  fx_rate_date?: string | null
+  fx_rate_source?: string | null
   stripe_payment_link?: string
   stripe_payment_intent_id?: string
   stripe_session_id?: string

@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   try {
     const { data: invoice, error } = await auth.supabase
       .from('invoices')
-      .select('id, invoice_number, account_id, contact_id, line_items, vat_rate, accounts(id, name), contacts(id, email)')
+      .select('id, invoice_number, account_id, contact_id, currency, line_items, vat_rate, accounts(id, name), contacts(id, email)')
       .eq('id', invoiceId)
       .maybeSingle<InvoiceWithRelations>()
 
@@ -53,6 +53,15 @@ export async function POST(request: NextRequest) {
     if (!invoice.account_id || !invoice.accounts?.name) {
       return NextResponse.json(
         { error: 'Recurring subscriptions require the invoice to be linked to an account' },
+        { status: 400 }
+      )
+    }
+
+    // Stripe price is GBP; a non-GBP invoice would charge a mismatched amount.
+    const invoiceCurrency = (invoice as { currency?: string | null }).currency ?? 'GBP'
+    if (invoiceCurrency !== 'GBP') {
+      return NextResponse.json(
+        { error: `Stripe subscriptions are GBP-only; this invoice is ${invoiceCurrency}.` },
         { status: 400 }
       )
     }

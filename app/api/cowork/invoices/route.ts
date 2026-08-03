@@ -11,6 +11,7 @@ import {
 import { createCoworkInvoice } from '@/lib/cowork-invoices'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
+import { formatMoney } from '@/lib/money'
 
 export async function GET(request: NextRequest) {
   if (!validateCoworkToken(request)) {
@@ -60,15 +61,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}))
     const { invoice, engagement } = await createCoworkInvoice(body)
-    const gbp = `£${invoice.total.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    const amount = formatMoney(invoice.total, invoice.currency)
+    const gbpEquiv = invoice.currency === 'GBP' ? '' : ` (${formatMoney(invoice.total_gbp, 'GBP')})`
     void recordCoworkWrite({
       action: 'create',
       entity: 'invoice',
       entityId: invoice.id,
       entityLabel: invoice.invoice_number,
       engagementId: engagement?.id ?? null,
-      summary: `Raised ${invoice.status} invoice ${invoice.invoice_number}, ${gbp}, ${invoice.title}${invoice.account ? `, ${invoice.account.name}` : ''}${engagement ? ` (${engagement.name})` : ''}`,
-      payload: { line_items: invoice.line_items, status: invoice.status, engagement_id: engagement?.id ?? null },
+      summary: `Raised ${invoice.status} invoice ${invoice.invoice_number}, ${amount}${gbpEquiv}, ${invoice.title}${invoice.account ? `, ${invoice.account.name}` : ''}${engagement ? ` (${engagement.name})` : ''}`,
+      payload: { line_items: invoice.line_items, status: invoice.status, currency: invoice.currency, fx_rate_to_gbp: invoice.fx_rate_to_gbp, engagement_id: engagement?.id ?? null },
     })
     return Response.json(invoice, { status: 201 })
   } catch (error) {

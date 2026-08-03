@@ -10,6 +10,7 @@ import {
   getWorkstreamBySlug,
   optionalDate,
   optionalString,
+  parseInvoiceCurrencyFields,
   parseInvoiceListStatus,
   parseLineItems,
   parseVatRate,
@@ -55,6 +56,8 @@ export async function createCoworkInvoice(body: Record<string, unknown>): Promis
   const status = body.status === undefined ? 'draft' : optionalString(body.status)
   if (status !== 'draft' && status !== 'sent') throw new CoworkApiError('status must be draft or sent', 400)
 
+  const currencyFields = parseInvoiceCurrencyFields(body)
+
   const contact = contactName ? await findContactByName(contactName) : null
   if (contactName && !contact) throw new CoworkApiError(`Contact not found: ${contactName}`, 400)
   let account = accountName
@@ -85,6 +88,10 @@ export async function createCoworkInvoice(body: Record<string, unknown>): Promis
       vat_rate: parseVatRate(body.vat_rate),
       line_items: lineItems,
       notes: optionalString(body.notes),
+      currency: currencyFields.currency,
+      fx_rate_to_gbp: currencyFields.fx_rate_to_gbp,
+      fx_rate_date: currencyFields.fx_rate_date,
+      fx_rate_source: currencyFields.fx_rate_source,
       status,
     })
     .select(INVOICE_SELECT)

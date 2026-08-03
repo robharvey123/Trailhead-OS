@@ -6,6 +6,7 @@ import { getInvoices } from '@/lib/db/invoices'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import { calculateTotals } from '@/lib/types'
+import { formatMoney } from '@/lib/money'
 
 const INVOICE_TABS = [
   { value: 'all', label: 'All' },
@@ -16,9 +17,6 @@ const INVOICE_TABS = [
   { value: 'cancelled', label: 'Cancelled' },
 ] as const
 
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
-}
 
 function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]) {
   if (invoice.paid_at || invoice.status === 'paid') {
@@ -74,9 +72,11 @@ export default async function InvoicingPage({
     getWorkstreams(supabase).catch(() => []),
   ])
 
+  // Sum GBP equivalents — invoices may be in different currencies, so summing
+  // native totals would add pounds to dollars. The headline figure is GBP.
   const outstandingAmount = invoices
     .filter((invoice) => invoice.status === 'sent' || invoice.status === 'overdue')
-    .reduce((sum, invoice) => sum + calculateTotals(invoice.line_items, invoice.vat_rate).total, 0)
+    .reduce((sum, invoice) => sum + calculateTotals(invoice.line_items, invoice.vat_rate).total * (invoice.fx_rate_to_gbp ?? 1), 0)
 
   return (
     <div className="space-y-6">
@@ -86,7 +86,7 @@ export default async function InvoicingPage({
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <h1 className="os-page-title">Invoicing</h1>
             <span className="rounded-full border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-1 text-sm font-medium text-[color:var(--amber-strong)]">
-              Outstanding {formatMoney(outstandingAmount)}
+              Outstanding {formatMoney(outstandingAmount, 'GBP')}
             </span>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default async function InvoicingPage({
                       <td className="py-4 text-[color:var(--text-2)]">{invoice.issue_date}</td>
                       <td className="py-4 text-[color:var(--text-2)]">{invoice.due_date ?? '—'}</td>
                       <td className="py-4 text-right font-medium text-[color:var(--text)]">
-                        {formatMoney(totals.total)}
+                        {formatMoney(totals.total, invoice.currency)}
                       </td>
                       <td className="py-4">
                         <StatusBadge status={invoice.status} kind="invoice" />

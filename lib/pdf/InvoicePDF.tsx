@@ -10,6 +10,7 @@ import {
 } from '@react-pdf/renderer'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type Workstream } from '@/lib/types'
+import { formatMoney } from '@/lib/money'
 import type { CompanySettings } from '@/lib/company-settings'
 
 const styles = StyleSheet.create({
@@ -129,6 +130,14 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTop: '1 solid #e2e8f0',
   },
+  fxNote: {
+    marginTop: 10,
+    marginLeft: 'auto',
+    width: 300,
+    fontSize: 8,
+    color: '#475569',
+    textAlign: 'right',
+  },
   footer: {
     position: 'absolute',
     bottom: 24,
@@ -139,10 +148,6 @@ const styles = StyleSheet.create({
     color: '#64748b',
   },
 })
-
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
-}
 
 function InvoiceDocument({
   invoice,
@@ -158,6 +163,12 @@ function InvoiceDocument({
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
   const billTo = getInvoiceBillToDisplay(invoice, contact)
   const showPayment = Boolean(companySettings?.bank_account_number)
+  const currency = invoice.currency ?? 'GBP'
+  const fxRate = invoice.fx_rate_to_gbp ?? 1
+  const isForeign = currency !== 'GBP'
+  const gbpEquivalent = Math.round(totals.total * fxRate * 100) / 100
+  const perGbp = fxRate > 0 ? 1 / fxRate : 0
+  const fxProvenance = [invoice.fx_rate_source, invoice.fx_rate_date].filter(Boolean).join(', ')
 
   return (
     <Document>
@@ -220,9 +231,9 @@ function InvoiceDocument({
             <View key={item.id} style={styles.tableRow}>
               <Text style={styles.colDescription}>{item.description || '—'}</Text>
               <Text style={styles.colQty}>{item.qty}</Text>
-              <Text style={styles.colUnitPrice}>{formatMoney(item.unit_price)}</Text>
+              <Text style={styles.colUnitPrice}>{formatMoney(item.unit_price, currency)}</Text>
               <Text style={styles.colLineTotal}>
-                {formatMoney(item.qty * item.unit_price)}
+                {formatMoney(item.qty * item.unit_price, currency)}
               </Text>
             </View>
           ))}
@@ -231,19 +242,28 @@ function InvoiceDocument({
         <View style={styles.summary}>
           <View style={styles.summaryRow}>
             <Text>Subtotal</Text>
-            <Text>{formatMoney(totals.subtotal)}</Text>
+            <Text>{formatMoney(totals.subtotal, currency)}</Text>
           </View>
           {invoice.vat_rate > 0 ? (
             <View style={styles.summaryRow}>
               <Text>VAT ({invoice.vat_rate}%)</Text>
-              <Text>{formatMoney(totals.vat_amount)}</Text>
+              <Text>{formatMoney(totals.vat_amount, currency)}</Text>
             </View>
           ) : null}
           <View style={styles.totalRow}>
             <Text>Total</Text>
-            <Text>{formatMoney(totals.total)}</Text>
+            <Text>{formatMoney(totals.total, currency)}</Text>
           </View>
         </View>
+
+        {isForeign ? (
+          <View style={styles.fxNote}>
+            <Text>
+              Total GBP equivalent {formatMoney(gbpEquivalent, 'GBP')} at 1 GBP = {perGbp.toFixed(4)} {currency}
+              {fxProvenance ? ` (${fxProvenance})` : ''}. For reference only. Payable in {currency}.
+            </Text>
+          </View>
+        ) : null}
 
         {showPayment && companySettings ? (
           <View style={styles.bankDetails}>

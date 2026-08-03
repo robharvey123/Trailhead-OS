@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { sendInvoicePaidNotification } from '@/lib/stripe/notifications'
 import { supabaseService } from '@/lib/supabase/service'
 import { calculateTotals, type InvoiceStatus, type LineItem, type TaskPriority, type TouchpointType } from '@/lib/types'
+import { SUPPORTED_CURRENCIES, isSupportedCurrency } from '@/lib/money'
 
 const TASK_PRIORITIES = new Set<TaskPriority>(['low', 'medium', 'high', 'urgent'])
 const CONTACT_STATUSES = new Set(['lead', 'active', 'inactive', 'archived'])
@@ -102,6 +103,10 @@ type InvoiceRow = {
   line_items: LineItem[] | null
   vat_rate: number | string | null
   notes: string | null
+  currency: string | null
+  fx_rate_to_gbp: number | string | null
+  fx_rate_date: string | null
+  fx_rate_source: string | null
   stripe_payment_link: string | null
   paid_at: string | null
   created_at: string
@@ -273,6 +278,10 @@ export const INVOICE_SELECT = `
   line_items,
   vat_rate,
   notes,
+  currency,
+  fx_rate_to_gbp,
+  fx_rate_date,
+  fx_rate_source,
   stripe_payment_link,
   paid_at,
   created_at,
@@ -778,6 +787,43 @@ export function parseVatRate(value: unknown, fallback = 20) {
   return vatRate
 }
 
+export type InvoiceCurrencyFields = {
+  currency: string
+  fx_rate_to_gbp: number
+  fx_rate_date: string | null
+  fx_rate_source: string | null
+}
+
+/**
+ * Validate + normalise the currency/FX fields for a create or patch. Rules:
+ * currency must be a supported ISO code; GBP is always rate 1.0 (any supplied
+ * rate ignored); a non-GBP currency with no fx_rate_to_gbp is REJECTED (never
+ * silently 1.0 — that would report USD 4,718.35 as £4,718.35).
+ */
+export function parseInvoiceCurrencyFields(body: Record<string, unknown>): InvoiceCurrencyFields {
+  const currency = (optionalString(body.currency) ?? 'GBP').toUpperCase()
+  if (!isSupportedCurrency(currency)) {
+    throw new CoworkApiError(`Unsupported currency: ${currency}. Supported: ${SUPPORTED_CURRENCIES.join(', ')}`, 400)
+  }
+  if (currency === 'GBP') {
+    return { currency, fx_rate_to_gbp: 1, fx_rate_date: null, fx_rate_source: null }
+  }
+  const raw = body.fx_rate_to_gbp
+  if (raw === undefined || raw === null || raw === '') {
+    throw new CoworkApiError(`fx_rate_to_gbp is required for ${currency} invoices`, 400)
+  }
+  const rate = Number(raw)
+  if (!Number.isFinite(rate) || rate <= 0) {
+    throw new CoworkApiError('fx_rate_to_gbp must be a positive number', 400)
+  }
+  return {
+    currency,
+    fx_rate_to_gbp: rate,
+    fx_rate_date: optionalDate(body.fx_rate_date, 'fx_rate_date'),
+    fx_rate_source: optionalString(body.fx_rate_source),
+  }
+}
+
 /** Optional numeric field: null when unset, else a finite number (>= 0 unless allowNegative). */
 export function optionalNumber(value: unknown, field: string, { allowNegative = false } = {}) {
   if (value === null || value === undefined || value === '') return null
@@ -936,6 +982,9 @@ export function formatInvoice(row: InvoiceRow) {
   const vatRate = Number(row.vat_rate ?? 0)
   const lineItems = row.line_items ?? []
   const totals = calculateTotals(lineItems, vatRate)
+  const currency = row.currency ?? 'GBP'
+  const fxRateToGbp = Number(row.fx_rate_to_gbp ?? 1)
+  const totalGbp = Math.round(totals.total * fxRateToGbp * 100) / 100
 
   return {
     id: row.id,
@@ -958,6 +1007,11 @@ export function formatInvoice(row: InvoiceRow) {
     subtotal: totals.subtotal,
     vat_amount: totals.vat_amount,
     total: totals.total,
+    currency,
+    fx_rate_to_gbp: fxRateToGbp,
+    fx_rate_date: row.fx_rate_date,
+    fx_rate_source: row.fx_rate_source,
+    total_gbp: totalGbp,
     stripe_payment_link: row.stripe_payment_link,
     created_at: row.created_at,
     updated_at: row.updated_at,

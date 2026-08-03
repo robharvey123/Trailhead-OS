@@ -20,7 +20,7 @@ export async function pushInvoiceToFreeAgent(invoiceId: string): Promise<string>
 
   const { data: invoice, error } = await supabase
     .from('invoices')
-    .select('id, account_id, contact_id, bill_to_name, bill_to_email, bill_to_address, bill_to_city, bill_to_postcode, bill_to_country, issue_date, due_date, line_items, vat_rate, freeagent_invoice_url, deleted_at')
+    .select('id, account_id, contact_id, bill_to_name, bill_to_email, bill_to_address, bill_to_city, bill_to_postcode, bill_to_country, issue_date, due_date, line_items, vat_rate, currency, freeagent_invoice_url, deleted_at')
     .eq('id', invoiceId)
     .maybeSingle()
   if (error) throw new Error(error.message || 'Failed to load invoice')
@@ -40,9 +40,12 @@ export async function pushInvoiceToFreeAgent(invoiceId: string): Promise<string>
     bill_to_country: (invoice.bill_to_country as string | null) ?? null,
   })
 
-  const currency = invoice.account_id
-    ? ((await supabase.from('accounts').select('currency').eq('id', invoice.account_id).maybeSingle()).data?.currency as string | null) ?? 'GBP'
-    : 'GBP'
+  // The invoice's own currency is the single source of truth (was derived from
+  // accounts.currency, which nothing in the OS UI writes). FreeAgent uses the
+  // currency on the invoice payload; the FreeAgent contact's default currency does
+  // NOT override an explicit invoice currency, so no per-contact reconciliation is
+  // needed here.
+  const currency = ((invoice.currency as string | null) ?? 'GBP')
   const vatRate = Number(invoice.vat_rate ?? 0)
   const lineItems = (invoice.line_items ?? []) as LineItem[]
   if (lineItems.length === 0) throw new Error('Invoice has no line items.')

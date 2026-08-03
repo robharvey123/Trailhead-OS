@@ -59,6 +59,19 @@ export async function GET(request: Request) {
       newDueDate = newDue.toISOString().slice(0, 10)
     }
 
+    // Carry the currency, but do NOT copy the parent's FX rate — a September
+    // retainer generated at July's rate is a silent mispricing. GBP is always
+    // rate 1.0. A non-GBP recurring template has no live FX source in the OS, so
+    // the generated draft is flagged for a fresh rate before it is sent (it stays
+    // a draft, so it can't go out un-reviewed).
+    const sourceCurrency = (source.currency as string | null) ?? 'GBP'
+    const isGbp = sourceCurrency === 'GBP'
+    const fxToGbp = isGbp ? 1.0 : Number(source.fx_rate_to_gbp ?? 1)
+    const fxSource = isGbp ? null : 'NEEDS RE-SNAPSHOT (recurring) — verify rate before sending'
+    if (!isGbp) {
+      errors.push(`Invoice ${source.id}: generated a ${sourceCurrency} draft — set a fresh FX rate before sending.`)
+    }
+
     // Create the new draft invoice
     const { error: insertError } = await supabaseService
       .from('invoices')
@@ -72,6 +85,10 @@ export async function GET(request: Request) {
         due_date: newDueDate,
         line_items: source.line_items,
         vat_rate: source.vat_rate,
+        currency: sourceCurrency,
+        fx_rate_to_gbp: fxToGbp,
+        fx_rate_date: isGbp ? null : nextDate,
+        fx_rate_source: fxSource,
         bill_to_name: source.bill_to_name,
         bill_to_address: source.bill_to_address,
         bill_to_city: source.bill_to_city,

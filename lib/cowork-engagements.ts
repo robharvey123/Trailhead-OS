@@ -350,6 +350,10 @@ export async function getEngagementDetail(ref: string) {
     billing: billing
       ? {
           invoice_count: Number(billing.invoice_count ?? 0),
+          // All money here is GBP-normalised (mixed-currency engagements sum
+          // correctly). currency_count > 1 flags a mixed-currency engagement.
+          currency_count: Number(billing.currency_count ?? 0),
+          currencies: (billing.currencies as unknown as string[] | null) ?? [],
           total_invoiced: Number(billing.total_invoiced ?? 0),
           total_paid: Number(billing.total_paid ?? 0),
           total_outstanding: Number(billing.total_outstanding ?? 0),
@@ -357,7 +361,7 @@ export async function getEngagementDetail(ref: string) {
           next_due_date: (billing.next_due_date as string | null) ?? null,
           last_payment_at: (billing.last_payment_at as string | null) ?? null,
         }
-      : { invoice_count: 0, total_invoiced: 0, total_paid: 0, total_outstanding: 0, total_draft: 0, next_due_date: null, last_payment_at: null },
+      : { invoice_count: 0, currency_count: 0, currencies: [], total_invoiced: 0, total_paid: 0, total_outstanding: 0, total_draft: 0, next_due_date: null, last_payment_at: null },
     milestones: milestones.map((m) => formatMilestone(m as Tier1MilestoneWithAccount)),
     projects: (projectsRes.data ?? []) as Array<{ id: string; name: string; status: string }>,
   }

@@ -6,15 +6,12 @@ import { useEffect, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type InvoiceStatus, type Workstream } from '@/lib/types'
+import { formatMoney } from '@/lib/money'
 import ConfirmDialog from './ConfirmDialog'
 import RecordEmailDialog from './RecordEmailDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import StatusBadge from './StatusBadge'
 import { deleteInvoice, sendInvoiceToFreeAgent } from '@/app/(os)/invoicing/[id]/actions'
-
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
-}
 
 export default function InvoiceDetailClient({
   invoice,
@@ -363,9 +360,9 @@ export default function InvoiceDetailClient({
                 <tr key={item.id} className="border-t border-[color:var(--border)]">
                   <td className="py-3 text-[color:var(--text)]">{item.description}</td>
                   <td className="py-3 text-right text-[color:var(--text-2)]">{item.qty}</td>
-                  <td className="py-3 text-right text-[color:var(--text-2)]">{formatMoney(item.unit_price)}</td>
+                  <td className="py-3 text-right text-[color:var(--text-2)]">{formatMoney(item.unit_price, invoice.currency)}</td>
                   <td className="py-3 text-right text-[color:var(--text)]">
-                    {formatMoney(item.qty * item.unit_price)}
+                    {formatMoney(item.qty * item.unit_price, invoice.currency)}
                   </td>
                 </tr>
               ))}
@@ -390,15 +387,15 @@ export default function InvoiceDetailClient({
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-[color:var(--text-2)]">Subtotal</dt>
-                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</dd>
+                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal, invoice.currency)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-[color:var(--text-2)]">VAT ({invoice.vat_rate}%)</dt>
-                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</dd>
+                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount, invoice.currency)}</dd>
               </div>
               <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
                 <dt className="text-base font-semibold text-[color:var(--text)]">Total</dt>
-                <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total)}</dd>
+                <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, invoice.currency)}</dd>
               </div>
             </dl>
           </div>
@@ -408,7 +405,7 @@ export default function InvoiceDetailClient({
               <h2 className="os-section-title">Payment</h2>
               {subscriptionState.isRecurring && subscriptionState.interval ? (
                 <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
-                  Recurring: {formatMoney(totals.total)}/{subscriptionState.interval}
+                  Recurring: {formatMoney(totals.total, invoice.currency)}/{subscriptionState.interval}
                 </span>
               ) : null}
             </div>
@@ -554,7 +551,7 @@ export default function InvoiceDetailClient({
 
             <div className="mt-6 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Amount</p>
-              <p className="mt-2 text-2xl font-semibold text-[color:var(--text)]">{formatMoney(totals.total)}</p>
+              <p className="mt-2 text-2xl font-semibold text-[color:var(--text)]">{formatMoney(totals.total, invoice.currency)}</p>
             </div>
 
             <div className="mt-6 flex gap-3">
