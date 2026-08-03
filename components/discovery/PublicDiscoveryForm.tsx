@@ -343,7 +343,7 @@ export default function PublicDiscoveryForm() {
       setIsComplete(true)
     } catch {
       setSubmitError(
-        'Something went wrong. Please try again or email rob@trailheadholdings.com'
+        'Something went wrong. Please try again or email rob@trailheadholdings.uk'
       )
     } finally {
       setIsSubmitting(false)

@@ -204,7 +204,7 @@ function InvoiceDocument({
             <View>
               <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
               <Text style={styles.muted}>Registered in England &amp; Wales</Text>
-              <Text style={styles.muted}>rob@trailheadholdings.com</Text>
+              <Text style={styles.muted}>rob@trailheadholdings.uk</Text>
               {companySettings?.vat_registered && companySettings.vat_number ? (
                 <Text style={styles.muted}>VAT: {companySettings.vat_number}</Text>
               ) : null}
@@ -278,7 +278,8 @@ function InvoiceDocument({
           <View style={styles.fxNote}>
             <Text>
               Total GBP equivalent {formatMoney(gbpEquivalent, 'GBP')} at 1 GBP = {perGbp.toFixed(4)} {currency}
-              {fxProvenance ? ` (${fxProvenance})` : ''}. For reference only. Payable in {currency}.
+              {fxProvenance ? ` (${fxProvenance})` : ''}. For reference only; the sterling amount received is subject to
+              conversion and correspondent bank charges. Payable in {currency}.
             </Text>
           </View>
         ) : null}
