@@ -6,6 +6,7 @@ import { getContactById } from '@/lib/db/contacts'
 import { createInvoice, getInvoices } from '@/lib/db/invoices'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import { getCompanySettings } from '@/lib/company-settings'
+import { parseInvoiceCurrencyFields, CoworkApiError } from '@/lib/cowork-api'
 import { calculateTotals, type Invoice, type InvoiceStatus, type LineItem } from '@/lib/types'
 
 const INVOICE_STATUSES = new Set<InvoiceStatus>([
@@ -161,6 +162,14 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  let currencyFields
+  try {
+    currencyFields = parseInvoiceCurrencyFields(body)
+  } catch (e) {
+    if (e instanceof CoworkApiError) return NextResponse.json({ error: e.message }, { status: e.status })
+    throw e
+  }
+
   const payload: Omit<Invoice, 'id' | 'invoice_number' | 'created_at' | 'updated_at'> = {
     account_id: accountId,
     contact_id: contactId,
@@ -189,6 +198,11 @@ export async function POST(request: NextRequest) {
           : null,
     line_items: lineItems,
     vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : defaultVatRate,
+    currency: currencyFields.currency,
+    fx_rate_to_gbp: currencyFields.fx_rate_to_gbp,
+    fx_rate_quote: currencyFields.fx_rate_quote,
+    fx_rate_date: currencyFields.fx_rate_date,
+    fx_rate_source: currencyFields.fx_rate_source,
       bill_to_name: sanitizeText(body.bill_to_name) ?? derivedBillTo.bill_to_name,
       bill_to_address: sanitizeText(body.bill_to_address) ?? derivedBillTo.bill_to_address,
       bill_to_city: sanitizeText(body.bill_to_city) ?? derivedBillTo.bill_to_city,

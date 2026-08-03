@@ -17,7 +17,7 @@ import {
   type UnbilledTimeGroup,
   type Workstream,
 } from '@/lib/types'
-import { formatMoney } from '@/lib/money'
+import { formatMoney, SUPPORTED_CURRENCIES } from '@/lib/money'
 
 function createEmptyLineItem(): LineItem {
   return {
@@ -118,12 +118,26 @@ export default function InvoiceForm({
   const [dueDate, setDueDate] = useState(initialInvoice?.due_date ?? '')
   const [vatRate, setVatRate] = useState(String(initialInvoice?.vat_rate ?? (vatRegistered ? 20 : 0)))
   const [notes, setNotes] = useState(initialInvoice?.notes ?? '')
-  // Display currency for money in this form. New OS-form invoices are GBP; a
-  // non-GBP invoice is raised via the Cowork API (which captures the FX snapshot).
-  const displayCurrency = initialInvoice?.currency ?? 'GBP'
+  // Multi-currency: the client is billed in `currency`, but amounts are ENTERED in
+  // GBP (authoritative) and converted at the quoted rate (1 GBP = N foreign). A GBP
+  // invoice is unchanged. When editing a non-GBP invoice, the stored foreign line
+  // prices are converted back to GBP for the form.
+  const [currency, setCurrency] = useState(initialInvoice?.currency ?? 'GBP')
+  const initialQuote =
+    initialInvoice?.fx_rate_quote ??
+    (initialInvoice?.fx_rate_to_gbp ? 1 / initialInvoice.fx_rate_to_gbp : 1)
+  const [fxQuote, setFxQuote] = useState(
+    initialInvoice?.currency && initialInvoice.currency !== 'GBP' && initialInvoice.fx_rate_quote
+      ? String(initialInvoice.fx_rate_quote)
+      : ''
+  )
+  const [fxSource, setFxSource] = useState(initialInvoice?.fx_rate_source ?? '')
+  const [fxDate, setFxDate] = useState(initialInvoice?.fx_rate_date ?? '')
   const [lineItems, setLineItems] = useState<LineItem[]>(
     initialInvoice?.line_items.length
-      ? initialInvoice.line_items
+      ? initialInvoice.currency && initialInvoice.currency !== 'GBP'
+        ? initialInvoice.line_items.map((li) => ({ ...li, unit_price: Math.round((li.unit_price / (initialQuote || 1)) * 100) / 100 }))
+        : initialInvoice.line_items
       : []
   )
   const [savingAs, setSavingAs] = useState<'draft' | 'sent' | 'edit' | null>(null)
@@ -157,7 +171,15 @@ export default function InvoiceForm({
     return getContactLabel(contact).toLowerCase().includes(query)
   })
 
+  // GBP totals are what Rob books; foreign totals are what the client is billed.
   const totals = calculateTotals(lineItems, Number(vatRate) || 0)
+  const isForeign = currency !== 'GBP'
+  const quote = isForeign ? Number(fxQuote) : 1
+  const hasValidQuote = !isForeign || (Number.isFinite(quote) && quote > 0)
+  const foreignLineItems = isForeign && hasValidQuote
+    ? lineItems.map((li) => ({ ...li, unit_price: Math.round(li.unit_price * quote * 100) / 100 }))
+    : lineItems
+  const foreignTotals = calculateTotals(foreignLineItems, Number(vatRate) || 0)
 
   useEffect(() => {
     if (!selectionSyncReadyRef.current) {
@@ -254,7 +276,18 @@ export default function InvoiceForm({
       return
     }
 
+    if (isForeign && !hasValidQuote) {
+      setError(`Enter the exchange rate (1 GBP = N ${currency}) for a ${currency} invoice.`)
+      setSavingAs(null)
+      return
+    }
+
     try {
+      // Amounts are entered in GBP; store line prices in the invoice currency so the
+      // client sees the currency they pay. GBP invoices store as-is.
+      const outLineItems = isForeign
+        ? sanitizedLineItems.map((li) => ({ ...li, unit_price: Math.round(li.unit_price * quote * 100) / 100 }))
+        : sanitizedLineItems
       const payload = {
         account_id: accountId || null,
         contact_id: contactId || null,
@@ -271,7 +304,11 @@ export default function InvoiceForm({
         bill_to_email: billToEmail || null,
         bill_to_phone: billToPhone || null,
         notes,
-        line_items: sanitizedLineItems,
+        line_items: outLineItems,
+        currency,
+        fx_rate_quote: isForeign ? quote : null,
+        fx_rate_source: isForeign ? fxSource.trim() || null : null,
+        fx_rate_date: isForeign ? fxDate.trim() || null : null,
         status: nextStatus === 'edit' ? initialInvoice?.status ?? 'draft' : nextStatus,
         is_recurring: isRecurring,
         recurring_interval: isRecurring ? recurringInterval : null,
@@ -432,6 +469,18 @@ export default function InvoiceForm({
           />
         </label>
         <label className="space-y-2">
+          <span className="text-sm text-[color:var(--text-2)]">Currency</span>
+          <select
+            value={currency}
+            onChange={(event) => setCurrency(event.target.value)}
+            className="os-select w-full"
+          >
+            {SUPPORTED_CURRENCIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </label>
+        <label className="space-y-2">
           <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
           <input
             type="date"
@@ -440,6 +489,46 @@ export default function InvoiceForm({
             className="os-input w-full"
           />
         </label>
+
+        {isForeign ? (
+          <div className="md:col-span-2 rounded-[1.25rem] border border-[color:var(--border)] bg-[color:var(--surface-2)] p-4">
+            <p className="text-sm font-medium text-[color:var(--text)]">Exchange rate</p>
+            <p className="mt-1 text-xs text-[color:var(--text-2)]">
+              Enter all amounts below in <strong>GBP</strong>. The client is billed in {currency} at this rate.
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <label className="space-y-1">
+                <span className="text-xs text-[color:var(--text-2)]">1 GBP = … {currency}</span>
+                <input
+                  type="number" min="0" step="0.0001" inputMode="decimal"
+                  value={fxQuote}
+                  onChange={(event) => setFxQuote(event.target.value)}
+                  placeholder="e.g. 1.3481"
+                  className="os-input w-full"
+                />
+              </label>
+              <label className="space-y-1">
+                <span className="text-xs text-[color:var(--text-2)]">Rate source</span>
+                <input
+                  type="text"
+                  value={fxSource}
+                  onChange={(event) => setFxSource(event.target.value)}
+                  placeholder="e.g. Wise mid-market"
+                  className="os-input w-full"
+                />
+              </label>
+              <label className="space-y-1">
+                <span className="text-xs text-[color:var(--text-2)]">Rate date</span>
+                <input
+                  type="date"
+                  value={fxDate ?? ''}
+                  onChange={(event) => setFxDate(event.target.value)}
+                  className="os-input w-full"
+                />
+              </label>
+            </div>
+          </div>
+        ) : null}
         <label className="space-y-2">
           <span className="text-sm text-[color:var(--text-2)]">Due date</span>
           <input
@@ -684,7 +773,7 @@ export default function InvoiceForm({
                 className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
               <div className="flex items-center rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
-                {formatMoney(item.qty * item.unit_price, displayCurrency)}
+                {formatMoney(item.qty * item.unit_price, 'GBP')}
               </div>
               <button
                 type="button"
@@ -714,16 +803,26 @@ export default function InvoiceForm({
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex items-center justify-between gap-4">
               <dt className="text-[color:var(--text-2)]">Subtotal</dt>
-              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal, displayCurrency)}</dd>
+              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal, 'GBP')}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-[color:var(--text-2)]">VAT ({Number(vatRate) || 0}%)</dt>
-              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount, displayCurrency)}</dd>
+              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount, 'GBP')}</dd>
             </div>
             <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
-              <dt className="text-base font-semibold text-[color:var(--text)]">Total</dt>
-              <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, displayCurrency)}</dd>
+              <dt className="text-base font-semibold text-[color:var(--text)]">Total (GBP)</dt>
+              <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, 'GBP')}</dd>
             </div>
+            {isForeign ? (
+              <div className="flex items-center justify-between gap-4 rounded-[1rem] bg-[color:var(--accent-dim)] px-3 py-2">
+                <dt className="text-sm font-medium text-[color:var(--text)]">
+                  Client billed{fxQuote ? ` · 1 GBP = ${fxQuote} ${currency}` : ''}
+                </dt>
+                <dd className="text-base font-semibold text-[color:var(--text)]">
+                  {hasValidQuote ? formatMoney(foreignTotals.total, currency) : `— ${currency}`}
+                </dd>
+              </div>
+            ) : null}
           </dl>
         </div>
       </div>

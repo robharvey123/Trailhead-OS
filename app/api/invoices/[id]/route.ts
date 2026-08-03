@@ -5,6 +5,7 @@ import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { getInvoiceById, updateInvoice } from '@/lib/db/invoices'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
+import { parseInvoiceCurrencyFields, CoworkApiError } from '@/lib/cowork-api'
 import { calculateTotals, type InvoiceStatus, type LineItem } from '@/lib/types'
 
 const INVOICE_STATUSES = new Set<InvoiceStatus>([
@@ -278,6 +279,33 @@ export async function PATCH(
       )
     }
     patch.line_items = lineItems
+  }
+
+  // Currency + FX. Frozen once the invoice leaves draft (409); the currency itself
+  // can't be switched on an existing invoice (line items don't convert).
+  if (body.currency !== undefined || body.fx_rate_quote !== undefined || body.fx_rate_to_gbp !== undefined) {
+    if (existing.status !== 'draft') {
+      return NextResponse.json({ error: 'Currency and FX rate are frozen once an invoice leaves draft.' }, { status: 409 })
+    }
+    let cf
+    try {
+      cf = parseInvoiceCurrencyFields({ ...body, currency: body.currency ?? existing.currency })
+    } catch (e) {
+      if (e instanceof CoworkApiError) return NextResponse.json({ error: e.message }, { status: e.status })
+      throw e
+    }
+    const existingCurrency = (existing.currency as string | null) ?? 'GBP'
+    if (cf.currency !== existingCurrency) {
+      return NextResponse.json(
+        { error: `Cannot change an invoice from ${existingCurrency} to ${cf.currency}; line items do not convert. Raise a new ${cf.currency} invoice instead.` },
+        { status: 409 }
+      )
+    }
+    patch.currency = cf.currency
+    patch.fx_rate_to_gbp = cf.fx_rate_to_gbp
+    patch.fx_rate_quote = cf.fx_rate_quote
+    patch.fx_rate_date = cf.fx_rate_date
+    patch.fx_rate_source = cf.fx_rate_source
   }
 
   if (Object.keys(patch).length === 0) {
