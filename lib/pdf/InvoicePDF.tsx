@@ -11,7 +11,7 @@ import {
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, type Contact, type Invoice, type Workstream } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
-import type { CompanySettings } from '@/lib/company-settings'
+import type { CompanySettings, CompanyBankAccount } from '@/lib/company-settings'
 
 const styles = StyleSheet.create({
   page: {
@@ -154,20 +154,38 @@ function InvoiceDocument({
   contact,
   workstream,
   companySettings,
+  bankAccount = null,
 }: {
   invoice: Invoice
   contact: Contact | null
   workstream: Workstream | null
   companySettings: CompanySettings | null
+  bankAccount?: CompanyBankAccount | null
 }) {
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
   const billTo = getInvoiceBillToDisplay(invoice, contact)
-  const showPayment = Boolean(companySettings?.bank_account_number)
+  // Per-currency bank account when set (e.g. the USD account for a USD invoice);
+  // otherwise the legacy GBP fields on company settings.
+  const bank: CompanyBankAccount | null = bankAccount ?? (companySettings
+    ? {
+        currency: 'GBP',
+        account_name: companySettings.bank_account_name,
+        bank_name: companySettings.bank_name,
+        account_number: companySettings.bank_account_number,
+        sort_code: companySettings.bank_sort_code,
+        iban: companySettings.bank_iban,
+        bic: companySettings.bank_bic,
+        bank_address: null,
+      }
+    : null)
+  const showPayment = Boolean(bank && (bank.account_number || bank.iban))
   const currency = invoice.currency ?? 'GBP'
   const fxRate = invoice.fx_rate_to_gbp ?? 1
   const isForeign = currency !== 'GBP'
   const gbpEquivalent = Math.round(totals.total * fxRate * 100) / 100
-  const perGbp = fxRate > 0 ? 1 / fxRate : 0
+  // Prefer the quoted pair as entered (1 GBP = N foreign) for display; fall back
+  // to the derived inverse for older invoices without a stored quote.
+  const perGbp = invoice.fx_rate_quote ?? (fxRate > 0 ? 1 / fxRate : 0)
   const fxProvenance = [invoice.fx_rate_source, invoice.fx_rate_date].filter(Boolean).join(', ')
 
   return (
@@ -265,50 +283,60 @@ function InvoiceDocument({
           </View>
         ) : null}
 
-        {showPayment && companySettings ? (
+        {showPayment && bank ? (
           <View style={styles.bankDetails}>
-            <Text style={styles.sectionTitle}>Payment Details</Text>
+            <Text style={styles.sectionTitle}>Payment Details{currency !== 'GBP' ? ` (${currency})` : ''}</Text>
             <View style={styles.bankGrid}>
               <View style={styles.bankColumn}>
-                {companySettings.bank_name ? (
+                {bank.bank_name ? (
                   <>
                     <Text style={styles.bankLabel}>Bank</Text>
-                    <Text style={styles.bankValue}>{companySettings.bank_name}</Text>
+                    <Text style={styles.bankValue}>{bank.bank_name}</Text>
                   </>
                 ) : null}
-                {companySettings.bank_account_name ? (
+                {bank.account_name ? (
                   <>
                     <Text style={styles.bankLabel}>Account name</Text>
-                    <Text style={styles.bankValue}>{companySettings.bank_account_name}</Text>
+                    <Text style={styles.bankValue}>{bank.account_name}</Text>
                   </>
                 ) : null}
-                {companySettings.bank_sort_code ? (
+                {bank.sort_code ? (
                   <>
                     <Text style={styles.bankLabel}>Sort code</Text>
-                    <Text style={styles.bankValue}>{companySettings.bank_sort_code}</Text>
+                    <Text style={styles.bankValue}>{bank.sort_code}</Text>
                   </>
                 ) : null}
-                <Text style={styles.bankLabel}>Account number</Text>
-                <Text style={styles.bankValue}>{companySettings.bank_account_number}</Text>
+                {bank.account_number ? (
+                  <>
+                    <Text style={styles.bankLabel}>Account number</Text>
+                    <Text style={styles.bankValue}>{bank.account_number}</Text>
+                  </>
+                ) : null}
               </View>
-              {companySettings.bank_iban || companySettings.bank_bic ? (
+              {bank.iban || bank.bic || bank.bank_address ? (
                 <View style={styles.bankColumn}>
-                  {companySettings.bank_iban ? (
+                  {bank.iban ? (
                     <>
                       <Text style={styles.bankLabel}>IBAN</Text>
-                      <Text style={styles.bankValue}>{companySettings.bank_iban}</Text>
+                      <Text style={styles.bankValue}>{bank.iban}</Text>
                     </>
                   ) : null}
-                  {companySettings.bank_bic ? (
+                  {bank.bic ? (
                     <>
-                      <Text style={styles.bankLabel}>BIC</Text>
-                      <Text style={styles.bankValue}>{companySettings.bank_bic}</Text>
+                      <Text style={styles.bankLabel}>BIC / SWIFT</Text>
+                      <Text style={styles.bankValue}>{bank.bic}</Text>
+                    </>
+                  ) : null}
+                  {bank.bank_address ? (
+                    <>
+                      <Text style={styles.bankLabel}>Bank address</Text>
+                      <Text style={styles.bankValue}>{bank.bank_address}</Text>
                     </>
                   ) : null}
                 </View>
               ) : null}
             </View>
-            {companySettings.payment_terms ? (
+            {companySettings?.payment_terms ? (
               <Text style={{ ...styles.muted, marginTop: 4 }}>{companySettings.payment_terms}</Text>
             ) : null}
           </View>
@@ -331,7 +359,8 @@ export async function renderInvoicePdf(
   invoice: Invoice,
   contact: Contact | null,
   workstream: Workstream | null,
-  companySettings: CompanySettings | null = null
+  companySettings: CompanySettings | null = null,
+  bankAccount: CompanyBankAccount | null = null
 ) {
   return renderToBuffer(
     <InvoiceDocument
@@ -339,6 +368,7 @@ export async function renderInvoicePdf(
       contact={contact}
       workstream={workstream}
       companySettings={companySettings}
+      bankAccount={bankAccount}
     />
   )
 }

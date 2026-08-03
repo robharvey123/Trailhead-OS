@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { sendInvoicePaidNotification } from '@/lib/stripe/notifications'
 import { supabaseService } from '@/lib/supabase/service'
 import { calculateTotals, type InvoiceStatus, type LineItem, type TaskPriority, type TouchpointType } from '@/lib/types'
-import { SUPPORTED_CURRENCIES, isSupportedCurrency } from '@/lib/money'
+import { SUPPORTED_CURRENCIES, isSupportedCurrency, quoteToRateToGbp, rateToGbpToQuote } from '@/lib/money'
 
 const TASK_PRIORITIES = new Set<TaskPriority>(['low', 'medium', 'high', 'urgent'])
 const CONTACT_STATUSES = new Set(['lead', 'active', 'inactive', 'archived'])
@@ -105,6 +105,7 @@ type InvoiceRow = {
   notes: string | null
   currency: string | null
   fx_rate_to_gbp: number | string | null
+  fx_rate_quote: number | string | null
   fx_rate_date: string | null
   fx_rate_source: string | null
   stripe_payment_link: string | null
@@ -280,6 +281,7 @@ export const INVOICE_SELECT = `
   notes,
   currency,
   fx_rate_to_gbp,
+  fx_rate_quote,
   fx_rate_date,
   fx_rate_source,
   stripe_payment_link,
@@ -790,15 +792,17 @@ export function parseVatRate(value: unknown, fallback = 20) {
 export type InvoiceCurrencyFields = {
   currency: string
   fx_rate_to_gbp: number
+  fx_rate_quote: number | null
   fx_rate_date: string | null
   fx_rate_source: string | null
 }
 
 /**
  * Validate + normalise the currency/FX fields for a create or patch. Rules:
- * currency must be a supported ISO code; GBP is always rate 1.0 (any supplied
- * rate ignored); a non-GBP currency with no fx_rate_to_gbp is REJECTED (never
- * silently 1.0 — that would report USD 4,718.35 as £4,718.35).
+ * currency must be a supported ISO code; GBP is always rate 1.0. A non-GBP
+ * currency must supply a rate as EITHER fx_rate_quote (1 GBP = N foreign, e.g.
+ * 1.3481 — preferred) OR fx_rate_to_gbp (the inverse); one is derived from the
+ * other at full precision. Neither supplied is REJECTED (never silently 1.0).
  */
 export function parseInvoiceCurrencyFields(body: Record<string, unknown>): InvoiceCurrencyFields {
   const currency = (optionalString(body.currency) ?? 'GBP').toUpperCase()
@@ -806,19 +810,30 @@ export function parseInvoiceCurrencyFields(body: Record<string, unknown>): Invoi
     throw new CoworkApiError(`Unsupported currency: ${currency}. Supported: ${SUPPORTED_CURRENCIES.join(', ')}`, 400)
   }
   if (currency === 'GBP') {
-    return { currency, fx_rate_to_gbp: 1, fx_rate_date: null, fx_rate_source: null }
+    return { currency, fx_rate_to_gbp: 1, fx_rate_quote: null, fx_rate_date: null, fx_rate_source: null }
   }
-  const raw = body.fx_rate_to_gbp
-  if (raw === undefined || raw === null || raw === '') {
-    throw new CoworkApiError(`fx_rate_to_gbp is required for ${currency} invoices`, 400)
+
+  const quoteRaw = body.fx_rate_quote
+  const rateRaw = body.fx_rate_to_gbp
+  let quote: number | null = null
+  let rateToGbp: number
+
+  if (quoteRaw !== undefined && quoteRaw !== null && quoteRaw !== '') {
+    quote = Number(quoteRaw)
+    if (!Number.isFinite(quote) || quote <= 0) throw new CoworkApiError('fx_rate_quote must be a positive number (1 GBP = N foreign)', 400)
+    rateToGbp = quoteToRateToGbp(quote)
+  } else if (rateRaw !== undefined && rateRaw !== null && rateRaw !== '') {
+    rateToGbp = Number(rateRaw)
+    if (!Number.isFinite(rateToGbp) || rateToGbp <= 0) throw new CoworkApiError('fx_rate_to_gbp must be a positive number', 400)
+    quote = rateToGbpToQuote(rateToGbp)
+  } else {
+    throw new CoworkApiError(`A rate is required for ${currency} invoices: supply fx_rate_quote (1 GBP = N ${currency}) or fx_rate_to_gbp.`, 400)
   }
-  const rate = Number(raw)
-  if (!Number.isFinite(rate) || rate <= 0) {
-    throw new CoworkApiError('fx_rate_to_gbp must be a positive number', 400)
-  }
+
   return {
     currency,
-    fx_rate_to_gbp: rate,
+    fx_rate_to_gbp: rateToGbp,
+    fx_rate_quote: quote,
     fx_rate_date: optionalDate(body.fx_rate_date, 'fx_rate_date'),
     fx_rate_source: optionalString(body.fx_rate_source),
   }
@@ -1009,6 +1024,7 @@ export function formatInvoice(row: InvoiceRow) {
     total: totals.total,
     currency,
     fx_rate_to_gbp: fxRateToGbp,
+    fx_rate_quote: row.fx_rate_quote != null ? Number(row.fx_rate_quote) : null,
     fx_rate_date: row.fx_rate_date,
     fx_rate_source: row.fx_rate_source,
     total_gbp: totalGbp,

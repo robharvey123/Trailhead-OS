@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { z } from 'zod'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
-import { getCompanySettings, renderCompanyEmailFooterHtml, type CompanySettings } from '@/lib/company-settings'
+import { getCompanySettings, getBankAccountForCurrency, renderCompanyEmailFooterHtml, type CompanySettings } from '@/lib/company-settings'
 import { getContactById } from '@/lib/db/contacts'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getInvoiceById } from '@/lib/db/invoices'
@@ -175,12 +175,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invoice not found.' }, { status: 404 })
     }
 
-    const [contact, workstreams] = await Promise.all([
+    const invoiceCurrency = invoice.currency ?? 'GBP'
+    const [contact, workstreams, bankAccount] = await Promise.all([
       invoice.contact_id ? getContactById(invoice.contact_id, auth.supabase).catch(() => null) : null,
       getWorkstreams(auth.supabase).catch(() => []),
+      invoiceCurrency !== 'GBP' ? getBankAccountForCurrency(invoiceCurrency, auth.supabase).catch(() => null) : null,
     ])
     const workstream = workstreams.find((item) => item.id === invoice.workstream_id) ?? null
-    const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings)
+    const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings, bankAccount)
 
     await resend.emails.send({
       from: fromAddress,

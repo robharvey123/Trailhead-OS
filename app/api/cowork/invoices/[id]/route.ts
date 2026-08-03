@@ -92,7 +92,7 @@ export async function PATCH(
     // be corrected, but the currency itself cannot be switched: line-item prices do
     // not convert themselves, so relabelling 3500 GBP as $3500 would misprice the
     // invoice. Blocking is safer than repricing — raise a new invoice instead.
-    if (body.currency !== undefined || body.fx_rate_to_gbp !== undefined) {
+    if (body.currency !== undefined || body.fx_rate_to_gbp !== undefined || body.fx_rate_quote !== undefined) {
       if (existing.status !== 'draft') {
         return Response.json({ error: 'Currency and FX rate are frozen once an invoice leaves draft.' }, { status: 409 })
       }
@@ -106,6 +106,7 @@ export async function PATCH(
       }
       patch.currency = cf.currency
       patch.fx_rate_to_gbp = cf.fx_rate_to_gbp
+      patch.fx_rate_quote = cf.fx_rate_quote
       patch.fx_rate_date = cf.fx_rate_date
       patch.fx_rate_source = cf.fx_rate_source
     }

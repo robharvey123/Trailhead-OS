@@ -92,6 +92,31 @@ export async function getCompanySettings(supabase: SupabaseClient): Promise<Comp
   }
 }
 
+export type CompanyBankAccount = {
+  currency: string
+  account_name: string | null
+  bank_name: string | null
+  account_number: string | null
+  sort_code: string | null
+  iban: string | null
+  bic: string | null
+  bank_address: string | null
+}
+
+/** Bank account to display for a given invoice currency, or null if none set.
+ * GBP falls back to the legacy fields on os_company_settings via the PDF. */
+export async function getBankAccountForCurrency(
+  currency: string,
+  supabase: SupabaseClient
+): Promise<CompanyBankAccount | null> {
+  const { data } = await supabase
+    .from('company_bank_accounts')
+    .select('currency, account_name, bank_name, account_number, sort_code, iban, bic, bank_address')
+    .eq('currency', currency)
+    .maybeSingle()
+  return (data as CompanyBankAccount | null) ?? null
+}
+
 export function renderCompanyEmailFooterHtml(settings: CompanySettings) {
   const lines = [
     `<p style="margin:0"><strong>${escapeHtml(settings.company_name)}</strong></p>`,

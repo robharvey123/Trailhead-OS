@@ -90,6 +90,7 @@ export async function createCoworkInvoice(body: Record<string, unknown>): Promis
       notes: optionalString(body.notes),
       currency: currencyFields.currency,
       fx_rate_to_gbp: currencyFields.fx_rate_to_gbp,
+      fx_rate_quote: currencyFields.fx_rate_quote,
       fx_rate_date: currencyFields.fx_rate_date,
       fx_rate_source: currencyFields.fx_rate_source,
       status,
