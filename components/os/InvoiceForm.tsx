@@ -176,6 +176,8 @@ export default function InvoiceForm({
   const isForeign = currency !== 'GBP'
   const quote = isForeign ? Number(fxQuote) : 1
   const hasValidQuote = !isForeign || (Number.isFinite(quote) && quote > 0)
+  // Catch the "typed the amount into the rate box" mistake (e.g. 3500).
+  const rateLooksWrong = isForeign && Number.isFinite(quote) && quote > 0 && (quote < 0.02 || quote > 1000)
   const foreignLineItems = isForeign && hasValidQuote
     ? lineItems.map((li) => ({ ...li, unit_price: Math.round(li.unit_price * quote * 100) / 100 }))
     : lineItems
@@ -278,6 +280,11 @@ export default function InvoiceForm({
 
     if (isForeign && !hasValidQuote) {
       setError(`Enter the exchange rate (1 GBP = N ${currency}) for a ${currency} invoice.`)
+      setSavingAs(null)
+      return
+    }
+    if (rateLooksWrong) {
+      setError(`That exchange rate looks wrong (1 GBP = ${fxQuote} ${currency}). Enter the rate, e.g. ~1.3 for USD, not the amount.`)
       setSavingAs(null)
       return
     }
@@ -506,6 +513,11 @@ export default function InvoiceForm({
                   placeholder="e.g. 1.3481"
                   className="os-input w-full"
                 />
+                {rateLooksWrong ? (
+                  <span className="text-xs text-[color:var(--red-strong)]">
+                    That looks like an amount, not a rate. 1 GBP is about 1.3 {currency}.
+                  </span>
+                ) : null}
               </label>
               <label className="space-y-1">
                 <span className="text-xs text-[color:var(--text-2)]">Rate source</span>

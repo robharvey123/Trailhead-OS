@@ -830,6 +830,13 @@ export function parseInvoiceCurrencyFields(body: Record<string, unknown>): Invoi
     throw new CoworkApiError(`A rate is required for ${currency} invoices: supply fx_rate_quote (1 GBP = N ${currency}) or fx_rate_to_gbp.`, 400)
   }
 
+  // Sanity band. No supported pair is anywhere near these bounds (1 GBP is ~1.3
+  // USD, ~1.15 EUR, ~14 SEK). A quote like 3500 means someone typed the amount
+  // into the rate box, which would bill the client thousands of times over.
+  if (quote < 0.02 || quote > 1000) {
+    throw new CoworkApiError(`That exchange rate looks wrong: 1 GBP = ${quote} ${currency}. Enter the rate (e.g. ~1.3 for USD), not the amount.`, 400)
+  }
+
   return {
     currency,
     fx_rate_to_gbp: rateToGbp,
