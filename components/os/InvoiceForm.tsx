@@ -133,6 +133,8 @@ export default function InvoiceForm({
   )
   const [fxSource, setFxSource] = useState(initialInvoice?.fx_rate_source ?? '')
   const [fxDate, setFxDate] = useState(initialInvoice?.fx_rate_date ?? '')
+  const [fetchingRate, setFetchingRate] = useState(false)
+  const [fxFetchError, setFxFetchError] = useState<string | null>(null)
   const [lineItems, setLineItems] = useState<LineItem[]>(
     initialInvoice?.line_items.length
       ? initialInvoice.currency && initialInvoice.currency !== 'GBP'
@@ -178,6 +180,24 @@ export default function InvoiceForm({
   const hasValidQuote = !isForeign || (Number.isFinite(quote) && quote > 0)
   // Catch the "typed the amount into the rate box" mistake (e.g. 3500).
   const rateLooksWrong = isForeign && Number.isFinite(quote) && quote > 0 && (quote < 0.02 || quote > 1000)
+
+  async function fetchRate() {
+    if (!isForeign) return
+    setFetchingRate(true)
+    setFxFetchError(null)
+    try {
+      const res = await fetch(`/api/fx/rate?from=GBP&to=${currency}`)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch rate')
+      setFxQuote(String(data.rate))
+      setFxSource(data.source)
+      setFxDate(data.date)
+    } catch (e) {
+      setFxFetchError(e instanceof Error ? e.message : 'Failed to fetch rate')
+    } finally {
+      setFetchingRate(false)
+    }
+  }
   const foreignLineItems = isForeign && hasValidQuote
     ? lineItems.map((li) => ({ ...li, unit_price: Math.round(li.unit_price * quote * 100) / 100 }))
     : lineItems
@@ -500,9 +520,22 @@ export default function InvoiceForm({
         {isForeign ? (
           <div className="md:col-span-2 rounded-[1.25rem] border border-[color:var(--border)] bg-[color:var(--surface-2)] p-4">
             <p className="text-sm font-medium text-[color:var(--text)]">Exchange rate</p>
-            <p className="mt-1 text-xs text-[color:var(--text-2)]">
-              Enter all amounts below in <strong>GBP</strong>. The client is billed in {currency} at this rate.
-            </p>
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-[color:var(--text-2)]">
+                Enter all amounts below in <strong>GBP</strong>. The client is billed in {currency} at this rate.
+              </p>
+              <button
+                type="button"
+                onClick={() => void fetchRate()}
+                disabled={fetchingRate}
+                className="rounded-xl border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
+              >
+                {fetchingRate ? 'Fetching…' : "Fetch today's rate (Wise)"}
+              </button>
+            </div>
+            {fxFetchError ? (
+              <p className="mt-2 text-xs text-[color:var(--red-strong)]">{fxFetchError}</p>
+            ) : null}
             <div className="mt-3 grid gap-3 md:grid-cols-3">
               <label className="space-y-1">
                 <span className="text-xs text-[color:var(--text-2)]">1 GBP = … {currency}</span>
