@@ -17,6 +17,16 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams
+    // This lists the workstream KANBAN `tasks`, which are not engagement-scoped.
+    // Reject engagement_id rather than silently returning every task — the counts
+    // can coincide (49 kanban == 49 engagement tickets) and look filtered when they
+    // aren't. Engagement tickets are their own table; use the engagement detail.
+    if (searchParams.get('engagement_id') || searchParams.get('engagement')) {
+      return Response.json(
+        { error: 'engagement_id is not supported here — /api/cowork/tasks lists workstream kanban tasks, not engagement tickets.' },
+        { status: 400 }
+      )
+    }
     const priorityParam = searchParams.get('priority')
 
     const tasks = await listCoworkTasks({

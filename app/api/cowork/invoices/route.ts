@@ -9,6 +9,7 @@ import {
   parseLimit,
 } from '@/lib/cowork-api'
 import { createCoworkInvoice } from '@/lib/cowork-invoices'
+import { getEngagementRow } from '@/lib/cowork-engagements'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 import { formatMoney } from '@/lib/money'
@@ -22,8 +23,12 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const workstreamSlug = searchParams.get('workstream')
     const status = parseInvoiceListStatus(searchParams.get('status'))
+    const engagementRef = searchParams.get('engagement_id') ?? searchParams.get('engagement')
     const limit = parseLimit(searchParams.get('limit'), 20, 100)
     const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
+    // getEngagementRow 404s on an unknown ref — a garbage filter returns no rows,
+    // never the whole table.
+    const engagement = engagementRef ? await getEngagementRow(engagementRef) : null
 
     let query = supabaseService
       .from('invoices')
@@ -39,6 +44,10 @@ export async function GET(request: NextRequest) {
 
     if (workstream) {
       query = query.eq('workstream_id', workstream.id)
+    }
+
+    if (engagement) {
+      query = query.eq('engagement_id', engagement.id)
     }
 
     const { data, error } = await query

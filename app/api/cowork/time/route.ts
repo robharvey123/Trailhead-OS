@@ -19,8 +19,11 @@ export async function GET(request: NextRequest) {
   }
   try {
     const sp = request.nextUrl.searchParams
-    const engagementRef = sp.get('engagement')
-    const projectId = sp.get('project')
+    // Accept the standard `engagement_id` as well as the legacy `engagement`.
+    // getEngagementRow 404s on an unknown ref, so a garbage filter can never fall
+    // through to an unfiltered "all rows" response.
+    const engagementRef = sp.get('engagement_id') ?? sp.get('engagement')
+    const projectId = sp.get('project_id') ?? sp.get('project')
     const from = parseDateParam(sp.get('from'), 'from')
     const to = parseDateParam(sp.get('to'), 'to')
     const billable = parseBooleanParam(sp.get('billable'))
