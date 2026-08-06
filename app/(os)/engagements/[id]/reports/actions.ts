@@ -11,12 +11,25 @@ import { sendReport } from '@/lib/reports/send'
 
 const VALID_KINDS: ReportKind[] = ['weekly_client', 'monthly_client', 'weekly_internal']
 
-/** Generate a draft report and route to its review screen. */
-export async function generateReportAction(engagementId: string, kind: ReportKind): Promise<{ error?: string }> {
+/** Generate a draft report and route to its review screen. An explicit period
+ *  overrides the kind's default (this week / last month) — pass both dates. */
+export async function generateReportAction(
+  engagementId: string,
+  kind: ReportKind,
+  period?: { start?: string; end?: string }
+): Promise<{ error?: string }> {
   if (!VALID_KINDS.includes(kind)) return { error: 'Unknown report kind' }
+  const periodStart = period?.start?.trim() || undefined
+  const periodEnd = period?.end?.trim() || undefined
+  if ((periodStart && !periodEnd) || (!periodStart && periodEnd)) {
+    return { error: 'Enter both a start and end date, or leave both blank for the default period.' }
+  }
+  if (periodStart && periodEnd && periodStart > periodEnd) {
+    return { error: 'The start date must be on or before the end date.' }
+  }
   let reportId: string
   try {
-    reportId = await generateEngagementReport({ engagementId, kind })
+    reportId = await generateEngagementReport({ engagementId, kind, periodStart, periodEnd })
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Failed to generate report' }
   }
@@ -47,7 +60,7 @@ export async function saveNarrativeAction(reportId: string, narrative: unknown):
   if (!parsed.success) return { error: 'The edited report is missing required sections.' }
   try {
     const { supabase, report } = await loadReport(reportId)
-    await supabase.from('engagement_reports').update({ narrative_edited: parsed.data }).eq('id', reportId)
+    await supabase.from('engagement_reports').update({ narrative_edited: parsed.data, narrative_error: null }).eq('id', reportId)
     await rerenderReportPdf(reportId, supabase)
     revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
     return {}
@@ -67,7 +80,7 @@ export async function regenerateSectionAction(reportId: string, section: Section
     const data = await gatherReportData(report.engagement_id as string, report.period_start as string, report.period_end as string, supabase)
     const fresh = await generateNarrative(data, { tone: 'consulting' })
     const merged: Narrative = { ...currentNarrative(report), [section]: fresh[section] }
-    await supabase.from('engagement_reports').update({ narrative_edited: merged }).eq('id', reportId)
+    await supabase.from('engagement_reports').update({ narrative_edited: merged, narrative_error: null }).eq('id', reportId)
     await rerenderReportPdf(reportId, supabase)
     revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
     return {}
@@ -82,7 +95,7 @@ export async function regenerateFullAction(reportId: string): Promise<{ error?: 
     const { supabase, report } = await loadReport(reportId)
     const data = await gatherReportData(report.engagement_id as string, report.period_start as string, report.period_end as string, supabase)
     const fresh = await generateNarrative(data, { tone: 'consulting' })
-    await supabase.from('engagement_reports').update({ narrative_edited: fresh }).eq('id', reportId)
+    await supabase.from('engagement_reports').update({ narrative_edited: fresh, narrative_error: null }).eq('id', reportId)
     await rerenderReportPdf(reportId, supabase)
     revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
     return {}

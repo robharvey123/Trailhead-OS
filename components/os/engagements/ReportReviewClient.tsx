@@ -25,6 +25,7 @@ export default function ReportReviewClient(props: {
   reportId: string
   kind: string
   status: 'draft' | 'sent' | 'archived'
+  narrativeError?: string | null
   periodStart: string
   periodEnd: string
   narrative: Narrative
@@ -141,6 +142,12 @@ export default function ReportReviewClient(props: {
         </div>
       </div>
 
+      {props.narrativeError ? (
+        <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
+          <strong>The AI narrative failed to generate</strong> — this report has factual data but no written prose.
+          Fix and click “Regenerate all”, or write the sections manually. Reason: {props.narrativeError}
+        </div>
+      ) : null}
       {error ? <p className="text-sm text-[color:var(--red)]">{error}</p> : null}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

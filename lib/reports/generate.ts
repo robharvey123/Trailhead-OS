@@ -77,12 +77,15 @@ export async function generateEngagementReport(
 
   const data = await gatherReportData(input.engagementId, period.start, period.end, supabase)
   let narrative: Narrative
+  let narrativeError: string | null = null
   try {
     narrative = await generateNarrative(data, { tone: 'consulting' })
-  } catch {
+  } catch (err) {
     // Don't block the draft on an LLM miss — create it with an empty narrative the
-    // user can write/regenerate from the review screen.
+    // user can write/regenerate from the review screen. But DON'T swallow it: record
+    // why, so the review screen shows a failure instead of an inexplicably blank PDF.
     narrative = EMPTY_NARRATIVE
+    narrativeError = err instanceof Error ? err.message : 'Narrative generation failed'
   }
 
   const numbers = {
@@ -90,6 +93,7 @@ export async function generateEngagementReport(
     billable_hours: data.hours_summary.billable,
     total_value_gbp: data.engagement.is_billable ? data.totals.value_gbp : 0,
     task_count_completed: data.tasks_completed.length,
+    narrative_error: narrativeError,
   }
 
   // Idempotent per (engagement, kind, period_start): reuse an existing draft.

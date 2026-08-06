@@ -8,13 +8,15 @@ export default function GenerateReportControls({ engagementId }: { engagementId:
   const [pending, startTransition] = useTransition()
   const [busyKind, setBusyKind] = useState<ReportKind | null>(null)
   const [error, setError] = useState('')
+  const [periodStart, setPeriodStart] = useState('')
+  const [periodEnd, setPeriodEnd] = useState('')
 
   function generate(kind: ReportKind) {
     setError('')
     setBusyKind(kind)
     startTransition(async () => {
       // On success the action redirects; an error result means it didn't.
-      const res = await generateReportAction(engagementId, kind)
+      const res = await generateReportAction(engagementId, kind, { start: periodStart, end: periodEnd })
       if (res?.error) {
         setError(res.error)
         setBusyKind(null)
@@ -23,7 +25,16 @@ export default function GenerateReportControls({ engagementId }: { engagementId:
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-[color:var(--text-2)]">
+        <span>Period (optional)</span>
+        <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="os-input px-2 py-1" aria-label="Period start" />
+        <span>→</span>
+        <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="os-input px-2 py-1" aria-label="Period end" />
+        {(periodStart || periodEnd) ? (
+          <button type="button" onClick={() => { setPeriodStart(''); setPeriodEnd('') }} className="text-[color:var(--text-3)] hover:text-[color:var(--text)]">clear</button>
+        ) : null}
+      </div>
       <div className="flex items-center gap-2">
         <button
           type="button"

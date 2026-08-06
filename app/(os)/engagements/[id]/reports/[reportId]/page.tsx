@@ -62,6 +62,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       reportId={reportId}
       kind={report.kind as string}
       status={report.status as 'draft' | 'sent' | 'archived'}
+      narrativeError={(report.narrative_error as string | null) ?? null}
       periodStart={report.period_start as string}
       periodEnd={report.period_end as string}
       narrative={narrative}

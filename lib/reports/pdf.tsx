@@ -1,29 +1,31 @@
 import { Document, Page, Text, View, StyleSheet, renderToBuffer } from '@react-pdf/renderer'
 import type { ReportData } from './data'
 import type { Narrative } from './narrative'
+import { BRAND, COMPANY, TrailheadLockup } from '@/lib/pdf/brand'
 
-// Restrained consulting-deliverable palette. No logo image is loaded (the brand
-// kit isn't bundled) — a typographic wordmark is used so the render never fails
-// on a missing asset.
-const INK = '#1A1A1A'
-const MUTED = '#6B7280'
-const LINE = '#E5E7EB'
-const ACCENT = '#0F766E' // teal
+const INK = BRAND.ink
+const MUTED = BRAND.muted
+const LINE = BRAND.line
+const ACCENT = BRAND.blue
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 56, paddingBottom: 56, paddingHorizontal: 48, fontSize: 10, color: INK, fontFamily: 'Helvetica', lineHeight: 1.5 },
-  wordmark: { fontSize: 11, letterSpacing: 2, fontFamily: 'Helvetica-Bold', color: INK },
-  coverWrap: { marginTop: 220 },
+  // lineHeight must NOT live on `page` — in @react-pdf/renderer 4.3.2 it silently
+  // suppresses the fixed, absolutely-positioned footer. It lives on paragraphs.
+  page: { paddingTop: 44, paddingBottom: 56, paddingHorizontal: 48, fontSize: 10, color: INK, fontFamily: 'Helvetica' },
+  // Blue accent rule under the header lockup — the brand mark.
+  accentRule: { marginTop: 10, height: 2, backgroundColor: ACCENT, borderRadius: 1 },
+  coverWrap: { marginTop: 130 },
   chip: { alignSelf: 'flex-start', fontSize: 8, letterSpacing: 1.5, color: ACCENT, fontFamily: 'Helvetica-Bold', borderColor: ACCENT, borderWidth: 1, borderRadius: 3, paddingVertical: 3, paddingHorizontal: 7, marginBottom: 14, textTransform: 'uppercase' },
-  title: { fontSize: 24, fontFamily: 'Helvetica-Bold', marginBottom: 8 },
-  subtitle: { fontSize: 12, color: MUTED, marginBottom: 4 },
-  sectionHeading: { fontSize: 13, fontFamily: 'Helvetica-Bold', marginTop: 22, marginBottom: 8, color: INK },
-  para: { marginBottom: 6 },
+  title: { fontSize: 24, fontFamily: 'Helvetica-Bold', marginBottom: 8, color: BRAND.navy },
+  subtitle: { fontSize: 12, color: MUTED, marginBottom: 4, lineHeight: 1.5 },
+  coverCompany: { position: 'absolute', bottom: 70, left: 48, right: 48, fontSize: 9, color: MUTED, lineHeight: 1.5 },
+  sectionHeading: { fontSize: 13, fontFamily: 'Helvetica-Bold', marginTop: 22, marginBottom: 8, color: BRAND.navy },
+  para: { marginBottom: 6, lineHeight: 1.5 },
   bullet: { flexDirection: 'row', marginBottom: 4 },
   bulletDot: { width: 10, color: ACCENT },
-  bulletText: { flex: 1 },
+  bulletText: { flex: 1, lineHeight: 1.5 },
   workTitle: { fontSize: 11, fontFamily: 'Helvetica-Bold', marginTop: 12, marginBottom: 4 },
-  table: { marginTop: 6, borderTopWidth: 1, borderColor: LINE },
+  trHead: { flexDirection: 'row', borderBottomWidth: 1, borderColor: LINE, paddingBottom: 4, marginTop: 4 },
   tr: { flexDirection: 'row', borderBottomWidth: 1, borderColor: LINE, paddingVertical: 4 },
   th: { fontFamily: 'Helvetica-Bold', fontSize: 9, color: MUTED, textTransform: 'uppercase', letterSpacing: 0.5 },
   cell: { fontSize: 9 },
@@ -57,10 +59,19 @@ function Bullets({ items }: { items: string[] }) {
   )
 }
 
+function Masthead() {
+  return (
+    <View>
+      <TrailheadLockup size={28} />
+      <View style={styles.accentRule} />
+    </View>
+  )
+}
+
 function Footer() {
   return (
     <View style={styles.footer} fixed>
-      <Text>Trailhead Holdings Ltd · Confidential</Text>
+      <Text>{COMPANY.name} · {COMPANY.registered} {COMPANY.number} · Confidential</Text>
       <Text render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
     </View>
   )
@@ -74,7 +85,7 @@ function ReportDocument({ data, narrative, kind }: { data: ReportData; narrative
     <Document>
       {/* Cover */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.wordmark}>TRAILHEAD HOLDINGS</Text>
+        <Masthead />
         <View style={styles.coverWrap}>
           <Text style={styles.chip}>{KIND_LABEL(kind)}</Text>
           <Text style={styles.title}>{e.name}</Text>
@@ -84,12 +95,16 @@ function ReportDocument({ data, narrative, kind }: { data: ReportData; narrative
           </Text>
           {e.billed_via ? <Text style={styles.subtitle}>Billed via {e.billed_via}</Text> : null}
         </View>
+        <View style={styles.coverCompany}>
+          <Text>{COMPANY.name} · {COMPANY.registered} {COMPANY.number}</Text>
+          <Text>{COMPANY.email}</Text>
+        </View>
         <Footer />
       </Page>
 
       {/* Narrative + hours */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.wordmark}>TRAILHEAD HOLDINGS</Text>
+        <Masthead />
 
         {narrative.executive_summary ? (
           <>
@@ -121,6 +136,10 @@ function ReportDocument({ data, narrative, kind }: { data: ReportData; narrative
             identities) and no monetary value. A client artefact carries time,
             not billing. */}
         <Text style={styles.sectionHeading}>Hours</Text>
+        <View style={styles.trHead}>
+          <Text style={[styles.th, { flex: 1 }]}>Measure</Text>
+          <Text style={[styles.th, styles.right, { width: 90 }]}>Value</Text>
+        </View>
         <View style={styles.tr}>
           <Text style={[styles.cell, { flex: 1 }]}>Total hours in period</Text>
           <Text style={[styles.cell, styles.right, { width: 90, fontFamily: 'Helvetica-Bold' }]}>{h(hs.total)}</Text>

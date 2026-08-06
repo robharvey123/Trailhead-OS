@@ -1,12 +1,13 @@
 import ExcelJS from 'exceljs'
 import type { ReportData } from './data'
 import { toClientSafeTimeEntry, type ClientSafeTimeEntry } from '@/lib/engagements/client-safe'
+import { BRAND_ARGB } from '@/lib/pdf/brand'
 
-// Near-black header band (no colour tied to money). ARGB.
+// Brand navy header band (matches the PDF/logo). ARGB.
 const HEADER_FILL: ExcelJS.Fill = {
   type: 'pattern',
   pattern: 'solid',
-  fgColor: { argb: 'FF0C0C14' },
+  fgColor: { argb: BRAND_ARGB.navy },
 }
 
 function styleHeader(row: ExcelJS.Row) {
