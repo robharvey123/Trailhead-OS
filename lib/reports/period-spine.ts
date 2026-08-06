@@ -38,6 +38,9 @@ export type EngagementPeriodSpine = {
   }
   tier1_movements: { account_name: string; gate: string; date: string }[]
   tier1_position: { account_name: string; gates_set: number; is_complete: boolean }[]
+  // Open deals on the tier-1 accounts, grouped by stage. Account + stage only —
+  // deal names are internal sales-side labels, never client-safe.
+  pipeline: { stage: string; accounts: string[] }[]
   meetings: { date: string; title: string; attendees_summary: string }[]
   risks: { raised_at: string; title: string; status: string; detail: string | null }[]
 }
@@ -345,6 +348,26 @@ export async function buildEngagementPeriodReport(
   tier1_movements.sort((a, b) => a.date.localeCompare(b.date) || a.account_name.localeCompare(b.account_name))
   tier1_position.sort((a, b) => a.account_name.localeCompare(b.account_name))
 
+  // Pipeline — open deals on the tier-1 accounts, grouped by stage. Account + stage
+  // only; deal names are internal sales labels and never rendered. Empty in.() is a
+  // 400, so fall back to the same no-match sentinel the Granola query uses.
+  const tier1AccountIds = ((tier1Res.data ?? []) as unknown as Tier1[]).map((m) => m.account_id).filter(Boolean)
+  const dealAccounts = tier1AccountIds.length ? tier1AccountIds : ['00000000-0000-0000-0000-000000000000']
+  const { data: dealsData } = await supabase
+    .from('deals')
+    .select('stage, account:accounts(name)')
+    .in('account_id', dealAccounts)
+    .not('stage', 'in', '("Won","Lost")')
+  const byStage = new Map<string, Set<string>>()
+  for (const d of (dealsData ?? []) as unknown as Array<{ stage: string; account: { name: string } | { name: string }[] | null }>) {
+    const name = (Array.isArray(d.account) ? d.account[0] : d.account)?.name
+    if (!name) continue
+    ;(byStage.get(d.stage) ?? byStage.set(d.stage, new Set<string>()).get(d.stage)!).add(name)
+  }
+  const pipeline: EngagementPeriodSpine['pipeline'] = [...byStage.entries()]
+    .map(([stage, accounts]) => ({ stage, accounts: [...accounts].sort((a, b) => a.localeCompare(b)) }))
+    .sort((a, b) => a.stage.localeCompare(b.stage))
+
   // Meetings — calendar events on this engagement, unioned with Granola meetings
   // on the engagement's client accounts, deduped by (date, title). No fabrication.
   const meetingMap = new Map<string, { date: string; title: string; attendees_summary: string }>()
@@ -380,6 +403,7 @@ export async function buildEngagementPeriodReport(
     hours: { used_in_period, months },
     tier1_movements,
     tier1_position,
+    pipeline,
     meetings,
     risks,
   }

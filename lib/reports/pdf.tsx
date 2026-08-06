@@ -174,6 +174,12 @@ function ReportDocument({ data, narrative, spine, kind }: { data: ReportData; na
           {narrative.hours_commentary ? <Text style={[styles.para, { marginTop: 8 }]}>{narrative.hours_commentary}</Text> : null}
         </Section>
 
+        {spine.pipeline.length ? (
+          <Section heading="Pipeline">
+            <BulletList items={spine.pipeline.map((p) => ({ text: p.stage, meta: `(${p.accounts.join(', ')})` }))} />
+          </Section>
+        ) : null}
+
         {spine.tier1_movements.length || spine.tier1_position.length ? (
           <Section heading="Tier 1 progress">
             {spine.tier1_movements.length ? (

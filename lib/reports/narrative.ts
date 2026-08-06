@@ -65,6 +65,7 @@ function buildPayload(spine: EngagementPeriodSpine) {
     },
     hours: spine.hours,
     tier1_movements: spine.tier1_movements,
+    pipeline: spine.pipeline,
     meetings: spine.meetings.map((m) => ({ date: m.date, title: m.title })),
     risks: spine.risks.map((r) => ({ title: r.title, status: r.status })),
   }
@@ -87,6 +88,11 @@ export function validateNarrative(narrative: Narrative, spine: EngagementPeriodS
   const taskCounts = new Set([spine.completed.length, spine.in_progress.length, spine.scheduled_next.length, spine.slipped.length].map(String))
   const meetingCount = String(spine.meetings.length)
   const riskCount = String(spine.risks.length)
+  // Pipeline: distinct accounts total + per stage — validates "N accounts at X stage".
+  const accountCounts = new Set<string>()
+  const allPipelineAccounts = new Set<string>()
+  for (const p of spine.pipeline) { accountCounts.add(String(p.accounts.length)); p.accounts.forEach((a) => allPipelineAccounts.add(a)) }
+  accountCounts.add(String(allPipelineAccounts.size))
 
   const pct = new Set<string>()
   const hours = new Set<string>()
@@ -105,7 +111,10 @@ export function validateNarrative(narrative: Narrative, spine: EngagementPeriodS
   let m: RegExpExecArray | null
   while ((m = COUNT_NOUN.exec(text))) {
     const noun = m[2].toLowerCase()
-    const allowed = /meeting/.test(noun) ? new Set([meetingCount]) : /risk/.test(noun) ? new Set([riskCount]) : taskCounts
+    const allowed = /meeting/.test(noun) ? new Set([meetingCount])
+      : /risk/.test(noun) ? new Set([riskCount])
+      : /account|retailer/.test(noun) ? accountCounts
+      : taskCounts
     if (!allowed.has(m[1])) bad.push(`${m[1]} ${m[2]}`)
   }
   while ((m = HOURS_RE.exec(text))) { const v = m[1]; if (!hours.has(v) && !hours.has(Number(v).toFixed(1))) bad.push(`${v}h`) }

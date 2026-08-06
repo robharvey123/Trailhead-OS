@@ -471,7 +471,7 @@ export default function EngagementDetailClient({
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/reports`}>Reports</Link>
-                  <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/weekly-update/new`}>Generate weekly update</Link>
+                  <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/reports`}>Reports</Link>
                   <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/tasks`}>Task board</Link>
                   <Link className="btn btn-ghost btn-sm" href={`/timesheet`}>+ Log time on this engagement</Link>
                 </div>
@@ -678,7 +678,7 @@ export default function EngagementDetailClient({
         {tab === 'Weekly Updates' ? (
           <div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-              <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/weekly-update/new`}>Generate this week’s update</Link>
+              <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/reports`}>Generate weekly report</Link>
             </div>
             {documents.filter((d) => d.type === 'weekly_update').length === 0 ? (
               <div className="empty">No weekly updates generated yet.</div>

@@ -19,6 +19,7 @@ type ReportFacts = {
   scheduled_next: SpineTask[]
   slipped: SpineTask[]
   hours: { used_in_period: number; months: Array<{ month: string; used: number; included: number | null; over: number }> }
+  pipeline: Array<{ stage: string; accounts: string[] }>
   meetings: Array<{ date: string; title: string }>
   risks: Array<{ title: string; status: string }>
 } | null
@@ -101,6 +102,7 @@ export default function ReportReviewClient(props: {
     { head: `In progress (${s.in_progress.length})`, items: s.in_progress.map(labelOf) },
     { head: `Scheduled next (${s.scheduled_next.length})`, items: s.scheduled_next.map(labelOf) },
     { head: `Slipped (${s.slipped.length})`, items: s.slipped.map(labelOf) },
+    { head: `Pipeline (${(s.pipeline ?? []).length} stages)`, items: (s.pipeline ?? []).map((p) => `${p.stage}: ${p.accounts.join(', ')}`) },
     { head: `Meetings (${s.meetings.length})`, items: s.meetings.map((m) => `${m.date} — ${m.title}`) },
     { head: `Risks (${s.risks.length})`, items: s.risks.map((r) => `${r.title} (${r.status})`) },
   ] : []
