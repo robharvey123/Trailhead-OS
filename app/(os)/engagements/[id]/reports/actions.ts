@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/roles'
-import { gatherReportData } from '@/lib/reports/data'
-import { generateNarrative, NarrativeSchema, EMPTY_NARRATIVE, type Narrative } from '@/lib/reports/narrative'
+import { buildEngagementPeriodReport } from '@/lib/reports/period-spine'
+import { generateNarrative, NarrativeSchema, EMPTY_NARRATIVE } from '@/lib/reports/narrative'
 import { generateEngagementReport, rerenderReportPdf, type ReportKind } from '@/lib/reports/generate'
 import { sendReport } from '@/lib/reports/send'
 
@@ -50,11 +50,7 @@ async function loadReport(reportId: string) {
   return { supabase, report: data }
 }
 
-function currentNarrative(report: { narrative_edited: unknown; narrative_json: unknown }): Narrative {
-  return (report.narrative_edited as Narrative | null) ?? (report.narrative_json as Narrative | null) ?? EMPTY_NARRATIVE
-}
-
-/** Save user-edited narrative; re-render the PDF from it. */
+/** Save user-edited narrative prose; re-render the PDF from it. */
 export async function saveNarrativeAction(reportId: string, narrative: unknown): Promise<{ error?: string }> {
   const parsed = NarrativeSchema.safeParse(narrative)
   if (!parsed.success) return { error: 'The edited report is missing required sections.' }
@@ -69,36 +65,30 @@ export async function saveNarrativeAction(reportId: string, narrative: unknown):
   }
 }
 
-const SECTION_KEYS = ['executive_summary', 'highlights', 'work_completed', 'hours_commentary', 'next_period', 'risks_or_blockers'] as const
-type SectionKey = (typeof SECTION_KEYS)[number]
-
-/** Re-run the LLM and replace just one section, leaving the others untouched. */
-export async function regenerateSectionAction(reportId: string, section: SectionKey): Promise<{ error?: string }> {
-  if (!SECTION_KEYS.includes(section)) return { error: 'Unknown section' }
-  try {
-    const { supabase, report } = await loadReport(reportId)
-    const data = await gatherReportData(report.engagement_id as string, report.period_start as string, report.period_end as string, supabase)
-    const fresh = await generateNarrative(data, { tone: 'consulting' })
-    const merged: Narrative = { ...currentNarrative(report), [section]: fresh[section] }
-    await supabase.from('engagement_reports').update({ narrative_edited: merged, narrative_error: null }).eq('id', reportId)
-    await rerenderReportPdf(reportId, supabase)
-    revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
-    return {}
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : 'Failed to regenerate' }
-  }
-}
-
-/** Re-run the whole narrative from current source data. */
+/**
+ * Re-run the narrative from the spine. On a C3 rejection (or LLM miss) we DON'T
+ * silently fall back: the reason is written to narrative_error and shown as the
+ * review banner, the PDF re-renders with the factual spine and no prose.
+ */
 export async function regenerateFullAction(reportId: string): Promise<{ error?: string }> {
   try {
     const { supabase, report } = await loadReport(reportId)
-    const data = await gatherReportData(report.engagement_id as string, report.period_start as string, report.period_end as string, supabase)
-    const fresh = await generateNarrative(data, { tone: 'consulting' })
-    await supabase.from('engagement_reports').update({ narrative_edited: fresh, narrative_error: null }).eq('id', reportId)
-    await rerenderReportPdf(reportId, supabase)
-    revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
-    return {}
+    const spine = await buildEngagementPeriodReport(
+      report.engagement_id as string, report.period_start as string, report.period_end as string, {}, supabase
+    )
+    try {
+      const fresh = await generateNarrative(spine)
+      await supabase.from('engagement_reports').update({ narrative_edited: fresh, narrative_error: null, spine_json: spine }).eq('id', reportId)
+      await rerenderReportPdf(reportId, supabase)
+      revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
+      return {}
+    } catch (genErr) {
+      const reason = genErr instanceof Error ? genErr.message : 'Narrative generation failed'
+      await supabase.from('engagement_reports').update({ narrative_edited: EMPTY_NARRATIVE, narrative_error: reason, spine_json: spine }).eq('id', reportId)
+      await rerenderReportPdf(reportId, supabase)
+      revalidatePath(`/engagements/${report.engagement_id}/reports/${reportId}`)
+      return { error: reason }
+    }
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Failed to regenerate' }
   }

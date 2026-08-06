@@ -66,6 +66,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       periodStart={report.period_start as string}
       periodEnd={report.period_end as string}
       narrative={narrative}
+      spine={(report.spine_json as never) ?? null}
       pdfUrl={pdfUrl}
       xlsxUrl={xlsxUrl}
       recipients={(report.recipient_emails as string[]) ?? []}

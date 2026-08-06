@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/roles'
 import { gatherReportData, londonWeekRange, londonMonthRange, type ReportData } from './data'
+import { buildEngagementPeriodReport, type EngagementPeriodSpine } from './period-spine'
 import { generateNarrative, EMPTY_NARRATIVE, type Narrative } from './narrative'
 import { renderReportPdf } from './pdf'
 import { buildReportXlsx } from './xlsx'
@@ -32,9 +33,10 @@ async function uploadArtifacts(
   reportId: string,
   data: ReportData,
   narrative: Narrative,
+  spine: EngagementPeriodSpine,
   kind: ReportKind
 ) {
-  const [pdf, xlsx] = await Promise.all([renderReportPdf(data, narrative, kind), buildReportXlsx(data)])
+  const [pdf, xlsx] = await Promise.all([renderReportPdf(data, narrative, spine, kind), buildReportXlsx(data)])
   const pPath = pdfPath(engagementId, reportId)
   const xPath = xlsxPath(engagementId, reportId)
   const up1 = await supabase.storage.from(BUCKET).upload(pPath, pdf, { contentType: 'application/pdf', upsert: true })
@@ -75,15 +77,19 @@ export async function generateEngagementReport(
     throw new Error(`Report generation limit reached for this engagement today (${DAILY_LIMIT}/day).`)
   }
 
+  // gatherReportData drives the hours numbers + the XLSX timesheet; the spine is
+  // the factual floor for the PDF task lists and the narrative payload.
   const data = await gatherReportData(input.engagementId, period.start, period.end, supabase)
+  const spine = await buildEngagementPeriodReport(input.engagementId, period.start, period.end, {}, supabase)
+
   let narrative: Narrative
   let narrativeError: string | null = null
   try {
-    narrative = await generateNarrative(data, { tone: 'consulting' })
+    narrative = await generateNarrative(spine)
   } catch (err) {
-    // Don't block the draft on an LLM miss — create it with an empty narrative the
-    // user can write/regenerate from the review screen. But DON'T swallow it: record
-    // why, so the review screen shows a failure instead of an inexplicably blank PDF.
+    // The narrative failed or was REJECTED by the C3 gate (cited a figure not in
+    // the spine). Don't ship silent prose — the PDF still renders the factual spine
+    // lists, and the reason is recorded so the review screen shows the banner.
     narrative = EMPTY_NARRATIVE
     narrativeError = err instanceof Error ? err.message : 'Narrative generation failed'
   }
@@ -92,8 +98,9 @@ export async function generateEngagementReport(
     total_hours: data.hours_summary.total,
     billable_hours: data.hours_summary.billable,
     total_value_gbp: data.engagement.is_billable ? data.totals.value_gbp : 0,
-    task_count_completed: data.tasks_completed.length,
+    task_count_completed: spine.completed.length,
     narrative_error: narrativeError,
+    spine_json: spine,
   }
 
   // Idempotent per (engagement, kind, period_start): reuse an existing draft.
@@ -132,7 +139,7 @@ export async function generateEngagementReport(
     reportId = row.id as string
   }
 
-  const { pPath, xPath } = await uploadArtifacts(supabase, input.engagementId, reportId, data, narrative, input.kind)
+  const { pPath, xPath } = await uploadArtifacts(supabase, input.engagementId, reportId, data, narrative, spine, input.kind)
   await supabase.from('engagement_reports').update({ pdf_storage_path: pPath, xlsx_storage_path: xPath }).eq('id', reportId)
 
   return reportId
@@ -148,14 +155,18 @@ export async function rerenderReportPdf(reportId: string, client?: SupabaseClien
 
   const { data: report, error } = await supabase
     .from('engagement_reports')
-    .select('id, engagement_id, kind, period_start, period_end, narrative_json, narrative_edited')
+    .select('id, engagement_id, kind, period_start, period_end, narrative_json, narrative_edited, spine_json')
     .eq('id', reportId)
     .maybeSingle()
   if (error || !report) throw new Error('Report not found')
 
   const data = await gatherReportData(report.engagement_id as string, report.period_start as string, report.period_end as string, supabase)
+  // Render from the STORED spine (reproducible); fall back to recomputing for any
+  // pre-Stage-C report that has no snapshot.
+  const spine = (report.spine_json as EngagementPeriodSpine | null)
+    ?? (await buildEngagementPeriodReport(report.engagement_id as string, report.period_start as string, report.period_end as string, {}, supabase))
   const narrative = (report.narrative_edited as Narrative | null) ?? (report.narrative_json as Narrative | null) ?? EMPTY_NARRATIVE
-  const pdf = await renderReportPdf(data, narrative, report.kind as ReportKind)
+  const pdf = await renderReportPdf(data, narrative, spine, report.kind as ReportKind)
   const up = await supabase.storage.from(BUCKET).upload(pdfPath(report.engagement_id as string, reportId), pdf, { contentType: 'application/pdf', upsert: true })
   if (up.error) throw new Error(up.error.message || 'Failed to re-render PDF')
 }

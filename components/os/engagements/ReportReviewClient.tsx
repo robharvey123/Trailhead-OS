@@ -5,19 +5,25 @@ import { useRouter } from 'next/navigation'
 import type { Narrative } from '@/lib/reports/narrative'
 import {
   saveNarrativeAction,
-  regenerateSectionAction,
   regenerateFullAction,
   setRecipientsAction,
   sendReportAction,
 } from '@/app/(os)/engagements/[id]/reports/actions'
 
-type SectionKey = 'executive_summary' | 'highlights' | 'work_completed' | 'hours_commentary' | 'next_period' | 'risks_or_blockers'
-
 const KIND_LABEL: Record<string, string> = { weekly_client: 'Weekly report', monthly_client: 'Monthly report', weekly_internal: 'Internal report' }
 
-function linesToArr(s: string): string[] {
-  return s.split('\n').map((l) => l.trim()).filter(Boolean)
-}
+type SpineTask = { title: string; description: string | null; due_date?: string | null }
+type ReportFacts = {
+  completed: SpineTask[]
+  in_progress: SpineTask[]
+  scheduled_next: SpineTask[]
+  slipped: SpineTask[]
+  hours: { used_in_period: number; months: Array<{ month: string; used: number; included: number | null; over: number }> }
+  meetings: Array<{ date: string; title: string }>
+  risks: Array<{ title: string; status: string }>
+} | null
+
+const labelOf = (t: SpineTask) => t.description || t.title
 
 export default function ReportReviewClient(props: {
   engagementId: string
@@ -29,6 +35,7 @@ export default function ReportReviewClient(props: {
   periodStart: string
   periodEnd: string
   narrative: Narrative
+  spine: ReportFacts
   pdfUrl: string | null
   xlsxUrl: string | null
   recipients: string[]
@@ -42,13 +49,11 @@ export default function ReportReviewClient(props: {
   const [error, setError] = useState('')
   const [savedFlash, setSavedFlash] = useState(false)
 
-  // Narrative as an editable text model.
+  // Prose-only narrative model (the facts are rendered from the spine, not edited here).
   const [exec, setExec] = useState(props.narrative.executive_summary)
-  const [highlights, setHighlights] = useState(props.narrative.highlights.join('\n'))
-  const [work, setWork] = useState(props.narrative.work_completed.map((s) => ({ title: s.section_title, items: s.items.join('\n') })))
   const [hours, setHours] = useState(props.narrative.hours_commentary)
-  const [next, setNext] = useState(props.narrative.next_period.join('\n'))
-  const [risks, setRisks] = useState(props.narrative.risks_or_blockers.join('\n'))
+  const [outlook, setOutlook] = useState(props.narrative.outlook)
+  const [risks, setRisks] = useState(props.narrative.risks_commentary)
 
   const [recipients, setRecipients] = useState<string[]>(props.recipients)
   const [recipientInput, setRecipientInput] = useState('')
@@ -56,13 +61,11 @@ export default function ReportReviewClient(props: {
   const assemble = useMemo(
     () => (): Narrative => ({
       executive_summary: exec.trim(),
-      highlights: linesToArr(highlights),
-      work_completed: work.map((s) => ({ section_title: s.title.trim(), items: linesToArr(s.items) })).filter((s) => s.section_title || s.items.length),
       hours_commentary: hours.trim(),
-      next_period: linesToArr(next),
-      risks_or_blockers: linesToArr(risks),
+      outlook: outlook.trim(),
+      risks_commentary: risks.trim(),
     }),
-    [exec, highlights, work, hours, next, risks]
+    [exec, hours, outlook, risks]
   )
 
   function run(fn: () => Promise<{ error?: string }>, after?: () => void) {
@@ -70,36 +73,18 @@ export default function ReportReviewClient(props: {
     startTransition(async () => {
       const res = await fn()
       if (res?.error) setError(res.error)
-      else {
-        after?.()
-        router.refresh()
-      }
+      else { after?.(); router.refresh() }
     })
   }
-
   function save() {
     run(() => saveNarrativeAction(props.reportId, assemble()), () => { setSavedFlash(true); setTimeout(() => setSavedFlash(false), 2000) })
   }
-  function regenSection(key: SectionKey) {
-    // Persist current edits first so other sections aren't lost, then regenerate one.
-    run(async () => {
-      const saved = await saveNarrativeAction(props.reportId, assemble())
-      if (saved.error) return saved
-      return regenerateSectionAction(props.reportId, key)
-    })
-  }
-  function regenAll() {
-    run(() => regenerateFullAction(props.reportId))
-  }
-  function saveRecipients(list: string[]) {
-    setRecipients(list)
-    run(() => setRecipientsAction(props.reportId, list))
-  }
+  function regenAll() { run(() => regenerateFullAction(props.reportId)) }
+  function saveRecipients(list: string[]) { setRecipients(list); run(() => setRecipientsAction(props.reportId, list)) }
   function addRecipient(email: string) {
     const e = email.trim().toLowerCase()
     if (!e || recipients.includes(e)) return
-    saveRecipients([...recipients, e])
-    setRecipientInput('')
+    saveRecipients([...recipients, e]); setRecipientInput('')
   }
   function send() {
     if (!recipients.length || !confirm(`Send this report to ${recipients.length} recipient(s)? This cannot be undone.`)) return
@@ -108,17 +93,17 @@ export default function ReportReviewClient(props: {
 
   const input = 'w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
   const sectionWrap = 'rounded-2xl border border-[color:var(--border)] p-4'
-  const sectionHead = 'flex items-center justify-between gap-2 mb-2'
   const label = 'text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--text-3)]'
 
-  function regenBtn(section: SectionKey) {
-    if (readOnly) return null
-    return (
-      <button type="button" disabled={pending} onClick={() => regenSection(section)} className="text-[11px] text-[color:var(--accent-strong)] hover:underline disabled:opacity-50">
-        Regenerate
-      </button>
-    )
-  }
+  const s = props.spine
+  const factGroups: Array<{ head: string; items: string[] }> = s ? [
+    { head: `Completed (${s.completed.length})`, items: s.completed.map(labelOf) },
+    { head: `In progress (${s.in_progress.length})`, items: s.in_progress.map(labelOf) },
+    { head: `Scheduled next (${s.scheduled_next.length})`, items: s.scheduled_next.map(labelOf) },
+    { head: `Slipped (${s.slipped.length})`, items: s.slipped.map(labelOf) },
+    { head: `Meetings (${s.meetings.length})`, items: s.meetings.map((m) => `${m.date} — ${m.title}`) },
+    { head: `Risks (${s.risks.length})`, items: s.risks.map((r) => `${r.title} (${r.status})`) },
+  ] : []
 
   return (
     <div className="space-y-5">
@@ -135,7 +120,7 @@ export default function ReportReviewClient(props: {
           {props.xlsxUrl ? <a href={props.xlsxUrl} className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]">Download timesheet</a> : null}
           {!readOnly ? (
             <>
-              <button type="button" disabled={pending} onClick={regenAll} className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)] disabled:opacity-60">Regenerate all</button>
+              <button type="button" disabled={pending} onClick={regenAll} className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)] disabled:opacity-60">Regenerate prose</button>
               <button type="button" disabled={pending} onClick={save} className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60">{savedFlash ? 'Saved ✓' : 'Save draft'}</button>
             </>
           ) : null}
@@ -144,8 +129,8 @@ export default function ReportReviewClient(props: {
 
       {props.narrativeError ? (
         <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
-          <strong>The AI narrative failed to generate</strong> — this report has factual data but no written prose.
-          Fix and click “Regenerate all”, or write the sections manually. Reason: {props.narrativeError}
+          <strong>AI narrative not applied</strong> — the report still shows the factual lists below, but has no written prose.
+          Click “Regenerate prose”, or write the sections manually. Reason: {props.narrativeError}
         </div>
       ) : null}
       {error ? <p className="text-sm text-[color:var(--red)]">{error}</p> : null}
@@ -160,44 +145,43 @@ export default function ReportReviewClient(props: {
           )}
         </div>
 
-        {/* Narrative editor / recipients */}
         <div className="space-y-4">
-          <div className={sectionWrap}>
-            <div className={sectionHead}><span className={label}>Executive summary</span>{regenBtn('executive_summary')}</div>
-            <textarea className={`${input} min-h-[5rem] resize-y`} value={exec} onChange={(e) => setExec(e.target.value)} readOnly={readOnly} />
-          </div>
-
-          <div className={sectionWrap}>
-            <div className={sectionHead}><span className={label}>Highlights (one per line)</span>{regenBtn('highlights')}</div>
-            <textarea className={`${input} min-h-[5rem] resize-y`} value={highlights} onChange={(e) => setHighlights(e.target.value)} readOnly={readOnly} />
-          </div>
-
-          <div className={sectionWrap}>
-            <div className={sectionHead}><span className={label}>Work completed</span>{regenBtn('work_completed')}</div>
-            <div className="space-y-3">
-              {work.map((s, i) => (
-                <div key={i} className="space-y-1">
-                  <input className={input} value={s.title} placeholder="Section title" readOnly={readOnly} onChange={(e) => setWork((w) => w.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} />
-                  <textarea className={`${input} min-h-[4rem] resize-y`} value={s.items} placeholder="Items, one per line" readOnly={readOnly} onChange={(e) => setWork((w) => w.map((x, j) => (j === i ? { ...x, items: e.target.value } : x)))} />
-                </div>
-              ))}
-              {work.length === 0 ? <p className="text-xs text-[color:var(--text-3)]">No sections yet. Regenerate to draft them.</p> : null}
+          {/* Facts (read-only — rendered directly into the PDF from the spine) */}
+          {s ? (
+            <div className={sectionWrap}>
+              <div className="mb-2 flex items-center justify-between">
+                <span className={label}>Report facts (from the activity log — not editable)</span>
+                <span className="text-[11px] text-[color:var(--text-3)]">{s.hours.used_in_period.toFixed(1)}h in period</span>
+              </div>
+              <div className="space-y-2">
+                {factGroups.map((g) => (
+                  <div key={g.head}>
+                    <p className="text-xs font-semibold text-[color:var(--text-2)]">{g.head}</p>
+                    {g.items.length ? (
+                      <ul className="ml-4 list-disc text-xs text-[color:var(--text-2)]">{g.items.map((it, i) => <li key={i}>{it}</li>)}</ul>
+                    ) : <p className="ml-4 text-xs text-[color:var(--text-3)]">—</p>}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
 
+          {/* Prose (editable) */}
           <div className={sectionWrap}>
-            <div className={sectionHead}><span className={label}>Hours commentary</span>{regenBtn('hours_commentary')}</div>
-            <textarea className={`${input} min-h-[4rem] resize-y`} value={hours} onChange={(e) => setHours(e.target.value)} readOnly={readOnly} />
+            <span className={label}>Executive summary</span>
+            <textarea className={`${input} mt-2 min-h-[5rem] resize-y`} value={exec} onChange={(e) => setExec(e.target.value)} readOnly={readOnly} />
           </div>
-
           <div className={sectionWrap}>
-            <div className={sectionHead}><span className={label}>Next period (one per line)</span>{regenBtn('next_period')}</div>
-            <textarea className={`${input} min-h-[4rem] resize-y`} value={next} onChange={(e) => setNext(e.target.value)} readOnly={readOnly} />
+            <span className={label}>Hours commentary</span>
+            <textarea className={`${input} mt-2 min-h-[4rem] resize-y`} value={hours} onChange={(e) => setHours(e.target.value)} readOnly={readOnly} />
           </div>
-
           <div className={sectionWrap}>
-            <div className={sectionHead}><span className={label}>Risks &amp; blockers (one per line, optional)</span>{regenBtn('risks_or_blockers')}</div>
-            <textarea className={`${input} min-h-[3rem] resize-y`} value={risks} onChange={(e) => setRisks(e.target.value)} readOnly={readOnly} />
+            <span className={label}>Outlook (next period)</span>
+            <textarea className={`${input} mt-2 min-h-[4rem] resize-y`} value={outlook} onChange={(e) => setOutlook(e.target.value)} readOnly={readOnly} />
+          </div>
+          <div className={sectionWrap}>
+            <span className={label}>Risks commentary (optional)</span>
+            <textarea className={`${input} mt-2 min-h-[3rem] resize-y`} value={risks} onChange={(e) => setRisks(e.target.value)} readOnly={readOnly} />
           </div>
 
           {/* Recipients */}
@@ -222,23 +206,16 @@ export default function ReportReviewClient(props: {
               <div className="mt-2">
                 <p className="text-[11px] text-[color:var(--text-3)]">Suggested (click to add):</p>
                 <div className="mt-1 flex flex-wrap gap-2">
-                  {props.suggested.filter((s) => !recipients.includes(s.email.toLowerCase())).map((s) => (
-                    <button key={s.email} type="button" onClick={() => addRecipient(s.email)} className="rounded-full border border-dashed border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)] hover:border-[color:var(--accent)]">
-                      + {s.name} ({s.email})
+                  {props.suggested.filter((sg) => !recipients.includes(sg.email.toLowerCase())).map((sg) => (
+                    <button key={sg.email} type="button" onClick={() => addRecipient(sg.email)} className="rounded-full border border-dashed border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)] hover:border-[color:var(--accent)]">
+                      + {sg.name} ({sg.email})
                     </button>
                   ))}
                 </div>
               </div>
             ) : null}
-
             {!readOnly ? (
-              <button
-                type="button"
-                disabled={pending || recipients.length === 0}
-                onClick={send}
-                title={recipients.length === 0 ? 'Add a recipient first' : 'Send with PDF + timesheet attached'}
-                className="mt-3 w-full rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-              >
+              <button type="button" disabled={pending || recipients.length === 0} onClick={send} title={recipients.length === 0 ? 'Add a recipient first' : 'Send with PDF + timesheet attached'} className="mt-3 w-full rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50">
                 {pending ? 'Sending…' : `Send${recipients.length ? ` to ${recipients.length}` : ''}`}
               </button>
             ) : null}
