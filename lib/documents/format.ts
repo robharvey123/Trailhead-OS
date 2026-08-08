@@ -35,11 +35,17 @@ export function formatBytes(bytes: number | null | undefined): string {
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[i]}`
 }
 
-/** How a document should be previewed, from its mime type. */
-export function mimeKind(mime: string | null | undefined): 'image' | 'pdf' | 'other' {
-  if (!mime) return 'other'
-  if (mime.startsWith('image/')) return 'image'
+const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+/**
+ * How a document should be previewed, from its mime type (with a filename fallback
+ * for .docx, whose mime is easy to lose). 'docx' renders via server-side conversion;
+ * everything not image/pdf/docx falls back to a download card.
+ */
+export function mimeKind(mime: string | null | undefined, fileName?: string | null): 'image' | 'pdf' | 'docx' | 'other' {
+  if (mime?.startsWith('image/')) return 'image'
   if (mime === 'application/pdf') return 'pdf'
+  if (mime === DOCX_MIME || fileName?.toLowerCase().endsWith('.docx')) return 'docx'
   return 'other'
 }
 

@@ -45,6 +45,15 @@ export default function DocumentPreviewDrawer({
   const [loadedId, setLoadedId] = useState<string | null>(null)
   const loaded = !!shown && loadedId === shown.id
 
+  // .docx is converted to HTML server-side and fetched here (keyed by doc id).
+  const [docx, setDocx] = useState<{ id: string; status: 'loading' | 'ready' | 'error'; html: string }>({ id: '', status: 'ready', html: '' })
+  const docxStatus: 'loading' | 'ready' | 'error' = shown && docx.id === shown.id ? docx.status : 'loading'
+
+  const previewUrl = shown ? `/api/engagements/${engagementId}/documents/${shown.id}?preview=1` : ''
+  const downloadUrl = shown ? `/api/engagements/${engagementId}/documents/${shown.id}` : ''
+  const kind = shown ? mimeKind(shown.mime_type, shown.file_name) : 'other'
+  const name = shown?.title || shown?.file_name || 'Document'
+
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -52,10 +61,18 @@ export default function DocumentPreviewDrawer({
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  const previewUrl = shown ? `/api/engagements/${engagementId}/documents/${shown.id}?preview=1` : ''
-  const downloadUrl = shown ? `/api/engagements/${engagementId}/documents/${shown.id}` : ''
-  const kind = shown ? mimeKind(shown.mime_type) : 'other'
-  const name = shown?.title || shown?.file_name || 'Document'
+  // Fetch the converted HTML when a .docx is shown (no synchronous setState — only in
+  // the async callbacks — so this stays clear of the set-state-in-effect rule).
+  useEffect(() => {
+    if (!shown || kind !== 'docx' || docx.id === shown.id) return
+    const id = shown.id
+    let cancelled = false
+    fetch(`/api/engagements/${engagementId}/documents/${id}/html`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((j: { html?: string }) => { if (!cancelled) setDocx({ id, status: 'ready', html: j.html ?? '' }) })
+      .catch(() => { if (!cancelled) setDocx({ id, status: 'error', html: '' }) })
+    return () => { cancelled = true }
+  }, [shown, kind, engagementId, docx.id])
 
   return (
     <>
@@ -141,6 +158,28 @@ export default function DocumentPreviewDrawer({
                     </a>
                   </div>
                 </>
+              ) : kind === 'docx' ? (
+                docxStatus === 'error' ? (
+                  <FallbackCard
+                    name={name}
+                    sub="Inline preview unavailable for this file."
+                    action={
+                      <a href={downloadUrl} className="mt-4 inline-block rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white">
+                        Download file
+                      </a>
+                    }
+                  />
+                ) : docxStatus === 'loading' ? (
+                  <div className="flex h-full items-center justify-center"><Skeleton /></div>
+                ) : (
+                  <div className="mx-auto max-w-[760px] px-4 py-6">
+                    <style>{DOCX_STYLE}</style>
+                    <div
+                      className="docx-preview rounded-lg bg-white p-8 text-[13.5px] leading-relaxed text-[#1a1a1a] shadow-sm"
+                      dangerouslySetInnerHTML={{ __html: docx.html }}
+                    />
+                  </div>
+                )
               ) : (
                 <FallbackCard
                   name={name}
@@ -162,6 +201,23 @@ export default function DocumentPreviewDrawer({
     </>
   )
 }
+
+// Scoped typography for mammoth's converted HTML — it emits semantic tags (h1–h6, p,
+// ul/ol, table, strong/em, a, img) with no styling of its own. Rendered on white
+// "paper" so the document reads the same in light and dark app themes.
+const DOCX_STYLE = `
+.docx-preview h1 { font-size: 1.5em; font-weight: 700; margin: 0.8em 0 0.4em; }
+.docx-preview h2 { font-size: 1.25em; font-weight: 700; margin: 0.8em 0 0.4em; }
+.docx-preview h3 { font-size: 1.1em; font-weight: 700; margin: 0.7em 0 0.3em; }
+.docx-preview p { margin: 0 0 0.7em; }
+.docx-preview ul, .docx-preview ol { margin: 0 0 0.7em; padding-left: 1.4em; }
+.docx-preview li { margin: 0.2em 0; }
+.docx-preview a { color: #0369a1; text-decoration: underline; }
+.docx-preview table { border-collapse: collapse; width: 100%; margin: 0.6em 0; font-size: 0.95em; }
+.docx-preview th, .docx-preview td { border: 1px solid #d4d4d4; padding: 5px 8px; text-align: left; vertical-align: top; }
+.docx-preview img { max-width: 100%; height: auto; }
+.docx-preview strong { font-weight: 700; }
+`
 
 function Skeleton() {
   return <div className="h-40 w-40 animate-pulse rounded-xl bg-[var(--surface-3)]" />
