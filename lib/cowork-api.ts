@@ -171,6 +171,7 @@ type TimeEntryRow = {
   engagements?: RelationValue<{ id: string; name: string; code: string | null }>
   projects?: RelationValue<NamedRelation>
   accounts?: RelationValue<NamedRelation>
+  task?: RelationValue<{ id: string; title: string }>
 }
 
 type EnquiryRow = {
@@ -341,7 +342,8 @@ export const TIME_ENTRY_SELECT = `
   created_at,
   engagements(id, name, code),
   projects(id, name),
-  accounts(id, name)
+  accounts(id, name),
+  task:engagement_tasks(id, title)
 `
 
 export const PROJECT_SELECT = `
@@ -1120,6 +1122,7 @@ export function formatTimeEntry(row: TimeEntryRow) {
   const engagement = firstRelation(row.engagements)
   const project = firstRelation(row.projects)
   const account = firstRelation(row.accounts)
+  const task = firstRelation(row.task)
   const rate = row.rate_snapshot != null ? Number(row.rate_snapshot) : 0
   const hours = row.duration_minutes / 60
   return {
@@ -1137,6 +1140,7 @@ export function formatTimeEntry(row: TimeEntryRow) {
     project: project ? { id: project.id, name: project.name } : null,
     account: account ? { id: account.id, name: account.name } : null,
     task_id: row.task_id,
+    task: task ? { id: task.id, title: task.title } : null,
     created_at: row.created_at,
   }
 }
