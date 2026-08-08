@@ -751,41 +751,36 @@ export interface LogTimeResult {
  */
 export async function logTime(body: Record<string, unknown>): Promise<LogTimeResult> {
   const durationMinutes = requiredPositiveInt(body.duration_minutes, 'duration_minutes')
-  const engagementId = optionalString(body.engagement_id)
-  const projectId = optionalString(body.project_id)
+  const suppliedEngagementId = optionalString(body.engagement_id)
+  const suppliedProjectId = optionalString(body.project_id)
   const taskId = optionalString(body.task_id)
   const accountId = optionalString(body.account_id)
-  if (!engagementId && !projectId && !taskId) {
+  if (!suppliedEngagementId && !suppliedProjectId && !taskId) {
     throw new CoworkApiError('one of engagement_id, project_id or task_id is required', 400)
   }
   const entryDate = optionalDate(body.entry_date, 'entry_date') ?? todayDate()
   const billable = body.billable === undefined ? true : parseBooleanBody(body.billable, 'billable') ?? true
 
-  // Validate every supplied reference (service role bypasses RLS).
-  let engagement: EngRow | null = null
-  if (engagementId) engagement = await getEngagementRow(engagementId)
-  if (projectId) await assertExists('projects', projectId, 'project_id')
-  if (taskId) await assertExists('tasks', taskId, 'task_id')
+  // Validate + derive. A task_id is a delivery ticket (engagement_tasks); it fills
+  // in the engagement and project from the ticket's own columns. A caller-supplied
+  // engagement_id that contradicts the ticket is a 409 (see deriveLinks).
+  const derived = await deriveLinks({ taskId, engagementId: suppliedEngagementId, projectId: suppliedProjectId })
+  if (suppliedProjectId) await assertExists('projects', suppliedProjectId, 'project_id')
   if (accountId) await assertExists('accounts', accountId, 'account_id')
+
+  let engagement: EngRow | null = null
+  if (derived.engagementId) engagement = await getEngagementRow(derived.engagementId)
 
   const ownerUserId = await rpcScalar('owner_user_id')
   if (!ownerUserId) throw new CoworkApiError('No owner user is configured (owner_user_id returned null)', 500)
   const ownerPersonId = await rpcScalar('owner_person_id')
 
-  // Rate: explicit → contributor rate → account default → 0.
-  let rate = optionalNumber(body.rate_snapshot, 'rate_snapshot')
-  if (rate == null && engagement && ownerPersonId) {
-    rate = await contributorRate(engagement.id, ownerPersonId, svc)
-  }
-  if (rate == null) {
-    const rateAccountId = accountId ?? engagement?.end_client_account_id ?? null
-    if (rateAccountId) {
-      const { data } = await supabaseService.from('accounts').select('default_hourly_rate').eq('id', rateAccountId).maybeSingle()
-      const acctRate = (data as { default_hourly_rate: number | string | null } | null)?.default_hourly_rate
-      rate = acctRate != null ? Number(acctRate) : null
-    }
-  }
-  const rateSnapshot = rate ?? 0
+  const rateSnapshot = await resolveRateSnapshot({
+    explicit: optionalNumber(body.rate_snapshot, 'rate_snapshot'),
+    engagement,
+    personId: ownerPersonId,
+    accountId,
+  })
 
   const { data, error } = await supabaseService
     .from('time_entries')
@@ -793,7 +788,7 @@ export async function logTime(body: Record<string, unknown>): Promise<LogTimeRes
       user_id: ownerUserId,
       person_id: ownerPersonId,
       account_id: accountId,
-      project_id: projectId,
+      project_id: derived.projectId,
       engagement_id: engagement?.id ?? null,
       task_id: taskId,
       entry_date: entryDate,
@@ -812,13 +807,219 @@ export async function logTime(body: Record<string, unknown>): Promise<LogTimeRes
   if (error) throw new CoworkApiError(error.message || 'Failed to log time', 500)
 
   const result: LogTimeResult = { entry: formatTimeEntry(data as never) }
+  const warning = await overageWarning(engagement)
+  if (warning) result.warning = warning
+  return result
+}
 
-  // Overage warning: did this push the engagement past its monthly included hours?
-  if (engagement && engagement.included_hours_monthly != null) {
-    const h = await engagementHoursThisMonth(engagement.id, engagement.included_hours_monthly, svc)
-    if (h.over > 0) {
-      result.warning = { over_by_hours: Math.round(h.over * 100) / 100, included: engagement.included_hours_monthly }
+/**
+ * Resolve a delivery ticket (`engagement_tasks`) to its billing parents. The ticket
+ * carries `engagement_id` directly (the billing-relevant parent) and an optional
+ * `project_id` (a subdivision) — we derive each from its OWN column rather than
+ * routing engagement through the project, which would fail for a ticket sitting on
+ * an engagement with no project. A ticket whose project points at a DIFFERENT
+ * engagement is a data-integrity bug: we trust the ticket's own engagement_id but
+ * log the divergence rather than papering over it.
+ */
+async function resolveTaskLink(taskId: string): Promise<{ engagementId: string | null; projectId: string | null }> {
+  const { data, error } = await supabaseService
+    .from('engagement_tasks')
+    .select('id, engagement_id, project_id')
+    .eq('id', taskId)
+    .maybeSingle()
+  if (error) throw new CoworkApiError(error.message || 'Failed to resolve task_id', 500)
+  if (!data) throw new CoworkApiError(`task_id ${taskId} not found`, 404)
+  const link = data as { engagement_id: string | null; project_id: string | null }
+  if (link.project_id && link.engagement_id) {
+    const { data: proj } = await supabaseService.from('projects').select('engagement_id').eq('id', link.project_id).maybeSingle()
+    const projEng = (proj as { engagement_id: string | null } | null)?.engagement_id ?? null
+    if (projEng && projEng !== link.engagement_id) {
+      console.warn(
+        `[cowork/time] integrity: engagement_task ${taskId} has engagement_id=${link.engagement_id} but its project ${link.project_id} has engagement_id=${projEng}; trusting the task's engagement.`
+      )
     }
   }
+  return { engagementId: link.engagement_id, projectId: link.project_id }
+}
+
+/**
+ * Given a task_id plus optional explicit engagement_id/project_id, produce the final
+ * billing parents. A task fills in whichever of engagement/project the caller left
+ * null. A caller-supplied engagement_id that CONTRADICTS the task's engagement is a
+ * 409 (both values named) — we never silently pick one.
+ */
+async function deriveLinks(opts: {
+  taskId: string | null
+  engagementId: string | null
+  projectId: string | null
+}): Promise<{ engagementId: string | null; projectId: string | null }> {
+  if (!opts.taskId) return { engagementId: opts.engagementId, projectId: opts.projectId }
+  const link = await resolveTaskLink(opts.taskId)
+  if (opts.engagementId && link.engagementId && opts.engagementId !== link.engagementId) {
+    throw new CoworkApiError(
+      `engagement_id ${opts.engagementId} conflicts with task ${opts.taskId}, which belongs to engagement ${link.engagementId}. Omit engagement_id to use the task's, or move the entry to a ticket on ${opts.engagementId}.`,
+      409
+    )
+  }
+  return {
+    engagementId: opts.engagementId ?? link.engagementId,
+    projectId: opts.projectId ?? link.projectId,
+  }
+}
+
+/** Rate snapshot: explicit → the contributor's engagement rate → account default → 0. */
+async function resolveRateSnapshot(opts: {
+  explicit: number | null
+  engagement: EngRow | null
+  personId: string | null
+  accountId: string | null
+}): Promise<number> {
+  let rate = opts.explicit
+  if (rate == null && opts.engagement && opts.personId) {
+    rate = await contributorRate(opts.engagement.id, opts.personId, svc)
+  }
+  if (rate == null) {
+    const rateAccountId = opts.accountId ?? opts.engagement?.end_client_account_id ?? null
+    if (rateAccountId) {
+      const { data } = await supabaseService.from('accounts').select('default_hourly_rate').eq('id', rateAccountId).maybeSingle()
+      const acctRate = (data as { default_hourly_rate: number | string | null } | null)?.default_hourly_rate
+      rate = acctRate != null ? Number(acctRate) : null
+    }
+  }
+  return rate ?? 0
+}
+
+/** Did the engagement pass its monthly included hours? Null if no cap / no engagement. */
+async function overageWarning(engagement: EngRow | null): Promise<{ over_by_hours: number; included: number } | null> {
+  if (!engagement || engagement.included_hours_monthly == null) return null
+  const h = await engagementHoursThisMonth(engagement.id, engagement.included_hours_monthly, svc)
+  if (h.over > 0) return { over_by_hours: Math.round(h.over * 100) / 100, included: engagement.included_hours_monthly }
+  return null
+}
+
+// ── Read / amend a single time entry ─────────────────────────────────────────
+
+export interface PatchTimeResult extends LogTimeResult {
+  /** Present only when the snapshot rate changed as a result of the amend. */
+  rate_change?: { from: number; to: number; reason: string }
+}
+
+/** One time entry, engagement/project/task/account expanded. 404 if it does not exist. */
+export async function getCoworkTimeEntry(id: string): Promise<ReturnType<typeof formatTimeEntry>> {
+  const { data, error } = await supabaseService
+    .from('time_entries')
+    .select(TIME_ENTRY_SELECT)
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new CoworkApiError(error.message || 'Failed to load time entry', 500)
+  if (!data) throw new CoworkApiError(`time entry ${id} not found`, 404)
+  return formatTimeEntry(data as never)
+}
+
+type RawTimeEntry = {
+  id: string
+  engagement_id: string | null
+  project_id: string | null
+  task_id: string | null
+  account_id: string | null
+  person_id: string | null
+  rate_snapshot: number | string | null
+  entry_date: string
+}
+
+/**
+ * Amend an existing time entry (never deletes). Linking a task backfills the
+ * engagement/project from the ticket (deriveLinks rules; a contradicting
+ * engagement_id is a 409). The snapshot rate is HISTORY: it is only recomputed when
+ * the entry moves to a different engagement (including null → engagement, which is
+ * how an engagement-level orphan gets the correct rate once linked) or when the
+ * caller passes `resnapshot_rate: true`. An explicit `rate_snapshot` in the body
+ * always wins and suppresses the automatic recompute.
+ */
+export async function patchCoworkTimeEntry(id: string, body: Record<string, unknown>): Promise<PatchTimeResult> {
+  const { data: current, error: loadErr } = await supabaseService
+    .from('time_entries')
+    .select('id, engagement_id, project_id, task_id, account_id, person_id, rate_snapshot, entry_date')
+    .eq('id', id)
+    .maybeSingle()
+  if (loadErr) throw new CoworkApiError(loadErr.message || 'Failed to load time entry', 500)
+  if (!current) throw new CoworkApiError(`time entry ${id} not found`, 404)
+  const cur = current as RawTimeEntry
+
+  const updates: Record<string, unknown> = {}
+
+  if ('description' in body) updates.description = optionalString(body.description)
+  if (body.duration_minutes !== undefined) updates.duration_minutes = requiredPositiveInt(body.duration_minutes, 'duration_minutes')
+  if (body.entry_date !== undefined) updates.entry_date = optionalDate(body.entry_date, 'entry_date') ?? cur.entry_date
+  if (body.billable !== undefined) updates.billable = parseBooleanBody(body.billable, 'billable') ?? true
+
+  const accountProvided = 'account_id' in body
+  const nextAccountId = accountProvided ? optionalString(body.account_id) : cur.account_id
+  if (accountProvided) {
+    if (nextAccountId) await assertExists('accounts', nextAccountId, 'account_id')
+    updates.account_id = nextAccountId
+  }
+
+  // Link resolution — only when a link field is in the body.
+  const taskProvided = 'task_id' in body
+  const engProvided = 'engagement_id' in body
+  const projProvided = 'project_id' in body
+  let nextEngagementId = cur.engagement_id
+  let nextProjectId = cur.project_id
+  if (taskProvided || engProvided || projProvided) {
+    const nextTaskId = taskProvided ? optionalString(body.task_id) : cur.task_id
+    const taskChanged = taskProvided && nextTaskId !== cur.task_id
+    // When the task changes, let the new ticket supply engagement/project unless the
+    // caller pins them explicitly; when it does not, keep the current links as the
+    // baseline so an engagement_id change is still conflict-checked against the task.
+    const baseEngagement = engProvided ? optionalString(body.engagement_id) : (taskChanged ? null : cur.engagement_id)
+    const baseProject = projProvided ? optionalString(body.project_id) : (taskChanged ? null : cur.project_id)
+    const derived = await deriveLinks({ taskId: nextTaskId, engagementId: baseEngagement, projectId: baseProject })
+    if (projProvided && baseProject) await assertExists('projects', baseProject, 'project_id')
+    nextEngagementId = derived.engagementId
+    nextProjectId = derived.projectId
+    updates.task_id = nextTaskId
+    updates.engagement_id = nextEngagementId
+    updates.project_id = nextProjectId
+  }
+
+  // Rate: explicit wins; else re-snapshot on an engagement change or explicit request.
+  const explicitRate = 'rate_snapshot' in body ? (optionalNumber(body.rate_snapshot, 'rate_snapshot') ?? 0) : undefined
+  const resnapshot = body.resnapshot_rate === true
+  const engagementChanged = nextEngagementId !== cur.engagement_id
+  const currentRate = cur.rate_snapshot != null ? Number(cur.rate_snapshot) : 0
+  let nextEngagement: EngRow | null = null
+  if (nextEngagementId) nextEngagement = await getEngagementRow(nextEngagementId)
+  let rateChange: PatchTimeResult['rate_change']
+
+  if (explicitRate !== undefined) {
+    if (explicitRate !== currentRate) {
+      updates.rate_snapshot = explicitRate
+      rateChange = { from: currentRate, to: explicitRate, reason: 'set explicitly on this request' }
+    }
+  } else if (engagementChanged || resnapshot) {
+    const newRate = await resolveRateSnapshot({ explicit: null, engagement: nextEngagement, personId: cur.person_id, accountId: nextAccountId })
+    if (newRate !== currentRate) {
+      updates.rate_snapshot = newRate
+      rateChange = { from: currentRate, to: newRate, reason: engagementChanged ? 'engagement changed' : 'rate re-snapshot requested' }
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { entry: await getCoworkTimeEntry(id) }
+  }
+
+  const { data, error } = await supabaseService
+    .from('time_entries')
+    .update(updates)
+    .eq('id', id)
+    .select(TIME_ENTRY_SELECT)
+    .single()
+  if (error) throw new CoworkApiError(error.message || 'Failed to amend time entry', 500)
+
+  const result: PatchTimeResult = { entry: formatTimeEntry(data as never) }
+  if (rateChange) result.rate_change = rateChange
+  const warning = await overageWarning(nextEngagement)
+  if (warning) result.warning = warning
   return result
 }

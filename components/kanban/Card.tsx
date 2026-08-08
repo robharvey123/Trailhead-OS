@@ -16,14 +16,24 @@ function initials(name?: string | null) {
 function fmtDate(v: string | null) {
   return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : null
 }
+/** Compact logged-time label: 45 → "45m", 90 → "1h 30m", 120 → "2h". */
+function fmtLogged(minutes: number) {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) return `${m}m`
+  return m === 0 ? `${h}h` : `${h}h ${m}m`
+}
 
 export default function TaskCard({
   task,
+  loggedMinutes = 0,
   onOpen,
   activeLabels,
   onToggleLabel,
 }: {
   task: EngagementTaskWithRelations
+  /** Total time logged against this ticket, across all users. 0 = no chip shown. */
+  loggedMinutes?: number
   onOpen: (id: string) => void
   activeLabels?: string[]
   onToggleLabel?: (label: string) => void
@@ -83,7 +93,14 @@ export default function TaskCard({
         </div>
       ) : null}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-        <span style={{ fontSize: 11, color: due ? 'var(--text-2)' : 'var(--text-3)' }}>{due ?? '—'}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11, color: due ? 'var(--text-2)' : 'var(--text-3)' }}>{due ?? '—'}</span>
+          {loggedMinutes > 0 ? (
+            <span title={`${fmtLogged(loggedMinutes)} logged`} style={{ fontSize: 10, color: 'var(--text-3)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+              ⏱ {fmtLogged(loggedMinutes)}
+            </span>
+          ) : null}
+        </span>
         <span title={task.assignee?.full_name ?? 'Unassigned'} style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--surface-3)', color: 'var(--text-2)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {initials(task.assignee?.full_name)}
         </span>

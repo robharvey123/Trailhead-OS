@@ -18,6 +18,7 @@ export default function EngagementTasksClient({
   engagementId,
   projectId,
   initialTasks,
+  minutesByTask,
   people,
   backHref,
 }: {
@@ -25,6 +26,8 @@ export default function EngagementTasksClient({
   /** When set, this is a project-scoped board: new tasks stamp project_id, no project filter shown. */
   projectId?: string
   initialTasks: EngagementTaskWithRelations[]
+  /** Total logged minutes per task id, for the per-card time chip. */
+  minutesByTask?: Record<string, number>
   people: Named[]
   /** Source path stamped onto opened tasks so the detail page can offer "Back". */
   backHref: string
@@ -157,6 +160,7 @@ export default function EngagementTasksClient({
       <Board
         key={projectId ?? scope}
         initialTasks={visible}
+        minutesByTask={minutesByTask}
         fromPath={backHref}
         sortMode={sortMode}
         dueFrom={dueFrom}

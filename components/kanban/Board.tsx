@@ -19,6 +19,7 @@ function compareDue(a: string | null, b: string | null, dir: 1 | -1) {
 
 export default function Board({
   initialTasks,
+  minutesByTask,
   fromPath,
   sortMode = 'manual',
   dueFrom = '',
@@ -27,6 +28,8 @@ export default function Board({
   onToggleLabel,
 }: {
   initialTasks: EngagementTaskWithRelations[]
+  /** Total logged minutes per task id, for the per-card time chip. */
+  minutesByTask?: Record<string, number>
   fromPath?: string
   /** 'manual' = position order (drag-drop). Date modes order each column by due_date. */
   sortMode?: BoardSortMode
@@ -104,6 +107,7 @@ export default function Board({
             key={status}
             status={status}
             tasks={columnTasks(status)}
+            minutesByTask={minutesByTask}
             onOpen={openTask}
             activeLabels={activeLabels}
             onToggleLabel={onToggleLabel}

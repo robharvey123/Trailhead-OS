@@ -9,12 +9,14 @@ import TaskCard from './Card'
 export default function KanbanColumn({
   status,
   tasks,
+  minutesByTask,
   onOpen,
   activeLabels,
   onToggleLabel,
 }: {
   status: EngagementTaskStatus
   tasks: EngagementTaskWithRelations[]
+  minutesByTask?: Record<string, number>
   onOpen: (id: string) => void
   activeLabels?: string[]
   onToggleLabel?: (label: string) => void
@@ -31,7 +33,7 @@ export default function KanbanColumn({
       </div>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div style={{ minHeight: 40, flex: 1 }}>
-          {tasks.map((t) => (<TaskCard key={t.id} task={t} onOpen={onOpen} activeLabels={activeLabels} onToggleLabel={onToggleLabel} />))}
+          {tasks.map((t) => (<TaskCard key={t.id} task={t} loggedMinutes={minutesByTask?.[t.id] ?? 0} onOpen={onOpen} activeLabels={activeLabels} onToggleLabel={onToggleLabel} />))}
           {tasks.length === 0 ? <div style={{ fontSize: 12, color: 'var(--text-3)', padding: 8 }}>—</div> : null}
         </div>
       </SortableContext>

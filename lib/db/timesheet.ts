@@ -436,6 +436,24 @@ export async function getTaskTimeSummary(taskId: string, client?: SupabaseClient
   }
 }
 
+/**
+ * Total logged minutes per task (all users, via the SECURITY DEFINER batch RPC),
+ * keyed by task_id. For board rollups where one query beats N single-task calls.
+ * Tasks with no logged time are absent from the map.
+ */
+export async function getTasksTimeTotals(taskIds: string[], client?: SupabaseClient): Promise<Record<string, number>> {
+  if (taskIds.length === 0) return {}
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase.rpc('tasks_time_summary', { p_task_ids: taskIds })
+  if (error) {
+    throw new Error(error.message || 'Failed to load task time totals')
+  }
+  const rows = (data ?? []) as Array<{ task_id: string; minutes: number }>
+  const out: Record<string, number> = {}
+  for (const r of rows) out[r.task_id] = Number(r.minutes)
+  return out
+}
+
 export interface TaskTimeEntryRow {
   id: string
   entry_date: string

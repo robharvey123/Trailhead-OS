@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile } from '@/lib/auth/roles'
 import { listEngagementTasks } from '@/lib/db/engagement-tasks'
+import { getTasksTimeTotals } from '@/lib/db/timesheet'
 import { listPeople } from '@/lib/db/people'
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementTasksClient from './EngagementTasksClient'
@@ -23,6 +24,7 @@ export default async function EngagementTasksPage({ params }: { params: Promise<
     listEngagementTasks(id, supabase).catch(() => []),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
   ])
+  const minutesByTask = await getTasksTimeTotals(tasks.map((t) => t.id), supabase).catch(() => ({}))
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -35,6 +37,7 @@ export default async function EngagementTasksPage({ params }: { params: Promise<
           <EngagementTasksClient
             engagementId={id}
             initialTasks={tasks}
+            minutesByTask={minutesByTask}
             people={people.map((p) => ({ id: p.id, name: p.full_name }))}
             backHref={`/engagements/${id}/tasks`}
           />
