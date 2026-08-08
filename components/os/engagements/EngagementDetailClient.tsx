@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
+import { formatDate } from '@/lib/documents/format'
+import DocumentPreviewDrawer from '@/components/os/engagements/DocumentPreviewDrawer'
 import type { EngagementDetail, EngagementLinkCounts } from '@/lib/db/engagements'
 import type { EngagementTouchpoint } from '@/lib/db/touchpoints'
 import ConfirmDialog from '@/components/os/ConfirmDialog'
@@ -40,9 +42,9 @@ function fmtDur(min: number) {
   return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
-function fmtDate(v: string | null | undefined) {
-  return v ? new Date(`${v}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '—'
-}
+// Delegates to the shared formatter, which handles both date-only values
+// (week_start) and full timestamps (created_at) without rendering "Invalid Date".
+const fmtDate = formatDate
 
 /** Days from today (UTC) to a date-only string; positive = future. */
 function daysUntil(d: string | null | undefined): number | null {
@@ -99,6 +101,7 @@ export default function EngagementDetailClient({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [previewDoc, setPreviewDoc] = useState<EngagementDoc | null>(null)
 
   async function uploadDoc(file: File) {
     setError('')
@@ -726,20 +729,28 @@ export default function EngagementDetailClient({
                 <thead><tr><th>Title</th><th>Type</th><th>Size</th><th>Created</th><th style={{ textAlign: 'right' }}></th></tr></thead>
                 <tbody>
                   {documents.map((d) => (
-                    <tr key={d.id}>
-                      <td className="td-name">
-                        {d.file_path ? (
-                          <a href={`/api/engagements/${e.id}/documents/${d.id}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
-                            {d.title ?? d.file_name ?? 'Untitled'}
-                          </a>
-                        ) : (
-                          d.title ?? '—'
-                        )}
-                      </td>
+                    <tr
+                      key={d.id}
+                      onClick={d.file_path ? () => setPreviewDoc(d) : undefined}
+                      style={d.file_path ? { cursor: 'pointer' } : undefined}
+                      title={d.file_path ? 'Click to preview' : undefined}
+                    >
+                      <td className="td-name">{d.title ?? d.file_name ?? (d.file_path ? 'Untitled' : '—')}</td>
                       <td><span className="channel-tag">{d.type}</span></td>
                       <td className="td-mono">{fmtBytes(d.size_bytes)}</td>
                       <td className="td-mono">{fmtDate(d.created_at)}</td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td style={{ textAlign: 'right' }} onClick={(ev) => ev.stopPropagation()}>
+                        {d.file_path ? (
+                          <a
+                            href={`/api/engagements/${e.id}/documents/${d.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-ghost btn-sm"
+                            style={{ marginRight: 4 }}
+                          >
+                            Download
+                          </a>
+                        ) : null}
                         <button className="btn btn-ghost btn-sm" onClick={() => deleteDoc(d.id)}>Delete</button>
                       </td>
                     </tr>
@@ -836,6 +847,8 @@ export default function EngagementDetailClient({
         loading={busy}
         onConfirm={doDelete}
       />
+
+      <DocumentPreviewDrawer engagementId={e.id} doc={previewDoc} onClose={() => setPreviewDoc(null)} />
     </div>
   )
 }
