@@ -968,12 +968,14 @@ export async function patchCoworkTimeEntry(id: string, body: Record<string, unkn
   let nextProjectId = cur.project_id
   if (taskProvided || engProvided || projProvided) {
     const nextTaskId = taskProvided ? optionalString(body.task_id) : cur.task_id
-    const taskChanged = taskProvided && nextTaskId !== cur.task_id
-    // When the task changes, let the new ticket supply engagement/project unless the
-    // caller pins them explicitly; when it does not, keep the current links as the
-    // baseline so an engagement_id change is still conflict-checked against the task.
-    const baseEngagement = engProvided ? optionalString(body.engagement_id) : (taskChanged ? null : cur.engagement_id)
-    const baseProject = projProvided ? optionalString(body.project_id) : (taskChanged ? null : cur.project_id)
+    // Only re-derive from a task when there is a NEW one to derive from. Unlinking a
+    // task (task_id → null) must keep the existing engagement/project, not strip them.
+    const rederiveFromTask = taskProvided && nextTaskId !== cur.task_id && nextTaskId != null
+    // With a new ticket, let it supply engagement/project unless the caller pins them
+    // explicitly; otherwise keep the current links as the baseline so an engagement_id
+    // change is still conflict-checked against the (unchanged) task.
+    const baseEngagement = engProvided ? optionalString(body.engagement_id) : (rederiveFromTask ? null : cur.engagement_id)
+    const baseProject = projProvided ? optionalString(body.project_id) : (rederiveFromTask ? null : cur.project_id)
     const derived = await deriveLinks({ taskId: nextTaskId, engagementId: baseEngagement, projectId: baseProject })
     if (projProvided && baseProject) await assertExists('projects', baseProject, 'project_id')
     nextEngagementId = derived.engagementId
