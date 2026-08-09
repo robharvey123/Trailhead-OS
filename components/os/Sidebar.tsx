@@ -2,8 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import {
+  IconDashboard, IconCalendar, IconTasks, IconMessages, IconInbox,
+  IconEngagements, IconProjects, IconTimesheet, IconAccounts, IconContacts,
+  IconMeetings, IconDeals, IconOutreach, IconEnquiries, IconQuotes,
+  IconInvoicing, IconExpenses, IconAnalytics, IconReport, IconBlog,
+  IconDiscovery, IconSettings, IconSignOut,
+} from '@/components/os/nav-icons'
+
+const ICON_CLASS = 'h-[18px] w-[18px] shrink-0'
 
 interface SidebarProps {
   newEnquiryCount: number
@@ -22,6 +31,7 @@ function NavLink({
   active,
   onClick,
   dotColour,
+  icon,
   badge,
   mentionBadge,
   collapsed,
@@ -31,6 +41,7 @@ function NavLink({
   active: boolean
   onClick?: () => void
   dotColour?: string
+  icon?: ReactNode
   badge?: number
   /** Distinct, attention-grabbing "@N" mention chip, additive to `badge`. */
   mentionBadge?: number
@@ -48,7 +59,9 @@ function NavLink({
             : 'text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
         }`}
       >
-        {dotColour ? (
+        {icon ? (
+          icon
+        ) : dotColour ? (
           <span className={`h-2.5 w-2.5 rounded-full ${dotColour}`} />
         ) : (
           <span className="text-xs font-semibold">{label.charAt(0)}</span>
@@ -78,10 +91,12 @@ function NavLink({
       }`}
     >
       <span className="flex min-w-0 items-center gap-3">
-        {dotColour ? (
+        {icon ? (
+          <span className={`flex items-center justify-center ${active ? '' : 'text-[#64748B]'}`}>{icon}</span>
+        ) : dotColour ? (
           <span className={`h-2.5 w-2.5 rounded-full ${dotColour}`} />
         ) : null}
-        <span>{label}</span>
+        <span className="truncate">{label}</span>
       </span>
       <span className="flex items-center gap-1.5">
         {typeof mentionBadge === 'number' && mentionBadge > 0 ? (
@@ -134,6 +149,72 @@ function CollapseToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle:
   )
 }
 
+type BadgeKey = 'enquiries' | 'quotes' | 'tasks' | 'mail' | 'messages'
+type NavItem = {
+  href: string
+  label: string
+  icon: ReactNode
+  match: (p: string) => boolean
+  badgeKey?: BadgeKey
+  mention?: boolean
+}
+type NavGroup = { header?: string; items: NavItem[] }
+
+// Grouped by "what am I doing": daily workspace first, then delivery (the where-are-we
+// cluster), clients/CRM, money, insights, content. Reorder here — the render is generic.
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: <IconDashboard className={ICON_CLASS} />, match: (p) => p === '/dashboard' },
+      { href: '/calendar', label: 'Calendar', icon: <IconCalendar className={ICON_CLASS} />, match: (p) => p === '/calendar' },
+      { href: '/tasks', label: 'Tasks', icon: <IconTasks className={ICON_CLASS} />, match: (p) => p === '/tasks' || p.startsWith('/my-work/'), badgeKey: 'tasks' },
+      { href: '/messages', label: 'Messages', icon: <IconMessages className={ICON_CLASS} />, match: (p) => p === '/messages' || p.startsWith('/messages/'), badgeKey: 'messages', mention: true },
+      { href: '/inbox', label: 'Inbox', icon: <IconInbox className={ICON_CLASS} />, match: (p) => p.startsWith('/inbox'), badgeKey: 'mail' },
+    ],
+  },
+  {
+    header: 'Delivery',
+    items: [
+      { href: '/engagements', label: 'Engagements', icon: <IconEngagements className={ICON_CLASS} />, match: (p) => p.startsWith('/engagements') },
+      { href: '/projects', label: 'Projects', icon: <IconProjects className={ICON_CLASS} />, match: (p) => p === '/projects' || p.startsWith('/projects/records') || p === '/projects/new' },
+      { href: '/timesheet', label: 'Timesheet', icon: <IconTimesheet className={ICON_CLASS} />, match: (p) => p.startsWith('/timesheet') },
+    ],
+  },
+  {
+    header: 'Clients',
+    items: [
+      { href: '/crm/accounts', label: 'Accounts', icon: <IconAccounts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/accounts') },
+      { href: '/crm/contacts', label: 'Contacts', icon: <IconContacts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/contacts') },
+      { href: '/crm/meetings', label: 'Meetings', icon: <IconMeetings className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/meetings') },
+      { href: '/deals', label: 'Deals', icon: <IconDeals className={ICON_CLASS} />, match: (p) => p.startsWith('/deals') },
+      { href: '/outreach', label: 'Outreach', icon: <IconOutreach className={ICON_CLASS} />, match: (p) => p.startsWith('/outreach') },
+      { href: '/enquiries', label: 'Enquiries', icon: <IconEnquiries className={ICON_CLASS} />, match: (p) => p.startsWith('/enquiries'), badgeKey: 'enquiries' },
+    ],
+  },
+  {
+    header: 'Commercial',
+    items: [
+      { href: '/quotes', label: 'Quotes', icon: <IconQuotes className={ICON_CLASS} />, match: (p) => p.startsWith('/quotes'), badgeKey: 'quotes' },
+      { href: '/invoicing', label: 'Invoicing', icon: <IconInvoicing className={ICON_CLASS} />, match: (p) => p.startsWith('/invoicing') },
+      { href: '/expenses', label: 'Expenses', icon: <IconExpenses className={ICON_CLASS} />, match: (p) => p.startsWith('/expenses') },
+    ],
+  },
+  {
+    header: 'Insights',
+    items: [
+      { href: '/analytics', label: 'Analytics', icon: <IconAnalytics className={ICON_CLASS} />, match: (p) => p.startsWith('/analytics') || p.startsWith('/workspaces') || p.startsWith('/workspace') },
+      { href: '/reports/weekly', label: 'Weekly Report', icon: <IconReport className={ICON_CLASS} />, match: (p) => p.startsWith('/reports') },
+    ],
+  },
+  {
+    header: 'Content',
+    items: [
+      { href: '/blog', label: 'Blog', icon: <IconBlog className={ICON_CLASS} />, match: (p) => p === '/blog' || p.startsWith('/blog/') || p.startsWith('/os/blog') },
+      { href: '/discovery?view=form', label: 'Discovery form', icon: <IconDiscovery className={ICON_CLASS} />, match: (p) => p.startsWith('/discovery') },
+    ],
+  },
+]
+
 export default function Sidebar({
   newEnquiryCount,
   activeQuoteCount,
@@ -144,6 +225,13 @@ export default function Sidebar({
   collapsed = false,
   onToggle,
 }: SidebarProps) {
+  const badgeValues: Record<BadgeKey, number> = {
+    enquiries: newEnquiryCount,
+    quotes: activeQuoteCount,
+    tasks: unreadTaskCount,
+    mail: unreadMailCount,
+    messages: unreadMessageCount,
+  }
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -206,213 +294,35 @@ export default function Sidebar({
 
       <nav className={`flex-1 overflow-y-auto py-2 ${collapsed ? 'px-1.5' : 'px-4'}`}>
         <div className={`pb-6 ${collapsed ? 'flex flex-col items-center space-y-2' : 'space-y-6'}`}>
-          <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'space-y-1.5'}>
-            <NavLink
-              href="/dashboard"
-              label="Dashboard"
-              active={pathname === '/dashboard'}
-              onClick={() => setMobileOpen(false)}
-              collapsed={collapsed}
-            />
-            <NavLink
-              href="/calendar"
-              label="Calendar"
-              active={pathname === '/calendar'}
-              onClick={() => setMobileOpen(false)}
-              collapsed={collapsed}
-            />
-            <NavLink
-              href="/tasks"
-              label="Tasks"
-              active={pathname === '/tasks' || pathname.startsWith('/my-work/')}
-              onClick={() => setMobileOpen(false)}
-              collapsed={collapsed}
-              badge={unreadTaskCount}
-            />
-            <NavLink
-              href="/messages"
-              label="Messages"
-              active={pathname === '/messages' || pathname.startsWith('/messages/')}
-              onClick={() => setMobileOpen(false)}
-              collapsed={collapsed}
-              badge={unreadMessageCount}
-              mentionBadge={unreadMentionsCount}
-            />
-            <NavLink
-              href="/projects"
-              label="Projects"
-              active={pathname === '/projects' || pathname.startsWith('/projects/records') || pathname === '/projects/new'}
-              onClick={() => setMobileOpen(false)}
-              collapsed={collapsed}
-            />
-          </div>
-
-          <div className={collapsed ? 'flex flex-col items-center' : ''}>
-            {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
-                Clients
-              </p>
-            )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
-            <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
-              <NavLink
-                href="/enquiries"
-                label="Enquiries"
-                active={pathname.startsWith('/enquiries')}
-                onClick={() => setMobileOpen(false)}
-                badge={newEnquiryCount}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/discovery?view=form"
-                label="Discovery form"
-                active={pathname.startsWith('/discovery')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/crm/accounts"
-                label="Accounts"
-                active={pathname.startsWith('/crm/accounts')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/crm/contacts"
-                label="Contacts"
-                active={pathname.startsWith('/crm/contacts')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/crm/meetings"
-                label="Meetings"
-                active={pathname.startsWith('/crm/meetings')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/deals"
-                label="Deals"
-                active={pathname.startsWith('/deals')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/outreach"
-                label="Outreach"
-                active={pathname.startsWith('/outreach')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/inbox"
-                label="Inbox"
-                active={pathname.startsWith('/inbox')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-                badge={unreadMailCount}
-              />
-              <NavLink
-                href="/engagements"
-                label="Engagements"
-                active={pathname.startsWith('/engagements')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-            </div>
-          </div>
-
-          <div className={collapsed ? 'flex flex-col items-center' : ''}>
-            {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
-                Commercial
-              </p>
-            )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
-            <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
-              <NavLink
-                href="/quotes"
-                label="Quotes"
-                active={pathname.startsWith('/quotes')}
-                onClick={() => setMobileOpen(false)}
-                badge={activeQuoteCount}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/invoicing"
-                label="Invoicing"
-                active={pathname.startsWith('/invoicing')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/timesheet"
-                label="Timesheet"
-                active={pathname.startsWith('/timesheet')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/expenses"
-                label="Expenses"
-                active={pathname.startsWith('/expenses')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-            </div>
-          </div>
-
-          <div className={collapsed ? 'flex flex-col items-center' : ''}>
-            {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
-                Content
-              </p>
-            )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
-            <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
-              <NavLink
-                href="/blog"
-                label="Blog"
-                active={
-                  pathname === '/blog' ||
-                  pathname.startsWith('/blog/') ||
-                  pathname.startsWith('/os/blog')
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={group.header ?? gi} className={collapsed ? 'flex flex-col items-center' : ''}>
+              {!collapsed && group.header ? (
+                <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">{group.header}</p>
+              ) : null}
+              {collapsed && gi > 0 ? <div className="my-1 h-px w-6 bg-[#E2E8F0]" /> : null}
+              <div
+                className={
+                  collapsed
+                    ? 'flex flex-col items-center space-y-1'
+                    : `${group.header ? 'mt-2 ' : ''}space-y-1.5`
                 }
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
+              >
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
+                    active={item.match(pathname)}
+                    onClick={() => setMobileOpen(false)}
+                    collapsed={collapsed}
+                    badge={item.badgeKey ? badgeValues[item.badgeKey] : undefined}
+                    mentionBadge={item.mention ? unreadMentionsCount : undefined}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div className={collapsed ? 'flex flex-col items-center' : ''}>
-            {!collapsed && (
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">
-                Analytics
-              </p>
-            )}
-            {collapsed && <div className="my-1 h-px w-6 bg-[#E2E8F0]" />}
-            <div className={collapsed ? 'flex flex-col items-center space-y-1' : 'mt-2 space-y-1.5'}>
-              <NavLink
-                href="/analytics"
-                label="Analytics"
-                active={
-                  pathname.startsWith('/analytics') ||
-                  pathname.startsWith('/workspaces') ||
-                  pathname.startsWith('/workspace')
-                }
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-              <NavLink
-                href="/reports/weekly"
-                label="Weekly Report"
-                active={pathname.startsWith('/reports')}
-                onClick={() => setMobileOpen(false)}
-                collapsed={collapsed}
-              />
-            </div>
-          </div>
+          ))}
         </div>
       </nav>
 
@@ -422,6 +332,7 @@ export default function Sidebar({
             <NavLink
               href="/settings"
               label="Settings"
+              icon={<IconSettings className={ICON_CLASS} />}
               active={pathname.startsWith('/settings')}
               onClick={() => setMobileOpen(false)}
               collapsed
@@ -431,9 +342,9 @@ export default function Sidebar({
               onClick={handleSignOut}
               disabled={signingOut}
               title="Sign out"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] text-xs font-semibold text-[#475569] transition hover:border-[#0EA5E9]/40 hover:text-[#0EA5E9] disabled:opacity-60 mx-auto"
+              className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] text-[#475569] transition hover:border-[#0EA5E9]/40 hover:text-[#0EA5E9] disabled:opacity-60"
             >
-              {signingOut ? '...' : '✕'}
+              <IconSignOut className={ICON_CLASS} />
             </button>
           </>
         ) : (
@@ -441,6 +352,7 @@ export default function Sidebar({
             <NavLink
               href="/settings"
               label="Settings"
+              icon={<IconSettings className={ICON_CLASS} />}
               active={pathname.startsWith('/settings')}
               onClick={() => setMobileOpen(false)}
             />
@@ -448,8 +360,9 @@ export default function Sidebar({
               type="button"
               onClick={handleSignOut}
               disabled={signingOut}
-              className="flex w-full items-center justify-center rounded-2xl border border-[#E2E8F0] px-4 py-3 text-sm font-medium text-[#475569] transition hover:border-[#0EA5E9]/40 hover:text-[#0EA5E9] disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-[#E2E8F0] px-4 py-3 text-sm font-medium text-[#475569] transition hover:border-[#0EA5E9]/40 hover:text-[#0EA5E9] disabled:opacity-60"
             >
+              <IconSignOut className={ICON_CLASS} />
               {signingOut ? 'Signing out...' : 'Sign out'}
             </button>
           </>

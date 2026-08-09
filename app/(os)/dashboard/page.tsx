@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import ActiveProjectTasks from '@/components/os/ActiveProjectTasks'
 import DailyBriefClient from '@/components/os/DailyBriefClient'
+import PortfolioOverview from '@/components/os/PortfolioOverview'
 import { getDailyBriefData } from '@/lib/db/daily-brief'
+import { getPortfolioOverview } from '@/lib/db/portfolio'
 import { createClient } from '@/lib/supabase/server'
 
 function formatDate(value: Date) {
@@ -25,7 +27,10 @@ export default async function DashboardPage() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const todayLabel = formatDate(today)
-  const dailyBrief = await getDailyBriefData(user.id, today, supabase)
+  const [dailyBrief, portfolio] = await Promise.all([
+    getDailyBriefData(user.id, today, supabase),
+    getPortfolioOverview(supabase).catch(() => null),
+  ])
 
   // How many changes Claude made today, for the activity strip.
   let coworkChangesToday = 0
@@ -48,6 +53,11 @@ export default async function DashboardPage() {
             <span>Claude made {coworkChangesToday} change{coworkChangesToday === 1 ? '' : 's'} today</span>
             <span className="text-xs text-[color:var(--text-3)]">Review →</span>
           </Link>
+        </div>
+      ) : null}
+      {portfolio ? (
+        <div className="mx-auto max-w-[1100px]">
+          <PortfolioOverview data={portfolio} />
         </div>
       ) : null}
       <div className="mx-auto max-w-[780px]">

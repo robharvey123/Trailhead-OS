@@ -7,8 +7,10 @@ import EngagementsClient from '@/components/os/engagements/EngagementsClient'
 export const metadata = { title: 'Engagements | Trailhead OS' }
 
 function monthStartISO() {
+  // Direct YYYY-MM-01 string: new Date(y, m, 1).toISOString() shifts back a day in
+  // timezones ahead of UTC (e.g. BST), reading the previous month's hours as zero.
   const d = new Date()
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
 }
 
 export default async function EngagementsPage() {
