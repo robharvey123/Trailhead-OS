@@ -24,22 +24,32 @@ export interface Meeting {
 }
 
 export interface MeetingWithRelations extends Meeting {
+  /** Primary (auto-linked) account — kept for backward compatibility. */
   account: { id: string; name: string } | null
+  /** Full editable set of linked accounts (includes the primary). */
+  accounts: { id: string; name: string }[]
   contactIds: string[]
 }
 
-const SELECT = '*, account:accounts(id,name), meeting_contacts(contact_id)'
+const SELECT =
+  '*, account:accounts(id,name), meeting_contacts(contact_id), meeting_accounts(account:accounts(id,name))'
 
 type RawRow = Record<string, unknown> & {
   account?: { id: string; name: string } | null
   meeting_contacts?: Array<{ contact_id: string }> | null
+  meeting_accounts?: Array<{ account: { id: string; name: string } | null }> | null
 }
 
 function normalize(row: RawRow): MeetingWithRelations {
-  const { meeting_contacts, account, ...rest } = row
+  const { meeting_contacts, meeting_accounts, account, ...rest } = row
+  const accounts = (meeting_accounts ?? [])
+    .map((r) => r.account)
+    .filter((a): a is { id: string; name: string } => !!a)
+    .sort((a, b) => a.name.localeCompare(b.name))
   return {
     ...(rest as unknown as Meeting),
     account: account ?? null,
+    accounts,
     contactIds: (meeting_contacts ?? []).map((r) => r.contact_id),
   }
 }
@@ -70,10 +80,20 @@ export async function listMeetingsForAccount(
   client?: SupabaseClient
 ): Promise<MeetingWithRelations[]> {
   const supabase = await getSupabase(client)
+  // Via the many-to-many join so a meeting linked to several accounts shows under
+  // each. Backfilled from the legacy account_id, so this is a superset of it.
+  const { data: links, error: linkError } = await supabase
+    .from('meeting_accounts')
+    .select('meeting_id')
+    .eq('account_id', accountId)
+  if (linkError) throw new Error(linkError.message || 'Failed to load meetings')
+  const ids = Array.from(new Set((links ?? []).map((l) => l.meeting_id as string)))
+  if (ids.length === 0) return []
+
   const { data, error } = await supabase
     .from('meetings')
     .select(SELECT)
-    .eq('account_id', accountId)
+    .in('id', ids)
     .order('meeting_date', { ascending: false, nullsFirst: false })
   if (error) throw new Error(error.message || 'Failed to load meetings')
   return (data ?? []).map((r) => normalize(r as RawRow))

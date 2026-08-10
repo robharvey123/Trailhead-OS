@@ -4,6 +4,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/server'
 import { getMeeting } from '@/lib/db/meetings'
 import MeetingSummary from '@/components/os/MeetingSummary'
+import MeetingLinksEditor, { type LinkItem } from '@/components/os/MeetingLinksEditor'
 
 function fmtDate(iso: string | null) {
   if (!iso) return 'No date'
@@ -23,16 +24,26 @@ export default async function MeetingDetailPage({
     notFound()
   }
 
+  // For the picker + attendee cross-linking: all accounts, all contacts, and the
+  // subset currently linked to this meeting.
+  const [{ data: allAccountRows }, { data: allContactRows }, { data: linkedContactRows }] = await Promise.all([
+    supabase.from('accounts').select('id, name').order('name'),
+    supabase.from('contacts').select('id, name, email, company').order('name'),
+    meeting.contactIds.length > 0
+      ? supabase.from('contacts').select('id, name, email').in('id', meeting.contactIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; name: string; email: string | null }> }),
+  ])
+
+  const allAccounts: LinkItem[] = (allAccountRows ?? []).map((a) => ({ id: a.id, name: a.name }))
+  const allContacts: LinkItem[] = (allContactRows ?? []).map((c) => ({
+    id: c.id, name: c.name, sub: c.email ?? c.company ?? null,
+  }))
+  const linkedContacts: LinkItem[] = (linkedContactRows ?? []).map((c) => ({ id: c.id, name: c.name, sub: c.email ?? null }))
+
   // Resolve the linked contacts so matched attendees can link to their page.
   const contactByEmail = new Map<string, { id: string; name: string }>()
-  if (meeting.contactIds.length > 0) {
-    const { data: contacts } = await supabase
-      .from('contacts')
-      .select('id, name, email')
-      .in('id', meeting.contactIds)
-    for (const c of (contacts ?? []) as Array<{ id: string; name: string; email: string | null }>) {
-      if (c.email) contactByEmail.set(c.email.trim().toLowerCase(), { id: c.id, name: c.name })
-    }
+  for (const c of (linkedContactRows ?? []) as Array<{ id: string; name: string; email: string | null }>) {
+    if (c.email) contactByEmail.set(c.email.trim().toLowerCase(), { id: c.id, name: c.name })
   }
 
   return (
@@ -44,14 +55,6 @@ export default async function MeetingDetailPage({
           </Link>
           <h1 className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</h1>
           <p className="mt-1 text-sm text-[var(--muted)]">{fmtDate(meeting.meeting_date)}</p>
-          {meeting.account ? (
-            <Link
-              href={`/crm/accounts/${meeting.account.id}`}
-              className="mt-3 inline-block rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)] transition hover:border-[var(--lime)]/40"
-            >
-              {meeting.account.name}
-            </Link>
-          ) : null}
         </div>
 
         {meeting.attendees.length > 0 ? (
@@ -81,6 +84,14 @@ export default async function MeetingDetailPage({
             </div>
           </div>
         ) : null}
+
+        <MeetingLinksEditor
+          meetingId={meeting.id}
+          initialAccounts={meeting.accounts}
+          initialContacts={linkedContacts}
+          allAccounts={allAccounts}
+          allContacts={allContacts}
+        />
 
         <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Summary</h2>

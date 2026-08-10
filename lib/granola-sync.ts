@@ -93,15 +93,26 @@ async function linkMeeting(
     )
   if (linkError) throw new Error(linkError.message || 'Failed to link meeting contacts')
 
-  if (!currentAccountId) {
-    const firstAccountId = matched.find((c) => c.account_id)?.account_id
-    if (firstAccountId) {
-      const { error: acctError } = await supabaseService
-        .from('meetings')
-        .update({ account_id: firstAccountId })
-        .eq('id', meetingId)
-      if (acctError) throw new Error(acctError.message || 'Failed to set meeting account')
-    }
+  // Link every distinct account the matched contacts belong to (a meeting can span
+  // several). Manual edits on top of these live in meeting_accounts too.
+  const accountIds = Array.from(new Set(matched.map((c) => c.account_id).filter((a): a is string => !!a)))
+  if (accountIds.length > 0) {
+    const { error: maError } = await supabaseService
+      .from('meeting_accounts')
+      .upsert(
+        accountIds.map((account_id) => ({ meeting_id: meetingId, account_id })),
+        { onConflict: 'meeting_id,account_id', ignoreDuplicates: true }
+      )
+    if (maError) throw new Error(maError.message || 'Failed to link meeting accounts')
+  }
+
+  // Keep the legacy primary account populated for backward compatibility.
+  if (!currentAccountId && accountIds.length > 0) {
+    const { error: acctError } = await supabaseService
+      .from('meetings')
+      .update({ account_id: accountIds[0] })
+      .eq('id', meetingId)
+    if (acctError) throw new Error(acctError.message || 'Failed to set meeting account')
   }
 
   return contactIds.length
