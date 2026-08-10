@@ -31,8 +31,10 @@ export interface MeetingWithRelations extends Meeting {
   contactIds: string[]
 }
 
+// account_id and meeting_accounts both relate meetings→accounts, so the direct
+// (primary) embed must name its FK column or PostgREST errors on the ambiguity.
 const SELECT =
-  '*, account:accounts(id,name), meeting_contacts(contact_id), meeting_accounts(account:accounts(id,name))'
+  '*, account:accounts!account_id(id,name), meeting_contacts(contact_id), meeting_accounts(account:accounts(id,name))'
 
 type RawRow = Record<string, unknown> & {
   account?: { id: string; name: string } | null
