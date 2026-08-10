@@ -22,7 +22,7 @@ export default async function MeetingsPage() {
       <div className="mx-auto max-w-4xl space-y-6 p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-white">Meetings</h1>
+            <h1 className="text-2xl font-semibold text-[color:var(--text)]">Meetings</h1>
             <p className="text-sm text-[var(--muted)]">
               Granola meeting notes, auto-linked to contacts and accounts by attendee email.
             </p>
@@ -43,7 +43,7 @@ export default async function MeetingsPage() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:border-[var(--lime)]/40"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">{meeting.title || 'Untitled meeting'}</p>
+                  <p className="truncate text-sm font-medium text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</p>
                   <p className="text-xs text-[var(--muted)]">{fmtDate(meeting.meeting_date)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">

@@ -13,7 +13,7 @@ export default function MeetingsTimeline({ meetings }: { meetings: MeetingWithRe
   return (
     <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
       <div>
-        <h2 className="text-lg font-semibold text-white">Meetings</h2>
+        <h2 className="text-lg font-semibold text-[color:var(--text)]">Meetings</h2>
         <p className="text-sm text-[var(--muted)]">Granola meeting notes matched by attendee email.</p>
       </div>
 
@@ -30,7 +30,7 @@ export default function MeetingsTimeline({ meetings }: { meetings: MeetingWithRe
               className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-[var(--border)] bg-[var(--card-alt)] p-4 transition hover:border-[var(--lime)]/40"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-white">{meeting.title || 'Untitled meeting'}</p>
+                <p className="truncate text-sm font-medium text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</p>
                 <p className="text-xs text-[var(--muted)]">{fmtDate(meeting.meeting_date)}</p>
               </div>
               <span className="shrink-0 rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--muted)]">

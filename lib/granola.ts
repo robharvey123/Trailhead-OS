@@ -55,7 +55,14 @@ interface RawNote {
   title?: string | null
   summary_markdown?: string | null
   attendees?: RawAttendee[] | null
-  calendar_event?: { scheduled_start_time?: string | null } | null
+  calendar_event?: {
+    scheduled_start_time?: string | null
+    // The calendar invite list is the canonical attendee source; note.attendees
+    // alone is often just the note owner. invitees carry email only; organiser is
+    // a bare email string.
+    invitees?: Array<{ email?: string | null; name?: string | null }> | null
+    organiser?: string | null
+  } | null
   created_at?: string
   updated_at?: string
 }
@@ -137,9 +144,23 @@ export async function getNote(id: string): Promise<GranolaNote | null> {
 
   const note = (await response.json()) as RawNote
 
-  const attendees = (note.attendees ?? [])
-    .filter((a): a is RawAttendee & { email: string } => typeof a.email === 'string' && a.email.length > 0)
-    .map((a) => ({ name: a.name ?? null, email: a.email }))
+  // Merge every attendee source, deduped by lowercased email, preferring an entry
+  // that carries a real name. note.attendees is often just the owner; the calendar
+  // event's invitees + organiser are what make it a full meeting.
+  const byEmail = new Map<string, { name: string | null; email: string }>()
+  const add = (email: string | null | undefined, name?: string | null) => {
+    const trimmed = email?.trim()
+    if (!trimmed) return
+    const key = trimmed.toLowerCase()
+    const cleanName = name?.trim() || null
+    const existing = byEmail.get(key)
+    if (!existing) byEmail.set(key, { name: cleanName, email: trimmed })
+    else if (!existing.name && cleanName) existing.name = cleanName
+  }
+  for (const a of note.attendees ?? []) add(a.email, a.name)
+  for (const inv of note.calendar_event?.invitees ?? []) add(inv.email, inv.name)
+  add(note.calendar_event?.organiser)
+  const attendees = Array.from(byEmail.values())
 
   return {
     granola_note_id: note.id,

@@ -39,10 +39,10 @@ export default async function MeetingDetailPage({
     <div className={`thmock ${mockupFontVars}`}>
       <div className="mx-auto max-w-3xl space-y-6 p-6">
         <div>
-          <Link href="/crm/meetings" className="text-sm text-[var(--muted)] transition hover:text-white">
+          <Link href="/crm/meetings" className="text-sm text-[var(--muted)] transition hover:text-[color:var(--text)]">
             ← Meetings
           </Link>
-          <h1 className="mt-3 text-2xl font-semibold text-white">{meeting.title || 'Untitled meeting'}</h1>
+          <h1 className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</h1>
           <p className="mt-1 text-sm text-[var(--muted)]">{fmtDate(meeting.meeting_date)}</p>
           {meeting.account ? (
             <Link
@@ -56,7 +56,7 @@ export default async function MeetingDetailPage({
 
         {meeting.attendees.length > 0 ? (
           <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-white">Attendees</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Attendees</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {meeting.attendees.map((attendee, i) => {
                 const matched = contactByEmail.get(attendee.email.trim().toLowerCase())
@@ -83,7 +83,7 @@ export default async function MeetingDetailPage({
         ) : null}
 
         <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-white">Summary</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Summary</h2>
           <div className="mt-3">
             <MeetingSummary markdown={meeting.summary_md} />
           </div>

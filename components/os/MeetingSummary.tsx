@@ -16,13 +16,13 @@ export default function MeetingSummary({ markdown }: { markdown: string | null }
     <div className="space-y-2 text-sm text-[var(--muted)]">
       <ReactMarkdown
         components={{
-          h1: (props) => <h1 className="mt-4 text-xl font-semibold text-white" {...props} />,
-          h2: (props) => <h2 className="mt-4 text-lg font-semibold text-white" {...props} />,
-          h3: (props) => <h3 className="mt-3 text-base font-semibold text-white" {...props} />,
+          h1: (props) => <h1 className="mt-4 text-xl font-semibold text-[color:var(--text)]" {...props} />,
+          h2: (props) => <h2 className="mt-4 text-lg font-semibold text-[color:var(--text)]" {...props} />,
+          h3: (props) => <h3 className="mt-3 text-base font-semibold text-[color:var(--text)]" {...props} />,
           p: (props) => <p className="mt-2 leading-relaxed" {...props} />,
           ul: (props) => <ul className="mt-2 list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="mt-2 list-decimal space-y-1 pl-5" {...props} />,
-          strong: (props) => <strong className="font-semibold text-white" {...props} />,
+          strong: (props) => <strong className="font-semibold text-[color:var(--text)]" {...props} />,
           a: (props) => <a className="text-[var(--lime)] underline" {...props} />,
           code: (props) => <code className="rounded bg-[var(--bg)] px-1 py-0.5 text-xs" {...props} />,
         }}

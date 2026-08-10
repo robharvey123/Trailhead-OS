@@ -21,7 +21,7 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
   return (
     <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
       <div>
-        <h2 className="text-lg font-semibold text-white">Meeting notes</h2>
+        <h2 className="text-lg font-semibold text-[color:var(--text)]">Meeting notes</h2>
         <p className="text-sm text-[var(--muted)]">Google Meet transcripts and AI summaries from calls.</p>
       </div>
 
@@ -52,7 +52,7 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
                     ) : null}
                     {s.decisions.length > 0 ? (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-white">Decisions</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text)]">Decisions</p>
                         <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--muted)]">
                           {s.decisions.map((d, i) => <li key={i}>{d}</li>)}
                         </ul>
@@ -60,7 +60,7 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
                     ) : null}
                     {s.nextSteps.length > 0 ? (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-white">Next steps</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text)]">Next steps</p>
                         <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--muted)]">
                           {s.nextSteps.map((n, i) => <li key={i}>{n}</li>)}
                         </ul>
@@ -73,7 +73,7 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
 
                 {note.transcript ? (
                   <details className="mt-3">
-                    <summary className="cursor-pointer text-sm text-[var(--muted)] transition hover:text-white">
+                    <summary className="cursor-pointer text-sm text-[var(--muted)] transition hover:text-[color:var(--text)]">
                       Transcript
                     </summary>
                     <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-3 text-xs text-[var(--muted)]">
