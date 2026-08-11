@@ -30,6 +30,7 @@ import type {
 import PriorityBadge from './PriorityBadge'
 import ConfirmDialog from './ConfirmDialog'
 import WorkstreamBadge from './WorkstreamBadge'
+import LogToCrmForm from './LogToCrmForm'
 
 const EVENT_COLOURS = [
   { label: 'Blue', value: '#3B82F6' },
@@ -405,12 +406,16 @@ export default function CalendarClient({
   workstreams,
   contacts,
   projects,
+  accounts = [],
+  engagements = [],
   googleConnected,
   feeds = [],
 }: {
   workstreams: Workstream[]
   contacts: Contact[]
   projects: ProjectListItem[]
+  accounts?: Array<{ id: string; name: string }>
+  engagements?: Array<{ id: string; name: string }>
   googleConnected: boolean
   feeds?: Array<{ id: string; name: string; colour: string | null }>
 }) {
@@ -1108,6 +1113,17 @@ export default function CalendarClient({
                       </button>
                     </>
                   )}
+                  <LogToCrmForm
+                    event={{
+                      id: selectedEvent.id,
+                      title: selectedEvent.title,
+                      start_at: selectedEvent.start_at,
+                      contact_id: selectedEvent.contact_id,
+                    }}
+                    accounts={accounts}
+                    contacts={contacts.map((c) => ({ id: c.id, name: c.name, sub: c.email ?? c.company ?? null }))}
+                    engagements={engagements}
+                  />
                 </div>
               </div>
             ) : null}

@@ -74,6 +74,18 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Only keep event_id if it points at a real calendar_events row (manual/synced
+  // events are stored; external feed events are not) so the FK never rejects the log.
+  let eventId: string | null = null
+  if (typeof body.event_id === 'string' && body.event_id) {
+    const { data: ev } = await auth.supabase
+      .from('calendar_events')
+      .select('id')
+      .eq('id', body.event_id)
+      .maybeSingle()
+    eventId = ev ? body.event_id : null
+  }
+
   try {
     const touchpoint = await createTouchpoint(
       {
@@ -83,6 +95,7 @@ export async function POST(request: NextRequest) {
           typeof body.contact_id === 'string' && body.contact_id ? body.contact_id : null,
         engagement_id:
           typeof body.engagement_id === 'string' && body.engagement_id ? body.engagement_id : null,
+        event_id: eventId,
         type,
         subject,
         body: sanitizeText(body.body),

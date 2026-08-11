@@ -17,6 +17,7 @@ function sanitizePayload(data: Partial<Touchpoint>) {
   if ('account_id' in data) payload.account_id = data.account_id ?? null
   if ('contact_id' in data) payload.contact_id = data.contact_id ?? null
   if ('engagement_id' in data) payload.engagement_id = data.engagement_id ?? null
+  if ('event_id' in data) payload.event_id = data.event_id ?? null
   if ('type' in data) payload.type = data.type
   if ('subject' in data) payload.subject = typeof data.subject === 'string' ? data.subject.trim() : data.subject
   if ('body' in data) payload.body = sanitizeText(data.body)

@@ -46,6 +46,8 @@ export interface Touchpoint {
   account_id?: string | null
   contact_id?: string | null
   engagement_id?: string | null
+  /** Set when this touchpoint was logged from a calendar event (traces it back). */
+  event_id?: string | null
   type: TouchpointType
   subject: string
   body?: string | null
