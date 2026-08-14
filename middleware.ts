@@ -44,7 +44,9 @@ function getMarketingRewritePath(pathname: string) {
     pathname === '/mvp-cricket' ||
     pathname.startsWith('/mvp-cricket/') ||
     pathname === '/bright-fire' ||
-    pathname.startsWith('/bright-fire/')
+    pathname.startsWith('/bright-fire/') ||
+    pathname === '/web-app-design' ||
+    pathname.startsWith('/web-app-design/')
   ) {
     return `/marketing${pathname}`
   }

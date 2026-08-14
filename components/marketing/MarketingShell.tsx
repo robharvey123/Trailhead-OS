@@ -34,6 +34,10 @@ export default function MarketingShell({
   const navItems = [
     { label: 'Services', href: buildMarketingHref('/#services', isLocalhost) },
     {
+      label: 'Web & App Design',
+      href: buildMarketingHref('/web-app-design', isLocalhost),
+    },
+    {
       label: 'MVP Cricket',
       href: buildMarketingHref('/mvp-cricket', isLocalhost),
     },
