@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   IconDashboard, IconCalendar, IconTasks, IconMessages, IconInbox,
@@ -15,12 +15,12 @@ import {
 const ICON_CLASS = 'h-[18px] w-[18px] shrink-0'
 
 interface SidebarProps {
-  newEnquiryCount: number
-  activeQuoteCount: number
-  unreadTaskCount?: number
-  unreadMailCount?: number
-  unreadMessageCount?: number
-  unreadMentionsCount?: number
+  newEnquiryCount: number | null
+  activeQuoteCount: number | null
+  unreadTaskCount?: number | null
+  unreadMailCount?: number | null
+  unreadMessageCount?: number | null
+  unreadMentionsCount?: number | null
   collapsed?: boolean
   onToggle?: () => void
 }
@@ -42,9 +42,10 @@ function NavLink({
   onClick?: () => void
   dotColour?: string
   icon?: ReactNode
-  badge?: number
+  /** `null` means the count query failed — rendered as a warning, never as 0. */
+  badge?: number | null
   /** Distinct, attention-grabbing "@N" mention chip, additive to `badge`. */
-  mentionBadge?: number
+  mentionBadge?: number | null
   collapsed?: boolean
 }) {
   if (collapsed) {
@@ -53,6 +54,7 @@ function NavLink({
         href={href}
         onClick={onClick}
         title={label}
+        aria-current={active ? 'page' : undefined}
         className={`group relative flex h-9 w-9 items-center justify-center rounded-xl transition ${
           active
             ? 'bg-[#E0F2FE] text-[#0369A1]'
@@ -67,13 +69,26 @@ function NavLink({
           <span className="text-xs font-semibold">{label.charAt(0)}</span>
         )}
         {typeof mentionBadge === 'number' && mentionBadge > 0 ? (
-          <span className="absolute -left-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white" title={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}>
-            @{mentionBadge}
+          <span
+            className="absolute -left-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white"
+            aria-label={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}
+          >
+            <span aria-hidden="true">@{mentionBadge}</span>
           </span>
         ) : null}
-        {typeof badge === 'number' && badge > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
-            {badge}
+        {badge === null ? (
+          <span
+            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--surface-3)] text-[9px] font-bold text-[color:var(--text-3)]"
+            aria-label={`${label} count unavailable`}
+          >
+            <span aria-hidden="true">!</span>
+          </span>
+        ) : typeof badge === 'number' && badge > 0 ? (
+          <span
+            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white"
+            aria-label={`${badge} unread`}
+          >
+            <span aria-hidden="true">{badge}</span>
           </span>
         ) : null}
       </Link>
@@ -84,6 +99,7 @@ function NavLink({
     <Link
       href={href}
       onClick={onClick}
+      aria-current={active ? 'page' : undefined}
       className={`flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-sm transition ${
         active
           ? 'bg-[#E0F2FE] text-[#0369A1]'
@@ -102,20 +118,29 @@ function NavLink({
         {typeof mentionBadge === 'number' && mentionBadge > 0 ? (
           <span
             className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700"
-            title={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}
+            aria-label={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}
           >
-            @{mentionBadge}
+            <span aria-hidden="true">@{mentionBadge}</span>
           </span>
         ) : null}
-        {typeof badge === 'number' && badge > 0 ? (
+        {badge === null ? (
+          <span
+            className="rounded-full bg-[var(--surface-3)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--text-3)]"
+            aria-label={`${label} count unavailable`}
+            title="Couldn't load this count — the underlying query failed."
+          >
+            <span aria-hidden="true">!</span>
+          </span>
+        ) : typeof badge === 'number' && badge > 0 ? (
           <span
             className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
               active
                 ? 'bg-[#0EA5E9] text-white'
                 : 'bg-rose-100 text-rose-600'
             }`}
+            aria-label={`${badge} unread`}
           >
-            {badge}
+            <span aria-hidden="true">{badge}</span>
           </span>
         ) : null}
       </span>
@@ -129,6 +154,8 @@ function CollapseToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle:
       type="button"
       onClick={onToggle}
       className="flex h-7 w-7 items-center justify-center rounded-lg text-[#475569] transition hover:bg-[#F1F5F9] hover:text-[#0EA5E9]"
+      aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      aria-expanded={!collapsed}
       title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
     >
       <svg
@@ -225,7 +252,7 @@ export default function Sidebar({
   collapsed = false,
   onToggle,
 }: SidebarProps) {
-  const badgeValues: Record<BadgeKey, number> = {
+  const badgeValues: Record<BadgeKey, number | null | undefined> = {
     enquiries: newEnquiryCount,
     quotes: activeQuoteCount,
     tasks: unreadTaskCount,
@@ -236,6 +263,7 @@ export default function Sidebar({
   const router = useRouter()
   const supabase = createClient()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const mobileNavId = useId()
   const [signingOut, setSigningOut] = useState(false)
 
   async function handleSignOut() {
@@ -247,9 +275,9 @@ export default function Sidebar({
 
   const panel = (
     <aside
-      className={`flex h-screen flex-col overflow-hidden border-r border-[#E2E8F0] bg-[#F8FAFC] pointer-events-auto transition-[width] duration-300 ${
-        collapsed ? 'w-16' : 'w-72'
-      }`}
+      // Width comes from --os-sidebar-w on the shell root, and is not
+      // transitioned — see the `.os-shell` block in globals.css.
+      className="os-sidebar-panel flex h-screen flex-col overflow-hidden border-r border-[#E2E8F0] bg-[#F8FAFC] pointer-events-auto"
     >
       <div className={`flex flex-shrink-0 items-center ${collapsed ? 'justify-center p-2' : 'justify-between p-4'}`}>
         {collapsed ? (
@@ -292,12 +320,12 @@ export default function Sidebar({
         </div>
       ) : null}
 
-      <nav className={`flex-1 overflow-y-auto py-2 ${collapsed ? 'px-1.5' : 'px-4'}`}>
+      <nav aria-label="Primary" className={`flex-1 overflow-y-auto py-2 ${collapsed ? 'px-1.5' : 'px-4'}`}>
         <div className={`pb-6 ${collapsed ? 'flex flex-col items-center space-y-2' : 'space-y-6'}`}>
           {NAV_GROUPS.map((group, gi) => (
             <div key={group.header ?? gi} className={collapsed ? 'flex flex-col items-center' : ''}>
               {!collapsed && group.header ? (
-                <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[#94A3B8]">{group.header}</p>
+                <p className="px-3 text-[10px] font-bold uppercase tracking-[3px] text-[color:var(--text-3)]">{group.header}</p>
               ) : null}
               {collapsed && gi > 0 ? <div className="my-1 h-px w-6 bg-[#E2E8F0]" /> : null}
               <div
@@ -341,6 +369,7 @@ export default function Sidebar({
               type="button"
               onClick={handleSignOut}
               disabled={signingOut}
+              aria-label="Sign out"
               title="Sign out"
               className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-[#E2E8F0] text-[#475569] transition hover:border-[#0EA5E9]/40 hover:text-[#0EA5E9] disabled:opacity-60"
             >
@@ -376,15 +405,15 @@ export default function Sidebar({
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
+        aria-expanded={mobileOpen}
+        aria-controls={mobileNavId}
         className="fixed left-4 top-4 z-40 rounded-2xl border border-[#E2E8F0] bg-white/90 px-3 py-2 text-sm font-medium text-[#0F172A] backdrop-blur md:hidden"
       >
         Menu
       </button>
 
       <div
-        className={`hidden transition-[width] duration-300 md:fixed md:inset-y-0 md:left-0 md:z-30 md:block md:overflow-hidden ${
-          collapsed ? 'md:w-16' : 'md:w-72'
-        }`}
+        className="os-sidebar-rail hidden md:fixed md:inset-y-0 md:left-0 md:z-30 md:block md:overflow-hidden"
       >
         {panel}
       </div>
@@ -397,7 +426,7 @@ export default function Sidebar({
             onClick={() => setMobileOpen(false)}
             aria-label="Close navigation"
           />
-          <div className="relative h-full max-w-[18rem]">{panel}</div>
+          <div id={mobileNavId} className="relative h-full max-w-[18rem]">{panel}</div>
         </div>
       ) : null}
     </>

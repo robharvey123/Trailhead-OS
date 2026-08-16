@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { DndContext, PointerSensor, closestCorners, useDroppable, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { DndContext, KeyboardSensor, PointerSensor, closestCorners, useDroppable, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from '@tanstack/react-table'
 import { formatTaskSchedule, getWorkstreamColourClasses } from '@/lib/os'
@@ -109,7 +109,11 @@ export default function WorkstreamBoardClient({
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board')
   const [sorting, setSorting] = useState<SortingState>([])
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  // KeyboardSensor makes the same reorder reachable with Space + arrow keys.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
   const colourClasses = getWorkstreamColourClasses(workstream.colour)
 
   const tasksByColumn = columns.reduce<Record<string, TaskWithWorkstream[]>>((groups, column) => {

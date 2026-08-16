@@ -1,4 +1,4 @@
-import CalendarClient from '@/components/os/CalendarClient'
+import CalendarClient from '@/components/os/CalendarClientLazy'
 import { getContacts } from '@/lib/db/contacts'
 import { getProjects } from '@/lib/db/projects'
 import { getWorkstreams } from '@/lib/db/workstreams'

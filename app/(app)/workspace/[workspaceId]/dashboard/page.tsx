@@ -5,10 +5,8 @@ import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
 } from '@/lib/route-params'
-import DashboardCharts from './DashboardCharts'
-import DashboardInsights from './DashboardInsights'
+import { DashboardCharts, DashboardInsights, DashboardSkuInsights } from './charts-lazy'
 import DashboardKPIs from './DashboardKPIs'
-import DashboardSkuInsights from './DashboardSkuInsights'
 import DashboardTable from './DashboardTable'
 import FiltersBar from '@/components/filters/FiltersBar'
 

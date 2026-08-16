@@ -1,0 +1,74 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "typing-bounce",
+        "createdAt": "2026-08-16T20:17:51.462Z",
+        "reason": "Assessment B verified: the chat typing indicator in the messaging module (three staggered dots), a universally-recognised convention, not bounce easing on a CTA"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "animate-bounce",
+        "createdAt": "2026-08-16T20:17:51.540Z",
+        "reason": "The only match is the prefers-reduced-motion block at globals.css:1078 that DISABLES animate-bounce; the detector is matching the class name inside its own suppression rule"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "app/api/contact/route.ts"
+        ],
+        "createdAt": "2026-08-16T20:17:51.611Z",
+        "reason": "Assessment B verified: inline CSS in a transactional email HTML template, not rendered app UI; Inter/Arial is a standard email-client-safe stack"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "app/globals.css"
+        ],
+        "createdAt": "2026-08-16T20:17:51.684Z",
+        "reason": "Assessment B verified all three: two blockquote left-rules (.marketing-prose, ProseMirror) and the unread-email accent bar documented in the adjacent code comment. Typography and state conventions, not AI-dashboard card tells"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "components/crm/ActivityTimeline.tsx"
+        ],
+        "createdAt": "2026-08-16T20:17:51.756Z",
+        "reason": "Assessment B verified: border colour encodes CRM activity type (call/email/meeting) on a timeline rail — semantic, not decorative"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "components/os/DailyBriefClient.tsx"
+        ],
+        "createdAt": "2026-08-16T20:17:51.829Z",
+        "reason": "Assessment B verified: border colour encodes task priority via getAccentClasses on the Action Required row — semantic, not decorative"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "app/(marketing)/marketing/blog/page.tsx"
+        ],
+        "createdAt": "2026-08-16T20:18:38.227Z",
+        "reason": "Independently verified: text-slate-600 is the base state and bg-sky-50 only applies on :hover; the detector paired them across states. Measured 7.11:1, passes AA"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "app/(app)/workspace/[workspaceId]/dashboard/DashboardKPIs.tsx"
+        ],
+        "createdAt": "2026-08-16T20:18:38.294Z",
+        "reason": "Decorative colour-per-card removed this pass; the remaining border-l-4 is on the two cards whose colour encodes a live threshold (low stock, unread) — semantic"
+      }
+    ]
+  }
+}

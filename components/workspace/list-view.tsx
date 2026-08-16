@@ -69,14 +69,21 @@ export function ListView({ tasks, onSelectTask, onStatusChange }: ListViewProps)
             ] as [SortKey, string][]).map(([key, label]) => (
               <th
                 key={key}
-                onClick={() => toggleSort(key)}
-                className="cursor-pointer px-4 py-3 transition hover:text-slate-200"
+                scope="col"
+                aria-sort={sortKey === key ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+                className="px-4 py-3"
               >
-                {label}
-                {arrow(key)}
+                <button
+                  type="button"
+                  onClick={() => toggleSort(key)}
+                  className="inline-flex items-center gap-1 uppercase tracking-[0.2em] transition hover:text-slate-200"
+                >
+                  {label}
+                  {arrow(key)}
+                </button>
               </th>
             ))}
-            <th className="px-4 py-3">Assigned</th>
+            <th scope="col" className="px-4 py-3">Assigned</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-800">
@@ -88,13 +95,26 @@ export function ListView({ tasks, onSelectTask, onStatusChange }: ListViewProps)
             </tr>
           )}
           {sorted.map((task) => (
+            // The title button carries a stretched ::after so the whole row stays
+            // clickable, while the button itself is a real Tab/Enter target.
             <tr
               key={task.id}
               onClick={() => onSelectTask(task)}
-              className="cursor-pointer text-slate-200 transition hover:bg-white/5"
+              className="relative cursor-pointer text-slate-200 transition hover:bg-white/5"
             >
               <td className="whitespace-nowrap px-4 py-2.5 text-slate-400">{task.scheduled_date}</td>
-              <td className="px-4 py-2.5 font-medium text-slate-100">{task.title}</td>
+              <td className="px-4 py-2.5 font-medium text-slate-100">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onSelectTask(task)
+                  }}
+                  className="text-left after:absolute after:inset-0 after:content-['']"
+                >
+                  {task.title}
+                </button>
+              </td>
               <td className="px-4 py-2.5 text-slate-400">
                 {task.category
                   ? WORKSPACE_CATEGORY_LABELS[task.category as keyof typeof WORKSPACE_CATEGORY_LABELS] || task.category
@@ -113,9 +133,12 @@ export function ListView({ tasks, onSelectTask, onStatusChange }: ListViewProps)
                   {task.priority}
                 </span>
               </td>
-              <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
+              {/* relative + z-10 lifts this cell above the row's stretched ::after
+                  so the status select stays clickable. */}
+              <td className="relative z-10 px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
                 <select
                   value={task.status}
+                  aria-label={`Status for ${task.title}`}
                   onChange={(e) => onStatusChange(task.id, e.target.value as TaskRow['status'])}
                   className="rounded border border-slate-700 bg-slate-950 px-2 py-0.5 text-xs text-slate-200"
                 >

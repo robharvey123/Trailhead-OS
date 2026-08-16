@@ -408,7 +408,7 @@ export default function EngagementDetailClient({
       <div style={{ padding: 24 }}>
         {/* OVERVIEW */}
         {tab === 'Overview' ? (
-          <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' }}>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
             <div className="card">
               <div className="panel-section-title">This month — hours</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -487,6 +487,7 @@ export default function EngagementDetailClient({
         {tab === 'Time' ? (
           <div>
             {timeEntries.length === 0 ? <div className="empty">No time logged on this engagement yet.</div> : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>Date</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th></th></tr></thead>
                 <tbody>
@@ -502,6 +503,7 @@ export default function EngagementDetailClient({
                     ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -516,6 +518,7 @@ export default function EngagementDetailClient({
               <button className="btn btn-primary btn-sm" onClick={() => { resetContributorForm(); setError(''); setShowAddContributor(true) }}>+ Add contributor</button>
             </div>
             {contributors.length === 0 ? <div className="empty">No contributors yet.</div> : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>Person</th><th>Role</th><th style={{ textAlign: 'right' }}>Rate £/h</th><th>Active</th></tr></thead>
                 <tbody>
@@ -537,6 +540,7 @@ export default function EngagementDetailClient({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -552,6 +556,7 @@ export default function EngagementDetailClient({
               <button className="btn btn-primary btn-sm" onClick={addTier1} disabled={!addAccountId}>+ Add to Tier 1</button>
             </div>
             {milestones.length === 0 ? <div className="empty">No Tier-1 accounts yet.</div> : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>Account</th><th>Channel</th><th>Milestone</th><th style={{ textAlign: 'right' }}>Fee</th><th>Invoice</th><th></th></tr></thead>
                 <tbody>
@@ -570,6 +575,7 @@ export default function EngagementDetailClient({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -586,7 +592,7 @@ export default function EngagementDetailClient({
                       <button className="btn btn-primary btn-sm" onClick={() => raiseInvoice(m)}>Raise {formatCurrency(m.performance_fee ?? 0, e.currency)} invoice</button>
                     ) : m.fee_invoice_id ? <Link className="btn btn-ghost btn-sm" href={`/invoicing/${m.fee_invoice_id}`}>View invoice</Link> : null}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {([['range_review_decided_at', 'Range review decided'], ['go_live_confirmed_at', 'Go-live confirmed'], ['first_po_received_at', 'First PO received']] as const).map(([field, lbl]) => (
                       <div key={field}>
                         <label className="field-label">{lbl}</label>
@@ -612,6 +618,7 @@ export default function EngagementDetailClient({
 
         {tab === 'Projects' ? (
           projects.length === 0 ? <div className="empty">No projects linked. Link projects from /settings/engagements or the project page.</div> : (
+            <div className="overflow-x-auto">
             <table className="data-table">
               <thead><tr><th>Project</th><th>Status</th></tr></thead>
               <tbody>{projects.map((p) => (
@@ -620,6 +627,7 @@ export default function EngagementDetailClient({
                 </tr>
               ))}</tbody>
             </table>
+            </div>
           )
         ) : null}
 
@@ -628,7 +636,7 @@ export default function EngagementDetailClient({
           <div>
             <div className="card" style={{ marginBottom: 16 }}>
               <div className="panel-section-title">Request approval</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <div>
                   <label className="field-label">Type</label>
                   <select className="filter-select" style={{ width: '100%' }} value={reqType} onChange={(ev) => setReqType(ev.target.value as ApprovalType)}>
@@ -650,6 +658,7 @@ export default function EngagementDetailClient({
             </div>
 
             {approvals.length === 0 ? <div className="empty">No approval requests yet.</div> : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>Type</th><th style={{ textAlign: 'right' }}>Amount</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead>
                 <tbody>
@@ -673,6 +682,7 @@ export default function EngagementDetailClient({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -686,6 +696,7 @@ export default function EngagementDetailClient({
             {documents.filter((d) => d.type === 'weekly_update').length === 0 ? (
               <div className="empty">No weekly updates generated yet.</div>
             ) : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>Title</th><th>Week of</th><th>Created</th></tr></thead>
                 <tbody>
@@ -698,6 +709,7 @@ export default function EngagementDetailClient({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -725,6 +737,7 @@ export default function EngagementDetailClient({
             {documents.length === 0 ? (
               <div className="empty">No documents yet. Upload signed copies, Annex A/B, Tier-1 sub-schedules — anything for this engagement.</div>
             ) : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>Title</th><th>Type</th><th>Size</th><th>Created</th><th style={{ textAlign: 'right' }}></th></tr></thead>
                 <tbody>
@@ -757,6 +770,7 @@ export default function EngagementDetailClient({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -795,12 +809,12 @@ export default function EngagementDetailClient({
                 </select>
               </div>
               {personPick === '__new__' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   <div><label className="field-label">Full name *</label><input className="filter-select" style={{ width: '100%' }} value={newName} onChange={(ev) => setNewName(ev.target.value)} /></div>
                   <div><label className="field-label">Email</label><input className="filter-select" style={{ width: '100%' }} value={newEmail} onChange={(ev) => setNewEmail(ev.target.value)} placeholder="optional" /></div>
                 </div>
               ) : null}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <div><label className="field-label">Role</label><input className="filter-select" style={{ width: '100%' }} value={cRole} onChange={(ev) => setCRole(ev.target.value)} placeholder="e.g. Engineer" /></div>
                 <div><label className="field-label">Rate £/h *</label><input type="number" className="filter-select" style={{ width: '100%' }} value={cRate} onChange={(ev) => setCRate(ev.target.value)} placeholder="0 for volunteer" /></div>
               </div>

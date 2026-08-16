@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from 'react'
-import DashboardCharts from '../dashboard/DashboardCharts'
-import DashboardInsights from '../dashboard/DashboardInsights'
+import { DashboardCharts, DashboardInsights } from '../dashboard/charts-lazy'
 import DashboardTable from '../dashboard/DashboardTable'
 import CompanySummaryTable from '../company-summary/CompanySummaryTable'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'

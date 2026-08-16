@@ -52,6 +52,7 @@ export default async function HoursByPersonPage({
                     {p.total_hours.toFixed(1)}h · {p.billable_hours.toFixed(1)}h billable · {formatCurrency(p.total_cost, 'GBP')}
                   </span>
                 </summary>
+                <div className="overflow-x-auto">
                 <table className="data-table" style={{ marginTop: 10 }}>
                   <thead>
                     <tr>
@@ -72,6 +73,7 @@ export default async function HoursByPersonPage({
                     ))}
                   </tbody>
                 </table>
+                </div>
               </details>
             ))
           )}

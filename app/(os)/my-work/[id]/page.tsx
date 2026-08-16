@@ -105,7 +105,7 @@ export default async function TaskDetailPage({
           <TaskStatusBadge status={task.status} />
         </div>
 
-        <div style={{ padding: 24, display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)' }}>
+        <div className="grid grid-cols-1 gap-[18px] p-4 sm:p-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div style={{ display: 'grid', gap: 16 }}>
             {canEdit ? (
               <TaskDetailControls

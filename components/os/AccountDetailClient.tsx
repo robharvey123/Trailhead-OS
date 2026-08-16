@@ -198,10 +198,10 @@ export default function AccountDetailClient({
               onCancel={() => setEditing(false)}
             />
           ) : (
-            <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' }}>
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
               <div className="card">
                 <div className="panel-section-title">Account info</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Field label="Channel" value={account.channel} />
                   <Field label="Source" value={account.source} />
                   <Field label="Email" value={account.email_contact} mono />
@@ -267,6 +267,7 @@ export default function AccountDetailClient({
                 </div>
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead>
                   <tr><th>From</th><th>Subject</th><th>When</th><th></th></tr>
@@ -285,6 +286,7 @@ export default function AccountDetailClient({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -298,6 +300,7 @@ export default function AccountDetailClient({
             {deals.length === 0 ? (
               <div className="empty">No deals for this account yet.</div>
             ) : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead>
                   <tr><th>Name</th><th>Stage</th><th style={{ textAlign: 'right' }}>Value</th><th style={{ textAlign: 'right' }}>Prob.</th><th>Close</th></tr>
@@ -314,6 +317,7 @@ export default function AccountDetailClient({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         ) : null}
@@ -362,6 +366,7 @@ export default function AccountDetailClient({
             {timeEntries.length === 0 ? (
               <div className="empty">No time logged against this account yet.</div>
             ) : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead>
                   <tr><th>Date</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Rate</th><th style={{ textAlign: 'right' }}>Amount</th><th></th></tr>
@@ -388,6 +393,7 @@ export default function AccountDetailClient({
                   </tr>
                 </tfoot>
               </table>
+              </div>
             )}
           </div>
         ) : null}

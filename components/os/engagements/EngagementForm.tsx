@@ -106,67 +106,67 @@ export default function EngagementForm({
   }
 
   return (
-    <div className="panel" style={{ maxWidth: 760, margin: '0 auto', padding: 24 }}>
+    <div className="panel mx-auto w-full max-w-[760px] p-4 sm:p-6">
       <h1 className="topbar-title" style={{ marginBottom: 16 }}>{isEdit ? 'Edit engagement' : 'New engagement'}</h1>
-      <div style={{ display: 'grid', gap: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
-          <div>
-            <label className={label}>Engagement type *</label>
+      <div className="grid gap-[14px]">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
+          <label className="block">
+            <span className={label}>Engagement type *</span>
             <select className={input} value={engagementType} onChange={(e) => setEngagementType(e.target.value as EngagementType)}>
               {(Object.keys(ENGAGEMENT_TYPE_LABELS) as EngagementType[]).map((t) => (<option key={t} value={t}>{ENGAGEMENT_TYPE_LABELS[t]}</option>))}
             </select>
-          </div>
+          </label>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
             <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0, paddingBottom: 9 }}>
               {isInternal ? 'Internal · non-billable — cost is tracked from contributor time.' : 'Client · billable.'}
             </p>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
-          <div><label className={label}>Name *</label><input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={isInternal ? 'Trailhead OS build' : 'Qola - DRIVER GTM (via Wide Advocacy)'} /></div>
-          <div><label className={label}>Code</label><input className={input} value={code} onChange={(e) => setCode(e.target.value)} placeholder="QOLA-GTM" /></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
+          <label className="block"><span className={label}>Name *</span><input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={isInternal ? 'Trailhead OS build' : 'Qola - DRIVER GTM (via Wide Advocacy)'} /></label>
+          <label className="block"><span className={label}>Code</span><input className={input} value={code} onChange={(e) => setCode(e.target.value)} placeholder="QOLA-GTM" /></label>
         </div>
         {!isInternal ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label className={label}>End client *</label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className={label}>End client *</span>
               <select className={input} value={endClient} onChange={(e) => setEndClient(e.target.value)}>
                 {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
               </select>
-            </div>
-            <div>
-              <label className={label}>Billed via</label>
+            </label>
+            <label className="block">
+              <span className={label}>Billed via</span>
               <select className={input} value={billedVia} onChange={(e) => setBilledVia(e.target.value)}>
                 <option value="">— direct (end client)</option>
                 {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
               </select>
-            </div>
+            </label>
           </div>
         ) : null}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-          <div><label className={label}>Currency</label><input className={input} value={currency} onChange={(e) => setCurrency(e.target.value)} /></div>
-          <div><label className={label}>Start date *</label><input type="date" className={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} /></div>
-          <div><label className={label}>End date</label><input type="date" className={input} value={endDate} onChange={(e) => setEndDate(e.target.value)} /></div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="block"><span className={label}>Currency</span><input className={input} value={currency} onChange={(e) => setCurrency(e.target.value)} /></label>
+          <label className="block"><span className={label}>Start date *</span><input type="date" className={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
+          <label className="block"><span className={label}>End date</span><input type="date" className={input} value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, alignItems: 'end' }}>
-          <div><label className={label}>Notice period (days)</label><input type="number" className={input} value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} placeholder="30" /></div>
+        <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="block"><span className={label}>Notice period (days)</span><input type="number" className={input} value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} placeholder="30" /></label>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13, paddingBottom: 8 }}><input type="checkbox" checked={autoRenews} onChange={(e) => setAutoRenews(e.target.checked)} /> Auto-renews</label>
-          <div><label className={label}>Renewal term (months)</label><input type="number" className={input} value={renewalTerm} onChange={(e) => setRenewalTerm(e.target.value)} placeholder="12" /></div>
+          <label className="block"><span className={label}>Renewal term (months)</span><input type="number" className={input} value={renewalTerm} onChange={(e) => setRenewalTerm(e.target.value)} placeholder="12" /></label>
         </div>
         {!isInternal ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
-            <div><label className={label}>Retainer / mo</label><input type="number" className={input} value={retainer} onChange={(e) => setRetainer(e.target.value)} placeholder="8500" /></div>
-            <div><label className={label}>Included hrs/mo</label><input type="number" className={input} value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} placeholder="40" /></div>
-            <div><label className={label}>Day rate</label><input type="number" className={input} value={dayRate} onChange={(e) => setDayRate(e.target.value)} placeholder="350" /></div>
-            <div><label className={label}>Default perf fee</label><input type="number" className={input} value={perfFee} onChange={(e) => setPerfFee(e.target.value)} placeholder="4000" /></div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="block"><span className={label}>Retainer / mo</span><input type="number" className={input} value={retainer} onChange={(e) => setRetainer(e.target.value)} placeholder="8500" /></label>
+            <label className="block"><span className={label}>Included hrs/mo</span><input type="number" className={input} value={includedHours} onChange={(e) => setIncludedHours(e.target.value)} placeholder="40" /></label>
+            <label className="block"><span className={label}>Day rate</span><input type="number" className={input} value={dayRate} onChange={(e) => setDayRate(e.target.value)} placeholder="350" /></label>
+            <label className="block"><span className={label}>Default perf fee</span><input type="number" className={input} value={perfFee} onChange={(e) => setPerfFee(e.target.value)} placeholder="4000" /></label>
           </div>
         ) : null}
 
         <div className="card">
           <div className="panel-section-title">Approval thresholds</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div><label className={label}>Hours overage trigger (h)</label><input type="number" className={input} value={hoursOverage} onChange={(e) => setHoursOverage(e.target.value)} /></div>
-            <div><label className={label}>Travel approval threshold (£)</label><input type="number" className={input} value={travelThreshold} onChange={(e) => setTravelThreshold(e.target.value)} /></div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="block"><span className={label}>Hours overage trigger (h)</span><input type="number" className={input} value={hoursOverage} onChange={(e) => setHoursOverage(e.target.value)} /></label>
+            <label className="block"><span className={label}>Travel approval threshold (£)</span><input type="number" className={input} value={travelThreshold} onChange={(e) => setTravelThreshold(e.target.value)} /></label>
           </div>
           <div style={{ display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
             <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}><input type="checkbox" checked={slotting} onChange={(e) => setSlotting(e.target.checked)} /> Slotting fees require approval</label>

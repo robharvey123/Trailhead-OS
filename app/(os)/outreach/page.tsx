@@ -29,6 +29,7 @@ export default async function OutreachPage() {
         {campaigns.length === 0 ? (
           <div className="empty">No campaigns yet. Create one, or run the Engineer OS seed.</div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>
@@ -56,6 +57,7 @@ export default async function OutreachPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

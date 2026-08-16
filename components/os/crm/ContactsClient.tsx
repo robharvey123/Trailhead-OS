@@ -106,7 +106,7 @@ export default function ContactsClient({ contacts, accounts, channels }: Contact
         ) : null}
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
+      <div className="overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>

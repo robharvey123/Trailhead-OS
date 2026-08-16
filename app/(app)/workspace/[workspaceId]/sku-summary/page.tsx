@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatNumber, formatPercent } from '@/lib/format'
 import { pivotMonthly } from '@/lib/analytics/pivot'
-import SkuCharts from './SkuCharts'
+import { SkuCharts } from './charts-lazy'
 import SkuSummaryTable from './SkuSummaryTable'
 import PivotTable from '@/components/table/PivotTable'
 import FiltersBar from '@/components/filters/FiltersBar'

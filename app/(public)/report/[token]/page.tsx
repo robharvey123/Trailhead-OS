@@ -1,6 +1,5 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import DashboardCharts from '@/app/(app)/workspace/[workspaceId]/dashboard/DashboardCharts'
-import DashboardInsights from '@/app/(app)/workspace/[workspaceId]/dashboard/DashboardInsights'
+import { DashboardCharts, DashboardInsights } from '@/app/(app)/workspace/[workspaceId]/dashboard/charts-lazy'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
 

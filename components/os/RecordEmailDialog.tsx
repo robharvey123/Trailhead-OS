@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import Modal from '@/components/ui/Modal'
 
 type RecordEmailDialogProps = {
   kind: 'enquiry' | 'quote' | 'invoice'
@@ -41,6 +42,7 @@ export default function RecordEmailDialog({
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const errorId = useId()
 
   useEffect(() => {
     if (!open) {
@@ -110,92 +112,100 @@ export default function RecordEmailDialog({
         {buttonLabel}
       </button>
 
-      {open ? (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgba(15,23,42,0.45)] px-4 py-8">
+      <Modal
+        open={open}
+        onClose={() => {
+          if (!sending) {
+            setOpen(false)
+          }
+        }}
+        title={dialogTitle}
+        closeLabel="Close email dialog"
+        overlayClassName="z-[70] px-4 py-8"
+        panelClassName="w-full max-w-2xl rounded-[2rem] border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="os-eyebrow">Email</p>
+            <h2 className="mt-2 os-section-title">{dialogTitle}</h2>
+          </div>
           <button
             type="button"
-            aria-label="Close email dialog"
-            className="absolute inset-0"
-            onClick={() => {
-              if (!sending) {
-                setOpen(false)
-              }
-            }}
-          />
+            onClick={() => setOpen(false)}
+            disabled={sending}
+            className="rounded-full border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+          >
+            Close
+          </button>
+        </div>
 
-          <div className="relative w-full max-w-2xl rounded-[2rem] border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="os-eyebrow">Email</p>
-                <h2 className="mt-2 os-section-title">{dialogTitle}</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                disabled={sending}
-                className="rounded-full border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
-              >
-                Close
-              </button>
-            </div>
+        <div className="mt-6 space-y-4">
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Recipients</span>
+            <textarea
+              rows={3}
+              value={recipientsText}
+              onChange={(event) => setRecipientsText(event.target.value)}
+              placeholder="name@example.com"
+              className="os-textarea w-full"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? errorId : undefined}
+            />
+            <p className="mt-2 text-xs text-[color:var(--text-3)]">Use commas or one email per line.</p>
+          </label>
 
-            <div className="mt-6 space-y-4">
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Recipients</span>
-                <textarea
-                  rows={3}
-                  value={recipientsText}
-                  onChange={(event) => setRecipientsText(event.target.value)}
-                  placeholder="name@example.com"
-                  className="os-textarea w-full"
-                />
-                <p className="mt-2 text-xs text-[color:var(--text-3)]">Use commas or one email per line.</p>
-              </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Subject</span>
+            <input
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+              className="os-input w-full"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? errorId : undefined}
+            />
+          </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Subject</span>
-                <input
-                  value={subject}
-                  onChange={(event) => setSubject(event.target.value)}
-                  className="os-input w-full"
-                />
-              </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Message</span>
+            <textarea
+              rows={6}
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              className="os-textarea w-full"
+            />
+          </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Message</span>
-                <textarea
-                  rows={6}
-                  value={message}
-                  onChange={(event) => setMessage(event.target.value)}
-                  className="os-textarea w-full"
-                />
-              </label>
+          {error ? (
+            <p id={errorId} role="alert" className="text-sm text-[color:var(--red-strong)]">
+              {error}
+            </p>
+          ) : null}
+          {success ? (
+            <p role="status" className="text-sm text-[color:var(--emerald-strong)]">
+              {success}
+            </p>
+          ) : null}
 
-              {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
-              {success ? <p className="text-sm text-[color:var(--emerald-strong)]">{success}</p> : null}
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  disabled={sending}
-                  className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleSend()}
-                  disabled={sending}
-                  className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
-                >
-                  {sending ? 'Sending...' : 'Send email'}
-                </button>
-              </div>
-            </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              disabled={sending}
+              className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleSend()}
+              disabled={sending}
+              className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+            >
+              {sending ? 'Sending...' : 'Send email'}
+            </button>
           </div>
         </div>
-      ) : null}
+      </Modal>
     </>
   )
 }

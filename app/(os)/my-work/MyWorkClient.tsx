@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState, useSyncExternalStore } from 'react'
-import { useRouter } from 'next/navigation'
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
+import Link from 'next/link'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Board from '@/components/kanban/Board'
 import TaskForm from '@/components/tasks/TaskForm'
 import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
@@ -82,14 +83,43 @@ export default function MyWorkClient({
   people: Named[]
   engagements: Named[]
 }) {
+  // Filters live in the URL, not useState. Previously all six reset on any
+  // navigation — filter down to "urgent, due this week", open a task, press
+  // Back, and everything was gone. In the URL they survive Back/Forward,
+  // refresh, and can be bookmarked or pasted.
   const router = useRouter()
-  const [tab, setTab] = useState<TabKey>('assigned')
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const setParam = useCallback(
+    (key: string, value: string) => {
+      const next = new URLSearchParams(searchParams.toString())
+      if (value) next.set(key, value)
+      else next.delete(key)
+      router.replace(next.size ? `${pathname}?${next}` : pathname, { scroll: false })
+    },
+    [pathname, router, searchParams]
+  )
+
+  const tab = (TABS.find((t) => t.key === searchParams.get('tab'))?.key ?? 'assigned') as TabKey
+  const setTab = useCallback((next: TabKey) => setParam('tab', next === 'assigned' ? '' : next), [setParam])
+
+  const statusFilter = (searchParams.get('status') ?? '') as EngagementTaskStatus | ''
+  const setStatusFilter = useCallback((v: EngagementTaskStatus | '') => setParam('status', v), [setParam])
+
+  const priorityFilter = (searchParams.get('priority') ?? '') as EngagementTaskPriority | ''
+  const setPriorityFilter = useCallback((v: EngagementTaskPriority | '') => setParam('priority', v), [setParam])
+
+  const sort = (SORTS.find((s) => s.key === searchParams.get('sort'))?.key ?? 'due_asc') as SortKey
+  const setSort = useCallback((v: SortKey) => setParam('sort', v === 'due_asc' ? '' : v), [setParam])
+
+  const dueFrom = searchParams.get('from') ?? ''
+  const setDueFrom = useCallback((v: string) => setParam('from', v), [setParam])
+
+  const dueTo = searchParams.get('to') ?? ''
+  const setDueTo = useCallback((v: string) => setParam('to', v), [setParam])
+
   const view = useSyncExternalStore(subscribeView, getViewSnapshot, getViewServerSnapshot)
-  const [statusFilter, setStatusFilter] = useState<EngagementTaskStatus | ''>('')
-  const [priorityFilter, setPriorityFilter] = useState<EngagementTaskPriority | ''>('')
-  const [sort, setSort] = useState<SortKey>('due_asc')
-  const [dueFrom, setDueFrom] = useState('')
-  const [dueTo, setDueTo] = useState('')
   const [showForm, setShowForm] = useState(false)
 
   const source = tab === 'assigned' ? assigned : tab === 'reported' ? reported : engagementTasks
@@ -187,12 +217,18 @@ export default function MyWorkClient({
         ) : rows.length === 0 ? (
           <div className="empty">No tasks.</div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="data-table">
-            <thead><tr><th>Title</th><th>Engagement</th><th>Status</th><th>Priority</th><th>Due</th></tr></thead>
+            <thead><tr><th scope="col">Title</th><th scope="col">Engagement</th><th scope="col">Status</th><th scope="col">Priority</th><th scope="col">Due</th></tr></thead>
             <tbody>
               {rows.map((t) => (
-                <tr key={t.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/my-work/${t.id}?from=${encodeURIComponent('/my-work')}`)}>
-                  <td className="td-name">{t.title}</td>
+                // .row-link: the name cell's <a> stretches a transparent ::after
+                // across the row, so the whole row is clickable while Tab/Enter
+                // and cmd/middle-click keep working.
+                <tr key={t.id} className="row-link">
+                  <td className="td-name">
+                    <Link href={`/my-work/${t.id}?from=${encodeURIComponent('/my-work')}`}>{t.title}</Link>
+                  </td>
                   <td>{t.engagement?.name ?? '—'}</td>
                   <td><TaskStatusBadge status={t.status} /></td>
                   <td>{ENGAGEMENT_TASK_PRIORITY_LABELS[t.priority]}</td>
@@ -201,6 +237,7 @@ export default function MyWorkClient({
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

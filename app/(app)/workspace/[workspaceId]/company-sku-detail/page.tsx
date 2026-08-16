@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatNumber, formatPercent } from '@/lib/format'
 import CompanySkuTable from './CompanySkuTable'
-import CompanySkuCharts from './CompanySkuCharts'
+import { CompanySkuCharts } from './charts-lazy'
 import FiltersBar from '@/components/filters/FiltersBar'
 import { resolveSearchParams, type WorkspaceSearchParams } from '@/lib/search-params'
 import {

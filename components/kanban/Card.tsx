@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTaskPriority, type EngagementTaskWithRelations } from '@/lib/types'
@@ -24,7 +25,23 @@ function fmtLogged(minutes: number) {
   return m === 0 ? `${h}h` : `${h}h ${m}m`
 }
 
-export default function TaskCard({
+/**
+ * Memoised: a busy engagement board renders 50-150 of these, and `Board`
+ * re-renders for things that have nothing to do with any individual card — the
+ * two aria-live announcement strings after a drop, the error string, and every
+ * sort/label/due filter change (which rebuilds the column lists but leaves most
+ * `task` object identities untouched).
+ *
+ * The props are all stable by construction: `task` comes straight out of Board's
+ * `tasks` state and only gets a new identity when that card actually changes,
+ * `loggedMinutes` is a number, and `onOpen`/`onToggleLabel` are `useCallback`s
+ * (Board / EngagementTasksClient). `activeLabels` is a `useState` array.
+ *
+ * Caveat, stated honestly: this does NOT stop re-renders during an active drag.
+ * `useSortable` subscribes each card to the dnd-kit store, so they re-render from
+ * the inside regardless of props. The win is on everything else.
+ */
+function TaskCard({
   task,
   loggedMinutes = 0,
   onOpen,
@@ -54,7 +71,17 @@ export default function TaskCard({
       onClick={() => onOpen(task.id)}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-        <span className="td-name" style={{ fontSize: 13 }}>{task.title}</span>
+        {/* The card itself is the drag handle (dnd-kit's attributes make it a
+            keyboard drag target), so opening the ticket needs its own control. */}
+        <button
+          type="button"
+          className="td-name"
+          style={{ fontSize: 13, textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onOpen(task.id) }}
+        >
+          {task.title}
+        </button>
         <span title={ENGAGEMENT_TASK_PRIORITY_LABELS[task.priority]} style={{ width: 8, height: 8, borderRadius: '50%', background: PRIORITY_COLOR[task.priority], flexShrink: 0, marginTop: 4 }} />
       </div>
       {task.labels.length > 0 ? (
@@ -108,3 +135,5 @@ export default function TaskCard({
     </div>
   )
 }
+
+export default memo(TaskCard)

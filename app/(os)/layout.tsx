@@ -21,59 +21,56 @@ export default async function OsLayout({
     redirect('/login')
   }
 
-  let newEnquiryCount = 0
-  let activeQuoteCount = 0
-  let unreadTaskCount = 0
-  let unreadMailCount = 0
-  let unreadMessageCount = 0
-  let unreadMentionsCount = 0
+  // These six badge counts are independent of each other. Awaiting them in
+  // series put ~6 round-trips on the critical path of every OS navigation,
+  // because this is the layout. They now run concurrently.
+  //
+  // `null` means "this query failed" and is rendered as a warning glyph, not a
+  // zero — a broken Gmail token used to make the Inbox badge read 0, which is
+  // indistinguishable from an empty inbox.
+  const settled = (result: PromiseSettledResult<number>): number | null =>
+    result.status === 'fulfilled' ? result.value : null
 
-  try {
-    const profile = await getCurrentProfile(supabase)
-    if (profile?.person_id) unreadTaskCount = await getUnreadTaskCount(profile.person_id, supabase)
-  } catch {
-    unreadTaskCount = 0
-  }
+  const [
+    taskResult,
+    mailResult,
+    messageResult,
+    mentionsResult,
+    enquiryResult,
+    quoteResult,
+  ] = await Promise.allSettled([
+    (async () => {
+      const profile = await getCurrentProfile(supabase)
+      if (!profile?.person_id) return 0
+      return getUnreadTaskCount(profile.person_id, supabase)
+    })(),
+    getUnreadMailCount(supabase),
+    getUnreadMessagesCount(user.id, supabase),
+    getUnreadMentionsCount(user.id, supabase),
+    (async () => {
+      const { count, error } = await supabase
+        .from('enquiries')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'new')
+      if (error) throw error
+      return count ?? 0
+    })(),
+    (async () => {
+      const { count, error } = await supabase
+        .from('quotes')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['draft', 'review'])
+      if (error) throw error
+      return count ?? 0
+    })(),
+  ])
 
-  try {
-    unreadMailCount = await getUnreadMailCount(supabase)
-  } catch {
-    unreadMailCount = 0
-  }
-
-  try {
-    unreadMessageCount = await getUnreadMessagesCount(user.id, supabase)
-  } catch {
-    unreadMessageCount = 0
-  }
-
-  try {
-    unreadMentionsCount = await getUnreadMentionsCount(user.id, supabase)
-  } catch {
-    unreadMentionsCount = 0
-  }
-
-  try {
-    const { count } = await supabase
-      .from('enquiries')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'new')
-
-    newEnquiryCount = count ?? 0
-  } catch {
-    newEnquiryCount = 0
-  }
-
-  try {
-    const { count } = await supabase
-      .from('quotes')
-      .select('id', { count: 'exact', head: true })
-      .in('status', ['draft', 'review'])
-
-    activeQuoteCount = count ?? 0
-  } catch {
-    activeQuoteCount = 0
-  }
+  const unreadTaskCount = settled(taskResult)
+  const unreadMailCount = settled(mailResult)
+  const unreadMessageCount = settled(messageResult)
+  const unreadMentionsCount = settled(mentionsResult)
+  const newEnquiryCount = settled(enquiryResult)
+  const activeQuoteCount = settled(quoteResult)
 
   return (
     <OsShell

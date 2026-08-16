@@ -1,12 +1,19 @@
 'use client'
 
+import { memo } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { type EngagementTaskStatus, type EngagementTaskWithRelations } from '@/lib/types'
 import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
 import TaskCard from './Card'
 
-export default function KanbanColumn({
+/**
+ * Memoised for the same reason as TaskCard, one level up: Board's post-drop
+ * announcement/error state changes must not walk four columns' worth of cards.
+ * `tasks` is handed in from Board's `tasksByColumn` useMemo, so its identity only
+ * changes when that column's contents actually change.
+ */
+function KanbanColumn({
   status,
   tasks,
   minutesByTask,
@@ -40,3 +47,5 @@ export default function KanbanColumn({
     </div>
   )
 }
+
+export default memo(KanbanColumn)

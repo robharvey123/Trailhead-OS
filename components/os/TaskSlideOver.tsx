@@ -14,6 +14,7 @@ import type {
   TaskWithWorkstream,
   Workstream,
 } from '@/lib/types'
+import Modal from '@/components/ui/Modal'
 import PriorityBadge from './PriorityBadge'
 import ProjectSelector from './ProjectSelector'
 import EntityCombobox from './EntityCombobox'
@@ -149,10 +150,6 @@ export default function TaskSlideOver({
     }
   }, [projectId, projects, workstreamId])
 
-  if (!open) {
-    return null
-  }
-
   async function handleSave() {
     const nextTitle = title.trim()
     if (!nextTitle || saving) {
@@ -270,261 +267,260 @@ export default function TaskSlideOver({
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.45)]">
-      <button
-        type="button"
-        aria-label="Close task panel"
-        className="flex-1"
-        onClick={onClose}
-      />
-      <div className="relative h-full w-full max-w-2xl overflow-y-auto border-l border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="os-eyebrow text-[color:var(--accent-strong)]">
-              {task ? 'Task detail' : 'New task'}
-            </p>
-            <h2 className="os-section-title mt-2">
-              {task ? task.title : 'Create a task'}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
-          >
-            Close
-          </button>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={task ? task.title : 'Create a task'}
+      placement="right"
+      closeLabel="Close task panel"
+      panelClassName="h-full w-full max-w-2xl overflow-y-auto border-l border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="os-eyebrow text-[color:var(--accent-strong)]">
+            {task ? 'Task detail' : 'New task'}
+          </p>
+          <h2 className="os-section-title mt-2">
+            {task ? task.title : 'Create a task'}
+          </h2>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
+        >
+          Close
+        </button>
+      </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          <PriorityBadge priority={priority} />
-          {currentWorkstream ? (
-            <WorkstreamBadge
-              label={currentWorkstream.label}
-              slug={currentWorkstream.slug}
-              colour={currentWorkstream.colour}
-            />
-          ) : null}
-          {task?.updated_at ? (
-            <span className="text-xs text-[color:var(--text-2)]">Updated {formatDateTime(task.updated_at)}</span>
-          ) : null}
-        </div>
-
-        <div className="mt-8 space-y-5">
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Title</span>
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              className="os-input w-full"
-            />
-          </label>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Workstream</span>
-              <select
-                value={workstreamId}
-                onChange={(event) => setWorkstreamId(event.target.value)}
-                className="os-select w-full"
-              >
-                <option value="">No workstream</option>
-                {workstreams.map((workstream) => (
-                  <option key={workstream.id} value={workstream.id}>
-                    {workstream.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Priority</span>
-              <select
-                value={priority}
-                onChange={(event) => setPriority(event.target.value as TaskPriority)}
-                className="os-select w-full"
-              >
-                {PRIORITIES.map((entry) => (
-                  <option key={entry} value={entry}>
-                    {entry}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due date</span>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(event) => {
-                  const nextDate = event.target.value
-                  setDueDate(nextDate)
-                  if (!nextDate) {
-                    setDueTime('')
-                  }
-                }}
-                className="os-input w-full"
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due time</span>
-              <input
-                type="time"
-                value={dueTime}
-                onChange={(event) => setDueTime(event.target.value)}
-                disabled={!dueDate}
-                className="os-input w-full disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </label>
-
-            <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
-              <input
-                type="checkbox"
-                checked={isMasterTodo}
-                onChange={(event) => setIsMasterTodo(event.target.checked)}
-                className="h-4 w-4 rounded border-[color:var(--border)] bg-white"
-              />
-              <span className="text-sm text-[color:var(--text-2)]">Show on master to-do</span>
-            </label>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <EntityCombobox
-              label="Account"
-              entity="account"
-              value={accountId}
-              selectedLabel={accountOptions.find((o) => o.value === accountId)?.label}
-              onChange={(opt) => setAccountId(opt.id)}
-              clearable
-            />
-            <EntityCombobox
-              label="Contact"
-              entity="contact"
-              value={contactId}
-              selectedLabel={contactOptions.find((o) => o.value === contactId)?.label}
-              filters={accountId ? { account_id: accountId } : undefined}
-              onChange={(opt) => setContactId(opt.id)}
-              clearable
-            />
-          </div>
-
-          <ProjectSelector
-            label="Project"
-            value={projectId}
-            projects={projectOptions}
-            onChange={setProjectId}
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <PriorityBadge priority={priority} />
+        {currentWorkstream ? (
+          <WorkstreamBadge
+            label={currentWorkstream.label}
+            slug={currentWorkstream.slug}
+            colour={currentWorkstream.colour}
           />
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Tags</span>
-            <input
-              value={tags}
-              onChange={(event) => setTags(event.target.value)}
-              placeholder="client, follow-up, launch"
-              className="os-input w-full"
-            />
-          </label>
-
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Description</span>
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={6}
-              className="os-textarea w-full rounded-3xl"
-            />
-          </label>
-        </div>
-
-        {task?.id ? (
-          <section className="mt-10 space-y-4 border-t border-[color:var(--border)] pt-8">
-            <div>
-              <h3 className="text-lg font-semibold text-[color:var(--text)]">Notes</h3>
-              <p className="text-sm text-[color:var(--text-2)]">Keep task context close to the card.</p>
-            </div>
-
-            <form className="space-y-2" onSubmit={handleAddNote}>
-              <textarea
-                value={noteDraft}
-                onChange={(event) => setNoteDraft(event.target.value)}
-                rows={3}
-                placeholder="Add a note..."
-                className="os-textarea w-full rounded-3xl"
-              />
-              <button
-                type="submit"
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:bg-[var(--surface-2)]"
-              >
-                Add note
-              </button>
-            </form>
-
-            {noteError ? <p className="text-sm text-[color:var(--red-strong)]">{noteError}</p> : null}
-
-            <div className="space-y-3">
-              {notesLoading ? (
-                <p className="text-sm text-[color:var(--text-2)]">Loading notes...</p>
-              ) : notes.length === 0 ? (
-                <p className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-6 text-sm text-[color:var(--text-2)]">
-                  No notes yet.
-                </p>
-              ) : (
-                notes.map((note) => (
-                  <article key={note.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-                    {note.title ? <h4 className="font-medium text-[color:var(--text)]">{note.title}</h4> : null}
-                    <p className="mt-1 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{note.body}</p>
-                    <p className="mt-3 text-xs text-[color:var(--text-3)]">{formatDateTime(note.updated_at)}</p>
-                  </article>
-                ))
-              )}
-            </div>
-          </section>
         ) : null}
-
-        {error ? <p className="mt-6 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
-
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--border)] pt-6">
-          <div className="flex items-center gap-2">
-            {task?.id ? (
-              <button
-                type="button"
-                onClick={handleComplete}
-                disabled={deleting}
-                className="rounded-2xl border border-[color:var(--red)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-60"
-              >
-                {deleting ? 'Completing...' : 'Mark complete'}
-              </button>
-            ) : null}
-            {task?.id ? (
-              <button
-                type="button"
-                onClick={() => setEmailModalOpen(true)}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
-              >
-                Email task
-              </button>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || !title.trim()}
-            className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {saving ? 'Saving...' : task ? 'Save changes' : 'Create task'}
-          </button>
-        </div>
-
-        {task ? (
-          <TaskEmailModal
-            open={emailModalOpen}
-            onOpenChange={setEmailModalOpen}
-            tasks={[task]}
-          />
+        {task?.updated_at ? (
+          <span className="text-xs text-[color:var(--text-2)]">Updated {formatDateTime(task.updated_at)}</span>
         ) : null}
       </div>
-    </div>
+
+      <div className="mt-8 space-y-5">
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Title</span>
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            className="os-input w-full"
+          />
+        </label>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Workstream</span>
+            <select
+              value={workstreamId}
+              onChange={(event) => setWorkstreamId(event.target.value)}
+              className="os-select w-full"
+            >
+              <option value="">No workstream</option>
+              {workstreams.map((workstream) => (
+                <option key={workstream.id} value={workstream.id}>
+                  {workstream.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Priority</span>
+            <select
+              value={priority}
+              onChange={(event) => setPriority(event.target.value as TaskPriority)}
+              className="os-select w-full"
+            >
+              {PRIORITIES.map((entry) => (
+                <option key={entry} value={entry}>
+                  {entry}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due date</span>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(event) => {
+                const nextDate = event.target.value
+                setDueDate(nextDate)
+                if (!nextDate) {
+                  setDueTime('')
+                }
+              }}
+              className="os-input w-full"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due time</span>
+            <input
+              type="time"
+              value={dueTime}
+              onChange={(event) => setDueTime(event.target.value)}
+              disabled={!dueDate}
+              className="os-input w-full disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </label>
+
+          <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+            <input
+              type="checkbox"
+              checked={isMasterTodo}
+              onChange={(event) => setIsMasterTodo(event.target.checked)}
+              className="h-4 w-4 rounded border-[color:var(--border)] bg-white"
+            />
+            <span className="text-sm text-[color:var(--text-2)]">Show on master to-do</span>
+          </label>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <EntityCombobox
+            label="Account"
+            entity="account"
+            value={accountId}
+            selectedLabel={accountOptions.find((o) => o.value === accountId)?.label}
+            onChange={(opt) => setAccountId(opt.id)}
+            clearable
+          />
+          <EntityCombobox
+            label="Contact"
+            entity="contact"
+            value={contactId}
+            selectedLabel={contactOptions.find((o) => o.value === contactId)?.label}
+            filters={accountId ? { account_id: accountId } : undefined}
+            onChange={(opt) => setContactId(opt.id)}
+            clearable
+          />
+        </div>
+
+        <ProjectSelector
+          label="Project"
+          value={projectId}
+          projects={projectOptions}
+          onChange={setProjectId}
+        />
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Tags</span>
+          <input
+            value={tags}
+            onChange={(event) => setTags(event.target.value)}
+            placeholder="client, follow-up, launch"
+            className="os-input w-full"
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Description</span>
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={6}
+            className="os-textarea w-full rounded-3xl"
+          />
+        </label>
+      </div>
+
+      {task?.id ? (
+        <section className="mt-10 space-y-4 border-t border-[color:var(--border)] pt-8">
+          <div>
+            <h3 className="text-lg font-semibold text-[color:var(--text)]">Notes</h3>
+            <p className="text-sm text-[color:var(--text-2)]">Keep task context close to the card.</p>
+          </div>
+
+          <form className="space-y-2" onSubmit={handleAddNote}>
+            <textarea
+              value={noteDraft}
+              onChange={(event) => setNoteDraft(event.target.value)}
+              rows={3}
+              placeholder="Add a note..."
+              className="os-textarea w-full rounded-3xl"
+            />
+            <button
+              type="submit"
+              className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:bg-[var(--surface-2)]"
+            >
+              Add note
+            </button>
+          </form>
+
+          {noteError ? <p className="text-sm text-[color:var(--red-strong)]">{noteError}</p> : null}
+
+          <div className="space-y-3">
+            {notesLoading ? (
+              <p className="text-sm text-[color:var(--text-2)]">Loading notes...</p>
+            ) : notes.length === 0 ? (
+              <p className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-6 text-sm text-[color:var(--text-2)]">
+                No notes yet.
+              </p>
+            ) : (
+              notes.map((note) => (
+                <article key={note.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  {note.title ? <h4 className="font-medium text-[color:var(--text)]">{note.title}</h4> : null}
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{note.body}</p>
+                  <p className="mt-3 text-xs text-[color:var(--text-3)]">{formatDateTime(note.updated_at)}</p>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      {error ? <p className="mt-6 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
+
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--border)] pt-6">
+        <div className="flex items-center gap-2">
+          {task?.id ? (
+            <button
+              type="button"
+              onClick={handleComplete}
+              disabled={deleting}
+              className="rounded-2xl border border-[color:var(--red)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-60"
+            >
+              {deleting ? 'Completing...' : 'Mark complete'}
+            </button>
+          ) : null}
+          {task?.id ? (
+            <button
+              type="button"
+              onClick={() => setEmailModalOpen(true)}
+              className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+            >
+              Email task
+            </button>
+          ) : null}
+        </div>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !title.trim()}
+          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {saving ? 'Saving...' : task ? 'Save changes' : 'Create task'}
+        </button>
+      </div>
+
+      {task ? (
+        <TaskEmailModal
+          open={emailModalOpen}
+          onOpenChange={setEmailModalOpen}
+          tasks={[task]}
+        />
+      ) : null}
+    </Modal>
   )
 }

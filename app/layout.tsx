@@ -1,17 +1,23 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { Toaster } from 'sonner'
 import { SITE_URL, SITE_DEFAULTS } from '@/lib/seo'
 import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/JsonLd'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+// The .thmock design system reads these two as --sans / --mono (app/globals.css).
+// Loaded here via next/font so they are self-hosted and preloaded rather than
+// pulled from fonts.googleapis.com with a render-blocking @import.
+const inter = Inter({
+  variable: '--font-inter',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -69,11 +75,14 @@ export default function RootLayout({
   return (
     <html lang="en-GB">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <OrganizationJsonLd />
         <WebSiteJsonLd />
         {children}
+        {/* Every toast.success/toast.error call site in the app depends on this
+            being mounted. Without it sonner silently discards them all. */}
+        <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
   )

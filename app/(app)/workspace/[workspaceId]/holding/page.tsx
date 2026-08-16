@@ -1,5 +1,5 @@
 import { resolveWorkspaceParams, type WorkspaceRouteParams } from '@/lib/route-params'
-import HoldingDashboard from './HoldingDashboard'
+import { HoldingDashboard } from './charts-lazy'
 
 export default async function HoldingPage({
   params,

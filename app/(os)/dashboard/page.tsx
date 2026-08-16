@@ -45,7 +45,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {coworkChangesToday > 0 ? (
-        <div className="mx-auto max-w-[780px]">
+        <div className="mx-auto max-w-[1100px]">
           <Link
             href="/settings"
             className="flex items-center justify-between gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
           <PortfolioOverview data={portfolio} />
         </div>
       ) : null}
-      <div className="mx-auto max-w-[780px]">
+      <div className="mx-auto max-w-[1100px]">
         <ActiveProjectTasks />
       </div>
       <DailyBriefClient today={todayLabel} initialData={dailyBrief} />

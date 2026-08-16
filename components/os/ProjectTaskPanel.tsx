@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { DndContext, PointerSensor, closestCorners, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { DndContext, KeyboardSensor, PointerSensor, closestCorners, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatDateTime, formatTaskDate, getTaskStatusClasses } from '@/lib/os'
@@ -56,16 +56,17 @@ function SortableChecklistRow({
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
       className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-3"
     >
-      <button type="button" {...attributes} {...listeners} className="cursor-grab text-[color:var(--text-3)] active:cursor-grabbing">
+      <button type="button" aria-label={`Reorder ${item.title}`} {...attributes} {...listeners} className="cursor-grab text-[color:var(--text-3)] active:cursor-grabbing">
         ::
       </button>
-      <input type="checkbox" checked={item.is_complete} onChange={onToggle} />
+      <input type="checkbox" aria-label={`Mark ${item.title} complete`} checked={item.is_complete} onChange={onToggle} />
       <input
+        aria-label="Checklist item"
         value={item.title}
         onChange={(event) => onTitleChange(event.target.value)}
-        className="flex-1 bg-transparent text-sm text-[color:var(--text)] outline-none"
+        className="flex-1 bg-transparent text-sm text-[color:var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-strong)]"
       />
-      <button type="button" onClick={onDelete} className="text-xs text-[color:var(--red-strong)]">
+      <button type="button" aria-label={`Delete ${item.title}`} onClick={onDelete} className="text-xs text-[color:var(--red-strong)]">
         Delete
       </button>
     </div>
@@ -248,7 +249,11 @@ export default function ProjectTaskPanel({
   const estimated = currentTask?.estimated_hours ?? 0
   const breadcrumbTasks = taskStack.map((taskId) => tasks.find((entry) => entry.id === taskId)).filter((value): value is TaskWithWorkstream => Boolean(value))
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }))
+  // KeyboardSensor makes the same reorder reachable with Space + arrow keys.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
 
   if (!open || !currentTask) {
     return null
@@ -664,10 +669,11 @@ export default function ProjectTaskPanel({
               </div>
 
               <input
+                aria-label="Task title"
                 value={currentTask.title}
                 onChange={(event) => onTaskSaved({ ...currentTask, title: event.target.value })}
                 onBlur={(event) => void saveTaskPatch({ title: event.target.value })}
-                className="w-full bg-transparent text-2xl font-semibold text-[color:var(--text)] outline-none"
+                className="w-full bg-transparent text-2xl font-semibold text-[color:var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-strong)]"
               />
               {parentTask ? (
                 <button type="button" onClick={() => onOpenTask(parentTask.id)} className="mt-2 text-sm text-[color:var(--accent-strong)] hover:text-[color:var(--accent-hover)]">

@@ -1,8 +1,38 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
-import RichTextEditor from './RichTextEditor'
+import Modal from '@/components/ui/Modal'
+
+/**
+ * TipTap + ProseMirror is ~150kB of client JS that is only needed once the
+ * compose sheet is actually open, so it loads on demand rather than riding along
+ * in the inbox's first load. `ssr: false` matches the editor's own
+ * `immediatelyRender: false` — it is already client-only by design.
+ */
+const RichTextEditor = dynamic(() => import('./RichTextEditor'), {
+  ssr: false,
+  loading: () => <EditorSkeleton />,
+})
+
+/** Mirrors the editor's own pre-ready placeholder: same frame, toolbar, body. */
+function EditorSkeleton() {
+  return (
+    <div className="rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)]" aria-hidden>
+      <div className="flex flex-wrap gap-1 border-b border-[var(--border)] p-1">
+        {Array.from({ length: 7 }).map((_, index) => (
+          <div key={index} className="h-7 w-8 animate-pulse rounded-[4px] bg-[var(--surface-3)]" />
+        ))}
+      </div>
+      <div className="space-y-2 px-3 py-3" style={{ minHeight: 190 }}>
+        <div className="h-3 w-3/4 animate-pulse rounded-full bg-[var(--surface-3)]" />
+        <div className="h-3 w-full animate-pulse rounded-full bg-[var(--surface-3)]" />
+        <div className="h-3 w-2/3 animate-pulse rounded-full bg-[var(--surface-3)]" />
+      </div>
+    </div>
+  )
+}
 
 type ContactOpt = { id: string; name: string; email: string | null; account_id: string | null }
 type Named = { id: string; name: string }
@@ -109,6 +139,7 @@ export default function ComposeModal({
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [pickTime, setPickTime] = useState('')
   const [draftSaved, setDraftSaved] = useState(false)
+  const scheduleMenuId = useId()
 
   const draftsEnabled = Boolean(onSend)
   const draftIdRef = useRef<string | null>(draftId ?? null)
@@ -179,11 +210,12 @@ export default function ComposeModal({
           {recips.map((r) => (
             <span key={r.email} className={`tag-chip ${r.inCrm ? 'accent' : 'amber'}`} title={r.email}>
               {r.name ? `${r.name} ` : ''}{r.email}{!r.inCrm ? ' · Not in CRM' : ''}
-              <button onClick={() => set(f)((prev) => prev.filter((x) => x.email !== r.email))}>✕</button>
+              <button aria-label={`Remove ${r.email} from ${label}`} onClick={() => set(f)((prev) => prev.filter((x) => x.email !== r.email))}>✕</button>
             </span>
           ))}
           <input
-            className="min-w-[120px] flex-1 bg-transparent px-1 py-1 text-sm text-[var(--text)] outline-none"
+            aria-label={`${label} recipients`}
+            className="min-w-[120px] flex-1 bg-transparent px-1 py-1 text-sm text-[var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-strong)]"
             value={q}
             onChange={(e) => setQueries((qq) => ({ ...qq, [f]: e.target.value }))}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitFreeText(f) } }}
@@ -301,11 +333,18 @@ export default function ComposeModal({
   const monday = nextMonday8()
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={onClose}>
-      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-[8px] border border-[var(--border)] bg-white" onClick={(e) => e.stopPropagation()}>
+    <>
+      <Modal
+        open
+        onClose={onClose}
+        title={title}
+        closeLabel="Close compose window"
+        overlayClassName="p-4"
+        panelClassName="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-[8px] border border-[var(--border)] bg-white"
+      >
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3">
           <h2 className="text-base font-semibold text-[var(--text)]">{title}</h2>
-          <button onClick={onClose} className="text-[var(--text-3)] hover:text-[var(--text)]">✕</button>
+          <button onClick={onClose} aria-label="Close compose window" className="text-[var(--text-3)] hover:text-[var(--text)]">✕</button>
         </div>
 
         <div className="flex-1 space-y-2 overflow-y-auto p-5">
@@ -315,15 +354,21 @@ export default function ComposeModal({
             {!showBcc ? <button className="btn btn-ghost btn-sm" onClick={() => setShowBcc(true)}>+ Bcc</button> : null}
           </div>
           {showBcc ? renderField('bcc', 'Bcc') : null}
-          <input className={`${input} w-full`} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" />
+          <input
+            className={`${input} w-full`}
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder="Subject"
+            aria-label="Subject"
+          />
           <RichTextEditor initialHTML={initialHtml} onChange={setBodyHtml} />
           <div className="flex flex-wrap items-center gap-2">
             <label className="btn btn-ghost btn-sm cursor-pointer">📎 Attach<input type="file" multiple className="hidden" onChange={(e) => setFiles((f) => [...f, ...Array.from(e.target.files ?? [])])} /></label>
             {preAttachments.map((a, i) => (
-              <span key={`pre-${i}`} className="tag-chip grey">📎 {a.filename}<button onClick={() => setPreAttachments((p) => p.filter((_, j) => j !== i))}>✕</button></span>
+              <span key={`pre-${i}`} className="tag-chip grey">📎 {a.filename}<button aria-label={`Remove attachment ${a.filename}`} onClick={() => setPreAttachments((p) => p.filter((_, j) => j !== i))}>✕</button></span>
             ))}
             {files.map((file, i) => (
-              <span key={i} className="tag-chip grey">{file.name}<button onClick={() => setFiles((f) => f.filter((_, j) => j !== i))}>✕</button></span>
+              <span key={i} className="tag-chip grey">{file.name}<button aria-label={`Remove attachment ${file.name}`} onClick={() => setFiles((f) => f.filter((_, j) => j !== i))}>✕</button></span>
             ))}
           </div>
           {signature ? (
@@ -332,7 +377,7 @@ export default function ComposeModal({
               <div className="text-sm text-[var(--text-2)]" dangerouslySetInnerHTML={{ __html: signature }} />
             </div>
           ) : null}
-          {error ? <p className="text-sm text-[var(--red)]">{error}</p> : null}
+          {error ? <p role="alert" className="text-sm text-[var(--red)]">{error}</p> : null}
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border)] px-5 py-3">
@@ -343,9 +388,9 @@ export default function ComposeModal({
             <button className="btn btn-primary btn-sm" onClick={doSendCheck} disabled={busy}>{busy ? 'Working…' : '↗ Send'}</button>
             {onSchedule ? (
               <>
-                <button className="btn btn-primary btn-sm" onClick={() => setScheduleOpen((o) => !o)} disabled={busy} title="Schedule send">▾</button>
+                <button className="btn btn-primary btn-sm" onClick={() => setScheduleOpen((o) => !o)} disabled={busy} aria-label="Schedule send" aria-expanded={scheduleOpen} aria-controls={scheduleMenuId} title="Schedule send">▾</button>
                 {scheduleOpen ? (
-                  <div className="panel" style={{ position: 'absolute', bottom: 'calc(100% + 4px)', right: 0, zIndex: 70, minWidth: 220, padding: 6 }}>
+                  <div id={scheduleMenuId} className="panel" style={{ position: 'absolute', bottom: 'calc(100% + 4px)', right: 0, zIndex: 70, minWidth: 220, padding: 6 }}>
                     <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-[var(--surface-2)]" onClick={() => schedule(tomorrow.toISOString())}>
                       Send tomorrow 8am <span className="text-[11px] text-[var(--text-3)]">{labelFor(tomorrow)}</span>
                     </button>
@@ -353,7 +398,7 @@ export default function ComposeModal({
                       Send Monday 8am <span className="text-[11px] text-[var(--text-3)]">{labelFor(monday)}</span>
                     </button>
                     <div className="flex items-center gap-2 px-3 py-2">
-                      <input type="datetime-local" className={input} value={pickTime} onChange={(e) => setPickTime(e.target.value)} />
+                      <input type="datetime-local" aria-label="Custom send time" className={input} value={pickTime} onChange={(e) => setPickTime(e.target.value)} />
                       <button className="btn btn-ghost btn-sm" disabled={!pickTime} onClick={() => { if (pickTime) schedule(new Date(pickTime).toISOString()) }}>Set</button>
                     </div>
                   </div>
@@ -362,45 +407,48 @@ export default function ComposeModal({
             ) : null}
           </div>
         </div>
-      </div>
+      </Modal>
 
-      {addList ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={() => setAddList(null)}>
-          <div className="w-full max-w-lg rounded-[8px] border border-[var(--border)] bg-white p-5" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-semibold text-[var(--text)]">These recipients aren’t in your CRM. Add them?</h3>
-            <div className="mt-3 space-y-3">
-              {addList.map((r, i) => (
-                <div key={r.email} className="rounded-[5px] border border-[var(--border)] p-3">
-                  <label className="flex items-center gap-2 text-sm text-[var(--text)]">
-                    <input type="checkbox" checked={r.add} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, add: e.target.checked } : x))} />
-                    {r.email}
-                  </label>
-                  {r.add ? (
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                      <input className={input} placeholder="Name" value={r.name} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} />
-                      <select className={input} value={r.account} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, account: e.target.value } : x))}>
-                        <option value="">— account…</option>
-                        {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
-                        <option value={`__new__${suggestAccountName(r.email)}`}>+ Create new account “{suggestAccountName(r.email)}”</option>
-                      </select>
-                    </div>
-                  ) : null}
+      <Modal
+        open={Boolean(addList)}
+        onClose={() => setAddList(null)}
+        title="These recipients aren’t in your CRM. Add them?"
+        closeLabel="Cancel adding recipients"
+        overlayClassName="z-[60] p-4"
+        panelClassName="w-full max-w-lg rounded-[8px] border border-[var(--border)] bg-white p-5"
+      >
+        <h3 className="text-base font-semibold text-[var(--text)]">These recipients aren’t in your CRM. Add them?</h3>
+        <div className="mt-3 space-y-3">
+          {(addList ?? []).map((r, i) => (
+            <div key={r.email} className="rounded-[5px] border border-[var(--border)] p-3">
+              <label className="flex items-center gap-2 text-sm text-[var(--text)]">
+                <input type="checkbox" checked={r.add} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, add: e.target.checked } : x))} />
+                {r.email}
+              </label>
+              {r.add ? (
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <input className={input} aria-label={`Name for ${r.email}`} placeholder="Name" value={r.name} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} />
+                  <select className={input} aria-label={`Account for ${r.email}`} value={r.account} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, account: e.target.value } : x))}>
+                    <option value="">— account…</option>
+                    {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
+                    <option value={`__new__${suggestAccountName(r.email)}`}>+ Create new account “{suggestAccountName(r.email)}”</option>
+                  </select>
                 </div>
-              ))}
+              ) : null}
             </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <button className="btn btn-ghost btn-sm" onClick={() => setAddList(null)} disabled={busy}>Cancel</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => send()} disabled={busy}>Send without adding</button>
-              <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => send(
-                addList.filter((r) => r.add).map((r) => {
-                  const isNew = r.account.startsWith('__new__')
-                  return { email: r.email, name: r.name || undefined, account_id: isNew ? null : (r.account || null), new_account_name: isNew ? r.account.replace('__new__', '') : null }
-                })
-              )}>Send and add</button>
-            </div>
-          </div>
+          ))}
         </div>
-      ) : null}
-    </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button className="btn btn-ghost btn-sm" onClick={() => setAddList(null)} disabled={busy}>Cancel</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => send()} disabled={busy}>Send without adding</button>
+          <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => send(
+            (addList ?? []).filter((r) => r.add).map((r) => {
+              const isNew = r.account.startsWith('__new__')
+              return { email: r.email, name: r.name || undefined, account_id: isNew ? null : (r.account || null), new_account_name: isNew ? r.account.replace('__new__', '') : null }
+            })
+          )}>Send and add</button>
+        </div>
+      </Modal>
+    </>
   )
 }

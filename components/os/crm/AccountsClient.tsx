@@ -338,7 +338,7 @@ export default function AccountsClient({
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '8px 24px' }}>{error}</p> : null}
 
       {/* table */}
-      <div style={{ overflowX: 'auto' }}>
+      <div className="overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>

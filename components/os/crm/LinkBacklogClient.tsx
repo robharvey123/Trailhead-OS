@@ -163,6 +163,7 @@ export default function LinkBacklogClient() {
         <div className="os-card p-4">
           <p className="mb-3 text-sm text-[color:var(--text-2)]">Near-duplicate account names. Merge keeps one and repoints everything pointing at the other.</p>
           {data.account_duplicates.length === 0 ? <div className="empty">No duplicate accounts detected.</div> : (
+            <div className="overflow-x-auto">
             <table className="data-table">
               <thead><tr><th>Account A</th><th>Account B</th><th style={{ textAlign: 'right' }}>Similarity</th><th></th></tr></thead>
               <tbody>
@@ -178,6 +179,7 @@ export default function LinkBacklogClient() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       ) : null}
@@ -186,6 +188,7 @@ export default function LinkBacklogClient() {
         <div className="os-card p-4">
           <p className="mb-3 text-sm text-[color:var(--text-2)]">Contacts sharing a name or email. Merge keeps one and moves history across. Contacts in a running campaign are blocked until it stops.</p>
           {data.contact_duplicates.length === 0 ? <div className="empty">No duplicate contacts detected.</div> : (
+            <div className="overflow-x-auto">
             <table className="data-table">
               <thead><tr><th>Contact A</th><th>Contact B</th><th>Match</th><th></th></tr></thead>
               <tbody>
@@ -201,6 +204,7 @@ export default function LinkBacklogClient() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       ) : null}
@@ -209,6 +213,7 @@ export default function LinkBacklogClient() {
         <div className="os-card p-4">
           <p className="mb-3 text-sm text-[color:var(--text-2)]">Inbox threads with no account. Link them from the inbox reader.</p>
           {data.unmatched_threads.length === 0 ? <div className="empty">No unmatched threads.</div> : (
+            <div className="overflow-x-auto">
             <table className="data-table">
               <thead><tr><th>From</th><th>Subject</th><th>Suggested account</th></tr></thead>
               <tbody>
@@ -221,6 +226,7 @@ export default function LinkBacklogClient() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       ) : null}

@@ -1,5 +1,6 @@
-// The .thmock theme now loads Inter + JetBrains Mono via an @import in
-// app/globals.css (see the .thmock block), so no next/font wiring is needed.
+// Inter + JetBrains Mono are loaded via next/font in app/layout.tsx and exposed
+// on <body> as --font-inter / --font-jetbrains-mono, which .thmock reads through
+// its --sans / --mono tokens. Nothing extra is needed at the page level.
 // `mockupFontVars` is kept as an empty string so existing page wrappers
-// (`thmock ${mockupFontVars}`) don't need to change.
+// (`thmock ${mockupFontVars}`) keep working; it is scheduled for removal.
 export const mockupFontVars = ''

@@ -1,5 +1,9 @@
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+/* Inter + JetBrains Mono are loaded via next/font in app/layout.tsx and exposed
+   as --font-inter / --font-jetbrains-mono. Do not re-add a Google Fonts @import
+   here: Turbopack inlines the Tailwind import above it, which pushes any later
+   @import past thousands of generated rules and fails the CSS spec ordering
+   rule ("@import must precede all rules"), 500-ing every route. */
 
 :root {
   --background: #ffffff;
@@ -21,8 +25,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
   --color-os-bg:       #0C0C14;
   --color-os-card:     #1A1A28;
   --color-os-card-alt: #13131E;
@@ -42,7 +46,9 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Inter (loaded in app/layout.tsx) is the app's face everywhere else; this
+     was the last place still falling back to Arial. */
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
 .marketing-reveal {
@@ -139,6 +145,40 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   OS app shell — sidebar width
+
+   One custom property drives both the sidebar rail and the main region's left
+   padding, so the two can never disagree about how wide the sidebar is.
+
+   Deliberately NOT transitioned. `width` and `padding` are layout-triggering:
+   animating them over 300ms made the browser re-lay-out and repaint the entire
+   document on every frame of a sidebar toggle, which is brutal on the heaviest
+   OS screens (the project workspace, the virtualised inbox). There is no
+   transform-based equivalent, because collapsing swaps the nav from labelled
+   rows to an icon rail rather than sliding it — so the width snaps in a single
+   frame instead. Everything that still animates in the shell (the collapse
+   chevron) is transform/opacity only, which the compositor handles.
+   --------------------------------------------------------------------------- */
+.os-shell {
+  --os-sidebar-w: 18rem; /* w-72 */
+}
+
+.os-shell[data-sidebar='collapsed'] {
+  --os-sidebar-w: 4rem; /* w-16 */
+}
+
+.os-sidebar-panel,
+.os-sidebar-rail {
+  width: var(--os-sidebar-w);
+}
+
+@media (min-width: 768px) {
+  .os-shell-main {
+    padding-left: var(--os-sidebar-w);
+  }
+}
+
 @keyframes os-step-enter {
   from {
     opacity: 0;
@@ -157,14 +197,27 @@ body {
   100% { background-position: -100% 0; }
 }
 
+/* One placeholder bar in the inbox skeletons. Kept as a class (rather than an
+   inline style) so the reduced-motion block at the bottom of this file can stop
+   the sweep — inline `animation` beats any stylesheet rule. */
+.os-shimmer-bar {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3, var(--border)) 37%, var(--surface-2) 63%);
+  background-size: 400% 100%;
+  border-radius: 6px;
+  animation: os-shimmer 1.4s ease infinite;
+}
+
 /* TipTap compose editor — restore list/quote styling stripped by preflight. */
 .tiptap-body .ProseMirror { min-height: 190px; outline: none; }
 .tiptap-body .ProseMirror p { margin: 0 0 0.5rem; }
 .tiptap-body .ProseMirror ul { list-style: disc; padding-left: 1.4rem; margin: 0 0 0.5rem; }
 .tiptap-body .ProseMirror ol { list-style: decimal; padding-left: 1.4rem; margin: 0 0 0.5rem; }
 .tiptap-body .ProseMirror blockquote { border-left: 3px solid var(--border); padding-left: 0.75rem; color: var(--text-2); margin: 0 0 0.5rem; }
-.tiptap-body .ProseMirror a { color: var(--accent); text-decoration: underline; }
+.tiptap-body .ProseMirror a { color: var(--accent-strong); text-decoration: underline; } /* accent-strong: 5.93:1 on white; base --accent was 2.77:1 */
 .tiptap-body .ProseMirror:focus { outline: none; }
+/* The editor is a focusable region with no border of its own, so it needs the
+   ring back — inset, because the surrounding compose panel clips an outer one. */
+.tiptap-body .ProseMirror:focus-visible { outline: 2px solid var(--accent-strong, #0369A1); outline-offset: -2px; }
 .tiptap-body .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--text-3); float: left; height: 0; pointer-events: none; }
 
 @keyframes os-shake {
@@ -289,16 +342,17 @@ body {
   color: var(--accent-strong, var(--accent));
 }
 
-/* "Today" is the only context-resetting control — make it read as primary. */
+/* "Today" is the only context-resetting control — make it read as primary.
+   Uses --accent-strong, same as .btn-primary: white on --accent was 2.77:1, failing AA. */
 .fc .fc-today-button:not(:disabled) {
-  background: var(--accent, #0ea5e9);
-  border-color: var(--accent, #0ea5e9);
+  background: var(--accent-strong, #0369a1);
+  border-color: var(--accent-strong, #0369a1);
   color: #fff;
   opacity: 1;
 }
 .fc .fc-today-button:not(:disabled):hover {
-  background: var(--accent-hover, #0284c7);
-  border-color: var(--accent-hover, #0284c7);
+  background: var(--accent-hover, #075985);
+  border-color: var(--accent-hover, #075985);
 }
 
 .fc .fc-scrollgrid,
@@ -418,13 +472,23 @@ body {
   --border: #E2E8F0;
   --border-light: #CBD5E1;
   --text: #0F172A;
-  --text-2: #475569;
-  --text-3: #94A3B8;
+  --text-2: #334155;                 /* darkened from #475569 (was 7.58:1 on white) to hold a
+                                         perceptible step above the darkened --text-3 below;
+                                         now 10.35:1 on white, 9.90:1 on --surface */
+  --text-3: #5B6B82;                 /* was #94A3B8 (2.56:1 on white — fails AA 4.5:1). Darkened
+                                         past the ~#64748B midpoint because --text-3 also sits on
+                                         --surface-2 (#F1F5F9) in several selectors (topbar-count,
+                                         seg-toggle, search placeholder, meta-chip, range-chip),
+                                         where #64748B only reaches 4.34:1. #5B6B82 reaches
+                                         5.43:1 on white, 5.19:1 on --surface, 4.95:1 on
+                                         --surface-2 */
   --accent: #0EA5E9;
   --accent-dim: #E0F2FE;
   --accent-glow: rgba(14,165,233,0.15);
   --accent-strong: #0369A1;          /* readable accent text on light bg */
-  --accent-hover: #0284C7;
+  --accent-hover: #075985;           /* darkened from #0284C7 (white text on it only reached
+                                         4.10:1 in .btn-primary:hover / .fc-today-button:hover,
+                                         failing AA); now 7.56:1 */
   --green: #16A34A;
   --green-dim: #DCFCE7;
   --green-strong: #15803D;
@@ -439,11 +503,16 @@ body {
   --emerald-strong: #047857;
   --grey: #64748B;
   --grey-dim: #F1F5F9;
+  --grey-strong: #475569;            /* new: matches the -strong pattern above. #64748B on
+                                         --grey-dim was 4.34:1 (fails AA); #475569 reaches
+                                         6.92:1. Also equals the hardcoded value .status-on_hold
+                                         already used, so that rule now references this token
+                                         instead of a duplicate hex */
   --radius: 8px;
   --radius-sm: 5px;
   --serif: Georgia, 'Times New Roman', serif;
-  --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
   --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
   --shadow-md: 0 4px 12px rgba(15,23,42,0.06);
   --shadow-lg: 0 20px 60px rgba(15,23,42,0.12);
@@ -463,7 +532,7 @@ body {
   background: var(--bg);
   min-height: 100%;
 }
-.thmock .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
+.thmock .mono { font-family: var(--mono); }
 
 /* ---- os-* utility classes (page-body sweep v5.1) ----
    Reusable light surfaces/typography for the converted OS page bodies.
@@ -509,6 +578,18 @@ body {
 .thmock .os-input::placeholder, .thmock .os-textarea::placeholder { color: var(--text-3); }
 .thmock .os-input:focus, .thmock .os-select:focus, .thmock .os-textarea:focus { border-color: var(--accent); }
 
+/* Focus ring. The border-colour shift above is a ~1px change against a very
+   similar hue — nowhere near a 3:1 non-text indicator on its own. --accent-strong
+   (#0369A1) clears 7:1 against both --surface and --surface-2, and the 2px offset
+   keeps the ring off the control's own border so it stays legible. Every
+   `outline: none` in this file is paired with one of these blocks. */
+.thmock .os-input:focus-visible,
+.thmock .os-select:focus-visible,
+.thmock .os-textarea:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
 /* Dividers + meta text */
 .thmock .os-divider { border-color: var(--border); }
 .thmock .os-text { color: var(--text); }
@@ -518,7 +599,7 @@ body {
 
 /* meta labels */
 .thmock .meta-label {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--mono);
   font-size: 10px;
   font-weight: 500;
   color: var(--text-3);
@@ -528,12 +609,12 @@ body {
 .thmock .field-label {
   font-size: 11px;
   color: var(--text-3);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--mono);
   margin-bottom: 3px;
   letter-spacing: 0.05em;
 }
 .thmock .field-value { font-size: 14px; color: var(--text); font-weight: 500; }
-.thmock .field-value.mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--text-2); }
+.thmock .field-value.mono { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
 
 /* status badges */
 .thmock .status-badge {
@@ -547,8 +628,8 @@ body {
 .thmock .status-active { color: var(--green-strong); background: var(--green-dim); }
 .thmock .status-listed { color: var(--emerald-strong); background: var(--emerald-dim); }
 .thmock .status-declined { color: var(--red-strong); background: var(--red-dim); }
-.thmock .status-on_hold, .thmock .status-on-hold { color: #475569; background: var(--grey-dim); }
-.thmock .status-inactive { color: var(--grey); background: var(--grey-dim); }
+.thmock .status-on_hold, .thmock .status-on-hold { color: var(--grey-strong); background: var(--grey-dim); }
+.thmock .status-inactive { color: var(--grey-strong); background: var(--grey-dim); } /* was var(--grey), 4.34:1 — fails AA */
 .thmock .status-archived { color: var(--red-strong); background: var(--red-dim); }
 
 /* channel tags */
@@ -556,7 +637,7 @@ body {
   display: inline-block; padding: 2px 7px; border-radius: 3px;
   font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
   background: var(--surface-3); color: var(--text-2);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--mono);
 }
 
 /* generic tag chip (CRM tags) */
@@ -564,15 +645,17 @@ body {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 8px; border-radius: 999px;
   font-size: 11px; font-weight: 600;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--mono);
   background: var(--surface-3); color: var(--text-2);
 }
 .thmock .tag-chip.accent { background: var(--accent-dim); color: var(--accent-strong); }
-.thmock .tag-chip.green { background: var(--green-dim); color: var(--green); }
-.thmock .tag-chip.amber { background: var(--amber-dim); color: var(--amber); }
-.thmock .tag-chip.red { background: var(--red-dim); color: var(--red); }
-.thmock .tag-chip.emerald { background: var(--emerald-dim); color: var(--emerald); }
-.thmock .tag-chip.grey { background: var(--grey-dim); color: var(--grey); }
+/* .tag-chip.* below use the -strong variants (matching .status-* / StageBadge), not the base
+   hue — the base hue on its -dim background was 2.86–3.95:1, failing AA 4.5:1. */
+.thmock .tag-chip.green { background: var(--green-dim); color: var(--green-strong); }
+.thmock .tag-chip.amber { background: var(--amber-dim); color: var(--amber-strong); }
+.thmock .tag-chip.red { background: var(--red-dim); color: var(--red-strong); }
+.thmock .tag-chip.emerald { background: var(--emerald-dim); color: var(--emerald-strong); }
+.thmock .tag-chip.grey { background: var(--grey-dim); color: var(--grey-strong); }
 .thmock .tag-chip button { background: none; border: none; color: inherit; cursor: pointer; opacity: 0.6; padding: 0; }
 .thmock .tag-chip button:hover { opacity: 1; }
 
@@ -580,11 +663,15 @@ body {
 .thmock .btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 14px; border-radius: var(--radius-sm);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: var(--sans);
   font-size: 12px; font-weight: 600; cursor: pointer; border: none;
   transition: all 0.15s; letter-spacing: 0.02em;
 }
-.thmock .btn-primary { background: var(--accent); color: white; box-shadow: var(--shadow-sm); }
+/* Background uses --accent-strong, not --accent: white-on-#0EA5E9 was 2.77:1 (fails AA
+   4.5:1). --accent itself is left alone because it's shared far beyond button backgrounds
+   (borders, focus rings, chart accents), so darkening it globally risked side effects that
+   weren't verified safe everywhere — scoping the fix to the button is the surgical option. */
+.thmock .btn-primary { background: var(--accent-strong); color: white; box-shadow: var(--shadow-sm); }
 .thmock .btn-primary:hover { background: var(--accent-hover); }
 .thmock .btn-ghost { background: #ffffff; color: var(--text-2); border: 1px solid var(--border); }
 .thmock .btn-ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-light); }
@@ -600,7 +687,7 @@ body {
 /* CRM detail panel account name — larger serif display */
 .thmock .panel .topbar-title { font-size: 22px; letter-spacing: -0.02em; }
 .thmock .topbar-count {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--text-3);
+  font-family: var(--mono); font-size: 12px; color: var(--text-3);
   background: var(--surface-2); padding: 3px 8px; border-radius: 4px;
 }
 .thmock .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
@@ -611,10 +698,10 @@ body {
 .thmock .stat-item:last-child { border-right: none; }
 .thmock .stat-value { font-family: var(--serif); font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .thmock .stat-label {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; color: var(--text-3);
+  font-family: var(--mono); font-size: 10px; color: var(--text-3);
   letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
 }
-.thmock .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
+.thmock .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--mono); }
 
 /* filter bar + search + selects */
 .thmock .filterbar {
@@ -625,15 +712,17 @@ body {
 .thmock .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-3); }
 .thmock .search-input {
   width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 7px 10px 7px 32px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 14px; color: var(--text); outline: none;
+  padding: 7px 10px 7px 32px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none;
 }
 .thmock .search-input::placeholder { color: var(--text-3); }
 .thmock .search-input:focus { border-color: var(--accent); }
+.thmock .search-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .thmock .filter-select {
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 7px 10px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
+  padding: 7px 10px; font-family: var(--sans); font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
 }
 .thmock .filter-select:focus { border-color: var(--accent); }
+.thmock .filter-select:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .thmock .filter-date {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-3);
@@ -643,21 +732,21 @@ body {
 .thmock .range-chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
 .thmock .range-chip {
   padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer;
-  border: none; background: none; color: var(--text-3); font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  border: none; background: none; color: var(--text-3); font-family: var(--sans);
 }
 .thmock .range-chip.active { background: var(--surface-3); color: var(--text); }
 .thmock .seg-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
 .thmock .seg-toggle button {
-  padding: 6px 10px; font-size: 11px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  padding: 6px 10px; font-size: 11px; font-family: var(--sans);
   background: var(--surface-2); color: var(--text-3); border: none; cursor: pointer;
 }
-.thmock .seg-toggle button.active { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
+.thmock .seg-toggle button.active { background: var(--accent-dim); color: var(--accent-strong); font-weight: 700; } /* was --accent, 2.42:1 — fails AA */
 
 /* data tables (accounts + entries) */
 .thmock .data-table { width: 100%; border-collapse: collapse; }
 .thmock .data-table thead th {
   padding: 10px 16px; text-align: left;
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; font-weight: 500;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
   color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase;
   background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap;
 }
@@ -673,18 +762,18 @@ body {
 .thmock .data-table tbody tr.row-link .td-name a::after { content: ''; position: absolute; inset: 0; }
 .thmock .data-table td { padding: 11px 16px; font-size: 14px; color: var(--text); vertical-align: middle; }
 .thmock .td-name { font-weight: 600; }
-.thmock .td-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
-.thmock .td-mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); }
-.thmock .website-link { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); text-decoration: none; }
-.thmock .website-link:hover { color: var(--accent); }
+.thmock .td-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--mono); }
+.thmock .td-mono { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+.thmock .website-link { font-family: var(--mono); font-size: 11px; color: var(--text-3); text-decoration: none; }
+.thmock .website-link:hover { color: var(--accent-strong); } /* 5.17:1 on --surface; base --accent was 2.65:1 */
 
 /* pills (timesheet) */
-.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
+.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; font-family: var(--mono); }
 .thmock .pill.billable { color: var(--emerald-strong); background: var(--emerald-dim); }
 .thmock .pill.nonbill { color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); }
 .thmock .pill.timer { color: var(--red-strong); background: var(--red-dim); }
 .thmock .row-running td { background: rgba(220,38,38,0.04); }
-.thmock tfoot td { padding: 14px 16px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--surface); border-top: 2px solid var(--border-light); }
+.thmock tfoot td { padding: 14px 16px; font-family: var(--mono); font-size: 12px; background: var(--surface); border-top: 2px solid var(--border-light); }
 .thmock tfoot td.total-label { color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
 .thmock tfoot td.total-val { font-weight: 700; color: var(--text); }
 .thmock tfoot td.total-amount { font-weight: 800; color: var(--emerald-strong); font-size: 14px; }
@@ -694,7 +783,7 @@ body {
   display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: 999px;
   background: linear-gradient(135deg, #FEF2F2, #FEE2E2); border: 1px solid var(--red);
   box-shadow: var(--shadow-sm);
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-family: var(--mono);
 }
 .thmock .timer-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 var(--red); animation: thmock-pulse 1.6s infinite; }
 @keyframes thmock-pulse {
@@ -703,7 +792,7 @@ body {
   100% { box-shadow: 0 0 0 0 rgba(220,38,38,0) }
 }
 .thmock .timer-meta { font-size: 11px; color: var(--text); line-height: 1.2; }
-.thmock .timer-meta b { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-weight: 700; }
+.thmock .timer-meta b { font-family: var(--sans); font-weight: 700; }
 .thmock .timer-meta span { color: var(--text-3); font-size: 10px; }
 .thmock .timer-clock { font-size: 13px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; min-width: 62px; text-align: right; }
 .thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
@@ -712,7 +801,7 @@ body {
 .thmock .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
 .thmock .panel-section-title {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 9px; font-weight: 500; color: var(--text-3);
+  font-family: var(--mono); font-size: 9px; font-weight: 500; color: var(--text-3);
   letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
   display: flex; align-items: center; justify-content: space-between;
 }
@@ -721,17 +810,17 @@ body {
 .thmock .tabbar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 24px; background: var(--surface); }
 .thmock .tab {
   padding: 12px 14px; font-size: 12px; font-weight: 600; color: var(--text-3); cursor: pointer;
-  background: none; border: none; border-bottom: 2px solid transparent; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: none; border: none; border-bottom: 2px solid transparent; font-family: var(--sans);
 }
 .thmock .tab:hover { color: var(--text-2); }
-.thmock .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.thmock .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent); } /* text was --accent, 2.65:1 — fails AA */
 
 /* bulk action bar */
 .thmock .bulkbar {
   display: flex; align-items: center; gap: 10px; padding: 10px 24px;
   background: var(--accent-dim); border-bottom: 1px solid var(--accent);
 }
-.thmock .bulkbar .bulk-count { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 12px; color: var(--accent-strong); font-weight: 700; }
+.thmock .bulkbar .bulk-count { font-family: var(--mono); font-size: 12px; color: var(--accent-strong); font-weight: 700; }
 
 /* checkbox */
 .thmock input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
@@ -742,12 +831,12 @@ body {
 /* ---- inbox 3-pane ---- */
 .thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 120px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
 .thmock .folders { border-right: 1px solid var(--border); background: var(--surface); padding: 12px 8px; overflow-y: auto; }
-.thmock .folder-label { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; padding: 6px 10px 4px; text-transform: uppercase; }
+.thmock .folder-label { font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; padding: 6px 10px 4px; text-transform: uppercase; }
 .thmock .folder { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; color: var(--text-2); background: none; border: none; width: 100%; text-align: left; }
 .thmock .folder:hover { background: var(--surface-2); color: var(--text); }
-.thmock .folder.active { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
-.thmock .folder-count { margin-left: auto; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); }
-.thmock .folder.active .folder-count { color: var(--accent); }
+.thmock .folder.active { background: var(--accent-dim); color: var(--accent-strong); font-weight: 700; } /* was --accent, 2.42:1 — fails AA */
+.thmock .folder-count { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+.thmock .folder.active .folder-count { color: var(--accent-strong); }
 
 .thmock .threads { border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
 .thmock .threads-search { padding: 12px; border-bottom: 1px solid var(--border); }
@@ -767,11 +856,11 @@ body {
 .thmock .thread.unread:hover { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .thmock .thread-row { display: flex; align-items: baseline; gap: 6px; }
 .thmock .thread-from { font-size: 12px; font-weight: 600; color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thmock .thread-time { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); flex-shrink: 0; }
+.thmock .thread-time { font-family: var(--mono); font-size: 11px; color: var(--text-3); flex-shrink: 0; }
 .thmock .thread-subj { font-size: 14px; color: var(--text-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-snippet { font-size: 11px; color: var(--text-3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-tags { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
-.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 3px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 10px; letter-spacing: 0.04em; background: var(--surface-3); color: var(--text-2); }
+.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 3px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; background: var(--surface-3); color: var(--text-2); }
 .thmock .acct-pill.matched { background: var(--accent-dim); color: var(--accent-strong); }
 .thmock .acct-pill.unmatched { background: var(--amber-dim); color: var(--amber-strong); }
 .thmock .acct-pill.outbound { background: var(--emerald-dim); color: var(--emerald-strong); }
@@ -781,8 +870,8 @@ body {
 .thmock .reader-subject { font-family: var(--serif); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .thmock .reader-meta-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
 .thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-strong); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
-.thmock .acct-chip:hover { background: var(--accent); color: white; }
-.thmock .meta-chip { padding: 3px 8px; border-radius: 4px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; background: var(--surface-2); color: var(--text-3); }
+.thmock .acct-chip:hover { background: var(--accent-strong); color: white; } /* was --accent, 2.77:1 — fails AA */
+.thmock .meta-chip { padding: 3px 8px; border-radius: 4px; font-family: var(--mono); font-size: 11px; background: var(--surface-2); color: var(--text-3); }
 .thmock .reader-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 .thmock .reader-body { flex: 1; overflow-y: auto; padding: 0 24px; }
 .thmock .message { padding: 18px 0; border-bottom: 1px solid var(--border); }
@@ -791,12 +880,13 @@ body {
 .thmock .avatar.inbound { background: linear-gradient(135deg, #0EA5E9, #38BDF8); }
 .thmock .avatar.outbound { background: linear-gradient(135deg, #059669, #34D399); }
 .thmock .msg-from { font-size: 14px; font-weight: 700; color: var(--text); }
-.thmock .msg-to { font-size: 11px; color: var(--text-3); font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; margin-top: 2px; }
-.thmock .msg-time { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 11px; color: var(--text-3); }
+.thmock .msg-to { font-size: 11px; color: var(--text-3); font-family: var(--mono); margin-top: 2px; }
+.thmock .msg-time { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
 .thmock .msg-body { font-size: 14px; line-height: 1.7; color: var(--text-2); white-space: pre-wrap; padding-left: 48px; }
 .thmock .reader-reply { border-top: 1px solid var(--border); background: var(--surface); padding: 14px 24px; }
-.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
+.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
 .thmock .reply-input:focus { border-color: var(--accent); }
+.thmock .reply-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .thmock .reply-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
 
 /* scrollbars (3.12) */
@@ -804,3 +894,222 @@ body {
 .thmock ::-webkit-scrollbar-track { background: transparent; }
 .thmock ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
 .thmock ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ==========================================================================
+   TOUCH TARGETS (WCAG 2.5.8 AA — 24x24 minimum, 44x44 on coarse pointers)
+
+   Two tiers on purpose:
+
+   1. Baseline (all pointers) — only the three controls that actually measured
+      under 24px are touched, and each is fixed in a way that leaves the
+      rendered desktop layout pixel-identical. Everything else in the design
+      system already clears 24px at the current type scale (.btn 32px,
+      .filter-select 32px, .folder 30px, .btn-sm ~27px), so it is left alone.
+
+   2. @media (pointer: coarse) — a phone/tablet is driving. Here the dense
+      desktop metrics are the wrong trade, so controls grow toward 44px. This
+      is gated on the input device, not the viewport, so a narrow desktop
+      window keeps its density.
+   ========================================================================== */
+
+/* .timer-stop was 22x22. It's the round stop button inside the compact live
+   timer pill; growing the button itself would reflow the pill and the clock
+   next to it. A transparent, centred ::after expands only the HIT AREA — the
+   red dot still paints at 22px and nothing moves. */
+.thmock .timer-stop { position: relative; }
+.thmock .timer-stop::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
+
+/* .range-chip measured ~23px (4px padding + 11px/1.5 text). Pinned to 24px and
+   centred so it can never drop back under the minimum if the type scale moves. */
+.thmock .range-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+}
+
+/* The 14x14 native checkbox is the primary control for every bulk action in
+   CRM and the timesheet — the single worst target in the app.
+
+   Hit testing covers the BORDER box, so a transparent border grows the target
+   without changing what is painted; content-box sizing keeps the glyph itself
+   at exactly 14px, and the matching negative margin cancels the growth so the
+   element's outer size stays 14px and surrounding layout is unchanged.
+   14 + (2 x 5) = 24px. (No checkbox in the app sets its own margin, so the
+   negative margin has nothing to clobber.) */
+.thmock input[type="checkbox"] {
+  box-sizing: content-box;
+  border: 5px solid transparent;
+  margin: -5px;
+}
+
+@media (pointer: coarse) {
+  .thmock .btn { min-height: 44px; padding: 11px 16px; }
+  /* btn-sm stays visibly smaller than btn — 40px still clears the 24px
+     requirement comfortably and keeps the size hierarchy readable. */
+  .thmock .btn-sm { min-height: 40px; padding: 10px 14px; }
+  .thmock .filter-select { min-height: 44px; padding: 11px 12px; }
+  .thmock .folder { min-height: 44px; padding: 10px 12px; }
+  .thmock .range-chip { min-height: 40px; padding: 10px 14px; }
+  .thmock .seg-toggle button { min-height: 40px; padding: 10px 14px; }
+  .thmock .tab { min-height: 44px; }
+  .thmock .timer-stop::after { width: 44px; height: 44px; }
+
+  /* Same technique as above, scaled up: a 24px glyph inside a 44px hit box.
+     Layout does grow by 20px here — that is the intended trade on a phone. */
+  .thmock input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+    border-width: 10px;
+    margin: -10px;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE — mobile collapse (max-width: 767px)
+
+   Additive only: every rule below is inside the phone breakpoint, so the
+   desktop layout this tool depends on is untouched.
+   ========================================================================== */
+@media (max-width: 767px) {
+  /* The 3-pane inbox is a hard 210px + 340px + 1fr = 550px minimum, which
+     forces the whole DOCUMENT to scroll sideways on a phone. Collapse it to a
+     single column: folders become a horizontal chip strip, the thread list
+     caps at a readable height, and the reader takes the rest. */
+  .thmock .inbox {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+  .thmock .folders {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .thmock .folder-label { display: none; }
+  .thmock .folder { width: auto; flex: 0 0 auto; white-space: nowrap; }
+  .thmock .folder-count { margin-left: 6px; }
+  .thmock .threads {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 45vh;
+  }
+  .thmock .reader { min-height: 50vh; }
+  .thmock .msg-body { padding-left: 0; }
+
+  /* Page chrome: let the fixed-height / single-row bars wrap instead of
+     pushing their contents off the right edge. */
+  .thmock .topbar {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  .thmock .filterbar { padding: 10px 16px; }
+  .thmock .search-wrap { max-width: none; flex-basis: 100%; }
+  .thmock .bulkbar { padding: 10px 16px; flex-wrap: wrap; }
+  .thmock .empty { padding: 32px 16px; }
+
+  /* .stats-bar is a single flex row; 4-5 stats at 375px gives ~75px each and
+     the 24px serif figures overflow. Two per row instead. */
+  .thmock .stats-bar { flex-wrap: wrap; }
+  .thmock .stat-item {
+    flex: 1 1 50%;
+    min-width: 140px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Tabs scroll horizontally rather than compressing to unreadable stubs. */
+  .thmock .tabbar { padding: 0 16px; overflow-x: auto; flex-wrap: nowrap; }
+  .thmock .tab { white-space: nowrap; flex: 0 0 auto; }
+
+  /* Tables live inside .overflow-x-auto wrappers, so they scroll themselves.
+     Trimming the cell padding just means less of that scrolling is needed. */
+  .thmock .data-table thead th { padding: 9px 10px; }
+  .thmock .data-table td { padding: 10px 10px; }
+  .thmock tfoot td { padding: 12px 10px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion
+
+   Deliberately not a blanket `* { animation-duration: 0.01ms !important }` kill
+   switch. That flattens the motion that carries meaning as well — the 150ms
+   button/hover/focus transitions, the open and close of panels — and a UI where
+   nothing acknowledges a state change is worse for everyone, including people
+   who set this preference.
+
+   What is switched off here is the decorative and the endless: entrance
+   flourishes, the attention-seeking shake, and every infinite loop (skeleton
+   pulse, inbox shimmer, typing dots, the recording-timer ping) that keeps moving
+   whether or not anything has actually happened. Colour, opacity and layout end
+   states are preserved, so nothing disappears — it just stops moving.
+
+   Note the app-shell sidebar is absent from this list on purpose: its width is
+   no longer animated at all (see `.os-shell` above), so there is nothing to
+   reduce.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  /* Decorative entrance / error flourishes: land on the end state immediately. */
+  .animate-os-step-enter,
+  .animate-os-shake {
+    animation: none;
+  }
+
+  /* Tailwind's looping utilities. Skeletons and badges stay fully visible, just
+     still — `animation: none` leaves them at their 100% opacity/scale rest state. */
+  .animate-pulse,
+  .animate-bounce,
+  .animate-ping {
+    animation: none;
+  }
+
+  /* Spinners are the only signal that work is in flight, so they keep turning.
+     Slowing them removes the strobe without removing the information. */
+  .animate-spin {
+    animation-duration: 1.6s;
+  }
+
+  /* Inbox skeleton bars: hold the mid-tone instead of sweeping forever. */
+  .os-shimmer-bar {
+    animation: none;
+    background: var(--surface-2);
+  }
+
+  /* Messaging typing indicator: three dots at rest still read as "typing…",
+     paired with the visually-hidden live-region text that accompanies them. */
+  .typing-dot,
+  .typing-dot:nth-child(2),
+  .typing-dot:nth-child(3) {
+    animation: none;
+    animation-delay: 0s;
+    opacity: 0.75;
+    transform: none;
+  }
+
+  /* Live timer pill. The red dot pings on a 1.6s infinite loop, which is the
+     single most persistent piece of motion in the app; freeze it as a static
+     halo so "recording" stays legible. */
+  .thmock .timer-dot {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18);
+  }
+
+  /* The marketing reveal is handled in the block near the top of this file. */
+}

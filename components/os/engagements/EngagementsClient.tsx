@@ -76,7 +76,7 @@ export default function EngagementsClient({
         <div className="stat-item"><div className="stat-label">Tier-1 complete this month</div><div className="stat-value">{milestonesCompletedThisMonth}</div></div>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
+      <div className="overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>

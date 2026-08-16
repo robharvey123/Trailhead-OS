@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import {
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   closestCorners,
   useDroppable,
@@ -15,6 +16,7 @@ import {
 import {
   SortableContext,
   arrayMove,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
@@ -605,7 +607,11 @@ export default function ProjectWorkspaceClient({
   const [planningProject, setPlanningProject] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  // KeyboardSensor makes the same reorder reachable with Space + arrow keys.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
   const accent = getWorkstreamAccentHex(project.workstream?.colour)
   const checklistItems = taskChecklists
   const normalizedSearch = searchQuery.trim().toLowerCase()

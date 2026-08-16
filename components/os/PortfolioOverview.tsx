@@ -3,7 +3,10 @@ import { formatCurrency } from '@/lib/format'
 import type { EngagementHealth, PortfolioOverview as PortfolioData, ProjectHealth } from '@/lib/db/portfolio'
 
 const card = 'rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-4 transition hover:border-[color:var(--accent)]'
-const pill = 'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold'
+// `.tag-chip` is the design system's own status vocabulary, with AA-passing
+// -strong/-dim token pairs. The raw `bg-emerald-100 text-slate-600` palette
+// classes this used to carry were a second, unaudited status language.
+const pill = 'tag-chip'
 
 function fmtDate(iso: string): string {
   const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T00:00:00Z` : iso)
@@ -11,12 +14,12 @@ function fmtDate(iso: string): string {
 }
 
 const ENG_STATUS: Record<string, string> = {
-  Active: 'bg-emerald-100 text-emerald-700', Paused: 'bg-amber-100 text-amber-700', Draft: 'bg-slate-100 text-slate-600',
+  Active: 'emerald', Paused: 'amber', Draft: 'grey',
 }
 const PROJ_STATUS: Record<string, { label: string; cls: string }> = {
-  active: { label: 'Active', cls: 'bg-emerald-100 text-emerald-700' },
-  planning: { label: 'Planning', cls: 'bg-sky-100 text-sky-700' },
-  on_hold: { label: 'On hold', cls: 'bg-amber-100 text-amber-700' },
+  active: { label: 'Active', cls: 'emerald' },
+  planning: { label: 'Planning', cls: 'accent' },
+  on_hold: { label: 'On hold', cls: 'amber' },
 }
 
 /** A used/allowance bar. Colour escalates as the month's hours approach and pass the cap. */

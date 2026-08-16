@@ -162,6 +162,7 @@ export default function AccountsClient({
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <select
+          aria-label="Filter by account type"
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
           className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
@@ -173,6 +174,7 @@ export default function AccountsClient({
         </select>
         {brandNames.length > 0 && (
           <select
+            aria-label="Filter by brand"
             value={filterBrand}
             onChange={(e) => setFilterBrand(e.target.value)}
             className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
@@ -184,7 +186,8 @@ export default function AccountsClient({
           </select>
         )}
         <input
-          type="text"
+          type="search"
+          aria-label="Search accounts"
           placeholder="Search accounts..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -197,43 +200,45 @@ export default function AccountsClient({
         <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Account' : 'New Account'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Name *</label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">Name *</span>
               <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Type</label>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">Type</span>
               <select value={type} onChange={(e) => setType(e.target.value as CrmAccountType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 {CRM_ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{CRM_ACCOUNT_TYPE_LABELS[t]}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Industry</label>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">Industry</span>
               <input value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Email</label>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">Email</span>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Phone</label>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">Phone</span>
               <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Website</label>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">Website</span>
               <input value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">City</label>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">City</span>
               <input value={city} onChange={(e) => setCity(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">Country</label>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs text-slate-400">Country</span>
               <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
+            </label>
             {brandNames.length > 0 && (
-              <div className="sm:col-span-2">
-                <label className="mb-1 block text-xs text-slate-400">Brands</label>
+              // A group of checkboxes has no single control to label, so the
+              // heading names the group and each box keeps its own label.
+              <div className="sm:col-span-2" role="group" aria-label="Brands">
+                <span className="mb-1 block text-xs text-slate-400">Brands</span>
                 <div className="flex flex-wrap gap-3">
                   {brandNames.map((b) => (
                     <label key={b} className="flex items-center gap-1.5 text-sm text-slate-200">
@@ -249,10 +254,10 @@ export default function AccountsClient({
                 </div>
               </div>
             )}
-            <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs text-slate-400">Notes</label>
+            <label className="sm:col-span-2 block">
+              <span className="mb-1 block text-xs text-slate-400">Notes</span>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-            </div>
+            </label>
             <div className="flex gap-2 sm:col-span-2">
               <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">
                 {editingId ? 'Update' : 'Create'}

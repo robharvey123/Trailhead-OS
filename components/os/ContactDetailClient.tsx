@@ -704,7 +704,7 @@ export default function ContactDetailClient({
             </div>
           </div>
         ) : (
-          <div className="mt-4">
+          <div className="mt-4 overflow-x-auto">
             <table className="data-table">
               <thead>
                 <tr><th>From</th><th>Subject</th><th>When</th><th></th></tr>

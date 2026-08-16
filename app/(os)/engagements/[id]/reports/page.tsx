@@ -66,7 +66,7 @@ export default async function EngagementReportsPage({ params }: { params: Promis
                   <td className="px-4 py-3 tabular-nums">{r.period_start} → {r.period_end}</td>
                   <td className="px-4 py-3">{KIND_LABEL[r.kind] ?? r.kind}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${r.status === 'sent' ? 'bg-emerald-100 text-emerald-700' : r.status === 'archived' ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-700'}`}>
+                    <span className={`tag-chip ${r.status === 'sent' ? 'emerald' : r.status === 'archived' ? 'grey' : 'amber'}`}>
                       {r.status}
                     </span>
                   </td>

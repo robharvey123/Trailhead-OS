@@ -154,7 +154,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
                   onKeyDown={handleInputKeyDown}
                   onBlur={() => { if (inputValue.trim()) addRecipient(inputValue) }}
                   placeholder={recipients.length === 0 ? 'Type email and press Enter' : ''}
-                  className="min-w-[120px] flex-1 border-none bg-transparent text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] outline-none"
+                  className="min-w-[120px] flex-1 border-none bg-transparent text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-strong)]"
                 />
               </div>
             </div>

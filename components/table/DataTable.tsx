@@ -119,6 +119,7 @@ export default function DataTable<T>({
               value={globalFilter}
               onChange={(event) => setGlobalFilter(event.target.value)}
               placeholder={filterPlaceholder}
+              aria-label={filterPlaceholder}
               className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 md:max-w-xs"
             />
             {monthOptions?.length ? (
@@ -157,6 +158,16 @@ export default function DataTable<T>({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
+                    scope="col"
+                    aria-sort={
+                      header.column.getCanSort()
+                        ? header.column.getIsSorted() === 'asc'
+                          ? 'ascending'
+                          : header.column.getIsSorted() === 'desc'
+                            ? 'descending'
+                            : 'none'
+                        : undefined
+                    }
                     className={`px-4 py-3 text-left font-medium${
                       header.column.id === stickyColumnId
                         ? ' sticky left-0 z-20 bg-slate-950 shadow-[2px_0_0_0_rgba(15,23,42,0.8)]'
@@ -167,18 +178,22 @@ export default function DataTable<T>({
                       <button
                         type="button"
                         onClick={header.column.getToggleSortingHandler()}
+                        disabled={!header.column.getCanSort()}
                         className="inline-flex items-center gap-2"
                       >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                        {
+                        {/* aria-sort on the <th> carries the state; the glyph is decoration. */}
+                        <span aria-hidden="true">
                           {
-                            asc: '^',
-                            desc: 'v',
-                          }[header.column.getIsSorted() as string] ?? '<>'
-                        }
+                            {
+                              asc: '^',
+                              desc: 'v',
+                            }[header.column.getIsSorted() as string] ?? '<>'
+                          }
+                        </span>
                       </button>
                     )}
                   </th>

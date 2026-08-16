@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Board, { type BoardSortMode } from '@/components/kanban/Board'
 import TaskForm from '@/components/tasks/TaskForm'
 import { labelColor } from '@/lib/tags'
@@ -70,11 +70,12 @@ export default function EngagementTasksClient({
     return Array.from(set).sort((a, b) => a.localeCompare(b))
   }, [initialTasks])
 
-  function toggleLabel(label: string) {
+  // Passed down to every memoised card, so it has to keep one identity.
+  const toggleLabel = useCallback((label: string) => {
     setActiveLabels((current) =>
       current.includes(label) ? current.filter((l) => l !== label) : [...current, label]
     )
-  }
+  }, [])
 
   // Close the labels dropdown on outside click.
   useEffect(() => {

@@ -49,6 +49,7 @@ export default async function HoursByEngagementPage({
           {rows.length === 0 ? (
             <div className="empty">No time logged in this range.</div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="data-table">
               <thead>
                 <tr>
@@ -79,6 +80,7 @@ export default async function HoursByEngagementPage({
                 </tr>
               </tfoot>
             </table>
+            </div>
           )}
         </div>
       </div>

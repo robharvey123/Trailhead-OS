@@ -79,10 +79,10 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
         <span className="topbar-count">{invites.filter((i) => !i.claimed_at && new Date(i.expires_at) >= new Date()).length} pending</span>
       </div>
 
-      <div style={{ padding: 24, display: 'grid', gap: 20 }}>
+      <div className="grid gap-5 p-4 sm:p-6">
         <div className="card">
           <div className="panel-section-title">Send an invite</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
             <div><label className={label}>Email *</label><input className={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="person@company.com" /></div>
             <div>
               <label className={label}>Role</label>
@@ -100,7 +100,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
             </select>
           </div>
           {personPick === '__new__' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginTop: 12 }}>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
               <div><label className={label}>Full name *</label><input className={input} value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
               <div><label className={label}>Default rate £/h</label><input className={input} type="number" value={newRate} onChange={(e) => setNewRate(e.target.value)} placeholder="optional" /></div>
             </div>
@@ -124,6 +124,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
         </div>
 
         {invites.length === 0 ? <div className="empty">No invites yet.</div> : (
+          <div className="overflow-x-auto">
           <table className="data-table">
             <thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Expires</th><th></th></tr></thead>
             <tbody>
@@ -142,6 +143,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

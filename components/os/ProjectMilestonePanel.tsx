@@ -159,9 +159,10 @@ export default function ProjectMilestonePanel({
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-[3px] text-[color:var(--accent-strong)]">Milestone</p>
               <input
+                aria-label="Milestone title"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                className="mt-2 w-full bg-transparent text-2xl font-semibold text-[color:var(--text)] outline-none"
+                className="mt-2 w-full bg-transparent text-2xl font-semibold text-[color:var(--text)] outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-strong)]"
                 placeholder="Milestone title"
               />
             </div>

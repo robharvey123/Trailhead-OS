@@ -148,6 +148,7 @@ export default async function ProjectDetailPage({
             {imports.length === 0 ? (
               <p style={{ fontSize: 12, color: 'var(--text-3)' }}>No imports yet. Upload a .docx or .md roadmap to extract tasks.</p>
             ) : (
+              <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>File</th><th>Status</th><th>Tasks</th><th>Imported</th></tr></thead>
                 <tbody>
@@ -163,6 +164,7 @@ export default async function ProjectDetailPage({
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </div>

@@ -21,6 +21,7 @@ export default async function AudiencesPage() {
         {audiences.length === 0 ? (
           <div className="empty">No audiences yet. The Engineer OS seed creates one.</div>
         ) : (
+          <div className="overflow-x-auto">
           <table className="data-table">
             <thead><tr><th>Name</th><th>Description</th><th style={{ textAlign: 'right' }}>Members</th></tr></thead>
             <tbody>
@@ -33,6 +34,7 @@ export default async function AudiencesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

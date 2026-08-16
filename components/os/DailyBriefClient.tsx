@@ -1,5 +1,7 @@
 'use client'
 
+import { toast } from 'sonner'
+
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
@@ -61,8 +63,13 @@ function pluralize(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`
 }
 
-function getTaskHref() {
-  return '/tasks'
+/**
+ * The brief exists to triage: "2 urgent actions" is worthless if clicking one
+ * lands on an unfiltered list. Deep-link to the task itself and carry a `from`
+ * so the detail view can offer a way back to where the decision was made.
+ */
+function getTaskHref(taskId: string) {
+  return `/my-work/${taskId}?from=/dashboard`
 }
 
 function isOverdue(task: DailyBriefTask, todayKey: string) {
@@ -110,7 +117,7 @@ function ActionRequiredRow({ task, todayKey }: { task: DailyBriefTask; todayKey:
 
   return (
     <Link
-      href={getTaskHref()}
+      href={getTaskHref(task.id)}
       className={`block os-card p-4 transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)] border-l-4 ${accent.border}`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -180,6 +187,8 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
   const [data, setData] = useState(initialData)
   const [pendingTaskIds, setPendingTaskIds] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
+  // Completing a task just removes its row, which is silent for screen readers.
+  const [statusMessage, setStatusMessage] = useState('')
 
   const todayDate = useMemo(() => new Date(`${today}T00:00:00`), [today])
 
@@ -196,6 +205,18 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
 
     return `${urgentActions} · ${totalToday} · ${quotes}`
   }, [data.actionRequired.length, data.quotesAttention.length, data.todayTasks.length])
+
+  /**
+   * Tone escalates with the state of the queue, the same way HoursBar escalates
+   * from a neutral percentage to "+3.2h over". A brief that reads identically
+   * on a clear day and a burning one is not telling you anything.
+   */
+  const pressure = useMemo(() => {
+    const overdue = data.actionRequired.filter((t) => isOverdue(t, today)).length
+    if (overdue > 0) return { tone: 'over' as const, label: pluralize(overdue, 'item overdue', 'items overdue') }
+    if (data.actionRequired.length > 0) return { tone: 'due' as const, label: 'On top of it, nothing overdue' }
+    return { tone: 'clear' as const, label: 'Queue clear' }
+  }, [data.actionRequired, today])
 
   const statItems = useMemo(
     () => [
@@ -230,7 +251,12 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
     }
 
     const previousData = data
+    const completedTitle =
+      data.todayTasks.find((task) => task.id === taskId)?.title ??
+      data.weekAhead.flatMap((day) => day.tasks).find((task) => task.id === taskId)?.title ??
+      'Task'
     setError(null)
+    setStatusMessage('')
     setPendingTaskIds((current) => [...current, taskId])
     setData((current) => ({
       ...current,
@@ -243,21 +269,50 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
 
     try {
       await apiFetch<{ ok: true }>(`/api/os/tasks/${taskId}`, { method: 'DELETE' })
+      setStatusMessage(`${completedTitle} marked complete.`)
+      // Closing the loop. The app used to acknowledge a completed task by
+      // silently removing its row — clearing the last one of the day is the
+      // single best moment this product has, and it was going unremarked.
+      const remaining =
+        previousData.todayTasks.length -
+        1 +
+        previousData.actionRequired.length
+      if (remaining <= 0) {
+        toast.success('That’s the day cleared.', {
+          description: 'Nothing else is due today. Everything left is ahead of you, not behind.',
+          duration: 6000,
+        })
+      } else {
+        toast.success(`${completedTitle} done`, {
+          description: pluralize(remaining, 'item still due today', 'items still due today'),
+        })
+      }
     } catch (completeError) {
       setData(previousData)
-      setError(completeError instanceof Error ? completeError.message : 'Failed to complete task')
+      const message = completeError instanceof Error ? completeError.message : 'Failed to complete task'
+      setError(message)
+      toast.error(message)
     } finally {
       setPendingTaskIds((current) => current.filter((id) => id !== taskId))
     }
   }
 
   return (
-    <div className="mx-auto max-w-[780px] space-y-6">
+    <div className="mx-auto max-w-[1100px] space-y-6">
       <header className="overflow-hidden os-card p-6">
         <div className="space-y-3">
           <p className="os-eyebrow text-[color:var(--accent-strong)]">Daily brief</p>
           <h1 className="os-page-title">{formatLongDate(todayDate)}</h1>
-          <p className="max-w-2xl text-sm text-[color:var(--text-2)]">{summary}</p>
+          <div className="flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-2">
+            <p className="text-sm text-[color:var(--text-2)]">{summary}</p>
+            <span
+              className={`tag-chip ${
+                pressure.tone === 'over' ? 'red' : pressure.tone === 'due' ? 'amber' : 'emerald'
+              }`}
+            >
+              {pressure.label}
+            </span>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -354,7 +409,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
-                      <Link href={getTaskHref()} className="font-medium text-[color:var(--text)] transition hover:text-[color:var(--accent-strong)]">
+                      <Link href={getTaskHref(task.id)} className="font-medium text-[color:var(--text)] transition hover:text-[color:var(--accent-strong)]">
                         {task.title}
                       </Link>
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[color:var(--text-2)]">
@@ -430,6 +485,13 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
         </div>
       </section>
 
+      {/* Live regions stay mounted and out of flow so later changes are announced. */}
+      <p role="status" aria-live="polite" className="sr-only">
+        {statusMessage}
+      </p>
+      <p role="alert" aria-live="assertive" className="sr-only">
+        {error}
+      </p>
       {error ? (
         <div className="rounded-3xl border border-[color:var(--red-dim)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
           {error}

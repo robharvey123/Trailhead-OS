@@ -96,6 +96,7 @@ export default function MilestoneList({
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 8 }}>{error}</p> : null}
 
       {milestones.length === 0 ? <div className="empty">No milestones.</div> : (
+        <div className="overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>
@@ -118,6 +119,7 @@ export default function MilestoneList({
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Single delete (or blocked) */}

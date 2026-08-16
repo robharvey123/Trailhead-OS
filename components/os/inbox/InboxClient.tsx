@@ -1,11 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { apiFetch } from '@/lib/api-fetch'
 import { createClient } from '@/lib/supabase/client'
 import type { EmailLog, EmailThread } from '@/lib/types'
+import Modal from '@/components/ui/Modal'
 
 type LiveStatus = 'connecting' | 'live' | 'offline'
 import ComposeModal, { type ComposePayload } from './ComposeModal'
@@ -817,24 +818,33 @@ export default function InboxClient({
         </div>
       ) : null}
 
-      {showHelp ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4" onClick={() => setShowHelp(false)}>
-          <div className="rounded-[8px] border border-[var(--border)] bg-white p-5" style={{ minWidth: 340 }} onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-[var(--text)]">Keyboard shortcuts</h2>
-              <button onClick={() => setShowHelp(false)} className="text-[var(--text-3)] hover:text-[var(--text)]">✕</button>
-            </div>
-            <div className="mt-3 space-y-1.5">
-              {SHORTCUTS.map((s) => (
-                <div key={s.keys} className="flex items-center justify-between gap-6">
-                  <span className="text-sm text-[var(--text-2)]">{s.desc}</span>
-                  <kbd className="meta-chip">{s.keys}</kbd>
-                </div>
-              ))}
-            </div>
-          </div>
+      <Modal
+        open={showHelp}
+        onClose={() => setShowHelp(false)}
+        title="Keyboard shortcuts"
+        closeLabel="Close keyboard shortcuts"
+        overlayClassName="p-4"
+        panelClassName="min-w-[340px] rounded-[8px] border border-[var(--border)] bg-white p-5"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-[var(--text)]">Keyboard shortcuts</h2>
+          <button
+            onClick={() => setShowHelp(false)}
+            aria-label="Close keyboard shortcuts"
+            className="text-[var(--text-3)] hover:text-[var(--text)]"
+          >
+            ✕
+          </button>
         </div>
-      ) : null}
+        <div className="mt-3 space-y-1.5">
+          {SHORTCUTS.map((s) => (
+            <div key={s.keys} className="flex items-center justify-between gap-6">
+              <span className="text-sm text-[var(--text-2)]">{s.desc}</span>
+              <kbd className="meta-chip">{s.keys}</kbd>
+            </div>
+          ))}
+        </div>
+      </Modal>
 
       <div className="inbox">
         {/* folders */}
@@ -948,7 +958,17 @@ export default function InboxClient({
                           <div className="thread-from">{t.is_starred ? '★ ' : ''}{t.from_name}</div>
                           <div className="thread-time">{t.has_attachments ? '📎 ' : ''}{timeLabel(t.last_at)}</div>
                         </div>
-                        <div className="thread-subj">{t.subject}</div>
+                        {/* The row keeps its click target, but the subject is a real
+                            button so the thread can be opened from the keyboard —
+                            the cursorIndex outline below is only a painted ring. */}
+                        <button
+                          type="button"
+                          className="thread-subj block w-full cursor-pointer text-left"
+                          aria-current={t.gmail_thread_id === activeId ? 'true' : undefined}
+                          onClick={(e) => { e.stopPropagation(); openThread(t) }}
+                        >
+                          {t.subject}
+                        </button>
                         <div className="thread-snippet">{t.snippet}</div>
                         <div className="thread-tags">
                           {t.account_id ? (
@@ -979,7 +999,14 @@ export default function InboxClient({
                       <div className="thread-from">{t.from_name}</div>
                       <div className="thread-time">{t.has_attachments ? '📎 ' : ''}{timeLabel(t.last_at)}</div>
                     </div>
-                    <div className="thread-subj">{t.subject}</div>
+                    <button
+                      type="button"
+                      className="thread-subj block w-full cursor-pointer text-left"
+                      aria-current={t.gmail_thread_id === activeId ? 'true' : undefined}
+                      onClick={(e) => { e.stopPropagation(); openThread(t) }}
+                    >
+                      {t.subject}
+                    </button>
                     <div className="thread-snippet">{t.snippet}</div>
                     <div className="thread-tags"><span className="acct-pill outbound">from Gmail</span></div>
                   </div>
@@ -1108,13 +1135,10 @@ export default function InboxClient({
   )
 }
 
-// Simple shimmer placeholders (no library) matching the .thmock surfaces.
-const shimmer: CSSProperties = {
-  background: 'linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3, var(--border)) 37%, var(--surface-2) 63%)',
-  backgroundSize: '400% 100%',
-  borderRadius: 6,
-  animation: 'os-shimmer 1.4s ease infinite',
-}
+// Simple shimmer placeholders (no library) matching the .thmock surfaces. The
+// gradient and the infinite sweep live in `.os-shimmer-bar` (globals.css) rather
+// than in an inline style, so `prefers-reduced-motion` can actually switch the
+// animation off — a stylesheet rule cannot override an inline `animation`.
 
 function ThreadListSkeleton() {
   return (
@@ -1122,11 +1146,11 @@ function ThreadListSkeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="thread" style={{ pointerEvents: 'none' }}>
           <div className="thread-row">
-            <div style={{ ...shimmer, height: 12, flex: 1 }} />
-            <div style={{ ...shimmer, height: 10, width: 34 }} />
+            <div className="os-shimmer-bar" style={{ height: 12, flex: 1 }} />
+            <div className="os-shimmer-bar" style={{ height: 10, width: 34 }} />
           </div>
-          <div style={{ ...shimmer, height: 13, width: '70%', marginTop: 6 }} />
-          <div style={{ ...shimmer, height: 10, width: '90%', marginTop: 6 }} />
+          <div className="os-shimmer-bar" style={{ height: 13, width: '70%', marginTop: 6 }} />
+          <div className="os-shimmer-bar" style={{ height: 10, width: '90%', marginTop: 6 }} />
         </div>
       ))}
     </div>
@@ -1139,15 +1163,15 @@ function MessagesSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div className="message" key={i}>
           <div className="message-head">
-            <div style={{ ...shimmer, width: 34, height: 34, borderRadius: '50%' }} />
+            <div className="os-shimmer-bar" style={{ width: 34, height: 34, borderRadius: '50%' }} />
             <div style={{ flex: 1 }}>
-              <div style={{ ...shimmer, height: 12, width: '40%' }} />
-              <div style={{ ...shimmer, height: 10, width: '55%', marginTop: 6 }} />
+              <div className="os-shimmer-bar" style={{ height: 12, width: '40%' }} />
+              <div className="os-shimmer-bar" style={{ height: 10, width: '55%', marginTop: 6 }} />
             </div>
           </div>
-          <div style={{ ...shimmer, height: 10, width: '95%', marginTop: 10 }} />
-          <div style={{ ...shimmer, height: 10, width: '88%', marginTop: 6 }} />
-          <div style={{ ...shimmer, height: 10, width: '60%', marginTop: 6 }} />
+          <div className="os-shimmer-bar" style={{ height: 10, width: '95%', marginTop: 10 }} />
+          <div className="os-shimmer-bar" style={{ height: 10, width: '88%', marginTop: 6 }} />
+          <div className="os-shimmer-bar" style={{ height: 10, width: '60%', marginTop: 6 }} />
         </div>
       ))}
     </div>

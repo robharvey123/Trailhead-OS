@@ -23,6 +23,7 @@ export default function MentionPicker({
   return (
     <div
       role="listbox"
+      aria-label="Mention suggestions"
       style={{
         position: 'absolute',
         bottom: 'calc(100% + 4px)',

@@ -254,6 +254,11 @@ export default function InvoiceDetailClient({
               defaultSubject={`Invoice ${invoice.invoice_number}`}
               defaultMessage={`Hi,\n\nPlease find the attached invoice ${invoice.invoice_number}.\n\nThank you.`}
               buttonClassName="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              // Emailing the invoice IS sending it. Without this the client has
+              // the invoice while the OS still records it as a draft.
+              onSent={async () => {
+                if (invoice.status === 'draft') await updateStatus('sent')
+              }}
             />
             {isAdmin ? (
               faUrl ? (
@@ -485,7 +490,7 @@ export default function InvoiceDetailClient({
                     disabled={updatingStatus !== null}
                     className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
                   >
-                    {updatingStatus === 'sent' ? 'Updating...' : 'Mark as sent'}
+                    {updatingStatus === 'sent' ? 'Updating...' : 'Mark as sent (already emailed)'}
                   </button>
                   <button
                     type="button"

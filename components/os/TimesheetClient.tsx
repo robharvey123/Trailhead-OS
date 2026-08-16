@@ -270,7 +270,7 @@ export default function TimesheetClient({
 
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '8px 24px' }}>{error}</p> : null}
 
-      <div style={{ overflowX: 'auto' }}>
+      <div className="overflow-x-auto">
         {loading ? <div className="empty">Loading entries…</div> : entries.length === 0 && !timer ? <div className="empty">No time entries in this range.</div> : (
           <table className="data-table">
             <thead><tr><th>Date</th><th>Account</th><th>Engagement</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Amount</th><th></th><th></th></tr></thead>

@@ -813,6 +813,8 @@ export default function CalendarIntegrationsClient({
                         : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                     style={{ backgroundColor: c.value }}
+                    aria-label={c.label}
+                    aria-pressed={feedColour === c.value}
                     title={c.label}
                   />
                 ))}

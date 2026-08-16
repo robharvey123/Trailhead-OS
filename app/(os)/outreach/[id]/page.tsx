@@ -131,6 +131,7 @@ export default async function CampaignDetailPage({
           {steps.length === 0 ? (
             <p className="mt-2 text-sm text-[var(--muted)]">No steps yet. Add the first-touch email below — a campaign with zero steps can’t start.</p>
           ) : (
+            <div className="overflow-x-auto">
             <table className="data-table mt-3">
               <thead><tr><th>Step</th><th>Template</th><th style={{ textAlign: 'right' }}>Delay (days)</th><th></th></tr></thead>
               <tbody>
@@ -152,6 +153,7 @@ export default async function CampaignDetailPage({
                 ))}
               </tbody>
             </table>
+            </div>
           )}
           {!isRunning ? (
             <form action={addCampaignStepAction} className="mt-4 flex flex-wrap items-end gap-3">
@@ -224,6 +226,7 @@ export default async function CampaignDetailPage({
           {recipients.length === 0 ? (
             <p className="mt-3 text-sm text-[var(--muted)]">No recipients{statusFilter ? ` with status ${statusFilter}` : ''}.</p>
           ) : (
+            <div className="overflow-x-auto">
             <table className="data-table mt-3">
               <thead>
                 <tr><th>Contact</th><th>Company</th><th>Status</th><th style={{ textAlign: 'right' }}>Step</th><th>Next send</th><th>Stopped</th></tr>
@@ -241,6 +244,7 @@ export default async function CampaignDetailPage({
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>
