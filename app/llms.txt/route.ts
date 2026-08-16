@@ -10,17 +10,26 @@ export async function GET() {
 
 > Trailhead Holdings Ltd is a UK-based commercial strategy and product development house. We work with founders and operators in NGP (nicotine and reduced-risk), FMCG, and SaaS.
 
-## Services
-- NGP and FMCG commercial strategy, market entry, channel and pricing
-- Bespoke software and SaaS product development
-- In-house ventures including MVP Cricket and BrightFire
+## Two lines of work
+1. Consulting — NGP and FMCG commercial strategy, market entry, channel and pricing
+2. Web and app development — bespoke websites, web apps and mobile-first products for UK businesses
+
+## Products
+- Engineer OS (job management for UK field service teams): https://engineeros.uk
+- MVP Cricket (grassroots cricket club management SaaS): https://mvpcricket.app
 
 ## Key pages
 - Home: ${SITE_URL}/
-- MVP Cricket (grassroots cricket SaaS): ${SITE_URL}/mvp-cricket
-- BrightFire (field service software example): ${SITE_URL}/bright-fire
+- Consulting: ${SITE_URL}/consulting
+- Web & app development: ${SITE_URL}/web-app-design
+- Products: ${SITE_URL}/products
+- Engineer OS: ${SITE_URL}/engineer-os
+- MVP Cricket: ${SITE_URL}/mvp-cricket
+- BrightFire (the bespoke build that became Engineer OS): ${SITE_URL}/bright-fire
 - Contact: ${SITE_URL}/contact
 - Blog: ${SITE_URL}/blog
+- Privacy: ${SITE_URL}/privacy
+- Terms: ${SITE_URL}/terms
 
 ## Founder
 - Rob Harvey, Brentwood, Essex, UK

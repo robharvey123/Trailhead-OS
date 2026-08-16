@@ -1,50 +1,101 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
+import type { Metadata } from 'next'
 import Reveal from '@/components/marketing/Reveal'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
+import { buildMetadata } from '@/lib/seo'
 
-const features = [
+export const metadata: Metadata = buildMetadata({
+  title: 'MVP Cricket, Club Management for Grassroots Cricket',
+  description:
+    'MVP Cricket is a multi-tenant club management platform for grassroots cricket. Play-Cricket sync, automated MVP scoring, member notifications and subscriptions.',
+  path: '/mvp-cricket',
+  keywords: [
+    'cricket club management software',
+    'grassroots cricket app',
+    'play-cricket integration',
+    'cricket club admin software UK',
+  ],
+})
+
+const capabilities = [
   {
-    title: 'Scoring engine',
+    title: 'Scoring that reflects the club',
     description:
-      'Automated MVP calculations built around the way grassroots clubs actually score matches and recognise contributions.',
+      'An automated MVP engine built around how clubs actually recognise contribution — not just runs and wickets, but the things that keep a season running.',
   },
   {
     title: 'Play-Cricket sync',
     description:
-      'Pull in fixtures and results without extra admin. Keep your club records in step with the systems you already use.',
+      'Fixtures, results and the player registry pull in automatically on a daily schedule, so the volunteer who used to retype it all no longer has to.',
   },
   {
-    title: 'Leaderboards',
+    title: 'Leaderboards worth checking',
     description:
-      'Make player performance visible with live standings, weekly snapshots, and a leaderboard your members will keep checking.',
+      'Player and club standings that update through the season, giving members a reason to come back to the app between matches.',
   },
   {
-    title: 'Multi-club support',
+    title: 'Multi-club by design',
     description:
-      'Designed to support more than one club setup, making it suitable for operators managing leagues, groups, or multiple teams.',
+      'Leagues and groups running more than one team get proper tenant separation rather than a shared spreadsheet with more tabs.',
+  },
+  {
+    title: 'Notifications members actually get',
+    description:
+      'Web push and email, with per-member preferences respected at the point the message is queued rather than after it has already been sent.',
+  },
+  {
+    title: 'Subscriptions and invitations',
+    description:
+      'Stripe-backed tiers, magic-link auth and emailed invitations to bring a committee onto the platform without a password reset thread.',
   },
 ]
 
-const pricing = [
+const architecture = [
   {
-    name: 'Starter',
-    price: '£19/mo',
+    title: 'A monorepo, not a single app',
     description:
-      'Perfect for single-club rollouts getting started with automated MVP scoring.',
+      'Turborepo and pnpm workspaces split the system into a Next.js 15 web app and separate packages for the database, Play-Cricket integration, scoring, Stripe and email. Each part is testable on its own and the scoring rules are not tangled into page code.',
   },
   {
-    name: 'Club',
-    price: '£39/mo',
+    title: 'Tenant isolation in the database',
     description:
-      'For clubs that want scoring, leaderboards, and smoother player comms in one place.',
+      'The web app holds only an anon key — there is no service-role key in it at all. Every read and write goes through row-level security, and club creation runs through a security-definer RPC so the club and its first admin commit atomically or not at all.',
   },
   {
-    name: 'Multi-Club',
-    price: 'Custom',
+    title: 'Sync as an Edge Function',
     description:
-      'For organisations managing multiple clubs, competitions, or a wider member network.',
+      'Play-Cricket integration is a pure fetch-parse-transform library with no database imports, consumed by a Supabase Edge Function on a daily pg_cron schedule. API tokens live in an admin-only table and are never returned to the client after saving.',
   },
+  {
+    title: 'An outbox for notifications',
+    description:
+      'User actions enqueue notifications through a database function that resolves preferences and deduplicates, then a worker claims rows with FOR UPDATE SKIP LOCKED and retries three times. A five-minute sweep catches anything stranded, so a failed send is recoverable rather than lost.',
+  },
+  {
+    title: 'Web push written to the spec',
+    description:
+      'The push implementation is hand-rolled on WebCrypto against RFC 8291 and RFC 8292, because the usual library exceeds the edge runtime’s CPU limit. It is verified by a test that actually decrypts a payload and validates the signature, and dead subscriptions are pruned automatically.',
+  },
+  {
+    title: 'Rebuilt, then migrated',
+    description:
+      'This is the second generation. The original platform was replaced rather than patched, and the live club was migrated across on a scripted runbook with a rollback at every step — the old system left intact throughout as an archive.',
+  },
+]
+
+const stack = [
+  'Turborepo',
+  'pnpm workspaces',
+  'Next.js 15',
+  'TypeScript (strict)',
+  'Tailwind v4',
+  'Supabase',
+  'Edge Functions',
+  'pg_cron',
+  'Stripe',
+  'Resend',
+  'Vercel',
 ]
 
 export default async function MvpCricketPage() {
@@ -54,141 +105,143 @@ export default async function MvpCricketPage() {
   return (
     <div>
       <section className="px-6 py-16 md:px-8 md:py-20">
-        <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
               MVP Cricket
             </p>
-            <h1 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-              Built for grassroots cricket clubs that want a better operating
-              rhythm.
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
-              MVP Cricket turns spreadsheets, manual scoring summaries, and
-              scattered club admin into one clear system for performance
-              tracking and engagement.
-            </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href="https://mvpcricket.app"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
-              >
-                Visit mvpcricket.app
-              </Link>
-              <Link
-                href={buildMarketingHref('/#contact', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
-              >
-                Talk to us
-              </Link>
-            </div>
+            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-emerald-800">
+              Live
+            </span>
           </div>
 
-          <div className="rounded-[2rem] border border-[var(--marketing-border)] bg-[linear-gradient(180deg,#F8FAFC_0%,#EFF6FF_100%)] p-6">
-            <div className="rounded-[1.75rem] border border-sky-100 bg-white p-5 shadow-[0_20px_60px_-40px_rgba(14,165,233,0.45)]">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
-                    Season standings
-                  </p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-[-0.03em]">
-                    Derbyshire League
-                  </h2>
-                </div>
-                <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-                  2026
-                </span>
-              </div>
+          <h1 className="mt-5 max-w-3xl text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
+            Club management for grassroots cricket, run by volunteers rather
+            than administrators.
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            Clubs want to recognise what players contribute and keep members
+            engaged across a season. In practice the admin sits with one
+            volunteer and a spreadsheet, scoring gets done late or not at all,
+            and the thing that would keep players checking in never quite
+            happens. MVP Cricket takes that job off them.
+          </p>
 
-              <div className="mt-5 grid gap-3">
-                {[
-                  ['Belper CC', '1st', '492'],
-                  ['Milford Hall', '2nd', '468'],
-                  ['Ashbourne', '3rd', '451'],
-                ].map(([club, position, score]) => (
-                  <div
-                    key={club}
-                    className="grid grid-cols-[1fr_auto_auto] items-center gap-4 rounded-2xl border border-slate-100 px-4 py-3"
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <a
+              href="https://mvpcricket.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-full bg-sky-700 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-800"
+            >
+              Visit mvpcricket.app
+            </a>
+            <Link
+              href={buildMarketingHref('/contact', isLocalhost)}
+              className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
+            >
+              Talk to us about a build
+            </Link>
+          </div>
+
+          <p className="mt-8 text-sm leading-7 text-slate-600">
+            Tiered subscription pricing from{' '}
+            <strong className="font-semibold text-[var(--marketing-text)]">£19 a month</strong>, with a
+            custom tier for multi-club operators. A worked example of taking a
+            product from idea to billing customers without outside investment.
+          </p>
+        </div>
+      </section>
+
+      <Reveal>
+        <section className="border-t border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20">
+          <div className="mx-auto max-w-[1100px]">
+            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">What it does</h2>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {capabilities.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7"
+                >
+                  <h3 className="text-lg font-bold tracking-[-0.02em]">{item.title}</h3>
+                  <p className="mt-3 leading-7 text-slate-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </Reveal>
+
+      <Reveal>
+        <section className="px-6 py-16 md:px-8 md:py-20">
+          <div className="mx-auto max-w-[1100px]">
+            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">How it is built</h2>
+            <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+              The second generation of this platform, rebuilt as a monorepo. If
+              you are weighing us up for a build, this is the level of structure
+              we bring to something with real multi-tenancy in it.
+            </p>
+
+            <div className="mt-10 grid gap-5 md:grid-cols-2">
+              {architecture.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7"
+                >
+                  <h3 className="text-lg font-bold tracking-[-0.02em]">{item.title}</h3>
+                  <p className="mt-3 leading-7 text-slate-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Stack
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {stack.map((item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-4 py-2 text-xs font-semibold text-slate-600"
                   >
-                    <span className="font-semibold text-slate-800">{club}</span>
-                    <span className="text-sm text-slate-500">{position}</span>
-                    <span className="font-semibold text-sky-600">{score}</span>
-                  </div>
+                    {item}
+                  </span>
                 ))}
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <Reveal className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            Features
-          </p>
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {features.map((feature) => (
-              <article
-                key={feature.title}
-                className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8"
-              >
-                <h2 className="text-2xl font-bold tracking-[-0.03em]">
-                  {feature.title}
-                </h2>
-                <p className="mt-4 text-[0.98rem] leading-8 text-slate-600">
-                  {feature.description}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
+        </section>
       </Reveal>
 
-      <Reveal className="px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            Pricing
-          </p>
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {pricing.map((tier) => (
-              <article
-                key={tier.name}
-                className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
+      <Reveal>
+        <section className="px-6 pb-16 md:px-8 md:pb-20">
+          <div className="mx-auto max-w-[1100px] rounded-[2rem] bg-slate-950 px-8 py-14 text-white md:px-14">
+            <h2 className="max-w-2xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+              Runs a club? Or need something like this for a different sport?
+            </h2>
+            <p className="mt-5 max-w-2xl leading-8 text-slate-300">
+              MVP Cricket is live and taking clubs today. The same architecture —
+              multi-tenant, integration-fed, notification-driven — is what we
+              build for membership organisations generally.
+            </p>
+            <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+              <a
+                href="https://mvpcricket.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
               >
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  {tier.name}
-                </p>
-                <h2 className="mt-4 text-4xl font-bold tracking-[-0.04em]">
-                  {tier.price}
-                </h2>
-                <p className="mt-4 text-[0.98rem] leading-8 text-slate-600">
-                  {tier.description}
-                </p>
-              </article>
-            ))}
+                Visit mvpcricket.app
+              </a>
+              <Link
+                href={buildMarketingHref('/contact', isLocalhost)}
+                className="inline-flex items-center justify-center rounded-full border border-white/25 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Talk to us about a build
+              </Link>
+            </div>
           </div>
-        </div>
-      </Reveal>
-
-      <Reveal className="bg-slate-950 px-6 py-20 text-white md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px] text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
-            Ready to see it in action?
-          </p>
-          <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            Bring MVP Cricket into your club workflow.
-          </h2>
-          <Link
-            href="https://mvpcricket.app"
-            target="_blank"
-            rel="noreferrer"
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-400"
-          >
-            Visit mvpcricket.app
-          </Link>
-        </div>
+        </section>
       </Reveal>
     </div>
   )

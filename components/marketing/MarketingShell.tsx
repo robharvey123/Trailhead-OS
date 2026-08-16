@@ -65,22 +65,19 @@ export default function MarketingShell({
     }
   }, [menuOpen])
 
+  // The two lines of business are peers in the nav, then the things we sell.
+  // Previously this listed four products at equal weight with no way to tell
+  // consulting from builds, and Engineer OS — the only priced product with
+  // paying customers — was absent entirely.
   const navItems = [
-    { label: 'Services', href: buildMarketingHref('/#services', isLocalhost) },
+    { label: 'Consulting', href: buildMarketingHref('/consulting', isLocalhost) },
     {
-      label: 'Web & App Design',
+      label: 'Web & App',
       href: buildMarketingHref('/web-app-design', isLocalhost),
     },
-    {
-      label: 'MVP Cricket',
-      href: buildMarketingHref('/mvp-cricket', isLocalhost),
-    },
-    {
-      label: 'BrightFire',
-      href: buildMarketingHref('/bright-fire', isLocalhost),
-    },
+    { label: 'Products', href: buildMarketingHref('/products', isLocalhost) },
     { label: 'Blog', href: buildMarketingHref('/blog', isLocalhost) },
-    { label: 'Contact', href: buildMarketingHref('/#contact', isLocalhost) },
+    { label: 'Contact', href: buildMarketingHref('/contact', isLocalhost) },
   ]
 
   return (

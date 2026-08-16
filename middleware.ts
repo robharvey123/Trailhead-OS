@@ -46,15 +46,22 @@ function getMarketingRewritePath(pathname: string) {
     return pathname
   }
 
+  // Every public marketing route lives here. A path missing from this list is
+  // redirected to '/' by the caller, so adding a page means adding it here too.
+  const marketingRoots = [
+    '/blog',
+    '/consulting',
+    '/products',
+    '/engineer-os',
+    '/mvp-cricket',
+    '/bright-fire',
+    '/web-app-design',
+  ]
+
   if (
-    pathname === '/blog' ||
-    pathname.startsWith('/blog/') ||
-    pathname === '/mvp-cricket' ||
-    pathname.startsWith('/mvp-cricket/') ||
-    pathname === '/bright-fire' ||
-    pathname.startsWith('/bright-fire/') ||
-    pathname === '/web-app-design' ||
-    pathname.startsWith('/web-app-design/')
+    marketingRoots.some(
+      (root) => pathname === root || pathname.startsWith(`${root}/`)
+    )
   ) {
     return `/marketing${pathname}`
   }

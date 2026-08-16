@@ -24,83 +24,70 @@ export const metadata: Metadata = buildMetadata({
   ],
 })
 
-const services = [
+/**
+ * The homepage's two tracks. Consulting and software builds are separate
+ * businesses with separate buyers, so the page asks the visitor to pick one
+ * rather than presenting four capabilities at equal weight.
+ */
+const tracks = [
   {
-    title: 'NGP & FMCG Consulting',
+    eyebrow: 'Line one',
+    title: 'Consulting',
     description:
-      'One of a handful of UK operators with hands-on experience across both nicotine pouches and vaping. 13+ years navigating category complexity, building distributor networks, and taking brands to market across the UK and Europe.',
-    cta: 'Talk to us',
-    href: '#contact',
-    icon: (
-      <svg
-        viewBox="0 0 48 48"
-        className="h-10 w-10 text-sky-500"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      >
-        <path d="M10 34V22" />
-        <path d="M24 34V14" />
-        <path d="M38 34V8" />
-        <path d="M7 38H41" />
-      </svg>
-    ),
+      'NGP and FMCG commercial strategy from someone who has actually run these businesses — thirteen years in the category, six markets, and an exit.',
+    points: [
+      'Market entry across the UK, EU, DACH and Sweden',
+      'Distributor identification, negotiation and channel strategy',
+      'Pricing architecture and portfolio rationalisation',
+      'Interim commercial leadership while you hire',
+    ],
+    href: '/consulting',
+    cta: 'See the track record',
+    secondaryHref: '/contact',
+    secondaryCta: 'Start a conversation',
   },
   {
-    title: 'Bespoke App Development',
+    eyebrow: 'Line two',
+    title: 'Web & app development',
     description:
-      'Most businesses outgrow off-the-shelf tools before they realise it. The gaps between platforms, the manual bridging, the context-switching. We build internal tools, client portals, and SaaS products that fit the specific shape of your operation. From the first discovery conversation through to deployment and beyond.',
-    cta: 'See our work',
+      'Bespoke websites, web apps and mobile-first products for UK businesses that have outgrown the off-the-shelf tools — built and maintained by the same person who scoped them.',
+    points: [
+      'Internal tools, client portals and operational dashboards',
+      'Offline-capable field apps for teams working without signal',
+      'Full product builds taken from idea through to billing customers',
+      'Rebuilds of ageing sites for speed, search and maintainability',
+    ],
     href: '/web-app-design',
-    icon: (
-      <svg
-        viewBox="0 0 48 48"
-        className="h-10 w-10 text-sky-500"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      >
-        <path d="M18 14L8 24l10 10" />
-        <path d="M30 14l10 10-10 10" />
-      </svg>
-    ),
+    cta: 'See the work',
+    secondaryHref: '/products',
+    secondaryCta: 'See the products',
+  },
+]
+
+const productStrip = [
+  {
+    name: 'Engineer OS',
+    sector: 'Field service',
+    summary:
+      'Job management for UK field service teams. Offline job sheets, automatic certificates and asset history, from £15 per engineer a month.',
+    href: '/engineer-os',
+    cta: 'How it works',
   },
   {
-    title: 'MVP Cricket',
-    description:
-      'MVP Cricket is a SaaS platform built specifically for grassroots cricket clubs. Automated MVP scoring after every match, live Play-Cricket integration, player leaderboards, and club management tools. Everything a club needs to run more professionally and keep players more engaged, in one place.',
-    cta: 'Learn more',
+    name: 'MVP Cricket',
+    sector: 'Sports SaaS',
+    summary:
+      'Multi-tenant club management for grassroots cricket. Play-Cricket sync, automated MVP scoring and member notifications.',
     href: '/mvp-cricket',
-    icon: (
-      <svg
-        viewBox="0 0 48 48"
-        className="h-10 w-10 text-sky-500"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      >
-        <circle cx="18" cy="18" r="8" />
-        <path d="M24 24l12 12" />
-      </svg>
-    ),
+    cta: 'How it works',
   },
   {
-    title: 'BrightFire',
-    description:
-      'BrightFire is a bespoke field service management PWA we built for fire & security, electrical, HVAC, and facilities management operations. Not a subscription product — an example of the kind of tool we design and build for clients.',
-    cta: 'Learn more',
+    name: 'BrightFire',
+    sector: 'Fire & security',
+    summary:
+      'The bespoke build that became Engineer OS, made for a fire and security contractor in Harlow and productised once it proved itself.',
     href: '/bright-fire',
-    icon: (
-      <svg
-        viewBox="0 0 48 48"
-        className="h-10 w-10 text-sky-500"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      >
-        <path d="M24 8c0 0-11 12-11 20a11 11 0 0022 0c0-5-2.5-9-2.5-9s-3.5 5-7.5 5c-2 0-4-3-4-6 0-3 3-10 3-10z" />
-      </svg>
-    ),
+    cta: 'Read the story',
   },
 ]
 
@@ -109,195 +96,6 @@ const stats = [
   ['6', 'International markets operated in'],
   ['£5M+', 'Revenue built from scratch'],
   ['1', 'Successful founder exit'],
-]
-
-const consultingServices = [
-  'Go-to-market strategy and execution',
-  'Market entry, UK, EU, DACH, Sweden',
-  'Distributor identification and negotiation',
-  'Pricing architecture and value-chain design',
-  'Brand launch and route-to-market',
-  'SKU and portfolio strategy',
-  'Channel strategy, D2C, Retail, Wholesale',
-  'Interim Commercial Director',
-]
-
-const consultingTrackRecord = [
-  {
-    period: '2024.26',
-    company: 'Dholakia Tobacco',
-    role: 'Head of Sales and Business Development',
-    summary:
-      'RUSH and PAZ nicotine pouches. UK and EU expansion across DACH, Sweden, Italy, and South Africa.',
-  },
-  {
-    period: '2023.24',
-    company: 'RoarLabs',
-    role: 'Chief Executive Officer',
-    summary:
-      'Built a reduced-risk nicotine brand from the ground up. Full UK launch delivered in six months.',
-  },
-  {
-    period: '2022.23',
-    company: 'Flonq',
-    role: 'Head of Sales UK',
-    summary:
-      'UK market entry for e-cigarettes from zero. Retail and distribution coverage built within twelve months.',
-  },
-  {
-    period: '2020.22',
-    company: 'V&YOU',
-    role: 'Head of Sales and Marketing',
-    summary:
-      '£1M+ annual revenue. National UK distribution secured through Unitas.',
-  },
-  {
-    period: '2014.20',
-    company: 'EOS Leisure',
-    role: 'Founder and CCO',
-    summary:
-      'One of the UK\'s leading vaping and CBD companies. £1,500 start-up to £5M+ turnover. £4M raised. Successful exit in 2019.',
-  },
-]
-
-const categoryTags = [
-  'Nicotine Pouches',
-  'Vaping',
-  'Caffeine Pouches',
-  'CBD',
-  'Reduced-Risk',
-  'FMCG',
-  'D2C',
-  'UK and Europe',
-]
-
-const appDevelopmentStats = [
-  {
-    value: '4+',
-    label: 'Products currently in active development or deployment',
-  },
-  {
-    value: '3',
-    label: 'Core technologies used across every build',
-    detail: 'Next.js, Supabase, Tailwind',
-  },
-  {
-    value: '1',
-    label: 'Development partner throughout',
-    detail: 'Not handed off mid-project',
-  },
-]
-
-const appDevelopmentBuilds = [
-  'Internal business operating systems',
-  'Client portals and account management platforms',
-  'SaaS products with subscription and billing infrastructure',
-  'CRM and pipeline tooling',
-  'Invoicing and document generation',
-  'AI-powered modules and quoting tools',
-  'Third-party API integrations',
-  'Web push notification systems',
-]
-
-const appDevelopmentExamples = [
-  {
-    title: 'Trailhead OS',
-    summary:
-      'Our own internal operating system, built to run a multi-workstream business from a single platform. Covers a command centre dashboard, Kanban boards per workstream, CRM, invoicing with PDF generation, an AI quoting module, and a client discovery flow. Built on Next.js, TypeScript, Tailwind, and Supabase. The same stack we use for clients.',
-    href: null,
-    tag: 'Internal OS',
-  },
-  {
-    title: 'MVP Cricket',
-    summary:
-      'A SaaS platform built for grassroots cricket clubs. Automated MVP scoring after every match, live Play-Cricket integration, player leaderboards, and club management. Everything a club committee needs to operate more professionally in one place.',
-    href: '/mvp-cricket',
-    tag: 'SaaS · Sports',
-  },
-  {
-    title: 'BrightFire',
-    summary:
-      'A bespoke field service management PWA for fire & security, electrical, HVAC, and facilities management businesses. Job scheduling, digital job sheets, photo capture, and offline-first sync. A showcase of what we build for operations that have outgrown generic software.',
-    href: '/bright-fire',
-    tag: 'PWA · Field Service',
-  },
-]
-
-const appDevelopmentTags = [
-  'Next.js',
-  'TypeScript',
-  'Tailwind CSS',
-  'Supabase',
-  'SaaS',
-  'Internal Tools',
-  'Client Portals',
-  'API Integration',
-  'AI Modules',
-]
-
-const mvpStats = [
-  ['Automated', 'MVP scoring calculated without manual input'],
-  ['Live', 'Play-Cricket sync pulling match data directly'],
-  ['1', 'Platform for scoring, leaderboards, and club management'],
-]
-
-const mvpFeatures = [
-  'Automated MVP scoring engine, configurable per club',
-  'Play-Cricket API integration, live match data sync',
-  'Player leaderboards, updated after every game',
-  'Club and squad management',
-  'Season-long performance tracking',
-  'Designed for club committees, not just tech-savvy admins',
-]
-
-const mvpTags = [
-  'Grassroots Cricket',
-  'SaaS',
-  'Play-Cricket Integration',
-  'MVP Scoring',
-  'Club Management',
-  'Player Leaderboards',
-]
-
-const leaderboardRows = [
-  ['1', 'A. Turner', '128'],
-  ['2', 'L. Briggs', '117'],
-  ['3', 'J. Wood', '110'],
-  ['4', 'M. Fletcher', '102'],
-  ['5', 'C. Shaw', '96'],
-]
-
-const brightFireStats = [
-  { value: 'PWA', label: 'Works in any browser, on any device' },
-  { value: 'Offline', label: 'Fully functional without a signal' },
-  { value: 'Live', label: 'Field and office always in sync' },
-]
-
-const brightFireFeatures = [
-  'Job scheduling, dispatch, and calendar view',
-  'Digital job sheets and engineer checklists',
-  'Photo and document capture in the field',
-  'Customer and site record management',
-  'Offline-capable — syncs automatically when signal returns',
-  'Push notifications for job assignments and updates',
-]
-
-const brightFireTags = [
-  'PWA',
-  'Field Service',
-  'Fire & Security',
-  'Electrical',
-  'HVAC',
-  'Job Management',
-  'Offline-Capable',
-  'Next.js',
-  'Supabase',
-]
-
-const brightFireJobs = [
-  ['#2048', 'Fire Alarm Inspection', '09:00', 'J. Cooper', 'active'],
-  ['#2049', 'HVAC Annual Service', '11:30', 'T. Marsh', 'scheduled'],
-  ['#2050', 'Emergency Lighting Test', '14:00', 'S. White', 'scheduled'],
 ]
 
 export default async function MarketingHomePage() {
@@ -354,33 +152,59 @@ export default async function MarketingHomePage() {
 
       <Reveal
         id="services"
-        className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24"
+        className="scroll-mt-24 bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24"
       >
         <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
             What we do
           </p>
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {services.map((service) => (
+          <h2 className="mt-4 max-w-2xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+            Two lines of work, run by the same operator.
+          </h2>
+          <p className="mt-4 max-w-2xl leading-8 text-slate-600">
+            Most people arriving here need one or the other, so they are kept
+            apart rather than blended into a single list of capabilities.
+          </p>
+
+          {/* Two tracks at equal weight — a visitor self-selects once, here,
+              instead of choosing between four undifferentiated cards. */}
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            {tracks.map((track) => (
               <article
-                key={service.title}
-                className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
+                key={track.title}
+                className="flex flex-col rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] md:p-10"
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50">
-                  {service.icon}
-                </div>
-                <h2 className="mt-6 text-2xl font-bold tracking-[-0.03em]">
-                  {service.title}
-                </h2>
-                <p className="mt-4 text-[0.98rem] leading-8 text-slate-600">
-                  {service.description}
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  {track.eyebrow}
                 </p>
-                <Link
-                  href={buildMarketingHref(service.href, isLocalhost)}
-                  className="mt-6 inline-flex text-sm font-semibold text-sky-600 transition hover:text-sky-700"
-                >
-                  {service.cta}
-                </Link>
+                <h3 className="mt-4 text-3xl font-bold tracking-[-0.03em]">{track.title}</h3>
+                <p className="mt-4 leading-8 text-slate-600">{track.description}</p>
+
+                <ul className="mt-6 space-y-2.5 text-[0.98rem] text-slate-600">
+                  {track.points.map((point) => (
+                    <li key={point} className="flex gap-3">
+                      <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-700" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-8 flex flex-col gap-3 pt-2 sm:flex-row">
+                  <Link
+                    href={buildMarketingHref(track.href, isLocalhost)}
+                    className="inline-flex items-center justify-center rounded-full bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800"
+                  >
+                    {track.cta}
+                  </Link>
+                  {track.secondaryHref ? (
+                    <Link
+                      href={buildMarketingHref(track.secondaryHref, isLocalhost)}
+                      className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-5 py-3 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
+                    >
+                      {track.secondaryCta}
+                    </Link>
+                  ) : null}
+                </div>
               </article>
             ))}
           </div>
@@ -388,491 +212,84 @@ export default async function MarketingHomePage() {
       </Reveal>
 
       <Reveal className="px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              NGP & FMCG Consulting
-            </p>
-            <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-              Deep category expertise. From launch to scale.
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
-              One of a handful of UK operators with hands-on experience across
-              both nicotine pouches and vaping. 13+ years navigating category
-              complexity, building distributor networks, and taking brands to
-              market across the UK and Europe.
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div className="mx-auto max-w-[1100px]">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
+            Track record
+          </p>
+          <h2 className="mt-5 max-w-2xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
+            Thirteen years of it, and the companies are all real.
+          </h2>
+          <dl className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map(([value, label]) => (
               <div
                 key={label}
-                className="rounded-[1.75rem] border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-7"
+                className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-6"
               >
-                <p className="text-4xl font-bold tracking-[-0.05em] text-[var(--marketing-text)]">
-                  {value}
-                </p>
-                <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
-                  {label}
-                </p>
+                <dt className="sr-only">{label}</dt>
+                <dd>
+                  <span className="block text-3xl font-bold tracking-[-0.03em]">{value}</span>
+                  <span className="mt-2 block text-sm text-slate-600">{label}</span>
+                </dd>
               </div>
             ))}
-          </div>
-        </div>
-
-        <div className="mx-auto mt-12 grid max-w-[1100px] gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Services
-            </p>
-            <ul className="mt-6 space-y-4">
-              {consultingServices.map((service) => (
-                <li
-                  key={service}
-                  className="rounded-2xl border border-[var(--marketing-border)] bg-white px-5 py-4 text-sm font-medium leading-6 text-slate-700"
-                >
-                  {service}
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Track record
-            </p>
-            <div className="mt-6 space-y-4">
-              {consultingTrackRecord.map((entry) => (
-                <div
-                  key={`${entry.period}-${entry.company}`}
-                  className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-5"
-                >
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">
-                    {entry.period}
-                  </p>
-                  <h3 className="mt-3 text-xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-                    {entry.company}
-                  </h3>
-                  <p className="mt-2 text-sm font-semibold text-slate-700">
-                    {entry.role}
-                  </p>
-                  <p className="mt-3 text-[0.98rem] leading-7 text-slate-600">
-                    {entry.summary}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-
-        <div className="mx-auto mt-6 max-w-[1100px] rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            Category focus
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {categoryTags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
-            Available for retained advisory, project-based work, and interim
-            commercial director appointments. All engagements via Trailhead
-            Holdings Ltd.
-          </p>
-
+          </dl>
           <Link
-            href={buildMarketingHref('/#contact', isLocalhost)}
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
+            href={buildMarketingHref('/consulting', isLocalhost)}
+            className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition hover:text-sky-900"
           >
-            Talk to us
+            See the companies behind these numbers
+            <span aria-hidden="true">&rarr;</span>
           </Link>
         </div>
       </Reveal>
 
       <Reveal className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Bespoke App Development
-            </p>
-            <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-              Built for how you actually work. Not how a SaaS template assumes you do.
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
-              Most businesses outgrow off-the-shelf tools before they realise it. The gaps between platforms, the manual bridging, the context-switching. We build internal tools, client portals, and SaaS products that fit the specific shape of your operation. From the first discovery conversation through to deployment and beyond.
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            {appDevelopmentStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-[1.75rem] border border-[var(--marketing-border)] bg-white p-7"
-              >
-                <p className="text-4xl font-bold tracking-[-0.05em] text-[var(--marketing-text)]">
-                  {stat.value}
-                </p>
-                <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
-                  {stat.label}
-                </p>
-                {stat.detail ? (
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
-                    {stat.detail}
-                  </p>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mx-auto mt-12 grid max-w-[1100px] gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              What we build
-            </p>
-            <ul className="mt-6 space-y-4">
-              {appDevelopmentBuilds.map((item) => (
-                <li
-                  key={item}
-                  className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-4 text-sm font-medium leading-6 text-slate-700"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </article>
-
-          <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Examples
-            </p>
-            <div className="mt-6 space-y-4">
-              {appDevelopmentExamples.map((example) => (
-                <div
-                  key={example.title}
-                  className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-5"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <h3 className="text-xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
-                      {example.title}
-                    </h3>
-                    <span className="rounded-full border border-sky-100 bg-sky-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
-                      {example.tag}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-[0.98rem] leading-7 text-slate-600">
-                    {example.summary}
-                  </p>
-                  {example.href ? (
-                    <Link
-                      href={buildMarketingHref(example.href, isLocalhost)}
-                      className="mt-4 inline-flex text-sm font-semibold text-sky-600 transition hover:text-sky-700"
-                    >
-                      Learn more →
-                    </Link>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
-
-        <div className="mx-auto mt-6 max-w-[1100px] rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-          <div className="flex flex-wrap gap-2">
-            {appDevelopmentTags.map((tag) => (
-              <span
-                key={tag}
-                className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
-            We work with a small number of clients at any one time. If you have a tool you need built properly, get in touch early.
+        <div className="mx-auto max-w-[1100px]">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
+            Products
+          </p>
+          <h2 className="mt-5 max-w-2xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
+            Software we built, sell and run ourselves.
+          </h2>
+          <p className="mt-5 max-w-2xl leading-8 text-slate-600">
+            Live products with paying customers, which means we carry the
+            support, the billing and the uptime. The full story of each one is on
+            its own page.
           </p>
 
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {productStrip.map((product) => (
+              <article
+                key={product.name}
+                className="flex flex-col rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-xl font-bold tracking-[-0.02em]">{product.name}</h3>
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-800">
+                    Live
+                  </span>
+                </div>
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  {product.sector}
+                </p>
+                <p className="mt-4 flex-1 leading-7 text-slate-600">{product.summary}</p>
+                <Link
+                  href={buildMarketingHref(product.href, isLocalhost)}
+                  className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition hover:text-sky-900"
+                >
+                  {product.cta}
+                  <span aria-hidden="true">&rarr;</span>
+                </Link>
+              </article>
+            ))}
+          </div>
+
           <Link
-            href={buildMarketingHref('/#contact', isLocalhost)}
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
+            href={buildMarketingHref('/products', isLocalhost)}
+            className="mt-10 inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
           >
-            Start a project
+            All products
           </Link>
-        </div>
-      </Reveal>
-
-      <Reveal className="bg-slate-950 px-6 py-20 text-slate-50 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <div className="grid gap-10 lg:grid-cols-[1fr_0.95fr] lg:items-center">
-            <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
-                MVP Cricket
-              </p>
-              <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-                Your club deserves better than a spreadsheet and a WhatsApp group.
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-slate-300">
-                MVP Cricket is a SaaS platform built specifically for grassroots cricket clubs. Automated MVP scoring after every match, live Play-Cricket integration, player leaderboards, and club management tools. Everything a club needs to run more professionally and keep players more engaged, in one place.
-              </p>
-              <Link
-                href={buildMarketingHref('/mvp-cricket', isLocalhost)}
-                className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-400"
-              >
-                Learn more
-              </Link>
-            </div>
-
-            <div className="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-[0_35px_80px_-45px_rgba(14,165,233,0.55)] backdrop-blur">
-              <div className="rounded-[1.5rem] border border-white/10 bg-slate-900 p-5">
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.28em] text-sky-300">
-                      Leaderboard
-                    </p>
-                    <h3 className="mt-2 text-xl font-semibold">
-                      Saturday 1st XI
-                    </h3>
-                  </div>
-                  <span className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold text-sky-200">
-                    Live sync
-                  </span>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  {leaderboardRows.map(([position, name, score]) => (
-                    <div
-                      key={name}
-                      className="grid grid-cols-[56px_1fr_72px] items-center rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm"
-                    >
-                      <span className="font-semibold text-sky-300">
-                        #{position}
-                      </span>
-                      <span>{name}</span>
-                      <span className="text-right font-semibold text-white">
-                        {score}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-            <article className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
-                Stats
-              </p>
-              <div className="mt-6 space-y-4">
-                {mvpStats.map(([value, label]) => (
-                  <div
-                    key={label}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4"
-                  >
-                    <p className="text-3xl font-bold tracking-[-0.05em] text-white">
-                      {value}
-                    </p>
-                    <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-300">
-                      {label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="rounded-[2rem] border border-white/10 bg-white/5 p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
-                Features
-              </p>
-              <ul className="mt-6 space-y-4">
-                {mvpFeatures.map((feature) => (
-                  <li
-                    key={feature}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm font-medium leading-6 text-slate-200"
-                  >
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </div>
-
-          <div className="mt-6 rounded-[2rem] border border-white/10 bg-white/5 p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
-              Who it is for
-            </p>
-            <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-300">
-              Any grassroots cricket club running on a mix of WhatsApp messages, shared spreadsheets, and manual scoresheets. Clubs that want to reward performance, track form across a season, and give players something to check between matches. Committee members who want to spend less time on admin and more time on cricket.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {mvpTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-sky-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-300">
-              Currently available at{' '}
-              <a
-                href="https://mvpcricket.app"
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold text-sky-300 transition hover:text-sky-200"
-              >
-                mvpcricket.app
-              </a>
-              . Built by someone who plays the game and sits on a club committee.
-            </p>
-          </div>
-        </div>
-      </Reveal>
-
-      <Reveal className="px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <div className="grid gap-10 lg:grid-cols-[1fr_0.95fr] lg:items-center">
-            <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
-                BrightFire
-              </p>
-              <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-                An example of what we build for field service businesses.
-              </h2>
-              <p className="mt-6 text-lg leading-8 text-slate-600">
-                BrightFire is not a subscription product — it is a bespoke PWA we developed to demonstrate what we can build for field service operations. Job scheduling, digital job sheets, offline capability, and real-time field-to-office sync. The kind of tool we deliver for clients who need something that fits the actual shape of how they work.
-              </p>
-              <Link
-                href={buildMarketingHref('/bright-fire', isLocalhost)}
-                className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600"
-              >
-                Learn more
-              </Link>
-            </div>
-
-            <div className="rounded-[2rem] border border-orange-100 bg-[linear-gradient(180deg,#FFF7ED_0%,#FFEDD5_100%)] p-5 shadow-[0_35px_80px_-45px_rgba(249,115,22,0.35)]">
-              <div className="rounded-[1.5rem] border border-orange-50 bg-white p-5 shadow-[0_20px_60px_-40px_rgba(249,115,22,0.25)]">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
-                      Today&apos;s jobs
-                    </p>
-                    <h3 className="mt-2 text-xl font-bold tracking-[-0.03em] text-slate-800">
-                      Field schedule
-                    </h3>
-                  </div>
-                  <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                    27 Apr
-                  </span>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  {brightFireJobs.map(([id, title, time, engineer, status]) => (
-                    <div
-                      key={id}
-                      className="grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-2xl border border-slate-100 px-4 py-3"
-                    >
-                      <span className="text-xs font-semibold text-orange-500">{id}</span>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800">{title}</p>
-                        <p className="text-xs text-slate-500">{time} · {engineer}</p>
-                      </div>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          status === 'active'
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {status === 'active' ? 'Active' : 'Scheduled'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-            <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
-                Stats
-              </p>
-              <div className="mt-6 space-y-4">
-                {brightFireStats.map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-4"
-                  >
-                    <p className="text-3xl font-bold tracking-[-0.05em] text-[var(--marketing-text)]">
-                      {stat.value}
-                    </p>
-                    <p className="mt-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
-                Features
-              </p>
-              <ul className="mt-6 space-y-4">
-                {brightFireFeatures.map((feature) => (
-                  <li
-                    key={feature}
-                    className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-4 text-sm font-medium leading-6 text-slate-700"
-                  >
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </div>
-
-          <div className="mt-6 rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-500">
-              Who it is for
-            </p>
-            <p className="mt-6 max-w-4xl text-lg leading-8 text-slate-600">
-              Field service businesses running on phone calls, paper job sheets, and email chains. Fire &amp; security, electrical, HVAC, plumbing, and facilities management teams who need a single system that works for engineers in the field and managers back at the office.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-2">
-              {brightFireTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-orange-100 bg-orange-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-orange-700"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-600">
-              An example build. If you need something like this for your operation, we can design and deliver it.
-            </p>
-
-            <Link
-              href={buildMarketingHref('/bright-fire', isLocalhost)}
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-orange-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-orange-600"
-            >
-              Learn more →
-            </Link>
-          </div>
         </div>
       </Reveal>
 
@@ -935,7 +352,7 @@ export default async function MarketingHomePage() {
         </div>
       </Reveal>
 
-      <Reveal id="contact" className="px-6 py-20 md:px-8 md:py-24">
+      <Reveal id="contact" className="scroll-mt-24 px-6 py-20 md:px-8 md:py-24">
         <div className="mx-auto grid max-w-[1100px] gap-10 lg:grid-cols-[1.1fr_0.75fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">

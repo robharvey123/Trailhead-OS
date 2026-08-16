@@ -65,10 +65,16 @@ export function buildMetadata(input: BuildMetaInput) {
       : absoluteUrl(image)
     : absoluteUrl('/opengraph-image')
 
+  // Both layouts already apply `template: '%s | Trailhead Holdings'`, so
+  // appending the site name here too rendered "… | Trailhead Holdings |
+  // Trailhead Holdings" (and three times on /contact, whose own title ends in
+  // the name). The document title is left bare for the template to complete.
+  // openGraph and twitter titles do NOT pass through the template, so those
+  // keep the full form.
   const fullTitle = `${title} | ${SITE_DEFAULTS.name}`
 
   return {
-    title: fullTitle,
+    title,
     description,
     keywords,
     alternates: { canonical: url },

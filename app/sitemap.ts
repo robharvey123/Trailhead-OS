@@ -11,11 +11,17 @@ const STATIC_ROUTES: {
   priority: number
 }[] = [
   { path: '/', changeFrequency: 'weekly', priority: 1.0 },
+  { path: '/consulting', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/web-app-design', changeFrequency: 'monthly', priority: 0.9 },
-  { path: '/bright-fire', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/products', changeFrequency: 'monthly', priority: 0.9 },
+  { path: '/engineer-os', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/mvp-cricket', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/bright-fire', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/contact', changeFrequency: 'yearly', priority: 0.6 },
   { path: '/blog', changeFrequency: 'weekly', priority: 0.9 },
+  // These are real, indexable routes and were missing from the sitemap.
+  { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
+  { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
