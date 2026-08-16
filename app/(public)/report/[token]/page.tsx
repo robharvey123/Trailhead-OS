@@ -1,7 +1,23 @@
+import type { Metadata } from 'next'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { DashboardCharts, DashboardInsights } from '@/app/(app)/workspace/[workspaceId]/dashboard/charts-lazy'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
+
+/**
+ * These are private client reports reached by an unguessable token. Without this
+ * they inherited the root layout's `index, follow`, so any token URL that leaked
+ * through a referrer header, a forwarded link or a crawled email was eligible
+ * for the search index. Belt and braces: robots.txt also disallows /report/.
+ */
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: { index: false, follow: false, noimageindex: true },
+  },
+}
 
 type ReportTokenRow = {
   id: string

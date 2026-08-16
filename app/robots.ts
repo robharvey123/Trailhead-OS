@@ -10,7 +10,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/', '/admin'],
+        // /report/ serves tokenised client reports and /discovery is a private
+        // intake form — neither should ever be indexed, even if a URL leaks.
+        disallow: ['/api/', '/_next/', '/admin', '/report/', '/discovery'],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

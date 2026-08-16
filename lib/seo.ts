@@ -54,11 +54,16 @@ export function buildMetadata(input: BuildMetaInput) {
   } = input
 
   const url = absoluteUrl(path)
+  // Defining `openGraph` at all suppresses Next's opengraph-image file
+  // convention for this route, so pages built here must name the image
+  // explicitly. '/opengraph-image' (no extension) is the route that
+  // app/opengraph-image.tsx actually serves; the old default pointed at
+  // '/opengraph-image.png', which is a 404.
   const ogImage = image
     ? image.startsWith('http')
       ? image
       : absoluteUrl(image)
-    : absoluteUrl('/opengraph-image.png')
+    : absoluteUrl('/opengraph-image')
 
   const fullTitle = `${title} | ${SITE_DEFAULTS.name}`
 
@@ -82,7 +87,7 @@ export function buildMetadata(input: BuildMetaInput) {
       siteName: SITE_DEFAULTS.name,
       locale: SITE_DEFAULTS.defaultLocale,
       type,
-      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: title }] } : {}),
       ...(type === 'article' && publishedTime ? { publishedTime } : {}),
       ...(type === 'article' && modifiedTime ? { modifiedTime } : {}),
       ...(type === 'article' && authors ? { authors } : {}),
@@ -91,7 +96,7 @@ export function buildMetadata(input: BuildMetaInput) {
       card: 'summary_large_image' as const,
       title: fullTitle,
       description,
-      images: [ogImage],
+      ...(ogImage ? { images: [ogImage] } : {}),
       ...(SITE_DEFAULTS.twitterHandle
         ? { creator: SITE_DEFAULTS.twitterHandle }
         : {}),

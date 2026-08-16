@@ -40,13 +40,17 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: `${SITE_DEFAULTS.name} | ${SITE_DEFAULTS.tagline}`,
     description: SITE_DEFAULTS.description,
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: SITE_DEFAULTS.name }],
+    // No explicit `images` here on purpose. app/opengraph-image.tsx generates
+    // the real 1200x630 card and Next serves it via the file convention; an
+    // explicit entry OVERRIDES that convention, and the path this used to
+    // hardcode ('/opengraph-image.png') is a 404 — so every social card on
+    // every route rendered blank.
   },
   twitter: {
     card: 'summary_large_image',
     title: `${SITE_DEFAULTS.name} | ${SITE_DEFAULTS.tagline}`,
     description: SITE_DEFAULTS.description,
-    images: ['/opengraph-image.png'],
+    // Same reasoning as openGraph above — let the file convention supply it.
   },
   robots: {
     index: true,

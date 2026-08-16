@@ -29,6 +29,14 @@ const publicRoutePrefixes = ['/report', '/auth/claim']
 const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron', '/api/mcp', '/api/webhooks/resend', '/api/outreach/unsubscribe']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
+// Next's generated metadata images (app/opengraph-image.tsx and friends) are
+// served at extensionless paths, so PUBLIC_ASSET_PATTERN above does not match
+// them and they were being auth-gated — a social crawler following og:image got
+// a 307 to /login instead of the picture. Crawlers are never authenticated, so
+// these must be public.
+const METADATA_IMAGE_PATTERN =
+  /^\/(opengraph-image|twitter-image|icon|apple-icon)(\/|$)/
+
 function getMarketingRewritePath(pathname: string) {
   if (pathname === '/') {
     return '/marketing'
@@ -76,7 +84,8 @@ export async function middleware(request: NextRequest) {
     : !isAppSubdomain
   const pathname = request.nextUrl.pathname
   const isApiRequest = pathname.startsWith('/api/')
-  const isPublicAsset = PUBLIC_ASSET_PATTERN.test(pathname)
+  const isPublicAsset =
+    PUBLIC_ASSET_PATTERN.test(pathname) || METADATA_IMAGE_PATTERN.test(pathname)
 
   if (isPublicAsset) {
     return NextResponse.next()

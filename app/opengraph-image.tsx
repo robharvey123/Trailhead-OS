@@ -35,12 +35,14 @@ export default function OpengraphImage() {
           Trailhead Holdings
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.1 }}>
-            Commercial strategy.
-            <br />
-            Digital products.
-            <br />
-            Built to last.
+          {/* Satori (next/og) throws on any element with more than one child
+              unless display is explicit — the <br/>-separated version of this
+              block crashed the route with a 500, so no OG image was ever
+              generated. Separate flex rows instead of line breaks. */}
+          <div style={{ display: 'flex', flexDirection: 'column', fontSize: 76, fontWeight: 700, lineHeight: 1.1 }}>
+            <div style={{ display: 'flex' }}>Commercial strategy.</div>
+            <div style={{ display: 'flex' }}>Digital products.</div>
+            <div style={{ display: 'flex' }}>Built to last.</div>
           </div>
           <div style={{ fontSize: 28, opacity: 0.8 }}>
             NGP and FMCG consulting. Bespoke software. SaaS ventures.
