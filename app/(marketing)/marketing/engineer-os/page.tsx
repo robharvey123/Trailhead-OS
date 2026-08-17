@@ -33,7 +33,7 @@ const capabilities = [
   {
     title: 'Assets with their own history',
     description:
-      'Every unit on every site carries its own service record. When an insurer asks you to prove a panel was serviced on time, it is one click rather than an afternoon in a filing cabinet.',
+      'Every unit on every site carries its own service record, so the evidence for any audit is assembled by the system rather than by someone remembering which folder it went in.',
   },
   {
     title: 'Renewals before they lapse',
@@ -117,15 +117,15 @@ export default async function EngineerOsPage() {
           </div>
 
           <h1 className="mt-5 max-w-3xl text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-            Job management for field service teams that were priced out of the
-            enterprise stuff.
+            An insurer asks you to prove every alarm was serviced on time. How
+            long does that take?
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            Small field service firms run on a mix of WhatsApp groups, Word
-            templates and a filing cabinet. The work is rarely the hard part.
-            Proving it happened, on time, to whoever is asking, is what costs
-            them. Engineer OS is built for those firms specifically — not scaled
-            down from something designed for a fleet ten times the size.
+            If the answer is most of an afternoon in a filing cabinet, that is
+            what Engineer OS is for. The work is rarely the hard part for a small
+            field service firm &mdash; proving it happened is. Built for firms
+            that run on WhatsApp groups and Word templates, not scaled down from
+            something designed for a fleet ten times the size.
           </p>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">

@@ -78,14 +78,13 @@ export default async function ProductsPage() {
             Products
           </p>
           <h1 className="mt-5 max-w-3xl text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-            Software we built, sell and run ourselves.
+            Two of these might already do what you need.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            These are not case studies. They are live products with paying
-            customers, which means we carry the support, the billing and the
-            uptime — the parts of software that only show up after launch. It is
-            also the most honest answer to whether we can build something that
-            lasts.
+            Before commissioning a build, it is worth checking whether the thing
+            already exists. These are live products with paying customers, which
+            means we carry the support, the billing and the uptime &mdash; the
+            parts of software that only show up long after launch.
           </p>
         </div>
       </section>

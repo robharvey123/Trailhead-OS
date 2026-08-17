@@ -116,15 +116,14 @@ export default async function MvpCricketPage() {
           </div>
 
           <h1 className="mt-5 max-w-3xl text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-            Club management for grassroots cricket, run by volunteers rather
-            than administrators.
+            Your club runs on one volunteer and a spreadsheet.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            Clubs want to recognise what players contribute and keep members
-            engaged across a season. In practice the admin sits with one
-            volunteer and a spreadsheet, scoring gets done late or not at all,
-            and the thing that would keep players checking in never quite
-            happens. MVP Cricket takes that job off them.
+            Everyone wants to recognise what players contribute and keep members
+            engaged through a season. In practice the scoring gets done late, or
+            not at all, and the thing that would keep players checking in never
+            quite happens. MVP Cricket takes that job off whoever is currently
+            carrying it.
           </p>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">

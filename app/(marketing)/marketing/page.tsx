@@ -26,15 +26,15 @@ export const metadata: Metadata = buildMetadata({
 
 /**
  * The homepage's two tracks. Consulting and software builds are separate
- * businesses with separate buyers, so the page asks the visitor to pick one
- * rather than presenting four capabilities at equal weight.
+ * businesses with separate buyers, so the section asks what the visitor came
+ * for and lets them self-select on their problem rather than on our org chart.
  */
 const tracks = [
   {
-    eyebrow: 'Line one',
-    title: 'Consulting',
+    eyebrow: 'Consulting',
+    title: 'Grow the brand',
     description:
-      'NGP and FMCG commercial strategy from someone who has actually run these businesses — thirteen years in the category, six markets, and an exit.',
+      "Market entry, distribution and pricing for nicotine and FMCG brands going into markets that don't yet know them.",
     points: [
       'Market entry across the UK, EU, DACH and Sweden',
       'Distributor identification, negotiation and channel strategy',
@@ -47,10 +47,10 @@ const tracks = [
     secondaryCta: 'Start a conversation',
   },
   {
-    eyebrow: 'Line two',
-    title: 'Web & app development',
+    eyebrow: 'Software',
+    title: 'Build the software',
     description:
-      'Bespoke websites, web apps and mobile-first products for UK businesses that have outgrown the off-the-shelf tools — built and maintained by the same person who scoped them.',
+      'Internal tools, client portals and offline field apps — built and maintained by the person who scoped them.',
     points: [
       'Internal tools, client portals and operational dashboards',
       'Offline-capable field apps for teams working without signal',
@@ -159,11 +159,11 @@ export default async function MarketingHomePage() {
             What we do
           </p>
           <h2 className="mt-4 max-w-2xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-            Two lines of work, run by the same operator.
+            What did you come here for?
           </h2>
           <p className="mt-4 max-w-2xl leading-8 text-slate-600">
-            Most people arriving here need one or the other, so they are kept
-            apart rather than blended into a single list of capabilities.
+            Two separate businesses, run by one person &mdash; thirteen years in
+            FMCG, and the software studio that grew out of it.
           </p>
 
           {/* Two tracks at equal weight — a visitor self-selects once, here,

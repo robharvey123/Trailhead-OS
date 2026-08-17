@@ -133,14 +133,16 @@ export default async function ConsultingPage() {
               Consulting
             </p>
             <h1 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-              Thirteen years selling nicotine and FMCG brands into markets that
-              did not know them.
+              You have a brand. It needs to sell somewhere it isn&rsquo;t selling
+              yet.
             </h1>
             <p className="mt-6 text-lg leading-8 text-slate-600">
-              Most commercial advice in this category comes from people who have
-              read about it. This comes from having built a brand from £1,500 to
-              a £5M exit, launched into six markets, and negotiated the
-              distribution deals that made each of them work.
+              Maybe that is a new market, a distributor who has gone quiet, or
+              pricing that leaves nothing for anyone in the middle. Most advice
+              in this category comes from people who have read about it. This
+              comes from thirteen years of doing it &mdash; six markets, a brand
+              taken from £1,500 to a £5M exit, and the distribution deals that
+              made each of them work.
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link
