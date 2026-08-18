@@ -100,6 +100,199 @@ export async function syncGscNowAction(siteId: string) {
   }
 }
 
+// ── Phase 3: clusters, briefs, drafts ────────────────────────────────────────
+
+export async function generateClustersAction(siteId: string) {
+  await requireAdmin()
+  const { generateClusters } = await import('@/lib/growth/ai')
+  try {
+    const result = await generateClusters(siteId)
+    revalidatePath(`/growth/${siteId}/clusters`)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(
+      `/growth/${siteId}/clusters?notice=${encodeURIComponent(
+        `${result.created} clusters proposed covering ${result.assigned} keywords`
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/clusters?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function approveClusterAction(siteId: string, clusterId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+
+  try {
+    const { data: cluster } = await supabase
+      .from('seo_clusters')
+      .select('*, seo_sites!inner(name, workstream_id)')
+      .eq('id', clusterId)
+      .single()
+    if (!cluster) throw new Error('Cluster not found')
+
+    const { data: keywords } = await supabase
+      .from('seo_keywords')
+      .select('keyword')
+      .eq('cluster_id', clusterId)
+
+    // The content programme becomes a Project so it lands on the existing Gantt.
+    const { createProject } = await import('@/lib/db/projects')
+    const site = cluster.seo_sites as { name: string; workstream_id: string | null }
+    const brief = [
+      `Content programme for the "${cluster.name}" topic cluster (${site.name}).`,
+      `Pillar keyword: ${cluster.pillar_keyword ?? 'n/a'}. Intent: ${cluster.intent ?? 'n/a'}.`,
+      `Keywords: ${(keywords ?? []).map((k) => k.keyword).join(', ')}`,
+    ].join('\n')
+
+    const project = await createProject({
+      name: `Content: ${cluster.name}`,
+      description: `SEO content cluster targeting "${cluster.pillar_keyword ?? cluster.name}"`,
+      brief,
+      status: 'planning',
+      start_date: new Date().toISOString().slice(0, 10),
+      workstream_id: site.workstream_id ?? undefined,
+    })
+
+    // Heuristic planner — generates phases/milestones/tasks on the Gantt. It
+    // needs a workstream; without one the project still exists, just unplanned.
+    let planned = false
+    if (site.workstream_id) {
+      const { planProjectFromBrief } = await import('@/lib/project-planner')
+      await planProjectFromBrief({
+        projectId: project.id,
+        projectName: project.name,
+        workstreamId: site.workstream_id,
+        pricingTierId: null,
+        startDate: project.start_date ?? new Date().toISOString().slice(0, 10),
+        brief,
+      })
+      planned = true
+    }
+
+    const { error } = await supabase
+      .from('seo_clusters')
+      .update({ status: 'approved', project_id: project.id })
+      .eq('id', clusterId)
+    if (error) throw new Error(error.message)
+
+    revalidatePath(`/growth/${siteId}/clusters`)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(
+      `/growth/${siteId}/clusters?notice=${encodeURIComponent(
+        planned
+          ? `Cluster approved — project "${project.name}" created and planned`
+          : `Cluster approved — project "${project.name}" created (no workstream on the site, so no auto-plan)`
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/clusters?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function archiveClusterAction(siteId: string, clusterId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase.from('seo_clusters').update({ status: 'archived' }).eq('id', clusterId)
+  revalidatePath(`/growth/${siteId}/clusters`)
+  redirect(`/growth/${siteId}/clusters?notice=${encodeURIComponent('Cluster archived')}`)
+}
+
+export async function generateBriefAction(siteId: string, clusterId: string) {
+  await requireAdmin()
+  const { generateBrief } = await import('@/lib/growth/ai')
+  try {
+    const briefId = await generateBrief(clusterId)
+    revalidatePath(`/growth/${siteId}/briefs`)
+    redirect(`/growth/${siteId}/briefs/${briefId}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/clusters?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function approveBriefAction(siteId: string, briefId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+
+  try {
+    const { data: brief } = await supabase.from('seo_briefs').select('*').eq('id', briefId).single()
+    if (!brief) throw new Error('Brief not found')
+    if (brief.status !== 'proposed') throw new Error('Only proposed briefs can be approved')
+
+    const { error: briefError } = await supabase
+      .from('seo_briefs')
+      .update({ status: 'approved', approved_at: new Date().toISOString() })
+      .eq('id', briefId)
+    if (briefError) throw new Error(briefError.message)
+
+    // Queue the draft — the growth-draft cron picks it up within 5 minutes.
+    const { error: articleError } = await supabase.from('seo_articles').insert({
+      site_id: brief.site_id,
+      brief_id: briefId,
+      title: brief.title,
+      slug: brief.slug,
+      status: 'drafting',
+    })
+    if (articleError) throw new Error(articleError.message)
+
+    revalidatePath(`/growth/${siteId}/briefs`)
+    revalidatePath(`/growth/${siteId}/articles`)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(
+      `/growth/${siteId}/briefs?notice=${encodeURIComponent(
+        'Brief approved — draft queued, you will get a push when it is ready'
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/briefs/${briefId}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function rejectBriefAction(siteId: string, briefId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase.from('seo_briefs').update({ status: 'rejected' }).eq('id', briefId)
+  revalidatePath(`/growth/${siteId}/briefs`)
+  redirect(`/growth/${siteId}/briefs?notice=${encodeURIComponent('Brief rejected')}`)
+}
+
+export async function approveArticleAction(siteId: string, articleId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase.from('seo_articles').update({ status: 'approved' }).eq('id', articleId).eq('status', 'review')
+  revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+  revalidatePath(`/growth/${siteId}/articles`)
+  redirect(
+    `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(
+      'Article approved — publishing arrives in Phase 4'
+    )}`
+  )
+}
+
+export async function retryDraftAction(siteId: string, articleId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase
+    .from('seo_articles')
+    .update({ error: null, draft_started_at: null })
+    .eq('id', articleId)
+    .eq('status', 'drafting')
+  revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+  redirect(
+    `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent('Draft re-queued')}`
+  )
+}
+
 export async function researchKeywordsAction(siteId: string, formData: FormData) {
   await requireAdmin()
 

@@ -203,13 +203,22 @@ export default async function GrowthSitePage({
             {site.last_gsc_sync_at
               ? ` · synced ${new Date(site.last_gsc_sync_at).toLocaleString('en-GB')}`
               : ' · never synced'}
-            {' · '}
-            <Link
-              href={`/growth/${site.id}/settings`}
-              className="underline decoration-[color:var(--border)] underline-offset-2 hover:text-[color:var(--text)]"
-            >
-              settings
-            </Link>
+          </p>
+          <p className="mt-2 flex flex-wrap gap-3 text-sm">
+            {[
+              { href: `/growth/${site.id}/clusters`, label: 'Clusters' },
+              { href: `/growth/${site.id}/briefs`, label: 'Briefs' },
+              { href: `/growth/${site.id}/articles`, label: 'Articles' },
+              { href: `/growth/${site.id}/settings`, label: 'Settings' },
+            ].map((tab) => (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className="text-[color:var(--text-2)] underline decoration-[color:var(--border)] underline-offset-4 hover:text-[color:var(--accent-strong)]"
+              >
+                {tab.label}
+              </Link>
+            ))}
           </p>
         </div>
         <div className="flex items-center gap-3">

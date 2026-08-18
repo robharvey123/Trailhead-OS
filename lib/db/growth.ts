@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type {
   SeoAiMention,
+  SeoArticle,
   SeoBrief,
   SeoCluster,
   SeoGrowthScore,
@@ -127,6 +128,75 @@ export async function getSeoKeywords(
     .limit(1000)
   if (error) throw new Error(error.message)
   return (data ?? []) as SeoKeyword[]
+}
+
+export interface SeoClusterListItem extends SeoCluster {
+  keyword_count: number
+}
+
+export async function getSeoClusters(
+  siteId: string,
+  client?: SupabaseClient
+): Promise<SeoClusterListItem[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('seo_clusters')
+    .select('*')
+    .eq('site_id', siteId)
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: true })
+  if (error) throw new Error(error.message)
+  const clusters = (data ?? []) as SeoCluster[]
+
+  const counts = await Promise.all(
+    clusters.map(async (cluster) => {
+      const { count } = await supabase
+        .from('seo_keywords')
+        .select('id', { count: 'exact', head: true })
+        .eq('cluster_id', cluster.id)
+      return count ?? 0
+    })
+  )
+  return clusters.map((cluster, i) => ({ ...cluster, keyword_count: counts[i] }))
+}
+
+export async function getSeoBriefs(siteId: string, client?: SupabaseClient): Promise<SeoBrief[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('seo_briefs')
+    .select('*')
+    .eq('site_id', siteId)
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as SeoBrief[]
+}
+
+export async function getSeoBriefById(id: string, client?: SupabaseClient): Promise<SeoBrief | null> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase.from('seo_briefs').select('*').eq('id', id).maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as SeoBrief | null) ?? null
+}
+
+export async function getSeoArticles(siteId: string, client?: SupabaseClient): Promise<SeoArticle[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('seo_articles')
+    .select('*')
+    .eq('site_id', siteId)
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as SeoArticle[]
+}
+
+export async function getSeoArticleById(
+  id: string,
+  client?: SupabaseClient
+): Promise<SeoArticle | null> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase.from('seo_articles').select('*').eq('id', id).maybeSingle()
+  if (error) throw new Error(error.message)
+  return (data as SeoArticle | null) ?? null
 }
 
 export interface ArticleStub {

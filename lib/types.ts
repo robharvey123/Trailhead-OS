@@ -1655,6 +1655,8 @@ export interface SeoArticle {
   word_count: number | null
   model_used: string | null
   token_cost: number | null
+  draft_started_at: string | null
+  error: string | null
   created_at: string
   updated_at: string
 }

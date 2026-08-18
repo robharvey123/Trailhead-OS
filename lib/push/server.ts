@@ -11,7 +11,7 @@ import { supabaseService } from '@/lib/supabase/service'
  * user action that triggered it.
  */
 
-export type PushCategory = 'push_direct_message' | 'push_mention' | 'push_task_assigned' | 'push_new_email'
+export type PushCategory = 'push_direct_message' | 'push_mention' | 'push_task_assigned' | 'push_new_email' | 'push_growth'
 export type PushPayload = {
   title: string
   body: string
