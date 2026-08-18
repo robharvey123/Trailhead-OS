@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import type { SeoPrompt } from '@/lib/types'
+import { PendingButton } from '@/components/growth/PendingButton'
 import { addPromptAction, seedPromptsAction, togglePromptAction } from '../../actions'
 
 const INPUT_CLASS =
@@ -45,12 +46,9 @@ export default async function GrowthPromptsPage({
           </p>
         </div>
         <form action={seedPromptsAction.bind(null, site.id)}>
-          <button
-            type="submit"
-            className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-          >
+          <PendingButton variant="primary" pendingLabel="Writing prompts… (~30s)">
             Generate from ICP
-          </button>
+          </PendingButton>
         </form>
       </div>
 

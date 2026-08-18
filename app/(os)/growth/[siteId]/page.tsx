@@ -4,6 +4,7 @@ import { getSeoSiteById, getSiteDashboardData } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import KeywordTable from '@/components/os/growth/KeywordTable'
 import PipelineGuide from '@/components/os/growth/PipelineGuide'
+import { PendingButton } from '@/components/growth/PendingButton'
 import Sparkline from '@/components/os/growth/Sparkline'
 import type { SeoGscDaily, SeoGrowthScore } from '@/lib/types'
 import { researchKeywordsAction, syncGscNowAction } from '../actions'
@@ -302,12 +303,7 @@ export default async function GrowthSitePage({
         <div className="flex items-center gap-3">
           {site.gsc_property ? (
             <form action={syncAction}>
-              <button
-                type="submit"
-                className="rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
-              >
-                Sync GSC now
-              </button>
+              <PendingButton pendingLabel="Syncing Search Console…">Sync GSC now</PendingButton>
             </form>
           ) : null}
           <div className="group relative" tabIndex={0}>
@@ -507,12 +503,9 @@ export default async function GrowthSitePage({
             placeholder="job management software, field service app, digital job sheets"
             className="min-w-64 grow rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
           />
-          <button
-            type="submit"
-            className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-          >
+          <PendingButton variant="primary" pendingLabel="Queueing with DataForSEO…">
             Queue research
-          </button>
+          </PendingButton>
         </form>
       </div>
     </div>

@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import { blogMarkdownClassName } from '@/lib/blog'
 import { getSeoArticleById, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
+import { PendingButton } from '@/components/growth/PendingButton'
 import { approveArticleAction, mergeArticlePrAction, publishArticleAction, retryDraftAction } from '../../../actions'
 
 export default async function GrowthArticleDetailPage({
@@ -54,26 +55,20 @@ export default async function GrowthArticleDetailPage({
         ) : null}
         {article.status === 'approved' ? (
           <form action={publishArticleAction.bind(null, site.id, article.id)}>
-            <button
-              type="submit"
-              className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-            >
+            <PendingButton variant="primary" pendingLabel="Publishing…">
               {site.cms_type === 'wordpress'
                 ? 'Create WordPress draft'
                 : site.cms_type === 'internal'
                   ? 'Draft to marketing blog'
                   : 'Open publish PR'}
-            </button>
+            </PendingButton>
           </form>
         ) : null}
         {article.status === 'published' && article.publish_ref?.startsWith('http') ? (
           <form action={mergeArticlePrAction.bind(null, site.id, article.id)}>
-            <button
-              type="submit"
-              className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-            >
+            <PendingButton variant="primary" pendingLabel="Merging…">
               Merge PR → go live
-            </button>
+            </PendingButton>
           </form>
         ) : null}
         {article.status === 'drafting' && article.error ? (

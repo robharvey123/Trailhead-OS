@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSeoLinkTargets, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
+import { PendingButton } from '@/components/growth/PendingButton'
 import {
   importProspectsAction,
   markLinkLostAction,
@@ -78,12 +79,9 @@ export default async function GrowthLinksPage({
             placeholder="joblogic.com"
             className={`min-w-56 grow ${INPUT_CLASS}`}
           />
-          <button
-            type="submit"
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-          >
+          <PendingButton variant="primary" pendingLabel="Mining backlinks… (10-20s)">
             Import prospects
-          </button>
+          </PendingButton>
         </form>
       </div>
 
@@ -128,12 +126,9 @@ export default async function GrowthLinksPage({
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {target.status !== 'outreach' ? (
                     <form action={markLinkOutreachAction.bind(null, site.id, target.id)}>
-                      <button
-                        type="submit"
-                        className="rounded-2xl border border-[color:var(--border)] px-3 py-1.5 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-                      >
+                      <PendingButton className="px-3 py-1.5" pendingLabel="Marking…">
                         Mark outreach sent
-                      </button>
+                      </PendingButton>
                     </form>
                   ) : null}
                   <form
