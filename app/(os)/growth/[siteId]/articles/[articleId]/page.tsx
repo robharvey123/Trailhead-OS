@@ -58,7 +58,11 @@ export default async function GrowthArticleDetailPage({
               type="submit"
               className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
             >
-              {site.cms_type === 'wordpress' ? 'Create WordPress draft' : 'Open publish PR'}
+              {site.cms_type === 'wordpress'
+                ? 'Create WordPress draft'
+                : site.cms_type === 'internal'
+                  ? 'Draft to marketing blog'
+                  : 'Open publish PR'}
             </button>
           </form>
         ) : null}
@@ -122,6 +126,8 @@ export default async function GrowthArticleDetailPage({
                       {article.publish_ref}
                     </a>
                   </>
+                ) : article.publish_ref.startsWith('blog:') ? (
+                  <>Marketing blog draft — review and publish it from the /blog editor</>
                 ) : (
                   <>WordPress post #{article.publish_ref} (draft — publish from WP admin)</>
                 )}

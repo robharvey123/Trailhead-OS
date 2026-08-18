@@ -248,12 +248,13 @@ export async function collectReadyResults(): Promise<CollectResult> {
         const siteId = tag.startsWith(KW_TAG) ? tag.slice(KW_TAG.length) : null
         if (!siteId) throw new Error(`unusable tag: ${tag || '(empty)'}`)
         result.keywordTasks += 1
-        await storeKeywordIdeas(supabase, siteId, fetched.result, result)
+        // Sound cast: task.kind chose which fetcher ran two branches up.
+        await storeKeywordIdeas(supabase, siteId, fetched.result as KeywordIdeaItem[], result)
       } else {
         const keywordId = tag.startsWith(SERP_TAG) ? tag.slice(SERP_TAG.length) : null
         if (!keywordId) throw new Error(`unusable tag: ${tag || '(empty)'}`)
         result.serpTasks += 1
-        const payload = fetched.result[0]
+        const payload = (fetched.result as SerpTaskResult[])[0]
         if (!payload) throw new Error('task returned no result rows')
         await storeSerpSnapshot(supabase, keywordId, payload, result)
       }

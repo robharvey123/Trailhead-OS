@@ -104,7 +104,8 @@ export default async function GrowthSiteSettingsPage({
             <span className="text-[color:var(--text-2)]">CMS</span>
             <select name="cms_type" defaultValue={site.cms_type} className={`mt-1.5 ${INPUT_CLASS}`}>
               <option value="none">None (publishing disabled)</option>
-              <option value="github">GitHub — publish via pull request</option>
+              <option value="internal">Trailhead marketing blog — draft in /blog</option>
+              <option value="github">GitHub — PR to a separate site repo</option>
               <option value="wordpress">WordPress — create drafts via REST</option>
             </select>
           </label>

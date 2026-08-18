@@ -66,6 +66,7 @@ export async function updateSeoSiteAction(siteId: string, formData: FormData) {
       | 'none'
       | 'github'
       | 'wordpress'
+      | 'internal'
     let cmsConfig: Record<string, unknown> = {}
     if (cmsType === 'github') {
       cmsConfig = {
@@ -351,7 +352,9 @@ export async function publishArticleAction(siteId: string, articleId: string) {
       `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(
         site.cms_type === 'github'
           ? 'Pull request opened — merge it to go live. Distribution task created for today.'
-          : 'WordPress draft created — publish it from WP admin. Distribution task created for today.'
+          : site.cms_type === 'internal'
+            ? 'Draft created on the marketing blog — review and publish it from /blog. Distribution task created for today.'
+            : 'WordPress draft created — publish it from WP admin. Distribution task created for today.'
       )}`
     )
   } catch (err) {

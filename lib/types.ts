@@ -1535,7 +1535,7 @@ export interface OutreachCampaignStats {
 
 // ── Growth module (THH-SEO-001 v2) ──────────────────────────────────────────
 
-export type SeoCmsType = 'none' | 'github' | 'wordpress'
+export type SeoCmsType = 'none' | 'github' | 'wordpress' | 'internal'
 export type SeoKeywordSource = 'gsc' | 'dataforseo' | 'manual'
 export type SeoClusterStatus = 'proposed' | 'approved' | 'archived'
 export type SeoBriefStatus = 'proposed' | 'approved' | 'rejected' | 'drafted'

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getSeoSiteById, getSiteDashboardData } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import KeywordTable from '@/components/os/growth/KeywordTable'
+import PipelineGuide from '@/components/os/growth/PipelineGuide'
 import Sparkline from '@/components/os/growth/Sparkline'
 import type { SeoGscDaily, SeoGrowthScore } from '@/lib/types'
 import { researchKeywordsAction, syncGscNowAction } from '../actions'
@@ -187,6 +188,80 @@ export default async function GrowthSitePage({
 
   const latestScore = data.scores[0] ?? null
 
+  // ── The engine as a checklist — done-states derived from live data ──
+  const anyClusterApproved = data.clusters.some((c) => c.status === 'approved')
+  const anyBriefApproved = data.briefs.some((b) => b.status === 'approved' || b.status === 'drafted')
+  const anyArticleReady = data.articles.some((a) => a.status === 'approved' || a.status === 'published')
+  const anyPublished = data.articles.some((a) => a.status === 'published')
+  const pipelineSteps = [
+    {
+      title: 'Connect Search Console',
+      detail: site.last_gsc_sync_at
+        ? 'Synced — real queries, clicks and positions flow in daily.'
+        : site.gsc_property
+          ? 'Property set — run the first sync (button top right).'
+          : 'Add the GSC property in settings, then sync.',
+      href: site.gsc_property ? '#' : `/growth/${site.id}/settings`,
+      done: Boolean(site.last_gsc_sync_at),
+    },
+    {
+      title: 'Build the keyword list',
+      detail:
+        'Queue DataForSEO research from seed terms below; results land within ~15 minutes. GSC adds the queries you already rank for.',
+      href: '#research',
+      done: data.keywords.length > 0,
+    },
+    {
+      title: 'Group keywords into clusters',
+      detail:
+        'The model groups the list into topics worth owning. Generic clusters mean the ICP/brand voice in settings needs sharpening.',
+      href: `/growth/${site.id}/clusters`,
+      done: data.clusters.length > 0,
+    },
+    {
+      title: 'Approve a cluster',
+      detail: 'Approval creates a content-programme Project on the Gantt.',
+      href: `/growth/${site.id}/clusters`,
+      done: anyClusterApproved,
+    },
+    {
+      title: 'Generate and approve a brief',
+      detail:
+        'A brief needs a SERP snapshot for its pillar keyword (auto-queued if missing). Approving it queues the draft.',
+      href: `/growth/${site.id}/briefs`,
+      done: anyBriefApproved,
+    },
+    {
+      title: 'Review the draft',
+      detail: 'The drafting job runs every 5 minutes and pushes you a notification. Read it, then approve.',
+      href: `/growth/${site.id}/articles`,
+      done: anyArticleReady,
+    },
+    {
+      title: 'Publish',
+      detail:
+        site.cms_type === 'none'
+          ? 'Pick a publish target in settings first: Trailhead marketing blog, a GitHub repo (PR), or WordPress (draft).'
+          : 'Publish from the article page — always gated: PR to merge, or a draft to review.',
+      href: site.cms_type === 'none' ? `/growth/${site.id}/settings` : `/growth/${site.id}/articles`,
+      done: anyPublished,
+    },
+    {
+      title: 'Distribute and build links',
+      detail:
+        'Publishing creates a same-day distribution task. Mine competitor backlinks into CRM prospects on the Links page.',
+      href: `/growth/${site.id}/links`,
+      done: data.linkTargetCount > 0,
+    },
+    {
+      title: 'Measure: AI visibility + monthly report',
+      detail:
+        'Activate buyer-intent prompts (weekly runs against the AI engines) and send the monthly report from the sub-nav.',
+      href: `/growth/${site.id}/prompts`,
+      done: data.activePromptCount > 0,
+    },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -285,6 +360,8 @@ export default async function GrowthSitePage({
           {resolved.notice}
         </div>
       ) : null}
+
+      <PipelineGuide steps={pipelineSteps} />
 
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

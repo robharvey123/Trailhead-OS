@@ -42,9 +42,46 @@ export async function publishArticle(article: SeoArticle, site: SeoSite): Promis
       return publishViaGithubPr(article, site)
     case 'wordpress':
       return publishViaWordpressDraft(article, site)
+    case 'internal':
+      return publishToInternalBlog(article)
     default:
-      throw new Error('Set the site’s CMS (GitHub or WordPress) in settings before publishing')
+      throw new Error('Set the site’s CMS in settings before publishing (GitHub, WordPress, or the Trailhead marketing blog)')
   }
+}
+
+// ── Internal: draft in this app's own blog_posts (trailheadholdings.uk) ─────
+
+/** The marketing blog is database-backed, not MDX — so publishing to it is an
+ *  insert, gated the same way as WordPress: an UNPUBLISHED draft Rob reviews
+ *  in the /blog editor and publishes from there. */
+async function publishToInternalBlog(article: SeoArticle): Promise<PublishResult> {
+  const { createClient } = await import('@/lib/supabase/service')
+  const supabase = createClient()
+
+  const { data: existing } = await supabase
+    .from('blog_posts')
+    .select('id')
+    .eq('slug', article.slug)
+    .maybeSingle()
+  if (existing) {
+    throw new Error(`A blog post with slug "${article.slug}" already exists — change the slug or edit that post`)
+  }
+
+  const { data: post, error } = await supabase
+    .from('blog_posts')
+    .insert({
+      slug: article.slug,
+      title: article.title,
+      excerpt: article.meta_description ?? null,
+      body: article.body_mdx,
+      published: false,
+      tags: ['growth'],
+    })
+    .select('id')
+    .single()
+  if (error) throw new Error(error.message)
+
+  return { url: `https://trailheadholdings.uk/blog/${article.slug}`, ref: `blog:${post.id}` }
 }
 
 // ── GitHub: branch + MDX file + pull request ────────────────────────────────

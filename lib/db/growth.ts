@@ -99,7 +99,7 @@ export interface UpdateSeoSiteInput {
   brand_voice: string | null
   icp: string | null
   is_client: boolean
-  cms_type?: 'none' | 'github' | 'wordpress'
+  cms_type?: 'none' | 'github' | 'wordpress' | 'internal'
   cms_config?: Record<string, unknown>
 }
 
@@ -238,6 +238,8 @@ export interface SiteDashboardData {
   daily: SeoGscDaily[]
   scores: SeoGrowthScore[]
   mentions: SeoAiMention[]
+  activePromptCount: number
+  linkTargetCount: number
 }
 
 /** Everything the command centre renders, fetched in one parallel burst —
@@ -249,7 +251,7 @@ export async function getSiteDashboardData(
   const supabase = await getSupabase(client)
   const since28 = new Date(Date.now() - 28 * 86400_000).toISOString()
 
-  const [keywords, clusters, briefs, articles, daily, scores, mentions] = await Promise.all([
+  const [keywords, clusters, briefs, articles, daily, scores, mentions, promptRes, linkRes] = await Promise.all([
     getSeoKeywords(siteId, supabase),
     supabase
       .from('seo_clusters')
@@ -305,7 +307,26 @@ export async function getSiteDashboardData(
         if (error) throw new Error(error.message)
         return (data ?? []) as SeoAiMention[]
       }),
+    supabase
+      .from('seo_prompts')
+      .select('id', { count: 'exact', head: true })
+      .eq('site_id', siteId)
+      .eq('active', true),
+    supabase
+      .from('seo_link_targets')
+      .select('id', { count: 'exact', head: true })
+      .eq('site_id', siteId),
   ])
 
-  return { keywords, clusters, briefs, articles, daily, scores, mentions }
+  return {
+    keywords,
+    clusters,
+    briefs,
+    articles,
+    daily,
+    scores,
+    mentions,
+    activePromptCount: promptRes.count ?? 0,
+    linkTargetCount: linkRes.count ?? 0,
+  }
 }
