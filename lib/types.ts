@@ -1657,6 +1657,7 @@ export interface SeoArticle {
   token_cost: number | null
   draft_started_at: string | null
   error: string | null
+  publish_ref: string | null
   created_at: string
   updated_at: string
 }

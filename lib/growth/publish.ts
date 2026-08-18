@@ -1,0 +1,201 @@
+import type { SeoArticle, SeoSite } from '@/lib/types'
+
+/**
+ * Publishing adapters behind one interface (Growth Phase 4).
+ *
+ * - github:    opens a PR adding an MDX file to the site repo's content dir —
+ *              the right gate for a Next.js site (Vercel preview + review).
+ * - wordpress: creates a DRAFT post via the REST API with an application
+ *              password. Never publishes live — a human presses publish in
+ *              WP admin. Client domains are never auto-published.
+ *
+ * Credentials are server-side only: the GitHub token comes from
+ * GITHUB_PUBLISH_TOKEN (env), WordPress app passwords live in the admin-only
+ * seo_sites.cms_config. Nothing here is ever NEXT_PUBLIC.
+ */
+
+export interface PublishResult {
+  /** Where the article will live once merged/published. */
+  url: string
+  /** The PR URL (github) or post id (wordpress) — stored as publish_ref. */
+  ref: string
+}
+
+interface GithubCmsConfig {
+  repo?: string // "owner/name"
+  base_branch?: string
+  content_dir?: string
+}
+
+interface WordpressCmsConfig {
+  base_url?: string
+  username?: string
+  app_password?: string
+}
+
+export async function publishArticle(article: SeoArticle, site: SeoSite): Promise<PublishResult> {
+  if (!article.body_mdx) throw new Error('Article has no body to publish')
+  if (!article.slug) throw new Error('Article has no slug')
+
+  switch (site.cms_type) {
+    case 'github':
+      return publishViaGithubPr(article, site)
+    case 'wordpress':
+      return publishViaWordpressDraft(article, site)
+    default:
+      throw new Error('Set the site’s CMS (GitHub or WordPress) in settings before publishing')
+  }
+}
+
+// ── GitHub: branch + MDX file + pull request ────────────────────────────────
+
+async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`https://api.github.com${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+    },
+  })
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`GitHub ${path} failed (${res.status}): ${body.slice(0, 300)}`)
+  }
+  return (await res.json()) as T
+}
+
+function mdxFile(article: SeoArticle): string {
+  const frontmatter = [
+    '---',
+    `title: ${JSON.stringify(article.title)}`,
+    `description: ${JSON.stringify(article.meta_description ?? '')}`,
+    `date: ${JSON.stringify(new Date().toISOString().slice(0, 10))}`,
+    '---',
+    '',
+  ].join('\n')
+  return frontmatter + article.body_mdx
+}
+
+async function publishViaGithubPr(article: SeoArticle, site: SeoSite): Promise<PublishResult> {
+  const token = process.env.GITHUB_PUBLISH_TOKEN
+  if (!token) throw new Error('GITHUB_PUBLISH_TOKEN is not configured')
+  const slug = article.slug
+  if (!slug) throw new Error('Article has no slug')
+
+  const config = (site.cms_config ?? {}) as GithubCmsConfig
+  const repo = config.repo
+  if (!repo || !repo.includes('/')) {
+    throw new Error('Set cms_config.repo ("owner/name") in the site settings first')
+  }
+  const baseBranch = config.base_branch ?? 'main'
+  const contentDir = (config.content_dir ?? 'content/blog').replace(/^\/|\/$/g, '')
+  const filePath = `${contentDir}/${slug}.mdx`
+
+  const baseRef = await gh<{ object: { sha: string } }>(
+    token,
+    `/repos/${repo}/git/ref/${encodeURIComponent(`heads/${baseBranch}`)}`
+  )
+
+  // Branch names must be unique — suffix a timestamp so republish attempts
+  // never collide with an old branch.
+  const branch = `seo/${slug}-${Date.now().toString(36)}`
+  await gh(token, `/repos/${repo}/git/refs`, {
+    method: 'POST',
+    body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: baseRef.object.sha }),
+  })
+
+  await gh(token, `/repos/${repo}/contents/${filePath}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: `content: add "${article.title}"`,
+      content: Buffer.from(mdxFile(article), 'utf8').toString('base64'),
+      branch,
+    }),
+  })
+
+  const pr = await gh<{ html_url: string }>(token, `/repos/${repo}/pulls`, {
+    method: 'POST',
+    body: JSON.stringify({
+      title: `Article: ${article.title}`,
+      head: branch,
+      base: baseBranch,
+      body: [
+        `Adds \`${filePath}\` from the Growth engine.`,
+        '',
+        article.meta_description ? `> ${article.meta_description}` : '',
+        '',
+        `Target keyword: ${slug.replace(/-/g, ' ')} · ${article.word_count ?? '?'} words.`,
+        'Preview deploy will render the article; merge to publish.',
+      ].join('\n'),
+    }),
+  })
+
+  return { url: `https://${site.domain}/blog/${slug}`, ref: pr.html_url }
+}
+
+// ── WordPress: draft post via REST + application password ───────────────────
+
+/** Minimal markdown → HTML for the WP draft body. The draft is reviewed in the
+ *  WP editor before publishing, so this only needs to be readable, not perfect. */
+export function markdownToHtml(md: string): string {
+  const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const inline = (s: string) =>
+    escape(s)
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+
+  const blocks = md.split(/\n{2,}/)
+  return blocks
+    .map((block) => {
+      const trimmed = block.trim()
+      if (!trimmed) return ''
+      const heading = trimmed.match(/^(#{1,4})\s+(.*)$/)
+      if (heading && !trimmed.includes('\n')) {
+        const level = heading[1].length
+        return `<h${level}>${inline(heading[2])}</h${level}>`
+      }
+      if (trimmed.split('\n').every((l) => /^[-*]\s+/.test(l))) {
+        const items = trimmed.split('\n').map((l) => `<li>${inline(l.replace(/^[-*]\s+/, ''))}</li>`)
+        return `<ul>${items.join('')}</ul>`
+      }
+      if (trimmed.split('\n').every((l) => /^\d+\.\s+/.test(l))) {
+        const items = trimmed.split('\n').map((l) => `<li>${inline(l.replace(/^\d+\.\s+/, ''))}</li>`)
+        return `<ol>${items.join('')}</ol>`
+      }
+      return `<p>${inline(trimmed).replace(/\n/g, '<br />')}</p>`
+    })
+    .filter(Boolean)
+    .join('\n')
+}
+
+async function publishViaWordpressDraft(article: SeoArticle, site: SeoSite): Promise<PublishResult> {
+  const config = (site.cms_config ?? {}) as WordpressCmsConfig
+  if (!config.base_url || !config.username || !config.app_password) {
+    throw new Error('Set cms_config base_url, username and app_password in the site settings first')
+  }
+  const base = config.base_url.replace(/\/$/, '')
+  const auth = Buffer.from(`${config.username}:${config.app_password}`).toString('base64')
+
+  const res = await fetch(`${base}/wp-json/wp/v2/posts`, {
+    method: 'POST',
+    headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: article.title,
+      slug: article.slug,
+      // Always a draft — never auto-publish to a client domain.
+      status: 'draft',
+      content: markdownToHtml(article.body_mdx ?? ''),
+      excerpt: article.meta_description ?? '',
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`WordPress draft failed (${res.status}): ${body.slice(0, 300)}`)
+  }
+  const post = (await res.json()) as { id: number; link: string }
+  return { url: post.link, ref: String(post.id) }
+}

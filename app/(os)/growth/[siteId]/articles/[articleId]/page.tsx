@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import { blogMarkdownClassName } from '@/lib/blog'
 import { getSeoArticleById, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
-import { approveArticleAction, retryDraftAction } from '../../../actions'
+import { approveArticleAction, publishArticleAction, retryDraftAction } from '../../../actions'
 
 export default async function GrowthArticleDetailPage({
   params,
@@ -52,6 +52,16 @@ export default async function GrowthArticleDetailPage({
             </button>
           </form>
         ) : null}
+        {article.status === 'approved' ? (
+          <form action={publishArticleAction.bind(null, site.id, article.id)}>
+            <button
+              type="submit"
+              className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            >
+              {site.cms_type === 'wordpress' ? 'Create WordPress draft' : 'Open publish PR'}
+            </button>
+          </form>
+        ) : null}
         {article.status === 'drafting' && article.error ? (
           <form action={retryDraftAction.bind(null, site.id, article.id)}>
             <button
@@ -77,6 +87,47 @@ export default async function GrowthArticleDetailPage({
       {article.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           Draft failed: {article.error}
+        </div>
+      ) : null}
+
+      {article.status === 'published' ? (
+        <div className="os-card p-6">
+          <h2 className="text-sm font-semibold text-[color:var(--text)]">Published</h2>
+          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+            {article.published_url ? (
+              <>
+                Live URL:{' '}
+                <a
+                  href={article.published_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="break-all text-[color:var(--accent-strong)] underline underline-offset-2"
+                >
+                  {article.published_url}
+                </a>
+              </>
+            ) : null}
+            {article.publish_ref ? (
+              <>
+                <br />
+                {article.publish_ref.startsWith('http') ? (
+                  <>
+                    Pull request:{' '}
+                    <a
+                      href={article.publish_ref}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="break-all text-[color:var(--accent-strong)] underline underline-offset-2"
+                    >
+                      {article.publish_ref}
+                    </a>
+                  </>
+                ) : (
+                  <>WordPress post #{article.publish_ref} (draft — publish from WP admin)</>
+                )}
+              </>
+            ) : null}
+          </p>
         </div>
       ) : null}
 

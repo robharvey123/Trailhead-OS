@@ -98,6 +98,77 @@ export default async function GrowthSiteSettingsPage({
             className={`mt-1.5 ${INPUT_CLASS}`}
           />
         </label>
+        <fieldset className="rounded-2xl border border-[color:var(--border)] p-4">
+          <legend className="px-1 text-sm font-semibold text-[color:var(--text)]">Publishing</legend>
+          <label className="block text-sm">
+            <span className="text-[color:var(--text-2)]">CMS</span>
+            <select name="cms_type" defaultValue={site.cms_type} className={`mt-1.5 ${INPUT_CLASS}`}>
+              <option value="none">None (publishing disabled)</option>
+              <option value="github">GitHub — publish via pull request</option>
+              <option value="wordpress">WordPress — create drafts via REST</option>
+            </select>
+          </label>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <label className="block text-sm">
+              <span className="text-[color:var(--text-2)]">GitHub repo (owner/name)</span>
+              <input
+                name="cms_repo"
+                defaultValue={String((site.cms_config as { repo?: string }).repo ?? '')}
+                placeholder="robharvey/engineeros-site"
+                className={`mt-1.5 ${INPUT_CLASS}`}
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-[color:var(--text-2)]">Base branch</span>
+              <input
+                name="cms_base_branch"
+                defaultValue={String((site.cms_config as { base_branch?: string }).base_branch ?? 'main')}
+                className={`mt-1.5 ${INPUT_CLASS}`}
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-[color:var(--text-2)]">Content directory</span>
+              <input
+                name="cms_content_dir"
+                defaultValue={String((site.cms_config as { content_dir?: string }).content_dir ?? 'content/blog')}
+                className={`mt-1.5 ${INPUT_CLASS}`}
+              />
+            </label>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <label className="block text-sm">
+              <span className="text-[color:var(--text-2)]">WordPress base URL</span>
+              <input
+                name="cms_base_url"
+                defaultValue={String((site.cms_config as { base_url?: string }).base_url ?? '')}
+                placeholder="https://client-site.co.uk"
+                className={`mt-1.5 ${INPUT_CLASS}`}
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-[color:var(--text-2)]">WP username</span>
+              <input
+                name="cms_username"
+                defaultValue={String((site.cms_config as { username?: string }).username ?? '')}
+                className={`mt-1.5 ${INPUT_CLASS}`}
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-[color:var(--text-2)]">WP application password</span>
+              <input
+                name="cms_app_password"
+                type="password"
+                placeholder={
+                  (site.cms_config as { app_password?: string }).app_password
+                    ? 'saved — leave blank to keep'
+                    : ''
+                }
+                className={`mt-1.5 ${INPUT_CLASS}`}
+              />
+            </label>
+          </div>
+        </fieldset>
+
         <div className="flex flex-wrap items-end gap-4">
           <label className="flex items-center gap-2 text-sm text-[color:var(--text-2)]">
             <input

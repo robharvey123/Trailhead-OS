@@ -58,8 +58,32 @@ export async function updateSeoSiteAction(siteId: string, formData: FormData) {
     )
   }
 
-  const { updateSeoSite } = await import('@/lib/db/growth')
+  const { updateSeoSite, getSeoSiteById } = await import('@/lib/db/growth')
   try {
+    // CMS config: rebuild from the form, but keep the stored WordPress app
+    // password when the field is left blank (it is never echoed to the form).
+    const cmsType = (String(formData.get('cms_type') ?? 'none') || 'none') as
+      | 'none'
+      | 'github'
+      | 'wordpress'
+    let cmsConfig: Record<string, unknown> = {}
+    if (cmsType === 'github') {
+      cmsConfig = {
+        repo: String(formData.get('cms_repo') ?? '').trim(),
+        base_branch: String(formData.get('cms_base_branch') ?? '').trim() || 'main',
+        content_dir: String(formData.get('cms_content_dir') ?? '').trim() || 'content/blog',
+      }
+    } else if (cmsType === 'wordpress') {
+      const existing = await getSeoSiteById(siteId)
+      const stored = (existing?.cms_config ?? {}) as { app_password?: string }
+      const enteredPassword = String(formData.get('cms_app_password') ?? '').trim()
+      cmsConfig = {
+        base_url: String(formData.get('cms_base_url') ?? '').trim(),
+        username: String(formData.get('cms_username') ?? '').trim(),
+        app_password: enteredPassword || stored.app_password || '',
+      }
+    }
+
     await updateSeoSite(siteId, {
       name: String(formData.get('name') ?? '').trim(),
       gsc_property: String(formData.get('gsc_property') ?? '').trim() || null,
@@ -68,6 +92,8 @@ export async function updateSeoSiteAction(siteId: string, formData: FormData) {
       brand_voice: String(formData.get('brand_voice') ?? '').trim() || null,
       icp: String(formData.get('icp') ?? '').trim() || null,
       is_client: isClient,
+      cms_type: cmsType,
+      cms_config: cmsConfig,
     })
   } catch (err) {
     redirect(`/growth/${siteId}/settings?error=${encodeURIComponent(errMessage(err))}`)
@@ -276,6 +302,62 @@ export async function approveArticleAction(siteId: string, articleId: string) {
       'Article approved — publishing arrives in Phase 4'
     )}`
   )
+}
+
+export async function publishArticleAction(siteId: string, articleId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+
+  try {
+    const { data: article } = await supabase
+      .from('seo_articles')
+      .select('*')
+      .eq('id', articleId)
+      .single()
+    if (!article) throw new Error('Article not found')
+    if (article.status !== 'approved') throw new Error('Only approved articles can be published')
+    const { data: site } = await supabase.from('seo_sites').select('*').eq('id', siteId).single()
+    if (!site) throw new Error('Site not found')
+
+    const { publishArticle } = await import('@/lib/growth/publish')
+    const result = await publishArticle(article, site)
+
+    const { error } = await supabase
+      .from('seo_articles')
+      .update({
+        status: 'published',
+        published_at: new Date().toISOString(),
+        published_url: result.url,
+        publish_ref: result.ref,
+      })
+      .eq('id', articleId)
+    if (error) throw new Error(error.message)
+
+    // An article nobody sees earns nothing — distribution is a task, due today.
+    const { createEngineTaskOnce } = await import('@/lib/growth/tasks')
+    await createEngineTaskOnce({
+      title: `Distribute: ${article.title}`,
+      description: `Share ${result.url} — LinkedIn, relevant groups, forum threads. PR/ref: ${result.ref}`,
+      dueDate: new Date().toISOString().slice(0, 10),
+      priority: 'high',
+      extraLabels: ['distribution'],
+    })
+
+    revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+    revalidatePath(`/growth/${siteId}/articles`)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(
+      `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(
+        site.cms_type === 'github'
+          ? 'Pull request opened — merge it to go live. Distribution task created for today.'
+          : 'WordPress draft created — publish it from WP admin. Distribution task created for today.'
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(errMessage(err))}`)
+  }
 }
 
 export async function retryDraftAction(siteId: string, articleId: string) {

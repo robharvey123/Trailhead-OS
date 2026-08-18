@@ -98,6 +98,8 @@ export interface UpdateSeoSiteInput {
   brand_voice: string | null
   icp: string | null
   is_client: boolean
+  cms_type?: 'none' | 'github' | 'wordpress'
+  cms_config?: Record<string, unknown>
 }
 
 export async function updateSeoSite(
