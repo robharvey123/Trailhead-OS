@@ -430,7 +430,7 @@ export async function markLinkWonAction(siteId: string, targetId: string, formDa
     .single()
   await supabase
     .from('seo_link_targets')
-    .update({ status: 'won', won_url: wonUrl })
+    .update({ status: 'won', won_url: wonUrl, won_at: new Date().toISOString() })
     .eq('id', targetId)
 
   if (target) {
@@ -455,6 +455,51 @@ export async function markLinkLostAction(siteId: string, targetId: string) {
   await supabase.from('seo_link_targets').update({ status: 'lost' }).eq('id', targetId)
   revalidatePath(`/growth/${siteId}/links`)
   redirect(`/growth/${siteId}/links?notice=${encodeURIComponent('Marked lost')}`)
+}
+
+// ── Phase 6: AI visibility prompts ───────────────────────────────────────────
+
+export async function addPromptAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+  const prompt = String(formData.get('prompt') ?? '').trim()
+  if (!prompt) {
+    redirect(`/growth/${siteId}/prompts?error=${encodeURIComponent('Enter a prompt')}`)
+  }
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase.from('seo_prompts').insert({
+    site_id: siteId,
+    prompt,
+    category: String(formData.get('category') ?? '').trim() || null,
+  })
+  revalidatePath(`/growth/${siteId}/prompts`)
+  redirect(`/growth/${siteId}/prompts?notice=${encodeURIComponent('Prompt added')}`)
+}
+
+export async function togglePromptAction(siteId: string, promptId: string, active: boolean) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase.from('seo_prompts').update({ active }).eq('id', promptId)
+  revalidatePath(`/growth/${siteId}/prompts`)
+  redirect(`/growth/${siteId}/prompts`)
+}
+
+export async function seedPromptsAction(siteId: string) {
+  await requireAdmin()
+  try {
+    const { seedPrompts } = await import('@/lib/growth/visibility')
+    const added = await seedPrompts(siteId)
+    revalidatePath(`/growth/${siteId}/prompts`)
+    redirect(
+      `/growth/${siteId}/prompts?notice=${encodeURIComponent(
+        added > 0 ? `${added} buyer-intent prompts generated from the ICP` : 'No new prompts — the generated set already exists'
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/prompts?error=${encodeURIComponent(errMessage(err))}`)
+  }
 }
 
 export async function researchKeywordsAction(siteId: string, formData: FormData) {

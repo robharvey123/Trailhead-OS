@@ -1695,6 +1695,7 @@ export interface SeoLinkTarget {
   status: SeoLinkTargetStatus
   task_id: string | null
   won_url: string | null
+  won_at: string | null
   outreach_at: string | null
   followup_created: boolean
   created_at: string

@@ -210,6 +210,8 @@ export default async function GrowthSitePage({
               { href: `/growth/${site.id}/briefs`, label: 'Briefs' },
               { href: `/growth/${site.id}/articles`, label: 'Articles' },
               { href: `/growth/${site.id}/links`, label: 'Links' },
+              { href: `/growth/${site.id}/prompts`, label: 'AI prompts' },
+              { href: `/api/growth/report/${site.id}`, label: 'Monthly report' },
               { href: `/growth/${site.id}/settings`, label: 'Settings' },
             ].map((tab) => (
               <Link
