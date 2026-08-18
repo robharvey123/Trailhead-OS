@@ -52,7 +52,8 @@ export async function collectReadyResults(): Promise<CollectResult> {
   // ── Keyword ideas ──
   for (const task of await getKeywordIdeasTasksReady()) {
     try {
-      const { tag, items } = await getKeywordIdeasResult(task.id)
+      const { tag: resultTag, items } = await getKeywordIdeasResult(task.id)
+      const tag = resultTag ?? task.tag // tasks_ready carries the tag too
       const siteId = tag?.startsWith(KW_TAG) ? tag.slice(KW_TAG.length) : null
       if (!siteId) continue // not ours (e.g. posted from the DataForSEO dashboard)
       result.keywordTasks += 1
@@ -114,7 +115,8 @@ export async function collectReadyResults(): Promise<CollectResult> {
   // ── SERP snapshots ──
   for (const task of await getSerpTasksReady()) {
     try {
-      const { tag, result: serp } = await getSerpResult(task.id)
+      const { tag: resultTag, result: serp } = await getSerpResult(task.id)
+      const tag = resultTag ?? task.tag // tasks_ready carries the tag too
       const keywordId = tag?.startsWith(SERP_TAG) ? tag.slice(SERP_TAG.length) : null
       if (!keywordId) continue
       result.serpTasks += 1

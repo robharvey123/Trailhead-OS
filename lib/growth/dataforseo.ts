@@ -19,7 +19,10 @@ interface DfsTask<T> {
   id: string
   status_code: number
   status_message: string
+  /** Present on task_post/tasks_ready responses… */
   tag?: string
+  /** …but on task_get the tag is echoed inside the original request payload. */
+  data?: { tag?: string }
   result: T[] | null
 }
 
@@ -134,7 +137,7 @@ export async function getSerpResult(taskId: string): Promise<{ tag: string | nul
   const json = await dfsFetch<SerpTaskResult>(`/serp/google/organic/task_get/regular/${taskId}`)
   const task = json.tasks?.[0]
   if (!task) throw new Error(`DataForSEO SERP task ${taskId}: no task in response`)
-  return { tag: task.tag ?? null, result: task.result ?? [] }
+  return { tag: task.tag ?? task.data?.tag ?? null, result: task.result ?? [] }
 }
 
 export function dataForSeoConfigured(): boolean {
@@ -200,5 +203,5 @@ export async function getKeywordIdeasResult(
   )
   const task = json.tasks?.[0]
   if (!task) throw new Error(`DataForSEO keyword ideas task ${taskId}: no task in response`)
-  return { tag: task.tag ?? null, items: task.result ?? [] }
+  return { tag: task.tag ?? task.data?.tag ?? null, items: task.result ?? [] }
 }
