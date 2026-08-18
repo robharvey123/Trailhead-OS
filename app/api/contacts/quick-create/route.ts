@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
     for (const r of recipients) {
       const an = r.new_account_name?.trim()
       if (!an || accountByName.has(an.toLowerCase())) continue
-      const { data: existing } = await supabase.from('accounts').select('id').ilike('name', an).limit(1).maybeSingle()
+      const { data: existing } = await supabase.from('accounts').select('id').eq('record_type', 'sales').ilike('name', an).limit(1).maybeSingle()
       if (existing) { accountByName.set(an.toLowerCase(), existing.id); continue }
-      const { data: created, error } = await supabase.from('accounts').insert({ name: an, status: 'prospect' }).select('id').single()
+      const { data: created, error } = await supabase.from('accounts').insert({ name: an, status: 'prospect', record_type: 'sales' }).select('id').single()
       if (error) throw new Error(`account "${an}": ${error.message}`)
       accountByName.set(an.toLowerCase(), created.id)
     }

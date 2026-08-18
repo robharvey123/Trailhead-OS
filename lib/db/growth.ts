@@ -7,6 +7,7 @@ import type {
   SeoGrowthScore,
   SeoGscDaily,
   SeoKeyword,
+  SeoLinkTarget,
   SeoSite,
 } from '@/lib/types'
 
@@ -199,6 +200,27 @@ export async function getSeoArticleById(
   const { data, error } = await supabase.from('seo_articles').select('*').eq('id', id).maybeSingle()
   if (error) throw new Error(error.message)
   return (data as SeoArticle | null) ?? null
+}
+
+export interface SeoLinkTargetListItem extends SeoLinkTarget {
+  account_name: string | null
+}
+
+export async function getSeoLinkTargets(
+  siteId: string,
+  client?: SupabaseClient
+): Promise<SeoLinkTargetListItem[]> {
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('seo_link_targets')
+    .select('*, accounts:crm_account_id(name)')
+    .eq('site_id', siteId)
+    .order('tier', { ascending: true })
+    .order('domain_authority', { ascending: false, nullsFirst: false })
+  if (error) throw new Error(error.message)
+  return ((data ?? []) as Array<SeoLinkTarget & { accounts: { name: string } | null }>).map(
+    ({ accounts, ...rest }) => ({ ...rest, account_name: accounts?.name ?? null })
+  )
 }
 
 export interface ArticleStub {

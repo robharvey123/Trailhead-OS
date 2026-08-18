@@ -27,7 +27,7 @@ export default async function MeetingDetailPage({
   // For the picker + attendee cross-linking: all accounts, all contacts, and the
   // subset currently linked to this meeting.
   const [{ data: allAccountRows }, { data: allContactRows }, { data: linkedContactRows }] = await Promise.all([
-    supabase.from('accounts').select('id, name').order('name'),
+    supabase.from('accounts').select('id, name').eq('record_type', 'sales').order('name'),
     supabase.from('contacts').select('id, name, email, company').order('name'),
     meeting.contactIds.length > 0
       ? supabase.from('contacts').select('id, name, email').in('id', meeting.contactIds)

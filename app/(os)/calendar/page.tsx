@@ -11,7 +11,7 @@ export default async function CalendarPage() {
     getWorkstreams(supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getProjects({}, supabase).catch(() => []),
-    supabase.from('accounts').select('id, name').order('name'),
+    supabase.from('accounts').select('id, name').eq('record_type', 'sales').order('name'),
     listEngagements({ excludeTerminal: true }, supabase).catch(() => []),
     (async () => {
       try {

@@ -158,6 +158,39 @@ export async function getBacklinksSummary(
   return { referring_domains: result.referring_domains ?? 0, backlinks: result.backlinks ?? 0 }
 }
 
+export interface BacklinkItem {
+  url_from: string
+  domain_from: string
+  page_from_title: string | null
+  domain_from_rank: number | null
+}
+
+/**
+ * A competitor's backlinks, one per referring domain (Live — the backlinks API
+ * has no Standard queue). Used by prospect import; caller filters and maps
+ * into the CRM.
+ */
+export async function getCompetitorBacklinks(
+  target: string,
+  limit = 100
+): Promise<BacklinkItem[]> {
+  const json = await dfsFetch<{ items: BacklinkItem[] | null }>('/backlinks/backlinks/live', [
+    {
+      target,
+      mode: 'one_per_domain',
+      limit,
+      order_by: ['domain_from_rank,desc'],
+      exclude_internal_backlinks: true,
+    },
+  ])
+  const items = json.tasks?.[0]?.result?.[0]?.items ?? []
+  const targetHost = target.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '')
+  // Pages the competitor owns are not prospects.
+  return items.filter(
+    (i) => i.domain_from && !i.domain_from.toLowerCase().endsWith(targetHost)
+  )
+}
+
 /** Fetch one completed keyword-ideas task's results. */
 export async function getKeywordIdeasResult(
   taskId: string

@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       if (!name) return null
       const { data: acc, error } = await auth.supabase
         .from('accounts')
-        .insert({ name, status: 'prospect', workstream_id: workstreamId })
+        .insert({ name, status: 'prospect', workstream_id: workstreamId, record_type: 'sales' })
         .select('id')
         .single()
       if (error || !acc) return null

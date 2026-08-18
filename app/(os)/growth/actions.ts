@@ -375,6 +375,88 @@ export async function retryDraftAction(siteId: string, articleId: string) {
   )
 }
 
+// ── Phase 5: link building ───────────────────────────────────────────────────
+
+export async function importProspectsAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+  const competitor = String(formData.get('competitor') ?? '').trim()
+  if (!competitor) {
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent('Enter a competitor domain')}`)
+  }
+  try {
+    const { importLinkProspects } = await import('@/lib/growth/links')
+    const result = await importLinkProspects(siteId, competitor)
+    revalidatePath(`/growth/${siteId}/links`)
+    redirect(
+      `/growth/${siteId}/links?notice=${encodeURIComponent(
+        `${result.found} referring domains found — ${result.createdTargets} new targets, ${result.createdAccounts} new CRM prospects, ${result.skippedExisting} already known`
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function markLinkOutreachAction(siteId: string, targetId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase
+    .from('seo_link_targets')
+    .update({ status: 'outreach', outreach_at: new Date().toISOString() })
+    .eq('id', targetId)
+    .in('status', ['identified', 'researching'])
+  revalidatePath(`/growth/${siteId}/links`)
+  redirect(
+    `/growth/${siteId}/links?notice=${encodeURIComponent(
+      'Marked as outreach — the 7-day follow-up task is now armed (fires once)'
+    )}`
+  )
+}
+
+export async function markLinkWonAction(siteId: string, targetId: string, formData: FormData) {
+  await requireAdmin()
+  const wonUrl = String(formData.get('won_url') ?? '').trim()
+  if (!wonUrl) {
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent('Paste the URL where the link went live')}`)
+  }
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  const { data: target } = await supabase
+    .from('seo_link_targets')
+    .select('url, seo_sites!inner(name)')
+    .eq('id', targetId)
+    .single()
+  await supabase
+    .from('seo_link_targets')
+    .update({ status: 'won', won_url: wonUrl })
+    .eq('id', targetId)
+
+  if (target) {
+    const { notifyLinkWon } = await import('@/lib/growth/links')
+    const site = target.seo_sites as unknown as { name: string }
+    let host = wonUrl
+    try {
+      host = new URL(wonUrl.startsWith('http') ? wonUrl : `https://${wonUrl}`).hostname
+    } catch {
+      /* keep the raw string */
+    }
+    void notifyLinkWon(site.name, host, wonUrl)
+  }
+  revalidatePath(`/growth/${siteId}/links`)
+  redirect(`/growth/${siteId}/links?notice=${encodeURIComponent('Link won 🎉')}`)
+}
+
+export async function markLinkLostAction(siteId: string, targetId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  await supabase.from('seo_link_targets').update({ status: 'lost' }).eq('id', targetId)
+  revalidatePath(`/growth/${siteId}/links`)
+  redirect(`/growth/${siteId}/links?notice=${encodeURIComponent('Marked lost')}`)
+}
+
 export async function researchKeywordsAction(siteId: string, formData: FormData) {
   await requireAdmin()
 

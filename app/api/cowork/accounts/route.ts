@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
     let query = supabaseService
       .from('accounts')
       .select(ACCOUNT_SELECT)
+      .eq('record_type', 'sales')
       .order('name', { ascending: true })
       .limit(limit)
 

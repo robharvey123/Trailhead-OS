@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
   const { data } = await auth.supabase
     .from('accounts')
     .select('id, name, website, email_contact')
+    .eq('record_type', 'sales')
     .neq('status', 'archived')
   const accounts = (data ?? []) as AccountLite[]
 

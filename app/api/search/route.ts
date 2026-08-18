@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const [tasks, accounts, contacts, deals, invoices, quotes, projects, engagements] =
       await Promise.all([
         supabase.from('tasks').select('id, title, status').ilike('title', pattern).limit(PER_MODULE),
-        supabase.from('accounts').select('id, name, status').ilike('name', pattern).limit(PER_MODULE),
+        supabase.from('accounts').select('id, name, status').eq('record_type', 'sales').ilike('name', pattern).limit(PER_MODULE),
         supabase
           .from('contacts')
           .select('id, name, email, company')

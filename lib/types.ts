@@ -74,6 +74,7 @@ export interface Activity {
 export interface Account {
   id: string
   name: string
+  record_type?: 'sales' | 'link_prospect'
   website?: string
   industry?: string
   size?: '1-10' | '11-50' | '51-200' | '201-500' | '500+'
@@ -1694,5 +1695,7 @@ export interface SeoLinkTarget {
   status: SeoLinkTargetStatus
   task_id: string | null
   won_url: string | null
+  outreach_at: string | null
+  followup_created: boolean
   created_at: string
 }

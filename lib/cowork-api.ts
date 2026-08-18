@@ -695,6 +695,7 @@ export async function findAccountByName(name: string) {
   const { data, error } = await supabaseService
     .from('accounts')
     .select('id, name')
+    .eq('record_type', 'sales')
     .ilike('name', name)
     .order('updated_at', { ascending: false })
     .limit(1)
@@ -916,6 +917,7 @@ export async function findAccountByExactName(name: string) {
   const { data, error } = await supabaseService
     .from('accounts')
     .select(ACCOUNT_SELECT)
+    .eq('record_type', 'sales')
     .ilike('name', name)
   if (error) throw new CoworkApiError(error.message || 'Failed to load account', 500)
   const lower = name.trim().toLowerCase()

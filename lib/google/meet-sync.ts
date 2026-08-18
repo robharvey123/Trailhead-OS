@@ -49,7 +49,7 @@ export async function syncMeetings({ sinceHours = 6 }: { sinceHours?: number } =
 
   // Matching reference data + per-event token routing, loaded once.
   const [{ data: accounts }, { data: contacts }, { data: deals }, tokens, { data: syncs }] = await Promise.all([
-    supabase.from('accounts').select('id, website, email_contact'),
+    supabase.from('accounts').select('id, website, email_contact').eq('record_type', 'sales'),
     supabase.from('contacts').select('id, email, account_id'),
     supabase.from('deals').select('id, account_id, stage, updated_at'),
     getAllGoogleTokens(),

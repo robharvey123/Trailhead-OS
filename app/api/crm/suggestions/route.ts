@@ -27,7 +27,7 @@ export async function GET() {
   const supabase = auth.supabase
 
   const [{ data: accData }, { data: conData }] = await Promise.all([
-    supabase.from('accounts').select('id, name, website, email_contact'),
+    supabase.from('accounts').select('id, name, website, email_contact').eq('record_type', 'sales'),
     supabase.from('contacts').select('id, name, company, email, account_id, link_skipped_at'),
   ])
   const accounts = (accData ?? []) as AccountLite[]

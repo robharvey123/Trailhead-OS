@@ -155,7 +155,7 @@ async function resolveAccountRef(
     const existing = await findAccountByExactName(name)
     if (existing) return existing.id
     if (create) {
-      const { data, error } = await supabaseService.from('accounts').insert({ name }).select('id').single()
+      const { data, error } = await supabaseService.from('accounts').insert({ name, record_type: 'sales' }).select('id').single()
       if (error) throw new CoworkApiError(error.message || 'Failed to create account', 500)
       return data.id as string
     }

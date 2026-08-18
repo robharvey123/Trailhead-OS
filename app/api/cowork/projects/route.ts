@@ -160,6 +160,7 @@ export async function POST(request: NextRequest) {
       const { data: account, error: accountError } = await supabaseService
         .from('accounts')
         .select('id')
+        .eq('record_type', 'sales')
         .ilike('name', accountName)
         .limit(1)
         .maybeSingle()

@@ -45,7 +45,9 @@ export async function syncMailbox({
     // Archived contacts (e.g. merge losers, retired duplicates) must not capture
     // mail — a live email should attach to the contact still in use.
     supabase.from('contacts').select('id, email, account_id').neq('status', 'archived'),
-    supabase.from('accounts').select('id, website, email_contact'),
+    // record_type filter: link-building prospects share domains with outreach
+    // targets — they must never capture inbound mail matching.
+    supabase.from('accounts').select('id, website, email_contact').eq('record_type', 'sales'),
   ])
   const maps = buildAutolinkMaps(contacts ?? [], accounts ?? [], selfEmails)
 

@@ -54,6 +54,9 @@ export async function getAccounts(
     status?: AccountStatus
     channel?: string
     search?: string
+    /** 'sales' (default) keeps link-building prospects out of every sales
+     *  view/picker; pass 'link_prospect' or 'any' to widen deliberately. */
+    record_type?: 'sales' | 'link_prospect' | 'any'
   } = {},
   client?: SupabaseClient
 ): Promise<AccountListItem[]> {
@@ -62,6 +65,10 @@ export async function getAccounts(
     .from('accounts')
     .select('*, workstreams(label, colour)')
     .order('created_at', { ascending: false })
+
+  if ((filters.record_type ?? 'sales') !== 'any') {
+    query = query.eq('record_type', filters.record_type ?? 'sales')
+  }
 
   if (filters.workstream_id) {
     query = query.eq('workstream_id', filters.workstream_id)
@@ -262,6 +269,7 @@ function sanitizeAccountPayload(data: AccountMutationInput) {
   if ('country' in data) payload.country = data.country?.trim() || 'UK'
   if ('notes' in data) payload.notes = data.notes?.trim() || null
   if ('tags' in data) payload.tags = data.tags ?? []
+  if ('record_type' in data) payload.record_type = (data as Record<string, unknown>).record_type ?? 'sales'
 
   return payload
 }
