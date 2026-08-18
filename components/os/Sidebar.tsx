@@ -8,7 +8,7 @@ import {
   IconDashboard, IconCalendar, IconTasks, IconMessages, IconInbox,
   IconEngagements, IconProjects, IconTimesheet, IconAccounts, IconContacts,
   IconMeetings, IconDeals, IconOutreach, IconEnquiries, IconQuotes,
-  IconInvoicing, IconExpenses, IconAnalytics, IconReport, IconBlog,
+  IconInvoicing, IconExpenses, IconAnalytics, IconGrowth, IconReport, IconBlog,
   IconDiscovery, IconSettings, IconSignOut,
 } from '@/components/os/nav-icons'
 
@@ -230,6 +230,7 @@ const NAV_GROUPS: NavGroup[] = [
     header: 'Insights',
     items: [
       { href: '/analytics', label: 'Analytics', icon: <IconAnalytics className={ICON_CLASS} />, match: (p) => p.startsWith('/analytics') || p.startsWith('/workspaces') || p.startsWith('/workspace') },
+      { href: '/growth', label: 'Growth', icon: <IconGrowth className={ICON_CLASS} />, match: (p) => p.startsWith('/growth') },
       { href: '/reports/weekly', label: 'Weekly Report', icon: <IconReport className={ICON_CLASS} />, match: (p) => p.startsWith('/reports') },
     ],
   },

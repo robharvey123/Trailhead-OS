@@ -1531,3 +1531,137 @@ export interface OutreachCampaignStats {
   delivered: number
   opened: number
 }
+
+// ── Growth module (THH-SEO-001 v2) ──────────────────────────────────────────
+
+export type SeoCmsType = 'none' | 'github' | 'wordpress'
+export type SeoKeywordSource = 'gsc' | 'dataforseo' | 'manual'
+export type SeoClusterStatus = 'proposed' | 'approved' | 'archived'
+export type SeoBriefStatus = 'proposed' | 'approved' | 'rejected' | 'drafted'
+export type SeoArticleStatus = 'drafting' | 'review' | 'approved' | 'published' | 'archived'
+export type SeoLinkTargetStatus = 'identified' | 'researching' | 'outreach' | 'won' | 'lost'
+
+export interface SeoSite {
+  id: string
+  name: string
+  domain: string
+  workstream_id: string | null
+  client_account_id: string | null
+  cms_type: SeoCmsType
+  cms_config: Record<string, unknown>
+  brand_voice: string | null
+  icp: string | null
+  gsc_property: string | null
+  is_client: boolean
+  last_gsc_sync_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SeoCluster {
+  id: string
+  site_id: string
+  name: string
+  pillar_keyword: string | null
+  intent: string | null
+  priority: number
+  target_url: string | null
+  project_id: string | null
+  status: SeoClusterStatus
+  created_at: string
+}
+
+export interface SeoKeyword {
+  id: string
+  site_id: string
+  keyword: string
+  search_volume: number | null
+  difficulty: number | null
+  intent: string | null
+  source: SeoKeywordSource
+  gsc_impressions: number | null
+  gsc_clicks: number | null
+  gsc_position: number | null
+  cluster_id: string | null
+  status: string
+  last_refreshed_at: string | null
+  created_at: string
+}
+
+export interface SeoSerpSnapshot {
+  id: string
+  keyword_id: string
+  captured_at: string
+  results: Record<string, unknown>
+}
+
+export interface SeoBrief {
+  id: string
+  site_id: string
+  cluster_id: string | null
+  title: string
+  slug: string | null
+  target_keyword: string | null
+  secondary_keywords: string[]
+  intent: string | null
+  outline: Record<string, unknown> | null
+  word_target: number | null
+  internal_links: Record<string, unknown> | null
+  status: SeoBriefStatus
+  created_at: string
+  approved_at: string | null
+}
+
+export interface SeoArticle {
+  id: string
+  site_id: string
+  brief_id: string | null
+  title: string
+  slug: string | null
+  body_mdx: string | null
+  meta_description: string | null
+  schema_jsonld: Record<string, unknown> | null
+  status: SeoArticleStatus
+  published_url: string | null
+  published_at: string | null
+  word_count: number | null
+  model_used: string | null
+  token_cost: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SeoPrompt {
+  id: string
+  site_id: string
+  prompt: string
+  category: string | null
+  active: boolean
+  created_at: string
+}
+
+export interface SeoAiMention {
+  id: string
+  site_id: string
+  prompt_id: string
+  provider: string
+  run_at: string
+  brand_mentioned: boolean
+  position: number | null
+  competitors_mentioned: string[]
+  raw_response: string | null
+}
+
+export interface SeoLinkTarget {
+  id: string
+  site_id: string
+  crm_account_id: string | null
+  url: string
+  domain_authority: number | null
+  angle: string | null
+  tier: number | null
+  status: SeoLinkTargetStatus
+  task_id: string | null
+  won_url: string | null
+  created_at: string
+}

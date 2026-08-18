@@ -80,6 +80,9 @@ export const IconExpenses = (p: IconProps) => (
 export const IconAnalytics = (p: IconProps) => (
   <Base {...p}><path d="M4 4v15.5a.5.5 0 0 0 .5.5H20" /><path d="M8 16.5V12M12 16.5V8M16 16.5v-3" /></Base>
 )
+export const IconGrowth = (p: IconProps) => (
+  <Base {...p}><path d="M3.5 17.5l5.5-5.5 3.5 3.5 7.5-7.5" /><path d="M15 7.5h5v5" /></Base>
+)
 export const IconReport = (p: IconProps) => (
   <Base {...p}><path d="M6 3.5h8l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19z" /><path d="M13.5 3.5v4.5H18M9.5 16.5V13M12 16.5v-5M14.5 16.5v-2.5" /></Base>
 )

@@ -38,7 +38,22 @@ const SCOPES = [
   'https://www.googleapis.com/auth/meetings.space.readonly',
   'https://www.googleapis.com/auth/drive.readonly',
   'https://www.googleapis.com/auth/documents.readonly',
+  // Search Console (Growth module GSC sync). Read-only; granted on next reconnect.
+  'https://www.googleapis.com/auth/webmasters.readonly',
 ]
+
+export const GSC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly'
+
+/**
+ * Whether a stored grant covers a scope. Google returns the granted set as a
+ * space-delimited string; a scope added to SCOPES after a token was issued is
+ * NOT retroactively granted — API calls fail with a 403 that is not
+ * `invalid_grant`, so callers must check this and flag `needs_reconnect`
+ * themselves (the reconnect banner then handles re-consent).
+ */
+export function tokenHasScope(row: Pick<GoogleTokens, 'scope'>, scope: string): boolean {
+  return (row.scope ?? '').split(/\s+/).includes(scope)
+}
 
 // Restrict the OAuth flow to the Trailhead Workspace identity.
 const HOSTED_DOMAIN = 'trailheadholdings.uk'
