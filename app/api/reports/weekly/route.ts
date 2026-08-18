@@ -27,7 +27,8 @@ Structure: Start with headline summary, then highlight workstreams that need att
   try {
     const response = await anthropic.messages.create({
       model: ANTHROPIC_MODELS.SONNET,
-      max_tokens: 512,
+      // Sonnet 5 thinks by default and thinking shares max_tokens with the answer.
+      max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }],
     })
 

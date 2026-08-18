@@ -94,7 +94,7 @@ export async function generateClusters(siteId: string): Promise<{ created: numbe
     const system = attempt === 0 ? CLUSTERS_SYSTEM : `${CLUSTERS_SYSTEM}\n\nYour previous response was rejected: ${reason}. Return ONLY valid JSON for the schema.`
     const response = await anthropic.messages.create({
       model: ANTHROPIC_MODELS.OPUS,
-      max_tokens: 4000,
+      max_tokens: 8000,
       system,
       messages: [{ role: 'user', content: JSON.stringify(payload) }],
     })
@@ -300,7 +300,7 @@ export async function generateBrief(clusterId: string): Promise<string> {
     const system = attempt === 0 ? BRIEF_SYSTEM : `${BRIEF_SYSTEM}\n\nYour previous response was rejected: ${reason}. Return ONLY valid JSON for the schema.`
     const response = await anthropic.messages.create({
       model: ANTHROPIC_MODELS.OPUS,
-      max_tokens: 4000,
+      max_tokens: 8000,
       system,
       messages: [{ role: 'user', content: JSON.stringify(payload) }],
     })
@@ -399,7 +399,7 @@ export async function draftArticle(brief: SeoBrief, site: SeoSite): Promise<Draf
   const model = ANTHROPIC_MODELS.OPUS
   const response = await anthropic.messages.create({
     model,
-    max_tokens: 8000,
+    max_tokens: 12000,
     system: DRAFT_SYSTEM,
     messages: [{ role: 'user', content: JSON.stringify(payload) }],
   })

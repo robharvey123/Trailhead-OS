@@ -126,7 +126,8 @@ export function validateNarrative(narrative: Narrative, spine: EngagementPeriodS
 async function callClaude(spine: EngagementPeriodSpine, extra: string): Promise<string> {
   const response = await anthropic.messages.create({
     model: ANTHROPIC_MODELS.SONNET,
-    max_tokens: 1500,
+    // Sonnet 5 thinks by default and thinking shares max_tokens with the answer.
+    max_tokens: 4000,
     system: (SYSTEM_PROMPT + extra).trim(),
     messages: [{ role: 'user', content: JSON.stringify(buildPayload(spine)) }],
   })

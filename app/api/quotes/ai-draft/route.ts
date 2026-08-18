@@ -662,9 +662,10 @@ function enforceHostingLineItem(
 
 async function callAnthropic(system: string, user: string) {
   const response = await anthropic.messages.create({
+    // Opus 5: temperature is rejected (400); thinking is on by default and
+    // shares max_tokens with the answer, hence the extra headroom.
     model: ANTHROPIC_MODELS.OPUS,
-    max_tokens: 6000,
-    temperature: 0,
+    max_tokens: 16000,
     system,
     messages: [
       {

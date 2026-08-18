@@ -96,7 +96,8 @@ Promo stock is valued at zero; do not treat promo units as a cost line item.
   try {
     const response = await anthropic.messages.create({
       model: ANTHROPIC_MODELS.SONNET,
-      max_tokens: 1500,
+      // Sonnet 5 thinks by default and thinking shares max_tokens with the answer.
+      max_tokens: 4000,
       system: instructions.trim(),
       messages: [
         {
