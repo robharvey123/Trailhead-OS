@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSeoClusters, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
+import { PendingButton } from '@/components/growth/PendingButton'
 import {
   approveClusterAction,
   archiveClusterAction,
@@ -44,12 +45,13 @@ export default async function GrowthClustersPage({
           </p>
         </div>
         <form action={generateClustersAction.bind(null, site.id)}>
-          <button
-            type="submit"
-            className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          <PendingButton
+            variant="primary"
+            className="px-4 py-3 font-semibold"
+            pendingLabel="Generating clusters…"
           >
             Generate clusters
-          </button>
+          </PendingButton>
         </form>
       </div>
 
@@ -91,31 +93,18 @@ export default async function GrowthClustersPage({
                 {cluster.status === 'proposed' ? (
                   <>
                     <form action={approveClusterAction.bind(null, site.id, cluster.id)}>
-                      <button
-                        type="submit"
-                        className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
-                      >
+                      <PendingButton variant="primary" pendingLabel="Creating project…">
                         Approve → create project
-                      </button>
+                      </PendingButton>
                     </form>
                     <form action={archiveClusterAction.bind(null, site.id, cluster.id)}>
-                      <button
-                        type="submit"
-                        className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-                      >
-                        Archive
-                      </button>
+                      <PendingButton pendingLabel="Archiving…">Archive</PendingButton>
                     </form>
                   </>
                 ) : null}
                 {cluster.status !== 'archived' ? (
                   <form action={generateBriefAction.bind(null, site.id, cluster.id)}>
-                    <button
-                      type="submit"
-                      className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-                    >
-                      Generate brief
-                    </button>
+                    <PendingButton pendingLabel="Writing brief…">Generate brief</PendingButton>
                   </form>
                 ) : null}
                 {cluster.project_id ? (

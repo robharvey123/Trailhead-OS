@@ -205,3 +205,39 @@ export async function getKeywordIdeasResult(
   if (!task) throw new Error(`DataForSEO keyword ideas task ${taskId}: no task in response`)
   return { tag: task.tag ?? task.data?.tag ?? null, items: task.result ?? [] }
 }
+
+/**
+ * Per-task status codes on task_get. 20000 is a collected result; the 402xx/
+ * 40602 family means DataForSEO is still working on it, so the caller should
+ * leave the task pending and try again on the next tick rather than burning it.
+ */
+const IN_QUEUE_STATUS = new Set([40601, 40602, 40700])
+
+export type TaskFetch<T> =
+  | { state: 'ready'; tag: string | null; result: T[] }
+  | { state: 'pending' }
+  | { state: 'failed'; reason: string }
+
+async function fetchTask<T>(path: string): Promise<TaskFetch<T>> {
+  const json = await dfsFetch<T>(path)
+  const task = json.tasks?.[0]
+  if (!task) return { state: 'failed', reason: 'no task in response' }
+  if (IN_QUEUE_STATUS.has(task.status_code)) return { state: 'pending' }
+  if (task.status_code !== 20000) {
+    return { state: 'failed', reason: `status ${task.status_code}: ${task.status_message}` }
+  }
+  // task_get echoes the tag inside the original request payload, not top level.
+  return { state: 'ready', tag: task.tag ?? task.data?.tag ?? null, result: task.result ?? [] }
+}
+
+/** Fetch one SERP task by id, distinguishing "still queued" from "failed". */
+export function fetchSerpTask(taskId: string): Promise<TaskFetch<SerpTaskResult>> {
+  return fetchTask<SerpTaskResult>(`/serp/google/organic/task_get/regular/${taskId}`)
+}
+
+/** Fetch one keyword-ideas task by id, distinguishing "still queued" from "failed". */
+export function fetchKeywordIdeasTask(taskId: string): Promise<TaskFetch<KeywordIdeaItem>> {
+  return fetchTask<KeywordIdeaItem>(
+    `/keywords_data/google_ads/keywords_for_keywords/task_get/${taskId}`
+  )
+}
