@@ -1554,8 +1554,36 @@ export interface SeoSite {
   gsc_property: string | null
   is_client: boolean
   last_gsc_sync_at: string | null
+  referring_domains: number | null
+  referring_domains_checked_at: string | null
   created_at: string
   updated_at: string
+}
+
+export interface SeoGscDaily {
+  site_id: string
+  date: string
+  clicks: number
+  impressions: number
+  position: number | null
+}
+
+export interface SeoGrowthScore {
+  id: string
+  site_id: string
+  score_date: string
+  score: number
+  breakdown: {
+    components: Array<{
+      key: string
+      label: string
+      value: number | null
+      weight: number
+      detail: string
+    }>
+    summary: string
+  }
+  created_at: string
 }
 
 export interface SeoCluster {

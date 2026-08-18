@@ -47,6 +47,37 @@ export async function createSeoSiteAction(formData: FormData) {
   redirect(`/growth/${siteId}`)
 }
 
+export async function updateSeoSiteAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+
+  const isClient = formData.get('is_client') === 'on'
+  const clientAccountId = String(formData.get('client_account_id') ?? '') || null
+  if (isClient && !clientAccountId) {
+    redirect(
+      `/growth/${siteId}/settings?error=${encodeURIComponent('Client sites must be linked to a CRM account')}`
+    )
+  }
+
+  const { updateSeoSite } = await import('@/lib/db/growth')
+  try {
+    await updateSeoSite(siteId, {
+      name: String(formData.get('name') ?? '').trim(),
+      gsc_property: String(formData.get('gsc_property') ?? '').trim() || null,
+      workstream_id: String(formData.get('workstream_id') ?? '') || null,
+      client_account_id: clientAccountId,
+      brand_voice: String(formData.get('brand_voice') ?? '').trim() || null,
+      icp: String(formData.get('icp') ?? '').trim() || null,
+      is_client: isClient,
+    })
+  } catch (err) {
+    redirect(`/growth/${siteId}/settings?error=${encodeURIComponent(errMessage(err))}`)
+  }
+
+  revalidatePath('/growth')
+  revalidatePath(`/growth/${siteId}`)
+  redirect(`/growth/${siteId}?notice=${encodeURIComponent('Site settings saved')}`)
+}
+
 export async function syncGscNowAction(siteId: string) {
   await requireAdmin()
 

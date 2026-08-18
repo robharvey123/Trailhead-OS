@@ -137,6 +137,27 @@ export async function getSerpResult(taskId: string): Promise<{ tag: string | nul
   return { tag: task.tag ?? null, result: task.result ?? [] }
 }
 
+export function dataForSeoConfigured(): boolean {
+  return Boolean(process.env.DATAFORSEO_LOGIN && process.env.DATAFORSEO_PASSWORD)
+}
+
+/**
+ * Backlinks summary — referring-domain count for the Growth Score. The
+ * backlinks API is Live-only (no Standard queue exists for it); one call per
+ * site per night from the growth-score cron, never per render.
+ */
+export async function getBacklinksSummary(
+  target: string
+): Promise<{ referring_domains: number; backlinks: number }> {
+  const json = await dfsFetch<{ referring_domains: number; backlinks: number }>(
+    '/backlinks/summary/live',
+    [{ target, include_subdomains: true }]
+  )
+  const result = json.tasks?.[0]?.result?.[0]
+  if (!result) throw new Error(`DataForSEO backlinks summary for ${target}: no result`)
+  return { referring_domains: result.referring_domains ?? 0, backlinks: result.backlinks ?? 0 }
+}
+
 /** Fetch one completed keyword-ideas task's results. */
 export async function getKeywordIdeasResult(
   taskId: string

@@ -67,15 +67,27 @@ export async function syncSiteGsc(site: SeoSite): Promise<GscSyncResult> {
   const auth = await gscAuthClient()
   const searchconsole = google.searchconsole({ version: 'v1', auth })
 
-  const { data } = await searchconsole.searchanalytics.query({
-    siteUrl: site.gsc_property,
-    requestBody: {
-      startDate: isoDaysAgo(LOOKBACK_DAYS),
-      endDate: isoDaysAgo(0),
-      dimensions: ['query', 'page'],
-      rowLimit: ROW_LIMIT,
-    },
-  })
+  const [{ data }, { data: dailyData }] = await Promise.all([
+    searchconsole.searchanalytics.query({
+      siteUrl: site.gsc_property,
+      requestBody: {
+        startDate: isoDaysAgo(LOOKBACK_DAYS),
+        endDate: isoDaysAgo(0),
+        dimensions: ['query', 'page'],
+        rowLimit: ROW_LIMIT,
+      },
+    }),
+    // Site-level daily totals — powers the command centre's 28-day cards and sparklines.
+    searchconsole.searchanalytics.query({
+      siteUrl: site.gsc_property,
+      requestBody: {
+        startDate: isoDaysAgo(LOOKBACK_DAYS),
+        endDate: isoDaysAgo(0),
+        dimensions: ['date'],
+        rowLimit: LOOKBACK_DAYS + 1,
+      },
+    }),
+  ])
 
   const rows = data.rows ?? []
 
@@ -128,6 +140,22 @@ export async function syncSiteGsc(site: SeoSite): Promise<GscSyncResult> {
   }
   for (let i = 0; i < inserts.length; i += CHUNK) {
     const { error } = await supabase.from('seo_keywords').insert(inserts.slice(i, i + CHUNK))
+    if (error) throw new Error(error.message)
+  }
+
+  const dailyRows = (dailyData.rows ?? [])
+    .filter((row) => row.keys?.[0])
+    .map((row) => ({
+      site_id: site.id,
+      date: row.keys![0],
+      clicks: row.clicks ?? 0,
+      impressions: row.impressions ?? 0,
+      position: row.position != null ? Math.round(row.position * 10) / 10 : null,
+    }))
+  for (let i = 0; i < dailyRows.length; i += CHUNK) {
+    const { error } = await supabase
+      .from('seo_gsc_daily')
+      .upsert(dailyRows.slice(i, i + CHUNK), { onConflict: 'site_id,date' })
     if (error) throw new Error(error.message)
   }
 

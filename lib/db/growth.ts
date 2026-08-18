@@ -1,5 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
-import type { SeoKeyword, SeoSite } from '@/lib/types'
+import type {
+  SeoAiMention,
+  SeoBrief,
+  SeoCluster,
+  SeoGrowthScore,
+  SeoGscDaily,
+  SeoKeyword,
+  SeoSite,
+} from '@/lib/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -81,6 +89,30 @@ export async function createSeoSite(
   return data as SeoSite
 }
 
+export interface UpdateSeoSiteInput {
+  name: string
+  gsc_property: string | null
+  workstream_id: string | null
+  client_account_id: string | null
+  brand_voice: string | null
+  icp: string | null
+  is_client: boolean
+}
+
+export async function updateSeoSite(
+  id: string,
+  input: UpdateSeoSiteInput,
+  client?: SupabaseClient
+): Promise<void> {
+  const supabase = await getSupabase(client)
+  if (!input.name) throw new Error('Name is required')
+  if (input.is_client && !input.client_account_id) {
+    throw new Error('Client sites must be linked to a CRM account')
+  }
+  const { error } = await supabase.from('seo_sites').update(input).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
 export async function getSeoKeywords(
   siteId: string,
   client?: SupabaseClient
@@ -95,4 +127,91 @@ export async function getSeoKeywords(
     .limit(1000)
   if (error) throw new Error(error.message)
   return (data ?? []) as SeoKeyword[]
+}
+
+export interface ArticleStub {
+  id: string
+  title: string
+  status: string
+  published_url: string | null
+}
+
+export interface SiteDashboardData {
+  keywords: SeoKeyword[]
+  clusters: SeoCluster[]
+  briefs: SeoBrief[]
+  articles: ArticleStub[]
+  daily: SeoGscDaily[]
+  scores: SeoGrowthScore[]
+  mentions: SeoAiMention[]
+}
+
+/** Everything the command centre renders, fetched in one parallel burst —
+ *  the page must stay comfortably under the two-second budget. */
+export async function getSiteDashboardData(
+  siteId: string,
+  client?: SupabaseClient
+): Promise<SiteDashboardData> {
+  const supabase = await getSupabase(client)
+  const since28 = new Date(Date.now() - 28 * 86400_000).toISOString()
+
+  const [keywords, clusters, briefs, articles, daily, scores, mentions] = await Promise.all([
+    getSeoKeywords(siteId, supabase),
+    supabase
+      .from('seo_clusters')
+      .select('*')
+      .eq('site_id', siteId)
+      .order('priority', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.message)
+        return (data ?? []) as SeoCluster[]
+      }),
+    supabase
+      .from('seo_briefs')
+      .select('*')
+      .eq('site_id', siteId)
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.message)
+        return (data ?? []) as SeoBrief[]
+      }),
+    supabase
+      .from('seo_articles')
+      .select('id, title, status, published_url')
+      .eq('site_id', siteId)
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.message)
+        return (data ?? []) as ArticleStub[]
+      }),
+    supabase
+      .from('seo_gsc_daily')
+      .select('*')
+      .eq('site_id', siteId)
+      .order('date', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.message)
+        return (data ?? []) as SeoGscDaily[]
+      }),
+    supabase
+      .from('seo_growth_scores')
+      .select('*')
+      .eq('site_id', siteId)
+      .order('score_date', { ascending: false })
+      .limit(30)
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.message)
+        return (data ?? []) as SeoGrowthScore[]
+      }),
+    supabase
+      .from('seo_ai_mentions')
+      .select('*')
+      .eq('site_id', siteId)
+      .gte('run_at', since28)
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.message)
+        return (data ?? []) as SeoAiMention[]
+      }),
+  ])
+
+  return { keywords, clusters, briefs, articles, daily, scores, mentions }
 }
