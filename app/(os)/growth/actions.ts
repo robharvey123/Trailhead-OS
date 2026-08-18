@@ -74,6 +74,7 @@ export async function updateSeoSiteAction(siteId: string, formData: FormData) {
         base_branch: String(formData.get('cms_base_branch') ?? '').trim() || 'main',
         content_dir: String(formData.get('cms_content_dir') ?? '').trim() || 'content/blog',
         author: String(formData.get('cms_author') ?? '').trim() || null,
+        auto_merge: formData.get('cms_auto_merge') === 'on',
       }
     } else if (cmsType === 'wordpress') {
       const existing = await getSeoSiteById(siteId)
@@ -322,8 +323,24 @@ export async function publishArticleAction(siteId: string, articleId: string) {
     const { data: site } = await supabase.from('seo_sites').select('*').eq('id', siteId).single()
     if (!site) throw new Error('Site not found')
 
-    const { publishArticle } = await import('@/lib/growth/publish')
+    const { publishArticle, mergePublishPr } = await import('@/lib/growth/publish')
     const result = await publishArticle(article, site)
+
+    // Opt-in per site: merge the PR immediately. The human gates (approve +
+    // publish) already ran in the OS — this only removes the GitHub round-trip.
+    let autoMerged = false
+    if (
+      site.cms_type === 'github' &&
+      (site.cms_config as { auto_merge?: boolean } | null)?.auto_merge &&
+      result.ref.startsWith('http')
+    ) {
+      try {
+        await mergePublishPr(result.ref)
+        autoMerged = true
+      } catch {
+        autoMerged = false // PR stays open; merge by hand from the article page
+      }
+    }
 
     const { error } = await supabase
       .from('seo_articles')
@@ -352,12 +369,37 @@ export async function publishArticleAction(siteId: string, articleId: string) {
     redirect(
       `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(
         site.cms_type === 'github'
-          ? 'Pull request opened — merge it to go live. Distribution task created for today.'
+          ? autoMerged
+            ? 'Pull request opened and merged — live once the site deploy finishes. Distribution task created for today.'
+            : 'Pull request opened — merge it to go live. Distribution task created for today.'
           : site.cms_type === 'internal'
             ? 'Draft created on the marketing blog — review and publish it from /blog. Distribution task created for today.'
             : 'WordPress draft created — publish it from WP admin. Distribution task created for today.'
       )}`
     )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function mergeArticlePrAction(siteId: string, articleId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  try {
+    const { data: article } = await supabase
+      .from('seo_articles')
+      .select('publish_ref')
+      .eq('id', articleId)
+      .single()
+    if (!article?.publish_ref?.startsWith('http')) {
+      throw new Error('This article has no publish pull request')
+    }
+    const { mergePublishPr } = await import('@/lib/growth/publish')
+    const message = await mergePublishPr(article.publish_ref)
+    revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+    redirect(`/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(message)}`)
   } catch (err) {
     if (err && typeof err === 'object' && 'digest' in err) throw err
     redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(errMessage(err))}`)

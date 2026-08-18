@@ -182,6 +182,53 @@ async function publishViaGithubPr(article: SeoArticle, site: SeoSite): Promise<P
   return { url: `https://${site.domain}/blog/${slug}`, ref: pr.html_url }
 }
 
+/** Squash-merge a publish PR from inside the OS — the human gate already
+ *  happened at approve + publish, so this is one less GitHub round-trip, not an
+ *  approval bypass. Deletes the seo/* branch afterwards (best-effort). */
+export async function mergePublishPr(prUrl: string): Promise<string> {
+  const token = process.env.GITHUB_PUBLISH_TOKEN
+  if (!token) throw new Error('GITHUB_PUBLISH_TOKEN is not configured')
+
+  const match = prUrl.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/)
+  if (!match) throw new Error(`Not a GitHub PR URL: ${prUrl}`)
+  const [, owner, repo, number] = match
+
+  const pr = await gh<{ merged: boolean; state: string; head: { ref: string } }>(
+    token,
+    `/repos/${owner}/${repo}/pulls/${number}`
+  )
+  if (pr.merged) return 'Already merged — the article is live (or deploying).'
+  if (pr.state !== 'open') throw new Error('The pull request is closed without being merged — reopen it on GitHub first')
+
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${number}/merge`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ merge_method: 'squash' }),
+  })
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string }
+    // 405 = not mergeable (checks pending / conflict) — surface GitHub's reason.
+    throw new Error(body.message ?? `Merge failed (${res.status})`)
+  }
+
+  // Tidy the seo/* branch; a failure here never fails the merge.
+  await fetch(`https://api.github.com/repos/${owner}/${repo}/git/refs/heads/${pr.head.ref}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  }).catch(() => undefined)
+
+  return 'Merged — the article goes live when the site deploy finishes.'
+}
+
 // ── WordPress: draft post via REST + application password ───────────────────
 
 /** Minimal markdown → HTML for the WP draft body. The draft is reviewed in the

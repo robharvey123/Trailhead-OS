@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import { blogMarkdownClassName } from '@/lib/blog'
 import { getSeoArticleById, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
-import { approveArticleAction, publishArticleAction, retryDraftAction } from '../../../actions'
+import { approveArticleAction, mergeArticlePrAction, publishArticleAction, retryDraftAction } from '../../../actions'
 
 export default async function GrowthArticleDetailPage({
   params,
@@ -63,6 +63,16 @@ export default async function GrowthArticleDetailPage({
                 : site.cms_type === 'internal'
                   ? 'Draft to marketing blog'
                   : 'Open publish PR'}
+            </button>
+          </form>
+        ) : null}
+        {article.status === 'published' && article.publish_ref?.startsWith('http') ? (
+          <form action={mergeArticlePrAction.bind(null, site.id, article.id)}>
+            <button
+              type="submit"
+              className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            >
+              Merge PR → go live
             </button>
           </form>
         ) : null}

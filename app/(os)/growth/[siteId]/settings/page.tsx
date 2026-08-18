@@ -135,6 +135,15 @@ export default async function GrowthSiteSettingsPage({
                 className={`mt-1.5 ${INPUT_CLASS}`}
               />
             </label>
+            <label className="flex items-center gap-2 self-end pb-2 text-sm text-[color:var(--text-2)]">
+              <input
+                type="checkbox"
+                name="cms_auto_merge"
+                defaultChecked={Boolean((site.cms_config as { auto_merge?: boolean }).auto_merge)}
+                className="h-4 w-4 accent-[var(--accent)]"
+              />
+              Auto-merge the publish PR
+            </label>
             <label className="block text-sm">
               <span className="text-[color:var(--text-2)]">Frontmatter author</span>
               <input
