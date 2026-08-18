@@ -135,6 +135,15 @@ export default async function GrowthSiteSettingsPage({
                 className={`mt-1.5 ${INPUT_CLASS}`}
               />
             </label>
+            <label className="block text-sm">
+              <span className="text-[color:var(--text-2)]">Frontmatter author</span>
+              <input
+                name="cms_author"
+                defaultValue={String((site.cms_config as { author?: string }).author ?? '')}
+                placeholder="Rob Harvey"
+                className={`mt-1.5 ${INPUT_CLASS}`}
+              />
+            </label>
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             <label className="block text-sm">

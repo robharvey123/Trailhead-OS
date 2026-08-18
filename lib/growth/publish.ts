@@ -25,6 +25,7 @@ interface GithubCmsConfig {
   repo?: string // "owner/name"
   base_branch?: string
   content_dir?: string
+  author?: string // frontmatter author, e.g. "Rob Harvey"
 }
 
 interface WordpressCmsConfig {
@@ -103,12 +104,19 @@ async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T
   return (await res.json()) as T
 }
 
-function mdxFile(article: SeoArticle): string {
+function mdxFile(article: SeoArticle, slug: string, author?: string): string {
+  // Frontmatter matches the engineer-os blog contract (lib/blog/posts.ts there):
+  // title/description/slug/date/author/tags/draft; the PR is the review gate,
+  // so draft is false — the post is live the moment the PR merges.
   const frontmatter = [
     '---',
     `title: ${JSON.stringify(article.title)}`,
     `description: ${JSON.stringify(article.meta_description ?? '')}`,
+    `slug: ${JSON.stringify(slug)}`,
     `date: ${JSON.stringify(new Date().toISOString().slice(0, 10))}`,
+    ...(author ? [`author: ${JSON.stringify(author)}`] : []),
+    'tags: ["growth"]',
+    'draft: false',
     '---',
     '',
   ].join('\n')
@@ -128,7 +136,9 @@ async function publishViaGithubPr(article: SeoArticle, site: SeoSite): Promise<P
   }
   const baseBranch = config.base_branch ?? 'main'
   const contentDir = (config.content_dir ?? 'content/blog').replace(/^\/|\/$/g, '')
-  const filePath = `${contentDir}/${slug}.mdx`
+  // Date-prefixed filename per the target repo's convention (slug still comes
+  // from frontmatter, so the URL is stable regardless).
+  const filePath = `${contentDir}/${new Date().toISOString().slice(0, 10)}-${slug}.mdx`
 
   const baseRef = await gh<{ object: { sha: string } }>(
     token,
@@ -147,7 +157,7 @@ async function publishViaGithubPr(article: SeoArticle, site: SeoSite): Promise<P
     method: 'PUT',
     body: JSON.stringify({
       message: `content: add "${article.title}"`,
-      content: Buffer.from(mdxFile(article), 'utf8').toString('base64'),
+      content: Buffer.from(mdxFile(article, slug, config.author), 'utf8').toString('base64'),
       branch,
     }),
   })

@@ -73,6 +73,7 @@ export async function updateSeoSiteAction(siteId: string, formData: FormData) {
         repo: String(formData.get('cms_repo') ?? '').trim(),
         base_branch: String(formData.get('cms_base_branch') ?? '').trim() || 'main',
         content_dir: String(formData.get('cms_content_dir') ?? '').trim() || 'content/blog',
+        author: String(formData.get('cms_author') ?? '').trim() || null,
       }
     } else if (cmsType === 'wordpress') {
       const existing = await getSeoSiteById(siteId)
