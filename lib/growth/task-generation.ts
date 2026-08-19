@@ -1,4 +1,7 @@
 import { createClient } from '@/lib/supabase/service'
+import { anthropic, ANTHROPIC_MODELS } from '@/lib/anthropic/client'
+import { getCompetitorBacklinks, dataForSeoConfigured } from '@/lib/growth/dataforseo'
+import { notifyLinkWon } from '@/lib/growth/links'
 import { createEngineTaskOnce } from '@/lib/growth/tasks'
 import type { SeoSite } from '@/lib/types'
 
@@ -17,6 +20,8 @@ export interface TaskGenResult {
   backlinkMining: number
   factChecks: number
   reportReviews: number
+  repliesClassified: number
+  linksWonDetected: number
   errors: string[]
 }
 
@@ -28,6 +33,8 @@ export async function generateEngineTasks(): Promise<TaskGenResult> {
     backlinkMining: 0,
     factChecks: 0,
     reportReviews: 0,
+    repliesClassified: 0,
+    linksWonDetected: 0,
     errors: [],
   }
 
@@ -41,6 +48,8 @@ export async function generateEngineTasks(): Promise<TaskGenResult> {
       await backlinkMiningTasks(site, result)
       await factCheckTasks(site, result)
       await monthlyReportTask(site, result)
+      await classifyOutreachReplies(site, result)
+      await detectWonLinks(site, result)
     } catch (err) {
       result.errors.push(`${site.domain}: ${err instanceof Error ? err.message : String(err)}`)
     }
@@ -58,6 +67,7 @@ async function followupTasks(site: SeoSite, result: TaskGenResult): Promise<void
     .eq('site_id', site.id)
     .eq('status', 'outreach')
     .eq('followup_created', false)
+    .is('recipient_id', null) // engine-queued targets get the engine's step-2 follow-up
     .lt('outreach_at', cutoff)
 
   for (const target of due ?? []) {
@@ -157,4 +167,127 @@ async function monthlyReportTask(site: SeoSite, result: TaskGenResult): Promise<
     extraLabels: ['reporting'],
   })
   if (created) result.reportReviews += 1
+}
+
+// ── Reply classification (engine stop-on-reply already halted the sequence) ──
+
+const REPLY_SYSTEM = `You classify a reply to a link-building outreach email.
+
+Given the reply's subject and text, answer how the prospect responded.
+- interested: willing to link, wants more info, or asks a real question
+- declined: says no, not interested, paid-links-only, or asks not to be contacted
+- other: out-of-office, ambiguous, or automated
+
+Return strict JSON only: { "verdict": "interested" | "declined" | "other", "summary": string }`
+
+async function classifyOutreachReplies(site: SeoSite, result: TaskGenResult): Promise<void> {
+  const supabase = createClient()
+  const { data: targets } = await supabase
+    .from('seo_link_targets')
+    .select('id, url, contact_id, recipient_id, accounts:crm_account_id(name)')
+    .eq('site_id', site.id)
+    .eq('status', 'outreach')
+    .not('recipient_id', 'is', null)
+    .is('reply_processed_at', null)
+
+  for (const target of targets ?? []) {
+    const { data: recipient } = await supabase
+      .from('outreach_recipients')
+      .select('stopped_reason')
+      .eq('id', target.recipient_id as string)
+      .maybeSingle()
+    if (recipient?.stopped_reason !== 'replied') continue
+
+    const { data: reply } = await supabase
+      .from('email_logs')
+      .select('subject, snippet, body_html, received_at')
+      .eq('direction', 'inbound')
+      .eq('contact_id', target.contact_id as string)
+      .order('received_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const accountName = (target.accounts as unknown as { name: string } | null)?.name ?? target.url
+    let verdict = 'other'
+    let summary = 'Reply received'
+    if (reply) {
+      try {
+        const bodyText = (reply.body_html ?? reply.snippet ?? '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .slice(0, 4000)
+        const response = await anthropic.messages.create({
+          model: ANTHROPIC_MODELS.HAIKU,
+          max_tokens: 400,
+          system: REPLY_SYSTEM,
+          messages: [{ role: 'user', content: JSON.stringify({ subject: reply.subject, text: bodyText }) }],
+        })
+        const block = response.content.find((b) => b.type === 'text')
+        const text = block && block.type === 'text' ? block.text : ''
+        const parsed = JSON.parse(text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/, '').trim()) as {
+          verdict?: string
+          summary?: string
+        }
+        if (parsed.verdict) verdict = parsed.verdict
+        if (parsed.summary) summary = parsed.summary
+      } catch {
+        /* classification is best-effort — surface the reply as a task regardless */
+      }
+    }
+
+    if (verdict === 'declined') {
+      await supabase
+        .from('seo_link_targets')
+        .update({ status: 'lost', reply_processed_at: new Date().toISOString(), contact_note: `Declined: ${summary}` })
+        .eq('id', target.id)
+    } else {
+      await createEngineTaskOnce({
+        title: `Outreach reply: ${accountName}`,
+        description: `${verdict === 'interested' ? 'INTERESTED — ' : ''}${summary}\nCheck the inbox thread and reply personally. Target page: ${target.url}`,
+        dueDate: new Date().toISOString().slice(0, 10),
+        priority: verdict === 'interested' ? 'high' : 'normal',
+        extraLabels: ['outreach'],
+      })
+      await supabase
+        .from('seo_link_targets')
+        .update({ reply_processed_at: new Date().toISOString(), contact_note: `${verdict}: ${summary}` })
+        .eq('id', target.id)
+    }
+    result.repliesClassified += 1
+  }
+}
+
+// ── Win detection: a new referring domain that matches an open target ────────
+
+async function detectWonLinks(site: SeoSite, result: TaskGenResult): Promise<void> {
+  if (!dataForSeoConfigured()) return
+  const supabase = createClient()
+  const { data: open } = await supabase
+    .from('seo_link_targets')
+    .select('id, url, accounts:crm_account_id(name, website)')
+    .eq('site_id', site.id)
+    .in('status', ['identified', 'researching', 'outreach'])
+  if (!open || open.length === 0) return
+
+  const backlinks = await getCompetitorBacklinks(site.domain, 200)
+  const byDomain = new Map(backlinks.map((b) => [b.domain_from.toLowerCase().replace(/^www\./, ''), b.url_from]))
+
+  for (const target of open) {
+    const account = target.accounts as unknown as { name: string; website: string | null } | null
+    const domain = (account?.website ?? account?.name ?? '')
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .replace(/\/.*$/, '')
+    if (!domain) continue
+    const wonUrl = byDomain.get(domain)
+    if (!wonUrl) continue
+
+    await supabase
+      .from('seo_link_targets')
+      .update({ status: 'won', won_url: wonUrl, won_at: new Date().toISOString() })
+      .eq('id', target.id)
+    void notifyLinkWon(site.name, domain, wonUrl)
+    result.linksWonDetected += 1
+  }
 }

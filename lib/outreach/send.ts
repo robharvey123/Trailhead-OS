@@ -93,7 +93,12 @@ export async function sendCampaignEmail({ recipientId }: { recipientId: string }
   let subject: string
   let bodyHtml: string
   try {
-    const vars = contactVars(contact)
+    // Per-recipient vars win over contact-derived vars — this is what carries a
+    // fully personalised body (e.g. a Growth link pitch) through one template.
+    const recipientVars = Object.fromEntries(
+      Object.entries((recipient.vars as Record<string, unknown> | null) ?? {}).map(([k, v]) => [k, String(v ?? '')])
+    )
+    const vars = { ...contactVars(contact), ...recipientVars }
     subject = renderTemplate(template.subject ?? '', vars, { escape: false })
     bodyHtml = renderTemplate(template.body_html ?? '', vars)
   } catch (err) {

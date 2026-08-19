@@ -444,6 +444,129 @@ export async function importProspectsAction(siteId: string, formData: FormData) 
   }
 }
 
+export async function findContactAction(siteId: string, targetId: string) {
+  await requireAdmin()
+  try {
+    const { findProspectContact } = await import('@/lib/growth/outreach')
+    const result = await findProspectContact(targetId)
+    revalidatePath(`/growth/${siteId}/links`)
+    redirect(
+      `/growth/${siteId}/links?notice=${encodeURIComponent(
+        result.found ? `Contact found: ${result.note}` : `No contact found: ${result.note}`
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function findContactsBatchAction(siteId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  try {
+    const { data: targets } = await supabase
+      .from('seo_link_targets')
+      .select('id')
+      .eq('site_id', siteId)
+      .in('status', ['identified', 'researching'])
+      .is('contact_search_at', null)
+      .order('tier', { ascending: true })
+      .limit(8)
+    if (!targets || targets.length === 0) {
+      redirect(`/growth/${siteId}/links?notice=${encodeURIComponent('No targets awaiting contact search')}`)
+    }
+    const { findProspectContact } = await import('@/lib/growth/outreach')
+    let found = 0
+    for (const target of targets!) {
+      try {
+        if ((await findProspectContact(target.id as string)).found) found += 1
+      } catch {
+        /* keep going — per-target failures are recorded on the row */
+      }
+    }
+    revalidatePath(`/growth/${siteId}/links`)
+    redirect(
+      `/growth/${siteId}/links?notice=${encodeURIComponent(
+        `Searched ${targets!.length} prospects — found ${found} contacts. Run again for the next batch.`
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function draftPitchAction(siteId: string, targetId: string) {
+  await requireAdmin()
+  try {
+    const { draftPitch } = await import('@/lib/growth/outreach')
+    await draftPitch(targetId)
+    revalidatePath(`/growth/${siteId}/links`)
+    redirect(`/growth/${siteId}/links?notice=${encodeURIComponent('Pitch drafted — review it below, then approve to queue')}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function draftPitchesBatchAction(siteId: string) {
+  await requireAdmin()
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  const supabase = createServiceClient()
+  try {
+    const { data: targets } = await supabase
+      .from('seo_link_targets')
+      .select('id')
+      .eq('site_id', siteId)
+      .in('status', ['identified', 'researching'])
+      .not('contact_id', 'is', null)
+      .is('pitch_generated_at', null)
+      .order('tier', { ascending: true })
+      .limit(5)
+    if (!targets || targets.length === 0) {
+      redirect(`/growth/${siteId}/links?notice=${encodeURIComponent('No contacts awaiting a pitch draft')}`)
+    }
+    const { draftPitch } = await import('@/lib/growth/outreach')
+    let drafted = 0
+    for (const target of targets!) {
+      try {
+        await draftPitch(target.id as string)
+        drafted += 1
+      } catch {
+        /* per-target failures shouldn't sink the batch */
+      }
+    }
+    revalidatePath(`/growth/${siteId}/links`)
+    redirect(
+      `/growth/${siteId}/links?notice=${encodeURIComponent(
+        `${drafted} pitches drafted — review each below and approve to queue`
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function approvePitchAction(siteId: string, targetId: string) {
+  await requireAdmin()
+  try {
+    const { queueApprovedPitch } = await import('@/lib/growth/outreach')
+    await queueApprovedPitch(targetId)
+    revalidatePath(`/growth/${siteId}/links`)
+    redirect(
+      `/growth/${siteId}/links?notice=${encodeURIComponent(
+        'Queued — the engine sends inside its window (Tue-Thu, 07:30-16:00), follows up once at 7 days, and stops on reply'
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/links?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
 export async function markLinkOutreachAction(siteId: string, targetId: string) {
   await requireAdmin()
   const { createClient: createServiceClient } = await import('@/lib/supabase/service')

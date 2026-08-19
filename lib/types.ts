@@ -1484,6 +1484,8 @@ export interface OutreachRecipient {
   call_status: string | null
   call_last_at: string | null
   unsubscribe_token: string
+  /** Per-recipient merge tokens, merged over contact vars at render time. */
+  vars?: Record<string, string> | null
   created_at: string
 }
 
@@ -1557,6 +1559,7 @@ export interface SeoSite {
   last_gsc_sync_at: string | null
   referring_domains: number | null
   referring_domains_checked_at: string | null
+  outreach_campaign_id: string | null
   created_at: string
   updated_at: string
 }
@@ -1698,5 +1701,14 @@ export interface SeoLinkTarget {
   won_at: string | null
   outreach_at: string | null
   followup_created: boolean
+  contact_id: string | null
+  contact_search_at: string | null
+  contact_note: string | null
+  pitch_subject: string | null
+  pitch_body: string | null
+  pitch_generated_at: string | null
+  pitch_article_id: string | null
+  recipient_id: string | null
+  reply_processed_at: string | null
   created_at: string
 }

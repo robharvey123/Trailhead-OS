@@ -4,6 +4,11 @@ import { getSeoLinkTargets, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import { PendingButton } from '@/components/growth/PendingButton'
 import {
+  approvePitchAction,
+  draftPitchAction,
+  draftPitchesBatchAction,
+  findContactAction,
+  findContactsBatchAction,
   importProspectsAction,
   markLinkLostAction,
   markLinkOutreachAction,
@@ -85,6 +90,30 @@ export default async function GrowthLinksPage({
         </form>
       </div>
 
+      {targets.length > 0 ? (
+        <div className="os-card p-6">
+          <h2 className="text-sm font-semibold text-[color:var(--text)]">Automated outreach</h2>
+          <p className="mt-1 text-sm text-[color:var(--text-2)]">
+            Find contacts (scrape + extract, batches of 8) → draft personalised pitches (batches of
+            5) → review each pitch below and approve. Approved pitches go through the outreach
+            engine: sent Tue-Thu inside the send window, one follow-up at 7 days, stops the moment
+            they reply, unsubscribe handled.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <form action={findContactsBatchAction.bind(null, site.id)}>
+              <PendingButton variant="primary" pendingLabel="Searching sites… (~1 min)">
+                Find contacts
+              </PendingButton>
+            </form>
+            <form action={draftPitchesBatchAction.bind(null, site.id)}>
+              <PendingButton variant="primary" pendingLabel="Writing pitches… (~2 min)">
+                Draft pitches
+              </PendingButton>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
       {targets.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No link targets yet — mine a competitor above.
@@ -112,6 +141,25 @@ export default async function GrowthLinksPage({
                   {target.angle ? (
                     <p className="mt-1 text-sm text-[color:var(--text-2)]">{target.angle}</p>
                   ) : null}
+                  {target.contact_id ? (
+                    <p className="mt-1 text-sm text-emerald-700">
+                      Contact found{target.contact_note ? ` — ${target.contact_note}` : ''}
+                    </p>
+                  ) : target.contact_search_at ? (
+                    <p className="mt-1 text-sm text-[color:var(--text-3)]">
+                      No contact found{target.contact_note ? ` — ${target.contact_note}` : ''}
+                    </p>
+                  ) : null}
+                  {target.pitch_subject && target.pitch_body ? (
+                    <details className="mt-2 rounded-2xl border border-[color:var(--border)] px-3 py-2">
+                      <summary className="cursor-pointer text-sm font-medium text-[color:var(--text)]">
+                        Pitch: {target.pitch_subject}
+                      </summary>
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">
+                        {target.pitch_body}
+                      </p>
+                    </details>
+                  ) : null}
                   {target.won_url ? (
                     <p className="mt-1 break-all text-sm text-emerald-700">Won: {target.won_url}</p>
                   ) : null}
@@ -124,10 +172,31 @@ export default async function GrowthLinksPage({
               </div>
               {target.status === 'identified' || target.status === 'researching' || target.status === 'outreach' ? (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {target.status !== 'outreach' && !target.contact_search_at ? (
+                    <form action={findContactAction.bind(null, site.id, target.id)}>
+                      <PendingButton className="px-3 py-1.5" pendingLabel="Searching…">
+                        Find contact
+                      </PendingButton>
+                    </form>
+                  ) : null}
+                  {target.status !== 'outreach' && target.contact_id ? (
+                    <form action={draftPitchAction.bind(null, site.id, target.id)}>
+                      <PendingButton className="px-3 py-1.5" pendingLabel="Writing…">
+                        {target.pitch_generated_at ? 'Redraft pitch' : 'Draft pitch'}
+                      </PendingButton>
+                    </form>
+                  ) : null}
+                  {target.status !== 'outreach' && target.contact_id && target.pitch_subject ? (
+                    <form action={approvePitchAction.bind(null, site.id, target.id)}>
+                      <PendingButton variant="primary" className="px-3 py-1.5" pendingLabel="Queueing…">
+                        Approve &amp; queue send
+                      </PendingButton>
+                    </form>
+                  ) : null}
                   {target.status !== 'outreach' ? (
                     <form action={markLinkOutreachAction.bind(null, site.id, target.id)}>
                       <PendingButton className="px-3 py-1.5" pendingLabel="Marking…">
-                        Mark outreach sent
+                        Sent manually
                       </PendingButton>
                     </form>
                   ) : null}
