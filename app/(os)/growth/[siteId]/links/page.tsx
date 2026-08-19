@@ -71,8 +71,8 @@ export default async function GrowthLinksPage({
         <h2 className="text-sm font-semibold text-[color:var(--text)]">Mine a competitor</h2>
         <p className="mt-1 text-sm text-[color:var(--text-2)]">
           Pulls their referring domains from DataForSEO (one per domain), filters out pages they
-          own, and files the rest as CRM prospects with a suggested angle. Finding the right
-          contact is manual research — no contacts are auto-created.
+          own, and files the rest as CRM prospects with a suggested angle. Then run the automated
+          outreach steps below.
         </p>
         <form
           action={importProspectsAction.bind(null, site.id)}
