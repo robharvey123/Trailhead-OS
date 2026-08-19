@@ -59,8 +59,12 @@ const TRACKS: Record<Track, TrackTokens> = {
     accentBorder: '#B6D3E4',
     nav: [
       { label: 'Services', href: '/consulting#services' },
+      // Five items per track, which is what the 1100px header fits alongside
+      // the cross-track link, the CTA and Log in. Current work displaces
+      // Sectors rather than joining it: a live client is proof, the sector
+      // chips are decoration, and the section is still there on scroll.
+      { label: 'Current work', href: '/consulting#current-work' },
       { label: 'Track record', href: '/consulting#track-record' },
-      { label: 'Sectors', href: '/consulting#sectors' },
       { label: 'Blog', href: '/blog' },
       { label: 'Contact', href: '/contact?track=commercial' },
     ],

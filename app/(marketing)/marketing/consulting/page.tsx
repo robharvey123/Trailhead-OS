@@ -52,6 +52,23 @@ const services = [
   },
 ]
 
+// Live client engagements under Trailhead Commercial, kept separate from the
+// employment history below. Everything in trackRecord is a role Rob held; a
+// page made only of those reads as a CV rather than a consultancy, and a buyer
+// cannot tell whether this is a going concern. One live engagement answers it.
+//
+// Mandate and scope only. Commercial terms, target account names and anything
+// still under negotiation stay off a public page.
+const currentWork = [
+  {
+    client: 'Qola',
+    mandate: 'UK and EU commercial',
+    period: 'Aug 2026 to date',
+    summary:
+      'Nicotine pouch brand entering the UK and EU. Route to market across distribution and retail, pricing architecture that holds through the value chain, and the named account work that turns a listing conversation into a first order. Initial term runs to November 2026.',
+  },
+]
+
 const trackRecord = [
   {
     period: '2024–26',
@@ -250,12 +267,59 @@ export default async function ConsultingPage() {
       </Reveal>
 
       <Reveal>
+        <section
+          id="current-work"
+          className="scroll-mt-24 border-t border-[var(--marketing-border)] px-6 py-16 md:px-8 md:py-20"
+        >
+          <div className="mx-auto max-w-[1100px]">
+            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+              Current work
+            </h2>
+            <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+              Live engagements, running now. Work in progress rather than a case
+              study: results get published when there are results to publish.
+            </p>
+
+            <ul className="mt-10 space-y-4">
+              {currentWork.map((entry) => (
+                <li
+                  key={entry.client}
+                  className="rounded-[2rem] border border-[var(--marketing-accent-border)] bg-[var(--marketing-accent-soft)] p-6 md:p-7"
+                >
+                  <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-6">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h3 className="text-xl font-bold tracking-[-0.02em]">
+                          {entry.client}
+                        </h3>
+                        <span className="rounded-full bg-[var(--marketing-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white">
+                          Live
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-[var(--marketing-accent)]">
+                        {entry.mandate}
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-sm font-semibold text-slate-500">
+                      {entry.period}
+                    </p>
+                  </div>
+                  <p className="mt-4 leading-7 text-slate-600">{entry.summary}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      </Reveal>
+
+      <Reveal>
         <section id="track-record" className="scroll-mt-24 px-6 py-16 md:px-8 md:py-20">
           <div className="mx-auto max-w-[1100px]">
             <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">Track record</h2>
             <p className="mt-4 max-w-2xl leading-7 text-slate-600">
-              Every one of these is a real company with a real trading history.
-              Look them up. That is rather the point of listing them.
+              The operating history behind the consultancy. Roles held, not
+              clients billed. Every one is a real company with a real trading
+              history, so look them up. That is rather the point of listing them.
             </p>
 
             <ol className="mt-10 space-y-4">

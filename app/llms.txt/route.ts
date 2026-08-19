@@ -12,6 +12,7 @@ export async function GET() {
 
 ## Trailhead Commercial: consulting
 NGP and FMCG commercial strategy: market entry (UK, EU, DACH, Sweden), distributor and channel strategy, pricing architecture, interim commercial leadership. Thirteen years operating in nicotine and reduced-risk, six markets, one founder exit.
+Currently engaged: Qola, UK and EU commercial for a nicotine pouch brand entering both markets, from August 2026.
 - ${SITE_URL}/consulting
 
 ## Trailhead Studio: bespoke software
