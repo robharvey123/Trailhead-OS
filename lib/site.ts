@@ -21,7 +21,9 @@ export function buildMarketingSiteUrl(path: string, isLocalhost: boolean) {
     return buildMarketingHref(path, true)
   }
 
-  return `https://trailheadholdings.uk${path}`
+  // www, not the apex: the site canonicalises to www and the apex 301s to it,
+  // so apex URLs built here cost every visitor (and crawler) a redirect hop.
+  return `https://www.trailheadholdings.uk${path}`
 }
 
 export function buildAppLoginHref(isLocalhost: boolean) {

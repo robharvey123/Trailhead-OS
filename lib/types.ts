@@ -164,6 +164,12 @@ export interface Enquiry {
   internal_notes_updated_at: string | null
   internal_notes_author_id: string | null
   converted_contact_id: string | null
+  /** 'discovery' for the discovery form, 'contact' for the marketing contact form. */
+  source: string
+  /** Sub-brand the enquiry arrived through: commercial, studio or labs. */
+  track: string | null
+  /** OS workstream the track maps to. Null for Labs, which is product interest. */
+  workstream: string | null
 }
 
 export interface EnquiryFormState {
@@ -208,7 +214,7 @@ export interface GoogleTokens {
 }
 
 // ---------------------------------------------------------------------------
-// v4 — Engagements / Tier-1 milestones
+// v4: Engagements / Tier-1 milestones
 // ---------------------------------------------------------------------------
 
 export type EngagementStatus = 'Draft' | 'Active' | 'Paused' | 'Completed' | 'Terminated'
@@ -232,10 +238,10 @@ export type EngagementType =
   | 'internal_ops'
 
 export const ENGAGEMENT_TYPE_LABELS: Record<EngagementType, string> = {
-  client_consulting: 'Client — consulting',
-  client_app_build: 'Client — app build',
-  internal_app_build: 'Internal — app build',
-  internal_ops: 'Internal — ops',
+  client_consulting: 'Client, consulting',
+  client_app_build: 'Client, app build',
+  internal_app_build: 'Internal, app build',
+  internal_ops: 'Internal, ops',
 }
 
 /** Client engagements are billable; internal ones are not. Mirrors the DB generated column. */
@@ -348,7 +354,7 @@ export const ENGAGEMENT_TASK_STATUSES: EngagementTaskStatus[] = ['backlog', 'in_
 export const ENGAGEMENT_TASK_STATUS_LABELS: Record<EngagementTaskStatus, string> = {
   backlog: 'Backlog', in_progress: 'In progress', review: 'Review', done: 'Done', cancelled: 'Cancelled',
 }
-// Colour is part of the status definition — rendered as status chips everywhere
+// Colour is part of the status definition, rendered as status chips everywhere
 // via <TaskStatusBadge>. Hex (not Tailwind classes) so it can be applied inline.
 export const ENGAGEMENT_TASK_STATUS_COLOURS: Record<EngagementTaskStatus, string> = {
   backlog: '#6B7280', in_progress: '#3B82F6', review: '#F59E0B', done: '#10B981', cancelled: '#EF4444',
@@ -1270,7 +1276,7 @@ export interface ProjectTimeTotals {
 }
 
 // ---------------------------------------------------------------------------
-// CRM v3 — Deals / Tags / Saved Views
+// CRM v3: Deals / Tags / Saved Views
 // ---------------------------------------------------------------------------
 
 export type DealStage =
@@ -1292,7 +1298,7 @@ export const DEAL_STAGES: DealStage[] = [
   'On Hold',
 ]
 
-// Stages shown as kanban columns (Won/Lost are terminal — set via card actions).
+// Stages shown as kanban columns (Won/Lost are terminal, set via card actions).
 export const DEAL_PIPELINE_STAGES: DealStage[] = [
   'New',
   'Qualified',

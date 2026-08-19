@@ -47,6 +47,91 @@ export function WebSiteJsonLd() {
   return <JsonLd data={data} />
 }
 
+type ProfessionalServiceProps = {
+  name: string
+  description: string
+  url: string
+  serviceTypes: string[]
+}
+
+// Per-track service markup: /consulting and /studio are separate offers with
+// separate buyers, so each carries its own ProfessionalService node under the
+// Trailhead Holdings parent Organization.
+export function ProfessionalServiceJsonLd({
+  name,
+  description,
+  url,
+  serviceTypes,
+}: ProfessionalServiceProps) {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    name,
+    description,
+    url,
+    parentOrganization: {
+      '@type': 'Organization',
+      name: SITE_DEFAULTS.legalName,
+      url: SITE_URL,
+    },
+    founder: { '@type': 'Person', name: SITE_DEFAULTS.founder },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: SITE_DEFAULTS.addressLocality,
+      addressRegion: SITE_DEFAULTS.addressRegion,
+      addressCountry: SITE_DEFAULTS.addressCountry,
+    },
+    makesOffer: serviceTypes.map((serviceType) => ({
+      '@type': 'Offer',
+      itemOffered: { '@type': 'Service', serviceType },
+    })),
+  }
+  return <JsonLd data={data} />
+}
+
+type SoftwareApplicationProps = {
+  name: string
+  description: string
+  /** The product's own domain when it has one: canonical home, not this site. */
+  url: string
+  applicationCategory: string
+  price?: { amount: string; currency: string; unitText: string }
+}
+
+export function SoftwareApplicationJsonLd({
+  name,
+  description,
+  url,
+  applicationCategory,
+  price,
+}: SoftwareApplicationProps) {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name,
+    description,
+    url,
+    applicationCategory,
+    operatingSystem: 'Web',
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_DEFAULTS.legalName,
+      url: SITE_URL,
+    },
+    ...(price
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: price.amount,
+            priceCurrency: price.currency,
+            description: price.unitText,
+          },
+        }
+      : {}),
+  }
+  return <JsonLd data={data} />
+}
+
 type BlogPostingProps = {
   title: string
   description: string

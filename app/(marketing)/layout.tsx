@@ -30,8 +30,8 @@ export default async function MarketingLayout({
       {/* Scroll-reveal ships content at opacity:0 and depends on an
           IntersectionObserver to bring it back. That means a JS failure, a
           blocked chunk, or a crawler that does not execute scripts sees a hero
-          and ~10,000px of blank page. The content is in the HTML — it is only
-          CSS-hidden — so a noscript override restores all of it. */}
+          and ~10,000px of blank page. The content is in the HTML and only
+          CSS-hidden, so a noscript override restores all of it. */}
       <noscript>
         <style
           dangerouslySetInnerHTML={{

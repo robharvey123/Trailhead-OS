@@ -5,16 +5,36 @@ import { useState, type FormEvent } from 'react'
 const fieldClassName =
   'w-full rounded-2xl border border-[var(--marketing-border)] bg-white px-4 py-3 text-[0.98rem] text-[var(--marketing-text)] outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100'
 
-export default function ContactForm() {
+export type ContactTrack = 'commercial' | 'studio' | 'labs'
+
+// The interest dropdown mirrors the three tracks so an enquiry arrives
+// already sorted, and the referring page preselects it, so the visitor never
+// has to translate their problem into our org chart.
+const interestOptions = [
+  'Consulting, Trailhead Commercial',
+  'Software build, Trailhead Studio',
+  'Products, Trailhead Labs',
+  'Other',
+]
+
+const trackToInterest: Record<ContactTrack, string> = {
+  commercial: interestOptions[0],
+  studio: interestOptions[1],
+  labs: interestOptions[2],
+}
+
+export default function ContactForm({ track }: { track?: ContactTrack }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
-  const [interest, setInterest] = useState('NGP/Brand Consulting')
+  const [interest, setInterest] = useState(
+    track ? trackToInterest[track] : interestOptions[0]
+  )
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
-  // Honeypot — hidden from users, tempting to bots. Non-empty on submit → spam.
+  // Honeypot: hidden from users, tempting to bots. Non-empty on submit → spam.
   const [website, setWebsite] = useState('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -33,6 +53,7 @@ export default function ContactForm() {
           email,
           company: company || undefined,
           interest,
+          track,
           message,
           website,
         }),
@@ -152,11 +173,9 @@ export default function ContactForm() {
             value={interest}
             onChange={(event) => setInterest(event.target.value)}
           >
-            <option>NGP/Brand Consulting</option>
-            <option>App Development</option>
-            <option>MVP Cricket</option>
-            <option>BrightFire</option>
-            <option>Other</option>
+            {interestOptions.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
           </select>
         </div>
 

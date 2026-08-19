@@ -6,9 +6,9 @@ export const SITE_URL = 'https://www.trailheadholdings.uk'
 export const SITE_DEFAULTS = {
   name: 'Trailhead Holdings',
   legalName: 'Trailhead Holdings Ltd',
-  tagline: 'Commercial strategy. Digital products. Built to last.',
+  tagline: 'Commercial strategy. Bespoke software. One operator.',
   description:
-    'Trailhead Holdings Ltd. Commercial strategy and product development for NGP, FMCG and SaaS founders. UK-based consultancy and software studio.',
+    'Trailhead Holdings Ltd runs two businesses: Trailhead Commercial (NGP and FMCG consulting) and Trailhead Studio (bespoke software), plus the Trailhead Labs product portfolio.',
   twitterHandle: '@trailheadhq', // change or remove if you do not have a handle
   defaultLocale: 'en_GB',
   founder: 'Rob Harvey',

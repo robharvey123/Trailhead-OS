@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
-import ContactDetailsCard from '@/components/marketing/ContactDetailsCard'
-import ContactForm from '@/components/marketing/ContactForm'
+import type { CSSProperties } from 'react'
 import Reveal from '@/components/marketing/Reveal'
 import { formatBlogDate } from '@/lib/blog'
 import { getPublishedBlogPosts } from '@/lib/db/blog-posts'
@@ -11,30 +10,33 @@ import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Commercial Strategy & Product Development for NGP, FMCG and SaaS',
+  title: 'Trailhead Holdings: Commercial Strategy & Software',
   description:
-    'We help brands grow in competitive markets, from NGP and FMCG consulting to bespoke software and SaaS products. UK-based, founder-led.',
+    'Trailhead Holdings runs two businesses: Trailhead Commercial for NGP and FMCG consulting, and Trailhead Studio for bespoke software, plus the Trailhead Labs product portfolio.',
   path: '/',
+  // Brand terms only. The consulting and software keyword pools belong to
+  // /consulting and /studio. The homepage competing for both diluted all three.
   keywords: [
-    'NGP consulting',
-    'nicotine pouch consulting',
-    'FMCG go to market',
-    'bespoke software development UK',
-    'commercial strategy consultant',
+    'Trailhead Holdings',
+    'Trailhead Commercial',
+    'Trailhead Studio',
+    'Trailhead Labs',
+    'Rob Harvey',
   ],
 })
 
 /**
- * The homepage's two tracks. Consulting and software builds are separate
- * businesses with separate buyers, so the section asks what the visitor came
- * for and lets them self-select on their problem rather than on our org chart.
+ * The two doors. Consulting and software builds are separate businesses with
+ * separate buyers, so the homepage's only job is to establish who Trailhead is
+ * and get the visitor into the right track. Each door wears its track's accent
+ * so the colour coding starts here.
  */
-const tracks = [
+const doors = [
   {
-    eyebrow: 'Consulting',
-    title: 'Grow the brand',
+    eyebrow: 'Trailhead Commercial',
+    title: 'You have a brand. It needs to sell somewhere it isn’t selling yet.',
     description:
-      "Market entry, distribution and pricing for nicotine and FMCG brands going into markets that don't yet know them.",
+      'Commercial strategy for nicotine, reduced-risk and FMCG brands, from someone who has spent thirteen years doing it rather than reading about it.',
     points: [
       'Market entry across the UK, EU, DACH and Sweden',
       'Distributor identification, negotiation and channel strategy',
@@ -42,60 +44,42 @@ const tracks = [
       'Interim commercial leadership while you hire',
     ],
     href: '/consulting',
-    cta: 'See the track record',
-    secondaryHref: '/contact',
-    secondaryCta: 'Start a conversation',
+    cta: 'Enter Trailhead Commercial',
+    accent: '#0B4A6F',
+    accentStrong: '#083A57',
   },
   {
-    eyebrow: 'Software',
-    title: 'Build the software',
+    eyebrow: 'Trailhead Studio',
+    title: 'You are running the business on spreadsheets, WhatsApp and someone’s memory.',
     description:
-      'Internal tools, client portals and offline field apps — built and maintained by the person who scoped them.',
+      'Bespoke software for companies that have outgrown their tooling, built and maintained by the person who scoped it.',
     points: [
       'Internal tools, client portals and operational dashboards',
       'Offline-capable field apps for teams working without signal',
       'Full product builds taken from idea through to billing customers',
       'Rebuilds of ageing sites for speed, search and maintainability',
     ],
-    href: '/web-app-design',
-    cta: 'See the work',
-    secondaryHref: '/products',
-    secondaryCta: 'See the products',
+    href: '/studio',
+    cta: 'Enter Trailhead Studio',
+    accent: '#0EA5E9',
+    accentStrong: '#0284C7',
   },
 ]
 
-const productStrip = [
+/** One line each. The full story lives on each product's own site, via /labs. */
+const labsStrip = [
   {
     name: 'Engineer OS',
-    sector: 'Field service',
-    summary:
-      'Job management for UK field service teams. Offline job sheets, automatic certificates and asset history, from £15 per engineer a month.',
-    href: '/engineer-os',
-    cta: 'How it works',
+    line: 'Job management for UK field service teams, from £15 per engineer a month.',
   },
   {
     name: 'MVP Cricket',
-    sector: 'Sports SaaS',
-    summary:
-      'Multi-tenant club management for grassroots cricket. Play-Cricket sync, automated MVP scoring and member notifications.',
-    href: '/mvp-cricket',
-    cta: 'How it works',
+    line: 'Club management for grassroots cricket, with Play-Cricket sync and automated MVP scoring.',
   },
   {
-    name: 'BrightFire',
-    sector: 'Fire & security',
-    summary:
-      'The bespoke build that became Engineer OS, made for a fire and security contractor in Harlow and productised once it proved itself.',
-    href: '/bright-fire',
-    cta: 'Read the story',
+    name: 'MVP Predictor',
+    line: 'White-label football prediction competitions for clubs, in build.',
   },
-]
-
-const stats = [
-  ['13+', 'Years in NGP & FMCG'],
-  ['6', 'International markets operated in'],
-  ['£5M+', 'Revenue built from scratch'],
-  ['1', 'Successful founder exit'],
 ]
 
 export default async function MarketingHomePage() {
@@ -108,208 +92,124 @@ export default async function MarketingHomePage() {
 
   return (
     <div>
-      <section className="px-6 pb-18 pt-10 md:px-8 md:pb-24">
-        <div className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-[1100px] items-center gap-14 lg:grid-cols-[1.25fr_0.85fr]">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-sky-500">
-              Trailhead Holdings Ltd
-            </p>
-            <h1 className="mt-6 text-5xl font-bold leading-[1.08] tracking-[-0.05em] text-[var(--marketing-text)] md:text-[56px]">
-              <span className="block">Commercial strategy.</span>
-              <span className="block">Digital products.</span>
-              <span className="block">Built to last.</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600 md:text-xl">
-              We help brands grow in competitive markets, from NGP and FMCG
-              consulting to bespoke software development and SaaS products.
-            </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href={buildMarketingHref('/#contact', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
-              >
-                Work with us
-              </Link>
-              <Link
-                href="#services"
-                className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
-              >
-                See what we build
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative mx-auto h-[420px] w-full max-w-[420px]">
-            <div className="absolute inset-0 rounded-[2.5rem] border border-sky-100 bg-[linear-gradient(160deg,rgba(14,165,233,0.08),rgba(255,255,255,0.92))]" />
-            <div className="absolute left-[8%] top-[14%] h-44 w-36 rounded-[2rem] bg-sky-500/14 shadow-[0_30px_60px_-35px_rgba(14,165,233,0.7)]" />
-            <div className="absolute right-[10%] top-[10%] h-36 w-44 rounded-[1.75rem] border border-sky-200 bg-sky-500/12" />
-            <div className="absolute left-[18%] top-[40%] h-40 w-56 rounded-[2rem] bg-sky-500/18" />
-            <div className="absolute bottom-[12%] right-[12%] h-48 w-40 rounded-[2.25rem] border border-sky-100 bg-sky-500/10" />
-            <div className="absolute bottom-[18%] left-[12%] h-20 w-20 rounded-[1.5rem] bg-sky-400/20" />
-          </div>
+      <section className="px-6 pb-14 pt-14 md:px-8 md:pb-16 md:pt-20">
+        <div className="mx-auto max-w-[1100px]">
+          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-slate-500">
+            Trailhead Holdings Ltd
+          </p>
+          <h1 className="mt-6 max-w-3xl text-5xl font-bold leading-[1.08] tracking-[-0.05em] text-[var(--marketing-text)] md:text-[56px]">
+            Thirteen years selling in hard markets. Now building the software
+            too.
+          </h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 md:text-xl">
+            Trailhead Holdings is two businesses run by one operator.
+            Commercial strategy for nicotine and FMCG brands. Bespoke software
+            for companies that have outgrown their spreadsheets.
+          </p>
+          <p className="mt-4 text-sm font-semibold text-slate-500">
+            One operator. Two businesses. Since 2014.
+          </p>
         </div>
       </section>
 
-      <Reveal
-        id="services"
-        className="scroll-mt-24 bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24"
-      >
+      {/* The doors are the CTA. No button competes with them above. */}
+      <section className="px-6 pb-20 md:px-8 md:pb-24">
+        <div className="mx-auto grid max-w-[1100px] gap-6 lg:grid-cols-2">
+          {doors.map((door) => (
+            <article
+              key={door.eyebrow}
+              style={
+                {
+                  '--door-accent': door.accent,
+                  '--door-accent-strong': door.accentStrong,
+                } as CSSProperties
+              }
+              className="flex flex-col rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] md:p-10"
+            >
+              {/* Inset accent bar instead of a card border. A straight
+                  border-top clashes with the 2rem corner radius. */}
+              <span
+                aria-hidden="true"
+                className="h-1 w-12 rounded-full bg-[var(--door-accent)]"
+              />
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--door-accent)]">
+                {door.eyebrow}
+              </p>
+              <h2 className="mt-4 text-2xl font-bold leading-snug tracking-[-0.03em] md:text-3xl">
+                {door.title}
+              </h2>
+              <p className="mt-4 leading-8 text-slate-600">{door.description}</p>
+
+              <ul className="mt-6 flex-1 space-y-2.5 text-[0.98rem] text-slate-600">
+                {door.points.map((point) => (
+                  <li key={point} className="flex gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--door-accent)]"
+                    />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8 pt-2">
+                <Link
+                  href={buildMarketingHref(door.href, isLocalhost)}
+                  className="inline-flex items-center justify-center rounded-full bg-[var(--door-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[var(--door-accent-strong)]"
+                >
+                  {door.cta}
+                </Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <Reveal className="bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20">
         <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
-            What we do
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7C3AED]">
+            Trailhead Labs
           </p>
           <h2 className="mt-4 max-w-2xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-            What did you come here for?
+            And three products we run.
           </h2>
-          <p className="mt-4 max-w-2xl leading-8 text-slate-600">
-            Two separate businesses, run by one person &mdash; thirteen years in
-            FMCG, and the software studio that grew out of it.
-          </p>
-
-          {/* Two tracks at equal weight — a visitor self-selects once, here,
-              instead of choosing between four undifferentiated cards. */}
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
-            {tracks.map((track) => (
-              <article
-                key={track.title}
-                className="flex flex-col rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] md:p-10"
-              >
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                  {track.eyebrow}
-                </p>
-                <h3 className="mt-4 text-3xl font-bold tracking-[-0.03em]">{track.title}</h3>
-                <p className="mt-4 leading-8 text-slate-600">{track.description}</p>
-
-                <ul className="mt-6 space-y-2.5 text-[0.98rem] text-slate-600">
-                  {track.points.map((point) => (
-                    <li key={point} className="flex gap-3">
-                      <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-700" />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-8 flex flex-col gap-3 pt-2 sm:flex-row">
-                  <Link
-                    href={buildMarketingHref(track.href, isLocalhost)}
-                    className="inline-flex items-center justify-center rounded-full bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800"
-                  >
-                    {track.cta}
-                  </Link>
-                  {track.secondaryHref ? (
-                    <Link
-                      href={buildMarketingHref(track.secondaryHref, isLocalhost)}
-                      className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-5 py-3 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
-                    >
-                      {track.secondaryCta}
-                    </Link>
-                  ) : null}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </Reveal>
-
-      <Reveal className="px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
-            Track record
-          </p>
-          <h2 className="mt-5 max-w-2xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            Thirteen years of it, and the companies are all real.
-          </h2>
-          <dl className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map(([value, label]) => (
-              <div
-                key={label}
-                className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-6"
-              >
-                <dt className="sr-only">{label}</dt>
-                <dd>
-                  <span className="block text-3xl font-bold tracking-[-0.03em]">{value}</span>
-                  <span className="mt-2 block text-sm text-slate-600">{label}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <Link
-            href={buildMarketingHref('/consulting', isLocalhost)}
-            className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition hover:text-sky-900"
-          >
-            See the companies behind these numbers
-            <span aria-hidden="true">&rarr;</span>
-          </Link>
-        </div>
-      </Reveal>
-
-      <Reveal className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
-            Products
-          </p>
-          <h2 className="mt-5 max-w-2xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            Software we built, sell and run ourselves.
-          </h2>
-          <p className="mt-5 max-w-2xl leading-8 text-slate-600">
-            Live products with paying customers, which means we carry the
-            support, the billing and the uptime. The full story of each one is on
-            its own page.
-          </p>
-
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {productStrip.map((product) => (
-              <article
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {labsStrip.map((product) => (
+              <Link
                 key={product.name}
-                className="flex flex-col rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7"
+                href={buildMarketingHref('/labs', isLocalhost)}
+                className="group rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7 transition hover:border-[#C4B5FD]"
               >
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-xl font-bold tracking-[-0.02em]">{product.name}</h3>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-800">
-                    Live
+                <h3 className="text-xl font-bold tracking-[-0.02em]">
+                  {product.name}
+                </h3>
+                <p className="mt-3 leading-7 text-slate-600">{product.line}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#7C3AED]">
+                  Trailhead Labs
+                  <span aria-hidden="true" className="transition group-hover:translate-x-0.5">
+                    &rarr;
                   </span>
-                </div>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  {product.sector}
-                </p>
-                <p className="mt-4 flex-1 leading-7 text-slate-600">{product.summary}</p>
-                <Link
-                  href={buildMarketingHref(product.href, isLocalhost)}
-                  className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-700 transition hover:text-sky-900"
-                >
-                  {product.cta}
-                  <span aria-hidden="true">&rarr;</span>
-                </Link>
-              </article>
+                </span>
+              </Link>
             ))}
           </div>
-
-          <Link
-            href={buildMarketingHref('/products', isLocalhost)}
-            className="mt-10 inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
-          >
-            All products
-          </Link>
         </div>
       </Reveal>
 
-      <Reveal
-        id="blog"
-        className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24"
-      >
+      <Reveal id="blog" className="px-6 py-16 md:px-8 md:py-20">
         <div className="mx-auto max-w-[1100px]">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500">
                 Thinking
               </p>
-              <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
+              <h2 className="mt-4 text-3xl font-bold tracking-[-0.03em] md:text-4xl">
                 From the blog
               </h2>
             </div>
             <Link
               href={buildMarketingHref('/blog', isLocalhost)}
-              className="text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+              className="text-sm font-semibold text-slate-600 transition hover:text-[var(--marketing-text)]"
             >
               All posts →
             </Link>
@@ -334,7 +234,7 @@ export default async function MarketingHomePage() {
                   {post.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700"
+                      className="rounded-full border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600"
                     >
                       {tag}
                     </span>
@@ -342,36 +242,13 @@ export default async function MarketingHomePage() {
                 </div>
                 <Link
                   href={buildMarketingHref(`/blog/${post.slug}`, isLocalhost)}
-                  className="mt-6 inline-flex text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+                  className="mt-6 inline-flex text-sm font-semibold text-slate-700 transition hover:text-[var(--marketing-text)]"
                 >
                   Read more →
                 </Link>
               </article>
             ))}
           </div>
-        </div>
-      </Reveal>
-
-      <Reveal id="contact" className="scroll-mt-24 px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-[1100px] gap-10 lg:grid-cols-[1.1fr_0.75fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Get in touch
-            </p>
-            <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-              Let&apos;s talk
-            </h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-              Whether you&apos;re looking for commercial consultancy, a
-              development partner, or just want to find out more, we&apos;d
-              love to hear from you.
-            </p>
-            <div className="mt-10">
-              <ContactForm />
-            </div>
-          </div>
-
-          <ContactDetailsCard includeLegalNote isLocalhost={isLocalhost} />
         </div>
       </Reveal>
     </div>

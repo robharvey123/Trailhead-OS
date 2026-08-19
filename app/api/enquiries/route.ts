@@ -54,7 +54,7 @@ function isValidEmail(value: string): boolean {
 /**
  * Build an enquiry insert from an explicit whitelist of PUBLIC form fields only.
  * Internal CRM fields (account_id, project_id, internal_notes*, converted_contact_id)
- * are never accepted here — they are settable solely via the authenticated PATCH
+ * are never accepted here. They are settable solely via the authenticated PATCH
  * path. status is forced to 'new'; the caller cannot set it.
  */
 function mapPublicEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, 'id' | 'created_at'> {
@@ -79,6 +79,11 @@ function mapPublicEnquiryPayload(body: Record<string, unknown>): Omit<Enquiry, '
     budget: cappedText(body.budget, MAX_SHORT),
     extra: cappedText(body.extra, MAX_TEXTAREA),
     status: 'new',
+    // This route is the discovery form. The marketing contact form persists
+    // its own enquiries in app/api/contact/route.ts with source 'contact'.
+    source: 'discovery',
+    track: null,
+    workstream: null,
     account_id: null,
     project_id: null,
     internal_notes: null,
@@ -151,12 +156,12 @@ export async function POST(request: Request) {
   }
 
   // Honeypot: a real user never fills the hidden `website` field. If it's
-  // populated, pretend success and insert nothing — no signal to the bot.
+  // populated, pretend success and insert nothing, so the bot gets no signal.
   if (cappedText(body.website, MAX_SHORT)) {
     return NextResponse.json({ id: crypto.randomUUID() }, { status: 201 })
   }
 
-  // Public endpoint runs as the anon role — the "public can insert enquiries"
+  // Public endpoint runs as the anon role, so the "public can insert enquiries"
   // RLS policy is the authorisation boundary, not a service-role key.
   const supabase = await createSupabaseClient()
 

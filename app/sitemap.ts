@@ -12,11 +12,12 @@ const STATIC_ROUTES: {
 }[] = [
   { path: '/', changeFrequency: 'weekly', priority: 1.0 },
   { path: '/consulting', changeFrequency: 'monthly', priority: 0.9 },
-  { path: '/web-app-design', changeFrequency: 'monthly', priority: 0.9 },
-  { path: '/products', changeFrequency: 'monthly', priority: 0.9 },
-  { path: '/engineer-os', changeFrequency: 'monthly', priority: 0.8 },
-  { path: '/mvp-cricket', changeFrequency: 'monthly', priority: 0.8 },
-  { path: '/bright-fire', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/studio', changeFrequency: 'monthly', priority: 0.9 },
+  // Retired paths (/web-app-design, /products, /engineer-os, /mvp-cricket,
+  // /bright-fire) 301 in middleware.ts and must NOT be listed here. A
+  // sitemap advertising redirects is a crawl-budget leak.
+  { path: '/labs', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/labs/mvp-predictor', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/contact', changeFrequency: 'yearly', priority: 0.6 },
   { path: '/blog', changeFrequency: 'weekly', priority: 0.9 },
   // These are real, indexable routes and were missing from the sitemap.

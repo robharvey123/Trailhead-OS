@@ -30,6 +30,28 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
+const TRACK_WORKSTREAMS: Record<string, string | null> = {
+  commercial: 'consulting',
+  studio: 'app-dev',
+  labs: null,
+}
+
+// The interest dropdown is the fallback. Someone who lands on /contact
+// directly has no track in the URL, and without this every direct visit is
+// unattributed, which is most of them.
+const INTEREST_TRACKS: Record<string, string> = {
+  'Consulting, Trailhead Commercial': 'commercial',
+  'Software build, Trailhead Studio': 'studio',
+  'Products, Trailhead Labs': 'labs',
+}
+
+function resolveTrack(track: string | null, interest: string) {
+  if (track && track in TRACK_WORKSTREAMS) {
+    return track
+  }
+  return INTEREST_TRACKS[interest] ?? null
+}
+
 export async function POST(request: NextRequest) {
   const raw = await request.text()
   if (raw.length > MAX_BODY_BYTES) {
@@ -53,6 +75,14 @@ export async function POST(request: NextRequest) {
   const company = cappedString(body.company, MAX_SHORT)
   const interest = cappedString(body.interest, MAX_SHORT) ?? 'General'
   const message = cappedString(body.message, MAX_MESSAGE)
+  // Which sub-brand the enquiry came through (/consulting, /studio or /labs),
+  // mapped to the OS workstream so the enquiry lands on the right board.
+  //
+  // Labs maps to null on purpose. A Labs enquiry is product interest, not a
+  // services lead, and folding it into app-dev would inflate Studio's number
+  // in the very count this field exists to produce.
+  const track = resolveTrack(cappedString(body.track, MAX_SHORT), interest)
+  const workstream = track ? TRACK_WORKSTREAMS[track] : null
 
   if (!name || !email || !message) {
     return NextResponse.json(
@@ -84,7 +114,7 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: 'Trailhead Website <notifications@trailheadholdings.uk>',
         to: [notificationEmail],
-        subject: `Website enquiry — ${interest} — ${name}`,
+        subject: `Website enquiry: ${interest}, ${name}`,
         html: `
           <div style="font-family: Inter, Arial, sans-serif; color: #0F172A; line-height: 1.7;">
             <h1 style="font-size: 20px; margin-bottom: 16px;">New website enquiry</h1>
@@ -92,6 +122,11 @@ export async function POST(request: NextRequest) {
             <p><strong>Email:</strong> ${escapeHtml(email)}</p>
             <p><strong>Company:</strong> ${escapeHtml(company ?? 'Not provided')}</p>
             <p><strong>Interest:</strong> ${escapeHtml(interest)}</p>
+            ${
+              track
+                ? `<p><strong>Track:</strong> ${escapeHtml(track)}${workstream ? ` (workstream: ${escapeHtml(workstream)})` : ' (product enquiry, no services workstream)'}</p>`
+                : ''
+            }
             <p><strong>Message:</strong></p>
             <div style="padding: 16px; border-radius: 16px; background: #F8FAFC; border: 1px solid #E2E8F0;">
               ${escapeHtml(message).replace(/\n/g, '<br />')}
@@ -102,6 +137,31 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('Failed to send marketing contact email', error)
+  }
+
+  // Persist the enquiry so it reaches a board, not just an inbox. Until this
+  // existed, "which door produces work" was answerable only by trawling email
+  // by hand, which in practice meant never.
+  //
+  // The message lands in pain_points: it is the closest existing column and it
+  // renders in the OS enquiry view. source separates these from discovery-form
+  // enquiries, which carry team size, devices and the quote workflow.
+  //
+  // Fail-open, like the throttle event below. The notification has already
+  // gone out by this point, so a Supabase problem must not cost us the lead.
+  const { error: enquiryError } = await supabase.from('enquiries').insert({
+    biz_name: company ?? name,
+    contact_name: name,
+    contact_email: email,
+    project_type: interest,
+    pain_points: message,
+    source: 'contact',
+    track,
+    workstream,
+    status: 'new',
+  })
+  if (enquiryError) {
+    console.error('Failed to persist contact enquiry', enquiryError)
   }
 
   // Record this accepted submission so the hourly cap can count it next time.

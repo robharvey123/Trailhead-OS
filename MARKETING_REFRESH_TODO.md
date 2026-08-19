@@ -2,6 +2,16 @@
 
 Raised 26 July 2026. The marketing tree lives at `app/(marketing)/marketing/` and is served on the non-app host. It has drifted well behind what the businesses actually are.
 
+> **Update 19 August 2026: the track split landed.** The site is now three
+> sub-brands on one domain: Trailhead Commercial (`/consulting`), Trailhead
+> Studio (`/studio`, moved from `/web-app-design`) and Trailhead Labs
+> (`/labs`, replacing `/products`). Items 1–4 below are resolved by it:
+> `/engineer-os` and `/mvp-cricket` 301 to the products' own domains,
+> `/bright-fire` 301s to `/studio` where the case study lives, MVP Predictor
+> has its page at `/labs/mvp-predictor`, and the homepage is a two-door
+> router. Items 5 and 6 (the diverged privacy pages and the prospect-data
+> section) are **still open** and still block the outreach campaign.
+
 ## The headline problem
 
 `grep -ric "engineer os"` and `grep -ric "predictor"` across the whole marketing tree both return **zero**. The site sells a single-tenant field service app called BrightFire and a V1 MVP Cricket, neither of which reflects where those products got to, and it does not mention the predictor business at all.

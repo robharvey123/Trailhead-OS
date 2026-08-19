@@ -8,24 +8,24 @@ export const dynamic = 'force-static'
 export async function GET() {
   const body = `# Trailhead Holdings
 
-> Trailhead Holdings Ltd is a UK-based commercial strategy and product development house. We work with founders and operators in NGP (nicotine and reduced-risk), FMCG, and SaaS.
+> Trailhead Holdings Ltd is the UK parent of three tracks run by one operator, Rob Harvey: Trailhead Commercial (NGP and FMCG consulting), Trailhead Studio (bespoke software), and Trailhead Labs (its own SaaS products). Commercial and Studio are separate specialist businesses with separate buyers, not one blended agency.
 
-## Two lines of work
-1. Consulting — NGP and FMCG commercial strategy, market entry, channel and pricing
-2. Web and app development — bespoke websites, web apps and mobile-first products for UK businesses
+## Trailhead Commercial: consulting
+NGP and FMCG commercial strategy: market entry (UK, EU, DACH, Sweden), distributor and channel strategy, pricing architecture, interim commercial leadership. Thirteen years operating in nicotine and reduced-risk, six markets, one founder exit.
+- ${SITE_URL}/consulting
 
-## Products
-- Engineer OS (job management for UK field service teams): https://engineeros.uk
-- MVP Cricket (grassroots cricket club management SaaS): https://mvpcricket.app
+## Trailhead Studio: bespoke software
+Internal tools, client portals, offline-capable field apps, marketing sites and full web app builds for UK businesses. Built in-house by the person who scoped them.
+- ${SITE_URL}/studio
 
-## Key pages
+## Trailhead Labs: products
+- Engineer OS (job management for UK field service teams, from £15 per engineer/month): https://engineeros.uk
+- MVP Cricket (grassroots cricket club management SaaS, from £19/month): https://mvpcricket.app
+- MVP Predictor (white-label football prediction competitions for clubs, in build): ${SITE_URL}/labs/mvp-predictor
+- Portfolio: ${SITE_URL}/labs
+
+## Other pages
 - Home: ${SITE_URL}/
-- Consulting: ${SITE_URL}/consulting
-- Web & app development: ${SITE_URL}/web-app-design
-- Products: ${SITE_URL}/products
-- Engineer OS: ${SITE_URL}/engineer-os
-- MVP Cricket: ${SITE_URL}/mvp-cricket
-- BrightFire (the bespoke build that became Engineer OS): ${SITE_URL}/bright-fire
 - Contact: ${SITE_URL}/contact
 - Blog: ${SITE_URL}/blog
 - Privacy: ${SITE_URL}/privacy

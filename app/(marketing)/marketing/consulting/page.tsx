@@ -2,19 +2,22 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import Reveal from '@/components/marketing/Reveal'
+import { ProfessionalServiceJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
-import { buildMetadata } from '@/lib/seo'
+import { absoluteUrl, buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'NGP & FMCG Commercial Consulting',
+  title: 'Trailhead Commercial: NGP & FMCG Consulting',
   description:
     'Commercial strategy, market entry and route-to-market for nicotine, reduced-risk and FMCG brands. Thirteen years operating in the category, six markets, one exit.',
   path: '/consulting',
+  // This page owns the consulting keyword pool; the homepage carries brand
+  // terms only and /studio owns the software pool.
   keywords: [
-    'NGP commercial consultant',
-    'nicotine pouch market entry',
-    'FMCG go to market consultant UK',
-    'reduced risk nicotine strategy',
+    'nicotine pouch consultant',
+    'NGP market entry',
+    'FMCG route to market UK',
+    'distributor strategy UK EU',
     'interim commercial director FMCG',
   ],
 })
@@ -97,6 +100,29 @@ const categories = [
   'UK and Europe',
 ]
 
+// The shape of pricing, not a rate card. A brand owner deciding whether to
+// start a conversation needs to know how the money works before they will.
+const engagementShapes = [
+  {
+    title: 'Scoped project',
+    shape: 'Fixed price, agreed in writing before work starts',
+    description:
+      'A defined piece of work with a defined end: a market entry plan, a distributor search, a pricing review. You see the price and the deliverable before you commit to either.',
+  },
+  {
+    title: 'Interim leadership',
+    shape: 'Monthly retainer against an agreed day commitment',
+    description:
+      'Running the commercial function while you hire, or while the business is too early to justify a permanent director. Reviewed quarterly, and built to make itself redundant.',
+  },
+  {
+    title: 'Advisory',
+    shape: 'Short and fixed-fee',
+    description:
+      'A second pair of eyes on a deal, a distributor negotiation or a market you are weighing up. Days rather than months, priced as such.',
+  },
+]
+
 const faqs = [
   {
     question: 'Who actually does the work?',
@@ -106,7 +132,7 @@ const faqs = [
   {
     question: 'How do engagements usually start?',
     answer:
-      'A conversation, then a written scope with a fixed price before anything is committed. Most start as a defined piece of work — a market entry plan, a pricing review — and some continue as an ongoing interim role.',
+      'A conversation, then a written scope with a fixed price before anything is committed. Most start as a defined piece of work (a market entry plan, a pricing review), and some continue as an ongoing interim role.',
   },
   {
     question: 'Do you work outside nicotine and FMCG?',
@@ -116,7 +142,7 @@ const faqs = [
   {
     question: 'Is this related to the software side of the business?',
     answer:
-      'They are separate lines of work with the same operator behind them. Occasionally they meet — a client needs an internal tool the market does not sell — and when that happens we can build it. Neither is a route into selling the other.',
+      'They are separate lines of work with the same operator behind them. Occasionally they meet: a client needs an internal tool the market does not sell. When that happens we can build it. Neither is a route into selling the other.',
   },
 ]
 
@@ -126,11 +152,22 @@ export default async function ConsultingPage() {
 
   return (
     <div>
+      <ProfessionalServiceJsonLd
+        name="Trailhead Commercial"
+        description="NGP and FMCG commercial consulting: market entry, route to market, pricing and interim commercial leadership for nicotine and reduced-risk brands."
+        url={absoluteUrl('/consulting')}
+        serviceTypes={[
+          'Market entry strategy',
+          'Route to market and channel strategy',
+          'Pricing and portfolio architecture',
+          'Interim commercial leadership',
+        ]}
+      />
       <section className="scroll-mt-24 px-6 py-16 md:px-8 md:py-20">
         <div className="mx-auto max-w-[1100px]">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-700">
-              Consulting
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--marketing-accent)]">
+              Trailhead Commercial
             </p>
             <h1 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
               You have a brand. It needs to sell somewhere it isn&rsquo;t selling
@@ -146,14 +183,14 @@ export default async function ConsultingPage() {
             </p>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link
-                href={buildMarketingHref('/contact', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full bg-sky-700 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-800"
+                href={buildMarketingHref('/contact?track=commercial', isLocalhost)}
+                className="inline-flex items-center justify-center rounded-full bg-[var(--marketing-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[var(--marketing-accent-strong)]"
               >
                 Start a conversation
               </Link>
               <Link
-                href={buildMarketingHref('/web-app-design', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
+                href={buildMarketingHref('/studio', isLocalhost)}
+                className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent-border)] hover:bg-[var(--marketing-accent-soft)]"
               >
                 Looking for software instead?
               </Link>
@@ -178,7 +215,10 @@ export default async function ConsultingPage() {
       </section>
 
       <Reveal>
-        <section className="border-t border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20">
+        <section
+          id="services"
+          className="scroll-mt-24 border-t border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20"
+        >
           <div className="mx-auto max-w-[1100px]">
             <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
               What we are usually brought in to do
@@ -195,7 +235,7 @@ export default async function ConsultingPage() {
               ))}
             </div>
 
-            <div className="mt-10 flex flex-wrap gap-2">
+            <div id="sectors" className="mt-10 flex scroll-mt-24 flex-wrap gap-2">
               {categories.map((category) => (
                 <span
                   key={category}
@@ -210,12 +250,12 @@ export default async function ConsultingPage() {
       </Reveal>
 
       <Reveal>
-        <section className="px-6 py-16 md:px-8 md:py-20">
+        <section id="track-record" className="scroll-mt-24 px-6 py-16 md:px-8 md:py-20">
           <div className="mx-auto max-w-[1100px]">
             <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">Track record</h2>
             <p className="mt-4 max-w-2xl leading-7 text-slate-600">
               Every one of these is a real company with a real trading history.
-              Look them up — that is rather the point of listing them.
+              Look them up. That is rather the point of listing them.
             </p>
 
             <ol className="mt-10 space-y-4">
@@ -227,7 +267,7 @@ export default async function ConsultingPage() {
                   <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-6">
                     <div>
                       <h3 className="text-xl font-bold tracking-[-0.02em]">{entry.company}</h3>
-                      <p className="mt-1 text-sm font-semibold text-sky-700">{entry.role}</p>
+                      <p className="mt-1 text-sm font-semibold text-[var(--marketing-accent)]">{entry.role}</p>
                     </div>
                     <p className="shrink-0 text-sm font-semibold text-slate-500">{entry.period}</p>
                   </div>
@@ -241,6 +281,35 @@ export default async function ConsultingPage() {
 
       <Reveal>
         <section className="border-t border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20">
+          <div className="mx-auto max-w-[1100px]">
+            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+              How engagements are priced
+            </h2>
+            <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+              Numbers depend on the brief, but the shape never changes: you see
+              the price in writing before anything is committed, and nothing
+              bills by the hour.
+            </p>
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {engagementShapes.map((shape) => (
+                <div
+                  key={shape.title}
+                  className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7"
+                >
+                  <h3 className="text-xl font-bold tracking-[-0.02em]">{shape.title}</h3>
+                  <p className="mt-2 text-sm font-semibold text-[var(--marketing-accent)]">
+                    {shape.shape}
+                  </p>
+                  <p className="mt-3 leading-7 text-slate-600">{shape.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </Reveal>
+
+      <Reveal>
+        <section className="px-6 py-16 md:px-8 md:py-20">
           <div className="mx-auto max-w-[1100px]">
             <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
               Questions we get asked
@@ -275,7 +344,7 @@ export default async function ConsultingPage() {
               and a fixed price, whether or not you go ahead with us.
             </p>
             <Link
-              href={buildMarketingHref('/contact', isLocalhost)}
+              href={buildMarketingHref('/contact?track=commercial', isLocalhost)}
               className="mt-9 inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
             >
               Start a conversation

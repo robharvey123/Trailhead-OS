@@ -2,30 +2,25 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
 import Reveal from '@/components/marketing/Reveal'
+import { ProfessionalServiceJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
-import { buildMetadata } from '@/lib/seo'
+import { absoluteUrl, buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Website & App Design and Development',
+  title: 'Trailhead Studio: Bespoke Software & Web Apps',
   description:
-    'Trailhead designs and builds websites, web apps and mobile-first products for UK businesses. See the work: Engineer OS, BrightFire, Trailhead OS, MVP Cricket.',
-  path: '/web-app-design',
+    'Trailhead Studio designs and builds bespoke software for UK businesses: internal tools, offline field apps, client portals and full web apps, all built in-house.',
+  path: '/studio',
+  // This page owns the software keyword pool; /consulting owns the consulting
+  // pool and the homepage carries brand terms only.
   keywords: [
-    'website design UK',
-    'bespoke app development UK',
-    'web app development Essex',
-    'custom software development for SMEs',
-    'progressive web app developer UK',
-    'SaaS product development UK',
+    'bespoke software development Essex',
+    'internal tools development UK',
+    'offline field service app',
+    'PWA development UK',
+    'Brentwood web design',
   ],
 })
-
-const stats = [
-  ['5', 'Products designed and shipped'],
-  ['3', 'Live in production today'],
-  ['1', 'Client build productised into SaaS'],
-  ['0', 'Agencies or offshore teams involved'],
-]
 
 const capabilities = [
   {
@@ -113,27 +108,10 @@ type Project = {
   internal?: boolean
 }
 
+// Client work only. The in-house products used to pad this list, which made
+// them read as side projects and made the portfolio read as borrowed proof.
+// They live at /labs now. Thinner and honest converts better than padded.
 const projects: Project[] = [
-  {
-    name: 'Engineer OS',
-    sector: 'Field service software',
-    status: 'Live',
-    headline: 'A job management platform for UK field service teams.',
-    problem:
-      'Small field service firms run on a mix of WhatsApp groups, Word templates and a filing cabinet. The work is rarely the hard part. Proving it happened, on time, to whoever is asking, is what costs them. Existing platforms were built for fleets ten times their size and priced accordingly.',
-    built: [
-      'Mobile-first PWA that installs to an engineer’s home screen and works with no signal, syncing when the van is back in range',
-      'Configurable digital forms with photo capture and drawn signatures that generate a branded PDF certificate automatically',
-      'Asset and site records, so every unit carries its own service history and an audit is one click rather than an afternoon',
-      'Certificate expiry tracking that surfaces renewals as a reminder rather than a surprise',
-      'Quoting and invoicing with Xero and QuickBooks sync, plus dashboards for utilisation, SLA performance and job profitability',
-    ],
-    stack: ['Next.js', 'TypeScript', 'Tailwind', 'Supabase', 'Stripe', 'Vercel'],
-    outcome:
-      'Live and selling at engineeros.uk on per-engineer pricing from £15 a month, with a 14-day trial and same-day setup. A typical ten-engineer team is onboarded inside a week, customer data imported and forms rebuilt as part of the setup.',
-    href: 'https://engineeros.uk',
-    hrefLabel: 'Visit engineeros.uk',
-  },
   {
     name: 'BrightFire',
     sector: 'Fire & security contractor',
@@ -149,48 +127,9 @@ const projects: Project[] = [
     ],
     stack: ['PWA', 'Next.js', 'TypeScript', 'Supabase', 'Offline sync'],
     outcome:
-      'Paperwork now lands in the office before the engineer has left the car park. The build worked well enough that we productised it into Engineer OS and took it to market — the clearest proof we know how to design software for a trade rather than for a demo.',
-    href: '/bright-fire',
-    hrefLabel: 'See the BrightFire page',
-    internal: true,
-  },
-  {
-    name: 'Trailhead OS',
-    sector: 'Business operating system',
-    status: 'Live',
-    headline: 'The system that runs this business, built from scratch.',
-    problem:
-      'Running a consultancy and a software studio across five workstreams meant a project tool, a separate CRM, a spreadsheet for invoices, an inbox for everything else, and no single view of any of it. Off-the-shelf platforms each solved a third of the problem and none of them talked to the others.',
-    built: [
-      'Project boards with drag-and-drop kanban, Gantt timelines, dependencies and milestones across five workstreams',
-      'Full CRM — accounts, contacts, enquiries, deals and a public discovery form feeding straight into the pipeline',
-      'Quoting and invoicing with PDF export, Stripe payment links, automatic reconciliation on payment and recurring subscriptions',
-      'Two-way Google Calendar sync, Gmail threads linked to CRM contacts, and an iCal feed for Apple Calendar',
-      'AI scope and quote generation that reads a submitted discovery form and returns a priced scope with a complexity breakdown',
-      'Web push notifications, shareable client report links with token expiry, and a bearer-token API for programmatic access',
-    ],
-    stack: ['Next.js', 'TypeScript', 'Tailwind', 'Supabase', 'Stripe', 'Claude API', 'Vercel'],
-    outcome:
-      'In production at app.trailheadholdings.uk and used every working day. It replaced four subscriptions and is the reference build we point clients at when they ask whether we can handle something with real operational depth.',
-  },
-  {
-    name: 'MVP Cricket',
-    sector: 'Sports SaaS',
-    status: 'Live',
-    headline: 'A SaaS platform for grassroots cricket clubs.',
-    problem:
-      'Grassroots clubs want to recognise player contribution and keep members engaged across a season, but the admin sits with one volunteer and a spreadsheet. Scoring gets done late, or not at all, and the thing that would keep players checking in never quite happens.',
-    built: [
-      'Automated MVP scoring engine built around how clubs actually recognise contributions, not just runs and wickets',
-      'Live Play-Cricket integration pulling fixtures and results in without extra admin',
-      'Player and club leaderboards with live standings and weekly snapshots',
-      'Multi-club support for leagues and groups running more than one team',
-    ],
-    stack: ['Next.js', 'TypeScript', 'Supabase', 'Stripe', 'Play-Cricket API'],
-    outcome:
-      'Live at mvpcricket.app on tiered subscription pricing from £19 a month, with a custom tier for multi-club operators. A worked example of taking a product from idea to billing customers without outside investment.',
-    href: 'https://mvpcricket.app',
-    hrefLabel: 'Visit mvpcricket.app',
+      'Paperwork now lands in the office before the engineer has left the car park. The build worked well enough that Trailhead Labs productised it into Engineer OS and took it to market. That is the clearest proof we know how to design software for a trade rather than for a demo.',
+    href: 'https://engineeros.uk',
+    hrefLabel: 'Now sold as Engineer OS',
   },
   {
     name: 'Yasin & Co Solicitors',
@@ -207,7 +146,7 @@ const projects: Project[] = [
     ],
     stack: ['Next.js', 'TypeScript', 'Tailwind', 'CMS', 'Vercel'],
     outcome:
-      'Audit delivered and scope agreed across three costed options. Currently in build — we will publish the before-and-after numbers when it ships.',
+      'Audit delivered and scope agreed across three costed options. Currently in build, and we will publish the before-and-after numbers when it ships.',
   },
 ]
 
@@ -262,19 +201,30 @@ const faqs = [
   },
 ]
 
-export default async function WebAppDesignPage() {
+export default async function StudioPage() {
   const host = (await headers()).get('host') || ''
   const isLocalhost = isLocalDevelopmentHost(host)
-  const contactHref = buildMarketingHref('/#contact', isLocalhost)
+  const contactHref = buildMarketingHref('/contact?track=studio', isLocalhost)
 
   return (
     <div>
+      <ProfessionalServiceJsonLd
+        name="Trailhead Studio"
+        description="Bespoke software for UK businesses: internal tools, offline-capable field apps, client portals, marketing sites and full web app builds, designed and built in-house."
+        url={absoluteUrl('/studio')}
+        serviceTypes={[
+          'Bespoke web application development',
+          'Internal tools development',
+          'Offline-first field app development',
+          'Marketing website design and build',
+        ]}
+      />
       {/* Hero */}
       <section className="px-6 py-16 md:px-8 md:py-20">
         <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Website &amp; App Design
+              Trailhead Studio
             </p>
             <h1 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
               Websites and apps designed to do a job, not just look good.
@@ -282,7 +232,7 @@ export default async function WebAppDesignPage() {
             <p className="mt-6 text-lg leading-8 text-slate-600">
               We design and build digital products for businesses that have
               outgrown off-the-shelf software. Marketing sites, internal tools,
-              client portals, mobile-first apps, and full SaaS platforms. Every
+              client portals, mobile-first apps, and full web platforms. Every
               one of them built in-house, from the first discovery conversation
               through to deployment and beyond.
             </p>
@@ -291,7 +241,7 @@ export default async function WebAppDesignPage() {
                 href={contactHref}
                 className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
               >
-                Start a project
+                Scope a build
               </Link>
               <Link
                 href="#work"
@@ -309,7 +259,7 @@ export default async function WebAppDesignPage() {
                 <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
                 <span className="ml-3 truncate rounded-full bg-white px-3 py-1 text-[11px] text-slate-400">
-                  engineeros.uk
+                  Bright Fire Services: job board
                 </span>
               </div>
               <div className="p-5">
@@ -355,22 +305,8 @@ export default async function WebAppDesignPage() {
         </div>
       </section>
 
-      {/* Stats */}
-      <Reveal className="border-y border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-6 py-12 md:px-8">
-        <div className="mx-auto grid max-w-[1100px] gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map(([value, label]) => (
-            <div key={label}>
-              <p className="text-4xl font-bold tracking-[-0.04em] text-sky-600">
-                {value}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{label}</p>
-            </div>
-          ))}
-        </div>
-      </Reveal>
-
       {/* Capabilities */}
-      <Reveal className="px-6 py-20 md:px-8 md:py-24">
+      <Reveal id="services" className="scroll-mt-24 px-6 py-20 md:px-8 md:py-24">
         <div className="mx-auto max-w-[1100px]">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
             What we build
@@ -422,15 +358,16 @@ export default async function WebAppDesignPage() {
       >
         <div className="mx-auto max-w-[1100px]">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            Selected work
+            Client work
           </p>
           <h2 className="mt-5 max-w-3xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            Five products. Every one designed, built and shipped by us.
+            A short list, on purpose.
           </h2>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
             The detail below is the whole point. Anyone can show a screenshot,
             so here is the problem each business came with, what we actually
-            built, what it runs on, and where it got to.
+            built, what it runs on, and where it got to. The products we build
+            and sell ourselves live at Trailhead Labs.
           </p>
 
           <div className="mt-12 grid gap-8">
@@ -615,7 +552,7 @@ export default async function WebAppDesignPage() {
       </Reveal>
 
       {/* Process */}
-      <Reveal className="bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
+      <Reveal id="process" className="scroll-mt-24 bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
         <div className="mx-auto max-w-[1100px]">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
             How we work
