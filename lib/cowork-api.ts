@@ -198,6 +198,7 @@ type ProjectRow = {
   status: string
   workstream_id: string
   account_id: string | null
+  engagement_id: string | null
   pricing_tier_id: string | null
   start_date: string | null
   end_date: string | null
@@ -207,6 +208,7 @@ type ProjectRow = {
   updated_at: string
   workstreams?: RelationValue<WorkstreamShape>
   accounts?: RelationValue<NamedRelation>
+  engagements?: RelationValue<{ id: string; code: string | null; name: string }>
   pricing_tiers?: RelationValue<{ id: string; slug: string; name: string }>
 }
 
@@ -354,6 +356,7 @@ export const PROJECT_SELECT = `
   status,
   workstream_id,
   account_id,
+  engagement_id,
   pricing_tier_id,
   start_date,
   end_date,
@@ -363,21 +366,44 @@ export const PROJECT_SELECT = `
   updated_at,
   workstreams(id, slug, label),
   accounts(id, name),
+  engagements(id, code, name),
   pricing_tiers(id, slug, name)
 `
 
 export class CoworkApiError extends Error {
   status: number
+  /** Extra keys merged into the JSON error body (e.g. supplied/accepted). */
+  details?: Record<string, unknown>
 
-  constructor(message: string, status = 400) {
+  constructor(message: string, status = 400, details?: Record<string, unknown>) {
     super(message)
     this.status = status
+    this.details = details
   }
+}
+
+/**
+ * The 400 for "body had keys but none were recognised". A bare
+ * `No changes supplied` for both an empty body and a typo'd field name cost
+ * twenty minutes of live probing (23 Aug) — name the accepted fields instead.
+ * Callers keep `No changes supplied` for a genuinely empty body.
+ */
+export function noRecognisedFieldsError(
+  body: Record<string, unknown>,
+  accepted: string[]
+) {
+  return new CoworkApiError('No recognised fields', 400, {
+    supplied: Object.keys(body),
+    accepted,
+  })
 }
 
 export function jsonError(error: unknown, fallbackMessage: string) {
   if (error instanceof CoworkApiError) {
-    return NextResponse.json({ error: error.message }, { status: error.status })
+    return NextResponse.json(
+      { error: error.message, ...(error.details ?? {}) },
+      { status: error.status }
+    )
   }
 
   return NextResponse.json(

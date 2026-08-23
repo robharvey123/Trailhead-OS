@@ -2,6 +2,7 @@ import {
   TASK_SELECT,
   addDays,
   CoworkApiError,
+  noRecognisedFieldsError,
   formatTask,
   getColumnIdForWorkstream,
   getTaskById,
@@ -30,6 +31,19 @@ import type { TaskPriority } from '@/lib/types'
  */
 
 export type CoworkTaskDueFilter = 'today' | 'overdue' | 'this_week' | 'all'
+
+/** Accepted-field list quoted back on a no-recognised-fields 400. */
+export const TASK_PATCH_FIELDS = [
+  'title',
+  'description',
+  'priority',
+  'due_date',
+  'start_date',
+  'is_master_todo',
+  'completed_at',
+  'column',
+  'status',
+]
 
 export interface ListCoworkTasksFilters {
   workstreamSlug?: string | null
@@ -182,18 +196,24 @@ export async function updateCoworkTask(id: string, body: Record<string, unknown>
     patch.completed_at = optionalIsoDatetime(body.completed_at, 'completed_at')
   }
 
-  if (body.column !== undefined) {
+  // `status` is an alias for `column` — the obvious field name cost twenty
+  // minutes of live probing (23 Aug). Same enum, `column` wins if both sent.
+  const columnValue = body.column !== undefined ? body.column : body.status
+  if (columnValue !== undefined) {
     if (!existingTask.workstream_id) {
       throw new CoworkApiError('Task has no workstream to move within', 400)
     }
 
     patch.column_id = await getColumnIdForWorkstream(
       existingTask.workstream_id,
-      parseColumnKey(body.column)
+      parseColumnKey(columnValue)
     )
   }
 
   if (Object.keys(patch).length === 0) {
+    if (Object.keys(body).length > 0) {
+      throw noRecognisedFieldsError(body, TASK_PATCH_FIELDS)
+    }
     throw new CoworkApiError('No changes supplied', 400)
   }
 

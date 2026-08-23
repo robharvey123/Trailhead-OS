@@ -7,6 +7,7 @@ import {
 } from '@/lib/db/engagement-tasks'
 import { addNote } from '@/lib/db/notes'
 import { getProjectById, getProjects } from '@/lib/db/projects'
+import { updateCoworkProject, updateProjectMilestone } from '@/lib/cowork-projects'
 import type { createClient as createServerClient } from '@/lib/supabase/server'
 import { supabaseService } from '@/lib/supabase/service'
 import {
@@ -166,6 +167,52 @@ export const getProject = defineTool({
         contacts: project.contacts.length,
       },
     }
+  },
+})
+
+export const updateProjectTool = defineTool({
+  name: 'update_project',
+  description:
+    'Patch a project. Supply only the fields to change: name, description, status, start_date, end_date, account_id, engagement_id. Setting engagement_id links the project to an engagement (so bulk_create_engagement_tasks tickets inherit it and hours reconcile); null clears the link. Linking is refused (409) when the engagement’s end client differs from the project’s account.',
+  inputSchema: z.object({
+    id: z.string().min(1).optional(),
+    project_id: z.string().min(1).optional(),
+    name: z.string().optional(),
+    description: z.string().nullable().optional(),
+    status: projectStatus.optional(),
+    start_date: isoDate.nullable().optional(),
+    end_date: isoDate.nullable().optional(),
+    account_id: z.string().uuid().nullable().optional(),
+    engagement_id: z.string().uuid().nullable().optional(),
+  }),
+  handler: async (input) => {
+    const { id, project_id, ...rest } = input
+    const projectId = id ?? project_id
+    if (!projectId) throw new Error('id (or project_id) is required')
+    const body = Object.fromEntries(
+      Object.entries(rest).filter(([, value]) => value !== undefined)
+    )
+    return updateCoworkProject(projectId, body)
+  },
+})
+
+export const updateProjectMilestoneTool = defineTool({
+  name: 'update_project_milestone',
+  description:
+    'Patch one project milestone: completed (stamps/clears completed_at), date, name. Use get_project to find milestone ids.',
+  inputSchema: z.object({
+    project_id: z.string().min(1),
+    milestone_id: z.string().min(1),
+    completed: z.boolean().optional(),
+    date: isoDate.optional(),
+    name: z.string().optional(),
+  }),
+  handler: async (input) => {
+    const { project_id, milestone_id, ...rest } = input
+    const body = Object.fromEntries(
+      Object.entries(rest).filter(([, value]) => value !== undefined)
+    )
+    return updateProjectMilestone(project_id, milestone_id, body)
   },
 })
 
@@ -575,6 +622,8 @@ export const tools: McpTool[] = [
   whoami,
   listProjects,
   getProject,
+  updateProjectTool,
+  updateProjectMilestoneTool,
   listEngagementTasks,
   bulkCreateEngagementTasksTool,
   updateEngagementTaskTool,

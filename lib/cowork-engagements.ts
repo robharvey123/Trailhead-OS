@@ -3,6 +3,7 @@ import { supabaseService } from '@/lib/supabase/service'
 import {
   CoworkApiError,
   findAccountByExactName,
+  noRecognisedFieldsError,
   formatTimeEntry,
   isUuid,
   optionalDate,
@@ -407,6 +408,30 @@ export async function createEngagement(body: Record<string, unknown>) {
   return formatEngagement(data as unknown as EngRow)
 }
 
+/** Accepted-field list quoted back on a no-recognised-fields 400. */
+export const ENGAGEMENT_PATCH_FIELDS = [
+  'name',
+  'status',
+  'engagement_type',
+  'currency',
+  'retainer_amount_monthly',
+  'included_hours_monthly',
+  'day_rate',
+  'performance_fee_default',
+  'end_date',
+  'notice_period_days',
+  'auto_renews',
+  'renewal_term_months',
+  'notes',
+  'approval_thresholds',
+  'start_date',
+  'code',
+  'end_client_account_id',
+  'end_client_account_name',
+  'billed_via_account_id',
+  'billed_via_account_name',
+]
+
 export async function updateEngagement(ref: string, body: Record<string, unknown>) {
   const e = await getEngagementRow(ref)
   const patch: Record<string, unknown> = {}
@@ -450,7 +475,10 @@ export async function updateEngagement(ref: string, body: Record<string, unknown
     patch.billed_via_account_id = await resolveAccountRef(body.billed_via_account_id, body.billed_via_account_name, 'billed_via')
   }
 
-  if (Object.keys(patch).length === 0) throw new CoworkApiError('No changes supplied', 400)
+  if (Object.keys(patch).length === 0) {
+    if (Object.keys(body).length > 0) throw noRecognisedFieldsError(body, ENGAGEMENT_PATCH_FIELDS)
+    throw new CoworkApiError('No changes supplied', 400)
+  }
 
   const { data, error } = await supabaseService.from('engagements').update(patch).eq('id', e.id).select(ENGAGEMENT_SELECT).single()
   if (error) throw new CoworkApiError(error.message || 'Failed to update engagement', 500)

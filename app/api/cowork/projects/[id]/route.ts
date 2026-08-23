@@ -1,15 +1,12 @@
 import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
-  PROJECT_SELECT,
   TASK_SELECT,
   formatTask,
   getProjectById,
   jsonError,
-  optionalDate,
-  optionalString,
-  parseProjectStatus,
 } from '@/lib/cowork-api'
+import { updateCoworkProject } from '@/lib/cowork-projects'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(
@@ -32,7 +29,7 @@ export async function GET(
         .order('sort_order', { ascending: true }),
       supabaseService
         .from('project_milestones')
-        .select('id, name, description, date, completed')
+        .select('id, name, description, date, completed, completed_at')
         .eq('project_id', id)
         .order('date', { ascending: true }),
       supabaseService
@@ -114,6 +111,21 @@ export async function GET(
           : Array.isArray(project.accounts) && project.accounts[0]
             ? { id: project.accounts[0].id, name: project.accounts[0].name }
             : null,
+      engagement_id: project.engagement_id ?? null,
+      engagement:
+        project.engagements && !Array.isArray(project.engagements)
+          ? {
+              id: project.engagements.id,
+              code: project.engagements.code,
+              name: project.engagements.name,
+            }
+          : Array.isArray(project.engagements) && project.engagements[0]
+            ? {
+                id: project.engagements[0].id,
+                code: project.engagements[0].code,
+                name: project.engagements[0].name,
+              }
+            : null,
       phases,
       milestones: milestonesResult.data ?? [],
       upcoming_tasks: upcomingTasks,
@@ -138,39 +150,8 @@ export async function PATCH(
 
   try {
     const { id } = await params
-    await getProjectById(id)
-
     const body = await request.json().catch(() => ({}))
-    const patch: Record<string, unknown> = {}
-
-    if (body.name !== undefined) {
-      const name = optionalString(body.name)
-      if (!name) {
-        return Response.json({ error: 'name is required' }, { status: 400 })
-      }
-      patch.name = name
-    }
-
-    if (body.status !== undefined) patch.status = parseProjectStatus(body.status)
-    if (body.description !== undefined) patch.description = optionalString(body.description)
-    if (body.start_date !== undefined) patch.start_date = optionalDate(body.start_date, 'start_date')
-    if (body.end_date !== undefined) patch.end_date = optionalDate(body.end_date, 'end_date')
-
-    if (Object.keys(patch).length === 0) {
-      return Response.json({ error: 'No changes supplied' }, { status: 400 })
-    }
-
-    const { data, error } = await supabaseService
-      .from('projects')
-      .update(patch)
-      .eq('id', id)
-      .select(PROJECT_SELECT)
-      .single()
-
-    if (error) {
-      throw error
-    }
-
+    const data = await updateCoworkProject(id, body)
     return Response.json(data)
   } catch (error) {
     return jsonError(error, 'Failed to update project')
