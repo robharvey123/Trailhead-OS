@@ -90,7 +90,7 @@ create table if not exists seo_serp_state (
   paa_questions text[] not null default '{}'
 );
 create index if not exists idx_seo_serp_state_kw on seo_serp_state (keyword_id, captured_at desc);
-create unique index if not exists idx_seo_serp_state_snapshot on seo_serp_state (snapshot_id) where snapshot_id is not null;
+create unique index if not exists idx_seo_serp_state_snapshot on seo_serp_state (snapshot_id);
 
 -- ── B2: competitors and their keyword sets ───────────────────────────────────
 create table if not exists seo_competitors (
