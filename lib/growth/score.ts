@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/service'
 import { dataForSeoConfigured, getBacklinksSummary } from '@/lib/growth/dataforseo'
+import { technicalScoreInput } from '@/lib/growth/onpage'
 import type { SeoSite } from '@/lib/types'
 
 /**
@@ -22,6 +23,9 @@ export interface ScoreComponent {
   value: number | null
   weight: number
   detail: string
+  /** D5: what would raise this component, and where to do it. */
+  raise?: string
+  href?: string
 }
 
 export interface GrowthScoreBreakdown {
@@ -31,6 +35,8 @@ export interface GrowthScoreBreakdown {
 
 const TOP10_TARGET = 10
 const REFERRING_DOMAINS_TARGET = 20
+/** Weighted open technical issues at which the technical component hits zero. */
+const ISSUE_TARGET = 40
 
 function clamp01(n: number): number {
   return Math.max(0, Math.min(1, n))
@@ -82,6 +88,9 @@ export async function computeSiteScore(
     + briefs.filter((b) => b.status === 'approved').length
   const aiRuns = mentions.length
   const aiHits = mentions.filter((m) => m.brand_mentioned).length
+  const technical = await technicalScoreInput(site.id, supabase).catch(() => null)
+  const quickWins = keywords.filter((k) => k.gsc_position !== null && k.gsc_position >= 11 && k.gsc_position <= 20).length
+  const base = `/growth/${site.id}`
 
   const components: ScoreComponent[] = [
     {
@@ -93,6 +102,10 @@ export async function computeSiteScore(
         tracked > 0
           ? `${top10} of ${tracked} tracked keywords rank in Google's top 10 (target ${TOP10_TARGET})`
           : 'No ranking data yet — sync Search Console',
+      raise: quickWins > 0
+        ? `${quickWins} keyword${quickWins === 1 ? '' : 's'} sit at 11-20 — each refresh that lands on page one adds a point here`
+        : 'Publish against approved briefs; new pages take 6-12 weeks to settle',
+      href: quickWins > 0 ? `${base}/keywords?band=11-20` : `${base}/briefs`,
     },
     {
       key: 'referring_domains',
@@ -103,6 +116,8 @@ export async function computeSiteScore(
         referringDomains !== null
           ? `${referringDomains} referring domains (target ${REFERRING_DOMAINS_TARGET})`
           : 'Not checked yet — needs DataForSEO credentials',
+      raise: 'Every link won on the Links page is one more referring domain',
+      href: `${base}/links`,
     },
     {
       key: 'content',
@@ -113,6 +128,8 @@ export async function computeSiteScore(
         planned > 0
           ? `${published} of ${planned} planned articles published`
           : 'No content planned yet',
+      raise: 'Approve drafts in review and publish approved articles',
+      href: `${base}/articles`,
     },
     {
       key: 'ai_mentions',
@@ -123,6 +140,8 @@ export async function computeSiteScore(
         aiRuns > 0
           ? `Mentioned in ${aiHits} of ${aiRuns} AI answers over 28 days`
           : 'AI visibility tracking not running yet',
+      raise: 'AI engines cite the pages that rank and the domains that get linked — content and links move this, prompts only measure it',
+      href: `${base}/prompts`,
     },
     {
       key: 'distribution',
@@ -131,6 +150,17 @@ export async function computeSiteScore(
       value: null,
       weight: 0.1,
       detail: 'Distribution tracking starts with the outreach phase',
+    },
+    {
+      key: 'technical',
+      label: 'Technical health',
+      value: technical ? 1 - clamp01(technical.weighted / ISSUE_TARGET) : null,
+      weight: 0.15,
+      detail: technical
+        ? `${technical.open} open issue${technical.open === 1 ? '' : 's'} (${technical.critical} critical) from the last crawl`
+        : 'No crawl yet — the first OnPage crawl runs on the next growth-crawl tick',
+      raise: technical && technical.open > 0 ? 'Fix the critical and high issues first; the next crawl resolves them automatically' : 'Keep the crawl clean',
+      href: `${base}/keywords?issues=1`,
     },
   ]
 

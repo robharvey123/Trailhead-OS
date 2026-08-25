@@ -45,6 +45,14 @@ export interface SeoReportData {
     competitors: Array<{ name: string; count: number }>
   }
   nextMonth: Array<{ project: string; phase: string; start: string }>
+  /** E4: paid + blended. Present only when the site has an ads account. */
+  paid: {
+    channels: Array<{ channel: string; clicks: number; impressions: number; spend: number | null; conversions: number | null; cpa: number | null }>
+    equivalentMediaValue: number | null
+    blendedCac: number | null
+    trend: Array<{ month: string; spend: number; organicClicks: number; blendedCac: number | null }>
+  } | null
+  refreshesApplied: number
 }
 
 function monthRange(month: string): { start: string; end: string; prevStart: string } {
@@ -143,6 +151,23 @@ export async function buildSeoReportData(siteId: string, month: string): Promise
   }
 
   const monthDate = new Date(`${month}-01T00:00:00Z`)
+  // E4: paid channels + equivalent media value (only when an ads account is linked).
+  const { channelTable, trailingTrend, adsAccountsForSite } = await import('@/lib/growth/paid-loops')
+  const adsAccounts = await adsAccountsForSite(siteId, supabase)
+  let paid: SeoReportData['paid'] = null
+  if (adsAccounts.length > 0) {
+    const table = await channelTable(siteId, start, end, supabase)
+    const trend = await trailingTrend(siteId, 6, supabase)
+    paid = { channels: table.rows, equivalentMediaValue: table.equivalentMediaValue, blendedCac: table.blendedCac, trend }
+  }
+  const { count: refreshesApplied } = await supabase
+    .from('seo_page_refreshes')
+    .select('id', { count: 'exact', head: true })
+    .eq('site_id', siteId)
+    .eq('status', 'applied')
+    .gte('applied_at', start)
+    .lt('applied_at', end)
+
   return {
     site,
     monthLabel: monthDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
@@ -176,6 +201,8 @@ export async function buildSeoReportData(siteId: string, month: string): Promise
         .map(([name, count]) => ({ name, count })),
     },
     nextMonth,
+    paid,
+    refreshesApplied: refreshesApplied ?? 0,
   }
 }
 
@@ -356,6 +383,55 @@ function SeoReportDocument({ data }: { data: SeoReportData }) {
             </>
           )}
         </View>
+
+        {data.refreshesApplied > 0 ? (
+          <View style={styles.section}>
+            <Text style={styles.h2}>Pages refreshed</Text>
+            <Text style={styles.li}>
+              • {data.refreshesApplied} existing page{data.refreshesApplied === 1 ? '' : 's'} refreshed from Search Console evidence (title, sections, internal links).
+            </Text>
+          </View>
+        ) : null}
+
+        {data.paid ? (
+          <View style={styles.section}>
+            <Text style={styles.h2}>Channels</Text>
+            <View style={styles.trHead}>
+              <Text style={[styles.cellMetric, styles.th]}>Channel</Text>
+              <Text style={[styles.cell, styles.th]}>Clicks</Text>
+              <Text style={[styles.cell, styles.th]}>Spend</Text>
+              <Text style={[styles.cell, styles.th]}>Conv.</Text>
+              <Text style={[styles.cell, styles.th]}>CPA</Text>
+            </View>
+            {data.paid.channels.map((c) => (
+              <View key={c.channel} style={styles.tr}>
+                <Text style={styles.cellMetric}>{c.channel}</Text>
+                <Text style={styles.cell}>{c.clicks.toLocaleString('en-GB')}</Text>
+                <Text style={styles.cell}>{c.spend === null ? '—' : c.spend.toLocaleString('en-GB', { maximumFractionDigits: 0 })}</Text>
+                <Text style={styles.cell}>{c.conversions === null ? '—' : c.conversions.toLocaleString('en-GB', { maximumFractionDigits: 0 })}</Text>
+                <Text style={styles.cell}>{c.cpa === null ? '—' : c.cpa.toLocaleString('en-GB', { maximumFractionDigits: 0 })}</Text>
+              </View>
+            ))}
+            {data.paid.equivalentMediaValue !== null ? (
+              <Text style={[styles.li, { marginTop: 6 }]}>
+                • Organic delivered {data.paid.channels[0]?.clicks.toLocaleString('en-GB')} clicks this month, which would have cost roughly{' '}
+                {data.paid.equivalentMediaValue.toLocaleString('en-GB')} at your current Ads CPCs (equivalent-value model, not revenue: each query&apos;s clicks × the CPC you paid for it, or an estimate where it was never bought).
+              </Text>
+            ) : null}
+            {data.paid.blendedCac !== null ? (
+              <Text style={styles.li}>• Blended cost per conversion across paid channels: {data.paid.blendedCac.toLocaleString('en-GB')}.</Text>
+            ) : null}
+            {data.paid.trend.length > 1 ? (
+              <Text style={[styles.muted, { marginTop: 4 }]}>
+                Trailing 6 months — spend / organic clicks / blended CPA:{' '}
+                {data.paid.trend.map((t) => `${t.month}: ${Math.round(t.spend)} / ${t.organicClicks} / ${t.blendedCac ?? '—'}`).join(' · ')}
+              </Text>
+            ) : null}
+            <Text style={[styles.muted, { marginTop: 4 }]}>
+              Google and Meta report conversions under different attribution models and windows and can count the same conversion twice; rows are shown separately and any blended figure is directional.
+            </Text>
+          </View>
+        ) : null}
 
         <View style={styles.section}>
           <Text style={styles.h2}>Next month</Text>

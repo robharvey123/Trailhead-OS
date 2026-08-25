@@ -3,6 +3,7 @@ import type { Message } from '@anthropic-ai/sdk/resources/messages'
 import { anthropic, ANTHROPIC_MODELS } from '@/lib/anthropic/client'
 import { createClient } from '@/lib/supabase/service'
 import { requestSerpSnapshots } from '@/lib/growth/keywords'
+import { fetchHeadings } from '@/lib/growth/page-fetch'
 import type { SeoBrief, SeoCluster, SeoKeyword, SeoSite } from '@/lib/types'
 
 /**
@@ -23,11 +24,11 @@ const TOKEN_PRICES: Record<string, { input: number; output: number }> = {
   [ANTHROPIC_MODELS.SONNET]: { input: 3 / 1_000_000, output: 15 / 1_000_000 },
 }
 
-function stripFences(text: string): string {
+export function stripFences(text: string): string {
   return text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/, '').trim()
 }
 
-function textOf(response: Message): string {
+export function textOf(response: Message): string {
   const block = response.content.find((b) => b.type === 'text')
   return block && block.type === 'text' ? block.text : ''
 }
@@ -53,7 +54,7 @@ You are given the site's domain, ideal customer profile, brand voice and its key
 Rules:
 - Every pillar_keyword and every entry in keywords MUST be copied verbatim from the provided keyword list. Do not invent keywords.
 - Never output a search volume, difficulty or any other metric. You do not know them.
-- intent is one of: informational, commercial, transactional, navigational.
+- intent is one of: informational, commercial, transactional, navigational. Where a keyword carries a measured intent field (from DataForSEO), the cluster's intent MUST reflect the measured intents of its members — do not overrule measured data with a guess.
 - priority is 1 (low) to 5 (highest commercial value for THIS site's ICP).
 - 4 to 10 clusters. Leave keywords that fit nowhere out entirely.
 - Cluster names are recognisable topics a marketer would say out loud, not keyword strings.
@@ -68,7 +69,7 @@ export async function generateClusters(siteId: string): Promise<{ created: numbe
 
   const { data: keywords, error: kwError } = await supabase
     .from('seo_keywords')
-    .select('id, keyword, search_volume, gsc_clicks, gsc_impressions')
+    .select('id, keyword, search_volume, gsc_clicks, gsc_impressions, intent, intent_source, keyword_difficulty')
     .eq('site_id', siteId)
     .order('search_volume', { ascending: false, nullsFirst: false })
     .limit(MAX_KEYWORDS_FOR_CLUSTERING)
@@ -84,8 +85,11 @@ export async function generateClusters(siteId: string): Promise<{ created: numbe
     keywords: keywords.map((k) => ({
       keyword: k.keyword,
       volume: k.search_volume,
+      difficulty: k.keyword_difficulty,
       gsc_clicks: k.gsc_clicks,
       gsc_impressions: k.gsc_impressions,
+      // Measured intent (A1) goes in as a fact; the model only guesses where it is missing.
+      intent: k.intent_source === 'dataforseo' ? k.intent : undefined,
     })),
   }
 
@@ -144,6 +148,13 @@ export async function generateClusters(siteId: string): Promise<{ created: numbe
         .in('id', memberIds)
       if (assignError) throw new Error(assignError.message)
       assigned += memberIds.length
+
+      // Model-guessed intent is the FALLBACK only: never overwrite a measured one.
+      await supabase
+        .from('seo_keywords')
+        .update({ intent: cluster.intent, intent_source: 'model' })
+        .in('id', memberIds)
+        .is('intent', null)
     }
 
     if (created === 0) {
@@ -174,7 +185,7 @@ const BriefSchema = z.object({
 
 const BRIEF_SYSTEM = `You are an SEO content strategist writing an article brief.
 
-You are given: the site's context, the target (pillar) keyword, the cluster's supporting keywords, the current top-10 Google results for the target keyword, the H1/H2 heading structure of the top-ranking pages, People Also Ask questions, and a list of the site's published articles available for internal linking.
+You are given: the site's context, the target (pillar) keyword, the cluster's supporting keywords, the current top-10 Google results for the target keyword, the H1/H2 heading structure of the top-ranking pages, People Also Ask questions, a list of the site's published articles available for internal linking, and (optionally) angles_proven_in_paid_social — ad hooks that have already earned attention from this audience; treat them as tested angles worth reflecting in the title and opening, not as copy to reuse verbatim.
 
 Rules:
 - The outline must cover the topics the top-ranking pages cover, PLUS at least one angle none of them have. Name that angle explicitly in outline.angle.
@@ -195,30 +206,6 @@ interface SerpItem {
   domain?: string
   description?: string
   items?: Array<{ title?: string; question?: string }>
-}
-
-/** H1/H2 structure of a competitor page, best-effort with a hard timeout. */
-async function fetchHeadings(url: string): Promise<{ url: string; headings: string[] } | null> {
-  try {
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 8000)
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TrailheadGrowth/1.0)' },
-    })
-    clearTimeout(timer)
-    if (!res.ok) return null
-    const html = (await res.text()).slice(0, 500_000)
-    const headings: string[] = []
-    for (const match of html.matchAll(/<h([12])[^>]*>([\s\S]*?)<\/h\1>/gi)) {
-      const text = match[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
-      if (text) headings.push(`H${match[1]}: ${text}`)
-      if (headings.length >= 20) break
-    }
-    return headings.length > 0 ? { url, headings } : null
-  } catch {
-    return null
-  }
 }
 
 export async function generateBrief(clusterId: string): Promise<string> {
@@ -284,6 +271,11 @@ export async function generateBrief(clusterId: string): Promise<string> {
     .eq('status', 'published')
     .not('published_url', 'is', null)
 
+  // E3.1: hooks that have already earned attention from this audience in paid
+  // social — the top decile of Meta creatives by CTR. Empty when no Meta account.
+  const { winningAngles } = await import('@/lib/growth/paid-loops')
+  const provenAngles = await winningAngles(cluster.site_id).catch(() => [])
+
   const payload = {
     site: { domain: site.domain, icp: site.icp, brand_voice: site.brand_voice },
     target_keyword: cluster.pillar_keyword,
@@ -293,6 +285,7 @@ export async function generateBrief(clusterId: string): Promise<string> {
     competitor_headings: headingResults.filter(Boolean),
     people_also_ask: paa,
     published_articles: (published ?? []).map((a) => ({ title: a.title, url: a.published_url })),
+    angles_proven_in_paid_social: provenAngles,
   }
 
   let reason = ''

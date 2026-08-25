@@ -4,7 +4,7 @@ import { getSeoSiteById } from '@/lib/db/growth'
 import { getAccounts } from '@/lib/db/accounts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
-import { updateSeoSiteAction } from '../../actions'
+import { updateGrowthBudgetsAction, updateSeoSiteAction } from '../../actions'
 
 const INPUT_CLASS =
   'w-full rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
@@ -14,7 +14,7 @@ export default async function GrowthSiteSettingsPage({
   searchParams,
 }: {
   params: Promise<{ siteId: string }>
-  searchParams?: Promise<{ error?: string }>
+  searchParams?: Promise<{ error?: string; notice?: string }>
 }) {
   const { siteId } = await params
   const resolved = searchParams ? await searchParams : undefined
@@ -46,6 +46,11 @@ export default async function GrowthSiteSettingsPage({
       {resolved?.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {resolved.error}
+        </div>
+      ) : null}
+      {resolved?.notice ? (
+        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+          {resolved.notice}
         </div>
       ) : null}
 
@@ -219,6 +224,40 @@ export default async function GrowthSiteSettingsPage({
           className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           Save settings
+        </button>
+      </form>
+
+      <form action={updateGrowthBudgetsAction.bind(null, site.id)} className="os-card space-y-4 p-6">
+        <div>
+          <h2 className="text-sm font-semibold text-[color:var(--text)]">Budgets and thresholds</h2>
+          <p className="mt-1 text-xs text-[color:var(--text-3)]">
+            DataForSEO spend this month: ${Number(site.api_spend_mtd ?? 0).toFixed(2)}
+            {site.monthly_api_budget ? ` of $${site.monthly_api_budget}` : ' (no cap set)'} — estimated from per-call list prices. Non-essential enrichment pauses at the cap; paid-platform calls are free and do not count.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm">
+            <span className="text-[color:var(--text-2)]">Monthly DataForSEO budget (USD)</span>
+            <input name="monthly_api_budget" type="number" step="0.01" min="0" defaultValue={site.monthly_api_budget ?? ''} placeholder="e.g. 20" className={`mt-1.5 ${INPUT_CLASS}`} />
+          </label>
+          <label className="block text-sm">
+            <span className="text-[color:var(--text-2)]">Monthly media budget (ads spend target)</span>
+            <input name="monthly_ads_budget" type="number" step="1" min="0" defaultValue={site.monthly_ads_budget ?? ''} placeholder="for pacing alerts" className={`mt-1.5 ${INPUT_CLASS}`} />
+          </label>
+          <label className="block text-sm">
+            <span className="text-[color:var(--text-2)]">SERP-overlap threshold (shared top-10 URLs)</span>
+            <input name="serp_overlap_threshold" type="number" min="1" max="10" defaultValue={site.serp_overlap_threshold ?? 3} className={`mt-1.5 ${INPUT_CLASS}`} />
+          </label>
+          <label className="block text-sm">
+            <span className="text-[color:var(--text-2)]">Max pages per crawl</span>
+            <input name="max_crawl_pages" type="number" min="10" max="5000" defaultValue={site.max_crawl_pages ?? 200} className={`mt-1.5 ${INPUT_CLASS}`} />
+          </label>
+        </div>
+        <button
+          type="submit"
+          className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+        >
+          Save budgets
         </button>
       </form>
     </div>

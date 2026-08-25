@@ -182,6 +182,133 @@ async function publishViaGithubPr(article: SeoArticle, site: SeoSite): Promise<P
   return { url: `https://${site.domain}/blog/${slug}`, ref: pr.html_url }
 }
 
+// ── D3: refresh an existing article as a PR ─────────────────────────────────
+
+export interface RefreshChanges {
+  title?: string
+  meta_description?: string
+  /** Markdown sections appended before the FAQ (or at the end). */
+  sections?: Array<{ heading: string; body: string }>
+}
+
+interface GithubFile {
+  path: string
+  sha: string
+  content: string
+}
+
+/** Locate the MDX file for a published URL: an explicit path map on the site
+ *  row (cms_config.path_map[url]), else a content-dir search on the slug. */
+async function locateArticleFile(token: string, repo: string, contentDir: string, site: SeoSite, publishedUrl: string): Promise<GithubFile> {
+  const config = (site.cms_config ?? {}) as { path_map?: Record<string, string> }
+  let path = config.path_map?.[publishedUrl]
+  if (!path) {
+    const slug = publishedUrl.replace(/\/$/, '').split('/').pop() ?? ''
+    if (!slug) throw new Error('Could not derive a slug from the published URL')
+    const listing = await gh<Array<{ name: string; path: string }>>(token, `/repos/${repo}/contents/${contentDir}`)
+    const match = listing.find((f) => f.name === `${slug}.mdx` || f.name === `${slug}.md` || f.name.endsWith(`-${slug}.mdx`) || f.name.endsWith(`-${slug}.md`))
+    if (!match) throw new Error(`No file matching "${slug}" in ${contentDir}`)
+    path = match.path
+  }
+  const file = await gh<{ sha: string; content: string; encoding: string }>(token, `/repos/${repo}/contents/${path}`)
+  return { path, sha: file.sha, content: Buffer.from(file.content, 'base64').toString('utf8') }
+}
+
+/** Apply approved change-list items to frontmatter + body. */
+export function applyRefreshToMdx(source: string, changes: RefreshChanges): string {
+  const fm = source.match(/^---\n([\s\S]*?)\n---\n?/)
+  let frontmatter = fm ? fm[1] : ''
+  let body = fm ? source.slice(fm[0].length) : source
+  const setKey = (key: string, value: string) => {
+    const line = `${key}: ${JSON.stringify(value)}`
+    frontmatter = new RegExp(`^${key}:`, 'm').test(frontmatter) ? frontmatter.replace(new RegExp(`^${key}:.*$`, 'm'), line) : `${frontmatter}\n${line}`.replace(/^\n/, '')
+  }
+  if (changes.title) {
+    setKey('title', changes.title)
+    body = body.replace(/^# .*$/m, `# ${changes.title}`)
+  }
+  if (changes.meta_description) setKey('description', changes.meta_description)
+  if (changes.sections && changes.sections.length > 0) {
+    const block = changes.sections.map((s) => `\n## ${s.heading}\n\n${s.body.trim()}\n`).join('')
+    const faq = body.search(/^##\s+(FAQ|Frequently asked)/im)
+    body = faq >= 0 ? body.slice(0, faq) + block + '\n' + body.slice(faq) : body.trimEnd() + '\n' + block
+  }
+  return (frontmatter ? `---\n${frontmatter}\n---\n` : '') + body
+}
+
+/** Open a "Refresh: {title}" PR applying the approved change list. Same review
+ *  gate as new content — nothing goes live unreviewed. */
+export async function updateArticle(site: SeoSite, publishedUrl: string, title: string, changes: RefreshChanges): Promise<PublishResult> {
+  if (site.cms_type === 'wordpress') return updateWordpressAsDraft(site, publishedUrl, title, changes)
+  if (site.cms_type !== 'github') throw new Error('Refresh PRs need a GitHub-published site (WordPress sites get a revision draft)')
+  const token = process.env.GITHUB_PUBLISH_TOKEN
+  if (!token) throw new Error('GITHUB_PUBLISH_TOKEN is not configured')
+  const config = (site.cms_config ?? {}) as GithubCmsConfig
+  const repo = config.repo
+  if (!repo || !repo.includes('/')) throw new Error('Set cms_config.repo ("owner/name") in the site settings first')
+  const baseBranch = config.base_branch ?? 'main'
+  const contentDir = (config.content_dir ?? 'content/blog').replace(/^\/|\/$/g, '')
+
+  const file = await locateArticleFile(token, repo, contentDir, site, publishedUrl)
+  const updated = applyRefreshToMdx(file.content, changes)
+  if (updated === file.content) throw new Error('No approved changes to apply')
+
+  const baseRef = await gh<{ object: { sha: string } }>(token, `/repos/${repo}/git/ref/${encodeURIComponent(`heads/${baseBranch}`)}`)
+  const slug = file.path.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'article'
+  const branch = `seo/refresh-${slug}-${Date.now().toString(36)}`
+  await gh(token, `/repos/${repo}/git/refs`, { method: 'POST', body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: baseRef.object.sha }) })
+  await gh(token, `/repos/${repo}/contents/${file.path}`, {
+    method: 'PUT',
+    body: JSON.stringify({ message: `content: refresh "${title}"`, content: Buffer.from(updated, 'utf8').toString('base64'), branch, sha: file.sha }),
+  })
+  const pr = await gh<{ html_url: string }>(token, `/repos/${repo}/pulls`, {
+    method: 'POST',
+    body: JSON.stringify({
+      title: `Refresh: ${title}`,
+      head: branch,
+      base: baseBranch,
+      body: [
+        `Refreshes \`${file.path}\` from the Growth refresh worksheet.`,
+        '',
+        changes.title ? `- Title → ${changes.title}` : '',
+        changes.meta_description ? `- Meta description → ${changes.meta_description}` : '',
+        ...(changes.sections ?? []).map((s) => `- Added section: ${s.heading}`),
+        '',
+        'Preview deploy will render the change; merge to publish.',
+      ].filter((l) => l !== null).join('\n'),
+    }),
+  })
+  return { url: publishedUrl, ref: pr.html_url }
+}
+
+/** WordPress: never edit the live post — create a draft revision copy. */
+async function updateWordpressAsDraft(site: SeoSite, publishedUrl: string, title: string, changes: RefreshChanges): Promise<PublishResult> {
+  const config = (site.cms_config ?? {}) as WordpressCmsConfig
+  if (!config.base_url || !config.username || !config.app_password) throw new Error('WordPress base_url, username and app password are required')
+  const auth = `Basic ${Buffer.from(`${config.username}:${config.app_password}`).toString('base64')}`
+  const base = config.base_url.replace(/\/$/, '')
+  const slug = publishedUrl.replace(/\/$/, '').split('/').pop() ?? ''
+  const search = await fetch(`${base}/wp-json/wp/v2/posts?slug=${encodeURIComponent(slug)}&context=edit`, { headers: { Authorization: auth } })
+  if (!search.ok) throw new Error(`WordPress lookup failed (${search.status})`)
+  const posts = (await search.json()) as Array<{ id: number; content?: { raw?: string }; excerpt?: { raw?: string } }>
+  const post = posts[0]
+  if (!post) throw new Error(`No WordPress post with slug "${slug}"`)
+  const extra = (changes.sections ?? []).map((s) => `<h2>${s.heading}</h2>${markdownToHtml(s.body)}`).join('')
+  const res = await fetch(`${base}/wp-json/wp/v2/posts`, {
+    method: 'POST',
+    headers: { Authorization: auth, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: `[REFRESH DRAFT] ${changes.title ?? title}`,
+      status: 'draft',
+      content: (post.content?.raw ?? '') + extra,
+      excerpt: changes.meta_description ?? post.excerpt?.raw ?? '',
+    }),
+  })
+  if (!res.ok) throw new Error(`WordPress draft failed (${res.status}): ${(await res.text()).slice(0, 200)}`)
+  const draft = (await res.json()) as { id: number }
+  return { url: publishedUrl, ref: String(draft.id) }
+}
+
 /** Squash-merge a publish PR from inside the OS — the human gate already
  *  happened at approve + publish, so this is one less GitHub round-trip, not an
  *  approval bypass. Deletes the seo/* branch afterwards (best-effort). */

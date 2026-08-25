@@ -1544,7 +1544,14 @@ export interface OutreachCampaignStats {
 // ── Growth module (THH-SEO-001 v2) ──────────────────────────────────────────
 
 export type SeoCmsType = 'none' | 'github' | 'wordpress' | 'internal'
-export type SeoKeywordSource = 'gsc' | 'dataforseo' | 'manual'
+export type SeoKeywordSource =
+  | 'gsc'
+  | 'dataforseo'
+  | 'manual'
+  | 'labs_suggestion'
+  | 'labs_related'
+  | 'competitor_gap'
+  | 'google_ads'
 export type SeoClusterStatus = 'proposed' | 'approved' | 'archived'
 export type SeoBriefStatus = 'proposed' | 'approved' | 'rejected' | 'drafted'
 export type SeoArticleStatus = 'drafting' | 'review' | 'approved' | 'published' | 'archived'
@@ -1566,6 +1573,15 @@ export interface SeoSite {
   referring_domains: number | null
   referring_domains_checked_at: string | null
   outreach_campaign_id: string | null
+  last_gsc_backfill_at: string | null
+  serp_overlap_threshold: number
+  monthly_api_budget: number | null
+  api_spend_month: string | null
+  api_spend_mtd: number
+  max_crawl_pages: number
+  last_crawl_at: string | null
+  crawl_task_id: string | null
+  monthly_ads_budget: number | null
   created_at: string
   updated_at: string
 }
@@ -1590,6 +1606,8 @@ export interface SeoGrowthScore {
       value: number | null
       weight: number
       detail: string
+      raise?: string
+      href?: string
     }>
     summary: string
   }
@@ -1606,6 +1624,9 @@ export interface SeoCluster {
   target_url: string | null
   project_id: string | null
   status: SeoClusterStatus
+  method: 'model' | 'serp_overlap'
+  rationale: string | null
+  evidence: { shared_domains?: Array<{ domain: string; count: number }>; avg_overlap?: number; member_count?: number } | null
   created_at: string
 }
 
@@ -1623,7 +1644,171 @@ export interface SeoKeyword {
   cluster_id: string | null
   status: string
   last_refreshed_at: string | null
+  /** Organic KD from DataForSEO Labs (0-100). `difficulty` mirrors it for display. */
+  keyword_difficulty: number | null
+  /** Google Ads competition index (0-100) — paid competition, NOT difficulty. */
+  ads_competition: number | null
+  intent_confidence: number | null
+  intent_source: 'dataforseo' | 'model' | null
+  enriched_at: string | null
+  cpc: number | null
+  ranking_url: string | null
+  ranking_url_checked_at: string | null
+  ranking_url_clicks: number | null
+  ranking_url_impressions: number | null
+  ranking_url_position: number | null
+  commercial_value: number | null
+  conversions_per_1000_impressions: number | null
+  value_per_click: number | null
+  paid_checked_at: string | null
   created_at: string
+}
+
+export interface SeoSerpState {
+  id: string
+  keyword_id: string
+  snapshot_id: string | null
+  captured_at: string
+  our_position: number | null
+  our_url: string | null
+  top_urls: string[]
+  top_domains: string[]
+  item_types: string[]
+  ai_overview: boolean
+  ai_overview_cites_us: boolean
+  ai_overview_urls: string[]
+  featured_snippet_domain: string | null
+  paa_count: number
+  paa_questions: string[]
+}
+
+export interface SeoCompetitor {
+  id: string
+  site_id: string
+  domain: string
+  added_by: 'manual' | 'serp' | 'labs'
+  tracked: boolean
+  last_pulled_at: string | null
+  keyword_count: number | null
+  created_at: string
+}
+
+export interface SeoPageIssue {
+  id: string
+  site_id: string
+  url: string
+  issue_type: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  detail: string | null
+  first_seen_at: string
+  last_seen_at: string
+  resolved_at: string | null
+}
+
+export type AdsPlatform = 'google' | 'meta'
+
+export interface AdsAccount {
+  id: string
+  site_id: string
+  platform: AdsPlatform
+  external_id: string
+  name: string | null
+  currency: string | null
+  manager_id: string | null
+  status: string
+  last_synced_at: string | null
+  last_error: string | null
+  created_at: string
+}
+
+export interface AdsCampaign {
+  id: string
+  account_id: string
+  external_id: string
+  name: string
+  channel: string | null
+  status: string | null
+  daily_budget: number | null
+  bidding_strategy: string | null
+}
+
+export interface AdsDaily {
+  account_id: string
+  campaign_id: string | null
+  date: string
+  impressions: number
+  clicks: number
+  cost: number
+  conversions: number
+  conversion_value: number
+}
+
+export interface AdsKeyword {
+  id: string
+  account_id: string
+  campaign_id: string | null
+  ad_group_external_id: string | null
+  keyword: string
+  match_type: string | null
+  status: string | null
+  quality_score: number | null
+  qs_landing_page: string | null
+  qs_ad_relevance: string | null
+  qs_expected_ctr: string | null
+  landing_page: string | null
+  impressions: number
+  clicks: number
+  cost: number
+  conversions: number
+  conversion_value: number
+  average_cpc: number | null
+  impression_share: number | null
+  lost_is_budget: number | null
+  lost_is_rank: number | null
+  window_start: string | null
+  window_end: string | null
+}
+
+export interface AdsSearchTerm {
+  id: string
+  account_id: string
+  search_term: string
+  matched_keyword: string | null
+  campaign_id: string | null
+  impressions: number
+  clicks: number
+  cost: number
+  conversions: number
+  conversion_value: number
+  window_start: string | null
+  window_end: string | null
+}
+
+export interface AdsCreative {
+  id: string
+  account_id: string
+  external_id: string
+  adset_external_id: string | null
+  campaign_id: string | null
+  name: string | null
+  format: string | null
+  primary_text: string | null
+  headline: string | null
+  destination_url: string | null
+  thumbnail_url: string | null
+  status: string | null
+  impressions: number
+  reach: number
+  frequency: number | null
+  clicks: number
+  spend: number
+  conversions: number
+  conversion_value: number
+  ctr: number | null
+  first_week_ctr: number | null
+  first_seen_at: string
+  window_start: string | null
+  window_end: string | null
 }
 
 export interface SeoSerpSnapshot {

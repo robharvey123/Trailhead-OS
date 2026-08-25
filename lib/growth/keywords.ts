@@ -9,6 +9,7 @@ import {
   postKeywordIdeasTask,
   postSerpTasks,
 } from '@/lib/growth/dataforseo'
+import { parseSnapshot } from '@/lib/growth/serp-parse'
 
 /**
  * DataForSEO orchestration (Growth module). Tasks are posted with a routing tag
@@ -115,9 +116,11 @@ async function storeKeywordIdeas(
       site_id: siteId,
       keyword: item.keyword,
       search_volume: item.search_volume,
-      // Google Ads competition index (0-100) — a paid-competition proxy, the
-      // closest thing to difficulty this endpoint returns.
-      difficulty: item.competition_index,
+      // Google Ads competition index (0-100) is PAID competition — it goes in
+      // ads_competition, never in difficulty. Organic KD comes from Labs
+      // (growth-enrich cron) and is the only thing that fills `difficulty`.
+      ads_competition: item.competition_index,
+      cpc: item.cpc,
       source: 'dataforseo',
       last_refreshed_at: now,
     }))
@@ -133,7 +136,8 @@ async function storeKeywordIdeas(
       .from('seo_keywords')
       .update({
         search_volume: item.search_volume,
-        difficulty: item.competition_index,
+        ads_competition: item.competition_index,
+        cpc: item.cpc,
         last_refreshed_at: now,
       })
       .eq('site_id', siteId)
@@ -148,11 +152,39 @@ async function storeSerpSnapshot(
   payload: SerpTaskResult,
   result: CollectResult
 ) {
-  const { error } = await supabase
+  const { data: inserted, error } = await supabase
     .from('seo_serp_snapshots')
     .insert({ keyword_id: keywordId, results: payload })
+    .select('id, captured_at')
+    .single()
   if (error) throw new Error(error.message)
   result.snapshotsStored += 1
+
+  // A3: parse the payload into seo_serp_state so every snapshot is queryable
+  // (true position, AI Overview, top-10 set) without re-reading the jsonb.
+  await storeSerpState(supabase, keywordId, inserted.id as string, inserted.captured_at as string, payload)
+}
+
+/** Parse one snapshot into seo_serp_state. Exported for the backfill script. */
+export async function storeSerpState(
+  supabase: Supabase,
+  keywordId: string,
+  snapshotId: string,
+  capturedAt: string,
+  payload: SerpTaskResult
+): Promise<void> {
+  const { data: kw } = await supabase
+    .from('seo_keywords')
+    .select('site_id, seo_sites!inner(domain)')
+    .eq('id', keywordId)
+    .maybeSingle()
+  const domain = (kw?.seo_sites as unknown as { domain: string } | null)?.domain
+  if (!domain) return
+  const parsed = parseSnapshot(domain, payload)
+  const { error } = await supabase
+    .from('seo_serp_state')
+    .upsert({ keyword_id: keywordId, snapshot_id: snapshotId, captured_at: capturedAt, ...parsed }, { onConflict: 'snapshot_id' })
+  if (error) throw new Error(error.message)
 }
 
 /** Adopt anything DataForSEO reports ready that the ledger has never seen —

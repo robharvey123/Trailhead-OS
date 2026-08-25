@@ -15,7 +15,7 @@ const BASE_URL = 'https://api.dataforseo.com/v3'
 export const UK_LOCATION_CODE = 2826
 export const LANGUAGE_CODE = 'en'
 
-interface DfsTask<T> {
+export interface DfsTask<T> {
   id: string
   status_code: number
   status_message: string
@@ -26,7 +26,7 @@ interface DfsTask<T> {
   result: T[] | null
 }
 
-interface DfsResponse<T> {
+export interface DfsResponse<T> {
   status_code: number
   status_message: string
   tasks: DfsTask<T>[] | null
@@ -50,7 +50,7 @@ export interface ReadyTask {
   tag: string | null
 }
 
-function authHeader(): string {
+export function authHeader(): string {
   const login = process.env.DATAFORSEO_LOGIN
   const password = process.env.DATAFORSEO_PASSWORD
   if (!login || !password) {
@@ -59,7 +59,7 @@ function authHeader(): string {
   return `Basic ${Buffer.from(`${login}:${password}`).toString('base64')}`
 }
 
-async function dfsFetch<T>(path: string, body?: unknown): Promise<DfsResponse<T>> {
+export async function dfsFetch<T>(path: string, body?: unknown): Promise<DfsResponse<T>> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: body === undefined ? 'GET' : 'POST',
     headers: { Authorization: authHeader(), 'Content-Type': 'application/json' },

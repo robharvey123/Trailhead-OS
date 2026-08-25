@@ -40,9 +40,13 @@ const SCOPES = [
   'https://www.googleapis.com/auth/documents.readonly',
   // Search Console (Growth module GSC sync). Read-only; granted on next reconnect.
   'https://www.googleapis.com/auth/webmasters.readonly',
+  // Google Ads (Growth module paid sync). Same reconnect flow as GSC: a token
+  // issued before this line lacks the scope until Google is reconnected.
+  'https://www.googleapis.com/auth/adwords',
 ]
 
 export const GSC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly'
+export const ADS_SCOPE = 'https://www.googleapis.com/auth/adwords'
 
 /**
  * Whether a stored grant covers a scope. Google returns the granted set as a

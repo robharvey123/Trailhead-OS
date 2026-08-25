@@ -1,4 +1,4 @@
-import { google } from 'googleapis'
+import { google, type searchconsole_v1 } from 'googleapis'
 import { createClient } from '@/lib/supabase/service'
 import {
   GSC_SCOPE,
@@ -7,20 +7,33 @@ import {
   markTokenNeedsReconnect,
   tokenHasScope,
 } from '@/lib/google/oauth'
+import { refreshRankingUrls } from '@/lib/growth/pages'
 import type { SeoSite } from '@/lib/types'
 
 /**
- * Google Search Console → seo_keywords sync (Growth module).
+ * Google Search Console → Growth module sync.
  *
- * Daily pull of the last 90 days, dimensions query+page, aggregated to keyword
- * level and upserted on (site_id, keyword). GSC reports with a 2-3 day lag and
- * returns nothing for freshly verified properties — an empty result is a valid
- * sync, not an error.
+ * Three pulls per site per night:
+ *  1. query+page over 90 days, aggregated to one row per query → seo_keywords
+ *     (the cheap read path for the keyword table; unchanged).
+ *  2. date only → seo_gsc_daily (site-level sparklines).
+ *  3. date+query+page → seo_gsc_query_page, the history table that makes
+ *     cannibalisation, decay and per-keyword rank movement possible. GSC
+ *     finalises data ~3 days late, so each run re-pulls the last 5 days and
+ *     upserts over them; the first run backfills 90 days in date chunks
+ *     (guarded by seo_sites.last_gsc_backfill_at so it happens once).
+ *
+ * GSC returns nothing for freshly verified properties — an empty result is a
+ * valid sync, not an error.
  */
 
 const LOOKBACK_DAYS = 90
 const ROW_LIMIT = 25000
 const CHUNK = 500
+const INCREMENTAL_DAYS = 5
+const BACKFILL_DAYS = 90
+const BACKFILL_CHUNK_DAYS = 7
+const RETENTION_MONTHS = 16
 
 interface QueryTotals {
   impressions: number
@@ -57,6 +70,76 @@ export interface GscSyncResult {
   keywords: number
   inserted: number
   updated: number
+  queryPageRows: number
+  backfilled: boolean
+  rankingUrls: number
+}
+
+type Supabase = ReturnType<typeof createClient>
+
+/** One date+query+page pull, paged past rowLimit with startRow. */
+async function pullQueryPage(
+  searchconsole: searchconsole_v1.Searchconsole,
+  siteUrl: string,
+  startDate: string,
+  endDate: string
+): Promise<searchconsole_v1.Schema$ApiDataRow[]> {
+  const rows: searchconsole_v1.Schema$ApiDataRow[] = []
+  let startRow = 0
+  for (let page = 0; page < 8; page++) {
+    const { data } = await searchconsole.searchanalytics.query({
+      siteUrl,
+      requestBody: {
+        startDate,
+        endDate,
+        dimensions: ['date', 'query', 'page'],
+        rowLimit: ROW_LIMIT,
+        startRow,
+      },
+    })
+    const batch = data.rows ?? []
+    rows.push(...batch)
+    if (batch.length < ROW_LIMIT) break
+    startRow += ROW_LIMIT
+  }
+  return rows
+}
+
+async function upsertQueryPage(
+  supabase: Supabase,
+  siteId: string,
+  rows: searchconsole_v1.Schema$ApiDataRow[]
+): Promise<number> {
+  const records = rows
+    .filter((row) => row.keys && row.keys.length === 3 && row.keys[1] && row.keys[2])
+    .map((row) => ({
+      site_id: siteId,
+      date: row.keys![0],
+      query: row.keys![1].trim().toLowerCase(),
+      page: row.keys![2],
+      clicks: row.clicks ?? 0,
+      impressions: row.impressions ?? 0,
+      position: row.position != null ? Math.round(row.position * 10) / 10 : null,
+    }))
+  // The same (date, query, page) can appear twice only if GSC dedupes
+  // differently on case — collapse to be safe before the upsert.
+  const byKey = new Map<string, (typeof records)[number]>()
+  for (const r of records) {
+    const key = `${r.date}|${r.query}|${r.page}`
+    const prev = byKey.get(key)
+    if (prev) {
+      prev.clicks += r.clicks
+      prev.impressions += r.impressions
+    } else byKey.set(key, r)
+  }
+  const deduped = [...byKey.values()]
+  for (let i = 0; i < deduped.length; i += CHUNK) {
+    const { error } = await supabase
+      .from('seo_gsc_query_page')
+      .upsert(deduped.slice(i, i + CHUNK), { onConflict: 'site_id,date,query,page' })
+    if (error) throw new Error(error.message)
+  }
+  return deduped.length
 }
 
 export async function syncSiteGsc(site: SeoSite): Promise<GscSyncResult> {
@@ -159,6 +242,35 @@ export async function syncSiteGsc(site: SeoSite): Promise<GscSyncResult> {
     if (error) throw new Error(error.message)
   }
 
+  // ── A2: query × page history ──
+  let queryPageRows = 0
+  let backfilled = false
+  if (!site.last_gsc_backfill_at) {
+    // First run: 90 days in 7-day chunks so each request stays under rowLimit.
+    for (let start = BACKFILL_DAYS; start > 0; start -= BACKFILL_CHUNK_DAYS) {
+      const end = Math.max(0, start - BACKFILL_CHUNK_DAYS + 1)
+      const chunkRows = await pullQueryPage(searchconsole, site.gsc_property, isoDaysAgo(start), isoDaysAgo(end))
+      queryPageRows += await upsertQueryPage(supabase, site.id, chunkRows)
+    }
+    backfilled = true
+    await supabase.from('seo_sites').update({ last_gsc_backfill_at: now }).eq('id', site.id)
+  } else {
+    const recent = await pullQueryPage(searchconsole, site.gsc_property, isoDaysAgo(INCREMENTAL_DAYS), isoDaysAgo(0))
+    queryPageRows = await upsertQueryPage(supabase, site.id, recent)
+  }
+
+  // Prune beyond GSC's own 16-month horizon.
+  const cutoff = new Date()
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - RETENTION_MONTHS)
+  await supabase
+    .from('seo_gsc_query_page')
+    .delete()
+    .eq('site_id', site.id)
+    .lt('date', cutoff.toISOString().slice(0, 10))
+
+  // ── D1: keyword → ranking URL cache ──
+  const rankingUrls = await refreshRankingUrls(site.id)
+
   await supabase.from('seo_sites').update({ last_gsc_sync_at: now }).eq('id', site.id)
 
   return {
@@ -167,6 +279,9 @@ export async function syncSiteGsc(site: SeoSite): Promise<GscSyncResult> {
     keywords: byQuery.size,
     inserted: inserts.length,
     updated: updates.length,
+    queryPageRows,
+    backfilled,
+    rankingUrls,
   }
 }
 

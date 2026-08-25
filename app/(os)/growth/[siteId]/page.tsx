@@ -1,13 +1,26 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getSeoSiteById, getSiteDashboardData } from '@/lib/db/growth'
+import { getLatestSerpStates, getPaidTile, getRefreshSummaries, getSeoSiteById, getSiteDashboardData } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
-import KeywordTable from '@/components/os/growth/KeywordTable'
+import KeywordTable, { type SerpStateLite } from '@/components/os/growth/KeywordTable'
 import PipelineGuide from '@/components/os/growth/PipelineGuide'
 import { PendingButton } from '@/components/growth/PendingButton'
 import Sparkline from '@/components/os/growth/Sparkline'
+import { estimatedMonthlyUpside } from '@/lib/growth/ctr'
+import { worksheetPath } from '@/lib/growth/refresh'
 import type { SeoGscDaily, SeoGrowthScore } from '@/lib/types'
-import { researchKeywordsAction, syncGscNowAction } from '../actions'
+import { expandSeedsAction, researchKeywordsAction, syncGscNowAction } from '../actions'
+
+/** D5: an action names its object, shows the measurement + window, states the gain and links to a real destination. */
+interface RankedAction {
+  label: string
+  href: string
+  evidence: string
+  why: string
+  /** Estimated monthly clicks (or click-equivalents) at stake — the sort key. */
+  value: number
+  kind: 'organic' | 'paid' | 'pipeline'
+}
 
 interface StatDelta {
   value: string
@@ -64,10 +77,21 @@ export default async function GrowthSitePage({
   const supabase = await createClient()
   const site = await getSeoSiteById(siteId, supabase)
   if (!site) notFound()
-  const data = await getSiteDashboardData(siteId, supabase)
+  const [data, serpStateMap, paidTile, refreshes] = await Promise.all([
+    getSiteDashboardData(siteId, supabase),
+    getLatestSerpStates(siteId, supabase).catch(() => new Map()),
+    getPaidTile(siteId, supabase).catch(() => null),
+    getRefreshSummaries(siteId, supabase).catch(() => []),
+  ])
+  const serpStates: Record<string, SerpStateLite> = {}
+  for (const [id, st] of serpStateMap) serpStates[id] = { our_position: st.our_position, ai_overview: st.ai_overview, ai_overview_cites_us: st.ai_overview_cites_us }
+  const aioPresent = Object.values(serpStates).filter((st) => st.ai_overview).length
+  const aioCitesUs = Object.values(serpStates).filter((st) => st.ai_overview_cites_us).length
+  const enrichedCount = data.keywords.filter((k) => k.enriched_at).length
 
   const syncAction = syncGscNowAction.bind(null, site.id)
   const researchAction = researchKeywordsAction.bind(null, site.id)
+  const expandAction = expandSeedsAction.bind(null, site.id)
 
   // ── Stat cards ──
   const last28 = windowTotals(data.daily, 28, 0)
@@ -116,53 +140,159 @@ export default async function GrowthSitePage({
       series: componentSeries(data.scores, 'ai_mentions'),
       caption: aiRuns === 0 ? 'Starts with AI visibility tracking (Phase 6)' : `${aiRuns} answers checked`,
     },
+    {
+      label: 'Google AI Overviews',
+      value: aioPresent > 0 ? `${aioCitesUs}/${aioPresent}` : '—',
+      delta: null,
+      series: [],
+      caption: aioPresent > 0 ? `${aioPresent} tracked SERPs show an AI Overview; ${aioCitesUs} cite ${site.name}` : 'From SERP snapshots — none parsed yet',
+    },
+    ...(paidTile
+      ? [
+          {
+            label: 'Ad spend · month to date',
+            value: paidTile.spend.toLocaleString('en-GB'),
+            delta: null,
+            series: [],
+            caption: paidTile.cpa !== null ? `${paidTile.conversions} conversions · CPA ${paidTile.cpa.toLocaleString('en-GB')}` : `${paidTile.conversions} conversions`,
+          },
+        ]
+      : []),
   ]
 
-  // ── Next actions, ranked by how directly they move the engine forward ──
+  // ── Next actions — ranked by estimated value, never linking to an anchor ──
   const proposedBriefs = data.briefs.filter((b) => b.status === 'proposed').length
   const reviewArticles = data.articles.filter((a) => a.status === 'review').length
   const approvedArticles = data.articles.filter((a) => a.status === 'approved').length
   const proposedClusters = data.clusters.filter((c) => c.status === 'proposed').length
-  const quickWins = data.keywords.filter(
-    (k) => k.gsc_position !== null && k.gsc_position >= 11 && k.gsc_position <= 20
-  ).length
+  const quickWinRows = data.keywords.filter((k) => k.gsc_position !== null && k.gsc_position >= 11 && k.gsc_position <= 20)
+  const quickWins = quickWinRows.length
 
-  const nextActions: Array<{ label: string; href: string }> = []
+  const actions: RankedAction[] = []
+
+  // Quick wins grouped by the page that owns them (D1) → the worksheet (D2).
+  const byPage = new Map<string, { upside: number; queries: number; impressions: number }>()
+  let orphanQuickWins = 0
+  for (const k of quickWinRows) {
+    const upside = estimatedMonthlyUpside(k.gsc_impressions ?? 0, k.gsc_position, 90)
+    if (k.ranking_url) {
+      const e = byPage.get(k.ranking_url) ?? { upside: 0, queries: 0, impressions: 0 }
+      e.upside += upside
+      e.queries += 1
+      e.impressions += k.gsc_impressions ?? 0
+      byPage.set(k.ranking_url, e)
+    } else orphanQuickWins += 1
+  }
+  for (const [url, e] of [...byPage.entries()].sort((a, b) => b[1].upside - a[1].upside).slice(0, 3)) {
+    let path = url
+    try {
+      path = new URL(url).pathname
+    } catch {
+      /* keep */
+    }
+    actions.push({
+      label: `Refresh ${path}`,
+      href: worksheetPath(site.id, url),
+      evidence: `${e.queries} quer${e.queries === 1 ? 'y' : 'ies'} at positions 11-20, ${e.impressions.toLocaleString('en-GB')} impressions (90-day Search Console)`,
+      why: 'Page two to page one on a page that already ranks is the cheapest traffic in the module.',
+      value: e.upside,
+      kind: 'organic',
+    })
+  }
+  if (orphanQuickWins > 0 && byPage.size === 0 && !site.last_gsc_backfill_at) {
+    actions.push({
+      label: `${quickWins} quick-win keyword${quickWins === 1 ? '' : 's'} at position 11-20 — pages resolve after the next GSC sync`,
+      href: `/growth/${site.id}/keywords?band=11-20`,
+      evidence: 'Query→page history backfills on the first sync after this release.',
+      why: 'Until then the module cannot say which page to refresh.',
+      value: quickWinRows.reduce((s, k) => s + estimatedMonthlyUpside(k.gsc_impressions ?? 0, k.gsc_position, 90), 0),
+      kind: 'organic',
+    })
+  } else if (orphanQuickWins >= 3) {
+    actions.push({
+      label: `${orphanQuickWins} page-two queries have no owning page`,
+      href: `/growth/${site.id}/keywords?target=none`,
+      evidence: 'Impressions at 11-20 but no single URL holds them (28-day query×page data).',
+      why: 'A deliberate new page usually wins these faster than refreshing whichever page Google half-matches.',
+      value: quickWinRows.filter((k) => !k.ranking_url).reduce((s, k) => s + estimatedMonthlyUpside(k.gsc_impressions ?? 0, k.gsc_position, 90), 0),
+      kind: 'organic',
+    })
+  }
+
+  const openRefreshes = refreshes.filter((r) => r.status === 'open')
+  if (openRefreshes.length > 0) {
+    const top = openRefreshes.sort((a, b) => (b.estimated_upside_clicks ?? 0) - (a.estimated_upside_clicks ?? 0))[0]
+    let path = top.url
+    try {
+      path = new URL(top.url).pathname
+    } catch {
+      /* keep */
+    }
+    actions.push({
+      label: `Finish the open worksheet for ${path}`,
+      href: worksheetPath(site.id, top.url),
+      evidence: `${openRefreshes.length} worksheet${openRefreshes.length === 1 ? '' : 's'} generated, not yet applied`,
+      why: 'A change list that never ships earns nothing; apply it as a PR or mark it done.',
+      value: top.estimated_upside_clicks ?? 0,
+      kind: 'organic',
+    })
+  }
+
+  if (paidTile?.hasAccounts) {
+    const { minedSearchTerms, handoffOpportunities, wastedSearchTerms } = await import('@/lib/growth/paid-loops')
+    const [mined, handoffs, wasted] = await Promise.all([
+      minedSearchTerms(siteId).catch(() => []),
+      handoffOpportunities(siteId).catch(() => []),
+      wastedSearchTerms(siteId).catch(() => []),
+    ])
+    if (mined.length > 0)
+      actions.push({
+        label: `${mined.length} converting search terms have no organic page`,
+        href: `/growth/${site.id}/paid?tab=search`,
+        evidence: `${Math.round(mined.reduce((s, t) => s + t.conversion_value, 0)).toLocaleString('en-GB')} of conversion value on queries with no page in Search Console (60-day Ads window)`,
+        why: 'Proven commercial demand, already paid for once. The strongest content backlog the module can produce.',
+        value: Math.round(mined.reduce((s, t) => s + t.clicks, 0) / 2),
+        kind: 'paid',
+      })
+    if (wasted.length > 0)
+      actions.push({
+        label: `Add ${wasted.length} negatives — ${Math.round(wasted.reduce((s, t) => s + t.cost, 0)).toLocaleString('en-GB')} spent on zero-conversion terms`,
+        href: `/growth/${site.id}/paid?tab=search`,
+        evidence: '60-day search terms report, terms above the spend threshold with no conversions',
+        why: 'Every one of these is a click bought for nothing; negatives stop it tonight.',
+        value: Math.round(wasted.reduce((s, t) => s + t.clicks, 0)),
+        kind: 'paid',
+      })
+    if (handoffs.length > 0)
+      actions.push({
+        label: `${handoffs.length} paid keywords where organic could take over`,
+        href: `/growth/${site.id}/paid?tab=search`,
+        evidence: `${handoffs.reduce((s, h) => s + h.optional_spend_per_month, 0).toLocaleString('en-GB')} per month becomes optional at organic position 3 (CTR-curve model)`,
+        why: 'The number that sells the retainer to a client already spending on Ads.',
+        value: handoffs.reduce((s, h) => s + h.organic_clicks_at_3, 0),
+        kind: 'paid',
+      })
+  }
+
+  // Pipeline actions: value is the queue depth scaled so they sit below real traffic wins but above nothing.
   if (proposedBriefs > 0)
-    nextActions.push({
-      label: `Review ${proposedBriefs} brief${proposedBriefs === 1 ? '' : 's'} awaiting approval`,
-      href: `/growth/${site.id}/briefs`,
-    })
+    actions.push({ label: `Review ${proposedBriefs} brief${proposedBriefs === 1 ? '' : 's'} awaiting approval`, href: `/growth/${site.id}/briefs`, evidence: `${proposedBriefs} proposed`, why: 'Approval queues the draft; nothing gets written until you say so.', value: proposedBriefs * 5, kind: 'pipeline' })
   if (reviewArticles > 0)
-    nextActions.push({
-      label: `Review ${reviewArticles} drafted article${reviewArticles === 1 ? '' : 's'}`,
-      href: `/growth/${site.id}/articles`,
-    })
+    actions.push({ label: `Review ${reviewArticles} drafted article${reviewArticles === 1 ? '' : 's'}`, href: `/growth/${site.id}/articles`, evidence: `${reviewArticles} in review`, why: 'Drafts only earn once published.', value: reviewArticles * 8, kind: 'pipeline' })
   if (approvedArticles > 0)
-    nextActions.push({
-      label: `${approvedArticles} approved article${approvedArticles === 1 ? '' : 's'} awaiting publish`,
-      href: `/growth/${site.id}/articles`,
-    })
+    actions.push({ label: `Publish ${approvedArticles} approved article${approvedArticles === 1 ? '' : 's'}`, href: `/growth/${site.id}/articles`, evidence: `${approvedArticles} approved, unpublished`, why: 'One click from live.', value: approvedArticles * 10, kind: 'pipeline' })
   if (proposedClusters > 0)
-    nextActions.push({
-      label: `Approve or reject ${proposedClusters} proposed cluster${proposedClusters === 1 ? '' : 's'}`,
-      href: `/growth/${site.id}/clusters`,
-    })
-  if (quickWins > 0)
-    nextActions.push({
-      label: `${quickWins} quick-win keyword${quickWins === 1 ? '' : 's'} at position 11-20 — refresh those pages`,
-      href: '#keywords',
-    })
+    actions.push({ label: `Approve or reject ${proposedClusters} proposed cluster${proposedClusters === 1 ? '' : 's'}`, href: `/growth/${site.id}/clusters`, evidence: `${proposedClusters} proposed`, why: 'Approval creates the content programme on the Gantt.', value: proposedClusters * 3, kind: 'pipeline' })
   if (!site.gsc_property)
-    nextActions.push({ label: 'Add a Search Console property', href: `/growth/${site.id}/settings` })
+    actions.push({ label: 'Add a Search Console property', href: `/growth/${site.id}/settings`, evidence: 'No property set', why: 'Without it the module has no real ranking data at all.', value: 1000, kind: 'pipeline' })
   if (data.keywords.length === 0)
-    nextActions.push({ label: 'Queue keyword research from seed terms', href: '#research' })
+    actions.push({ label: 'Queue keyword research from seed terms', href: `/growth/${site.id}/keywords`, evidence: 'Keyword list is empty', why: 'Everything downstream needs a list.', value: 500, kind: 'pipeline' })
+  if (data.keywords.length > 0 && enrichedCount === 0)
+    actions.push({ label: 'Enrich the keyword list with real difficulty and intent', href: `/growth/${site.id}/keywords`, evidence: `${data.keywords.length} keywords, none enriched`, why: 'Until then difficulty is unknown and intent is a guess; every prioritisation call rests on it.', value: 200, kind: 'pipeline' })
   if (data.keywords.length > 0 && data.clusters.length === 0)
-    nextActions.push({
-      label: 'Generate topic clusters from the keyword list',
-      href: `/growth/${site.id}/clusters`,
-    })
-  const topActions = nextActions.slice(0, 3)
+    actions.push({ label: 'Generate topic clusters from the keyword list', href: `/growth/${site.id}/clusters`, evidence: `${data.keywords.length} keywords, no clusters`, why: 'Clusters are what briefs get written against.', value: 50, kind: 'pipeline' })
+
+  const topActions = [...actions].sort((a, b) => b.value - a.value).slice(0, 5)
 
   // ── Content pipeline ──
   const pipeline = [
@@ -198,24 +328,31 @@ export default async function GrowthSitePage({
     {
       title: 'Connect Search Console',
       detail: site.last_gsc_sync_at
-        ? 'Synced — real queries, clicks and positions flow in daily.'
+        ? 'Synced — real queries, clicks, positions and the query→page history flow in daily.'
         : site.gsc_property
-          ? 'Property set — run the first sync (button top right).'
-          : 'Add the GSC property in settings, then sync.',
+          ? 'Property set — run the first sync (button top right). Needs: the Google grant with the Search Console scope. Costs: nothing. Produces: 90 days of query×page history. Takes: about a minute.'
+          : 'Add the GSC property in settings, then sync. Needs: the property verified in Search Console. Costs: nothing.',
       href: site.gsc_property ? '#' : `/growth/${site.id}/settings`,
       done: Boolean(site.last_gsc_sync_at),
     },
     {
       title: 'Build the keyword list',
       detail:
-        'Queue DataForSEO research from seed terms below; results land within ~15 minutes. GSC adds the queries you already rank for.',
-      href: '#research',
+        'Seed terms below → Google Ads ideas (Standard queue, ~$0.05 per seed batch, lands in ~15 minutes) and Labs suggestions (instant, ~$0.02 per seed). GSC adds what you already rank for. Later: the competitor gap view.',
+      href: `/growth/${site.id}/keywords`,
       done: data.keywords.length > 0,
+    },
+    {
+      title: 'Enrich with real difficulty and intent',
+      detail:
+        'DataForSEO Labs KD + search intent, 1,000 keywords per call, fractions of a penny each. Runs nightly at 05:30; press Enrich now on the keywords page to do it immediately. Produces: the KD column and measured intent chips.',
+      href: `/growth/${site.id}/keywords`,
+      done: enrichedCount > 0,
     },
     {
       title: 'Group keywords into clusters',
       detail:
-        'The model groups the list into topics worth owning. Generic clusters mean the ICP/brand voice in settings needs sharpening.',
+        'Preferred: SERP overlap — needs a snapshot per keyword (~$0.0006 each, ~15 minutes), then clusters are measured from shared top-10 URLs and the model only names them. Fallback: the model groups by keyword text alone.',
       href: `/growth/${site.id}/clusters`,
       done: data.clusters.length > 0,
     },
@@ -250,9 +387,17 @@ export default async function GrowthSitePage({
     {
       title: 'Distribute and build links',
       detail:
-        'Publishing creates a same-day distribution task. Mine competitor backlinks into CRM prospects on the Links page.',
+        'Publishing creates a same-day distribution task and an internal-links task. Mine competitor backlinks into CRM prospects on the Links page (one Live call per competitor, a few pence).',
       href: `/growth/${site.id}/links`,
       done: data.linkTargetCount > 0,
+    },
+    {
+      title: 'Link paid media',
+      detail: paidTile?.hasAccounts
+        ? 'Linked — the search terms report and conversion data flow onto the keyword list nightly.'
+        : 'Optional but the single best first-party keyword source. Needs: Google Ads API access (developer token on the MCC, days to approve) and/or a Meta system user token. Costs: nothing per call. Produces: converting search terms with no organic page, wasted spend, the handoff model.',
+      href: `/growth/${site.id}/paid`,
+      done: Boolean(paidTile?.hasAccounts),
     },
     {
       title: 'Measure: AI visibility + monthly report',
@@ -282,6 +427,9 @@ export default async function GrowthSitePage({
           </p>
           <p className="mt-2 flex flex-wrap gap-3 text-sm">
             {[
+              { href: `/growth/${site.id}/keywords`, label: 'Keywords & pages' },
+              { href: `/growth/${site.id}/gap`, label: 'Competitor gap' },
+              { href: `/growth/${site.id}/paid`, label: 'Paid' },
               { href: `/growth/${site.id}/clusters`, label: 'Clusters' },
               { href: `/growth/${site.id}/briefs`, label: 'Briefs' },
               { href: `/growth/${site.id}/articles`, label: 'Articles' },
@@ -332,6 +480,19 @@ export default async function GrowthSitePage({
                           </span>
                         </div>
                         <p className="mt-0.5 text-[color:var(--text-3)]">{c.detail}</p>
+                        {c.raise ? (
+                          <p className="mt-0.5 text-[color:var(--text-2)]">
+                            ↑ {c.raise}
+                            {c.href ? (
+                              <>
+                                {' '}
+                                <Link href={c.href} className="text-[color:var(--accent-strong)] underline decoration-[color:var(--border)] underline-offset-2">
+                                  go
+                                </Link>
+                              </>
+                            ) : null}
+                          </p>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
@@ -360,7 +521,7 @@ export default async function GrowthSitePage({
       <PipelineGuide steps={pipelineSteps} />
 
       {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {stats.map((stat) => (
           <div key={stat.label} className="os-card p-5">
             <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">{stat.label}</p>
@@ -383,25 +544,49 @@ export default async function GrowthSitePage({
         ))}
       </div>
 
-      {/* Next actions */}
+      {/* Next actions — organic and paid compete in one list, ranked by estimated value */}
       <div className="os-card p-6">
-        <h2 className="text-sm font-semibold text-[color:var(--text)]">Next actions</h2>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-sm font-semibold text-[color:var(--text)]">Next actions</h2>
+          <p className="text-xs text-[color:var(--text-3)]">Ranked by estimated monthly clicks at stake (CTR-curve model for organic; paid figures from your Ads data)</p>
+        </div>
         {topActions.length === 0 ? (
-          <p className="mt-3 text-sm text-[color:var(--text-3)]">
-            Nothing waiting on you — the engine is between cycles.
-          </p>
+          <p className="mt-3 text-sm text-[color:var(--text-3)]">Nothing waiting on you — the engine is between cycles.</p>
         ) : (
           <ol className="mt-3 space-y-2">
             {topActions.map((action, i) => (
               <li key={action.label}>
                 <Link
                   href={action.href}
-                  className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                  className="flex items-start gap-3 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm transition hover:border-[color:var(--accent)]"
                 >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent-dim)] text-xs font-semibold text-[color:var(--accent-strong)]">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent-dim)] text-xs font-semibold text-[color:var(--accent-strong)]">
                     {i + 1}
                   </span>
-                  {action.label}
+                  <span className="min-w-0 grow">
+                    <span className="block font-medium text-[color:var(--text)]">
+                      {action.label}
+                      <span
+                        className={`ml-2 rounded-full border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
+                          action.kind === 'paid'
+                            ? 'border-violet-200 bg-violet-50 text-violet-700'
+                            : action.kind === 'organic'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                              : 'border-[color:var(--border)] text-[color:var(--text-3)]'
+                        }`}
+                      >
+                        {action.kind}
+                      </span>
+                    </span>
+                    <span className="block text-xs text-[color:var(--text-2)]">{action.evidence}</span>
+                    <span className="block text-xs text-[color:var(--text-3)]">{action.why}</span>
+                  </span>
+                  {action.kind !== 'pipeline' ? (
+                    <span className="shrink-0 text-right text-xs tabular-nums text-[color:var(--text-2)]" title="Estimated monthly clicks at stake">
+                      ~{action.value.toLocaleString('en-GB')}
+                      <span className="block text-[10px] text-[color:var(--text-3)]">clicks/mo</span>
+                    </span>
+                  ) : null}
                 </Link>
               </li>
             ))}
@@ -412,16 +597,19 @@ export default async function GrowthSitePage({
       {/* Keyword table + AI visibility */}
       <div className="grid gap-4 xl:grid-cols-3">
         <div id="keywords" className="os-card p-6 xl:col-span-2">
-          <h2 className="text-sm font-semibold text-[color:var(--text)]">
-            Keywords ({data.keywords.length})
-          </h2>
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-sm font-semibold text-[color:var(--text)]">Keywords ({data.keywords.length})</h2>
+            <Link href={`/growth/${site.id}/keywords`} className="text-xs text-[color:var(--accent-strong)] underline decoration-[color:var(--border)] underline-offset-2">
+              Full coverage matrix, pages and technical issues →
+            </Link>
+          </div>
           {data.keywords.length === 0 ? (
             <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
               No keywords yet. Sync GSC or queue keyword research below.
             </div>
           ) : (
             <div className="mt-4">
-              <KeywordTable keywords={data.keywords} clusters={data.clusters} />
+              <KeywordTable keywords={data.keywords} clusters={data.clusters} siteId={site.id} serpStates={serpStates} />
             </div>
           )}
         </div>
@@ -504,8 +692,18 @@ export default async function GrowthSitePage({
             className="min-w-64 grow rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
           />
           <PendingButton variant="primary" pendingLabel="Queueing with DataForSEO…">
-            Queue research
+            Queue research (Google Ads ideas)
           </PendingButton>
+        </form>
+        <form action={expandAction} className="mt-3 flex flex-wrap items-start gap-3">
+          <textarea
+            name="seeds"
+            rows={1}
+            required
+            placeholder="Up to 5 seeds for Labs suggestions + related keywords (instant, tagged by source)"
+            className="min-w-64 grow rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+          />
+          <PendingButton pendingLabel="Asking DataForSEO Labs…">Expand with Labs</PendingButton>
         </form>
       </div>
     </div>

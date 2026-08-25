@@ -355,13 +355,32 @@ export async function publishArticleAction(siteId: string, articleId: string) {
 
     // An article nobody sees earns nothing — distribution is a task, due today.
     const { createEngineTaskOnce } = await import('@/lib/growth/tasks')
+    const { count: metaAccounts } = await supabase
+      .from('ads_accounts')
+      .select('id', { count: 'exact', head: true })
+      .eq('site_id', siteId)
+      .eq('platform', 'meta')
+      .eq('status', 'active')
     await createEngineTaskOnce({
       title: `Distribute: ${article.title}`,
-      description: `Share ${result.url} — LinkedIn, relevant groups, forum threads. PR/ref: ${result.ref}`,
+      url: result.url,
+      context: {
+        what: 'Get the new article in front of the people it was written for.',
+        why: 'Published today; the first week of engagement signals are the ones Google and the AI engines weigh most.',
+        evidence: [`PR/ref: ${result.ref}`],
+        firstStep: metaAccounts
+          ? 'Build a traffic campaign around the article in Meta (link ad, 7 days, modest cap) and add readers to a retargeting audience; then LinkedIn and relevant forum threads.'
+          : 'LinkedIn post from the personal profile, then relevant groups and forum threads where the question comes up.',
+        link: `/growth/${siteId}/articles/${articleId}`,
+      },
       dueDate: new Date().toISOString().slice(0, 10),
       priority: 'high',
       extraLabels: ['distribution'],
     })
+
+    // C3: internal links from existing articles that already mention the topic.
+    const { internalLinkTaskForArticle } = await import('@/lib/growth/task-generation')
+    await internalLinkTaskForArticle(siteId, articleId).catch(() => false)
 
     revalidatePath(`/growth/${siteId}/articles/${articleId}`)
     revalidatePath(`/growth/${siteId}/articles`)
@@ -694,4 +713,268 @@ export async function researchKeywordsAction(siteId: string, formData: FormData)
       'Keyword research queued — results land on the next collect run (within ~15 minutes)'
     )}`
   )
+}
+
+// ── v2: worksheets, overlap clustering, competitors, paid ───────────────────
+
+async function serviceClient() {
+  const { createClient: createServiceClient } = await import('@/lib/supabase/service')
+  return createServiceClient()
+}
+
+export async function generateWorksheetAction(siteId: string, encodedUrl: string) {
+  await requireAdmin()
+  const { generateWorksheet, decodePageUrl } = await import('@/lib/growth/refresh')
+  const site = await getSeoSiteById(siteId)
+  if (!site) redirect('/growth')
+  const url = decodePageUrl(encodedUrl)
+  const path = `/growth/${siteId}/pages/${encodedUrl}`
+  try {
+    await generateWorksheet(site, url)
+    revalidatePath(path)
+    redirect(`${path}?notice=${encodeURIComponent('Worksheet generated')}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`${path}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function toggleWorksheetItemAction(siteId: string, encodedUrl: string, key: string, checked: boolean) {
+  await requireAdmin()
+  const { setWorksheetCheck, decodePageUrl } = await import('@/lib/growth/refresh')
+  await setWorksheetCheck(siteId, decodePageUrl(encodedUrl), key, checked)
+  revalidatePath(`/growth/${siteId}/pages/${encodedUrl}`)
+}
+
+export async function setWorksheetStatusAction(siteId: string, encodedUrl: string, status: 'open' | 'applied' | 'dismissed') {
+  await requireAdmin()
+  const { setWorksheetStatus, decodePageUrl } = await import('@/lib/growth/refresh')
+  await setWorksheetStatus(siteId, decodePageUrl(encodedUrl), status)
+  const path = `/growth/${siteId}/pages/${encodedUrl}`
+  revalidatePath(path)
+  revalidatePath(`/growth/${siteId}`)
+  redirect(`${path}?notice=${encodeURIComponent(status === 'applied' ? 'Marked applied' : status === 'dismissed' ? 'Dismissed' : 'Reopened')}`)
+}
+
+/** D3: turn the ticked change-list items into a PR (GitHub) or a draft (WordPress). */
+export async function openRefreshPrAction(siteId: string, encodedUrl: string) {
+  await requireAdmin()
+  const { getWorksheet, setWorksheetStatus, decodePageUrl } = await import('@/lib/growth/refresh')
+  const path = `/growth/${siteId}/pages/${encodedUrl}`
+  try {
+    const site = await getSeoSiteById(siteId)
+    if (!site) throw new Error('Site not found')
+    const url = decodePageUrl(encodedUrl)
+    const ws = await getWorksheet(siteId, url)
+    const list = ws?.payload.change_list
+    if (!ws || !list) throw new Error('Generate the worksheet first')
+    const checked = ws.checked
+    const sections = list.sections_to_add
+      .map((s, i) => ({ key: `section:${i}`, s }))
+      .filter(({ key }) => checked[key])
+      .map(({ s }) => ({ heading: s.heading, body: `_${s.covers}_\n\n<!-- Draft this section: ${s.covers} -->` }))
+    const changes = {
+      title: checked.title ? list.title.proposed : undefined,
+      meta_description: checked.meta ? list.meta_description.proposed : undefined,
+      sections,
+    }
+    if (!changes.title && !changes.meta_description && sections.length === 0) throw new Error('Tick at least one change to apply')
+    const { updateArticle } = await import('@/lib/growth/publish')
+    const title = ws.payload.page?.title ?? url
+    const result = await updateArticle(site, url, title, changes)
+    await setWorksheetStatus(siteId, url, 'applied', result.ref)
+    revalidatePath(path)
+    redirect(`${path}?notice=${encodeURIComponent(site.cms_type === 'github' ? `Pull request opened: ${result.ref}` : `WordPress draft ${result.ref} created — review it in WP admin`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`${path}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+/** B1: queue SERP snapshots for keywords lacking one (the confirmation step). */
+export async function queueOverlapSnapshotsAction(siteId: string) {
+  await requireAdmin()
+  const { queueMissingSnapshots } = await import('@/lib/growth/clustering')
+  try {
+    const queued = await queueMissingSnapshots(siteId)
+    revalidatePath(`/growth/${siteId}/clusters`)
+    redirect(`/growth/${siteId}/clusters?notice=${encodeURIComponent(queued === 0 ? 'Every keyword already has a snapshot or one is queued' : `${queued} SERP snapshots queued — they land within ~15 minutes`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/clusters?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function generateOverlapClustersAction(siteId: string) {
+  await requireAdmin()
+  const { generateOverlapClusters } = await import('@/lib/growth/clustering')
+  try {
+    const site = await getSeoSiteById(siteId)
+    if (!site) throw new Error('Site not found')
+    const r = await generateOverlapClusters(site)
+    revalidatePath(`/growth/${siteId}/clusters`)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(`/growth/${siteId}/clusters?notice=${encodeURIComponent(`${r.created} clusters from SERP overlap covering ${r.assigned} keywords (${r.skippedNoSerp} keywords had no snapshot and were left out)`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/clusters?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function addCompetitorAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+  const domain = String(formData.get('domain') ?? '').trim()
+  const addedBy = (String(formData.get('added_by') ?? 'manual') as 'manual' | 'serp' | 'labs')
+  const { addCompetitor, pullCompetitorKeywords } = await import('@/lib/growth/competitors')
+  try {
+    await addCompetitor(siteId, domain, addedBy)
+    const clean = domain.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '')
+    const n = await pullCompetitorKeywords(siteId, clean)
+    revalidatePath(`/growth/${siteId}/gap`)
+    redirect(`/growth/${siteId}/gap?notice=${encodeURIComponent(`${clean} added — ${n} ranked keywords pulled`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/gap?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function pullCompetitorAction(siteId: string, domain: string) {
+  await requireAdmin()
+  const { pullCompetitorKeywords } = await import('@/lib/growth/competitors')
+  try {
+    const n = await pullCompetitorKeywords(siteId, domain)
+    revalidatePath(`/growth/${siteId}/gap`)
+    redirect(`/growth/${siteId}/gap?notice=${encodeURIComponent(`${domain}: ${n} ranked keywords pulled`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/gap?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function toggleCompetitorAction(siteId: string, competitorId: string, tracked: boolean) {
+  await requireAdmin()
+  const supabase = await serviceClient()
+  await supabase.from('seo_competitors').update({ tracked }).eq('id', competitorId)
+  revalidatePath(`/growth/${siteId}/gap`)
+  redirect(`/growth/${siteId}/gap`)
+}
+
+export async function addGapKeywordsAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+  const keywords = formData.getAll('keyword').map((k) => String(k).trim().toLowerCase()).filter(Boolean)
+  const { addKeywordsFromGap } = await import('@/lib/growth/competitors')
+  try {
+    const n = await addKeywordsFromGap(siteId, keywords)
+    revalidatePath(`/growth/${siteId}/gap`)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(`/growth/${siteId}/gap?notice=${encodeURIComponent(`${n} keywords added to the list (${keywords.length - n} were already there)`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/gap?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+/** Research box: Labs expansion (suggestions + related) alongside Google Ads seeds. */
+export async function expandSeedsAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+  const seeds = String(formData.get('seeds') ?? '').split(/[,\n]/).map((s) => s.trim()).filter(Boolean)
+  if (seeds.length === 0) redirect(`/growth/${siteId}?error=${encodeURIComponent('Enter at least one seed keyword')}`)
+  const { expandSeeds } = await import('@/lib/growth/competitors')
+  try {
+    const r = await expandSeeds(siteId, seeds)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(`/growth/${siteId}?notice=${encodeURIComponent(`Labs expansion: ${r.added} new keywords from ${r.seen} suggestions (tagged by source)`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function runEnrichNowAction(siteId: string) {
+  await requireAdmin()
+  const { enrichSite } = await import('@/lib/growth/enrich')
+  try {
+    const site = await getSeoSiteById(siteId)
+    if (!site) throw new Error('Site not found')
+    const r = await enrichSite(site)
+    revalidatePath(`/growth/${siteId}`)
+    redirect(`/growth/${siteId}?notice=${encodeURIComponent(`Enriched ${r.enriched} keywords with Labs difficulty and intent (${r.seasonality} got volume history)`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function recrawlAction(siteId: string) {
+  await requireAdmin()
+  const { startCrawl } = await import('@/lib/growth/onpage')
+  try {
+    const site = await getSeoSiteById(siteId)
+    if (!site) throw new Error('Site not found')
+    if (site.crawl_task_id) throw new Error('A crawl is already running — results land on the next growth-crawl tick')
+    await startCrawl(site)
+    revalidatePath(`/growth/${siteId}/keywords`)
+    redirect(`/growth/${siteId}/keywords?issues=1&notice=${encodeURIComponent(`Crawl started (up to ${site.max_crawl_pages} pages) — issues appear within a few hours`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/keywords?issues=1&error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function linkAdsAccountAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+  const platform = String(formData.get('platform') ?? '') as 'google' | 'meta'
+  const externalId = String(formData.get('external_id') ?? '').trim().replace(/-/g, '')
+  const name = String(formData.get('name') ?? '').trim() || null
+  if (!platform || !externalId) redirect(`/growth/${siteId}/paid?error=${encodeURIComponent('Platform and account id are required')}`)
+  const supabase = await serviceClient()
+  const { error } = await supabase
+    .from('ads_accounts')
+    .upsert({ site_id: siteId, platform, external_id: externalId, name, status: 'active' }, { onConflict: 'platform,external_id' })
+  if (error) redirect(`/growth/${siteId}/paid?error=${encodeURIComponent(error.message)}`)
+  revalidatePath(`/growth/${siteId}/paid`)
+  redirect(`/growth/${siteId}/paid?notice=${encodeURIComponent('Account linked — first sync runs tonight at 05:15, or press Sync now')}`)
+}
+
+export async function syncAdsNowAction(siteId: string) {
+  await requireAdmin()
+  try {
+    const supabase = await serviceClient()
+    const { syncAllGoogleAccounts } = await import('@/lib/growth/ads-google')
+    const { syncAllMetaAccounts } = await import('@/lib/growth/ads-meta')
+    const { applyCommercialWeighting, pushMinedTermsToKeywords } = await import('@/lib/growth/paid-loops')
+    const g = await syncAllGoogleAccounts(supabase)
+    const m = await syncAllMetaAccounts(supabase)
+    const mined = await pushMinedTermsToKeywords(siteId, supabase)
+    await applyCommercialWeighting(siteId, supabase)
+    const errors = [...g.errors, ...m.errors].filter((e) => e.account !== '*')
+    revalidatePath(`/growth/${siteId}/paid`)
+    revalidatePath(`/growth/${siteId}`)
+    if (errors.length > 0) redirect(`/growth/${siteId}/paid?error=${encodeURIComponent(errors.map((e) => `${e.account}: ${e.error}`).join(' · '))}`)
+    redirect(`/growth/${siteId}/paid?notice=${encodeURIComponent(`Synced ${g.synced.length} Google and ${m.synced.length} Meta account(s); ${mined} converting search terms pushed to the keyword list`)}`)
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/paid?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+export async function updateGrowthBudgetsAction(siteId: string, formData: FormData) {
+  await requireAdmin()
+  const num = (k: string) => {
+    const v = String(formData.get(k) ?? '').trim()
+    return v === '' ? null : Number(v)
+  }
+  const supabase = await serviceClient()
+  const { error } = await supabase
+    .from('seo_sites')
+    .update({
+      serp_overlap_threshold: num('serp_overlap_threshold') ?? 3,
+      monthly_api_budget: num('monthly_api_budget'),
+      monthly_ads_budget: num('monthly_ads_budget'),
+      max_crawl_pages: num('max_crawl_pages') ?? 200,
+    })
+    .eq('id', siteId)
+  if (error) redirect(`/growth/${siteId}/settings?error=${encodeURIComponent(error.message)}`)
+  revalidatePath(`/growth/${siteId}/settings`)
+  redirect(`/growth/${siteId}/settings?notice=${encodeURIComponent('Budgets and thresholds saved')}`)
 }

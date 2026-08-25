@@ -3,11 +3,14 @@ import { notFound } from 'next/navigation'
 import { getSeoClusters, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import { PendingButton } from '@/components/growth/PendingButton'
+import { overlapReadiness } from '@/lib/growth/clustering'
 import {
   approveClusterAction,
   archiveClusterAction,
   generateBriefAction,
   generateClustersAction,
+  generateOverlapClustersAction,
+  queueOverlapSnapshotsAction,
 } from '../../actions'
 
 const STATUS_STYLE: Record<string, string> = {
@@ -29,6 +32,7 @@ export default async function GrowthClustersPage({
   const site = await getSeoSiteById(siteId, supabase)
   if (!site) notFound()
   const clusters = await getSeoClusters(siteId, supabase)
+  const readiness = await overlapReadiness(siteId).catch(() => null)
 
   return (
     <div className="space-y-6">
@@ -44,16 +48,35 @@ export default async function GrowthClustersPage({
             Approving a cluster creates a content-programme Project on the existing Gantt.
           </p>
         </div>
-        <form action={generateClustersAction.bind(null, site.id)}>
-          <PendingButton
-            variant="primary"
-            className="px-4 py-3 font-semibold"
-            pendingLabel="Generating clusters…"
-          >
-            Generate clusters
-          </PendingButton>
-        </form>
+        <div className="flex flex-wrap items-center gap-2">
+          <form action={generateClustersAction.bind(null, site.id)}>
+            <PendingButton pendingLabel="Generating clusters…">Cluster by model (fallback)</PendingButton>
+          </form>
+          {readiness && readiness.missing.length > 0 ? (
+            <form action={queueOverlapSnapshotsAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Queueing SERP tasks…">
+                Queue {readiness.missing.length - readiness.pending} SERP snapshots
+              </PendingButton>
+            </form>
+          ) : null}
+          <form action={generateOverlapClustersAction.bind(null, site.id)}>
+            <PendingButton variant="primary" className="px-4 py-3 font-semibold" pendingLabel="Measuring SERP overlap…">
+              Cluster by SERP overlap
+            </PendingButton>
+          </form>
+        </div>
       </div>
+
+      {readiness ? (
+        <div className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+          SERP-overlap clustering (measured, not guessed) needs a snapshot per keyword: {readiness.withSnapshot} of {readiness.total} have one
+          {readiness.pending > 0 ? `, ${readiness.pending} queued and landing within ~15 minutes` : ''}.
+          {readiness.missing.length - readiness.pending > 0
+            ? ` Queueing the remaining ${readiness.missing.length - readiness.pending} costs roughly $${((readiness.missing.length - readiness.pending) * 0.0006).toFixed(2)} on the Standard queue.`
+            : ''}{' '}
+          Keywords without a snapshot are left out of the overlap run, never silently guessed in. Threshold: {site.serp_overlap_threshold} shared top-10 URLs (settings).
+        </div>
+      ) : null}
 
       {resolved?.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -80,8 +103,18 @@ export default async function GrowthClustersPage({
                   <p className="font-medium text-[color:var(--text)]">{cluster.name}</p>
                   <p className="mt-1 text-sm text-[color:var(--text-2)]">
                     Pillar: {cluster.pillar_keyword ?? '—'} · {cluster.intent ?? 'no intent'} ·{' '}
-                    {cluster.keyword_count} keywords · priority {cluster.priority}
+                    {cluster.keyword_count} keywords · priority {cluster.priority} ·{' '}
+                    <span title={cluster.method === 'serp_overlap' ? 'Membership measured by shared top-10 URLs' : 'Membership guessed by the model from keyword strings'}>
+                      {cluster.method === 'serp_overlap' ? 'SERP overlap' : 'model'}
+                    </span>
                   </p>
+                  {cluster.rationale ? <p className="mt-1 text-sm text-[color:var(--text-3)]">{cluster.rationale}</p> : null}
+                  {cluster.evidence?.shared_domains && cluster.evidence.shared_domains.length > 0 ? (
+                    <p className="mt-1 text-xs text-[color:var(--text-3)]">
+                      Who owns this topic: {cluster.evidence.shared_domains.map((d) => `${d.domain} (${d.count}/${cluster.evidence?.member_count ?? '?'})`).join(' · ')}
+                      {cluster.evidence.avg_overlap ? ` · avg ${cluster.evidence.avg_overlap} shared URLs per pair` : ''}
+                    </p>
+                  ) : null}
                 </div>
                 <span
                   className={`rounded-full border px-3 py-1 text-xs font-medium ${STATUS_STYLE[cluster.status] ?? ''}`}

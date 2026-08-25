@@ -330,3 +330,132 @@ export async function getSiteDashboardData(
     linkTargetCount: linkRes.count ?? 0,
   }
 }
+
+// ── v2: research depth, worksheets, competitors, paid ────────────────────────
+
+import type {
+  AdsAccount,
+  AdsCampaign,
+  AdsCreative,
+  AdsKeyword,
+  AdsSearchTerm,
+  SeoCompetitor,
+  SeoPageIssue,
+  SeoSerpState,
+} from '@/lib/types'
+
+/** Latest parsed SERP state per keyword for a site. */
+export async function getLatestSerpStates(
+  siteId: string,
+  client?: SupabaseClient
+): Promise<Map<string, SeoSerpState>> {
+  const supabase = await getSupabase(client)
+  const { data: keywords } = await supabase.from('seo_keywords').select('id').eq('site_id', siteId)
+  const ids = (keywords ?? []).map((k) => k.id as string)
+  const out = new Map<string, SeoSerpState>()
+  for (let i = 0; i < ids.length; i += 500) {
+    const { data } = await supabase
+      .from('seo_serp_state')
+      .select('*')
+      .in('keyword_id', ids.slice(i, i + 500))
+      .order('captured_at', { ascending: false })
+    for (const s of (data ?? []) as SeoSerpState[]) if (!out.has(s.keyword_id)) out.set(s.keyword_id, s)
+  }
+  return out
+}
+
+export interface RefreshSummary {
+  id: string
+  url: string
+  status: 'open' | 'applied' | 'dismissed'
+  generated_at: string
+  estimated_upside_clicks: number | null
+  pr_url: string | null
+}
+
+export async function getRefreshSummaries(siteId: string, client?: SupabaseClient): Promise<RefreshSummary[]> {
+  const supabase = await getSupabase(client)
+  const { data } = await supabase
+    .from('seo_page_refreshes')
+    .select('id, url, status, generated_at, estimated_upside_clicks, pr_url')
+    .eq('site_id', siteId)
+    .order('generated_at', { ascending: false })
+  return (data ?? []) as RefreshSummary[]
+}
+
+export async function getSeoCompetitors(siteId: string, client?: SupabaseClient): Promise<SeoCompetitor[]> {
+  const supabase = await getSupabase(client)
+  const { data } = await supabase.from('seo_competitors').select('*').eq('site_id', siteId).order('created_at')
+  return (data ?? []) as SeoCompetitor[]
+}
+
+export async function getOpenPageIssues(siteId: string, client?: SupabaseClient): Promise<SeoPageIssue[]> {
+  const supabase = await getSupabase(client)
+  const { data } = await supabase
+    .from('seo_page_issues')
+    .select('*')
+    .eq('site_id', siteId)
+    .is('resolved_at', null)
+    .order('severity')
+    .order('last_seen_at', { ascending: false })
+    .limit(500)
+  return (data ?? []) as SeoPageIssue[]
+}
+
+export async function getAdsAccounts(siteId: string, client?: SupabaseClient): Promise<AdsAccount[]> {
+  const supabase = await getSupabase(client)
+  const { data } = await supabase.from('ads_accounts').select('*').eq('site_id', siteId).order('platform')
+  return (data ?? []) as AdsAccount[]
+}
+
+export interface PaidData {
+  accounts: AdsAccount[]
+  campaigns: AdsCampaign[]
+  keywords: AdsKeyword[]
+  searchTerms: AdsSearchTerm[]
+  creatives: AdsCreative[]
+  daily: Array<{ account_id: string; date: string; cost: number; clicks: number; conversions: number; conversion_value: number; impressions: number }>
+}
+
+export async function getPaidData(siteId: string, client?: SupabaseClient): Promise<PaidData> {
+  const supabase = await getSupabase(client)
+  const accounts = await getAdsAccounts(siteId, supabase)
+  const ids = accounts.map((a) => a.id)
+  if (ids.length === 0) return { accounts, campaigns: [], keywords: [], searchTerms: [], creatives: [], daily: [] }
+  const since = new Date(Date.now() - 120 * 86400_000).toISOString().slice(0, 10)
+  const [campaigns, keywords, searchTerms, creatives, daily] = await Promise.all([
+    supabase.from('ads_campaigns').select('*').in('account_id', ids).order('name'),
+    supabase.from('ads_keywords').select('*').in('account_id', ids).order('cost', { ascending: false }).limit(500),
+    supabase.from('ads_search_terms').select('*').in('account_id', ids).order('cost', { ascending: false }).limit(500),
+    supabase.from('ads_creatives').select('*').in('account_id', ids).order('spend', { ascending: false }).limit(200),
+    supabase.from('ads_daily').select('account_id, date, cost, clicks, conversions, conversion_value, impressions').in('account_id', ids).gte('date', since).order('date'),
+  ])
+  return {
+    accounts,
+    campaigns: (campaigns.data ?? []) as AdsCampaign[],
+    keywords: (keywords.data ?? []) as AdsKeyword[],
+    searchTerms: (searchTerms.data ?? []) as AdsSearchTerm[],
+    creatives: (creatives.data ?? []) as AdsCreative[],
+    daily: (daily.data ?? []) as PaidData['daily'],
+  }
+}
+
+/** Month-to-date paid spend across a site's accounts — for the overview tile. */
+export async function getPaidTile(
+  siteId: string,
+  client?: SupabaseClient
+): Promise<{ spend: number; conversions: number; cpa: number | null; hasAccounts: boolean } | null> {
+  const supabase = await getSupabase(client)
+  const accounts = await getAdsAccounts(siteId, supabase)
+  if (accounts.length === 0) return null
+  const now = new Date()
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10)
+  const { data } = await supabase
+    .from('ads_daily')
+    .select('cost, conversions')
+    .in('account_id', accounts.map((a) => a.id))
+    .gte('date', monthStart)
+  const spend = (data ?? []).reduce((s, r) => s + Number(r.cost), 0)
+  const conversions = (data ?? []).reduce((s, r) => s + Number(r.conversions), 0)
+  return { spend: Math.round(spend), conversions: Math.round(conversions), cpa: conversions > 0 ? Math.round(spend / conversions) : null, hasAccounts: true }
+}

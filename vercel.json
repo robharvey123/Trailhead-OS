@@ -43,7 +43,7 @@
     },
     {
       "path": "/api/cron/growth-score",
-      "schedule": "30 5 * * *"
+      "schedule": "45 5 * * *"
     },
     {
       "path": "/api/cron/growth-draft",
@@ -56,12 +56,29 @@
     {
       "path": "/api/cron/growth-ai-visibility",
       "schedule": "30 6 * * 1"
+    },
+    {
+      "path": "/api/cron/ads-sync",
+      "schedule": "15 5 * * *"
+    },
+    {
+      "path": "/api/cron/growth-enrich",
+      "schedule": "30 5 * * *"
+    },
+    {
+      "path": "/api/cron/growth-crawl",
+      "schedule": "0 */6 * * *"
     }
   ],
   "redirects": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "trailheadholdings.uk" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "trailheadholdings.uk"
+        }
+      ],
       "destination": "https://www.trailheadholdings.uk/$1",
       "permanent": true
     }
@@ -70,29 +87,53 @@
     {
       "source": "/((?!api|_next).*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        }
       ]
     },
     {
       "source": "/contact",
       "headers": [
-        { "key": "Cache-Control", "value": "private, no-store" }
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        }
       ]
     },
     {
       "source": "/sitemap.xml",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800" },
-        { "key": "Content-Type", "value": "application/xml; charset=utf-8" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        }
       ]
     },
     {
       "source": "/robots.txt",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400, s-maxage=604800" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, s-maxage=604800"
+        }
       ]
     }
   ]
