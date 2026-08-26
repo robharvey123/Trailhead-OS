@@ -4,6 +4,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { listMeetingNotesForContact } from '@/lib/db/meeting-notes'
 import { listMeetingsForContact } from '@/lib/db/meetings'
+import { listConversationsForContact, withMessages } from '@/lib/db/whatsapp'
 import { listThreads } from '@/lib/db/inbox'
 import { getCompanySettings } from '@/lib/company-settings'
 import { listProjectsByContact, listProjectsByAccount } from '@/lib/db/projects'
@@ -33,7 +34,7 @@ export default async function ContactDetailPage({
     .order('occurred_at', { ascending: false })
     .order('created_at', { ascending: false })
 
-  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult, projects, quotes, meetingNotes, meetings, emailThreads, companySettings, userResult] = await Promise.all([
+  const [contact, workstreams, accounts, linkedTasks, enquiryResult, touchpointsResult, projects, quotes, meetingNotes, meetings, whatsappConversations, emailThreads, companySettings, userResult] = await Promise.all([
     getContactById(id, supabase).catch(() => null),
     getWorkstreams(supabase).catch(() => []),
     getAccounts({}, supabase).catch(() => []),
@@ -44,6 +45,7 @@ export default async function ContactDetailPage({
     getQuotes({ contact_id: id }, supabase).catch(() => []),
     listMeetingNotesForContact(id, supabase).catch(() => []),
     listMeetingsForContact(id, supabase).catch(() => []),
+    listConversationsForContact(id, supabase).then((c) => withMessages(c, { includeDrafts: true, limit: 500 }, supabase)).catch(() => []),
     listThreads({ contactId: id }, supabase).catch(() => []),
     getCompanySettings(supabase).catch(() => null),
     supabase.auth.getUser(),
@@ -82,6 +84,7 @@ export default async function ContactDetailPage({
       initialTouchpoints={touchpointsResult.data ?? []}
       meetingNotes={meetingNotes}
       meetings={meetings}
+      whatsappConversations={whatsappConversations}
       emailThreads={emailThreads}
       selfEmail={userResult.data.user?.email ?? ''}
       signature={companySettings?.email_signature ?? ''}

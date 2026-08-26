@@ -1,0 +1,191 @@
+{
+  "conversation": "QOLA UK development",
+  "is_group": true,
+  "timezone": "Europe/London",
+  "participants": [
+    "Ciprian Boboi",
+    "Lee",
+    "NOAH WENG",
+    "Rob Harvey",
+    "Samuel",
+    "Steve"
+  ],
+  "messages": [
+    {
+      "occurred_at": "2026-07-29T18:55:14",
+      "sender": "QOLA UK development",
+      "body": "Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them.",
+      "type": "system",
+      "direction": "inbound",
+      "wa_message_id": "imp:1e2a5fc73523afdd6129333ff7e7adfc"
+    },
+    {
+      "occurred_at": "2026-07-29T18:55:14",
+      "sender": "Ciprian Boboi",
+      "body": "Ciprian Boboi created group \u201cQOLA UK development\u201d",
+      "type": "system",
+      "direction": "inbound",
+      "wa_message_id": "imp:592562db86956d1512dd3c204f043939"
+    },
+    {
+      "occurred_at": "2026-07-29T18:55:14",
+      "sender": "QOLA UK development",
+      "body": "Ciprian Boboi added you",
+      "type": "system",
+      "direction": "inbound",
+      "wa_message_id": "imp:cd8f70c83a66c3082d622e2026d41ff0"
+    },
+    {
+      "occurred_at": "2026-07-29T18:56:31",
+      "sender": "Ciprian Boboi",
+      "body": "Ciprian Boboi changed this group's icon",
+      "type": "system",
+      "direction": "inbound",
+      "wa_message_id": "imp:02e75ad973c517dcaa11987899e94bcb"
+    },
+    {
+      "occurred_at": "2026-07-30T02:04:45",
+      "sender": "Steve",
+      "body": "NOAH WENG added ~ Steve",
+      "type": "system",
+      "direction": "inbound",
+      "wa_message_id": "imp:6a65e2b01bcc08f602f2ec451e46f7f7"
+    },
+    {
+      "occurred_at": "2026-07-31T03:22:46",
+      "sender": "Samuel",
+      "body": "NOAH WENG added ~ Samuel",
+      "type": "system",
+      "direction": "inbound",
+      "wa_message_id": "imp:a1a1c8c3e9cb15ed7b1f0967926e9266"
+    },
+    {
+      "occurred_at": "2026-08-02T04:35:45",
+      "sender": "Lee",
+      "body": "NOAH WENG added Lee",
+      "type": "system",
+      "direction": "inbound",
+      "wa_message_id": "imp:1f69ed724764a8ecc97e1c465ef69bd5"
+    },
+    {
+      "occurred_at": "2026-08-14T10:44:27",
+      "sender": "Rob Harvey",
+      "body": "Hi all, im now back from my Holidays - may i suggest that we have a call this coming Tuesday so I can present my initial thoughts and plan",
+      "type": "text",
+      "direction": "outbound",
+      "wa_message_id": "imp:989c60513d98ee715f68e86b3e15d785"
+    },
+    {
+      "occurred_at": "2026-08-14T10:45:06",
+      "sender": "NOAH WENG",
+      "body": "No problem",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:02657a7f6728cf029bb707fef1c0a802"
+    },
+    {
+      "occurred_at": "2026-08-14T10:45:39",
+      "sender": "Rob Harvey",
+      "body": "Great 10am (UK) work?",
+      "type": "text",
+      "direction": "outbound",
+      "wa_message_id": "imp:de1fbb9e081856e0a9529402f04539f8"
+    },
+    {
+      "occurred_at": "2026-08-14T10:46:03",
+      "sender": "NOAH WENG",
+      "body": "let me check time in beijing",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:adbb8a396d4434a95fbdd82ca545deb3"
+    },
+    {
+      "occurred_at": "2026-08-14T10:46:21",
+      "sender": "Ciprian Boboi",
+      "body": "Hi all. That works for me but not earlier",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:8eab8e5218feb4049c17e759e2fb0fd7"
+    },
+    {
+      "occurred_at": "2026-08-14T10:47:01",
+      "sender": "NOAH WENG",
+      "body": "Okay for us.",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:306cf0807f6256e970ac9314e06b8890"
+    },
+    {
+      "occurred_at": "2026-08-14T10:47:28",
+      "sender": "Rob Harvey",
+      "body": "Perfect - I will send an invite around shortly - Monday I will send an agenda",
+      "type": "text",
+      "direction": "outbound",
+      "wa_message_id": "imp:609e8917840698aa8b54aea0e826467d"
+    },
+    {
+      "occurred_at": "2026-08-14T10:52:17",
+      "sender": "NOAH WENG",
+      "body": "image omitted",
+      "type": "media",
+      "direction": "inbound",
+      "wa_message_id": "imp:8a31512cb081fbdc2be7da4a44c27ce3"
+    },
+    {
+      "occurred_at": "2026-08-14T10:53:43",
+      "sender": "NOAH WENG",
+      "body": "That's the traffic so fat that we test half months. So we would be very quick to reach 30k visitors within next moths. Hopefully",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:e3318be23f685afceb1eccb1cc7824d2"
+    },
+    {
+      "occurred_at": "2026-08-26T06:55:27",
+      "sender": "Steve",
+      "body": "@Rob Harvey Hi Rob, We are negotiating with TwoWombats about their Platform front page banner for promoting our product. Here is their offer to us. Would you mind kindly help commenting on top, if this plan is good? Their sale out price is listed as 2.49/ can, they are asking the sale in price we would offer in future. This might conflict with offline value chain. Velo, Zyn, Nordic, etc, they also face this issue. What would you recommend as sale in price for 3rd party EC platforms distribution channel. Look forward hearing back from you.",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:f94bb78528a7eb18e396946e3613a7c2"
+    },
+    {
+      "occurred_at": "2026-08-26T06:55:31",
+      "sender": "Steve",
+      "body": "image omitted",
+      "type": "media",
+      "direction": "inbound",
+      "wa_message_id": "imp:57fa17f085af76bcaeac45ab4e05770b"
+    },
+    {
+      "occurred_at": "2026-08-26T08:16:23",
+      "sender": "Rob Harvey",
+      "body": "Hi Steve,\nHad a proper look at the Two Wombats package. Before we get into commercial terms there's a fair bit that isn't defined, and I'd want it pinned down before any money is committed. I've put the questions in a block below so you can lift them straight into a mail to them.\nSome context on why I'm being cautious. I've run activity with Two Wombats before on RUSH and it didn't deliver what we were hoping for. That doesn't mean it can't work, but it does mean I want the measurement side tied down before we spend rather than after. My approach would be to start smaller than the package they've quoted, test the water, and scale on what the numbers actually say.\nTo be upfront on where I think we land: \u00a35,100 is too high for a first commitment with this platform. On our numbers it needs somewhere around 6,000 cans over 90 days just to wash its face, and that's before we've proved anything about repeat rate. Once we've got their answers I'd expect to counter at roughly \u00a32,000 fixed with a performance element on top, weighted away from the banner and towards the insert and email, which are the better trial assets in that package anyway. Worth you knowing that now rather than when the counter goes in.\nOn price, we should be working to around \u00a32 per can as our price into the chain, and I'd hold that line. We need enough margin in the model to fund marketing and retailer activity properly. Going in too low now feels like a quick win but it removes our ability to invest behind the brand later, and that matters more than a cheaper entry price. The 99p checkout price is fine by me, trial is the objective for this phase.\nOne idea worth putting to them: treat November as a control month with no paid activity, so we can see what repeat business the September and October push actually generates. Asking them what good looks like in November forces a number out of them up front, which is useful for both sides.\nI'm happy to come into the conversation with Two Wombats directly if that's easier. Either way, please copy me in on any reply from them.\nQuestions below.\nRob\nBanner and placement\n- Where exactly does the banner sit? The proposal lists product page banner and search page. Product page isn't what we're after, by that point the customer is already on the product. We're interested in homepage and category level. Can you confirm the exact positions available, ideally with screenshots or examples from previous campaigns?\n- Is the placement exclusive for the period or rotating? If rotating, what share of voice do we get?\n- Above or below the fold, and does it run on both desktop and mobile?\n- Will any other pouch brand be running in the same slot during our window?\nSamples and insert\n- How many samples do you expect to give out across the campaign?\n- Does the insert go out with every order? If so, roughly how many orders are we talking about over the two months?\n- Who designs and prints the insert, you or us? What's the spec and what's the artwork deadline?\n- who funds the sample stock? \n- \u2060Do you have enough stock for the perceived demand of the campaign\nCheckout price\n- The 99p checkout price works for us. Trial is the objective for this phase so no issue there.\nData and measurement\n- What data do we receive, and how often? We'd want units sold by SKU, new versus returning customers, traffic to the Qola pages, conversion rate, and redemptions against any code.\n- Can you report repeat purchase on Qola trialists specifically, at 60 and 90 days?\n- We're going to treat November as a control month. No paid activity, so we can see what repeat business the September and October push actually generates. What does good look like to you in November? A number would be genuinely useful, and if you have comparable data from other brand launches on the platform that would help us both set a realistic target rather than guessing at one.\nSolo email\n- What would you charge for a solo email campaign to your list? And what are the numbers behind it: total subscribers, active or engaged subscribers, typical open and click rates, and typical revenue per send. Would we be the only brand in that email?\nTiming\n- What's the actual deadline to commit for a September start, and is a later start date available if we need it? We'd rather get the setup right than rush it to hit a month boundary.",
+      "type": "text",
+      "direction": "outbound",
+      "wa_message_id": "imp:ac7193e09b8762883e237798d6908b82"
+    },
+    {
+      "occurred_at": "2026-08-26T08:35:33",
+      "sender": "Steve",
+      "body": "Yes, Rob, I am 100% agree with you. The idea in my mind is, I want to do  a trade off with them. They are main goal is pursuing higher margin in the long run, what we can do is offer them more free product as trade off towards marketing budget. For example, we don't necessary need to give 2550 pound marketing budget to them, we can offer them a deal like 1000 pound marketing fee and 1000 more free can. In this way, they have higher margin if they really push the sale. For us the total cost can also be lower. This would be beneficial for both side. However, we need to be clearly define the sale in price with them, and lock on the long term cooperation with them. What's your opinion on this? What sale in price would you recommend?",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:1a854856a0cf0e9df4389a800f2869ac"
+    },
+    {
+      "occurred_at": "2026-08-26T08:46:56",
+      "sender": "Rob Harvey",
+      "body": "Steve, I like this and I think you've landed on the right mechanism. Free product is the cheapest currency we have. A can costs us very little and it's worth considerably more to them, so we're handing over something they value more than the cash while it costs us less. That's a proper trade rather than a haggle.\nScaling your example across the campaign, I'd go in at \u00a32,000 cash plus 2,000 free cans against their \u00a35,100 ask. Worth framing the free stock as funding the trial programme specifically, since that's spend we'd have made anyway. We're not being more generous, we're routing the same money somewhere it does more work.\nOn sale in price, I'd recommend \u00a31.50 per can ex VAT. Our standard should be \u00a32.00, but at \u00a32.00 they can't reach the deeper end of the ladder at all and they won't push it. At \u00a31.50 they can trade the full ladder profitably. That's the argument to make to them. We're not just giving them a better number, we're giving them a ladder they can actually work.\nI wouldn't present it as a one-off favour though. The moment \u00a31.50 exists it becomes our price for every UK platform, and there are bigger ones who will ask. So publish it as a volume ladder: \u00a32.00 standard, \u00a31.75 at a middle volume tier, \u00a31.50 at the top. Then tell Two Wombats that in the spirit of the collaboration we'll open them at \u00a31.50 from day one for the first six months regardless of volume, settling onto the tier they've earned after that. Same gesture, but we have a way back if it doesn't perform and a straight answer for the next platform.\nTwo things to watch. Cap the free cans at a fixed total for the launch, released in tranches and tied to the trial and insert programme, not open ended. And put them through as a free case allowance on trade terms rather than calling them free samples.\nThen make the \u00a31.50 buy something. Right now we'd be giving it for goodwill. I'd tie it to a volume commitment, a capped marketing fee so we're not back at \u00a35,100 in six months, placement included rather than quoted separately, the sales and repeat data, and an agreed floor they won't discount below without talking to us.\nCompletely agree on the long term framing, that's how I'd position all of it. We're not buying a campaign, we're setting up a collaboration and pricing it that way from day one because we expect it to run for years. That framing is also what justifies the commitments above. A long term price should come with a long term commitment on both sides.\nOnce we have their answers to the questions, I'd put the whole thing to them as one package rather than negotiating piece by piece.\nRob",
+      "type": "text",
+      "direction": "outbound",
+      "wa_message_id": "imp:ca4cfce1858c1c4ad709e93cb4bc871c"
+    },
+    {
+      "occurred_at": "2026-08-26T08:56:34",
+      "sender": "Steve",
+      "body": "Rob, you speak directly to my heart! I will ask these questions to them and feedback to you. We will standardize it as a long term package for future online channel negotiation. \ud83e\udef6",
+      "type": "text",
+      "direction": "inbound",
+      "wa_message_id": "imp:455d94c6bdb05739bfc5c3f98de71de2"
+    }
+  ]
+}

@@ -192,6 +192,31 @@ POST /api/cowork/touchpoints
 { "subject": "required", "type": "call|email|message|meeting|note (default note — unknown values 400, no silent fallback)", "engagement": "code or uuid — optional", "account_id" or "account_name", "contact_id" or "contact_name", "body": "optional", "occurred_at": "ISO datetime (default now)" }
 At least one of engagement / account / contact is required. Log an interaction whenever Rob mentions a call/email/meeting with a client. No DELETE.
 
+### WhatsApp conversations (imports + live capture)
+
+Conversation-scoped: a chat (1:1 or group) has participants, each message has a sender. Participants may be unmapped (no CRM contact yet) — that is normal, never auto-create contacts. Everything is `client_visible: false` and there is no way to change that from this endpoint.
+
+```
+GET /api/cowork/whatsapp?conversation_id=&contact_id=&account_id=&engagement_id=&since=&limit=50&include_drafts=false
+  → { conversations: [{id,title,is_group,participants:[names]}], messages: [...newest first, with sender + conversation] }
+  include_drafts defaults false: the briefing and reports never see an unsent draft unless they ask.
+
+POST /api/cowork/whatsapp                 one object or an array (max 100 — log an exchange in one call)
+  { conversation_id? | conversation_title?,   // title is exact match; ambiguous → 409 with candidates, nothing written
+    sender?,                                  // participant display name; omit for your own outbound
+    sender_contact_id?, direction?,           // direction only disambiguates 1:1 inbound
+    body, occurred_at? (ISO, default now), occurred_at_precision? ('exact'|'minute'|'day', default 'minute'),
+    is_draft? (default false), type?, media_filename? }
+  Unknown sender in a known conversation → 409 (someone new in the group is worth surfacing, not guessing).
+  Identical message re-posted → 200 with the existing row and deduped: true. Re-logging on a later turn is normal.
+  engagement_id / account_id are inherited from the conversation — never pass them.
+
+PATCH /api/cowork/whatsapp/{id}            body, is_draft, client_visible, occurred_at, occurred_at_precision
+  {"is_draft": false} promotes a drafted reply to sent once Rob confirms. A body change recomputes the id.
+```
+
+Rules: a drafted reply is `is_draft: true` until Rob says it went. Log incoming first, then the draft, then PATCH the draft to the confirmed text. A later phone export is ground truth and replaces live-captured rows in its window (drafts included), so a draft that was never sent simply disappears.
+
 ### Engagement documents
 
 GET /api/cowork/engagements/[id]/documents — list.

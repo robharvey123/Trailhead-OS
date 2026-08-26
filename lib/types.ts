@@ -1903,3 +1903,78 @@ export interface SeoLinkTarget {
   reply_processed_at: string | null
   created_at: string
 }
+
+// ── WhatsApp conversations ────────────────────────────
+
+export type WhatsAppMessageSource = 'business_api' | 'history_backfill' | 'manual_import' | 'personal_export' | 'cowork_capture'
+export type WhatsAppMessageType = 'text' | 'media' | 'system'
+export type WhatsAppPrecision = 'exact' | 'minute' | 'day'
+export type WhatsAppDirection = 'inbound' | 'outbound'
+
+export interface WhatsAppConversation {
+  id: string
+  wa_chat_id: string | null
+  title: string
+  is_group: boolean
+  account_id: string | null
+  engagement_id: string | null
+  is_personal: boolean
+  client_visible: boolean
+  last_message_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface WhatsAppParticipant {
+  id: string
+  conversation_id: string
+  display_name: string
+  normalised_name: string
+  contact_id: string | null
+  is_self: boolean
+  joined_at: string | null
+  left_at: string | null
+  created_at: string
+}
+
+export interface WhatsAppParticipantWithContact extends WhatsAppParticipant {
+  contact: { id: string; name: string; account_id: string | null } | null
+}
+
+export interface WhatsAppMessage {
+  id: string
+  wa_message_id: string
+  conversation_id: string
+  sender_participant_id: string | null
+  direction: WhatsAppDirection
+  wa_id: string | null
+  display_name: string | null
+  contact_id: string | null
+  account_id: string | null
+  engagement_id: string | null
+  type: WhatsAppMessageType
+  body: string | null
+  media_filename: string | null
+  source: WhatsAppMessageSource
+  is_personal: boolean
+  client_visible: boolean
+  is_draft: boolean
+  occurred_at: string
+  occurred_at_precision: WhatsAppPrecision
+  revoked_at: string | null
+  import_batch_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface WhatsAppConversationWithRelations extends WhatsAppConversation {
+  participants: WhatsAppParticipantWithContact[]
+  account: { id: string; name: string } | null
+  engagement: { id: string; name: string; code: string | null } | null
+  message_count: number
+}
+
+export interface WhatsAppConversationWithMessages extends WhatsAppConversationWithRelations {
+  /** Newest first, capped by the caller. */
+  messages: WhatsAppMessage[]
+}

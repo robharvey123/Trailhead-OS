@@ -7,6 +7,7 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { listDeals } from '@/lib/db/deals'
 import { listMeetingNotesForAccount } from '@/lib/db/meeting-notes'
 import { listMeetingsForAccount } from '@/lib/db/meetings'
+import { listConversationsForAccount, withMessages } from '@/lib/db/whatsapp'
 import { listTimeEntries } from '@/lib/db/timesheet'
 import { tagsForAccount } from '@/lib/db/tags'
 import { listThreads } from '@/lib/db/inbox'
@@ -22,7 +23,7 @@ export default async function AccountDetailPage({
   const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const [account, workstreams, projects, activities, deals, timeEntries, tags, emailThreads, meetingNotes, meetings] =
+  const [account, workstreams, projects, activities, deals, timeEntries, tags, emailThreads, meetingNotes, meetings, whatsappConversations] =
     await Promise.all([
       getAccountById(id, supabase).catch(() => null),
       getWorkstreams(supabase).catch(() => []),
@@ -34,6 +35,7 @@ export default async function AccountDetailPage({
       listThreads({ accountId: id }, supabase).catch(() => []),
       listMeetingNotesForAccount(id, supabase).catch(() => []),
       listMeetingsForAccount(id, supabase).catch(() => []),
+      listConversationsForAccount(id, supabase).then((c) => withMessages(c, { includeDrafts: true, limit: 500 }, supabase)).catch(() => []),
     ])
   const settings = await getCompanySettings(supabase).catch(() => null)
 
@@ -54,6 +56,7 @@ export default async function AccountDetailPage({
         emailThreads={emailThreads}
         meetingNotes={meetingNotes}
         meetings={meetings}
+        whatsappConversations={whatsappConversations}
         selfEmail={user?.email ?? ''}
         signature={settings?.email_signature ?? ''}
       />

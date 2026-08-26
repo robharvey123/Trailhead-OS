@@ -15,7 +15,8 @@
     "seed": "node scripts/seed.js",
     "crm:import": "tsx scripts/import-crm-master.ts",
     "seed:engineer-os": "tsx scripts/seed-engineer-os-campaign.ts",
-    "crm:promote-placeholders": "tsx scripts/promote-placeholder-contacts.ts"
+    "crm:promote-placeholders": "tsx scripts/promote-placeholder-contacts.ts",
+    "test:whatsapp-parser": "tsx scripts/whatsapp-parser-guard.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
@@ -42,6 +43,7 @@
     "@tiptap/starter-kit": "^2.27.2",
     "@types/sanitize-html": "^2.16.1",
     "exceljs": "^4.4.0",
+    "fflate": "^0.8.3",
     "googleapis": "^171.4.0",
     "html-to-text": "^10.0.0",
     "ical-generator": "^10.2.0",

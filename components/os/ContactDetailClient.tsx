@@ -10,6 +10,7 @@ import StatusBadge from './StatusBadge'
 import TouchpointTimeline from './TouchpointTimeline'
 import MeetingNotesTimeline from './MeetingNotesTimeline'
 import MeetingsTimeline from './MeetingsTimeline'
+import WhatsAppTimeline from './WhatsAppTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
 import type { MeetingNoteWithRelations } from '@/lib/db/meeting-notes'
 import type { MeetingWithRelations } from '@/lib/db/meetings'
@@ -24,6 +25,7 @@ import type {
   QuoteListItem,
   TaskWithWorkstream,
   Touchpoint,
+  WhatsAppConversationWithMessages,
   Workstream,
 } from '@/lib/types'
 
@@ -49,6 +51,7 @@ export default function ContactDetailClient({
   initialTouchpoints,
   meetingNotes,
   meetings = [],
+  whatsappConversations = [],
   emailThreads = [],
   selfEmail = '',
   signature = '',
@@ -65,6 +68,7 @@ export default function ContactDetailClient({
   initialTouchpoints: Touchpoint[]
   meetingNotes: MeetingNoteWithRelations[]
   meetings?: MeetingWithRelations[]
+  whatsappConversations?: WhatsAppConversationWithMessages[]
   emailThreads?: EmailThread[]
   selfEmail?: string
   signature?: string
@@ -677,6 +681,7 @@ export default function ContactDetailClient({
 
       <MeetingNotesTimeline notes={meetingNotes} />
       <MeetingsTimeline meetings={meetings} />
+      <WhatsAppTimeline conversations={whatsappConversations} contactId={contact.id} accountId={contact.account_id} />
 
       <div className="os-card rounded-[2rem] p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">

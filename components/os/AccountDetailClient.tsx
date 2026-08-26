@@ -7,6 +7,7 @@ import AccountForm from './AccountForm'
 import ActivityTimeline from './ActivityTimeline'
 import MeetingNotesTimeline from './MeetingNotesTimeline'
 import MeetingsTimeline from './MeetingsTimeline'
+import WhatsAppTimeline from './WhatsAppTimeline'
 import SyncMailButton from './SyncMailButton'
 import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
@@ -25,6 +26,7 @@ import type {
   ProjectListItem,
   Tag,
   TimeEntry,
+  WhatsAppConversationWithMessages,
   Workstream,
 } from '@/lib/types'
 import type { AccountDetail } from '@/lib/db/accounts'
@@ -69,6 +71,7 @@ export default function AccountDetailClient({
   emailThreads = [],
   meetingNotes = [],
   meetings = [],
+  whatsappConversations = [],
   selfEmail = '',
   signature = '',
 }: {
@@ -82,6 +85,7 @@ export default function AccountDetailClient({
   emailThreads?: EmailThread[]
   meetingNotes?: MeetingNoteWithRelations[]
   meetings?: MeetingWithRelations[]
+  whatsappConversations?: WhatsAppConversationWithMessages[]
   selfEmail?: string
   signature?: string
 }) {
@@ -416,6 +420,7 @@ export default function AccountDetailClient({
             />
             <MeetingNotesTimeline notes={meetingNotes} />
             <MeetingsTimeline meetings={meetings} />
+            <WhatsAppTimeline conversations={whatsappConversations} accountId={account.id} />
             <ActivityTimeline initialActivities={initialActivities} accountId={account.id} />
           </div>
         ) : null}

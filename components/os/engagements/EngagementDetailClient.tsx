@@ -12,6 +12,8 @@ import type { EngagementTouchpoint } from '@/lib/db/touchpoints'
 import ConfirmDialog from '@/components/os/ConfirmDialog'
 import EngagementForm from '@/components/os/engagements/EngagementForm'
 import TouchpointTimeline from '@/components/os/TouchpointTimeline'
+import WhatsAppTimeline from '@/components/os/WhatsAppTimeline'
+import type { WhatsAppConversationWithMessages } from '@/lib/types'
 import {
   APPROVAL_TYPE_LABELS,
   ENGAGEMENT_STATUSES,
@@ -73,6 +75,7 @@ export default function EngagementDetailClient({
   contributors: initialContributors = [],
   people = [],
   touchpoints = [],
+  whatsappConversations = [],
 }: {
   detail: EngagementDetail
   timeEntries: TimeEntry[]
@@ -84,6 +87,7 @@ export default function EngagementDetailClient({
   contributors?: EngagementContributorWithPerson[]
   people?: Person[]
   touchpoints?: EngagementTouchpoint[]
+  whatsappConversations?: WhatsAppConversationWithMessages[]
 }) {
   const router = useRouter()
   const e = detail.engagement
@@ -608,12 +612,15 @@ export default function EngagementDetailClient({
 
         {/* PROJECTS */}
         {tab === 'Timeline' ? (
-          <TouchpointTimeline
-            initialTouchpoints={touchpoints}
-            engagementId={e.id}
-            title="Interactions"
-            description="Calls, emails and meetings on this engagement."
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <TouchpointTimeline
+              initialTouchpoints={touchpoints}
+              engagementId={e.id}
+              title="Interactions"
+              description="Calls, emails and meetings on this engagement."
+            />
+            <WhatsAppTimeline conversations={whatsappConversations} engagementId={e.id} accountId={e.end_client_account_id} />
+          </div>
         ) : null}
 
         {tab === 'Projects' ? (

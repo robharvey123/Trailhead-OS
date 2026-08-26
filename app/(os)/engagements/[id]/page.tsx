@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getEngagement, engagementLinkCounts, engagementAccountIds } from '@/lib/db/engagements'
 import { getEngagementTouchpoints } from '@/lib/db/touchpoints'
+import { listConversationsForEngagement, withMessages } from '@/lib/db/whatsapp'
 import { listTimeEntries } from '@/lib/db/timesheet'
 import { listApprovals } from '@/lib/db/approvals'
 import { listContributors } from '@/lib/db/contributors'
@@ -21,7 +22,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
   const detail = await getEngagement(id, supabase).catch(() => null)
   if (!detail) notFound()
 
-  const [timeEntries, projectsRes, accounts, docsRes, linkCounts, contributors, people, touchpoints] = await Promise.all([
+  const [timeEntries, projectsRes, accounts, docsRes, linkCounts, contributors, people, touchpoints, whatsappConversations] = await Promise.all([
     listTimeEntries({ engagement_id: id, limit: 300 }, supabase).catch(() => []),
     supabase.from('projects').select('id, name, status').eq('engagement_id', id),
     getAccounts({}, supabase).catch(() => []),
@@ -30,6 +31,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
     listContributors(id, supabase).catch(() => []),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
     getEngagementTouchpoints(id, engagementAccountIds(detail), supabase).catch(() => []),
+    listConversationsForEngagement(id, supabase).then((c) => withMessages(c, { includeDrafts: true, limit: 500 }, supabase)).catch(() => []),
   ])
   const approvals = await listApprovals(id, supabase).catch(() => [])
 
@@ -46,6 +48,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
         contributors={contributors}
         people={people}
         touchpoints={touchpoints}
+        whatsappConversations={whatsappConversations}
       />
     </div>
   )
