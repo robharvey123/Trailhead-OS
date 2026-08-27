@@ -1962,6 +1962,8 @@ export interface WhatsAppMessage {
   occurred_at: string
   occurred_at_precision: WhatsAppPrecision
   revoked_at: string | null
+  /** Set when the stored text was changed after sending (export edit marker, or a Cowork body amend). */
+  edited_at: string | null
   import_batch_id: string | null
   created_at: string
   updated_at: string

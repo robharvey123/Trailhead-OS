@@ -65,6 +65,8 @@ const ios = [
   `[26/08/2026, 08:21:00] Rob Harvey: ok`,
   `[26/08/2026, 08:21:00] Rob Harvey: ok`,
   `[26/08/2026, 09:00:00] Lee: Lee left`,
+  `[26/08/2026, 09:05:00] NOAH WENG: Traffic numbers attached: 30k ${LRM}<This message was edited>`,
+  `${LRM}[26/08/2026, 09:06:00] NOAH WENG: ${LRM}<attached: 00000030-PHOTO.jpg> <This message was edited>`,
 ].join('\r\n')
 const r = parseWhatsAppExport(ios, 'MDY') // caller says MDY; file must override to DMY
 ok('detected DMY from 29/07', r.detectedDateOrder === 'DMY')
@@ -88,6 +90,12 @@ ok('two identical same-second messages both kept', r.messages.filter((m) => m.bo
 ok('CRLF handled, no stray \\r', !r.messages.some((m) => m.body.includes('\r')))
 ok('timestamps local, correct day', r.messages[0].occurredAtLocal === '2026-08-14T10:44:27', r.messages[0].occurredAtLocal)
 ok('skippedLines is 0', r.skippedLines === 0, String(r.skippedLines))
+const editedText = r.messages.find((m) => m.body.startsWith('Traffic numbers'))
+ok('iOS edit marker stripped, edited flag set', editedText?.edited === true && editedText.body === 'Traffic numbers attached: 30k', editedText?.body)
+ok('marker never survives in any body', !r.messages.some((m) => /this message was edited/i.test(m.body)))
+const editedMedia = r.messages.find((m) => m.mediaFilename === '00000030-PHOTO.jpg')
+ok('edited media caption still classifies as media', editedMedia?.type === 'media' && editedMedia.edited === true)
+ok('unedited messages have edited=false', r.messages.filter((m) => m.edited).length === 2)
 
 // ── Android without seconds, 12-hour, attachment, 1:1 ───────────────────────
 console.log('Android 1:1 export')
@@ -98,6 +106,7 @@ const android = [
   `11/08/2026, 2:33 pm - Rob Harvey: IMG-20260811-WA0001.jpg (file attached)`,
   `11/08/2026, 2:34 pm - Perry McCarthy: <Media omitted>`,
   `11/08/2026, 12:10 am - Perry McCarthy: Late one`,
+  `11/08/2026, 12:11 am - Perry McCarthy: Late one, corrected <This message was edited>`,
 ].join('\n')
 const a = parseWhatsAppExport(android, 'DMY')
 ok('ambiguous date → caller order used', a.detectedDateOrder === 'ambiguous' && a.messages[0].occurredAtLocal.startsWith('2026-08-11'))
@@ -108,6 +117,7 @@ ok('12:10 am → 00:10', a.messages.some((m) => m.occurredAtLocal === '2026-08-1
 ok('(file attached) → media filename', a.messages.some((m) => m.type === 'media' && m.mediaFilename === 'IMG-20260811-WA0001.jpg'))
 ok('<Media omitted> → media', a.messages.some((m) => m.type === 'media' && m.body === '<Media omitted>'))
 ok('encryption notice dropped', !a.messages.some((m) => /encrypted/.test(m.body)))
+ok('Android edit marker stripped', a.messages.some((m) => m.edited && m.body === 'Late one, corrected'))
 
 // ── Mixed date order → throws ────────────────────────────────────────────────
 console.log('date order')

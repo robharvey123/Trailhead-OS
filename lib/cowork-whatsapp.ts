@@ -215,6 +215,9 @@ export async function patchMessage(id: string, raw: unknown): Promise<{ message:
   }
   if (Object.keys(patch).length === 0) throw new CoworkApiError('No recognised fields: body, is_draft, client_visible, occurred_at, occurred_at_precision', 400)
 
+  // A body change on a sent row is an edit. Promoting a draft to sent is not, even with new text.
+  if (patch.body !== undefined && patch.body !== prev.body && !prev.is_draft) patch.edited_at = new Date().toISOString()
+
   if ((patch.body !== undefined && patch.body !== prev.body) || (patch.occurred_at !== undefined && patch.occurred_at !== prev.occurred_at)) {
     if (prev.source === 'cowork_capture') {
       patch.wa_message_id = captureMessageId(prev.conversation_id, (patch.occurred_at as string) ?? prev.occurred_at, prev.display_name ?? '', (patch.body as string) ?? prev.body ?? '')

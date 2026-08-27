@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import EntityCombobox from './EntityCombobox'
@@ -14,6 +14,8 @@ import type { WhatsAppConversationWithMessages, WhatsAppMessage, WhatsAppPartici
 // your own messages right-aligned and accented.
 
 const COLLAPSED_LIMIT = 50
+// Bubbles longer than this render clamped with a per-bubble "Show more". Purely visual.
+const CLAMP_CHARS = 600
 
 // Stable per-participant colours (text / dim background).
 const PALETTE = [
@@ -79,8 +81,8 @@ export default function WhatsAppTimeline({ conversations, contactId, accountId, 
         </div>
       ) : (
         <div className="mt-4 space-y-4">
-          {conversations.map((c) => (
-            <ConversationPanel key={c.id} conversation={c} onChanged={() => router.refresh()} />
+          {conversations.map((c, i) => (
+            <ConversationPanel key={c.id} conversation={c} defaultExpanded={i === 0} onChanged={() => router.refresh()} />
           ))}
         </div>
       )}
@@ -98,8 +100,14 @@ export default function WhatsAppTimeline({ conversations, contactId, accountId, 
   )
 }
 
-function ConversationPanel({ conversation, onChanged }: { conversation: WhatsAppConversationWithMessages; onChanged: () => void }) {
+function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conversation: WhatsAppConversationWithMessages; defaultExpanded: boolean; onChanged: () => void }) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
   const [showAll, setShowAll] = useState(false)
+  // Scroll region. Opens at the newest message; "Load earlier" keeps the reader
+  // in place by restoring the distance from the bottom after the slice grows.
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const restoreFromBottom = useRef<number | null>(null)
+  const didInitialScroll = useRef(false)
   const [showParticipants, setShowParticipants] = useState(false)
   const [participants, setParticipants] = useState(conversation.participants)
   const [messages, setMessages] = useState(conversation.messages)
@@ -123,6 +131,28 @@ function ConversationPanel({ conversation, onChanged }: { conversation: WhatsApp
     }
     return out
   }, [visible])
+
+  // Runs after the visible slice is rendered — never against the raw array.
+  useLayoutEffect(() => {
+    const el = scrollRef.current
+    if (!el) {
+      didInitialScroll.current = false
+      return
+    }
+    if (restoreFromBottom.current !== null) {
+      el.scrollTop = el.scrollHeight - restoreFromBottom.current
+      restoreFromBottom.current = null
+    } else if (!didInitialScroll.current) {
+      el.scrollTop = el.scrollHeight
+      didInitialScroll.current = true
+    }
+  }, [visible, expanded])
+
+  function loadEarlier() {
+    const el = scrollRef.current
+    restoreFromBottom.current = el ? el.scrollHeight - el.scrollTop : null
+    setShowAll(true)
+  }
 
   async function linkParticipant(participantId: string, contactId: string | null) {
     setError('')
@@ -168,28 +198,32 @@ function ConversationPanel({ conversation, onChanged }: { conversation: WhatsApp
 
   return (
     <div className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)]">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
-        <div className="min-w-0">
+      <div className={`flex flex-wrap items-start justify-between gap-3 px-4 py-3 ${expanded ? 'border-b border-[var(--border)]' : ''}`}>
+        <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
           <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-[color:var(--text-3)]">{expanded ? '▾' : '▸'}</span>
             <p className="truncate text-sm font-semibold text-[color:var(--text)]">{conversation.title}</p>
             <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">
               {conversation.is_group ? `Group · ${participants.length}` : '1:1'}
             </span>
             {conversation.is_personal ? <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">Personal number</span> : null}
             <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">{conversation.message_count} messages</span>
+            {!expanded && conversation.last_message_at ? <span className="text-[11px] text-[color:var(--text-3)]">last {fmtDate(conversation.last_message_at)}</span> : null}
           </div>
           <p className="mt-1 text-xs text-[color:var(--text-2)]">
             {conversation.account ? <Link className="underline-offset-2 hover:underline" href={`/crm/accounts/${conversation.account.id}`}>{conversation.account.name}</Link> : 'No account'}
             {' · '}
             {conversation.engagement ? <Link className="underline-offset-2 hover:underline" href={`/engagements/${conversation.engagement.id}`}>{conversation.engagement.code ?? conversation.engagement.name}</Link> : 'No engagement'}
           </p>
-        </div>
-        <button type="button" className="btn btn-sm" onClick={() => setShowParticipants((v) => !v)}>
-          {showParticipants ? 'Hide participants' : 'Participants'}
         </button>
+        {expanded ? (
+          <button type="button" className="btn btn-sm" onClick={() => setShowParticipants((v) => !v)}>
+            {showParticipants ? 'Hide participants' : 'Participants'}
+          </button>
+        ) : null}
       </div>
 
-      {showParticipants ? (
+      {expanded && showParticipants ? (
         <div className="border-b border-[var(--border)] px-4 py-3">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]">Who was in the room</p>
           <ul className="space-y-2">
@@ -235,16 +269,17 @@ function ConversationPanel({ conversation, onChanged }: { conversation: WhatsApp
         </div>
       ) : null}
 
-      <div className="px-4 py-3">
+      {expanded ? (
+      <div ref={scrollRef} className="h-[min(60vh,520px)] overflow-y-auto overscroll-contain px-4 py-3">
         {hidden > 0 && !showAll ? (
-          <button type="button" className="mb-3 w-full rounded-2xl border border-dashed border-[var(--border)] py-2 text-xs text-[color:var(--text-2)] hover:border-[var(--accent)]" onClick={() => setShowAll(true)}>
-            Show all {messages.length} messages ({hidden} earlier hidden)
+          <button type="button" className="mb-3 w-full rounded-2xl border border-dashed border-[var(--border)] py-2 text-xs text-[color:var(--text-2)] hover:border-[var(--accent)]" onClick={loadEarlier}>
+            Load {hidden} earlier message{hidden === 1 ? '' : 's'}
           </button>
         ) : null}
 
         {groups.map((g) => (
           <div key={g.day} className="mb-3">
-            <div className="my-2 text-center text-[11px] uppercase tracking-wide text-[color:var(--text-3)]">{g.day}</div>
+            <div className="sticky top-0 z-10 -mx-4 bg-[var(--card-alt)] px-4 py-1.5 text-center text-[11px] uppercase tracking-wide text-[color:var(--text-3)]">{g.day}</div>
             <div className="space-y-1.5">
               {g.items.map((m) => (
                 <Bubble
@@ -267,6 +302,7 @@ function ConversationPanel({ conversation, onChanged }: { conversation: WhatsApp
         {messages.length === 0 ? <p className="text-sm text-[color:var(--text-2)]">No messages yet.</p> : null}
         {error ? <p className="mt-2 text-xs text-[color:var(--red-strong)]">{error}</p> : null}
       </div>
+      ) : null}
     </div>
   )
 }
@@ -289,6 +325,9 @@ function Bubble({
   const self = participant?.is_self ?? m.direction === 'outbound'
   const [fg, bg] = participant ? colourFor(participant.id) : ['var(--text-2)', 'transparent']
   const name = participant?.display_name ?? m.display_name ?? 'Unknown'
+  // Clamp on render only; nothing about display touches what is stored.
+  const isLong = (m.body?.length ?? 0) > CLAMP_CHARS
+  const [showMore, setShowMore] = useState(false)
 
   if (m.type === 'system') {
     return <p className="text-center text-[11px] italic text-[color:var(--text-3)]">{m.body}</p>
@@ -327,7 +366,14 @@ function Bubble({
             <span className="text-[11px] text-[color:var(--text-3)]"> — not imported</span>
           </p>
         ) : (
-          <p className="whitespace-pre-wrap break-words text-[color:var(--text)]">{m.body}</p>
+          <>
+            <p className={`whitespace-pre-wrap break-words text-[color:var(--text)] ${isLong && !showMore ? 'line-clamp-[12]' : ''}`}>{m.body}</p>
+            {isLong ? (
+              <button type="button" className="mt-1 text-[11px] text-[color:var(--accent-strong)] hover:underline" onClick={() => setShowMore((v) => !v)}>
+                {showMore ? 'Show less' : 'Show more'}
+              </button>
+            ) : null}
+          </>
         )}
 
         <div className="mt-1 flex items-center justify-end gap-2 text-[10px] text-[color:var(--text-3)]">
@@ -345,6 +391,7 @@ function Bubble({
             </>
           ) : null}
           {m.source === 'cowork_capture' && !m.is_draft ? <span title="Captured live by Cowork; a later export supersedes it">live</span> : null}
+          {m.edited_at ? <span className="rounded-full border border-[var(--border)] px-1.5 py-px text-[color:var(--text-3)]">edited</span> : null}
           <span>{fmtTime(m)}</span>
         </div>
       </div>

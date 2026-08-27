@@ -40,6 +40,8 @@ export interface ImportResult {
   conversation_id: string
   imported: number
   skipped: number
+  /** Existing rows whose text was replaced by an edited version from the export. */
+  edited: number
   superseded: number
   batch_id: string
 }
@@ -343,11 +345,12 @@ export async function commitImport(opts: ImportOptions, supabase: SupabaseClient
       occurred_at: occurredAt,
       occurred_at_precision: 'exact',
       revoked_at: m.deleted ? occurredAt : null,
+      edited_at: m.edited ? occurredAt : null,
       import_batch_id: batchId,
     }
   })
 
-  if (rows.length === 0) return { conversation_id: convId, imported: 0, skipped: 0, superseded: 0, batch_id: batchId }
+  if (rows.length === 0) return { conversation_id: convId, imported: 0, skipped: 0, edited: 0, superseded: 0, batch_id: batchId }
 
   const first = rows.reduce((a, r) => (r.occurred_at < a ? r.occurred_at : a), rows[0].occurred_at)
   const last = rows.reduce((a, r) => (r.occurred_at > a ? r.occurred_at : a), rows[0].occurred_at)
@@ -373,8 +376,51 @@ export async function commitImport(opts: ImportOptions, supabase: SupabaseClient
   if (exErr) throw new Error(exErr.message)
   const have = new Set((existingIds ?? []).map((r) => r.wa_message_id as string))
   const fresh = rows.filter((r) => !have.has(r.wa_message_id))
-  for (let i = 0; i < fresh.length; i += 500) {
-    const { error } = await supabase.from('whatsapp_messages').insert(fresh.slice(i, i + 500))
+
+  // 5b. Reconcile edits. An edited message hashes differently (the body changed),
+  // so it arrives here looking new. If exactly one existing row shares its
+  // timestamp and sender, and nothing else in this batch claims that row, it is
+  // an edit: update in place and re-key it. Any ambiguity → insert; a duplicate
+  // is recoverable, overwriting the wrong record is not.
+  let edited = 0
+  const toInsert: typeof fresh = []
+  if (fresh.length) {
+    const keyOf = (r: { occurred_at: string; sender_participant_id: string | null }) => `${r.occurred_at}|${r.sender_participant_id ?? ''}`
+    const incomingByKey = new Map<string, number>()
+    for (const r of fresh) incomingByKey.set(keyOf(r), (incomingByKey.get(keyOf(r)) ?? 0) + 1)
+    const existingByKey = new Map<string, Array<{ id: string; occurred_at: string; sender_participant_id: string | null }>>()
+    const times = [...new Set(fresh.map((r) => r.occurred_at))]
+    for (let i = 0; i < times.length; i += 200) {
+      const { data, error } = await supabase
+        .from('whatsapp_messages')
+        .select('id, occurred_at, sender_participant_id')
+        .eq('conversation_id', convId)
+        .in('occurred_at', times.slice(i, i + 200))
+      if (error) throw new Error(error.message)
+      for (const ex of (data ?? []) as Array<{ id: string; occurred_at: string; sender_participant_id: string | null }>) {
+        const k = keyOf({ occurred_at: new Date(ex.occurred_at).toISOString(), sender_participant_id: ex.sender_participant_id })
+        existingByKey.set(k, [...(existingByKey.get(k) ?? []), ex])
+      }
+    }
+    const now = new Date().toISOString()
+    for (const r of fresh) {
+      const k = keyOf(r)
+      const matches = existingByKey.get(k) ?? []
+      if (r.sender_participant_id && matches.length === 1 && incomingByKey.get(k) === 1) {
+        const { error } = await supabase
+          .from('whatsapp_messages')
+          .update({ body: r.body, type: r.type, media_filename: r.media_filename, revoked_at: r.revoked_at, edited_at: now, wa_message_id: r.wa_message_id })
+          .eq('id', matches[0].id)
+        if (error) throw new Error(error.message)
+        edited++
+      } else {
+        toInsert.push(r)
+      }
+    }
+  }
+
+  for (let i = 0; i < toInsert.length; i += 500) {
+    const { error } = await supabase.from('whatsapp_messages').insert(toInsert.slice(i, i + 500))
     if (error) throw new Error(error.message)
   }
 
@@ -385,7 +431,7 @@ export async function commitImport(opts: ImportOptions, supabase: SupabaseClient
     .or(`last_message_at.is.null,last_message_at.lt.${last}`)
   if (lmErr) throw new Error(lmErr.message)
 
-  return { conversation_id: convId, imported: fresh.length, skipped: rows.length - fresh.length, superseded, batch_id: batchId }
+  return { conversation_id: convId, imported: toInsert.length, skipped: rows.length - fresh.length, edited, superseded, batch_id: batchId }
 }
 
 /** Undo one import batch. Returns the number of rows removed. */

@@ -434,8 +434,13 @@ export default function WhatsAppImportModal({ defaultAccountId, defaultEngagemen
               ) : (
                 <>
                   <p className="font-medium text-[color:var(--text)]">
-                    {result.imported} imported · {result.skipped} already present
+                    {result.imported} imported · {result.skipped} already present{result.edited > 0 ? ` · ${result.edited} edited` : ''}
                   </p>
+                  {result.edited > 0 ? (
+                    <p className="mt-1 text-[color:var(--amber-strong)]">
+                      {result.edited} stored message{result.edited === 1 ? ' was' : 's were'} replaced with the edited text from the export.
+                    </p>
+                  ) : null}
                   {result.superseded > 0 ? (
                     <p className="mt-1 text-[color:var(--text-2)]">
                       {result.superseded} live-captured row{result.superseded === 1 ? '' : 's'} replaced by the export — the phone is ground truth for that window.

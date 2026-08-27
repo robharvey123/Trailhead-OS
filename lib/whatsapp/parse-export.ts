@@ -13,6 +13,8 @@ export type ParsedMessage = {
   type: 'text' | 'media' | 'system'
   mediaFilename: string | null
   deleted: boolean
+  /** The export carried an edit marker; the marker is stripped and only the edited text is kept. */
+  edited: boolean
 }
 
 export type ParticipantEventKind = 'created' | 'joined' | 'left'
@@ -78,6 +80,8 @@ const NOISE_RE =
   /(changed (?:this group's|the group) (?:icon|subject|description|settings)|changed the subject|changed this group's icon|end-to-end encrypted|security code (?:with .+ )?changed|changed their phone number|is a business account|This chat is with|Tap to learn more|You're now an admin|is now an admin|turned on disappearing messages|turned off disappearing messages|changed the group name|pinned a message)/i
 
 const DELETED_RE = /^(?:This message was deleted|You deleted this message|Message deleted)\.?$/i
+// Trailing edit marker, both platforms. Invisible marks are already stripped by then.
+const EDITED_RE = /\s*<This message was edited>\s*$/i
 const ATTACHED_IOS_RE = /^<attached:\s*(.+?)>$/i
 const ATTACHED_ANDROID_RE = /^(.+?)\s+\(file attached\)$/i
 const OMITTED_RE = /^<Media omitted>$|^(?:image|video|audio|sticker|document|GIF|Contact card|Media)\s+omitted$/i
@@ -272,12 +276,15 @@ export function parseWhatsAppExport(raw: string, dateOrder: DateOrder = 'DMY'): 
 
     if (senderClean === null) {
       // Unattributed system line we don't recognise. Keep as system so nothing is lost.
-      messages.push({ occurredAtLocal, sender: null, body, type: 'system', mediaFilename: null, deleted: false })
+      messages.push({ occurredAtLocal, sender: null, body, type: 'system', mediaFilename: null, deleted: false, edited: false })
       continue
     }
 
     addParticipant(senderClean)
-    messages.push({ occurredAtLocal, sender: senderClean, body, ...classifyBody(body) })
+    // Strip the edit marker BEFORE classifying, or an edited media caption stops matching the attachment pattern.
+    const edited = EDITED_RE.test(body)
+    const cleanBody = edited ? body.replace(EDITED_RE, '') : body
+    messages.push({ occurredAtLocal, sender: senderClean, body: cleanBody, ...classifyBody(cleanBody), edited })
   }
 
   const participants = [...participantSet.values()].sort((a, b) => a.localeCompare(b))
