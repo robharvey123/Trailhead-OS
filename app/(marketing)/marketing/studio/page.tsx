@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
+import PlanIcon from '@/components/marketing/PlanIcon'
+import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
 import { ProfessionalServiceJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
@@ -24,40 +26,66 @@ export const metadata: Metadata = buildMetadata({
 
 const capabilities = [
   {
+    code: 'CAP-01',
     title: 'Marketing websites',
     description:
       'Fast, accessible, search-ready sites that load in under a second and read well on a phone. Built on modern frameworks rather than a page builder, so the site stays quick and the content stays yours.',
-    points: ['Next.js or static build', 'SEO and schema built in', 'CMS where you need one', 'Analytics and conversion tracking'],
+    points: [
+      'Next.js or static build',
+      'SEO and schema built in',
+      'CMS where you need one',
+      'Analytics and conversion tracking',
+    ],
   },
   {
+    code: 'CAP-02',
     title: 'Web apps and internal tools',
     description:
       'The system your business actually runs on. Job tracking, client portals, dashboards, approval flows, anything that currently lives across a spreadsheet, an inbox and a WhatsApp group.',
     points: ['Role-based access', 'Real-time data', 'Reporting and exports', 'Audit trails'],
   },
   {
+    code: 'CAP-03',
     title: 'Mobile-first PWAs',
     description:
       'Installable apps that work on a bad 4G signal and sync when the van is back in range. No app store review cycle, no separate iOS and Android codebase to maintain.',
-    points: ['Offline-first architecture', 'Installs to the home screen', 'Camera and signature capture', 'Push notifications'],
+    points: [
+      'Offline-first architecture',
+      'Installs to the home screen',
+      'Camera and signature capture',
+      'Push notifications',
+    ],
   },
   {
+    code: 'CAP-04',
     title: 'SaaS products',
     description:
       'End to end: positioning, pricing model, onboarding, billing, and the product itself. We have taken our own products from blank page to paying customers, so this is not theory.',
-    points: ['Multi-tenant from day one', 'Stripe billing and trials', 'Self-serve onboarding', 'Usage analytics'],
+    points: [
+      'Multi-tenant from day one',
+      'Stripe billing and trials',
+      'Self-serve onboarding',
+      'Usage analytics',
+    ],
   },
   {
+    code: 'CAP-05',
     title: 'Design systems and UI',
     description:
       'A consistent visual language across every screen, defined in code rather than a static file. New features look like they belong without a designer redrawing them each time.',
     points: ['Component library', 'Design tokens', 'Light and dark themes', 'Accessible by default'],
   },
   {
+    code: 'CAP-06',
     title: 'Integrations and automation',
     description:
       'Software is only useful when it talks to the rest of your stack. We wire products into the tools you already pay for, and automate the handoffs that currently cost someone an afternoon.',
-    points: ['Stripe, Xero, QuickBooks', 'Gmail and Google Calendar', 'Webhooks and public APIs', 'Scheduled jobs and alerts'],
+    points: [
+      'Stripe, Xero, QuickBooks',
+      'Gmail and Google Calendar',
+      'Webhooks and public APIs',
+      'Scheduled jobs and alerts',
+    ],
   },
 ]
 
@@ -95,6 +123,7 @@ const process = [
 ]
 
 type Project = {
+  code: string
   name: string
   sector: string
   status: 'Live' | 'In build'
@@ -103,6 +132,8 @@ type Project = {
   built: string[]
   stack: string[]
   outcome: string
+  /** Real build screenshot. See .impeccable/ASSETS.md; omitted until supplied. */
+  screenshot?: string
   href?: string
   hrefLabel?: string
   internal?: boolean
@@ -113,6 +144,7 @@ type Project = {
 // They live at /labs now. Thinner and honest converts better than padded.
 const projects: Project[] = [
   {
+    code: 'JOB-01',
     name: 'BrightFire',
     sector: 'Fire & security contractor',
     status: 'Live',
@@ -132,6 +164,7 @@ const projects: Project[] = [
     hrefLabel: 'Now sold as Engineer OS',
   },
   {
+    code: 'JOB-02',
     name: 'Yasin & Co Solicitors',
     sector: 'Legal services',
     status: 'In build',
@@ -152,22 +185,22 @@ const projects: Project[] = [
 
 const concepts = [
   {
+    code: 'CON-01',
     name: 'Dental practice',
-    accent: 'bg-[linear-gradient(180deg,#F0F9FF_0%,#DBEAFE_100%)]',
     description:
       'Private practice site built around one job: getting a nervous first-time patient to book. Treatment pages priced openly, finance options up front, and a booking flow that never asks for more than a name and a number.',
     features: ['Online booking', 'Transparent pricing', 'Before-and-after gallery', 'Finance calculator'],
   },
   {
+    code: 'CON-02',
     name: 'Independent restaurant',
-    accent: 'bg-[linear-gradient(180deg,#FFFBEB_0%,#FFEDD5_100%)]',
     description:
       'Menu-led design where the food does the selling. Reservations, a live-editable menu the owner updates from their phone, and a private-hire enquiry form that captures covers and date in one step.',
     features: ['Table reservations', 'Self-managed menu', 'Private hire enquiries', 'Google reviews feed'],
   },
   {
+    code: 'CON-03',
     name: 'Landscaping and grounds',
-    accent: 'bg-[linear-gradient(180deg,#ECFDF5_0%,#DCFCE7_100%)]',
     description:
       'A trades site that qualifies before it converts. Project gallery by job type, a quote request that asks the three questions worth asking, and service-area pages that rank for the towns the business actually covers.',
     features: ['Project gallery', 'Qualified quote form', 'Service-area pages', 'Seasonal offers'],
@@ -201,6 +234,81 @@ const faqs = [
   },
 ]
 
+/**
+ * The job docket.
+ *
+ * This replaces the browser-chrome mockup the hero used to carry — three fake
+ * traffic-light dots and a div pretending to be a screenshot. It is drawn in
+ * this site's own grammar rather than imitating an interface, and it is keyed
+ * ILLUSTRATIVE, because the job types are real Bright Fire work but the docket
+ * itself is a drawing. A real Engineer OS screenshot replaces it when one is
+ * supplied; nothing here pretends to be that screenshot in the meantime.
+ */
+function JobDocket() {
+  const rows = [
+    ['FA-4471', 'Fire alarm service', 'Harlow', 'COMPLETE'],
+    ['EI-0912', 'EICR, unit 4', 'Basildon', 'ON SITE'],
+    ['FG-2205', 'F-Gas check', 'Brentwood', 'SCHEDULED'],
+  ]
+
+  return (
+    <figure className="ticket">
+      <div className="flex items-baseline justify-between gap-3">
+        <figcaption className="plan-label text-[var(--ink)]">
+          Bright Fire Services · job board
+        </figcaption>
+        <span className="key-state key-illustrative">Illustrative</span>
+      </div>
+
+      {/* The docket is a data table, so at narrow widths it scrolls inside its
+          own frame rather than forcing the page to scroll sideways. */}
+      <div className="ticket-rule -mx-1 overflow-x-auto px-1">
+        <table className="w-full min-w-[19rem] border-collapse">
+          <caption className="sr-only">
+            An illustrative field-service job board, showing job reference,
+            work type, town and status.
+          </caption>
+          <thead>
+            <tr className="border-b border-[var(--hair)]">
+              {['REF', 'WORK', 'TOWN', 'STATUS'].map((heading) => (
+                <th
+                  key={heading}
+                  scope="col"
+                  className="plan-data py-2 text-left font-normal text-[var(--ink-3)]"
+                >
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([ref, work, town, status]) => (
+              <tr key={ref} className="border-b border-[var(--hair)] last:border-b-0">
+                <td className="plan-data py-3 pr-3 whitespace-nowrap text-[var(--ink-3)]">
+                  {ref}
+                </td>
+                <td className="py-3 pr-3 plan-body-xs font-medium whitespace-nowrap text-[var(--ink)]">
+                  {work}
+                </td>
+                <td className="py-3 pr-3 plan-body-xs whitespace-nowrap text-[var(--ink-2)]">
+                  {town}
+                </td>
+                <td className="plan-data py-3 text-right whitespace-nowrap text-[var(--ink)]">
+                  {status}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="plan-data mt-3 border-t border-[var(--hair)] pt-2.5 text-[var(--ink-3)]">
+        SYNCS OFFLINE · SIGNATURE + PHOTO AT THE PANEL
+      </p>
+    </figure>
+  )
+}
+
 export default async function StudioPage() {
   const host = (await headers()).get('host') || ''
   const isLocalhost = isLocalDevelopmentHost(host)
@@ -219,445 +327,384 @@ export default async function StudioPage() {
           'Marketing website design and build',
         ]}
       />
-      {/* Hero */}
-      <section className="px-6 py-16 md:px-8 md:py-20">
-        <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Trailhead Studio
-            </p>
-            <h1 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-              Websites and apps designed to do a job, not just look good.
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
-              We design and build digital products for businesses that have
-              outgrown off-the-shelf software. Marketing sites, internal tools,
-              client portals, mobile-first apps, and full web platforms. Every
-              one of them built in-house, from the first discovery conversation
-              through to deployment and beyond.
-            </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href={contactHref}
-                className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-600"
-              >
-                Scope a build
-              </Link>
-              <Link
-                href="#work"
-                className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
-              >
-                See the work
-              </Link>
-            </div>
-          </div>
 
-          <div className="rounded-[2rem] border border-[var(--marketing-border)] bg-[linear-gradient(180deg,#F8FAFC_0%,#EFF6FF_100%)] p-6">
-            <div className="overflow-hidden rounded-[1.75rem] border border-sky-100 bg-white shadow-[0_20px_60px_-40px_rgba(14,165,233,0.45)]">
-              <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-3">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-300" />
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-                <span className="ml-3 truncate rounded-full bg-white px-3 py-1 text-[11px] text-slate-400">
-                  Bright Fire Services: job board
-                </span>
+      {/* ---- Hero: the claim, and the artifact that proves it, together ---- */}
+      <section className="pt-10 pb-12 md:pt-16 md:pb-16">
+        <div className="bay">
+          <div className="bay-code hidden lg:block">
+            <p className="plan-data text-[var(--ink-3)]">BAY 02</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Studio</p>
+          </div>
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start">
+            <div className="min-w-0">
+              <h1 className="plan-display rack">
+                Websites and apps designed to do a job, not just look good.
+              </h1>
+              <p className="plan-lede mt-7">
+                We design and build digital products for businesses that have
+                outgrown off-the-shelf software. Marketing sites, internal
+                tools, client portals, mobile-first apps, and full web
+                platforms. Every one of them built in-house, from the first
+                discovery conversation through to deployment and beyond.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Link href={contactHref} className="flash justify-center">
+                  Scope a build
+                </Link>
+                <Link href="#work" className="flash-ghost justify-center">
+                  See the work
+                </Link>
               </div>
-              <div className="p-5">
-                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
-                  Today
-                </p>
-                <h2 className="mt-2 text-2xl font-bold tracking-[-0.03em]">
-                  Live jobs
-                </h2>
-                <div className="mt-5 grid gap-3">
-                  {[
-                    ['Fire alarm service', 'Harlow', 'Complete'],
-                    ['EICR, unit 4', 'Basildon', 'On site'],
-                    ['F-Gas check', 'Brentwood', 'Scheduled'],
-                  ].map(([job, place, status]) => (
-                    <div
-                      key={job}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 px-4 py-3"
-                    >
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800">
-                          {job}
-                        </p>
-                        <p className="text-xs text-slate-500">{place}</p>
-                      </div>
-                      <span
-                        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          status === 'Complete'
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : status === 'On site'
-                              ? 'bg-sky-50 text-sky-700'
-                              : 'bg-slate-100 text-slate-600'
-                        }`}
-                      >
-                        {status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            </div>
+
+            <div className="lg:pt-2">
+              <JobDocket />
+
+              {/* What the docket is actually built on. Real stack, set as data,
+                  so the right column carries fact rather than empty stock. */}
+              <dl className="mt-5 border-t border-[var(--ink)]">
+                {[
+                  ['RUNS ON', 'Next.js · TypeScript · Supabase'],
+                  ['DELIVERY', 'PWA, installs to the home screen'],
+                  ['OFFLINE', 'Syncs when the van is back in range'],
+                  ['OWNERSHIP', 'Client owns the repository'],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-[var(--hair)] py-2.5"
+                  >
+                    <dt className="plan-data text-[var(--ink-3)]">{label}</dt>
+                    <dd className="plan-body-xs text-[var(--ink-2)]">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Capabilities */}
-      <Reveal id="services" className="scroll-mt-24 px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            What we build
-          </p>
-          <h2 className="mt-5 max-w-3xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            Six things, done properly, rather than everything done thinly.
-          </h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {capabilities.map((item) => (
-              <article
-                key={item.title}
-                className="flex flex-col rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
-              >
-                <h3 className="text-xl font-bold tracking-[-0.03em]">
-                  {item.title}
-                </h3>
-                <p className="mt-4 flex-1 text-[0.95rem] leading-7 text-slate-600">
-                  {item.description}
-                </p>
-                <ul className="mt-6 grid gap-2 border-t border-slate-100 pt-5">
-                  {item.points.map((point) => (
-                    <li
-                      key={point}
-                      className="flex items-start gap-2 text-sm text-slate-500"
-                    >
-                      <svg
-                        viewBox="0 0 20 20"
-                        className="mt-0.5 h-4 w-4 shrink-0 text-sky-500"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                      >
-                        <path d="M4 10.5l4 4 8-9" />
-                      </svg>
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            ))}
+      {/* ---- Capabilities ---- */}
+      <Reveal id="services" className="rail scroll-mt-24 bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">CAP</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">6 facings</p>
           </div>
-        </div>
-      </Reveal>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target max-w-[22ch]">
+              Six things, done properly, rather than everything done thinly.
+            </h2>
 
-      {/* Work */}
-      <Reveal
-        id="work"
-        className="scroll-mt-24 bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24"
-      >
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            Client work
-          </p>
-          <h2 className="mt-5 max-w-3xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            A short list, on purpose.
-          </h2>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
-            The detail below is the whole point. Anyone can show a screenshot,
-            so here is the problem each business came with, what we actually
-            built, what it runs on, and where it got to. The products we build
-            and sell ourselves live at Trailhead Labs.
-          </p>
-
-          <div className="mt-12 grid gap-8">
-            {projects.map((project) => (
-              <article
-                key={project.name}
-                className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] md:p-10"
-              >
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700">
-                    {project.sector}
-                  </span>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      project.status === 'Live'
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-amber-50 text-amber-700'
-                    }`}
-                  >
-                    {project.status}
-                  </span>
-                </div>
-
-                <h3 className="mt-5 text-3xl font-bold tracking-[-0.04em]">
-                  {project.name}
-                </h3>
-                <p className="mt-2 text-lg font-medium text-slate-500">
-                  {project.headline}
-                </p>
-
-                <div className="mt-8 grid gap-8 lg:grid-cols-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                      The problem
-                    </p>
-                    <p className="mt-3 text-[0.95rem] leading-7 text-slate-600">
-                      {project.problem}
-                    </p>
-
-                    <p className="mt-8 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                      {project.status === 'In build' ? 'Where it is up to' : 'Outcome'}
-                    </p>
-                    <p className="mt-3 text-[0.95rem] leading-7 text-slate-600">
-                      {project.outcome}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-                      {project.status === 'In build'
-                        ? 'What we are building'
-                        : 'What we built'}
-                    </p>
-                    <ul className="mt-3 grid gap-3">
-                      {project.built.map((point) => (
-                        <li
-                          key={point}
-                          className="flex items-start gap-2.5 text-[0.95rem] leading-7 text-slate-600"
-                        >
-                          <svg
-                            viewBox="0 0 20 20"
-                            className="mt-2 h-3.5 w-3.5 shrink-0 text-sky-500"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                          >
-                            <path d="M4 10.5l4 4 8-9" />
-                          </svg>
-                          {point}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4 border-t border-slate-100 pt-6">
-                  <div className="flex flex-wrap gap-2">
-                    {project.stack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="rounded-full border border-[var(--marketing-border)] px-3 py-1 text-xs font-medium text-slate-500"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                  {project.href ? (
-                    <Link
-                      href={
-                        project.internal
-                          ? buildMarketingHref(project.href, isLocalhost)
-                          : project.href
-                      }
-                      target={project.internal ? undefined : '_blank'}
-                      rel={project.internal ? undefined : 'noreferrer'}
-                      className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-sky-600 transition hover:text-sky-700"
-                    >
-                      {project.hrefLabel}
-                      <svg
-                        viewBox="0 0 20 20"
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                      >
-                        <path d="M4 10h12M11 5l5 5-5 5" />
-                      </svg>
-                    </Link>
-                  ) : null}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </Reveal>
-
-      {/* Concept builds */}
-      <Reveal className="px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            Concept builds
-          </p>
-          <h2 className="mt-5 max-w-3xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            What we would build for your sector.
-          </h2>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
-            These are our own concepts rather than client projects, built to
-            show how we approach a brief in sectors we work in often. Each one
-            starts from the single job the site has to do, then designs
-            backwards from it.
-          </p>
-
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {concepts.map((concept) => (
-              <article
-                key={concept.name}
-                className="overflow-hidden rounded-[2rem] border border-[var(--marketing-border)] bg-white shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
-              >
-                <div
-                  className={`${concept.accent} px-6 pt-6`}
-                  aria-hidden="true"
-                >
-                  <div className="rounded-t-2xl border border-b-0 border-white/70 bg-white/80 p-4 backdrop-blur">
-                    <div className="h-2 w-16 rounded-full bg-slate-300" />
-                    <div className="mt-3 h-2 w-24 rounded-full bg-slate-200" />
-                    <div className="mt-5 grid grid-cols-3 gap-2">
-                      <div className="h-8 rounded-lg bg-slate-100" />
-                      <div className="h-8 rounded-lg bg-slate-100" />
-                      <div className="h-8 rounded-lg bg-slate-100" />
-                    </div>
-                    <div className="mt-3 h-6 w-20 rounded-full bg-slate-800/85" />
-                  </div>
-                </div>
-
-                <div className="p-8">
-                  <h3 className="text-xl font-bold tracking-[-0.03em]">
-                    {concept.name}
-                  </h3>
-                  <p className="mt-4 text-[0.95rem] leading-7 text-slate-600">
-                    {concept.description}
+            <div className="facings mt-8 md:grid-cols-2 xl:grid-cols-3">
+              {capabilities.map((item) => (
+                <article key={item.title} className="facing flex flex-col bg-[var(--plan)]">
+                  <p className="plan-data text-[var(--ink-3)]">{item.code}</p>
+                  <h3 className="plan-h3 mt-3">{item.title}</h3>
+                  <p className="plan-body mt-3 flex-1 plan-body-sm">
+                    {item.description}
                   </p>
-                  <ul className="mt-6 flex flex-wrap gap-2">
-                    {concept.features.map((feature) => (
+                  <ul className="mt-5 border-t border-[var(--hair)] pt-3">
+                    {item.points.map((point) => (
                       <li
-                        key={feature}
-                        className="rounded-full bg-[var(--marketing-surface)] px-3 py-1 text-xs font-medium text-slate-600"
+                        key={point}
+                        className="plan-data py-1 text-[var(--ink-2)]"
                       >
-                        {feature}
+                        {point.toUpperCase()}
                       </li>
                     ))}
                   </ul>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <p className="mt-8 text-sm text-slate-500">
-            Concept work shown for illustration. Not commissioned client
-            projects.
-          </p>
-        </div>
-      </Reveal>
-
-      {/* Process */}
-      <Reveal id="process" className="scroll-mt-24 bg-[var(--marketing-surface)] px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-            How we work
-          </p>
-          <h2 className="mt-5 max-w-3xl text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            You see it working from week one.
-          </h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-            {process.map((phase) => (
-              <article
-                key={phase.step}
-                className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-6"
-              >
-                <p className="text-sm font-bold tracking-[0.2em] text-sky-500">
-                  {phase.step}
-                </p>
-                <h3 className="mt-4 text-lg font-bold tracking-[-0.02em]">
-                  {phase.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-slate-600">
-                  {phase.description}
-                </p>
-              </article>
-            ))}
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </Reveal>
 
-      {/* FAQ */}
-      <Reveal className="px-6 py-20 md:px-8 md:py-24">
-        <div className="mx-auto grid max-w-[1100px] gap-12 lg:grid-cols-[0.8fr_1.2fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-              Questions
+      {/* ---- Client work ---- */}
+      <Reveal id="work" className="rail scroll-mt-24">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">JOBS</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">2 on record</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">A short list, on purpose.</h2>
+            <p className="plan-body mt-4">
+              The detail below is the whole point. Anyone can show a screenshot,
+              so here is the problem each business came with, what we actually
+              built, what it runs on, and where it got to. The products we build
+              and sell ourselves live at Trailhead Labs.
             </p>
-            <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-              The things people ask first.
+
+            <div className="mt-8 border-t border-[var(--ink)]">
+              {projects.map((project) => (
+                <article
+                  key={project.name}
+                  className="border-b border-[var(--hair)] py-8"
+                >
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="plan-data text-[var(--ink-3)]">
+                        {project.code}
+                      </span>
+                      <span
+                        className={`key-state ${
+                          project.status === 'Live' ? 'key-live' : 'key-build'
+                        }`}
+                      >
+                        {project.status}
+                      </span>
+                    </div>
+                    <span className="plan-data text-[var(--ink-3)]">
+                      {project.sector.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <h3
+                    className="mt-4 text-[clamp(1.75rem,3vw,2.5rem)] leading-none font-bold"
+                    style={{ fontStretch: '80%', letterSpacing: '-0.02em' }}
+                  >
+                    {project.name}
+                  </h3>
+                  <p className="plan-label mt-3 text-[var(--key-deep)]">
+                    {project.headline}
+                  </p>
+
+                  <PlateSlot
+                    src={project.screenshot}
+                    alt={`${project.name}, the delivered build`}
+                    width={1600}
+                    height={1000}
+                    className="mt-7"
+                  />
+
+                  <div className="mt-7 grid gap-8 lg:grid-cols-2">
+                    <div>
+                      <p className="plan-data text-[var(--ink-3)]">
+                        THE PROBLEM
+                      </p>
+                      <p className="plan-body mt-2.5 plan-body-sm">
+                        {project.problem}
+                      </p>
+
+                      <p className="plan-data mt-7 text-[var(--ink-3)]">
+                        {project.status === 'In build'
+                          ? 'WHERE IT IS UP TO'
+                          : 'OUTCOME'}
+                      </p>
+                      <p className="plan-body mt-2.5 plan-body-sm">
+                        {project.outcome}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="plan-data text-[var(--ink-3)]">
+                        {project.status === 'In build'
+                          ? 'WHAT WE ARE BUILDING'
+                          : 'WHAT WE BUILT'}
+                      </p>
+                      <ul className="mt-2.5 border-t border-[var(--hair)]">
+                        {project.built.map((point) => (
+                          <li
+                            key={point}
+                            className="plan-body border-b border-[var(--hair)] py-2.5 plan-body-sm"
+                          >
+                            {point}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <ul className="flex flex-wrap gap-2">
+                      {project.stack.map((tech) => (
+                        <li
+                          key={tech}
+                          className="plan-data border border-[var(--hair)] px-2 py-1.5 text-[var(--ink-2)]"
+                        >
+                          {tech.toUpperCase()}
+                        </li>
+                      ))}
+                    </ul>
+                    {project.href ? (
+                      <Link
+                        href={
+                          project.internal
+                            ? buildMarketingHref(project.href, isLocalhost)
+                            : project.href
+                        }
+                        target={project.internal ? undefined : '_blank'}
+                        rel={project.internal ? undefined : 'noreferrer'}
+                        className="plan-label ml-auto inline-flex items-center gap-2 text-[var(--flash)] hover:underline"
+                      >
+                        {project.hrefLabel}
+                        <PlanIcon name="external" size={13} />
+                      </Link>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- Concept builds ---- */}
+      <Reveal className="rail bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">CON</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Not commissioned</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">
+              What we would build for your sector.
             </h2>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
+            <p className="plan-body mt-4">
+              These are our own concepts rather than client projects, built to
+              show how we approach a brief in sectors we work in often. Each one
+              starts from the single job the site has to do, then designs
+              backwards from it.
+            </p>
+
+            <div className="facings mt-8 md:grid-cols-3">
+              {concepts.map((concept) => (
+                <article key={concept.name} className="facing flex flex-col bg-[var(--plan)]">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="plan-data text-[var(--ink-3)]">
+                      {concept.code}
+                    </p>
+                    <span className="key-state key-illustrative">Concept</span>
+                  </div>
+                  <h3 className="plan-h3 mt-4">{concept.name}</h3>
+                  <p className="plan-body mt-3 flex-1 plan-body-sm">
+                    {concept.description}
+                  </p>
+                  <ul className="mt-5 flex flex-wrap gap-1.5 border-t border-[var(--hair)] pt-4">
+                    {concept.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className="plan-data border border-[var(--hair)] px-2 py-1.5 text-[var(--ink-2)]"
+                      >
+                        {feature.toUpperCase()}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- Process: the sequence is the information ---- */}
+      <Reveal id="process" className="rail scroll-mt-24">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">SEQ</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">01–05</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">You see it working from week one.</h2>
+
+            <ol className="mt-8 border-t border-[var(--ink)]">
+              {process.map((phase) => (
+                <li
+                  key={phase.step}
+                  className="grid gap-x-8 gap-y-2 border-b border-[var(--hair)] py-5 md:grid-cols-[4rem_10rem_minmax(0,1fr)] md:items-baseline"
+                >
+                  <span className="plan-data text-[var(--key-deep)]">
+                    {phase.step}
+                  </span>
+                  <h3 className="plan-h3">{phase.title}</h3>
+                  <p className="plan-body plan-body-sm">
+                    {phase.description}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- FAQ ---- */}
+      <Reveal className="rail bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">FAQ</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Asked first</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">The things people ask first.</h2>
+            <p className="plan-body mt-4">
               If yours is not here, ask it directly. You will get a straight
               answer rather than a brochure.
             </p>
-            <Link
-              href={contactHref}
-              className="mt-8 inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-sky-300 hover:bg-sky-50"
-            >
+
+            <div className="mt-8 border-t border-[var(--ink)]">
+              {faqs.map((faq) => (
+                <details key={faq.q} className="group border-b border-[var(--hair)]">
+                  <summary className="plan-h3 flex max-w-3xl cursor-pointer list-none items-center justify-between gap-4 py-4 marker:content-none">
+                    {faq.q}
+                    <PlanIcon
+                      name="cross"
+                      size={15}
+                      className="text-[var(--ink-2)] transition-transform group-open:rotate-45"
+                    />
+                  </summary>
+                  <p className="plan-body pb-5 plan-body-sm">{faq.a}</p>
+                </details>
+              ))}
+            </div>
+
+            <Link href={contactHref} className="flash-ghost mt-8">
               Ask us
             </Link>
-          </div>
-
-          <div className="grid gap-4">
-            {faqs.map((faq) => (
-              <details
-                key={faq.q}
-                className="group rounded-[1.5rem] border border-[var(--marketing-border)] bg-white p-6 open:shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold tracking-[-0.01em]">
-                  {faq.q}
-                  <svg
-                    viewBox="0 0 20 20"
-                    className="h-5 w-5 shrink-0 text-sky-500 transition group-open:rotate-45"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path d="M10 4v12M4 10h12" />
-                  </svg>
-                </summary>
-                <p className="mt-4 text-[0.95rem] leading-7 text-slate-600">
-                  {faq.a}
-                </p>
-              </details>
-            ))}
           </div>
         </div>
       </Reveal>
 
-      {/* CTA */}
-      <Reveal className="bg-slate-950 px-6 py-20 text-white md:px-8 md:py-24">
-        <div className="mx-auto max-w-[1100px] text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-300">
-            Start a project
-          </p>
-          <h2 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-            Tell us what is not working.
-          </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-400">
-            Most projects start with a business that knows something is costing
-            them time but cannot yet name the fix. That is the conversation we
-            are good at. You leave it with a written scope and a fixed price,
-            whether or not you go ahead with us.
-          </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href={contactHref}
-              className="inline-flex items-center justify-center rounded-full bg-sky-500 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-sky-400"
+      {/* ---- Close ---- */}
+      <Reveal className="rail brand-block">
+        <div className="bay py-14 md:py-20">
+          <div className="bay-code">
+            <p className="plan-note opacity-70" style={{ color: 'var(--key-ink)' }}>
+              End of bay
+            </p>
+          </div>
+          <div className="min-w-0">
+            <h2
+              className="plan-h2 rack-target max-w-[18ch]"
+              style={{ color: 'var(--key-ink)' }}
             >
-              Start a project
-            </Link>
-            <a
-              href="mailto:info@trailheadholdings.uk"
-              className="inline-flex items-center justify-center rounded-full border border-slate-700 px-6 py-3.5 text-sm font-semibold text-white transition hover:border-sky-400 hover:bg-slate-900"
-            >
-              info@trailheadholdings.uk
-            </a>
+              Tell us what is not working.
+            </h2>
+            <p className="plan-lede mt-6">
+              Most projects start with a business that knows something is
+              costing them time but cannot yet name the fix. That is the
+              conversation we are good at. You leave it with a written scope and
+              a fixed price, whether or not you go ahead with us.
+            </p>
+            <div className="ticket mt-9 max-w-md">
+              <p className="plan-data text-[var(--ink-3)]">
+                WRITTEN SCOPE · FIXED PRICE · NO HOURLY DRIFT
+              </p>
+              <div className="ticket-rule flex flex-col gap-2">
+                <Link href={contactHref} className="flash">
+                  Start a project
+                  <PlanIcon name="right" />
+                </Link>
+                <a
+                  href="mailto:info@trailheadholdings.uk"
+                  className="flash-ghost justify-center"
+                >
+                  info@trailheadholdings.uk
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </Reveal>

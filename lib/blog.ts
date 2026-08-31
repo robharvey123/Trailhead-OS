@@ -1,10 +1,8 @@
 import type { BlogPost } from '@/lib/types'
 
-export const blogMarkdownClassName = [
-  'marketing-prose',
-  'max-w-none',
-  'text-[var(--marketing-text)]',
-].join(' ')
+// The prose block keeps its own measure (68ch, set in the bay-plan sheet), so
+// it must not be widened here.
+export const blogMarkdownClassName = 'marketing-prose'
 
 export function slugifyBlogTitle(value: string) {
   return value

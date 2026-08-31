@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
+import PlanIcon from '@/components/marketing/PlanIcon'
+import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
 import { SoftwareApplicationJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
@@ -17,11 +19,15 @@ export const metadata: Metadata = buildMetadata({
 })
 
 type LabsProduct = {
+  code: string
   name: string
   status: 'Live' | 'In build'
   sector: string
   summary: string
+  /** Real product screenshot. See .impeccable/ASSETS.md; omitted until supplied. */
+  screenshot?: string
   origin?: string
+  /** The shelf price. `null` means not set yet, and prints as exactly that. */
   pricing: string | null
   href: string
   external: boolean
@@ -34,11 +40,12 @@ type LabsProduct = {
   }
 }
 
-// One screen, three cards, each linking out to the product's own home. Deep
+// One screen, three facings, each linking out to the product's own home. Deep
 // product pages on this domain would duplicate the product sites and split
 // whatever authority each one earns, so there aren't any.
 const products: LabsProduct[] = [
   {
+    code: 'LAB-01',
     name: 'Engineer OS',
     status: 'Live',
     sector: 'Field service software',
@@ -46,7 +53,7 @@ const products: LabsProduct[] = [
       'Job management for UK field service teams. Offline-capable job sheets, automatic certificates, asset history and invoicing, built for firms the enterprise platforms price out.',
     origin:
       'Started life as BrightFire, a bespoke build for a fire and security contractor in Harlow, and was productised once it proved itself in the field.',
-    pricing: 'Per engineer, from £15 a month',
+    pricing: 'From £15 per engineer, per month',
     href: 'https://engineeros.uk',
     external: true,
     ctaLabel: 'Visit engineeros.uk',
@@ -59,6 +66,7 @@ const products: LabsProduct[] = [
     },
   },
   {
+    code: 'LAB-02',
     name: 'MVP Cricket',
     status: 'Live',
     sector: 'Sports SaaS',
@@ -77,6 +85,7 @@ const products: LabsProduct[] = [
     },
   },
   {
+    code: 'LAB-03',
     name: 'MVP Predictor',
     status: 'In build',
     sector: 'Sports SaaS',
@@ -112,112 +121,159 @@ export default async function LabsPage() {
         />
       ))}
 
-      <section className="px-6 py-16 md:px-8 md:py-20">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--marketing-accent)]">
-            Trailhead Labs
-          </p>
-          <h1 className="mt-5 max-w-3xl text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-            Software we build, sell and run ourselves.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            Live products with paying customers, which means we carry the
-            support, the billing and the uptime &mdash; the parts of software
-            that only show up long after launch. Each one has its own home;
-            this page just points the way.
-          </p>
+      {/* ---- Hero ---- */}
+      <section className="pt-10 pb-10 md:pt-16 md:pb-12">
+        <div className="bay">
+          <div className="bay-code hidden lg:block">
+            <p className="plan-data text-[var(--ink-3)]">BAY 03</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Labs</p>
+          </div>
+          <div className="min-w-0">
+            <h1 className="plan-display rack max-w-[15ch]">
+              Software we build, sell and run ourselves.
+            </h1>
+            <p className="plan-lede mt-7">
+              Live products with paying customers, which means we carry the
+              support, the billing and the uptime &mdash; the parts of software
+              that only show up long after launch. Each one has its own home;
+              this page just points the way.
+            </p>
+          </div>
         </div>
       </section>
 
-      <Reveal>
-        <section className="px-6 pb-16 md:px-8 md:pb-20">
-          <div className="mx-auto grid max-w-[1100px] gap-5">
-            {products.map((product) => (
-              <article
-                key={product.name}
-                className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7 md:p-9"
-              >
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-2xl font-bold tracking-[-0.03em]">{product.name}</h2>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${
-                      product.status === 'Live'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-amber-100 text-amber-800'
-                    }`}
-                  >
-                    {product.status}
-                  </span>
-                  <span className="text-sm text-slate-500">{product.sector}</span>
-                </div>
-
-                <p className="mt-4 max-w-2xl leading-7 text-slate-600">{product.summary}</p>
-
-                {product.origin ? (
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-                    {product.origin}
-                  </p>
-                ) : null}
-
-                {product.pricing ? (
-                  <p className="mt-4 text-sm font-semibold text-[var(--marketing-text)]">
-                    {product.pricing}
-                  </p>
-                ) : null}
-
-                <div className="mt-7">
-                  {product.external ? (
-                    <a
-                      href={product.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--marketing-accent-strong)]"
-                    >
-                      {product.ctaLabel}
-                    </a>
-                  ) : (
-                    <Link
-                      href={buildMarketingHref(product.href, isLocalhost)}
-                      className="inline-flex items-center justify-center rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--marketing-accent-strong)]"
-                    >
-                      {product.ctaLabel}
-                    </Link>
-                  )}
-                </div>
-              </article>
-            ))}
+      {/* ---- Three facings, each with its real shelf price ---- */}
+      <Reveal className="rail">
+        <div className="bay py-10 md:py-14">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">LAB</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">3 facings</p>
           </div>
-        </section>
+          <div className="min-w-0">
+            <div className="facings md:grid-cols-3">
+              {products.map((product) => (
+                <article
+                  key={product.name}
+                  className="facing flex flex-col bg-[var(--plan)]"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="plan-data text-[var(--ink-3)]">
+                      {product.code}
+                    </p>
+                    <span
+                      className={`key-state ${
+                        product.status === 'Live' ? 'key-live' : 'key-build'
+                      }`}
+                    >
+                      {product.status}
+                    </span>
+                  </div>
+
+                  <PlateSlot
+                    src={product.screenshot}
+                    alt={`${product.name} in use`}
+                    width={1600}
+                    height={1000}
+                    className="mt-4"
+                  />
+
+                  <h2 className="plan-h3 mt-4">{product.name}</h2>
+                  <p className="plan-data mt-2 text-[var(--ink-3)]">
+                    {product.sector.toUpperCase()}
+                  </p>
+
+                  <p className="plan-body mt-4 flex-1 plan-body-sm">
+                    {product.summary}
+                  </p>
+
+                  {product.origin ? (
+                    <p className="plan-body mt-3 border-l border-[var(--hair)] pl-3 plan-body-xs">
+                      {product.origin}
+                    </p>
+                  ) : null}
+
+                  {/* The shelf ticket: the price is the point of a ticket, so
+                      an unset price prints as unset rather than disappearing. */}
+                  <div className="ticket mt-6">
+                    <p className="plan-data text-[var(--ink-3)]">PRICE</p>
+                    <p
+                      className="mt-1 text-[1.0625rem] font-bold text-[var(--ink)]"
+                      style={{ fontStretch: '84%' }}
+                    >
+                      {product.pricing ?? 'Not set — in build'}
+                    </p>
+                    <div className="ticket-rule">
+                      {product.external ? (
+                        <a
+                          href={product.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flash w-full justify-between"
+                        >
+                          {product.ctaLabel}
+                          <PlanIcon name="external" />
+                        </a>
+                      ) : (
+                        <Link
+                          href={buildMarketingHref(product.href, isLocalhost)}
+                          className="flash w-full justify-between"
+                        >
+                          {product.ctaLabel}
+                          <PlanIcon name="right" />
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
       </Reveal>
 
-      <Reveal>
-        <section className="px-6 pb-16 md:px-8 md:pb-20">
-          <div className="mx-auto max-w-[1100px] rounded-[2rem] bg-slate-950 px-8 py-14 text-white md:px-14">
-            <h2 className="max-w-2xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+      {/* ---- Close ---- */}
+      <Reveal className="rail brand-block">
+        <div className="bay py-14 md:py-20">
+          <div className="bay-code">
+            <p className="plan-note opacity-70" style={{ color: 'var(--key-ink)' }}>
+              End of bay
+            </p>
+          </div>
+          <div className="min-w-0">
+            <h2
+              className="plan-h2 rack-target max-w-[16ch]"
+              style={{ color: 'var(--key-ink)' }}
+            >
               None of them quite fit?
             </h2>
-            <p className="mt-5 max-w-2xl leading-8 text-slate-300">
+            <p className="plan-lede mt-6">
               Every one of these started as a specific business with a specific
               problem, and was only productised once it worked. If your
               operation does not fit an off-the-shelf tool, that is a Trailhead
               Studio conversation.
             </p>
-            <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href={buildMarketingHref('/studio', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-              >
-                See how we build
-              </Link>
-              <Link
-                href={buildMarketingHref('/contact?track=labs', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                Start a conversation
-              </Link>
+            <div className="ticket mt-9 max-w-md">
+              <p className="plan-data text-[var(--ink-3)]">
+                BESPOKE · BUILT BY THE PERSON WHO SCOPED IT
+              </p>
+              <div className="ticket-rule flex flex-col gap-2">
+                <Link
+                  href={buildMarketingHref('/studio', isLocalhost)}
+                  className="flash"
+                >
+                  See how we build
+                  <PlanIcon name="right" />
+                </Link>
+                <Link
+                  href={buildMarketingHref('/contact?track=labs', isLocalhost)}
+                  className="flash-ghost justify-center"
+                >
+                  Start a conversation
+                </Link>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
       </Reveal>
     </div>
   )

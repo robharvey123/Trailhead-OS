@@ -1,12 +1,26 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import { Inter } from 'next/font/google'
+import { Archivo, Martian_Mono } from 'next/font/google'
 import MarketingShell from '@/components/marketing/MarketingShell'
 import { isLocalDevelopmentHost } from '@/lib/site'
 import { SITE_DEFAULTS } from '@/lib/seo'
+import './bay.css'
 
-const inter = Inter({
+// One family across its width axis does the whole signage job: condensed for
+// the shelf-edge caps, normal for reading, the way a real retail signage
+// system prints every rail height from one face. The mono is admitted for
+// codes, prices, dates and dimensions only.
+const archivo = Archivo({
+  variable: '--font-archivo',
   subsets: ['latin'],
+  axes: ['wdth'],
+  display: 'swap',
+})
+
+const martianMono = Martian_Mono({
+  variable: '--font-martian',
+  subsets: ['latin'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -26,20 +40,7 @@ export default async function MarketingLayout({
   const isLocalhost = isLocalDevelopmentHost(host)
 
   return (
-    <div className={inter.className}>
-      {/* Scroll-reveal ships content at opacity:0 and depends on an
-          IntersectionObserver to bring it back. That means a JS failure, a
-          blocked chunk, or a crawler that does not execute scripts sees a hero
-          and ~10,000px of blank page. The content is in the HTML and only
-          CSS-hidden, so a noscript override restores all of it. */}
-      <noscript>
-        <style
-          dangerouslySetInnerHTML={{
-            __html:
-              '.marketing-reveal{opacity:1 !important;transform:none !important;transition:none !important}',
-          }}
-        />
-      </noscript>
+    <div className={`${archivo.variable} ${martianMono.variable}`}>
       <MarketingShell isLocalhost={isLocalhost}>{children}</MarketingShell>
     </div>
   )

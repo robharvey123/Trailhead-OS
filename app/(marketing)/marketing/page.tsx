@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
-import type { CSSProperties } from 'react'
+import PlanIcon from '@/components/marketing/PlanIcon'
 import Reveal from '@/components/marketing/Reveal'
 import { formatBlogDate } from '@/lib/blog'
 import { getPublishedBlogPosts } from '@/lib/db/blog-posts'
@@ -28,11 +28,17 @@ export const metadata: Metadata = buildMetadata({
 /**
  * The two doors. Consulting and software builds are separate businesses with
  * separate buyers, so the homepage's only job is to establish who Trailhead is
- * and get the visitor into the right track. Each door wears its track's accent
- * so the colour coding starts here.
+ * and get the visitor into the right track.
+ *
+ * Under the bay plan each door is a brand block: a full facing of one keyed
+ * colour standing hard against its neighbour, exactly as two brands sit
+ * adjacent in a bay. The price flash never prints on the block itself — it
+ * prints on the white shelf-edge ticket at its foot, which is both where it
+ * belongs physically and the only place red stays legible against yellow.
  */
 const doors = [
   {
+    code: 'SEL-01',
     eyebrow: 'Trailhead Commercial',
     title: 'You have a brand. It needs to sell somewhere it isn’t selling yet.',
     description:
@@ -45,12 +51,15 @@ const doors = [
     ],
     href: '/consulting',
     cta: 'Enter Trailhead Commercial',
-    accent: '#0B4A6F',
-    accentStrong: '#083A57',
+    meta: 'SINCE 2014 · 6 MARKETS',
+    key: 'var(--key-com)',
+    keyInk: '#ffffff',
   },
   {
+    code: 'SEL-02',
     eyebrow: 'Trailhead Studio',
-    title: 'You are running the business on spreadsheets, WhatsApp and someone’s memory.',
+    title:
+      'You are running the business on spreadsheets, WhatsApp and someone’s memory.',
     description:
       'Bespoke software for companies that have outgrown their tooling, built and maintained by the person who scoped it.',
     points: [
@@ -61,24 +70,34 @@ const doors = [
     ],
     href: '/studio',
     cta: 'Enter Trailhead Studio',
-    accent: '#0EA5E9',
-    accentStrong: '#0284C7',
+    meta: 'BUILT IN-HOUSE · YOU OWN THE CODE',
+    key: 'var(--key-studio)',
+    keyInk: 'var(--ink)',
   },
 ]
 
 /** One line each. The full story lives on each product's own site, via /labs. */
 const labsStrip = [
   {
+    code: 'LAB-01',
     name: 'Engineer OS',
     line: 'Job management for UK field service teams, from £15 per engineer a month.',
+    price: '£15 / ENGINEER / MO',
+    state: 'live' as const,
   },
   {
+    code: 'LAB-02',
     name: 'MVP Cricket',
     line: 'Club management for grassroots cricket, with Play-Cricket sync and automated MVP scoring.',
+    price: '£19 / CLUB / MO',
+    state: 'live' as const,
   },
   {
+    code: 'LAB-03',
     name: 'MVP Predictor',
     line: 'White-label football prediction competitions for clubs, in build.',
+    price: 'PRICE NOT SET',
+    state: 'build' as const,
   },
 ]
 
@@ -92,162 +111,230 @@ export default async function MarketingHomePage() {
 
   return (
     <div>
-      <section className="px-6 pb-14 pt-14 md:px-8 md:pb-16 md:pt-20">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-slate-500">
-            Trailhead Holdings Ltd
-          </p>
-          <h1 className="mt-6 max-w-3xl text-5xl font-bold leading-[1.08] tracking-[-0.05em] text-[var(--marketing-text)] md:text-[56px]">
-            Thirteen years selling in hard markets. Now building the software
-            too.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 md:text-xl">
-            Trailhead Holdings is two businesses run by one operator.
-            Commercial strategy for nicotine and FMCG brands. Bespoke software
-            for companies that have outgrown their spreadsheets.
-          </p>
-          <p className="mt-4 text-sm font-semibold text-slate-500">
-            One operator. Two businesses. Since 2014.
-          </p>
+      {/* ---- Hero: the plan's title block, hung from the header rail ---- */}
+      <section className="pt-7 pb-12 md:pt-8 md:pb-14">
+        <div className="bay">
+          {/* The title block sits in the gutter beside the statement on
+              desktop and below it on a phone, so it never reads as a caption
+              stacked above the heading. */}
+          <div className="bay-code order-2 hidden lg:order-1 lg:block">
+            <div className="ticket">
+              <p className="plan-label text-[var(--ink)]">Trailhead</p>
+              <p className="plan-label mt-1 text-[var(--ink-3)]">Holdings Ltd</p>
+              <div className="ticket-rule">
+                <p className="plan-data text-[var(--ink-2)]">EST. 2014</p>
+                <p className="plan-data mt-1 text-[var(--ink-2)]">
+                  BRENTWOOD
+                  <br />
+                  ESSEX
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="order-1 min-w-0 lg:order-2">
+            <h1 className="plan-display rack max-w-[19ch]">
+              Thirteen years selling in hard markets. Now building the software
+              too.
+            </h1>
+            <p className="plan-lede mt-5">
+              Trailhead Holdings is two businesses run by one operator.
+              Commercial strategy for nicotine and FMCG brands. Bespoke software
+              for companies that have outgrown their spreadsheets.
+            </p>
+
+            <p className="plan-note mt-5 text-[var(--ink-2)]">
+              One operator · Two businesses · Since 2014
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* The doors are the CTA. No button competes with them above. */}
-      <section className="px-6 pb-20 md:px-8 md:pb-24">
-        <div className="mx-auto grid max-w-[1100px] gap-6 lg:grid-cols-2">
+      {/* ---- The two doors, standing as brand blocks in one bay ---- */}
+      <section className="rail">
+        <div className="grid lg:grid-cols-2">
           {doors.map((door) => (
             <article
               key={door.eyebrow}
+              className="brand-block flex flex-col border-b border-[var(--ink)] p-6 pt-7 md:p-8 md:pt-9 lg:border-b-0 lg:[&+&]:border-l lg:[&+&]:border-[var(--ink)]"
               style={
                 {
-                  '--door-accent': door.accent,
-                  '--door-accent-strong': door.accentStrong,
-                } as CSSProperties
+                  '--key': door.key,
+                  '--key-ink': door.keyInk,
+                } as React.CSSProperties
               }
-              className="flex flex-col rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)] md:p-10"
             >
-              {/* Inset accent bar instead of a card border. A straight
-                  border-top clashes with the 2rem corner radius. */}
-              <span
-                aria-hidden="true"
-                className="h-1 w-12 rounded-full bg-[var(--door-accent)]"
-              />
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--door-accent)]">
-                {door.eyebrow}
-              </p>
-              <h2 className="mt-4 text-2xl font-bold leading-snug tracking-[-0.03em] md:text-3xl">
+              <div className="flex items-baseline justify-between gap-4">
+                <p
+                  className="plan-label"
+                  style={{ color: 'var(--key-ink)' }}
+                >
+                  {door.eyebrow}
+                </p>
+                <p
+                  className="plan-data opacity-70"
+                  style={{ color: 'var(--key-ink)' }}
+                >
+                  {door.code}
+                </p>
+              </div>
+
+              <h2
+                className="plan-h2 mt-4 max-w-[18ch]"
+                style={{ color: 'var(--key-ink)' }}
+              >
                 {door.title}
               </h2>
-              <p className="mt-4 leading-8 text-slate-600">{door.description}</p>
 
-              <ul className="mt-6 flex-1 space-y-2.5 text-[0.98rem] text-slate-600">
+              <p className="plan-body mt-4 max-w-[46ch]">{door.description}</p>
+
+              {/* The spec list, ruled the way a facing's contents are listed. */}
+              <ul className="mt-6 flex-1">
                 {door.points.map((point) => (
-                  <li key={point} className="flex gap-3">
-                    <span
-                      aria-hidden="true"
-                      className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--door-accent)]"
-                    />
-                    <span>{point}</span>
+                  <li
+                    key={point}
+                    className="border-t py-2.5 plan-body-sm leading-snug"
+                    style={{
+                      borderColor:
+                        'color-mix(in srgb, var(--key-ink) 26%, transparent)',
+                      color:
+                        'color-mix(in srgb, var(--key-ink) 88%, var(--key))',
+                    }}
+                  >
+                    {point}
                   </li>
                 ))}
               </ul>
 
-              <div className="mt-8 pt-2">
-                <Link
-                  href={buildMarketingHref(door.href, isLocalhost)}
-                  className="inline-flex items-center justify-center rounded-full bg-[var(--door-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[var(--door-accent-strong)]"
-                >
-                  {door.cta}
-                </Link>
+              {/* The shelf-edge ticket: white card, the price flash printed on
+                  it rather than on the block. */}
+              <div className="ticket mt-7">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="plan-data text-[var(--ink-3)]">{door.code}</p>
+                  <p className="plan-data text-[var(--ink-3)]">{door.meta}</p>
+                </div>
+                <div className="ticket-rule">
+                  <Link
+                    href={buildMarketingHref(door.href, isLocalhost)}
+                    className="flash"
+                  >
+                    {door.cta}
+                    <PlanIcon name="right" />
+                  </Link>
+                </div>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      <Reveal className="bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20">
-        <div className="mx-auto max-w-[1100px]">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7C3AED]">
-            Trailhead Labs
-          </p>
-          <h2 className="mt-4 max-w-2xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-            And three products we run.
-          </h2>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {labsStrip.map((product) => (
-              <Link
-                key={product.name}
-                href={buildMarketingHref('/labs', isLocalhost)}
-                className="group rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7 transition hover:border-[#C4B5FD]"
-              >
-                <h3 className="text-xl font-bold tracking-[-0.02em]">
-                  {product.name}
-                </h3>
-                <p className="mt-3 leading-7 text-slate-600">{product.line}</p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#7C3AED]">
-                  Trailhead Labs
-                  <span aria-hidden="true" className="transition group-hover:translate-x-0.5">
-                    &rarr;
-                  </span>
-                </span>
-              </Link>
-            ))}
+      {/* ---- Labs: three facings, each with a real price ticket ---- */}
+      <Reveal className="rail bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">BAY 03</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Labs</p>
+          </div>
+
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">And three products we run.</h2>
+            <p className="plan-body mt-4">
+              Live products with paying customers, which means we carry the
+              support, the billing and the uptime.
+            </p>
+
+            <div className="facings mt-8 sm:grid-cols-3">
+              {labsStrip.map((product) => (
+                <Link
+                  key={product.name}
+                  href={buildMarketingHref('/labs', isLocalhost)}
+                  className="facing group flex flex-col bg-[var(--plan)] transition-colors hover:bg-[var(--card)]"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="plan-data text-[var(--ink-3)]">
+                      {product.code}
+                    </span>
+                    <span
+                      className={`key-state ${
+                        product.state === 'live' ? 'key-live' : 'key-build'
+                      }`}
+                    >
+                      {product.state === 'live' ? 'Live' : 'In build'}
+                    </span>
+                  </div>
+
+                  <h3 className="plan-h3 mt-4">{product.name}</h3>
+                  <p className="plan-body mt-2.5 flex-1 plan-body-sm">
+                    {product.line}
+                  </p>
+
+                  <p className="plan-data mt-6 border-t border-[var(--hair)] pt-3 text-[var(--ink)]">
+                    {product.price}
+                    <PlanIcon
+                      name="right"
+                      className="float-right mt-0.5 text-[var(--flash)] transition-transform group-hover:translate-x-0.5"
+                    />
+                  </p>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </Reveal>
 
-      <Reveal id="blog" className="px-6 py-16 md:px-8 md:py-20">
-        <div className="mx-auto max-w-[1100px]">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500">
-                Thinking
-              </p>
-              <h2 className="mt-4 text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-                From the blog
-              </h2>
-            </div>
-            <Link
-              href={buildMarketingHref('/blog', isLocalhost)}
-              className="text-sm font-semibold text-slate-600 transition hover:text-[var(--marketing-text)]"
-            >
-              All posts →
-            </Link>
+      {/* ---- Notes: the plan's annotation sheet ---- */}
+      <Reveal id="blog" className="rail">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">BAY 04</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Notes</p>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {posts.map((post) => (
-              <article
-                key={post.id}
-                className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2 className="plan-h2 rack-target">From the blog</h2>
+              <Link
+                href={buildMarketingHref('/blog', isLocalhost)}
+                className="plan-label inline-flex items-center gap-2 text-[var(--ink-2)] transition-colors hover:text-[var(--flash)]"
               >
-                <p className="text-sm text-slate-500">
-                  {formatBlogDate(post.published_at)}
-                </p>
-                <h3 className="mt-4 text-2xl font-bold tracking-[-0.03em]">
-                  {post.title}
-                </h3>
-                <p className="mt-4 text-[0.98rem] leading-8 text-slate-600">
-                  {post.excerpt}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                All posts
+                <PlanIcon name="right" size={13} />
+              </Link>
+            </div>
+
+            <div className="mt-8 border-t border-[var(--ink)]">
+              {posts.map((post) => (
                 <Link
+                  key={post.id}
                   href={buildMarketingHref(`/blog/${post.slug}`, isLocalhost)}
-                  className="mt-6 inline-flex text-sm font-semibold text-slate-700 transition hover:text-[var(--marketing-text)]"
+                  className="group grid gap-x-8 gap-y-2 border-b border-[var(--hair)] py-5 transition-colors hover:bg-[var(--card)] md:grid-cols-[9rem_minmax(0,1fr)_auto] md:items-baseline"
                 >
-                  Read more →
+                  <span className="plan-data text-[var(--ink-3)]">
+                    {formatBlogDate(post.published_at)}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="plan-h3 block">{post.title}</span>
+                    <span className="plan-body mt-2 block plan-body-sm">
+                      {post.excerpt}
+                    </span>
+                  </span>
+                  <span className="plan-data inline-flex items-center gap-3 whitespace-nowrap text-[var(--ink-3)]">
+                    {post.tags.join(' · ').toUpperCase()}
+                    <PlanIcon
+                      name="right"
+                      size={13}
+                      className="text-[var(--flash)] transition-transform group-hover:translate-x-0.5"
+                    />
+                  </span>
                 </Link>
-              </article>
-            ))}
+              ))}
+
+              {posts.length === 0 ? (
+                <p className="plan-body border-b border-[var(--hair)] py-6">
+                  No posts published yet.
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
       </Reveal>

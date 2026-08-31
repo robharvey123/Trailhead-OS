@@ -2,49 +2,38 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { buildAppLoginHref, buildMarketingHref } from '@/lib/site'
-import { getTrackTokens, trackFromPathname, type TrackNavItem } from '@/lib/marketing/tracks'
+import {
+  getTrackTokens,
+  trackFromPathname,
+  type TrackNavItem,
+} from '@/lib/marketing/tracks'
 
 interface MarketingShellProps {
   children: ReactNode
   isLocalhost: boolean
 }
 
+/**
+ * The chrome is the top rail of the bay plan.
+ *
+ * One shell, three sub-brands. The pathname decides which block colour the
+ * chrome is keyed to, so a visitor on /consulting is standing in front of the
+ * Commercial bay and a visitor on /studio in front of Studio's, without the
+ * site splitting into two codebases.
+ */
 export default function MarketingShell({
   children,
   isLocalhost,
 }: MarketingShellProps) {
-  const [hasScrolled, setHasScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuId = useId()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const pathname = usePathname()
 
-  // One shell, three sub-brands. The pathname decides which identity the
-  // chrome wears (wordmark, accent, nav, CTA), so a visitor on /consulting
-  // sees a specialist consultancy and a visitor on /studio sees a software
-  // studio, without the site splitting into two codebases.
-  const tokens = getTrackTokens(trackFromPathname(pathname))
-
-  const wrapperStyle = {
-    '--marketing-text': '#0F172A',
-    '--marketing-accent': tokens.accent,
-    '--marketing-accent-strong': tokens.accentStrong,
-    '--marketing-accent-soft': tokens.accentSoft,
-    '--marketing-accent-border': tokens.accentBorder,
-    '--marketing-background': '#FFFFFF',
-    '--marketing-surface': '#F8FAFC',
-    '--marketing-border': '#E2E8F0',
-  } as CSSProperties
-
-  useEffect(() => {
-    const handleScroll = () => setHasScrolled(window.scrollY > 10)
-
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const track = trackFromPathname(pathname)
+  const tokens = getTrackTokens(track)
 
   // Close on route change, so back/forward navigation doesn't leave the panel
   // open. Render-time reset rather than setState-in-effect, the same pattern
@@ -101,58 +90,52 @@ export default function MarketingShell({
       </Link>
     )
 
+  const navLinkClass =
+    'plan-label text-[var(--ink-2)] transition-colors hover:text-[var(--flash)]'
+
   return (
-    <div
-      style={wrapperStyle}
-      className="min-h-screen bg-[var(--marketing-background)] text-[var(--marketing-text)]"
-    >
-      <header
-        className={`sticky top-0 z-40 transition ${
-          hasScrolled
-            ? 'border-b border-[var(--marketing-border)] bg-white/92 backdrop-blur'
-            : 'border-b border-transparent bg-white/80'
-        }`}
-      >
-        <div className="mx-auto flex max-w-[1100px] items-center justify-between gap-6 px-6 py-4 md:px-8">
-          {/* The wordmark is the endorsed sub-brand: same Trailhead mark, a
-              different second word per track. Rendered inline (not the static
-              logo.svg) so the second word and the accent bar can change. */}
+    <div className="bay-plan min-h-screen" data-track={track}>
+      <header className="sticky top-0 z-40 bg-[var(--plan)]">
+        <div className="mx-auto flex w-full max-w-[78rem] items-center justify-between gap-6 px-5 py-3.5 md:px-8">
           <Link
             href={buildMarketingHref('/', isLocalhost)}
             className="flex items-center gap-3"
             aria-label={`Trailhead ${tokens.wordmark.replace(' LTD', '')}, home`}
           >
+            {/* Four ascending bars, the last one carrying the track's key. The
+                mark is a fixed brand commitment; only its keyed bar moves. */}
             <svg
               aria-hidden="true"
-              width="34"
-              height="38"
+              width="30"
+              height="34"
               viewBox="0 0 46 48"
               className="shrink-0"
             >
-              <rect x="0" y="28" width="10" height="10" rx="2" fill="var(--marketing-text)" />
-              <rect x="12" y="18" width="10" height="20" rx="2" fill="var(--marketing-text)" />
-              <rect x="24" y="8" width="10" height="30" rx="2" fill="var(--marketing-text)" />
-              <rect x="36" y="0" width="10" height="38" rx="2" fill="var(--marketing-accent)" />
+              <rect x="0" y="28" width="10" height="10" rx="2" fill="var(--ink)" />
+              <rect x="12" y="18" width="10" height="20" rx="2" fill="var(--ink)" />
+              <rect x="24" y="8" width="10" height="30" rx="2" fill="var(--ink)" />
+              <rect x="36" y="0" width="10" height="38" rx="2" fill="var(--key-deep)" />
             </svg>
-            <span className="flex flex-col leading-none" style={{ fontFamily: 'Georgia, serif' }}>
-              <span className="text-lg font-bold tracking-[-0.02em] text-[var(--marketing-text)]">
-                Trailhead
+            <span className="flex flex-col leading-none">
+              <span
+                className="text-[1.0625rem] font-bold tracking-[0.02em] text-[var(--ink)]"
+                style={{ fontStretch: '84%' }}
+              >
+                TRAILHEAD
               </span>
-              <span className="mt-1 text-[11px] tracking-[0.14em] text-slate-500">
+              <span className="plan-label mt-[3px] text-[var(--ink-3)]">
                 {tokens.wordmark}
               </span>
             </span>
           </Link>
 
-          <div className="hidden items-center gap-8 md:flex">
-            <nav className="flex items-center gap-6 text-sm font-medium text-slate-600">
-              {tokens.nav.map((item) =>
-                renderNavItem(item, 'transition hover:text-[var(--marketing-text)]')
-              )}
+          <div className="hidden items-center gap-7 md:flex">
+            <nav aria-label="Primary" className="flex items-center gap-5">
+              {tokens.nav.map((item) => renderNavItem(item, navLinkClass))}
               {tokens.crossLink ? (
                 <Link
                   href={buildMarketingHref(tokens.crossLink.href, isLocalhost)}
-                  className="text-slate-400 transition hover:text-[var(--marketing-text)]"
+                  className="plan-label text-[var(--ink-3)] transition-colors hover:text-[var(--flash)]"
                 >
                   {tokens.crossLink.label}
                 </Link>
@@ -160,17 +143,14 @@ export default function MarketingShell({
             </nav>
 
             {tokens.cta ? (
-              <Link
-                href={buildMarketingHref(tokens.cta.href, isLocalhost)}
-                className="rounded-full bg-[var(--marketing-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--marketing-accent-strong)]"
-              >
+              <Link href={buildMarketingHref(tokens.cta.href, isLocalhost)} className="flash">
                 {tokens.cta.label}
               </Link>
             ) : null}
 
             <Link
               href={buildAppLoginHref(isLocalhost)}
-              className="rounded-full border border-[var(--marketing-border)] px-4 py-2 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent-border)] hover:bg-[var(--marketing-accent-soft)]"
+              className="plan-label border border-[var(--hair)] px-3 py-2 text-[var(--ink-2)] transition-colors hover:border-[var(--ink)] hover:text-[var(--ink)]"
             >
               Log in
             </Link>
@@ -186,7 +166,7 @@ export default function MarketingShell({
             aria-expanded={menuOpen}
             aria-controls={menuId}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--marketing-border)] text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent-border)] hover:bg-[var(--marketing-accent-soft)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marketing-accent)] md:hidden"
+            className="flex h-11 w-11 items-center justify-center border border-[var(--ink)] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--plan)] md:hidden"
           >
             <svg
               aria-hidden="true"
@@ -196,7 +176,6 @@ export default function MarketingShell({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              strokeLinecap="round"
             >
               {menuOpen ? (
                 <>
@@ -214,42 +193,82 @@ export default function MarketingShell({
           </button>
         </div>
 
+        {/* The rail. Every band on every page hangs from this line, and it
+            prints which bay the visitor is standing in. */}
+        <div className="rail bg-[var(--plan)]">
+          <div className="mx-auto flex w-full max-w-[78rem] items-center justify-between gap-4 px-5 pt-2 pb-1.5 md:px-8">
+            <span className="plan-data truncate text-[var(--ink-3)]">
+              {tokens.bayCode}
+              <span className="mx-2 text-[var(--hair)]">|</span>
+              {tokens.bayMeasure}
+            </span>
+
+            {/* The dimension callout: a measured span with extension ticks and
+                arrowheads, the way a bay width is called out on a plan. It is
+                drawn, not lettered — the contract asked for a dimension and a
+                text strip is not one. */}
+            <span className="hidden flex-1 items-center gap-2 px-4 sm:flex">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 200 12"
+                preserveAspectRatio="none"
+                className="h-3 w-full text-[var(--hair)]"
+              >
+                <path
+                  d="M1 0v12M199 0v12"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <path
+                  d="M1 6h198M5 3L1 6l4 3M195 3l4 3-4 3"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  fill="none"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+            </span>
+
+            <span className="plan-data hidden shrink-0 text-[var(--ink-3)] sm:block">
+              TRAILHEADHOLDINGS.UK
+            </span>
+          </div>
+        </div>
+
         {menuOpen ? (
-          <div
-            id={menuId}
-            className="border-t border-[var(--marketing-border)] bg-white md:hidden"
-          >
-            <nav aria-label="Primary" className="mx-auto flex max-w-[1100px] flex-col px-6 py-2">
+          <div id={menuId} className="border-t border-[var(--ink)] bg-[var(--plan)] md:hidden">
+            <nav
+              aria-label="Primary, mobile"
+              className="mx-auto flex w-full max-w-[78rem] flex-col px-5"
+            >
               {tokens.nav.map((item) =>
                 renderNavItem(
                   item,
-                  'border-b border-[var(--marketing-border)] py-4 text-base font-medium text-[var(--marketing-text)] last:border-b-0'
+                  'plan-label border-b border-[var(--hair)] py-4 text-[var(--ink)]'
                 )
               )}
               {tokens.crossLink ? (
                 <Link
                   href={buildMarketingHref(tokens.crossLink.href, isLocalhost)}
                   onClick={() => setMenuOpen(false)}
-                  className="border-b border-[var(--marketing-border)] py-4 text-base font-medium text-slate-500"
+                  className="plan-label border-b border-[var(--hair)] py-4 text-[var(--ink-3)]"
                 >
                   {tokens.crossLink.label}
                 </Link>
               ) : null}
-              <div className="flex flex-col gap-3 py-4">
+              <div className="flex flex-col gap-3 py-5">
                 <Link
-                  href={buildMarketingHref(
-                    tokens.cta?.href ?? '/contact',
-                    isLocalhost
-                  )}
+                  href={buildMarketingHref(tokens.cta?.href ?? '/contact', isLocalhost)}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-full bg-[var(--marketing-accent)] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--marketing-accent-strong)]"
+                  className="flash justify-center"
                 >
-                  {tokens.cta?.label ?? 'Work with us'}
+                  {tokens.cta?.label ?? 'Start a conversation'}
                 </Link>
                 <Link
                   href={buildAppLoginHref(isLocalhost)}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-full border border-[var(--marketing-border)] px-5 py-3 text-center text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent-border)] hover:bg-[var(--marketing-accent-soft)]"
+                  className="flash-ghost justify-center"
                 >
                   Log in
                 </Link>
@@ -261,90 +280,102 @@ export default function MarketingShell({
 
       <main>{children}</main>
 
-      <footer className="border-t border-[var(--marketing-border)] bg-white">
-        {/* The footer used to carry only contact and legal links, so on mobile,
-            where the nav is behind a menu, there was no second route to the
-            work. Every page now has a navigable floor. */}
-        <div className="mx-auto max-w-[1100px] border-b border-[var(--marketing-border)] px-6 py-8 md:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Explore
-          </p>
-          <nav aria-label="Footer" className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-600">
-            {tokens.nav.map((item) =>
-              item.external ? (
+      {/* The footer is the bottom rail: the plan's title block, carrying the
+          registration facts and a second full route to every page — on mobile,
+          where the nav sits behind a menu, this is the only one always in view. */}
+      <footer className="rail mt-0 bg-[var(--plan-recess)]">
+        <div className="mx-auto w-full max-w-[78rem] px-5 py-10 md:px-8 md:py-12">
+          <div className="grid gap-8 border-b border-[var(--hair)] pb-8 md:grid-cols-[minmax(0,1fr)_auto]">
+            <div>
+              <p className="plan-data text-[var(--ink-3)]">INDEX</p>
+              <nav
+                aria-label="Footer"
+                className="mt-3 flex flex-wrap gap-x-6 gap-y-3"
+              >
+                {tokens.nav.map((item) =>
+                  item.external ? (
+                    <a
+                      key={`footer-${item.href}`}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={navLinkClass}
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      key={`footer-${item.href}`}
+                      href={navHref(item)}
+                      className={navLinkClass}
+                    >
+                      {item.label}
+                    </Link>
+                  )
+                )}
+                {tokens.crossLink ? (
+                  <Link
+                    href={buildMarketingHref(tokens.crossLink.href, isLocalhost)}
+                    className={navLinkClass}
+                  >
+                    {tokens.crossLink.label}
+                  </Link>
+                ) : null}
+                {tokens.track !== 'holdings' ? (
+                  <Link
+                    href={buildMarketingHref('/', isLocalhost)}
+                    className={navLinkClass}
+                  >
+                    Trailhead Holdings
+                  </Link>
+                ) : null}
+              </nav>
+            </div>
+
+            <div className="md:text-right">
+              <p className="plan-data text-[var(--ink-3)]">DIRECT</p>
+              <div className="mt-3 flex flex-col gap-2 md:items-end">
                 <a
-                  key={`footer-${item.href}`}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="transition hover:text-[var(--marketing-text)]"
+                  href="mailto:info@trailheadholdings.uk"
+                  className="plan-label text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
                 >
-                  {item.label}
+                  info@trailheadholdings.uk
                 </a>
-              ) : (
-                <Link
-                  key={`footer-${item.href}`}
-                  href={navHref(item)}
-                  className="transition hover:text-[var(--marketing-text)]"
+                <a
+                  href="tel:+447346808412"
+                  className="plan-label text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
                 >
-                  {item.label}
-                </Link>
-              )
-            )}
-            {tokens.crossLink ? (
+                  +44 7346 808412
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between">
+            <p className="plan-data text-[var(--ink-3)]">
+              © 2026 TRAILHEAD HOLDINGS LTD · BRENTWOOD, ESSEX · REGISTERED IN
+              ENGLAND &amp; WALES
+            </p>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
               <Link
-                href={buildMarketingHref(tokens.crossLink.href, isLocalhost)}
-                className="transition hover:text-[var(--marketing-text)]"
+                href={buildMarketingHref('/privacy', isLocalhost)}
+                className={navLinkClass}
               >
-                {tokens.crossLink.label}
+                Privacy
               </Link>
-            ) : null}
-            {tokens.track !== 'holdings' ? (
               <Link
-                href={buildMarketingHref('/', isLocalhost)}
-                className="transition hover:text-[var(--marketing-text)]"
+                href={buildMarketingHref('/terms', isLocalhost)}
+                className={navLinkClass}
               >
-                Trailhead Holdings
+                Terms
               </Link>
-            ) : null}
-          </nav>
-        </div>
-        <div className="mx-auto flex max-w-[1100px] flex-col gap-4 px-6 py-8 text-sm text-slate-600 md:flex-row md:items-center md:justify-between md:px-8">
-          <p>
-            © 2026 Trailhead Holdings Ltd · Brentwood, Essex · Registered in
-            England &amp; Wales
-          </p>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <a
-              href="mailto:info@trailheadholdings.uk"
-              className="transition hover:text-[var(--marketing-text)]"
-            >
-              info@trailheadholdings.uk
-            </a>
-            <a
-              href="tel:+447346808412"
-              className="transition hover:text-[var(--marketing-text)]"
-            >
-              +44 7346 808412
-            </a>
-            <Link
-              href={buildMarketingHref('/privacy', isLocalhost)}
-              className="transition hover:text-[var(--marketing-text)]"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href={buildMarketingHref('/terms', isLocalhost)}
-              className="transition hover:text-[var(--marketing-text)]"
-            >
-              Terms of Service
-            </Link>
-            <Link
-              href={buildMarketingHref('/contact', isLocalhost)}
-              className="transition hover:text-[var(--marketing-text)]"
-            >
-              Contact
-            </Link>
+              <Link
+                href={buildMarketingHref('/contact', isLocalhost)}
+                className={navLinkClass}
+              >
+                Contact
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

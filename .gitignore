@@ -45,3 +45,9 @@ next-env.d.ts
 # Local CRM import data (contains contact PII — never commit)
 /data/*.xlsx
 /data/*.csv
+
+# Impeccable working evidence — review screenshots and served decision pages.
+# The durable records (DESIGN.md, PRODUCT.md, ASSETS.md, design.json, surfaces/)
+# are committed; these are throwaway build artefacts and run to ~10MB.
+/.impeccable/review/
+/.impeccable/questions/

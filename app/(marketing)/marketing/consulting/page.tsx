@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
+import PlanIcon from '@/components/marketing/PlanIcon'
+import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
 import { ProfessionalServiceJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
@@ -22,7 +24,25 @@ export const metadata: Metadata = buildMetadata({
   ],
 })
 
-const stats = [
+// The value chain, factory gate to shelf. This is the artifact behind the
+// headline: pricing architecture that survives every party in the middle is
+// the named service, so the page shows the ladder rather than asserting it.
+//
+// Structure is real; every figure is redacted, because the numbers belong to a
+// client's brief and inventing plausible ones would be the exact failure this
+// page exists to avoid.
+const valueChain = [
+  ['01', 'Factory gate', 'Cost of goods, ex works'],
+  ['02', 'Landed', 'Freight, duty, excise where it applies'],
+  ['03', 'Distributor', 'Their margin, and whether it holds'],
+  ['04', 'Wholesale', 'Depot terms, listing costs, rebates'],
+  ['05', 'Retail', 'Shelf margin the buyer will actually accept'],
+  ['06', 'Shelf', 'What the consumer pays'],
+]
+
+// Rendered as a dimension rail rather than four stat cards: on a plan a figure
+// is a measurement hung off the rule, not a tile.
+const dimensions = [
   ['13+', 'Years in NGP & FMCG'],
   ['6', 'International markets operated in'],
   ['£5M+', 'Revenue built from scratch'],
@@ -31,21 +51,25 @@ const stats = [
 
 const services = [
   {
+    code: 'SVC-01',
     title: 'Market entry',
     description:
       'Taking a brand into a market it has never sold in. Regulatory lay of the land, distributor shortlist, pricing that survives the value chain, and the first orders on the board. UK, EU, DACH, Sweden.',
   },
   {
+    code: 'SVC-02',
     title: 'Route to market',
     description:
       'Deciding which doors are worth knocking on and in what order. Channel strategy across D2C, retail and wholesale, and the commercial terms that make each one work rather than just look busy.',
   },
   {
+    code: 'SVC-03',
     title: 'Pricing and portfolio',
     description:
       'Pricing architecture from factory gate to shelf, margin modelling for every party in the chain, and SKU rationalisation for ranges that grew faster than they were planned.',
   },
   {
+    code: 'SVC-04',
     title: 'Interim commercial leadership',
     description:
       'Running the commercial function directly while you hire, or while the business is too early to justify a permanent director. Sales, distribution and the numbers that follow them.',
@@ -69,9 +93,12 @@ const currentWork = [
   },
 ]
 
+// `years` drives the elevation bar. It is tenure, nothing else — the bar is a
+// measurement, so it may never be tuned for looks.
 const trackRecord = [
   {
     period: '2024–26',
+    years: 2,
     company: 'Dholakia Tobacco',
     role: 'Head of Sales and Business Development',
     summary:
@@ -79,6 +106,7 @@ const trackRecord = [
   },
   {
     period: '2023–24',
+    years: 1,
     company: 'RoarLabs',
     role: 'Chief Executive Officer',
     summary:
@@ -86,6 +114,7 @@ const trackRecord = [
   },
   {
     period: '2022–23',
+    years: 1,
     company: 'Flonq',
     role: 'Head of Sales UK',
     summary:
@@ -93,18 +122,28 @@ const trackRecord = [
   },
   {
     period: '2020–22',
+    years: 2,
     company: 'V&YOU',
     role: 'Head of Sales and Marketing',
-    summary: '£1M+ annual revenue. National UK distribution secured through Unitas.',
+    summary:
+      '£1M+ annual revenue. National UK distribution secured through Unitas.',
   },
   {
     period: '2014–20',
+    years: 6,
     company: 'EOS Leisure',
     role: 'Founder and CCO',
     summary:
       "One of the UK's leading vaping and CBD companies. £1,500 start-up to £5M+ turnover. £4M raised. Successful exit in 2019.",
   },
 ]
+
+const MAX_TENURE = Math.max(...trackRecord.map((entry) => entry.years))
+
+// The operator. Nothing on this page proves a person is behind it, which is the
+// one claim the whole consultancy rests on. Set the path once the photograph
+// exists; see .impeccable/ASSETS.md.
+const PORTRAIT: string | undefined = undefined
 
 const categories = [
   'Nicotine Pouches',
@@ -121,18 +160,21 @@ const categories = [
 // start a conversation needs to know how the money works before they will.
 const engagementShapes = [
   {
+    code: 'ENG-01',
     title: 'Scoped project',
     shape: 'Fixed price, agreed in writing before work starts',
     description:
       'A defined piece of work with a defined end: a market entry plan, a distributor search, a pricing review. You see the price and the deliverable before you commit to either.',
   },
   {
+    code: 'ENG-02',
     title: 'Interim leadership',
     shape: 'Monthly retainer against an agreed day commitment',
     description:
       'Running the commercial function while you hire, or while the business is too early to justify a permanent director. Reviewed quarterly, and built to make itself redundant.',
   },
   {
+    code: 'ENG-03',
     title: 'Advisory',
     shape: 'Short and fixed-fee',
     description:
@@ -180,17 +222,20 @@ export default async function ConsultingPage() {
           'Interim commercial leadership',
         ]}
       />
-      <section className="scroll-mt-24 px-6 py-16 md:px-8 md:py-20">
-        <div className="mx-auto max-w-[1100px]">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[var(--marketing-accent)]">
-              Trailhead Commercial
-            </p>
-            <h1 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-[56px]">
-              You have a brand. It needs to sell somewhere it isn&rsquo;t selling
-              yet.
+
+      {/* ---- Hero ---- */}
+      <section className="scroll-mt-24 pt-10 pb-10 md:pt-16 md:pb-12">
+        <div className="bay">
+          <div className="bay-code hidden lg:block">
+            <p className="plan-data text-[var(--ink-3)]">BAY 01</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Commercial</p>
+          </div>
+          <div className="min-w-0">
+            <h1 className="plan-display rack max-w-[16ch]">
+              You have a brand. It needs to sell somewhere it isn&rsquo;t
+              selling yet.
             </h1>
-            <p className="mt-6 text-lg leading-8 text-slate-600">
+            <p className="plan-lede mt-7">
               Maybe that is a new market, a distributor who has gone quiet, or
               pricing that leaves nothing for anyone in the middle. Most advice
               in this category comes from people who have read about it. This
@@ -198,223 +243,372 @@ export default async function ConsultingPage() {
               taken from £1,500 to a £5M exit, and the distribution deals that
               made each of them work.
             </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href={buildMarketingHref('/contact?track=commercial', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--marketing-accent)] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[var(--marketing-accent-strong)]"
+                className="flash justify-center"
               >
                 Start a conversation
               </Link>
               <Link
                 href={buildMarketingHref('/studio', isLocalhost)}
-                className="inline-flex items-center justify-center rounded-full border border-[var(--marketing-border)] px-6 py-3.5 text-sm font-semibold text-[var(--marketing-text)] transition hover:border-[var(--marketing-accent-border)] hover:bg-[var(--marketing-accent-soft)]"
+                className="flash-ghost justify-center"
               >
                 Looking for software instead?
               </Link>
             </div>
           </div>
-
-          <dl className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map(([value, label]) => (
-              <div
-                key={label}
-                className="rounded-2xl border border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-5 py-6"
-              >
-                <dt className="sr-only">{label}</dt>
-                <dd>
-                  <span className="block text-3xl font-bold tracking-[-0.03em]">{value}</span>
-                  <span className="mt-2 block text-sm text-slate-600">{label}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </section>
 
-      <Reveal>
-        <section
-          id="services"
-          className="scroll-mt-24 border-t border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20"
-        >
-          <div className="mx-auto max-w-[1100px]">
-            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+      {/* ---- The artifact, not the assertion --------------------------------
+           The headline claims pricing that survives the value chain. This is
+           that chain, drawn. Figures are redacted rather than invented: the
+           structure is ours to show, the numbers are the client's. */}
+      <section className="rail">
+        <div className="bay py-10 md:py-12">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">PRC-01</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Value chain</p>
+          </div>
+
+          <figure className="min-w-0">
+            <PlateSlot
+              src={PORTRAIT}
+              alt="Rob Harvey"
+              caption="ROB HARVEY · TRAILHEAD COMMERCIAL"
+              width={1200}
+              height={1600}
+              className="mb-8 max-w-xs"
+            />
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <figcaption className="plan-h3">
+                Pricing architecture, factory gate to shelf
+              </figcaption>
+              <span className="key-state key-illustrative">Structure only</span>
+            </div>
+
+            <ol className="mt-5 border-t border-[var(--ink)]">
+              {valueChain.map(([step, stage, note]) => (
+                <li
+                  key={step}
+                  className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1 border-b border-[var(--hair)] py-3 md:grid-cols-[2.5rem_11rem_minmax(0,1fr)_auto]"
+                >
+                  <span className="plan-data text-[var(--ink-3)]">{step}</span>
+                  <span
+                    className="plan-body-sm font-bold text-[var(--ink)]"
+                    style={{ fontStretch: '88%' }}
+                  >
+                    {stage}
+                  </span>
+                  <span className="col-span-2 flex min-w-0 items-baseline gap-4 md:col-span-1">
+                    <span className="plan-body shrink-0 plan-body-xs">
+                      {note}
+                    </span>
+                    {/* The leader, carrying the eye to the measure. */}
+                    <span
+                      aria-hidden="true"
+                      className="hidden h-px flex-1 translate-y-[-0.3em] bg-[repeating-linear-gradient(to_right,var(--hair)_0_2px,transparent_2px_6px)] md:block"
+                    />
+                  </span>
+                  {/* The margin, struck out rather than guessed at. */}
+                  <span
+                    aria-hidden="true"
+                    className="hidden h-3 w-16 justify-self-end bg-[repeating-linear-gradient(45deg,var(--hair)_0_2px,transparent_2px_5px)] md:block"
+                  />
+                </li>
+              ))}
+            </ol>
+
+            <p className="plan-body mt-4 plan-body-xs">
+              Margins are redacted because they are yours. Modelling them for
+              every party in the chain — and finding where the ladder stops
+              holding — is usually the first week of the work.
+            </p>
+          </figure>
+        </div>
+      </section>
+
+      {/* ---- Services ---- */}
+      <Reveal id="services" className="rail scroll-mt-24 bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">SVC</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">4 facings</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">
               What we are usually brought in to do
             </h2>
-            <div className="mt-10 grid gap-5 md:grid-cols-2">
+
+            <div className="facings mt-8 md:grid-cols-2">
               {services.map((service) => (
-                <div
-                  key={service.title}
-                  className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7"
-                >
-                  <h3 className="text-xl font-bold tracking-[-0.02em]">{service.title}</h3>
-                  <p className="mt-3 leading-7 text-slate-600">{service.description}</p>
+                <div key={service.title} className="facing bg-[var(--plan)]">
+                  <p className="plan-data text-[var(--ink-3)]">{service.code}</p>
+                  <h3 className="plan-h3 mt-3">{service.title}</h3>
+                  <p className="plan-body mt-3 plan-body-sm">
+                    {service.description}
+                  </p>
                 </div>
               ))}
             </div>
 
-            <div id="sectors" className="mt-10 flex scroll-mt-24 flex-wrap gap-2">
-              {categories.map((category) => (
-                <span
-                  key={category}
-                  className="rounded-full border border-[var(--marketing-border)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600"
-                >
-                  {category}
-                </span>
-              ))}
+            {/* Category tickets: what sits on this bay. */}
+            <div id="sectors" className="mt-10 scroll-mt-24">
+              <p className="plan-data text-[var(--ink-3)]">CATEGORIES WORKED</p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <li
+                    key={category}
+                    className="plan-label border border-[var(--hair)] bg-[var(--card)] px-2.5 py-2 text-[var(--ink-2)]"
+                  >
+                    {category}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        </section>
+        </div>
       </Reveal>
 
-      <Reveal>
-        <section
-          id="current-work"
-          className="scroll-mt-24 border-t border-[var(--marketing-border)] px-6 py-16 md:px-8 md:py-20"
-        >
-          <div className="mx-auto max-w-[1100px]">
-            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-              Current work
-            </h2>
-            <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+      {/* ---- Current work ---- */}
+      <Reveal id="current-work" className="rail scroll-mt-24">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">LIVE</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">On shelf</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">Current work</h2>
+            <p className="plan-body mt-4">
               Live engagements, running now. Work in progress rather than a case
               study: results get published when there are results to publish.
             </p>
 
-            <ul className="mt-10 space-y-4">
+            <ul className="mt-8">
               {currentWork.map((entry) => (
                 <li
                   key={entry.client}
-                  className="rounded-[2rem] border border-[var(--marketing-accent-border)] bg-[var(--marketing-accent-soft)] p-6 md:p-7"
+                  className="brand-block border border-[var(--ink)] p-6 md:p-8"
                 >
-                  <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-6">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-xl font-bold tracking-[-0.02em]">
-                          {entry.client}
-                        </h3>
-                        <span className="rounded-full bg-[var(--marketing-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white">
-                          Live
-                        </span>
-                      </div>
-                      <p className="mt-1 text-sm font-semibold text-[var(--marketing-accent)]">
-                        {entry.mandate}
-                      </p>
+                  <div className="flex flex-col gap-3 md:flex-row md:items-baseline md:justify-between">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3
+                        className="plan-h3"
+                        style={{ color: 'var(--key-ink)' }}
+                      >
+                        {entry.client}
+                      </h3>
+                      <span
+                        className="key-state"
+                        style={{ color: 'var(--key-ink)' }}
+                      >
+                        Live
+                      </span>
                     </div>
-                    <p className="shrink-0 text-sm font-semibold text-slate-500">
-                      {entry.period}
+                    <p
+                      className="plan-data opacity-80"
+                      style={{ color: 'var(--key-ink)' }}
+                    >
+                      {entry.period.toUpperCase()}
                     </p>
                   </div>
-                  <p className="mt-4 leading-7 text-slate-600">{entry.summary}</p>
+                  <p
+                    className="plan-label mt-3"
+                    style={{ color: 'var(--key-ink)' }}
+                  >
+                    {entry.mandate}
+                  </p>
+                  <p className="plan-body mt-4">{entry.summary}</p>
                 </li>
               ))}
             </ul>
           </div>
-        </section>
+        </div>
       </Reveal>
 
-      <Reveal>
-        <section id="track-record" className="scroll-mt-24 px-6 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-[1100px]">
-            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">Track record</h2>
-            <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+      {/* ---- Track record, drawn as a bay elevation --------------------
+           Each role is a facing and the bar is its tenure to scale, so the
+           shape of thirteen years is legible before a word is read. Everything
+           before Trailhead prints as archive: the material carries its age. */}
+      <Reveal id="track-record" className="rail scroll-mt-24 bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">ELEVATION</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">2014–26</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">Track record</h2>
+            <p className="plan-body mt-4">
               The operating history behind the consultancy. Roles held, not
               clients billed. Every one is a real company with a real trading
-              history, so look them up. That is rather the point of listing them.
+              history, so look them up. That is rather the point of listing
+              them.
             </p>
 
-            <ol className="mt-10 space-y-4">
+            <ol className="mt-8 border-t border-[var(--ink)]">
               {trackRecord.map((entry) => (
                 <li
                   key={entry.company}
-                  className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-6 md:p-7"
+                  className="border-b border-[var(--hair)] py-6"
                 >
-                  <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between md:gap-6">
+                  <div className="grid gap-x-8 gap-y-3 md:grid-cols-[7.5rem_minmax(0,1fr)]">
                     <div>
-                      <h3 className="text-xl font-bold tracking-[-0.02em]">{entry.company}</h3>
-                      <p className="mt-1 text-sm font-semibold text-[var(--marketing-accent)]">{entry.role}</p>
+                      <p className="plan-data text-[var(--ink-2)]">
+                        {entry.period}
+                      </p>
+                      {/* The elevation bar: width is tenure, to scale. */}
+                      <div
+                        className="bar-tenure is-archive mt-2"
+                        style={{
+                          width: `${(entry.years / MAX_TENURE) * 100}%`,
+                        }}
+                        aria-hidden="true"
+                      />
+                      <p className="plan-data mt-1.5 text-[var(--ink-3)]">
+                        {entry.years} YR{entry.years > 1 ? 'S' : ''}
+                      </p>
                     </div>
-                    <p className="shrink-0 text-sm font-semibold text-slate-500">{entry.period}</p>
+                    <div className="min-w-0">
+                      <h3 className="plan-h3">{entry.company}</h3>
+                      <p className="plan-label mt-2 text-[var(--key-deep)]">
+                        {entry.role}
+                      </p>
+                      <p className="plan-body mt-3 plan-body-sm">
+                        {entry.summary}
+                      </p>
+                    </div>
                   </div>
-                  <p className="mt-4 leading-7 text-slate-600">{entry.summary}</p>
                 </li>
               ))}
             </ol>
+
+            {/* The totals the elevation adds up to. They belong beside the
+                thing that evidences them, not floating under the headline. */}
+            <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-6 md:grid-cols-4">
+              {dimensions.map(([value, label]) => (
+                <div key={label} className="border-l border-[var(--hair)] pl-4">
+                  <dt className="plan-note text-[var(--ink-3)]">{label}</dt>
+                  <dd
+                    className="plan-figure mt-1.5 text-[var(--key-deep)]"
+                  >
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        </section>
+        </div>
       </Reveal>
 
-      <Reveal>
-        <section className="border-t border-[var(--marketing-border)] bg-[var(--marketing-surface)] px-6 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-[1100px]">
-            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-              How engagements are priced
-            </h2>
-            <p className="mt-4 max-w-2xl leading-7 text-slate-600">
+      {/* ---- Pricing shapes, as three tickets ---- */}
+      <Reveal className="rail">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">ENG</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Terms</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">How engagements are priced</h2>
+            <p className="plan-body mt-4">
               Numbers depend on the brief, but the shape never changes: you see
               the price in writing before anything is committed, and nothing
               bills by the hour.
             </p>
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
+
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
               {engagementShapes.map((shape) => (
-                <div
-                  key={shape.title}
-                  className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-7"
-                >
-                  <h3 className="text-xl font-bold tracking-[-0.02em]">{shape.title}</h3>
-                  <p className="mt-2 text-sm font-semibold text-[var(--marketing-accent)]">
+                <div key={shape.title} className="ticket">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="plan-data text-[var(--ink-3)]">
+                      {shape.code}
+                    </p>
+                  </div>
+                  <h3 className="plan-h3 mt-3">{shape.title}</h3>
+                  <p className="plan-label mt-2 text-[var(--key-deep)]">
                     {shape.shape}
                   </p>
-                  <p className="mt-3 leading-7 text-slate-600">{shape.description}</p>
+                  <p className="plan-body ticket-rule plan-body-sm">
+                    {shape.description}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
-        </section>
+        </div>
       </Reveal>
 
-      <Reveal>
-        <section className="px-6 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-[1100px]">
-            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-              Questions we get asked
-            </h2>
-            <div className="mt-8 space-y-3">
+      {/* ---- FAQ ---- */}
+      <Reveal className="rail bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">FAQ</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Asked first</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">Questions we get asked</h2>
+            <div className="mt-8 border-t border-[var(--ink)]">
               {faqs.map((faq) => (
                 <details
                   key={faq.question}
-                  className="group rounded-2xl border border-[var(--marketing-border)] bg-white px-6 py-5"
+                  className="group border-b border-[var(--hair)]"
                 >
-                  <summary className="cursor-pointer list-none text-lg font-semibold tracking-[-0.01em] marker:content-none">
+                  <summary className="plan-h3 flex max-w-3xl cursor-pointer list-none items-center justify-between gap-4 py-4 marker:content-none">
                     {faq.question}
+                    <PlanIcon
+                      name="cross"
+                      size={15}
+                      className="text-[var(--ink-2)] transition-transform group-open:rotate-45"
+                    />
                   </summary>
-                  <p className="mt-3 leading-7 text-slate-600">{faq.answer}</p>
+                  <p className="plan-body pb-5 plan-body-sm">{faq.answer}</p>
                 </details>
               ))}
             </div>
           </div>
-        </section>
+        </div>
       </Reveal>
 
-      <Reveal>
-        <section className="px-6 py-16 md:px-8 md:py-20">
-          <div className="mx-auto max-w-[1100px] rounded-[2rem] bg-slate-950 px-8 py-14 text-white md:px-14">
-            <h2 className="max-w-2xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+      {/* ---- Close ---- */}
+      <Reveal className="rail brand-block">
+        <div className="bay py-14 md:py-20">
+          <div className="bay-code">
+            <p
+              className="plan-note opacity-70"
+              style={{ color: 'var(--key-ink)' }}
+            >
+              End of bay
+            </p>
+          </div>
+          <div className="min-w-0">
+            <h2
+              className="plan-h2 rack-target max-w-[20ch]"
+              style={{ color: 'var(--key-ink)' }}
+            >
               Tell us what the commercial problem actually is.
             </h2>
-            <p className="mt-5 max-w-2xl leading-8 text-slate-300">
+            <p className="plan-lede mt-6">
               Most engagements start with a business that knows its numbers are
               not where they should be but cannot yet name the reason. That is
               the conversation we are good at. You leave it with a written scope
               and a fixed price, whether or not you go ahead with us.
             </p>
-            <Link
-              href={buildMarketingHref('/contact?track=commercial', isLocalhost)}
-              className="mt-9 inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-            >
-              Start a conversation
-            </Link>
+            <div className="ticket mt-9 max-w-md">
+              <p className="plan-data text-[var(--ink-3)]">
+                NO FEE FOR THE FIRST CONVERSATION
+              </p>
+              <div className="ticket-rule">
+                <Link
+                  href={buildMarketingHref('/contact?track=commercial', isLocalhost)}
+                  className="flash"
+                >
+                  Start a conversation
+                  <PlanIcon name="right" />
+                </Link>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
       </Reveal>
     </div>
   )

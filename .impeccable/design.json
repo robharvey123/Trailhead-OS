@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-31T00:00:00Z",
+  "title": "Design System: Trailhead Holdings — Marketing Surface",
+  "scope": "app/(marketing) only, scoped in CSS by .bay-plan. The authenticated Trailhead OS app under app/(os) and app/(app) uses a separate dark system and inherits none of these tokens.",
+  "extensions": {
+    "colorMeta": {
+      "flash": { "role": "primary", "displayName": "Price Flash Red", "canonical": "#da2818", "tonalRamp": ["#2b0703", "#4d0d06", "#71140a", "#961a0e", "#ab1c10", "#da2818", "#f0705f", "#fbd3cd"] },
+      "flash-deep": { "role": "primary", "displayName": "Deep Flash", "canonical": "#ab1c10", "tonalRamp": ["#230604", "#3f0a07", "#5c0f0a", "#7a150d", "#ab1c10", "#d64a3c", "#ec9086", "#fbdcd7"] },
+      "key-commercial": { "role": "secondary", "displayName": "Ink Blue (Trailhead Commercial)", "canonical": "#12379e", "tonalRamp": ["#050f2c", "#081949", "#0b2266", "#0e2c83", "#12379e", "#3a5fc6", "#7f95dd", "#d5dcf5"] },
+      "key-studio": { "role": "secondary", "displayName": "Chrome Yellow (Trailhead Studio) — block fill only", "canonical": "#f2b01e", "tonalRamp": ["#3a2905", "#543c07", "#7a5606", "#a4740c", "#cb9114", "#f2b01e", "#f8cd6f", "#fdefcd"] },
+      "key-studio-deep": { "role": "secondary", "displayName": "Chrome Yellow Deep — Studio as type on stock (5.3:1)", "canonical": "#7a5606", "tonalRamp": ["#241903", "#3b2904", "#523905", "#7a5606", "#a3730a", "#cd9214", "#e7b954", "#f7e6bf"] },
+      "key-labs": { "role": "secondary", "displayName": "Plan Green (Trailhead Labs / Live)", "canonical": "#0c6b45", "tonalRamp": ["#031a11", "#052e1e", "#07452b", "#0c6b45", "#128f5e", "#2ab782", "#6fd6ab", "#cdefe0"] },
+      "key-build": { "role": "tertiary", "displayName": "Build Amber (In build state, 5.1:1 on stock)", "canonical": "#8a5104", "tonalRamp": ["#2a1901", "#3f2502", "#553203", "#8a5104", "#b26a08", "#d88d18", "#eeb45c", "#f9e5c2"] },
+      "plan-stock": { "role": "neutral", "displayName": "Plan Stock (the printed ground)", "canonical": "#e7eae4", "tonalRamp": ["#20231e", "#33372f", "#4b5045", "#6c7266", "#939a8c", "#bcc2b6", "#e7eae4", "#f6f8f4"] },
+      "plan-recess": { "role": "neutral", "displayName": "Bay Recess (backboard behind the facings)", "canonical": "#dcdfd8", "tonalRamp": ["#1d201a", "#30332b", "#474b41", "#676c60", "#8e9487", "#b7bcb1", "#dcdfd8", "#f0f2ee"] },
+      "ticket-stock": { "role": "neutral", "displayName": "Ticket Stock (shelf-edge ticket, field ground)", "canonical": "#fcfcfa", "tonalRamp": ["#232320", "#38382f", "#515145", "#727263", "#999985", "#c3c3b3", "#e6e6dc", "#fcfcfa"] },
+      "ink": { "role": "neutral", "displayName": "Ink (rail, rule, primary type)", "canonical": "#14161a", "tonalRamp": ["#14161a", "#22262c", "#343943", "#4a505c", "#6a7280", "#98a0ac", "#c7cdd5", "#eef0f3"] },
+      "ink-2": { "role": "neutral", "displayName": "Ink 2 (body and secondary type, 6.5:1 on stock)", "canonical": "#4a4f55", "tonalRamp": ["#131518", "#22262a", "#33383d", "#4a4f55", "#697079", "#929aa3", "#bfc5cb", "#e9ebee"] },
+      "ink-3": { "role": "neutral", "displayName": "Ink 3 (annotation floor: 5.2:1 on stock, 4.8:1 on recess)", "canonical": "#595e64", "tonalRamp": ["#16181a", "#262a2d", "#3a3f43", "#595e64", "#7b818a", "#a2a8b0", "#c8ccd2", "#ecedf0"] },
+      "hair": { "role": "neutral", "displayName": "Hairline (every internal division)", "canonical": "rgba(20, 22, 26, 0.22)", "tonalRamp": ["rgba(20,22,26,0.9)", "rgba(20,22,26,0.72)", "rgba(20,22,26,0.55)", "rgba(20,22,26,0.4)", "rgba(20,22,26,0.3)", "rgba(20,22,26,0.22)", "rgba(20,22,26,0.12)", "rgba(20,22,26,0.06)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "One per page, the page's statement. Archivo wdth 80. Capped at 5.5rem; never past 6rem." },
+      "headline": { "displayName": "Headline", "purpose": "The head of a band, sat against its rail. Archivo wdth 82." },
+      "title": { "displayName": "Title", "purpose": "A facing's name, a ticket's heading, a blog row's title. Archivo wdth 88." },
+      "lede": { "displayName": "Lede", "purpose": "The paragraph directly under a display. Max 62ch, text-wrap: pretty." },
+      "body": { "displayName": "Body", "purpose": "All running prose. Ink 2, max 68ch. Long-form prose runs the same size at 1.66." },
+      "label": { "displayName": "Shelf-edge Label", "purpose": "Mounted caps: nav items, ticket headings, gutter labels. Never alone above a heading." },
+      "note": { "displayName": "Note", "purpose": "The label voice when it must wrap to two or three lines." },
+      "data": { "displayName": "Plan Data", "purpose": "Martian Mono, admitted for codes, prices, dates, counts, dimensions, tags and table figures only. Never running prose." }
+    },
+    "shadows": [
+      { "name": "none", "value": "none", "purpose": "The system has no elevation shadows. Depth is tonal (recess / stock / ticket) plus two rule weights." },
+      { "name": "archive-hollow", "value": "inset 0 0 0 1px var(--key-deep)", "purpose": "Not elevation: the inset ring that draws .bar-tenure.is-archive hollow, marking a delisted line without dimming copy." }
+    ],
+    "motion": [
+      { "name": "rack-ease", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The only easing on the surface: entrance wipes and both button hovers." },
+      { "name": "rack-in", "value": "clip-path: inset(0 100% 0 0) → inset(0 0 0 0) over 720ms", "purpose": "Bands rack in along the rail, left to right, over content that is already fully visible." },
+      { "name": "control-transition", "value": "180ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Button background and 3px translateX nudge on hover; removed under prefers-reduced-motion." },
+      { "name": "reveal-threshold", "value": "IntersectionObserver threshold 0.14, rootMargin 0px 0px -40px 0px", "purpose": "When a band's rack-target wipe fires. The band itself is never hidden." }
+    ],
+    "breakpoints": [
+      { "name": "facing", "value": "48rem", "purpose": "Facing padding opens; facing grids go to 2 columns." },
+      { "name": "gutter", "value": "60rem", "purpose": "The layout model changes: the bay becomes gutter + facings; below it the gutter code takes order 2." },
+      { "name": "wide", "value": "64rem", "purpose": "Hero gutter tickets appear; brand blocks go side by side." },
+      { "name": "bay-max", "value": "78rem", "purpose": "Maximum bay width; the chrome and footer share it." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Price Flash (primary action)",
+      "kind": "button",
+      "refersTo": "flash",
+      "description": "The primary action, everywhere. Signal red, square, caps, with a drawn arrow. Never printed on a brand block — it goes on the white ticket at the block's foot.",
+      "html": "<a class=\"ds-flash\" href=\"#\">Start a conversation<svg class=\"ds-icon\" viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\" aria-hidden=\"true\"><path d=\"M2 8h12M10 4l4 4-4 4\"/></svg></a>",
+      "css": ".ds-flash { display: inline-flex; align-items: center; gap: 0.6rem; background: #da2818; color: #fff; border: 0; border-radius: 0; padding: 0.85rem 1.35rem; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-stretch: 76%; font-weight: 700; font-size: 0.8125rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1), transform 180ms cubic-bezier(0.16,1,0.3,1); } .ds-flash:hover { background: #ab1c10; transform: translateX(3px); } .ds-flash:focus-visible { outline: 2px solid #da2818; outline-offset: 2px; } .ds-flash:active { background: #ab1c10; } @media (prefers-reduced-motion: reduce) { .ds-flash:hover { transform: none; } }"
+    },
+    {
+      "name": "Flash Ghost (secondary action)",
+      "kind": "button",
+      "refersTo": "flash-ghost",
+      "description": "The secondary action. A 1px ink outline that inverts to a solid ink ground on hover.",
+      "html": "<a class=\"ds-flash-ghost\" href=\"#\">Log in</a>",
+      "css": ".ds-flash-ghost { display: inline-flex; align-items: center; gap: 0.6rem; background: transparent; color: #14161a; border: 1px solid #14161a; border-radius: 0; padding: 0.85rem 1.35rem; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-stretch: 76%; font-weight: 700; font-size: 0.8125rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1), color 180ms cubic-bezier(0.16,1,0.3,1), transform 180ms cubic-bezier(0.16,1,0.3,1); } .ds-flash-ghost:hover { background: #14161a; color: #e7eae4; transform: translateX(3px); } .ds-flash-ghost:focus-visible { outline: 2px solid #da2818; outline-offset: 2px; } @media (prefers-reduced-motion: reduce) { .ds-flash-ghost:hover { transform: none; } }"
+    },
+    {
+      "name": "Shelf-edge Ticket",
+      "kind": "card",
+      "refersTo": "ticket",
+      "description": "The only bordered container in the system. Ticket stock inside 1px ink, with a drawn mounting notch across its top edge where it clips into the rail.",
+      "html": "<div class=\"ds-ticket\"><div class=\"ds-ticket-head\"><span class=\"ds-data\">SEL-01</span><span class=\"ds-data\">SINCE 2014 · 6 MARKETS</span></div><div class=\"ds-ticket-rule\"><a class=\"ds-flash\" href=\"#\">Enter Trailhead Commercial</a></div></div>",
+      "css": ".ds-ticket { position: relative; background: #fcfcfa; border: 1px solid #14161a; border-radius: 0; padding: 0.9rem 1.05rem 1rem; color: #14161a; } .ds-ticket::before { content: ''; position: absolute; top: -1px; left: 1.05rem; width: 2.25rem; height: 3px; background: #14161a; } .ds-ticket-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; } .ds-ticket-rule { border-top: 1px solid rgba(20,22,26,0.22); margin-top: 0.7rem; padding-top: 0.55rem; } .ds-data { font-family: 'Martian Mono', ui-monospace, SFMono-Regular, monospace; font-size: 0.6875rem; letter-spacing: 0.02em; line-height: 1.3; font-variant-numeric: tabular-nums; color: #595e64; } .ds-flash { display: inline-flex; align-items: center; gap: 0.6rem; background: #da2818; color: #fff; border: 0; padding: 0.85rem 1.35rem; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-stretch: 76%; font-weight: 700; font-size: 0.8125rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-flash:hover { background: #ab1c10; }"
+    },
+    {
+      "name": "Facings Grid",
+      "kind": "card",
+      "refersTo": "facing",
+      "description": "Registered blocks divided by rule, not cards. The grid owns the top and left hairlines and each facing owns right and bottom, so N columns read as one ruled table.",
+      "html": "<div class=\"ds-facings\"><a class=\"ds-facing\" href=\"#\"><span class=\"ds-facing-data\">LAB-01</span><h3 class=\"ds-facing-title\">Engineer OS</h3><p class=\"ds-facing-body\">Job management for UK field service teams, from £15 per engineer a month.</p><p class=\"ds-facing-price\">£15 / ENGINEER / MO</p></a><a class=\"ds-facing\" href=\"#\"><span class=\"ds-facing-data\">LAB-02</span><h3 class=\"ds-facing-title\">MVP Cricket</h3><p class=\"ds-facing-body\">Club management for grassroots cricket, with Play-Cricket sync.</p><p class=\"ds-facing-price\">£19 / CLUB / MO</p></a></div>",
+      "css": ".ds-facings { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); border-top: 1px solid rgba(20,22,26,0.22); border-left: 1px solid rgba(20,22,26,0.22); background: #e7eae4; } .ds-facing { display: flex; flex-direction: column; border-right: 1px solid rgba(20,22,26,0.22); border-bottom: 1px solid rgba(20,22,26,0.22); border-radius: 0; padding: 1.75rem 1.75rem 2rem; background: transparent; color: #14161a; text-decoration: none; min-width: 0; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-facing:hover { background: #fcfcfa; } .ds-facing:focus-visible { outline: 2px solid #da2818; outline-offset: -2px; } .ds-facing-data { font-family: 'Martian Mono', ui-monospace, monospace; font-size: 0.6875rem; letter-spacing: 0.02em; color: #595e64; } .ds-facing-title { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-stretch: 88%; font-weight: 700; font-size: 1.5rem; line-height: 1.08; letter-spacing: -0.012em; margin: 1rem 0 0; } .ds-facing-body { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-weight: 400; font-size: 0.9375rem; line-height: 1.62; color: #4a4f55; flex: 1; margin: 0.625rem 0 0; } .ds-facing-price { font-family: 'Martian Mono', ui-monospace, monospace; font-size: 0.6875rem; letter-spacing: 0.02em; color: #14161a; border-top: 1px solid rgba(20,22,26,0.22); padding-top: 0.75rem; margin: 1.5rem 0 0; }"
+    },
+    {
+      "name": "Epistemic Key",
+      "kind": "chip",
+      "refersTo": "key-state",
+      "description": "Signature component. States what kind of claim is being made: Live (green, verifiable today), In build (amber, real work not yet shipped), Illustrative (grey with a hatched bullet, a drawing standing in for a real capture).",
+      "html": "<span class=\"ds-key ds-key-live\">Live</span> <span class=\"ds-key ds-key-build\">In build</span> <span class=\"ds-key ds-key-illustrative\">Illustrative</span>",
+      "css": ".ds-key { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.24rem 0.5rem; border: 1px solid currentColor; border-radius: 0; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-stretch: 72%; font-weight: 650; font-size: 0.625rem; letter-spacing: 0.13em; text-transform: uppercase; line-height: 1; } .ds-key::before { content: ''; width: 5px; height: 5px; background: currentColor; } .ds-key-live { color: #0c6b45; } .ds-key-build { color: #8a5104; } .ds-key-illustrative { color: #595e64; } .ds-key-illustrative::before { background: repeating-linear-gradient(45deg, currentColor 0 1px, transparent 1px 2px); }"
+    },
+    {
+      "name": "Brand Block",
+      "kind": "custom",
+      "refersTo": "brand-block",
+      "description": "A full facing of one keyed colour standing hard against its neighbour. At most two in view at once. Secondary copy is mixed from the block's own foreground, never grey. The price flash prints on the ticket at its foot, never on the block.",
+      "html": "<article class=\"ds-block\"><p class=\"ds-block-label\">Trailhead Commercial</p><h2 class=\"ds-block-title\">You have a brand. It needs to sell somewhere it isn't selling yet.</h2><ul class=\"ds-block-list\"><li>Market entry across the UK, EU, DACH and Sweden</li><li>Pricing architecture and portfolio rationalisation</li></ul><div class=\"ds-block-ticket\"><a class=\"ds-block-flash\" href=\"#\">Enter Trailhead Commercial</a></div></article>",
+      "css": ".ds-block { --key: #12379e; --key-ink: #ffffff; background: var(--key); color: var(--key-ink); border-radius: 0; padding: 2rem; display: flex; flex-direction: column; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; } .ds-block-label { font-stretch: 72%; font-weight: 650; font-size: 0.6875rem; letter-spacing: 0.13em; text-transform: uppercase; line-height: 1; margin: 0; } .ds-block-title { font-stretch: 82%; font-weight: 720; font-size: 2rem; line-height: 1; letter-spacing: -0.018em; max-width: 18ch; margin: 1rem 0 0; } .ds-block-list { list-style: none; padding: 0; margin: 1.5rem 0 0; } .ds-block-list li { border-top: 1px solid color-mix(in srgb, var(--key-ink) 26%, transparent); padding: 0.625rem 0; font-size: 0.9375rem; line-height: 1.375; color: color-mix(in srgb, var(--key-ink) 88%, var(--key)); } .ds-block-ticket { position: relative; background: #fcfcfa; border: 1px solid #14161a; margin-top: 1.75rem; padding: 0.9rem 1.05rem 1rem; } .ds-block-ticket::before { content: ''; position: absolute; top: -1px; left: 1.05rem; width: 2.25rem; height: 3px; background: #14161a; } .ds-block-flash { display: inline-flex; align-items: center; background: #da2818; color: #fff; padding: 0.85rem 1.35rem; font-stretch: 76%; font-weight: 700; font-size: 0.8125rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: background-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-block-flash:hover { background: #ab1c10; }"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Ticket stock in a hairline, square, no shadow. The border itself is the focus indicator, shifting to signal red; the caret matches.",
+      "html": "<label class=\"ds-label\" for=\"ds-email\">Email</label><input class=\"ds-input\" id=\"ds-email\" type=\"email\" placeholder=\"you@company.co.uk\">",
+      "css": ".ds-label { display: block; margin-bottom: 0.5rem; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-stretch: 72%; font-weight: 650; font-size: 0.6875rem; letter-spacing: 0.13em; text-transform: uppercase; line-height: 1; color: #4a4f55; } .ds-input { width: 100%; border: 1px solid rgba(20,22,26,0.22); border-radius: 0; background: #fcfcfa; padding: 0.75rem 0.875rem; font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-size: 0.9375rem; color: #14161a; caret-color: #da2818; outline: none; transition: border-color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-input::placeholder { color: #595e64; } .ds-input:hover { border-color: #4a4f55; } .ds-input:focus, .ds-input:focus-visible { border-color: #da2818; outline: none; }"
+    },
+    {
+      "name": "Rail with Bay Code",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "The rail every band hangs from: 1px ink with tick marks at a 2rem pitch, carrying the bay code, a drawn dimension callout and the domain. Nav labels are mounted caps that hover to signal red.",
+      "html": "<div class=\"ds-rail\"><div class=\"ds-rail-inner\"><span class=\"ds-rail-data\">BAY 01<span class=\"ds-rail-sep\">|</span>NGP · FMCG · UK/EU/DACH/SE</span><span class=\"ds-rail-dim\"><svg viewBox=\"0 0 200 12\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path d=\"M1 0v12M199 0v12\" stroke=\"currentColor\" stroke-width=\"1\" vector-effect=\"non-scaling-stroke\"/><path d=\"M1 6h198M5 3L1 6l4 3M195 3l4 3-4 3\" stroke=\"currentColor\" stroke-width=\"1\" fill=\"none\" vector-effect=\"non-scaling-stroke\"/></svg></span><a class=\"ds-nav-link\" href=\"#\">Track record</a></div></div>",
+      "css": ".ds-rail { position: relative; border-top: 1px solid #14161a; background: #e7eae4; } .ds-rail::before { content: ''; position: absolute; inset-inline: 0; top: 0; height: 0.5rem; background-image: repeating-linear-gradient(to right, rgba(20,22,26,0.22) 0 1px, transparent 1px 2rem); pointer-events: none; } .ds-rail-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.5rem 2rem 0.375rem; } .ds-rail-data { font-family: 'Martian Mono', ui-monospace, monospace; font-size: 0.6875rem; letter-spacing: 0.02em; color: #595e64; white-space: nowrap; } .ds-rail-sep { margin: 0 0.5rem; color: rgba(20,22,26,0.22); } .ds-rail-dim { flex: 1; padding: 0 1rem; color: rgba(20,22,26,0.22); } .ds-rail-dim svg { height: 0.75rem; width: 100%; display: block; } .ds-nav-link { font-family: Archivo, ui-sans-serif, system-ui, sans-serif; font-stretch: 72%; font-weight: 650; font-size: 0.6875rem; letter-spacing: 0.13em; text-transform: uppercase; line-height: 1; color: #4a4f55; text-decoration: none; transition: color 180ms cubic-bezier(0.16,1,0.3,1); } .ds-nav-link:hover { color: #da2818; } .ds-nav-link:focus-visible { outline: 2px solid #da2818; outline-offset: 2px; }"
+    },
+    {
+      "name": "Tenure Bar",
+      "kind": "custom",
+      "refersTo": "brand-block",
+      "description": "A drawn measure. Solid means current; hollow (a 1px inset ring) means the line is no longer on shelf. The distinction lives in the drawing, never in dimmed copy.",
+      "html": "<div class=\"ds-bar\"></div><div class=\"ds-bar ds-bar-archive\"></div>",
+      "css": ".ds-bar { height: 0.375rem; width: 60%; background: #14161a; margin-bottom: 0.75rem; } .ds-bar-archive { background: transparent; box-shadow: inset 0 0 0 1px #14161a; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Category Manager's Planogram",
+    "overview": "The site is a bay plan. Trailhead's job is getting a thing onto a shelf it is not on yet, so the marketing surface is drawn the way a category manager draws a bay elevation: plan stock ground, black hairline rails with tick marks at a fixed pitch, each service or product a registered facing divided from its neighbours by rule, and a white shelf-edge ticket mounted beneath carrying the checkable fact — a code, a price, a date. Nothing floats. Nothing is rounded. There is no white ground, no card, and no blue accent, which is the founder-consultancy default the world was built to refuse.\n\nDensity is high and the surface is quiet. Colour does almost nothing: the page is stock and rule, and a keyed colour appears only where it identifies something — which sub-brand's bay you are standing in, whether a claim is live or in build, which action is the primary one. The result reads as a printed working document rather than a marketing page, which is the point: the site's argument is that a checkable fact sits under every claim, and the material makes that visible before the copy is read.",
+    "keyCharacteristics": [
+      "Plan stock ground (#e7eae4) with a black 1px rail and tick-marked hairlines, never white with cards",
+      "Zero radius on every surface; the only rounding in the build is 2px on the four bars of the brand mark",
+      "One type family (Archivo) across its width axis, with Martian Mono admitted for data only",
+      "Colour is keyed data: a block fill that identifies a track, or a state key that identifies a claim's epistemic status",
+      "Signal red (#da2818) as the single action/attention colour, everywhere and nowhere else",
+      "Content ships fully visible; motion is a clip-wipe over the top of it, never a fade-in from hidden"
+    ],
+    "rules": [
+      { "name": "The Keyed-Colour Rule", "body": "Colour identifies; it never decorates. A colour appears on this surface only to answer one of three questions: which bay am I in (--key / --key-deep), how sure is this claim (.key-state), or where do I act (--flash). There is no third option. A tint, a gradient, a coloured background applied for warmth or interest, or a coloured heading for emphasis are all outside the system.", "section": "colors" },
+      { "name": "The Two-Block Rule", "body": "A brand block is a solid facing of one keyed colour. At most two are in view at once; everything else on the page is stock and rule. The colour commitment is total where it lands and absent everywhere else.", "section": "colors" },
+      { "name": "The Deep-Relative Rule", "body": "A key colour used as type or as a small graphic on plan stock must use its --key-deep value, never --key. Chrome yellow is the case that proves it: legible as a full block behind ink, illegible as 11px type. Any new track colour ships with both values or it does not ship.", "section": "colors" },
+      { "name": "The No-Dimmed-Copy Rule", "body": "Body copy is never dimmed with opacity to signal secondary or historical status. Where a distinction is needed, it is drawn — .bar-tenure.is-archive renders the same bar hollow, which reads as delisted on a plan and costs nothing in contrast.", "section": "colors" },
+      { "name": "The Coloured-Ground Rule", "body": "On a brand block, secondary type is mixed from the block's own foreground, never from the grey ink ramp. Grey on a coloured ground is a different, worse colour on every track.", "section": "colors" },
+      { "name": "The One Face Rule", "body": "Archivo carries display, headings, body, and the caps labels. A second sans, a serif, or a system display face is out of the system — including for a special hero. If a level needs distinguishing, move along the width axis or change case, weight, rule or position.", "section": "typography" },
+      { "name": "The Mono-Is-Data Rule", "body": "Martian Mono is admitted for codes, prices, dates, counts, dimensions, tags and table figures only. Mono running prose is a documented violation of this world, not a stylistic option.", "section": "typography" },
+      { "name": "The No-Kicker Rule", "body": "A shelf-edge label never stands alone above a heading as an announcement. It is mounted — on a rail, on a ticket, or in the gutter — and it carries data (a bay code, a facing count, a track name in the chrome), not a section title in miniature.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "The whole surface sets font-variant-numeric: tabular-nums. Figures in a column line up; a price never shifts on hover.", "section": "typography" },
+      { "name": "The Gutter-Never-Above Rule", "body": "The bay code never sits above a heading. At desktop it is a margin column, beside the statement. Below 60rem the bay collapses to one column and the gutter takes order: 2, dropping to the foot of its band with a hairline above it — where a drawing keeps its annotation block. Stacking it above the heading would make it a kicker, and nothing on this site earns one. The carve-out: .bay-code-lead takes order: 0 and leads the band, reserved for a gutter carrying navigation, because a back link is a control, not a label.", "section": "layout" },
+      { "name": "The Measure Rule", "body": "Body holds at 68ch, lede at 62ch, and a display headline is clamped by ch at its call site. A full-bleed line of running text is not in this system.", "section": "layout" },
+      { "name": "The Nothing-Floats Rule", "body": "No drop shadow, no glow, no lifted card, no offset hard shadow, no blur, no backdrop-filter. If a thing needs to read as separate, give it a ground change and a rule.", "section": "elevation" },
+      { "name": "The Motion-Reveals-Nothing Rule", "body": "Content is never shipped hidden. .marketing-reveal is explicitly opacity: 1 inside .bay-plan, and the entrance is a clip-path wipe that runs over fully-present content, left to right. A blocked chunk, a crawler, or a user with prefers-reduced-motion sees the complete page.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do hang every band from a rail and register its content as facings divided by rule.",
+      "Do put the checkable fact — code, price, date, count — on a ticket, in Martian Mono, near the claim it supports.",
+      "Do use --key-deep for any key-coloured type or small graphic on plan stock; --key is a block fill.",
+      "Do keep annotation type at Ink 3 (#595e64) or darker. It is a measured floor (5.2:1 on stock, 4.8:1 on recess) that was raised during review.",
+      "Do key any claim whose status is not self-evident with .key-state, and delete the Illustrative key in the same change that replaces the drawing with a real capture.",
+      "Do draw icons as 1.5px single-stroke SVG with butt caps and mitre joins, sized to the label beside them.",
+      "Do ship content visible and let motion wipe over it, with a prefers-reduced-motion cut-out.",
+      "Do put a gutter code in the margin at desktop and at the foot of its band on mobile; .bay-code-lead only when the gutter carries a back link."
+    ],
+    "donts": [
+      "Don't build a card. No radius, no shadow, no floating panel, no hover lift. .ticket is the only bordered container and it earns its border by being a mounted object.",
+      "Don't put a shelf-edge label alone above a heading as a kicker or eyebrow. Mount it, or set it in the gutter, or delete it.",
+      "Don't set Martian Mono in running prose. It is admitted for codes, prices, dates, counts and dimensions only.",
+      "Don't introduce a second type family, a serif, or a system display face for emphasis; move along Archivo's width axis instead.",
+      "Don't set chrome yellow (#f2b01e) as type on plan stock at any size — 1.5:1 at 11px. Use #7a5606.",
+      "Don't dim body copy with opacity to indicate secondary, historical or inactive status. Draw the distinction instead.",
+      "Don't use signal red as a field, a ground for content, or a track identity. It marks action, focus, selection and error, and its rarity is what makes it work.",
+      "Don't render a placeholder image, grey box, gradient, stock photo or device mockup where a real asset is missing. Render nothing.",
+      "Don't apply any of this to app/(os) or app/(app). The OS app is a separate dark system and the .bay-plan scope is the boundary."
+    ],
+    "openNotResolved": [
+      "The surface ships with no photography, no product screenshots and no client logos (.impeccable/ASSETS.md). Slots exist and are shaped; they are empty.",
+      "The Studio hero's job docket is an authored drawing keyed Illustrative, standing where a real Engineer OS screenshot belongs.",
+      "Entrance motion is currently one identical rack-in per section, not a single authored moment."
+    ]
+  }
+}

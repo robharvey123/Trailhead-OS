@@ -13,12 +13,15 @@ export default async function PrivacyPage() {
 
   return (
     <LegalPageShell isLocalhost={isLocalhost}>
-      <h1 className="text-4xl font-bold tracking-[-0.04em] text-[var(--marketing-text)] md:text-5xl">
+      <h1
+        className="text-[clamp(2rem,4.4vw,3.25rem)] leading-[0.98] font-bold text-[var(--ink)]"
+        style={{ fontStretch: '80%', letterSpacing: '-0.02em' }}
+      >
         Privacy Policy
       </h1>
 
       <p className="mt-6">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Last updated: July 2026
         </strong>
       </p>
@@ -34,7 +37,7 @@ export default async function PrivacyPage() {
       </p>
 
       <p className="mt-6">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Data controller:
         </strong>
         <br />
@@ -49,11 +52,11 @@ export default async function PrivacyPage() {
         info@trailheadholdings.uk
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         1. What data we collect
       </h2>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.1 Website contact form
       </h3>
       <p className="mt-4">
@@ -62,7 +65,7 @@ export default async function PrivacyPage() {
         enquiry. This data is sent to us via Resend and stored securely.
       </p>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.2 Discovery form (project enquiries)
       </h3>
       <p className="mt-4">
@@ -73,7 +76,7 @@ export default async function PrivacyPage() {
         accessible only to Trailhead Holdings Ltd.
       </p>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.3 Client and account data
       </h3>
       <p className="mt-4">
@@ -83,7 +86,7 @@ export default async function PrivacyPage() {
         fulfil our contract with you.
       </p>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.4 Payment data
       </h3>
       <p className="mt-4">
@@ -97,7 +100,7 @@ export default async function PrivacyPage() {
         .
       </p>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.5 Google Calendar
       </h3>
       <p className="mt-4">
@@ -115,7 +118,7 @@ export default async function PrivacyPage() {
         .
       </p>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.6 Cookies and analytics
       </h3>
       <p className="mt-4">
@@ -125,7 +128,7 @@ export default async function PrivacyPage() {
         users across sites.
       </p>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.7 Push notifications
       </h3>
       <p className="mt-4">
@@ -134,7 +137,7 @@ export default async function PrivacyPage() {
         can revoke this permission at any time in your browser settings.
       </p>
 
-      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--marketing-text)]">
+      <h3 className="mt-8 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
         1.8 Blog
       </h3>
       <p className="mt-4">
@@ -142,7 +145,7 @@ export default async function PrivacyPage() {
         it and we do not track individual readers.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         2. Legal basis for processing
       </h2>
       <p className="mt-4">
@@ -151,14 +154,14 @@ export default async function PrivacyPage() {
       </p>
       <ul className="mt-4 list-disc space-y-3 pl-6">
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Contract
           </strong>
           : processing necessary to fulfil a contract with you or take steps
           before entering one (client data, invoicing, quotes)
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Legitimate interests
           </strong>
           : processing necessary for our legitimate business interests where
@@ -166,14 +169,14 @@ export default async function PrivacyPage() {
           project scoping)
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Consent
           </strong>
           : where you have given clear consent (push notifications)
         </li>
       </ul>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         3. How we use your data
       </h2>
       <p className="mt-4">We use your data only for the purposes it was collected for:</p>
@@ -191,7 +194,7 @@ export default async function PrivacyPage() {
         Supabase for secure data storage) or where required by law.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         4. Prospect and business contact data
       </h2>
       <p className="mt-4">
@@ -200,7 +203,7 @@ export default async function PrivacyPage() {
         about it.
       </p>
       <p className="mt-4">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           What we hold.
         </strong>{' '}
         Your name and job title, your business email address, your business
@@ -210,7 +213,7 @@ export default async function PrivacyPage() {
         found each detail.
       </p>
       <p className="mt-4">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Where we got it.
         </strong>{' '}
         Not from you. We collected it from your employer&apos;s own public
@@ -218,7 +221,7 @@ export default async function PrivacyPage() {
         not buy contact lists and we do not use data brokers.
       </p>
       <p className="mt-4">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Why we hold it.
         </strong>{' '}
         To tell you about Engineer OS, our job management software for field
@@ -226,7 +229,7 @@ export default async function PrivacyPage() {
         engineers who work on site.
       </p>
       <p className="mt-4">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Our lawful basis.
         </strong>{' '}
         Legitimate interests, under Article 6(1)(f) of the UK GDPR. Our
@@ -238,7 +241,7 @@ export default async function PrivacyPage() {
         assessment.
       </p>
       <p className="mt-4">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Marketing rules.
         </strong>{' '}
         We only send marketing email of this kind to corporate subscribers,
@@ -249,7 +252,7 @@ export default async function PrivacyPage() {
         Service and do not call registered numbers.
       </p>
       <p className="mt-4">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           How long we keep it.
         </strong>{' '}
         We review prospect records at least every 24 months and delete those
@@ -260,7 +263,7 @@ export default async function PrivacyPage() {
         used for nothing else.
       </p>
       <p className="mt-4">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Your rights.
         </strong>{' '}
         You can object to this processing at any time and we will stop. For
@@ -279,7 +282,7 @@ export default async function PrivacyPage() {
         We do not sell, rent or share this information with anyone else.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         5. Data retention
       </h2>
       <p className="mt-4">
@@ -297,50 +300,50 @@ export default async function PrivacyPage() {
         <li>Push notification subscriptions: until you revoke permission</li>
       </ul>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         6. Your rights
       </h2>
       <p className="mt-4">Under UK GDPR you have the right to:</p>
       <ul className="mt-4 list-disc space-y-3 pl-6">
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Access
           </strong>{' '}
           the personal data we hold about you
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Rectification
           </strong>{' '}
           of inaccurate data
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Erasure
           </strong>{' '}
           (&quot;right to be forgotten&quot;) where there is no legitimate
           reason for us to continue processing
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Restriction
           </strong>{' '}
           of processing in certain circumstances
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Data portability
           </strong>{' '}
           , receive your data in a machine-readable format
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Object
           </strong>{' '}
           to processing based on legitimate interests
         </li>
         <li>
-          <strong className="font-semibold text-[var(--marketing-text)]">
+          <strong className="font-semibold text-[var(--ink)]">
             Withdraw consent
           </strong>{' '}
           at any time where consent is the legal basis
@@ -359,7 +362,7 @@ export default async function PrivacyPage() {
         .
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         7. Data security
       </h2>
       <p className="mt-4">
@@ -376,7 +379,7 @@ export default async function PrivacyPage() {
         </li>
       </ul>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         8. International transfers
       </h2>
       <p className="mt-4">
@@ -386,21 +389,21 @@ export default async function PrivacyPage() {
         accordance with UK GDPR requirements.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         9. Third-party processors
       </h2>
       <div className="mt-6 overflow-x-auto">
         <table className="min-w-[640px] w-full border-collapse text-left text-sm leading-6">
           <thead>
-            <tr className="border-b border-[var(--marketing-border)] text-[var(--marketing-text)]">
+            <tr className="border-b border-[var(--hair)] text-[var(--ink)]">
               <th className="px-0 py-3 font-semibold">Processor</th>
               <th className="px-4 py-3 font-semibold">Purpose</th>
               <th className="px-4 py-3 font-semibold">Privacy policy</th>
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-[var(--marketing-border)] align-top">
-              <td className="px-0 py-4 font-medium text-[var(--marketing-text)]">
+            <tr className="border-b border-[var(--hair)] align-top">
+              <td className="px-0 py-4 font-medium text-[var(--ink)]">
                 Supabase
               </td>
               <td className="px-4 py-4">Secure database hosting</td>
@@ -410,8 +413,8 @@ export default async function PrivacyPage() {
                 </a>
               </td>
             </tr>
-            <tr className="border-b border-[var(--marketing-border)] align-top">
-              <td className="px-0 py-4 font-medium text-[var(--marketing-text)]">
+            <tr className="border-b border-[var(--hair)] align-top">
+              <td className="px-0 py-4 font-medium text-[var(--ink)]">
                 Stripe
               </td>
               <td className="px-4 py-4">Payment processing</td>
@@ -421,8 +424,8 @@ export default async function PrivacyPage() {
                 </a>
               </td>
             </tr>
-            <tr className="border-b border-[var(--marketing-border)] align-top">
-              <td className="px-0 py-4 font-medium text-[var(--marketing-text)]">
+            <tr className="border-b border-[var(--hair)] align-top">
+              <td className="px-0 py-4 font-medium text-[var(--ink)]">
                 Resend
               </td>
               <td className="px-4 py-4">Email delivery</td>
@@ -436,8 +439,8 @@ export default async function PrivacyPage() {
                 </a>
               </td>
             </tr>
-            <tr className="border-b border-[var(--marketing-border)] align-top">
-              <td className="px-0 py-4 font-medium text-[var(--marketing-text)]">
+            <tr className="border-b border-[var(--hair)] align-top">
+              <td className="px-0 py-4 font-medium text-[var(--ink)]">
                 Google
               </td>
               <td className="px-4 py-4">Google Calendar API</td>
@@ -452,7 +455,7 @@ export default async function PrivacyPage() {
               </td>
             </tr>
             <tr className="align-top">
-              <td className="px-0 py-4 font-medium text-[var(--marketing-text)]">
+              <td className="px-0 py-4 font-medium text-[var(--ink)]">
                 Vercel
               </td>
               <td className="px-4 py-4">Website and application hosting</td>
@@ -470,7 +473,7 @@ export default async function PrivacyPage() {
         </table>
       </div>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         10. Changes to this policy
       </h2>
       <p className="mt-4">
@@ -479,12 +482,12 @@ export default async function PrivacyPage() {
         active clients of significant changes by email.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         11. Contact
       </h2>
       <p className="mt-4">For any privacy-related queries or to exercise your rights:</p>
       <p className="mt-6">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Trailhead Holdings Ltd
         </strong>
         <br />

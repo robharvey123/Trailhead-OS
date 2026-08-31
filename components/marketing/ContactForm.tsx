@@ -1,9 +1,16 @@
 'use client'
 
+import PlanIcon from '@/components/marketing/PlanIcon'
+
 import { useState, type FormEvent } from 'react'
 
+// Fields are ticket stock in an ink rule: square, printed, no shadow. Focus is
+// the price-flash red, so the caret and the ring belong to the same palette as
+// every other action on the site.
 const fieldClassName =
-  'w-full rounded-2xl border border-[var(--marketing-border)] bg-white px-4 py-3 text-[0.98rem] text-[var(--marketing-text)] outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100'
+  'w-full border border-[var(--hair)] bg-[var(--card)] px-3.5 py-3 plan-body-sm text-[var(--ink)] outline-none transition-colors placeholder:text-[var(--ink-3)] hover:border-[var(--ink-2)] focus:border-[var(--flash)]'
+
+const labelClassName = 'plan-label mb-2 block text-[var(--ink-2)]'
 
 export type ContactTrack = 'commercial' | 'studio' | 'labs'
 
@@ -80,11 +87,10 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
 
   if (success) {
     return (
-      <div className="rounded-[2rem] border border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-8">
-        <h3 className="text-2xl font-bold tracking-[-0.03em]">
-          Thanks, we&apos;ll be in touch shortly.
-        </h3>
-        <p className="mt-3 text-slate-600">
+      <div className="ticket">
+        <p className="plan-data text-[var(--ink-3)]">ENQUIRY LOGGED</p>
+        <h3 className="plan-h3 mt-3">Thanks, we&apos;ll be in touch shortly.</h3>
+        <p className="plan-body ticket-rule plan-body-sm">
           Your message is with us. We&apos;ll come back to you as soon as we
           can.
         </p>
@@ -95,7 +101,7 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-6 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.28)] md:p-8"
+      className="border border-[var(--ink)] bg-[var(--plan)] p-5 md:p-7"
     >
       {/* Honeypot: hidden off-screen (not display:none, which some bots skip). */}
       <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
@@ -111,11 +117,11 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
         />
       </div>
 
-      <div className="grid gap-5">
+      <div className="grid gap-4">
         <div>
           <label
             htmlFor="contact-name"
-            className="mb-2 block text-sm font-semibold text-slate-700"
+            className={labelClassName}
           >
             Name
           </label>
@@ -131,7 +137,7 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
         <div>
           <label
             htmlFor="contact-email"
-            className="mb-2 block text-sm font-semibold text-slate-700"
+            className={labelClassName}
           >
             Email
           </label>
@@ -148,7 +154,7 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
         <div>
           <label
             htmlFor="contact-company"
-            className="mb-2 block text-sm font-semibold text-slate-700"
+            className={labelClassName}
           >
             Company
           </label>
@@ -163,7 +169,7 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
         <div>
           <label
             htmlFor="contact-interest"
-            className="mb-2 block text-sm font-semibold text-slate-700"
+            className={labelClassName}
           >
             What are you looking for?
           </label>
@@ -182,7 +188,7 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
         <div>
           <label
             htmlFor="contact-message"
-            className="mb-2 block text-sm font-semibold text-slate-700"
+            className={labelClassName}
           >
             Message
           </label>
@@ -197,7 +203,10 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
       </div>
 
       {error ? (
-        <p className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <p
+          role="alert"
+          className="mt-5 border border-[var(--flash)] bg-[var(--card)] px-3.5 py-3 plan-body-xs text-[var(--flash)]"
+        >
           {error}
         </p>
       ) : null}
@@ -205,9 +214,10 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-6 inline-flex items-center justify-center rounded-full bg-sky-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70"
+        className="flash mt-6 w-full justify-between disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {submitting ? 'Sending...' : 'Send message'}
+        {submitting ? 'Sending…' : 'Send message'}
+        {submitting ? null : <PlanIcon name="right" />}
       </button>
     </form>
   )

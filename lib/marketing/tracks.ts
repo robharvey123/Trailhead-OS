@@ -1,9 +1,14 @@
 // lib/marketing/tracks.ts
 // The marketing site is one domain carrying three sub-brands. Every page
 // resolves to a track from its pathname, and the track supplies the chrome:
-// wordmark, accent tokens, nav, primary CTA and the quiet cross-track link.
+// wordmark, bay code, nav, primary CTA and the quiet cross-track link.
 // Consulting and software are separate businesses with separate buyers. The
 // track keeps the chrome saying the same thing as the page.
+//
+// Under the bay-plan world a track is a brand block: one keyed colour that
+// owns whole regions of the page rather than tinting details. The colour
+// values live in app/(marketing)/bay.css, selected by [data-track]; this file
+// carries only the identity that is content — code, wordmark, nav, CTA.
 
 export type Track = 'holdings' | 'commercial' | 'studio' | 'labs'
 
@@ -17,13 +22,10 @@ export interface TrackTokens {
   track: Track
   /** Second line of the wordmark, under "Trailhead". */
   wordmark: string
-  accent: string
-  /** Darker shade for hover states on accent-filled elements. */
-  accentStrong: string
-  /** Tinted background for hover states on outlined elements. */
-  accentSoft: string
-  /** Tinted border for hover states on outlined elements. */
-  accentBorder: string
+  /** Printed on the rail: the bay this track occupies on the plan. */
+  bayCode: string
+  /** The dimension callout beside the bay code. Facts only. */
+  bayMeasure: string
   nav: TrackNavItem[]
   cta: { label: string; href: string } | null
   crossLink: { label: string; href: string } | null
@@ -33,10 +35,8 @@ const TRACKS: Record<Track, TrackTokens> = {
   holdings: {
     track: 'holdings',
     wordmark: 'HOLDINGS LTD',
-    accent: '#0F172A',
-    accentStrong: '#1E293B',
-    accentSoft: '#F1F5F9',
-    accentBorder: '#CBD5E1',
+    bayCode: 'BAY 00',
+    bayMeasure: 'EST. 2014 · BRENTWOOD, ESSEX',
     nav: [
       { label: 'Commercial', href: '/consulting' },
       { label: 'Studio', href: '/studio' },
@@ -44,19 +44,17 @@ const TRACKS: Record<Track, TrackTokens> = {
       { label: 'Blog', href: '/blog' },
       { label: 'Contact', href: '/contact' },
     ],
-    // The homepage's two doors are the CTA, so the header stays quiet.
-    cta: null,
+    // The two doors carry the offer, but they sit below the fold, so the
+    // header keeps a visible primary action. Without it the only button on the
+    // homepage was Log in, which is an action for one person.
+    cta: { label: 'Start a conversation', href: '/contact' },
     crossLink: null,
   },
   commercial: {
     track: 'commercial',
     wordmark: 'COMMERCIAL',
-    // Consulting is bought on seniority: same palette family as Studio's sky,
-    // deeper register.
-    accent: '#0B4A6F',
-    accentStrong: '#083A57',
-    accentSoft: '#EFF6FA',
-    accentBorder: '#B6D3E4',
+    bayCode: 'BAY 01',
+    bayMeasure: 'NGP · FMCG · UK/EU/DACH/SE',
     nav: [
       { label: 'Services', href: '/consulting#services' },
       // Five items per track, which is what the 1100px header fits alongside
@@ -74,10 +72,8 @@ const TRACKS: Record<Track, TrackTokens> = {
   studio: {
     track: 'studio',
     wordmark: 'STUDIO',
-    accent: '#0EA5E9',
-    accentStrong: '#0284C7',
-    accentSoft: '#F0F9FF',
-    accentBorder: '#7DD3FC',
+    bayCode: 'BAY 02',
+    bayMeasure: 'BESPOKE SOFTWARE · IN-HOUSE',
     nav: [
       { label: 'Services', href: '/studio#services' },
       { label: 'Work', href: '/studio#work' },
@@ -91,10 +87,8 @@ const TRACKS: Record<Track, TrackTokens> = {
   labs: {
     track: 'labs',
     wordmark: 'LABS',
-    accent: '#7C3AED',
-    accentStrong: '#6D28D9',
-    accentSoft: '#F5F3FF',
-    accentBorder: '#C4B5FD',
+    bayCode: 'BAY 03',
+    bayMeasure: 'OWNED PRODUCTS · LIVE BILLING',
     nav: [
       { label: 'Engineer OS', href: 'https://engineeros.uk', external: true },
       { label: 'MVP Cricket', href: 'https://mvpcricket.app', external: true },

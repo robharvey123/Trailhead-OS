@@ -1,0 +1,544 @@
+/* ---------------------------------------------------------------------------
+   THE BAY PLAN — the marketing site's visual world.
+
+   The category manager's planogram: a ruled bay elevation where every service,
+   role, project and product is a facing registered on a rail, with a
+   shelf-edge ticket underneath carrying the checkable fact. Plan stock and
+   black hairline rule carry the page; colour is keyed data, never decoration.
+
+   Scoped entirely under .bay-plan so the authenticated OS app is untouched.
+   --------------------------------------------------------------------------- */
+
+.bay-plan {
+  /* Ground and rule -------------------------------------------------------- */
+  --plan: #e7eae4; /* plan stock: the printed ground */
+  --plan-recess: #dcdfd8; /* bay backboard behind the facings */
+  --card: #fcfcfa; /* shelf-edge ticket stock */
+  --ink: #14161a; /* rail, rule, primary type */
+  --ink-2: #4a4f55; /* secondary type — 6.5:1 on plan */
+  --ink-3: #595e64; /* annotation labels — 5.2:1 on plan, 4.8:1 on recess */
+  --hair: rgba(20, 22, 26, 0.22); /* the hairline rule */
+
+  /* Keyed colour: identifies, never decorates ------------------------------ */
+  --flash: #da2818; /* price flash — every primary action */
+  --flash-deep: #ab1c10;
+  --key: var(--ink); /* the active track's block colour */
+  --key-deep: var(--ink); /* the key as type or small graphic ON plan stock */
+  --key-ink: #ffffff; /* type that sits on the block */
+  --key-com: #12379e; /* Trailhead Commercial */
+  --key-studio: #f2b01e; /* Trailhead Studio */
+  --key-labs: #0c6b45; /* Trailhead Labs */
+
+  /* The rail grid: a fixed gutter carrying bay codes, then the facings ------ */
+  --gutter: 8.5rem;
+  --bay-max: 78rem;
+  --tick: 0.5rem;
+
+  /* The type ramp. Eight steps, no others. */
+  --text-body: 1.0625rem; /* the reading size */
+  --text-body-sm: 0.9375rem; /* dense facings, secondary passages, inputs */
+  --text-body-xs: 0.875rem; /* the tightest note and detail values */
+  --text-action: 0.8125rem; /* the price flash, and data values beside it */
+  --text-label: 0.6875rem; /* caps labels and mono data */
+  --text-state: 0.625rem; /* the epistemic state key */
+  --text-figure: 1.75rem; /* a measured figure standing beside its evidence */
+
+  /* One family, two axes. Hierarchy is width, case, rule weight and position;
+     never a new face and never a new colour. Mono is admitted for codes,
+     prices, dates and dimensions only — a real plan sets its numbers apart. */
+  --face: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --face-data: var(--font-martian), ui-monospace, SFMono-Regular, monospace;
+
+  background: var(--plan);
+  color: var(--ink);
+  font-family: var(--face);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Track keying. The chrome resolves its block colour from the pathname, so a
+   visitor on /consulting is standing in front of the Commercial bay. */
+.bay-plan[data-track='commercial'] {
+  --key: var(--key-com);
+  --key-deep: var(--key-com);
+  --key-ink: #ffffff;
+}
+.bay-plan[data-track='studio'] {
+  --key: var(--key-studio);
+  /* Chrome yellow is a block fill, not a type colour: at 11px on stock it is
+     1.5:1. The deep relative carries the same identity at 5.3:1. */
+  --key-deep: #7a5606;
+  --key-ink: var(--ink);
+}
+.bay-plan[data-track='labs'] {
+  --key: var(--key-labs);
+  --key-deep: var(--key-labs);
+  --key-ink: #ffffff;
+}
+
+/* --- Browser surfaces: the parts nobody draws still carry the design ------ */
+.bay-plan ::selection {
+  background: var(--flash);
+  color: #fff;
+}
+.bay-plan {
+  caret-color: var(--flash);
+  scrollbar-color: var(--ink) var(--plan-recess);
+  scrollbar-width: thin;
+}
+.bay-plan ::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+.bay-plan ::-webkit-scrollbar-track {
+  background: var(--plan-recess);
+}
+.bay-plan ::-webkit-scrollbar-thumb {
+  background: var(--ink);
+  border: 3px solid var(--plan-recess);
+}
+.bay-plan :focus-visible {
+  outline: 2px solid var(--flash);
+  outline-offset: 2px;
+}
+
+/* --- Type ---------------------------------------------------------------- */
+
+/* Condensed heavy grotesque is the signage voice: trade-press weight, set
+   tight, black on stock. Capped at 5.5rem — display never runs past 6rem. */
+.plan-display {
+  font-family: var(--face);
+  font-stretch: 80%;
+  font-weight: 750;
+  letter-spacing: -0.022em;
+  line-height: 0.94;
+  text-wrap: balance;
+  font-size: clamp(2.6rem, 6.6vw, 5.5rem);
+}
+.plan-h2 {
+  font-stretch: 82%;
+  font-weight: 720;
+  letter-spacing: -0.018em;
+  line-height: 1.0;
+  text-wrap: balance;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+}
+.plan-h3 {
+  font-stretch: 88%;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  line-height: 1.08;
+  font-size: clamp(1.25rem, 1.7vw, 1.6rem);
+}
+
+/* Body sits at normal width. Measure is held at 68ch. */
+.plan-body {
+  font-stretch: 100%;
+  font-weight: 400;
+  font-size: var(--text-body);
+  line-height: 1.62;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+/* Size modifiers, used alongside .plan-body. Nothing else may set a size. */
+.plan-body-sm {
+  font-size: var(--text-body-sm);
+}
+.plan-body-xs {
+  font-size: var(--text-body-xs);
+}
+/* A figure set beside the evidence it summarises. */
+.plan-figure {
+  font-stretch: 78%;
+  font-weight: 700;
+  font-size: var(--text-figure);
+  line-height: 1;
+  letter-spacing: -0.015em;
+}
+.plan-lede {
+  font-stretch: 100%;
+  font-weight: 400;
+  font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+/* The ticket label: condensed caps, tracked, the way a shelf-edge label is
+   printed. It never stands alone above a heading — it is mounted on a rail or
+   set in the gutter, carrying data rather than announcing a section. */
+.plan-label {
+  font-stretch: 72%;
+  font-weight: 650;
+  font-size: var(--text-label);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.plan-note {
+  font-stretch: 72%;
+  font-weight: 650;
+  font-size: var(--text-label);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  line-height: 1.45;
+}
+.plan-data {
+  font-family: var(--face-data);
+  font-weight: 400;
+  font-size: var(--text-label);
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- The rail ------------------------------------------------------------
+   A hairline with tick marks at a fixed pitch, exactly as a shelf rail is
+   dimensioned on a plan. Every band on the page is hung from one. */
+.rail {
+  position: relative;
+  border-top: 1px solid var(--ink);
+}
+.rail::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: var(--tick);
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--hair) 0 1px,
+    transparent 1px 2rem
+  );
+  pointer-events: none;
+}
+.rail-hair {
+  border-top: 1px solid var(--hair);
+}
+
+/* The bay: a gutter column carrying the code, then the facings. Below the
+   gutter breakpoint the code moves inline above its band, still on the rail. */
+.bay {
+  width: 100%;
+  max-width: var(--bay-max);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 60rem) {
+  .bay {
+    padding-inline: 2rem;
+    display: grid;
+    grid-template-columns: var(--gutter) minmax(0, 1fr);
+    column-gap: 2.5rem;
+  }
+  .bay > .bay-full {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The gutter code. Set against the rail, never above the heading — at desktop
+   it sits in the margin, and below the gutter breakpoint it drops to the foot
+   of its band, where a drawing keeps its annotation block. Stacking it above
+   the heading would make it a kicker, which nothing earns. */
+.bay-code {
+  color: var(--ink-3);
+  padding-top: 0.85rem;
+}
+@media (max-width: 59.99rem) {
+  .bay {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bay > * {
+    order: 1;
+  }
+  .bay > .bay-code {
+    order: 2;
+    margin-top: 2.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--hair);
+  }
+  /* A gutter carrying navigation (a back link) leads instead: it is a control,
+     not a label, so it belongs where the reader looks first. */
+  .bay > .bay-code-lead {
+    order: 0;
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 1.5rem;
+    border-top: 0;
+  }
+}
+
+/* --- Facings -------------------------------------------------------------
+   A facing is a registered block, divided from its neighbours by rule. Not a
+   card: no radius, no shadow, no floating. */
+.facings {
+  display: grid;
+  border-top: 1px solid var(--hair);
+  border-left: 1px solid var(--hair);
+}
+.facing {
+  border-right: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+  padding: 1.5rem 1.5rem 1.75rem;
+  background: transparent;
+  min-width: 0;
+}
+@media (min-width: 48rem) {
+  .facing {
+    padding: 1.75rem 1.75rem 2rem;
+  }
+}
+
+/* --- The shelf-edge ticket ----------------------------------------------- */
+.ticket {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--ink);
+  padding: 0.9rem 1.05rem 1rem;
+}
+/* The mounting notch, where the ticket clips into the rail. */
+.ticket::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 1.05rem;
+  width: 2.25rem;
+  height: 3px;
+  background: var(--ink);
+}
+.ticket-rule {
+  border-top: 1px solid var(--hair);
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+}
+
+/* --- The price flash: every primary action ------------------------------- */
+.flash {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--flash);
+  color: #fff;
+  border: 0;
+  padding: 0.85rem 1.35rem;
+  font-stretch: 76%;
+  font-weight: 700;
+  font-size: var(--text-action);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.flash:hover {
+  background: var(--flash-deep);
+  transform: translateX(3px);
+}
+.flash-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  padding: 0.85rem 1.35rem;
+  font-stretch: 76%;
+  font-weight: 700;
+  font-size: var(--text-action);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.flash-ghost:hover {
+  background: var(--ink);
+  color: var(--plan);
+  transform: translateX(3px);
+}
+
+/* --- Epistemic keying ----------------------------------------------------
+   Confirmed, live, in build and illustrative are keyed distinctly, so the
+   site's honesty is visible in the material before it is read. */
+.key-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.24rem 0.5rem;
+  border: 1px solid currentColor;
+  font-stretch: 72%;
+  font-weight: 650;
+  font-size: var(--text-state);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.key-state::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+}
+.key-live {
+  color: var(--key-labs);
+}
+.key-build {
+  color: #8a5104; /* 5.1:1 on plan */
+}
+.key-illustrative {
+  color: var(--ink-3);
+}
+.key-illustrative::before {
+  background: repeating-linear-gradient(
+    45deg,
+    currentColor 0 1px,
+    transparent 1px 2px
+  );
+}
+/* A facing that is no longer on shelf draws hollow, the way a plan marks a
+   delisted line. The distinction lives in the drawing, never in dimmed body
+   copy, which would only cost contrast. */
+.bar-tenure {
+  height: 0.375rem;
+  background: var(--key-deep);
+}
+.bar-tenure.is-archive {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--key-deep);
+}
+
+/* --- The brand block -----------------------------------------------------
+   A facing on a bay is a solid block of the brand's colour. This is the page's
+   colour commitment: at most two blocks in view at once, everything else is
+   stock and rule.
+
+   Named `brand-block`, not `block`: Tailwind ships `.block` as the
+   display utility, so the short name silently repainted every element that
+   used it for layout. */
+.brand-block {
+  background: var(--key);
+  color: var(--key-ink);
+}
+.brand-block .plan-body,
+.brand-block .plan-lede {
+  /* Never gray on a coloured ground: tint from the block's own foreground. */
+  color: color-mix(in srgb, var(--key-ink) 82%, var(--key));
+}
+.brand-block .ticket {
+  color: var(--ink);
+}
+
+/* --- Motion --------------------------------------------------------------
+   One authored moment: bands rack in along the rail, left to right, the
+   direction the whole site travels. Content is fully visible without JS and
+   without motion — the wipe never hides it. */
+.rack {
+  clip-path: inset(0 100% 0 0);
+  animation: rack-in 720ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes rack-in {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+/* Specificity deliberately beats the legacy `.marketing-reveal { opacity: 0 }`
+   in globals.css whatever order the two sheets land in. Content is never
+   shipped hidden here, so the old <noscript> rescue is no longer load-bearing:
+   a blocked chunk or a crawler that runs no JS sees the whole page. */
+.bay-plan .marketing-reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+.bay-plan .marketing-reveal.is-visible .rack-target {
+  animation: rack-in 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.rack-target {
+  will-change: clip-path;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rack,
+  .bay-plan .marketing-reveal.is-visible .rack-target {
+    animation: none;
+    clip-path: none;
+  }
+  .flash:hover,
+  .flash-ghost:hover {
+    transform: none;
+  }
+}
+
+/* --- Controls ------------------------------------------------------------ */
+.bay-plan select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%2314161A' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.4rem;
+}
+.bay-plan textarea {
+  resize: vertical;
+}
+
+/* --- Long-form prose: the small print on the back of the ticket ---------- */
+.bay-plan .marketing-prose {
+  color: var(--ink-2);
+  font-size: 1.0625rem;
+  line-height: 1.66;
+  max-width: 68ch;
+}
+.bay-plan .marketing-prose h2,
+.bay-plan .marketing-prose h3,
+.bay-plan .marketing-prose h4 {
+  color: var(--ink);
+  font-stretch: 84%;
+  letter-spacing: -0.012em;
+  margin-top: 2.4rem;
+  margin-bottom: 0.7rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--hair);
+}
+.bay-plan .marketing-prose h2 {
+  font-size: 1.625rem;
+  font-weight: 720;
+}
+.bay-plan .marketing-prose h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.bay-plan .marketing-prose a {
+  color: var(--ink);
+  text-decoration-color: var(--flash);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+.bay-plan .marketing-prose a:hover {
+  color: var(--flash);
+}
+.bay-plan .marketing-prose blockquote {
+  border-left: 1px solid var(--ink);
+  padding-left: 1.1rem;
+  color: var(--ink);
+}
+.bay-plan .marketing-prose code {
+  font-family: var(--face-data);
+  background: var(--plan-recess);
+  border-radius: 0;
+  border: 1px solid var(--hair);
+  padding: 0.1rem 0.3rem;
+  font-size: 0.9em;
+}
+.bay-plan .marketing-prose pre {
+  border-radius: 0;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--plan);
+}
+.bay-plan .marketing-prose ul,
+.bay-plan .marketing-prose ol {
+  padding-left: 1.35rem;
+}

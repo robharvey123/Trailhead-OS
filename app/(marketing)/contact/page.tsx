@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { headers } from 'next/headers'
 import ContactDetailsCard from '@/components/marketing/ContactDetailsCard'
 import ContactForm, { type ContactTrack } from '@/components/marketing/ContactForm'
 import Reveal from '@/components/marketing/Reveal'
-import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
+import { isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
@@ -27,6 +26,12 @@ const trackCopy: Record<ContactTrack, string> = {
 const defaultCopy =
   "Whether you're looking for commercial consultancy, a development partner, or just want to find out more, we'd love to hear from you."
 
+const trackBay: Record<ContactTrack, string> = {
+  commercial: 'BAY 01 · COMMERCIAL',
+  studio: 'BAY 02 · STUDIO',
+  labs: 'BAY 03 · LABS',
+}
+
 function parseTrack(value: string | string[] | undefined): ContactTrack | undefined {
   return value === 'commercial' || value === 'studio' || value === 'labs'
     ? value
@@ -43,32 +48,25 @@ export default async function ContactPage({
   const track = parseTrack((await searchParams).track)
 
   return (
-    <Reveal className="px-6 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1100px]">
-        <Link
-          href={buildMarketingHref('/', isLocalhost)}
-          className="inline-flex items-center text-sm font-semibold text-slate-600 transition hover:text-[var(--marketing-text)]"
-        >
-          ← Back to home
-        </Link>
-
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_0.75fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-slate-500">
-              Get in touch
+    <Reveal>
+      <div className="pt-10 pb-16 md:pt-16 md:pb-20">
+        <div className="bay">
+          <div className="bay-code hidden lg:block">
+            <p className="plan-note text-[var(--ink-3)]">Enquiry</p>
+            <p className="plan-data mt-1 text-[var(--ink-3)]">
+              {track ? trackBay[track] : 'ANY BAY'}
             </p>
-            <h1 className="mt-5 text-4xl font-bold tracking-[-0.04em] text-[var(--marketing-text)] md:text-5xl">
-              Let&apos;s talk
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-              {track ? trackCopy[track] : defaultCopy}
-            </p>
-            <div className="mt-10">
-              <ContactForm track={track} />
-            </div>
           </div>
 
-          <ContactDetailsCard includeLegalNote isLocalhost={isLocalhost} />
+          <div className="min-w-0">
+            <h1 className="plan-display rack max-w-[10ch]">Let&rsquo;s talk</h1>
+            <p className="plan-lede mt-7">{track ? trackCopy[track] : defaultCopy}</p>
+
+            <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start">
+              <ContactForm track={track} />
+              <ContactDetailsCard includeLegalNote isLocalhost={isLocalhost} />
+            </div>
+          </div>
         </div>
       </div>
     </Reveal>

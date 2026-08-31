@@ -1,12 +1,13 @@
 // app/(marketing)/marketing/blog/[slug]/opengraph-image.tsx
-// Per-post OG image using the post title from Supabase.
+// Per-post OG card using the post title from Supabase. See lib/og.tsx.
 
 import { ImageResponse } from 'next/og'
 import { getPublishedBlogPostBySlug } from '@/lib/db/blog-posts'
+import { OG, OG_SIZE, OgCard, loadArchivo } from '@/lib/og'
 
 export const runtime = 'edge'
 export const alt = 'Trailhead Holdings blog post'
-export const size = { width: 1200, height: 630 }
+export const size = OG_SIZE
 export const contentType = 'image/png'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -18,47 +19,28 @@ export default async function PostOgImage({ params }: Props) {
     const post = await getPublishedBlogPostBySlug(slug)
     if (post?.title) title = post.title
   } catch {
-    // fall back to default title
+    // fall back to the default title
   }
+
+  const fonts = await loadArchivo()
 
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '80px',
-          background: 'linear-gradient(135deg, #0b1220 0%, #1a2840 100%)',
-          color: 'white',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-        }}
-      >
+      <OgCard wordmark="Notes" footer="trailheadholdings.uk/blog">
         <div
           style={{
-            fontSize: 28,
-            opacity: 0.7,
-            letterSpacing: 2,
-            textTransform: 'uppercase',
-          }}
-        >
-          Trailhead Holdings · Blog
-        </div>
-        <div
-          style={{
-            fontSize: title.length > 60 ? 56 : 72,
+            display: 'flex',
+            fontSize: title.length > 60 ? 60 : 74,
             fontWeight: 700,
-            lineHeight: 1.15,
-            letterSpacing: -1,
+            lineHeight: 1.05,
+            letterSpacing: -2,
+            color: OG.ink,
           }}
         >
           {title}
         </div>
-        <div style={{ fontSize: 24, opacity: 0.7 }}>trailheadholdings.uk/blog</div>
-      </div>
+      </OgCard>
     ),
-    { ...size }
+    { ...size, fonts: fonts.length ? fonts : undefined }
   )
 }

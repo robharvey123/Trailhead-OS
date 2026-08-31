@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import type { Metadata } from 'next'
+import PlanIcon from '@/components/marketing/PlanIcon'
 import Reveal from '@/components/marketing/Reveal'
 import { collectBlogTags, formatBlogDate } from '@/lib/blog'
 import { getPublishedBlogPosts } from '@/lib/db/blog-posts'
@@ -32,89 +33,120 @@ export default async function MarketingBlogPage({
   const tags = collectBlogTags(posts)
 
   return (
-    <Reveal className="px-6 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1100px]">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-500">
-          Thinking
-        </p>
-        <h1 className="mt-5 text-4xl font-bold tracking-[-0.04em] md:text-5xl">
-          All blog posts
-        </h1>
-        <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-          Notes from the work: commercial strategy, product development, and the
-          markets Trailhead operates in.
-        </p>
-
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href={buildMarketingHref('/blog', isLocalhost)}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-              !activeTag
-                ? 'border-sky-500 bg-sky-500 text-white'
-                : 'border-[var(--marketing-border)] text-slate-600 hover:border-sky-300 hover:bg-sky-50'
-            }`}
-          >
-            All
-          </Link>
-          {tags.map((tag) => (
-            <Link
-              key={tag}
-              href={buildMarketingHref(
-                `/blog?tag=${encodeURIComponent(tag)}`,
-                isLocalhost
-              )}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold uppercase tracking-[0.16em] transition ${
-                activeTag === tag
-                  ? 'border-sky-500 bg-sky-500 text-white'
-                  : 'border-[var(--marketing-border)] text-slate-600 hover:border-sky-300 hover:bg-sky-50'
-              }`}
-            >
-              {tag}
-            </Link>
-          ))}
+    <div>
+      <section className="pt-10 pb-8 md:pt-16 md:pb-10">
+        <div className="bay">
+          <div className="bay-code hidden lg:block">
+            <p className="plan-data text-[var(--ink-3)]">BAY 04</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Notes</p>
+          </div>
+          <div className="min-w-0">
+            <h1 className="plan-display rack max-w-[12ch]">All blog posts</h1>
+            <p className="plan-lede mt-7">
+              Notes from the work: commercial strategy, product development, and
+              the markets Trailhead operates in.
+            </p>
+          </div>
         </div>
+      </section>
 
-        <div className="mt-10 grid gap-6">
-          {filteredPosts.map((post) => (
-            <article
-              key={post.id}
-              className="rounded-[2rem] border border-[var(--marketing-border)] bg-white p-8 shadow-[0_20px_50px_-40px_rgba(15,23,42,0.35)]"
-            >
-              <p className="text-sm text-slate-500">
-                {formatBlogDate(post.published_at)}
-              </p>
-              <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">
-                {post.title}
-              </h2>
-              <p className="mt-4 max-w-3xl text-[1rem] leading-8 text-slate-600">
-                {post.excerpt}
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-700"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+      <Reveal className="rail">
+        <div className="bay py-8 md:py-12">
+          <div className="bay-code">
+            <p className="plan-note text-[var(--ink-3)]">Filter</p>
+            <p className="plan-data mt-1 text-[var(--ink-3)]">
+              {filteredPosts.length} OF {posts.length}
+            </p>
+          </div>
+
+          <div className="min-w-0">
+            <nav aria-label="Filter posts by tag" className="flex flex-wrap gap-2">
               <Link
-                href={buildMarketingHref(`/blog/${post.slug}`, isLocalhost)}
-                className="mt-6 inline-flex text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+                href={buildMarketingHref('/blog', isLocalhost)}
+                aria-current={!activeTag ? 'true' : undefined}
+                className={`plan-label border px-3 py-2 transition-colors ${
+                  !activeTag
+                    ? 'border-[var(--ink)] bg-[var(--ink)] text-[var(--plan)]'
+                    : 'border-[var(--hair)] bg-[var(--card)] text-[var(--ink-2)] hover:border-[var(--ink)] hover:text-[var(--ink)]'
+                }`}
               >
-                Read →
+                All
               </Link>
-            </article>
-          ))}
+              {tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={buildMarketingHref(
+                    `/blog?tag=${encodeURIComponent(tag)}`,
+                    isLocalhost
+                  )}
+                  aria-current={activeTag === tag ? 'true' : undefined}
+                  className={`plan-label border px-3 py-2 transition-colors ${
+                    activeTag === tag
+                      ? 'border-[var(--ink)] bg-[var(--ink)] text-[var(--plan)]'
+                      : 'border-[var(--hair)] bg-[var(--card)] text-[var(--ink-2)] hover:border-[var(--ink)] hover:text-[var(--ink)]'
+                  }`}
+                >
+                  {tag}
+                </Link>
+              ))}
+            </nav>
 
-          {filteredPosts.length === 0 ? (
-            <div className="rounded-[2rem] border border-dashed border-[var(--marketing-border)] bg-[var(--marketing-surface)] p-10 text-slate-600">
-              No posts found for this tag yet.
+            <div className="mt-8 border-t border-[var(--ink)]">
+              {filteredPosts.map((post) => (
+                <article key={post.id} className="border-b border-[var(--hair)]">
+                  <Link
+                    href={buildMarketingHref(`/blog/${post.slug}`, isLocalhost)}
+                    className="group grid gap-x-8 gap-y-2 py-6 transition-colors hover:bg-[var(--card)] md:grid-cols-[9rem_minmax(0,1fr)]"
+                  >
+                    <div>
+                      <p className="plan-data text-[var(--ink-3)]">
+                        {formatBlogDate(post.published_at)}
+                      </p>
+                      <p className="plan-data mt-2 text-[var(--ink-3)]">
+                        {post.tags.join(' · ').toUpperCase()}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <h2
+                        className="text-[clamp(1.375rem,2.4vw,1.875rem)] leading-tight font-bold"
+                        style={{ fontStretch: '84%', letterSpacing: '-0.015em' }}
+                      >
+                        {post.title}
+                      </h2>
+                      <p className="plan-body mt-3 plan-body-sm">
+                        {post.excerpt}
+                      </p>
+                      <p className="plan-label mt-4 inline-flex items-center gap-2 text-[var(--flash)]">
+                        Read
+                        <PlanIcon
+                          name="right"
+                          size={13}
+                          className="transition-transform group-hover:translate-x-0.5"
+                        />
+                      </p>
+                    </div>
+                  </Link>
+                </article>
+              ))}
+
+              {filteredPosts.length === 0 ? (
+                <div className="border-b border-[var(--hair)] py-10">
+                  <p className="plan-h3">Nothing filed under this tag yet.</p>
+                  <p className="plan-body mt-3">
+                    Clear the filter to see everything published so far.
+                  </p>
+                  <Link
+                    href={buildMarketingHref('/blog', isLocalhost)}
+                    className="flash-ghost mt-6"
+                  >
+                    Show all posts
+                  </Link>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </div>
         </div>
-      </div>
-    </Reveal>
+      </Reveal>
+    </div>
   )
 }

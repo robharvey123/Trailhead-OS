@@ -13,12 +13,15 @@ export default async function TermsPage() {
 
   return (
     <LegalPageShell isLocalhost={isLocalhost}>
-      <h1 className="text-4xl font-bold tracking-[-0.04em] text-[var(--marketing-text)] md:text-5xl">
+      <h1
+        className="text-[clamp(2rem,4.4vw,3.25rem)] leading-[0.98] font-bold text-[var(--ink)]"
+        style={{ fontStretch: '80%', letterSpacing: '-0.02em' }}
+      >
         Terms of Service
       </h1>
 
       <p className="mt-6">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Last updated: March 2026
         </strong>
       </p>
@@ -30,7 +33,7 @@ export default async function TermsPage() {
       </p>
 
       <p className="mt-6">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Trailhead Holdings Ltd
         </strong>
         <br />
@@ -39,7 +42,7 @@ export default async function TermsPage() {
         info@trailheadholdings.uk
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         1. Services
       </h2>
       <p className="mt-4">
@@ -51,7 +54,7 @@ export default async function TermsPage() {
         precedence.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         2. Quotes and proposals
       </h2>
       <p className="mt-4">
@@ -74,7 +77,7 @@ export default async function TermsPage() {
         giving a reason.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         3. Payment terms
       </h2>
       <p className="mt-4">
@@ -105,7 +108,7 @@ export default async function TermsPage() {
         ).
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         4. Intellectual property
       </h2>
       <p className="mt-4">
@@ -128,7 +131,7 @@ export default async function TermsPage() {
         significant third-party licences at the time of delivery.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         5. Confidentiality
       </h2>
       <p className="mt-4">
@@ -143,7 +146,7 @@ export default async function TermsPage() {
         confidential.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         6. Liability
       </h2>
       <p className="mt-4">
@@ -173,7 +176,7 @@ export default async function TermsPage() {
         be excluded by law.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         7. Warranties and representations
       </h2>
       <p className="mt-4">
@@ -190,7 +193,7 @@ export default async function TermsPage() {
         or data you provide to us for use in your project.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         8. Project conduct
       </h2>
       <p className="mt-4">
@@ -212,7 +215,7 @@ export default async function TermsPage() {
         invoice for work completed to date and refund any unearned deposit.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         9. Website use
       </h2>
       <p className="mt-4">
@@ -232,7 +235,7 @@ export default async function TermsPage() {
         are not responsible for the content or practices of linked sites.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         10. Governing law
       </h2>
       <p className="mt-4">
@@ -241,7 +244,7 @@ export default async function TermsPage() {
         and Wales.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         11. Changes to these terms
       </h2>
       <p className="mt-4">
@@ -250,11 +253,11 @@ export default async function TermsPage() {
         services after changes constitutes acceptance of the updated terms.
       </p>
 
-      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--marketing-text)]">
+      <h2 className="mt-12 text-2xl font-bold tracking-[-0.03em] text-[var(--ink)]">
         12. Contact
       </h2>
       <p className="mt-6">
-        <strong className="font-semibold text-[var(--marketing-text)]">
+        <strong className="font-semibold text-[var(--ink)]">
           Trailhead Holdings Ltd
         </strong>
         <br />
