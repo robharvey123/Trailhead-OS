@@ -239,9 +239,9 @@ export default async function ConsultingPage() {
               Maybe that is a new market, a distributor who has gone quiet, or
               pricing that leaves nothing for anyone in the middle. Most advice
               in this category comes from people who have read about it. This
-              comes from thirteen years of doing it &mdash; six markets, a brand
-              taken from £1,500 to a £5M exit, and the distribution deals that
-              made each of them work.
+              comes from thirteen years of doing it. Six markets, a brand taken
+              from £1,500 to a £5M exit, and the distribution deals that made
+              each of them work.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -322,8 +322,8 @@ export default async function ConsultingPage() {
 
             <p className="plan-body mt-4 plan-body-xs">
               Margins are redacted because they are yours. Modelling them for
-              every party in the chain — and finding where the ladder stops
-              holding — is usually the first week of the work.
+              every party in the chain, and finding where the ladder stops
+              holding, is usually the first week of the work.
             </p>
           </figure>
         </div>

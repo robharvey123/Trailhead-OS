@@ -134,8 +134,8 @@ export default async function LabsPage() {
             </h1>
             <p className="plan-lede mt-7">
               Live products with paying customers, which means we carry the
-              support, the billing and the uptime &mdash; the parts of software
-              that only show up long after launch. Each one has its own home;
+              support, the billing and the uptime, the parts of software that
+              only show up long after launch. Each one has its own home;
               this page just points the way.
             </p>
           </div>
@@ -200,7 +200,7 @@ export default async function LabsPage() {
                       className="mt-1 text-[1.0625rem] font-bold text-[var(--ink)]"
                       style={{ fontStretch: '84%' }}
                     >
-                      {product.pricing ?? 'Not set — in build'}
+                      {product.pricing ?? 'Not set, in build'}
                     </p>
                     <div className="ticket-rule">
                       {product.external ? (
