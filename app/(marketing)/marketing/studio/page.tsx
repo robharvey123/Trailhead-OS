@@ -165,6 +165,46 @@ const projects: Project[] = [
   },
   {
     code: 'JOB-02',
+    name: "Wild 'n' Fresh",
+    sector: 'Fine food supply',
+    status: 'Live',
+    headline: 'A trade supplier that reads like a market list, not a catalogue.',
+    problem:
+      "An independent, family-run fine food supplier selling into London kitchens: restaurants, hotels, private chefs, yachts and members' clubs. The buyers are chefs, they order against a cut-off, and they judge a supplier on whether the produce is right rather than on how a website looks. The site had to carry a daily-changing range and open a trade account without putting a form wall in front of a chef at 11am.",
+    built: [
+      'Five routes built around how a chef actually decides: produce, sourcing, delivery, who you are, and how to open an account',
+      'A produce list that reads as a market list, named item by item, rather than a generic category grid',
+      'The order cut-off and delivery window stated in the chrome on every page, because it is the fact that governs whether they can buy today',
+      'Trade account enquiry routed straight to the office, with no account-manager layer in between',
+    ],
+    stack: ['Next.js', 'TypeScript', 'Vercel'],
+    outcome:
+      'Live at wildnfreshltd.com, carrying the full range and taking trade account enquiries.',
+    href: 'https://www.wildnfreshltd.com',
+    hrefLabel: 'Visit wildnfreshltd.com',
+  },
+  {
+    code: 'JOB-03',
+    name: 'Brookweald Cricket Club',
+    sector: 'Sports club',
+    status: 'Live',
+    headline: 'One site, four audiences, and volunteers who update it themselves.',
+    problem:
+      'A village club in Brentwood, three teams, on the same ground since 1949, with a clubhouse it lets out for weddings, wakes and functions. Four audiences with almost nothing in common: members checking a Saturday result on a phone at the ground, prospective players judging the standard, hire enquirers who do not care about cricket at all, and sponsors deciding whether to renew. Nobody on the committee is a developer, so any site that needed one to change a fixture or a photo would go stale by August.',
+    built: [
+      'Every piece of homepage content editable by committee volunteers behind a magic-link login, with built-in defaults so the site never renders empty if the content store is unreachable',
+      'Clubhouse hire given equal billing with the cricket, and its own enquiry route, because it is what the club is actually selling the rest of the week',
+      'A live MVP leaderboard pulled from the Trailhead Labs cricket platform over its public API, degrading to the rest of the page if that service is down',
+      'Enquiries delivered by email through Resend, with an optional webhook and an optional forward into the club platform',
+    ],
+    stack: ['Next.js', 'TypeScript', 'Supabase', 'Resend', 'Vercel'],
+    outcome:
+      'Live at brookwealdcc.co.uk and maintained by the club rather than by us. It is also where MVP Cricket is proven in the wild: the site consumes the product\u2019s public leaderboard endpoint, so the consultancy, the build and the product all meet on one page. Disclosure: Trailhead\u2019s operator sits on the club committee, so this is club work rather than an arm\u2019s-length commission.',
+    href: 'https://brookwealdcc.co.uk',
+    hrefLabel: 'Visit brookwealdcc.co.uk',
+  },
+  {
+    code: 'JOB-04',
     name: 'Yasin & Co Solicitors',
     sector: 'Legal services',
     status: 'In build',
@@ -427,7 +467,7 @@ export default async function StudioPage() {
         <div className="bay py-12 md:py-16">
           <div className="bay-code">
             <p className="plan-data text-[var(--ink-3)]">JOBS</p>
-            <p className="plan-note mt-1 text-[var(--ink-3)]">2 on record</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">4 on record</p>
           </div>
           <div className="min-w-0">
             <h2 className="plan-h2 rack-target">A short list, on purpose.</h2>
