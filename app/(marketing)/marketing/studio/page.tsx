@@ -215,7 +215,7 @@ const projects: Project[] = [
     ],
     stack: ['Next.js', 'TypeScript', 'Supabase', 'Resend', 'Vercel'],
     outcome:
-      'Live at brookwealdcc.co.uk and maintained by the club rather than by us. It is also where MVP Cricket is proven in the wild: the site consumes the product\u2019s public leaderboard endpoint, so the consultancy, the build and the product all meet on one page. Disclosure: Trailhead\u2019s operator sits on the club committee, so this is club work rather than an arm\u2019s-length commission.',
+      'Live at brookwealdcc.co.uk and maintained by the club rather than by us. The club is also where MVP Cricket was proven before it was sold to anyone: a full season of fixtures, selections, published team sheets and match-fee collection ran on it there, across 40+ members and £7,000+ in match fees collected. The site consumes that same platform\u2019s public leaderboard endpoint, so the build and the product meet on one page. Disclosure: Trailhead\u2019s operator sits on the club committee, so this is club work rather than an arm\u2019s-length commission.',
     href: 'https://brookwealdcc.co.uk',
     hrefLabel: 'Visit brookwealdcc.co.uk',
     screenshot: '/work/brookweald.webp',

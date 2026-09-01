@@ -26,6 +26,7 @@ type LabsProduct = {
   summary: string
   /** Real product screenshot. See .impeccable/ASSETS.md; omitted until supplied. */
   screenshot?: string
+  screenshotAlt?: string
   origin?: string
   /** The shelf price. `null` means not set yet, and prints as exactly that. */
   pricing: string | null
@@ -55,6 +56,8 @@ const products: LabsProduct[] = [
       'Started life as BrightFire, a bespoke build for a fire and security contractor in Harlow, and was productised once it proved itself in the field.',
     pricing: 'From £15 per engineer, per month',
     screenshot: '/labs/engineer-os.webp',
+    screenshotAlt:
+      "Engineer OS on a phone: an engineer's day of scheduled jobs, each with its reference, customer and time",
     href: 'https://engineeros.uk',
     external: true,
     ctaLabel: 'Visit engineeros.uk',
@@ -73,6 +76,11 @@ const products: LabsProduct[] = [
     sector: 'Sports SaaS',
     summary:
       'Multi-tenant club management for grassroots cricket. Play-Cricket sync, automated MVP scoring, leaderboards and member notifications, run by volunteers rather than administrators.',
+    origin:
+      'Built and battle-tested at Brookweald CC. A full season of fixtures, selections, published team sheets and match-fee collection ran on it before the product opened its doors: 40+ members, £7,000+ in match fees collected.',
+    screenshot: '/labs/mvp-cricket.webp',
+    screenshotAlt:
+      'MVP Cricket on a phone: the club MVP leaderboard for the 2026 season, players ranked by points across matches played',
     pricing: 'Tiered, from £19 a month',
     href: 'https://mvpcricket.app',
     external: true,
@@ -187,7 +195,7 @@ export default async function LabsPage() {
 
                   <PlateSlot
                     src={product.screenshot}
-                    alt={`${product.name} on a phone, showing an engineer's day of scheduled jobs`}
+                    alt={product.screenshotAlt ?? `${product.name} in use`}
                     width={418}
                     height={849}
                     className="mt-5 max-w-[13rem]"

@@ -26,11 +26,10 @@ cannot copy.
   the plan-stock ground; a studio white-background headshot will fight it.
 - **File:** `public/rob-harvey.jpg` (+ `rob-harvey@2x.jpg`).
 
-## 2. Product screenshots
+## 2. Product screenshots — SUPPLIED, 1 Sept 2026
 
-**Why it matters.** `/labs` currently sells three products on text and a price
-alone, and the Studio hero carries an authored drawing keyed `ILLUSTRATIVE`
-where a real interface belongs.
+Engineer OS, MVP Cricket, Wild 'n' Fresh and Brookweald are all in and live.
+What remains open is noted at the end of this section.
 
 - **Engineer OS** — the job board or a completed job sheet. Replaces the
   `JobDocket` component in `app/(marketing)/marketing/studio/page.tsx`. When it
