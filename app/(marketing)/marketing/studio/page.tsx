@@ -134,6 +134,11 @@ type Project = {
   outcome: string
   /** Real build screenshot. See .impeccable/ASSETS.md; omitted until supplied. */
   screenshot?: string
+  screenshotAlt?: string
+  screenshotWidth?: number
+  screenshotHeight?: number
+  /** Printed under the plate where the capture needs a fact stating about it. */
+  screenshotNote?: string
   href?: string
   hrefLabel?: string
   internal?: boolean
@@ -162,6 +167,12 @@ const projects: Project[] = [
       'Paperwork now lands in the office before the engineer has left the car park. The build worked well enough that Trailhead Labs productised it into Engineer OS and took it to market. That is the clearest proof we know how to design software for a trade rather than for a demo.',
     href: 'https://engineeros.uk',
     hrefLabel: 'Now sold as Engineer OS',
+    screenshot: '/work/brightfire.webp',
+    screenshotAlt:
+      'The Engineer OS admin dashboard: job counts, outstanding invoices, certificate expiry and a recent jobs table',
+    screenshotWidth: 1800,
+    screenshotHeight: 923,
+    screenshotNote: 'ENGINEER OS · DEMO DATA',
   },
   {
     code: 'JOB-02',
@@ -182,6 +193,11 @@ const projects: Project[] = [
       'Live at wildnfreshltd.com, carrying the full range and taking trade account enquiries.',
     href: 'https://www.wildnfreshltd.com',
     hrefLabel: 'Visit wildnfreshltd.com',
+    screenshot: '/work/wild-n-fresh.webp',
+    screenshotAlt:
+      "The Wild 'n' Fresh homepage: a chef's hands slicing on the pass, over the line We buy the way we cooked",
+    screenshotWidth: 1712,
+    screenshotHeight: 1293,
   },
   {
     code: 'JOB-03',
@@ -202,6 +218,11 @@ const projects: Project[] = [
       'Live at brookwealdcc.co.uk and maintained by the club rather than by us. It is also where MVP Cricket is proven in the wild: the site consumes the product\u2019s public leaderboard endpoint, so the consultancy, the build and the product all meet on one page. Disclosure: Trailhead\u2019s operator sits on the club committee, so this is club work rather than an arm\u2019s-length commission.',
     href: 'https://brookwealdcc.co.uk',
     hrefLabel: 'Visit brookwealdcc.co.uk',
+    screenshot: '/work/brookweald.webp',
+    screenshotAlt:
+      'The Brookweald CC homepage: the club badge beside the line Three teams. One badge, and the cricket and clubhouse split below',
+    screenshotWidth: 1376,
+    screenshotHeight: 1343,
   },
   {
     code: 'JOB-04',
@@ -514,9 +535,10 @@ export default async function StudioPage() {
 
                   <PlateSlot
                     src={project.screenshot}
-                    alt={`${project.name}, the delivered build`}
-                    width={1600}
-                    height={1000}
+                    alt={project.screenshotAlt ?? `${project.name}, the delivered build`}
+                    caption={project.screenshotNote}
+                    width={project.screenshotWidth ?? 1600}
+                    height={project.screenshotHeight ?? 1000}
                     className="mt-7"
                   />
 

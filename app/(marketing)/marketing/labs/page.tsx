@@ -54,6 +54,7 @@ const products: LabsProduct[] = [
     origin:
       'Started life as BrightFire, a bespoke build for a fire and security contractor in Harlow, and was productised once it proved itself in the field.',
     pricing: 'From £15 per engineer, per month',
+    screenshot: '/labs/engineer-os.webp',
     href: 'https://engineeros.uk',
     external: true,
     ctaLabel: 'Visit engineeros.uk',
@@ -169,14 +170,6 @@ export default async function LabsPage() {
                     </span>
                   </div>
 
-                  <PlateSlot
-                    src={product.screenshot}
-                    alt={`${product.name} in use`}
-                    width={1600}
-                    height={1000}
-                    className="mt-4"
-                  />
-
                   <h2 className="plan-h3 mt-4">{product.name}</h2>
                   <p className="plan-data mt-2 text-[var(--ink-3)]">
                     {product.sector.toUpperCase()}
@@ -191,6 +184,14 @@ export default async function LabsPage() {
                       {product.origin}
                     </p>
                   ) : null}
+
+                  <PlateSlot
+                    src={product.screenshot}
+                    alt={`${product.name} on a phone, showing an engineer's day of scheduled jobs`}
+                    width={418}
+                    height={849}
+                    className="mt-5 max-w-[13rem]"
+                  />
 
                   {/* The shelf ticket: the price is the point of a ticket, so
                       an unset price prints as unset rather than disappearing. */}
