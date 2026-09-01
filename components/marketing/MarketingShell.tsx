@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { buildAppLoginHref, buildMarketingHref } from '@/lib/site'
 import {
+  BUSINESSES,
+  UTILITY_NAV,
   getTrackTokens,
   trackFromPathname,
   type TrackNavItem,
@@ -18,10 +20,12 @@ interface MarketingShellProps {
 /**
  * The chrome is the top rail of the bay plan.
  *
- * One shell, three sub-brands. The pathname decides which block colour the
- * chrome is keyed to, so a visitor on /consulting is standing in front of the
- * Commercial bay and a visitor on /studio in front of Studio's, without the
- * site splitting into two codebases.
+ * Navigation is two-tier, the way a plan is read: pick the bay, then the
+ * shelf. The header carries the three businesses, always, with the current one
+ * marked; the rail beneath carries that bay's own sections. The pathname
+ * decides which block colour the chrome is keyed to, so a visitor on
+ * /consulting is standing in front of the Commercial bay and a visitor on
+ * /studio in front of Studio's, without the site splitting into two codebases.
  */
 export default function MarketingShell({
   children,
@@ -129,17 +133,34 @@ export default function MarketingShell({
             </span>
           </Link>
 
-          <div className="hidden items-center gap-7 md:flex">
-            <nav aria-label="Primary" className="flex items-center gap-5">
-              {tokens.nav.map((item) => renderNavItem(item, navLinkClass))}
-              {tokens.crossLink ? (
-                <Link
-                  href={buildMarketingHref(tokens.crossLink.href, isLocalhost)}
-                  className="plan-label text-[var(--ink-3)] transition-colors hover:text-[var(--flash)]"
-                >
-                  {tokens.crossLink.label}
-                </Link>
-              ) : null}
+          <div className="hidden items-center gap-6 md:flex">
+            {/* Tier one: the three businesses, constant everywhere. The active
+                one is underlined in its own key so you can see which bay you
+                are standing in without reading the wordmark. */}
+            <nav aria-label="Businesses" className="flex items-center gap-5">
+              {BUSINESSES.map((item) => {
+                const active = item.track === track
+                return (
+                  <Link
+                    key={item.href}
+                    href={buildMarketingHref(item.href, isLocalhost)}
+                    aria-current={active ? 'page' : undefined}
+                    className={`plan-label border-b-2 pb-1 transition-colors ${
+                      active
+                        ? 'border-[var(--key-deep)] text-[var(--ink)]'
+                        : 'border-transparent text-[var(--ink-2)] hover:text-[var(--flash)]'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </nav>
+
+            <span aria-hidden="true" className="h-4 w-px bg-[var(--hair)]" />
+
+            <nav aria-label="Secondary" className="flex items-center gap-5">
+              {UTILITY_NAV.map((item) => renderNavItem(item, navLinkClass))}
             </nav>
 
             {tokens.cta ? (
@@ -197,10 +218,32 @@ export default function MarketingShell({
             prints which bay the visitor is standing in. */}
         <div className="rail bg-[var(--plan)]">
           <div className="mx-auto flex w-full max-w-[78rem] items-center justify-between gap-4 px-5 pt-2 pb-1.5 md:px-8">
-            <span className="plan-data truncate text-[var(--ink-3)]">
-              {tokens.bayCode}
-              <span className="mx-2 text-[var(--hair)]">|</span>
-              {tokens.bayMeasure}
+            {/* Tier two: the shelves in this bay, or the bay's measure where
+                it has none. */}
+            <span className="flex min-w-0 items-baseline gap-3">
+              <span className="plan-data shrink-0 text-[var(--ink-3)]">
+                {tokens.bayCode}
+              </span>
+              <span aria-hidden="true" className="text-[var(--hair)]">
+                |
+              </span>
+              {tokens.sections.length ? (
+                <nav
+                  aria-label="Sections in this bay"
+                  className="flex min-w-0 flex-wrap items-baseline gap-x-4 gap-y-1"
+                >
+                  {tokens.sections.map((item) =>
+                    renderNavItem(
+                      item,
+                      'plan-data whitespace-nowrap text-[var(--ink-2)] transition-colors hover:text-[var(--flash)]'
+                    )
+                  )}
+                </nav>
+              ) : (
+                <span className="plan-data truncate text-[var(--ink-3)]">
+                  {tokens.bayMeasure}
+                </span>
+              )}
             </span>
 
             {/* The dimension callout: a measured span with extension ticks and
@@ -238,25 +281,56 @@ export default function MarketingShell({
 
         {menuOpen ? (
           <div id={menuId} className="border-t border-[var(--ink)] bg-[var(--plan)] md:hidden">
-            <nav
-              aria-label="Primary, mobile"
-              className="mx-auto flex w-full max-w-[78rem] flex-col px-5"
-            >
-              {tokens.nav.map((item) =>
-                renderNavItem(
-                  item,
-                  'plan-label border-b border-[var(--hair)] py-4 text-[var(--ink)]'
-                )
-              )}
-              {tokens.crossLink ? (
-                <Link
-                  href={buildMarketingHref(tokens.crossLink.href, isLocalhost)}
-                  onClick={() => setMenuOpen(false)}
-                  className="plan-label border-b border-[var(--hair)] py-4 text-[var(--ink-3)]"
+            <div className="mx-auto flex w-full max-w-[78rem] flex-col px-5">
+              <nav aria-label="Businesses, mobile" className="flex flex-col">
+                {BUSINESSES.map((item) => {
+                  const active = item.track === track
+                  return (
+                    <Link
+                      key={item.href}
+                      href={buildMarketingHref(item.href, isLocalhost)}
+                      onClick={() => setMenuOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`plan-label flex items-center justify-between border-b border-[var(--hair)] py-4 ${
+                        active ? 'text-[var(--ink)]' : 'text-[var(--ink-2)]'
+                      }`}
+                    >
+                      {item.label}
+                      {active ? (
+                        <span
+                          aria-hidden="true"
+                          className="h-1.5 w-6 bg-[var(--key-deep)]"
+                        />
+                      ) : null}
+                    </Link>
+                  )
+                })}
+              </nav>
+
+              {/* Tier two, indented under the bay it belongs to. */}
+              {tokens.sections.length ? (
+                <nav
+                  aria-label="Sections in this bay, mobile"
+                  className="flex flex-col border-b border-[var(--hair)] py-2 pl-4"
                 >
-                  {tokens.crossLink.label}
-                </Link>
+                  {tokens.sections.map((item) =>
+                    renderNavItem(
+                      item,
+                      'plan-data py-2.5 text-[var(--ink-2)]'
+                    )
+                  )}
+                </nav>
               ) : null}
+
+              <nav aria-label="Secondary, mobile" className="flex flex-col">
+                {UTILITY_NAV.map((item) =>
+                  renderNavItem(
+                    item,
+                    'plan-label border-b border-[var(--hair)] py-4 text-[var(--ink-2)]'
+                  )
+                )}
+              </nav>
+
               <div className="flex flex-col gap-3 py-5">
                 <Link
                   href={buildMarketingHref(tokens.cta?.href ?? '/contact', isLocalhost)}
@@ -273,7 +347,7 @@ export default function MarketingShell({
                   Log in
                 </Link>
               </div>
-            </nav>
+            </div>
           </div>
         ) : null}
       </header>
@@ -292,7 +366,11 @@ export default function MarketingShell({
                 aria-label="Footer"
                 className="mt-3 flex flex-wrap gap-x-6 gap-y-3"
               >
-                {tokens.nav.map((item) =>
+                {[
+                  ...BUSINESSES,
+                  ...tokens.sections,
+                  ...UTILITY_NAV,
+                ].map((item) =>
                   item.external ? (
                     <a
                       key={`footer-${item.href}`}
@@ -313,14 +391,6 @@ export default function MarketingShell({
                     </Link>
                   )
                 )}
-                {tokens.crossLink ? (
-                  <Link
-                    href={buildMarketingHref(tokens.crossLink.href, isLocalhost)}
-                    className={navLinkClass}
-                  >
-                    {tokens.crossLink.label}
-                  </Link>
-                ) : null}
                 {tokens.track !== 'holdings' ? (
                   <Link
                     href={buildMarketingHref('/', isLocalhost)}
