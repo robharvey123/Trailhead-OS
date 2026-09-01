@@ -1,4 +1,8 @@
-# Assets the site is waiting on
+# Assets — all supplied, 1 September 2026
+
+Nothing on the site is waiting on an asset any more, and nothing is faking one.
+Kept as the record of what went where, and of the one placement that changed
+once the photograph was actually in hand.
 
 The bay-plan redesign ships imagery-free on purpose: you confirmed photography,
 product screenshots and client logos exist, but none were on disk, and the build
@@ -10,7 +14,16 @@ credibility upgrade, listed in the order it pays back.
 
 ---
 
-## 1. Portrait of Rob — the highest-value missing asset
+## 1. Portrait of Rob — SUPPLIED, in the /consulting hero
+
+Placed in the hero's right column, not between the dimension rail and the
+Services bay as originally specified below. With the photograph in hand that
+plan was wrong: it buried the person halfway down a page whose opening line is
+the claim they evidence. The shelf-edge ticket beneath carries the name, the
+role, and the "no account manager, no junior team" line lifted out of the FAQ.
+File: `public/rob-harvey.webp`, 1066x1600.
+
+### Original specification, kept for the record
 
 **Why it matters most.** The whole pitch is "one operator, not an agency", and
 the site currently asserts that in words alone. A face is the cheapest proof

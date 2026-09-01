@@ -140,10 +140,10 @@ const trackRecord = [
 
 const MAX_TENURE = Math.max(...trackRecord.map((entry) => entry.years))
 
-// The operator. Nothing on this page proves a person is behind it, which is the
-// one claim the whole consultancy rests on. Set the path once the photograph
-// exists; see .impeccable/ASSETS.md.
-const PORTRAIT: string | undefined = undefined
+// The operator. Everything on this page rests on one claim, that you are
+// buying a person rather than an agency, and until this landed the person
+// never appeared. It sits in the hero, because that is where the claim is made.
+const PORTRAIT: string | undefined = '/rob-harvey.webp'
 
 const categories = [
   'Nicotine Pouches',
@@ -230,7 +230,8 @@ export default async function ConsultingPage() {
             <p className="plan-data text-[var(--ink-3)]">BAY 01</p>
             <p className="plan-note mt-1 text-[var(--ink-3)]">Commercial</p>
           </div>
-          <div className="min-w-0">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start">
+            <div className="min-w-0">
             <h1 className="plan-display rack max-w-[16ch]">
               You have a brand. It needs to sell somewhere it isn&rsquo;t
               selling yet.
@@ -257,6 +258,29 @@ export default async function ConsultingPage() {
                 Looking for software instead?
               </Link>
             </div>
+            </div>
+
+            {/* The operator, on a ticket, because the person is the offer. */}
+            <div className="lg:pt-2">
+              <PlateSlot
+                src={PORTRAIT}
+                alt="Rob Harvey, arms folded at a stand table"
+                width={1066}
+                height={1600}
+                className="max-w-[15rem]"
+                priority
+              />
+              <div className="ticket mt-4 max-w-[15rem]">
+                <p className="plan-label text-[var(--ink)]">Rob Harvey</p>
+                <p className="plan-data mt-1.5 text-[var(--ink-3)]">
+                  TRAILHEAD COMMERCIAL
+                </p>
+                <p className="plan-body ticket-rule plan-body-xs">
+                  There is no account manager and no junior team. The person who
+                  scopes the work is the person who does it.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -273,14 +297,6 @@ export default async function ConsultingPage() {
           </div>
 
           <figure className="min-w-0">
-            <PlateSlot
-              src={PORTRAIT}
-              alt="Rob Harvey"
-              caption="ROB HARVEY · TRAILHEAD COMMERCIAL"
-              width={1200}
-              height={1600}
-              className="mb-8 max-w-xs"
-            />
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <figcaption className="plan-h3">
                 Pricing architecture, factory gate to shelf
