@@ -26,13 +26,9 @@ const BILL_TO_KEYS = [
 ] as const
 
 function contactHasOwnAddress(contact: Contact | null | undefined) {
-  return Boolean(
-    contact?.address_line1 ||
-      contact?.address_line2 ||
-      contact?.city ||
-      contact?.postcode ||
-      contact?.country
-  )
+  // country alone doesn't count: contacts.country defaults to 'UK' in the DB, so
+  // every contact would "have an address" and the account path would never run.
+  return Boolean(contact?.address_line1 || contact?.address_line2 || contact?.city || contact?.postcode)
 }
 
 function accountHasStructuredAddress(account: Account | null | undefined) {

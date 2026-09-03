@@ -40,8 +40,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>
     const paidOn = typeof body.paid_on === 'string' && DATE_RE.test(body.paid_on) ? body.paid_on : null
     if (!paidOn) return NextResponse.json({ error: 'paid_on must be a YYYY-MM-DD date' }, { status: 400 })
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
-    if (paidOn > tomorrow) return NextResponse.json({ error: 'paid_on cannot be more than one day in the future' }, { status: 400 })
+    const today = new Date().toISOString().slice(0, 10)
+    if (paidOn > today) return NextResponse.json({ error: 'paid_on cannot be in the future' }, { status: 400 })
 
     const amount = roundMoney(Number(body.amount))
     if (!Number.isFinite(amount) || amount <= 0) return NextResponse.json({ error: 'amount must be greater than zero' }, { status: 400 })

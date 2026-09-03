@@ -78,6 +78,25 @@ export async function createCoworkInvoice(body: Record<string, unknown>): Promis
     if (defaultAccountId) account = { id: defaultAccountId, name: '' }
   }
 
+  // No due date supplied → derive from the account's payment terms, falling
+  // back to the company default (same rule as the OS API and the form).
+  let dueDate = optionalDate(body.due_date, 'due_date')
+  if (!dueDate) {
+    let termsDays: number | null = null
+    if (account?.id) {
+      const { data } = await supabaseService.from('accounts').select('payment_terms_days').eq('id', account.id).maybeSingle()
+      termsDays = (data?.payment_terms_days as number | null) ?? null
+    }
+    if (termsDays == null) {
+      const { data } = await supabaseService.from('os_company_settings').select('default_payment_terms_days').eq('key', 'default').maybeSingle()
+      const v = Number(data?.default_payment_terms_days)
+      termsDays = Number.isInteger(v) && v >= 0 ? v : 14
+    }
+    const due = new Date(`${todayDate()}T12:00:00Z`)
+    due.setUTCDate(due.getUTCDate() + termsDays)
+    dueDate = due.toISOString().slice(0, 10)
+  }
+
   const { data, error } = await supabaseService
     .from('invoices')
     .insert({
@@ -86,7 +105,7 @@ export async function createCoworkInvoice(body: Record<string, unknown>): Promis
       workstream_id: workstream?.id ?? null,
       engagement_id: engagement?.id ?? null,
       issue_date: todayDate(),
-      due_date: optionalDate(body.due_date, 'due_date'),
+      due_date: dueDate,
       vat_rate: parseVatRate(body.vat_rate),
       line_items: lineItems,
       notes: optionalString(body.notes),
@@ -165,8 +184,7 @@ export async function recordCoworkPayment(id: string, input: CoworkPaymentInput)
   }
   const paidOn = input.paid_on ?? todayDate()
   if (!DATE_RE.test(paidOn)) throw new CoworkApiError('paid_on must be a YYYY-MM-DD date', 400)
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
-  if (paidOn > tomorrow) throw new CoworkApiError('paid_on cannot be more than one day in the future', 400)
+  if (paidOn > todayDate()) throw new CoworkApiError('paid_on cannot be in the future', 400)
   if (input.method != null && !PAYMENT_METHODS.has(input.method)) {
     throw new CoworkApiError('method must be bank_transfer, stripe, card, cash, cheque, or other', 400)
   }

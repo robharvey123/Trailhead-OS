@@ -24,8 +24,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       if (typeof body.paid_on !== 'string' || !DATE_RE.test(body.paid_on)) {
         return NextResponse.json({ error: 'paid_on must be a YYYY-MM-DD date' }, { status: 400 })
       }
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
-      if (body.paid_on > tomorrow) return NextResponse.json({ error: 'paid_on cannot be more than one day in the future' }, { status: 400 })
+      const today = new Date().toISOString().slice(0, 10)
+      if (body.paid_on > today) return NextResponse.json({ error: 'paid_on cannot be in the future' }, { status: 400 })
       patch.paid_on = body.paid_on
     }
     if (body.amount !== undefined) {

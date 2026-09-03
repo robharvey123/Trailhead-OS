@@ -91,14 +91,33 @@ export default function PaymentDetailsForm({ company }: { company: CompanySettin
           />
         </label>
 
-        <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-[color:var(--text-2)]">Payment terms</span>
+        <label className="space-y-2 text-sm">
+          <span className="font-medium text-[color:var(--text-2)]">Payment terms (printed text)</span>
           <input
             name="payment_terms"
             defaultValue={company.payment_terms ?? ''}
             placeholder="e.g. Payment due within 14 days"
             className="os-input w-full rounded-2xl px-4 py-3 text-sm"
           />
+          <span className="text-xs text-[color:var(--text-3)]">
+            Free text shown in the payment section of the PDF.
+          </span>
+        </label>
+
+        <label className="space-y-2 text-sm">
+          <span className="font-medium text-[color:var(--text-2)]">Default payment terms (days)</span>
+          <input
+            name="default_payment_terms_days"
+            type="number"
+            min="0"
+            max="365"
+            step="1"
+            defaultValue={company.default_payment_terms_days ?? 14}
+            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+          />
+          <span className="text-xs text-[color:var(--text-3)]">
+            Used to set the due date when an account has no terms of its own.
+          </span>
         </label>
 
         <label className="flex items-center gap-3 text-sm md:col-span-2">

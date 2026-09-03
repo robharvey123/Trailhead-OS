@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAccounts } from '@/lib/db/accounts'
 import { listTags, accountTagMap } from '@/lib/db/tags'
 import { listSavedViews } from '@/lib/db/saved-views'
+import { getCompanySettings } from '@/lib/company-settings'
 import { mockupFontVars } from '@/lib/fonts'
 import AccountsClient from '@/components/os/crm/AccountsClient'
 
@@ -12,11 +13,12 @@ export const metadata = {
 export default async function AccountsPage() {
   const supabase = await createClient()
 
-  const [accounts, tags, tagMap, views] = await Promise.all([
+  const [accounts, tags, tagMap, views, companySettings] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     listTags(supabase).catch(() => []),
     accountTagMap(supabase).catch(() => ({})),
     listSavedViews('accounts', supabase).catch(() => []),
+    getCompanySettings(supabase).catch(() => null),
   ])
 
   const channels = Array.from(
@@ -31,6 +33,7 @@ export default async function AccountsPage() {
         accountTags={tagMap}
         channels={channels}
         savedViews={views}
+        defaultTermsDays={companySettings?.default_payment_terms_days ?? 14}
       />
     </div>
   )

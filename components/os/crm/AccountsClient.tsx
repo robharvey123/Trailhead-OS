@@ -33,6 +33,7 @@ interface AccountsClientProps {
   accountTags: Record<string, Tag[]>
   channels: string[]
   savedViews: SavedView[]
+  defaultTermsDays?: number
 }
 
 interface Filters {
@@ -40,9 +41,13 @@ interface Filters {
   channel: string
   status: string
   tag: string
+  /** '' all · 'custom' has own payment terms · 'default' inherits the company default */
+  terms: string
+  /** '' none · 'terms_asc' · 'terms_desc' — saved with views like the filters */
+  sort: string
 }
 
-const EMPTY_FILTERS: Filters = { search: '', channel: '', status: '', tag: '' }
+const EMPTY_FILTERS: Filters = { search: '', channel: '', status: '', tag: '', terms: '', sort: '' }
 
 export default function AccountsClient({
   initialAccounts,
@@ -50,6 +55,7 @@ export default function AccountsClient({
   accountTags,
   channels,
   savedViews: initialViews,
+  defaultTermsDays = 14,
 }: AccountsClientProps) {
   const router = useRouter()
   const [accounts] = useState(initialAccounts)
@@ -66,17 +72,24 @@ export default function AccountsClient({
 
   const filtered = useMemo(() => {
     const q = filters.search.trim().toLowerCase()
-    return accounts.filter((a) => {
+    const rows = accounts.filter((a) => {
       if (filters.status && a.status !== filters.status) return false
       if (filters.channel && a.channel !== filters.channel) return false
       if (filters.tag && !(tagMap[a.id] ?? []).some((t) => t.id === filters.tag)) return false
+      if (filters.terms === 'custom' && a.payment_terms_days == null) return false
+      if (filters.terms === 'default' && a.payment_terms_days != null) return false
       if (q) {
         const hay = `${a.name} ${a.website ?? ''} ${a.channel ?? ''}`.toLowerCase()
         if (!hay.includes(q)) return false
       }
       return true
     })
-  }, [accounts, filters, tagMap])
+    if (filters.sort === 'terms_asc' || filters.sort === 'terms_desc') {
+      const dir = filters.sort === 'terms_asc' ? 1 : -1
+      rows.sort((a, b) => ((a.payment_terms_days ?? defaultTermsDays) - (b.payment_terms_days ?? defaultTermsDays)) * dir || a.name.localeCompare(b.name))
+    }
+    return rows
+  }, [accounts, filters, tagMap, defaultTermsDays])
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -99,7 +112,7 @@ export default function AccountsClient({
     )
   }
 
-  async function bulk(action: 'tag' | 'status' | 'delete', payload?: Record<string, unknown>) {
+  async function bulk(action: 'tag' | 'status' | 'terms' | 'delete', payload?: Record<string, unknown>) {
     const ids = Array.from(selected)
     if (ids.length === 0) return
     if (action === 'delete' && !confirm(`Delete ${ids.length} account(s)? This cannot be undone.`))
@@ -138,11 +151,27 @@ export default function AccountsClient({
     }
   }
 
+  function setBulkTerms() {
+    const raw = prompt('Payment terms in days for the selected accounts (leave empty to clear back to the company default):')
+    if (raw === null) return
+    const trimmed = raw.trim()
+    if (trimmed !== '' && (!/^\d+$/.test(trimmed) || Number(trimmed) > 365)) {
+      setError('Payment terms must be a whole number of days between 0 and 365, or empty to clear.')
+      return
+    }
+    void bulk('terms', { payment_terms_days: trimmed === '' ? null : Number(trimmed) })
+  }
+
+  function cycleTermsSort() {
+    setFilters((f) => ({ ...f, sort: f.sort === 'terms_asc' ? 'terms_desc' : f.sort === 'terms_desc' ? '' : 'terms_asc' }))
+  }
+
   function exportCsv() {
     const rows = (selected.size ? filtered.filter((a) => selected.has(a.id)) : filtered).map((a) => ({
       Name: a.name,
       Channel: a.channel ?? '',
       Status: STATUS_LABEL[a.status] ?? a.status,
+      Terms: a.payment_terms_days != null ? `${a.payment_terms_days}d` : `${defaultTermsDays}d default`,
       Website: a.website ?? '',
       Contacts: a.contacts_count ?? 0,
       Tags: (tagMap[a.id] ?? []).map((t) => t.name).join('; '),
@@ -304,7 +333,12 @@ export default function AccountsClient({
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}
         </select>
-        {(filters.search || filters.channel || filters.status || filters.tag) ? (
+        <select className="filter-select" value={filters.terms} onChange={(e) => setFilter('terms', e.target.value)}>
+          <option value="">All terms</option>
+          <option value="custom">Own terms</option>
+          <option value="default">Inheriting default</option>
+        </select>
+        {(filters.search || filters.channel || filters.status || filters.tag || filters.terms || filters.sort) ? (
           <button className="btn btn-ghost btn-sm" onClick={() => setFilters(EMPTY_FILTERS)}>Clear</button>
         ) : null}
       </div>
@@ -329,6 +363,7 @@ export default function AccountsClient({
             <option value="">Change status…</option>
             {STATUS_ORDER.map((s) => (<option key={s} value={s}>{STATUS_LABEL[s]}</option>))}
           </select>
+          <button className="btn btn-ghost btn-sm" onClick={setBulkTerms} disabled={busy}>Set payment terms</button>
           <button className="btn btn-ghost btn-sm" onClick={exportCsv} disabled={busy}>Export CSV</button>
           <button className="btn btn-ghost btn-sm" onClick={() => bulk('delete')} disabled={busy} style={{ color: 'var(--red)' }}>Delete</button>
           <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={() => setSelected(new Set())}>Clear selection</button>
@@ -348,6 +383,16 @@ export default function AccountsClient({
               <th>Account</th>
               <th>Channel</th>
               <th>Status</th>
+              <th>
+                <button
+                  type="button"
+                  onClick={cycleTermsSort}
+                  title="Payment terms — click to sort"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', color: 'inherit', padding: 0 }}
+                >
+                  Terms{filters.sort === 'terms_asc' ? ' ▲' : filters.sort === 'terms_desc' ? ' ▼' : ''}
+                </button>
+              </th>
               <th>Tags</th>
               <th>Website</th>
               <th>Key contact</th>
@@ -356,7 +401,7 @@ export default function AccountsClient({
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="empty">No accounts match this view.</td></tr>
+              <tr><td colSpan={9} className="empty">No accounts match this view.</td></tr>
             ) : (
               filtered.map((a) => (
                 <tr key={a.id} className={selected.has(a.id) ? 'selected' : ''}>
@@ -371,6 +416,13 @@ export default function AccountsClient({
                   </td>
                   <td>{a.channel ? <span className="channel-tag">{a.channel}</span> : <span className="td-mono">—</span>}</td>
                   <td><span className={`status-badge status-${a.status}`}>{STATUS_LABEL[a.status] ?? a.status}</span></td>
+                  <td className="td-mono">
+                    {a.payment_terms_days != null ? (
+                      `${a.payment_terms_days}d`
+                    ) : (
+                      <span style={{ color: 'var(--muted, #94a3b8)' }}>{defaultTermsDays}d default</span>
+                    )}
+                  </td>
                   <td>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                       {(tagMap[a.id] ?? []).map((t) => (

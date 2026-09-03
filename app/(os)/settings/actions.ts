@@ -98,6 +98,12 @@ export async function updateOsPaymentSettings(
     return { error: 'Account number must be 8 digits.' }
   }
 
+  const termsRaw = String(formData.get('default_payment_terms_days') ?? '').trim()
+  const termsDays = termsRaw === '' ? 14 : Number(termsRaw)
+  if (!Number.isInteger(termsDays) || termsDays < 0 || termsDays > 365) {
+    return { error: 'Default payment terms must be a whole number of days between 0 and 365.' }
+  }
+
   const { error } = await supabase
     .from('os_company_settings')
     .upsert(
@@ -112,6 +118,7 @@ export async function updateOsPaymentSettings(
         payment_terms: String(formData.get('payment_terms') ?? '').trim() || null,
         vat_registered: formData.get('vat_registered') === 'on',
         vat_number: String(formData.get('vat_number') ?? '').trim() || null,
+        default_payment_terms_days: termsDays,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'key' }

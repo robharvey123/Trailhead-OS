@@ -16,7 +16,8 @@
     "crm:import": "tsx scripts/import-crm-master.ts",
     "seed:engineer-os": "tsx scripts/seed-engineer-os-campaign.ts",
     "crm:promote-placeholders": "tsx scripts/promote-placeholder-contacts.ts",
-    "test:whatsapp-parser": "tsx scripts/whatsapp-parser-guard.ts"
+    "test:whatsapp-parser": "tsx scripts/whatsapp-parser-guard.ts",
+    "test:invoice-ledger": "tsx scripts/invoice-ledger-acceptance.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",

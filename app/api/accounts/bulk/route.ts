@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Bulk account operations.
- * POST { ids: string[], action: 'tag' | 'status' | 'delete', tag_id?, status? }
+ * POST { ids: string[], action: 'tag' | 'status' | 'terms' | 'delete', tag_id?, status?, payment_terms_days? }
  */
 export async function POST(request: NextRequest) {
   try {
@@ -34,6 +34,17 @@ export async function POST(request: NextRequest) {
         await Promise.all(
           ids.map((id) => updateAccount(id, { status: body.status as AccountStatus }, supabase))
         )
+        break
+      }
+      case 'terms': {
+        // null clears back to "inherit the company default" — the desired state
+        // for most accounts, so never backfill a number everywhere.
+        const raw = body.payment_terms_days
+        const days = raw === null || raw === '' || raw === undefined ? null : Number(raw)
+        if (days !== null && (!Number.isInteger(days) || days < 0 || days > 365)) {
+          return NextResponse.json({ error: 'payment_terms_days must be a whole number of days between 0 and 365, or null' }, { status: 400 })
+        }
+        await Promise.all(ids.map((id) => updateAccount(id, { payment_terms_days: days }, supabase)))
         break
       }
       case 'delete': {

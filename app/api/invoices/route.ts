@@ -187,11 +187,7 @@ export async function POST(request: NextRequest) {
         ? body.issue_date
         : new Date().toISOString().slice(0, 10),
     due_date:
-      body.due_date === null || body.due_date === undefined
-        ? null
-        : typeof body.due_date === 'string' && body.due_date.trim()
-          ? body.due_date
-          : null,
+      typeof body.due_date === 'string' && body.due_date.trim() ? body.due_date : null,
     line_items: lineItems,
     vat_rate: Number.isFinite(Number(body.vat_rate)) ? Number(body.vat_rate) : defaultVatRate,
     currency: currencyFields.currency,
@@ -216,6 +212,22 @@ export async function POST(request: NextRequest) {
       body.is_recurring === true && (body.recurring_interval === 'month' || body.recurring_interval === 'year')
         ? body.recurring_interval
         : null,
+  }
+
+  // No due date supplied → derive it from the account's payment terms, falling
+  // back to the company default. Mirrors what the invoice form does client-side.
+  if (!payload.due_date) {
+    let termsDays = account?.payment_terms_days ?? null
+    if (termsDays == null) {
+      try {
+        termsDays = (await getCompanySettings(auth.supabase)).default_payment_terms_days
+      } catch {
+        termsDays = 14
+      }
+    }
+    const due = new Date(`${payload.issue_date}T12:00:00Z`)
+    due.setUTCDate(due.getUTCDate() + termsDays)
+    payload.due_date = due.toISOString().slice(0, 10)
   }
 
   const totals = calculateTotals(payload.line_items, payload.vat_rate)
