@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
   INVOICE_SELECT,
-  findPricingTierBySlug,
   formatInvoice,
   getInvoiceById,
   getWorkstreamBySlug,
@@ -16,6 +15,7 @@ import {
   sendCoworkInvoicePaidNotification,
 } from '@/lib/cowork-api'
 import { getEngagementRow } from '@/lib/cowork-engagements'
+import { recordCoworkPayment } from '@/lib/cowork-invoices'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
@@ -52,14 +52,18 @@ export async function PATCH(
     const body = await request.json().catch(() => ({}))
     const patch: Record<string, unknown> = {}
 
+    // paid / part_paid go through the payments ledger, never a direct write.
+    let markPaid = false
     if (body.status !== undefined) {
-      patch.status = parseInvoiceStatus(body.status)
-      if (patch.status === 'paid') {
-        patch.paid_at = new Date().toISOString()
+      const status = parseInvoiceStatus(body.status)
+      if (status === 'part_paid') {
+        return Response.json(
+          { error: 'Record a partial payment instead: POST /api/cowork/invoices/{id}/payments' },
+          { status: 409 }
+        )
       }
-      if (patch.status !== 'paid' && existing.paid_at) {
-        patch.paid_at = null
-      }
+      if (status === 'paid') markPaid = true
+      else patch.status = status
     }
 
     if (body.due_date !== undefined) patch.due_date = optionalDate(body.due_date, 'due_date')
@@ -79,9 +83,8 @@ export async function PATCH(
       patch.workstream_id = slug ? (await getWorkstreamBySlug(slug)).id : null
     }
 
-    if (body.tier !== undefined) {
-      const tierSlug = optionalString(body.tier)
-      patch.pricing_tier_id = tierSlug ? (await findPricingTierBySlug(tierSlug)).id : null
+    if (body.tier !== undefined || body.pricing_tier_id !== undefined) {
+      return Response.json({ error: 'Pricing tiers are no longer supported on invoices' }, { status: 400 })
     }
 
     if (body.line_items !== undefined) {
@@ -111,26 +114,41 @@ export async function PATCH(
       patch.fx_rate_source = cf.fx_rate_source
     }
 
-    if (Object.keys(patch).length === 0) {
+    if (Object.keys(patch).length === 0 && !markPaid) {
       return Response.json({ error: 'No changes supplied' }, { status: 400 })
     }
 
-    const { data, error } = await supabaseService
-      .from('invoices')
-      .update(patch)
-      .eq('id', id)
-      .select(INVOICE_SELECT)
-      .single()
-
-    if (error) {
-      throw error
+    let data: Record<string, unknown>
+    if (Object.keys(patch).length > 0) {
+      const { data: row, error } = await supabaseService
+        .from('invoices')
+        .update(patch)
+        .eq('id', id)
+        .select(INVOICE_SELECT)
+        .single()
+      if (error) {
+        throw error
+      }
+      data = row as Record<string, unknown>
+    } else {
+      data = existing as unknown as Record<string, unknown>
     }
 
-    if (existing.status !== 'paid' && data.status === 'paid') {
-      void sendCoworkInvoicePaidNotification({
-        id: String(data.id),
-        invoice_number: String(data.invoice_number),
-      }).catch(() => {})
+    if (markPaid) {
+      const paid = await recordCoworkPayment(id, { paid_on: optionalString(body.paid_on) })
+      if (existing.status !== 'paid' && paid.status === 'paid') {
+        void sendCoworkInvoicePaidNotification({ id: paid.id, invoice_number: paid.invoice_number }).catch(() => {})
+        void recordCoworkWrite({
+          action: 'update',
+          entity: 'invoice',
+          entityId: paid.id,
+          entityLabel: paid.invoice_number,
+          summary: `Marked invoice ${paid.invoice_number} paid via a ledger payment (was ${existing.status})`,
+          before: { status: existing.status },
+          payload: { status: 'paid' },
+        })
+      }
+      return Response.json(paid)
     }
 
     const updated = formatInvoice(data as never)

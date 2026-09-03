@@ -4,6 +4,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getContacts } from '@/lib/db/contacts'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getWorkstreams } from '@/lib/db/workstreams'
+import { getCompanySettings } from '@/lib/company-settings'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function EditInvoicePage({
@@ -23,10 +24,11 @@ export default async function EditInvoicePage({
     redirect(`/invoicing/${invoice.id}?warning=edit-blocked`)
   }
 
-  const [accounts, contacts, workstreams] = await Promise.all([
+  const [accounts, contacts, workstreams, companySettings] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getWorkstreams(supabase).catch(() => []),
+    getCompanySettings(supabase).catch(() => null),
   ])
 
   return (
@@ -35,6 +37,7 @@ export default async function EditInvoicePage({
       contacts={contacts}
       workstreams={workstreams}
       initialInvoice={invoice}
+      defaultPaymentTermsDays={companySettings?.default_payment_terms_days ?? 14}
     />
   )
 }

@@ -7,7 +7,7 @@ import { SUPPORTED_CURRENCIES, isSupportedCurrency, quoteToRateToGbp, rateToGbpT
 const TASK_PRIORITIES = new Set<TaskPriority>(['low', 'medium', 'high', 'urgent'])
 const CONTACT_STATUSES = new Set(['lead', 'active', 'inactive', 'archived'])
 const ENQUIRY_STATUSES = new Set(['new', 'reviewed', 'converted'])
-const INVOICE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'paid', 'overdue', 'cancelled'])
+const INVOICE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'part_paid', 'paid', 'overdue', 'cancelled'])
 const PROJECT_STATUSES = new Set(['planning', 'active', 'on_hold', 'completed', 'cancelled'])
 const ACCOUNT_STATUSES = new Set([
   'prospect', 'contacted', 'active', 'listed', 'declined', 'on_hold', 'inactive', 'archived',
@@ -96,7 +96,6 @@ type InvoiceRow = {
   contact_id: string | null
   workstream_id: string | null
   engagement_id: string | null
-  pricing_tier_id: string | null
   status: InvoiceStatus
   issue_date: string
   due_date: string | null
@@ -116,7 +115,6 @@ type InvoiceRow = {
   contacts?: RelationValue<NamedRelation>
   workstreams?: RelationValue<WorkstreamShape>
   engagements?: RelationValue<{ id: string; name: string; code: string | null }>
-  pricing_tiers?: RelationValue<{ id: string; slug: string; name: string }>
 }
 
 type AccountRow = {
@@ -275,7 +273,6 @@ export const INVOICE_SELECT = `
   contact_id,
   workstream_id,
   engagement_id,
-  pricing_tier_id,
   status,
   issue_date,
   due_date,
@@ -294,8 +291,7 @@ export const INVOICE_SELECT = `
   accounts(id, name),
   contacts(id, name),
   workstreams(id, slug, label),
-  engagements(id, name, code),
-  pricing_tiers(id, slug, name)
+  engagements(id, name, code)
 `
 
 export const ACCOUNT_SELECT = `
@@ -499,7 +495,7 @@ export function parseInvoiceStatus(value: unknown, fallback: InvoiceStatus = 'dr
     return fallback
   }
   if (typeof value !== 'string' || !INVOICE_STATUSES.has(value as InvoiceStatus)) {
-    throw new CoworkApiError('status must be draft, sent, paid, overdue, or cancelled', 400)
+    throw new CoworkApiError('status must be draft, sent, part_paid, paid, overdue, or cancelled', 400)
   }
   return value as InvoiceStatus
 }
@@ -507,7 +503,7 @@ export function parseInvoiceStatus(value: unknown, fallback: InvoiceStatus = 'dr
 export function parseInvoiceListStatus(value: string | null) {
   if (!value) return undefined
   if (!INVOICE_STATUSES.has(value as InvoiceStatus)) {
-    throw new CoworkApiError('status must be draft, sent, paid, overdue, or cancelled', 400)
+    throw new CoworkApiError('status must be draft, sent, part_paid, paid, overdue, or cancelled', 400)
   }
   return value as InvoiceStatus
 }
@@ -750,23 +746,6 @@ export async function findContactByName(name: string) {
   return data as { id: string; name: string; account_id: string | null } | null
 }
 
-export async function findPricingTierBySlug(slug: string) {
-  const { data, error } = await supabaseService
-    .from('pricing_tiers')
-    .select('id, slug, name')
-    .eq('slug', slug)
-    .maybeSingle()
-
-  if (error) {
-    throw new CoworkApiError(error.message || 'Failed to load pricing tier', 500)
-  }
-
-  if (!data) {
-    throw new CoworkApiError(`Pricing tier not found: ${slug}`, 400)
-  }
-
-  return data as { id: string; slug: string; name: string }
-}
 
 export function parseLineItems(value: unknown) {
   if (!Array.isArray(value) || value.length === 0) {
@@ -1030,7 +1009,6 @@ export function formatInvoice(row: InvoiceRow) {
   const contact = firstRelation(row.contacts)
   const workstream = firstRelation(row.workstreams)
   const engagement = firstRelation(row.engagements)
-  const pricingTier = firstRelation(row.pricing_tiers)
   const vatRate = Number(row.vat_rate ?? 0)
   const lineItems = row.line_items ?? []
   const totals = calculateTotals(lineItems, vatRate)
@@ -1046,9 +1024,6 @@ export function formatInvoice(row: InvoiceRow) {
     contact: contact ? { id: contact.id, name: contact.name } : null,
     workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
     engagement: engagement ? { id: engagement.id, name: engagement.name, code: engagement.code } : null,
-    pricing_tier: pricingTier
-      ? { id: pricingTier.id, slug: pricingTier.slug, name: pricingTier.name }
-      : null,
     status: row.status,
     issue_date: row.issue_date,
     due_date: row.due_date,

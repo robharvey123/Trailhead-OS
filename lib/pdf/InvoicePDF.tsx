@@ -9,7 +9,7 @@ import {
   renderToBuffer,
 } from '@react-pdf/renderer'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
-import { calculateTotals, type Contact, type Invoice, type Workstream } from '@/lib/types'
+import { calculateTotals, roundMoney, type Account, type Contact, type Invoice, type InvoicePayment, type Workstream } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
 import type { CompanySettings, CompanyBankAccount } from '@/lib/company-settings'
 
@@ -48,10 +48,29 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginBottom: 4,
   },
+  invoiceHeading: {
+    fontSize: 24,
+    fontWeight: 700,
+    letterSpacing: 2,
+    marginBottom: 2,
+    textAlign: 'right',
+  },
   invoiceNumber: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 700,
     marginBottom: 6,
+    textAlign: 'right',
+  },
+  paidStamp: {
+    marginTop: 10,
+    marginLeft: 'auto',
+    border: '2 solid #059669',
+    color: '#059669',
+    fontWeight: 700,
+    fontSize: 14,
+    letterSpacing: 2,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
   },
   metaGrid: {
     flexDirection: 'row',
@@ -152,18 +171,31 @@ const styles = StyleSheet.create({
 function InvoiceDocument({
   invoice,
   contact,
+  account = null,
   workstream,
   companySettings,
   bankAccount = null,
+  payments = [],
 }: {
   invoice: Invoice
   contact: Contact | null
+  account?: Account | null
   workstream: Workstream | null
   companySettings: CompanySettings | null
   bankAccount?: CompanyBankAccount | null
+  payments?: InvoicePayment[]
 }) {
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
-  const billTo = getInvoiceBillToDisplay(invoice, contact)
+  const billTo = getInvoiceBillToDisplay(invoice, contact, account)
+  const amountPaid = roundMoney(payments.reduce((sum, p) => sum + p.amount, 0))
+  const amountDue = roundMoney(totals.total - amountPaid)
+  const isSettled = amountPaid > 0 && amountDue <= 0.005
+  const companyName = companySettings?.company_name ?? 'Trailhead Holdings Ltd'
+  const companyLocality = [companySettings?.city, companySettings?.postcode].filter(Boolean).join(' ')
+  const termsDays =
+    invoice.due_date && invoice.issue_date
+      ? Math.round((new Date(invoice.due_date).getTime() - new Date(invoice.issue_date).getTime()) / 86400000)
+      : null
   // Per-currency bank account when set (e.g. the USD account for a USD invoice);
   // otherwise the legacy GBP fields on company settings.
   const bank: CompanyBankAccount | null = bankAccount ?? (companySettings
@@ -202,20 +234,30 @@ function InvoiceDocument({
               </Svg>
             </View>
             <View>
-              <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
-              <Text style={styles.muted}>Registered in England &amp; Wales</Text>
-              <Text style={styles.muted}>rob@trailheadholdings.uk</Text>
+              <Text style={styles.companyName}>{companyName}</Text>
+              {companySettings?.address_line1 ? <Text style={styles.muted}>{companySettings.address_line1}</Text> : null}
+              {companySettings?.address_line2 ? <Text style={styles.muted}>{companySettings.address_line2}</Text> : null}
+              {companyLocality ? <Text style={styles.muted}>{companyLocality}</Text> : null}
+              {companySettings?.country ? <Text style={styles.muted}>{companySettings.country}</Text> : null}
+              {companySettings?.company_number ? (
+                <Text style={styles.muted}>Registered in England and Wales. Company number {companySettings.company_number}.</Text>
+              ) : null}
+              {companySettings?.company_email ? <Text style={styles.muted}>{companySettings.company_email}</Text> : null}
               {companySettings?.vat_registered && companySettings.vat_number ? (
                 <Text style={styles.muted}>VAT: {companySettings.vat_number}</Text>
               ) : null}
             </View>
           </View>
           <View>
+            <Text style={styles.invoiceHeading}>INVOICE</Text>
             <Text style={styles.invoiceNumber}>{invoice.invoice_number}</Text>
             <Text style={styles.muted}>Issue date: {invoice.issue_date}</Text>
             <Text style={styles.muted}>
-              Due date: {invoice.due_date ?? 'Not set'}
+              {invoice.due_date
+                ? `Payment due by ${invoice.due_date}${termsDays != null && termsDays >= 0 ? ` (${termsDays} days)` : ''}`
+                : 'Due date: Not set'}
             </Text>
+            {invoice.po_number ? <Text style={styles.muted}>PO number: {invoice.po_number}</Text> : null}
             {workstream ? (
               <Text style={styles.muted}>Workstream: {workstream.label}</Text>
             ) : null}
@@ -235,6 +277,8 @@ function InvoiceDocument({
             {billTo.bill_to_country ? <Text style={styles.muted}>{billTo.bill_to_country}</Text> : null}
             {billTo.bill_to_email ? <Text style={styles.muted}>{billTo.bill_to_email}</Text> : null}
             {billTo.bill_to_phone ? <Text style={styles.muted}>{billTo.bill_to_phone}</Text> : null}
+            {billTo.bill_to_vat_number ? <Text style={styles.muted}>VAT number: {billTo.bill_to_vat_number}</Text> : null}
+            {billTo.bill_to_company_number ? <Text style={styles.muted}>Company number: {billTo.bill_to_company_number}</Text> : null}
           </View>
         </View>
 
@@ -272,7 +316,26 @@ function InvoiceDocument({
             <Text>Total</Text>
             <Text>{formatMoney(totals.total, currency)}</Text>
           </View>
+          {amountPaid > 0 ? (
+            <>
+              <View style={{ ...styles.summaryRow, marginTop: 6 }}>
+                <Text>Payments received</Text>
+                <Text>-{formatMoney(amountPaid, currency)}</Text>
+              </View>
+              <View style={styles.totalRow}>
+                <Text>Amount due</Text>
+                <Text>{formatMoney(Math.max(amountDue, 0), currency)}</Text>
+              </View>
+            </>
+          ) : null}
+          {isSettled ? <Text style={styles.paidStamp}>PAID IN FULL</Text> : null}
         </View>
+
+        {invoice.vat_note ? (
+          <View style={styles.fxNote}>
+            <Text>{invoice.vat_note}</Text>
+          </View>
+        ) : null}
 
         {isForeign ? (
           <View style={styles.fxNote}>
@@ -350,7 +413,7 @@ function InvoiceDocument({
           </View>
         ) : null}
 
-        <Text style={styles.footer}>Trailhead Holdings Ltd · Trailhead OS</Text>
+        <Text style={styles.footer}>{companyName} · Trailhead OS</Text>
       </Page>
     </Document>
   )
@@ -361,15 +424,19 @@ export async function renderInvoicePdf(
   contact: Contact | null,
   workstream: Workstream | null,
   companySettings: CompanySettings | null = null,
-  bankAccount: CompanyBankAccount | null = null
+  bankAccount: CompanyBankAccount | null = null,
+  account: Account | null = null,
+  payments: InvoicePayment[] = []
 ) {
   return renderToBuffer(
     <InvoiceDocument
       invoice={invoice}
       contact={contact}
+      account={account}
       workstream={workstream}
       companySettings={companySettings}
       bankAccount={bankAccount}
+      payments={payments}
     />
   )
 }

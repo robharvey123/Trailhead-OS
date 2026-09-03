@@ -5,9 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
-import { calculateTotals, type Contact, type Invoice, type InvoiceStatus, type Workstream } from '@/lib/types'
+import { calculateTotals, roundMoney, type Account, type Contact, type Invoice, type InvoicePayment, type InvoiceStatus, type Workstream } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
 import ConfirmDialog from './ConfirmDialog'
+import InvoicePayments from './InvoicePayments'
 import RecordEmailDialog from './RecordEmailDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import StatusBadge from './StatusBadge'
@@ -16,6 +17,8 @@ import { deleteInvoice, sendInvoiceToFreeAgent } from '@/app/(os)/invoicing/[id]
 export default function InvoiceDetailClient({
   invoice,
   contact,
+  account = null,
+  payments = [],
   workstream,
   subscriptionStatus,
   warning,
@@ -23,6 +26,8 @@ export default function InvoiceDetailClient({
 }: {
   invoice: Invoice
   contact: Contact | null
+  account?: Account | null
+  payments?: InvoicePayment[]
   workstream: Workstream | null
   subscriptionStatus: string | null
   warning?: string | null
@@ -62,11 +67,15 @@ export default function InvoiceDetailClient({
   )
   const [subscriptionLoading, setSubscriptionLoading] = useState(false)
   const paidToastShownRef = useRef(false)
+  const [recordPaymentOpen, setRecordPaymentOpen] = useState(false)
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
-  const billTo = getInvoiceBillToDisplay(invoice, contact)
+  const billTo = getInvoiceBillToDisplay(invoice, contact, account)
   const truncatedPaymentLink =
     paymentLink.length > 52 ? `${paymentLink.slice(0, 49)}...` : paymentLink
-  const isPaid = Boolean(invoice.paid_at)
+  const amountPaid = roundMoney(payments.reduce((sum, p) => sum + p.amount, 0))
+  const balance = roundMoney(totals.total - amountPaid)
+  const isPaid = invoice.status === 'paid'
+  const isPartPaid = invoice.status === 'part_paid'
 
   useEffect(() => {
     if (searchParams.get('paid') === 'true' && !paidToastShownRef.current) {
@@ -209,7 +218,11 @@ export default function InvoiceDetailClient({
 
       {isPaid ? (
         <div className="rounded-[1.75rem] border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-5 py-4 text-sm text-[color:var(--emerald-strong)]">
-          Paid on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleString('en-GB') : '—'}
+          Paid in full on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+        </div>
+      ) : isPartPaid ? (
+        <div className="rounded-[1.75rem] border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
+          Part paid, {formatMoney(balance, invoice.currency)} outstanding
         </div>
       ) : null}
 
@@ -227,11 +240,6 @@ export default function InvoiceDetailClient({
               <h1 className="os-page-title">
                 {invoice.invoice_number}
               </h1>
-              {invoice.pricing_tier ? (
-                <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
-                  {invoice.pricing_tier.name} tier
-                </span>
-              ) : null}
             </div>
             <div className="mt-4">
               <StatusBadge status={invoice.status} kind="invoice" />
@@ -309,6 +317,9 @@ export default function InvoiceDetailClient({
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Due date</p>
             <p className="mt-2 text-sm text-[color:var(--text-2)]">{invoice.due_date ?? '—'}</p>
+            {invoice.po_number ? (
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">PO number: {invoice.po_number}</p>
+            ) : null}
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Bill to</p>
@@ -329,6 +340,12 @@ export default function InvoiceDetailClient({
             ) : null}
             {billTo.bill_to_phone ? (
               <p className="text-sm text-[color:var(--text-2)]">{billTo.bill_to_phone}</p>
+            ) : null}
+            {billTo.bill_to_vat_number ? (
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">VAT: {billTo.bill_to_vat_number}</p>
+            ) : null}
+            {billTo.bill_to_company_number ? (
+              <p className="text-sm text-[color:var(--text-2)]">Company no: {billTo.bill_to_company_number}</p>
             ) : null}
           </div>
           <div>
@@ -402,8 +419,34 @@ export default function InvoiceDetailClient({
                 <dt className="text-base font-semibold text-[color:var(--text)]">Total</dt>
                 <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, invoice.currency)}</dd>
               </div>
+              {amountPaid > 0 ? (
+                <>
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-[color:var(--text-2)]">Payments received</dt>
+                    <dd className="font-medium text-[color:var(--text)]">−{formatMoney(amountPaid, invoice.currency)}</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
+                    <dt className="text-base font-semibold text-[color:var(--text)]">Balance outstanding</dt>
+                    <dd className={`text-lg font-bold ${balance > 0 ? 'text-[color:var(--amber-strong)]' : 'text-[color:var(--emerald-strong)]'}`}>
+                      {formatMoney(balance, invoice.currency)}
+                    </dd>
+                  </div>
+                </>
+              ) : null}
             </dl>
           </div>
+
+          {invoice.status !== 'draft' && invoice.status !== 'cancelled' ? (
+            <InvoicePayments
+              invoiceId={invoice.id}
+              currency={invoice.currency ?? 'GBP'}
+              total={totals.total}
+              initialPayments={payments}
+              status={invoice.status}
+              recordOpen={recordPaymentOpen}
+              onRecordOpenChange={setRecordPaymentOpen}
+            />
+          ) : null}
 
           <div className="os-card p-6">
             <div className="flex items-center justify-between gap-3">
@@ -506,11 +549,10 @@ export default function InvoiceDetailClient({
                 <>
                   <button
                     type="button"
-                    onClick={() => updateStatus('paid')}
-                    disabled={updatingStatus !== null}
-                    className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                    onClick={() => setRecordPaymentOpen(true)}
+                    className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                   >
-                    {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
+                    Record payment
                   </button>
                   <button
                     type="button"
@@ -530,14 +572,13 @@ export default function InvoiceDetailClient({
                   </button>
                 </>
               ) : null}
-              {invoice.status === 'overdue' ? (
+              {invoice.status === 'overdue' || invoice.status === 'part_paid' ? (
                 <button
                   type="button"
-                  onClick={() => updateStatus('paid')}
-                  disabled={updatingStatus !== null}
-                  className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                  onClick={() => setRecordPaymentOpen(true)}
+                  className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                 >
-                  {updatingStatus === 'paid' ? 'Updating...' : 'Mark as paid'}
+                  Record payment
                 </button>
               ) : null}
             </div>

@@ -1,20 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Invoice, InvoiceStatus, PricingTier } from '@/lib/types'
+import type { Invoice, InvoiceStatus } from '@/lib/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
-type InvoiceRow = Invoice & {
-  pricing_tiers: PricingTier | null
-}
 
 async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
-}
-
-function mapInvoice(row: InvoiceRow): Invoice {
-  return {
-    ...row,
-    pricing_tier: row.pricing_tiers ?? undefined,
-  }
 }
 
 export async function getInvoices(
@@ -24,7 +14,7 @@ export async function getInvoices(
   const supabase = await getSupabase(client)
   let query = supabase
     .from('invoices')
-    .select('*, pricing_tiers(*)')
+    .select('*')
     .is('deleted_at', null)
     .order('issue_date', { ascending: false })
     .order('created_at', { ascending: false })
@@ -47,7 +37,7 @@ export async function getInvoices(
     throw new Error(error.message || 'Failed to load invoices')
   }
 
-  return ((data ?? []) as InvoiceRow[]).map(mapInvoice)
+  return (data ?? []) as Invoice[]
 }
 
 export async function getInvoiceById(
@@ -57,7 +47,7 @@ export async function getInvoiceById(
   const supabase = await getSupabase(client)
   const { data, error } = await supabase
     .from('invoices')
-    .select('*, pricing_tiers(*)')
+    .select('*')
     .eq('id', id)
     .maybeSingle()
 
@@ -65,7 +55,7 @@ export async function getInvoiceById(
     throw new Error(error.message || 'Failed to load invoice')
   }
 
-  return data ? mapInvoice(data as InvoiceRow) : null
+  return data ? (data as Invoice) : null
 }
 
 export async function createInvoice(
@@ -76,14 +66,14 @@ export async function createInvoice(
   const { data: invoice, error } = await supabase
     .from('invoices')
     .insert(data)
-    .select('*, pricing_tiers(*)')
+    .select('*')
     .single()
 
   if (error) {
     throw new Error(error.message || 'Failed to create invoice')
   }
 
-  return mapInvoice(invoice as InvoiceRow)
+  return invoice as Invoice
 }
 
 export async function updateInvoice(
@@ -96,14 +86,14 @@ export async function updateInvoice(
     .from('invoices')
     .update(data)
     .eq('id', id)
-    .select('*, pricing_tiers(*)')
+    .select('*')
     .single()
 
   if (error) {
     throw new Error(error.message || 'Failed to update invoice')
   }
 
-  return mapInvoice(invoice as InvoiceRow)
+  return invoice as Invoice
 }
 
 /** Soft-delete: stamp deleted_at. Never hard-deletes (invoices are referenced

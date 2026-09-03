@@ -110,6 +110,11 @@ export async function POST(request: NextRequest) {
         source: sanitizeText(body.source) ?? undefined,
         email_contact: sanitizeText(body.email_contact) ?? undefined,
         hq_address: sanitizeText(body.hq_address) ?? undefined,
+        vat_number: sanitizeText(body.vat_number) ?? undefined,
+        company_number: sanitizeText(body.company_number) ?? undefined,
+        billing_email: sanitizeText(body.billing_email) ?? undefined,
+        payment_terms_days: Number.isInteger(Number(body.payment_terms_days)) && Number(body.payment_terms_days) >= 0 ? Number(body.payment_terms_days) : undefined,
+        po_required: body.po_required === true,
       } as Omit<Account, 'id' | 'created_at' | 'updated_at'>,
       auth.supabase
     )

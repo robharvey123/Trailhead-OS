@@ -465,7 +465,7 @@ export const raiseInvoiceTool = defineTool({
 
 export const markInvoicePaidTool = defineTool({
   name: 'mark_invoice_paid',
-  description: 'Mark an invoice paid (or set another status). id is the invoice uuid.',
+  description: 'Mark an invoice paid (records a ledger payment for the outstanding balance today) or set another status. id is the invoice uuid. For partial or back-dated payments use POST /api/cowork/invoices/{id}/payments.',
   inputSchema: z.object({ id: z.string().min(1), status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).optional() }),
   handler: async (input) => {
     const { invoice, before } = await setInvoiceStatus(input.id, input.status ?? 'paid')

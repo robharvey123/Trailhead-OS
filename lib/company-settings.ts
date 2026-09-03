@@ -19,6 +19,7 @@ export type CompanySettings = {
   payment_terms: string | null
   vat_registered: boolean
   vat_number: string | null
+  default_payment_terms_days: number
 }
 
 export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
@@ -40,10 +41,11 @@ export const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   payment_terms: null,
   vat_registered: false,
   vat_number: null,
+  default_payment_terms_days: 14,
 }
 
 const COMPANY_SETTINGS_FIELDS =
-  'company_name, address_line1, address_line2, city, postcode, country, company_email, company_number, email_signature, bank_name, bank_account_name, bank_sort_code, bank_account_number, bank_iban, bank_bic, payment_terms, vat_registered, vat_number'
+  'company_name, address_line1, address_line2, city, postcode, country, company_email, company_number, email_signature, bank_name, bank_account_name, bank_sort_code, bank_account_number, bank_iban, bank_bic, payment_terms, vat_registered, vat_number, default_payment_terms_days'
 
 function escapeHtml(value: string) {
   return value
@@ -89,6 +91,7 @@ export async function getCompanySettings(supabase: SupabaseClient): Promise<Comp
     payment_terms: withFallback(data.payment_terms, null),
     vat_registered: data.vat_registered ?? false,
     vat_number: withFallback(data.vat_number, null),
+    default_payment_terms_days: Number.isFinite(Number(data.default_payment_terms_days)) && Number(data.default_payment_terms_days) > 0 ? Number(data.default_payment_terms_days) : 14,
   }
 }
 

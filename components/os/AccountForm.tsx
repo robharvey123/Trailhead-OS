@@ -60,6 +60,11 @@ export default function AccountForm({
     city: initialAccount?.city ?? '',
     postcode: initialAccount?.postcode ?? '',
     country: initialAccount?.country ?? 'UK',
+    vat_number: initialAccount?.vat_number ?? '',
+    company_number: initialAccount?.company_number ?? '',
+    billing_email: initialAccount?.billing_email ?? '',
+    payment_terms_days: initialAccount?.payment_terms_days != null ? String(initialAccount.payment_terms_days) : '',
+    po_required: initialAccount?.po_required ?? false,
     notes: initialAccount?.notes ?? '',
   })
   const [saving, setSaving] = useState(false)
@@ -74,6 +79,7 @@ export default function AccountForm({
         ...form,
         workstream_id: form.workstream_id || null,
         size: form.size || null,
+        payment_terms_days: form.payment_terms_days.trim() ? Number(form.payment_terms_days) : null,
       }
 
       const response = initialAccount?.id
@@ -277,6 +283,59 @@ export default function AccountForm({
             className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
+
+        <div className="md:col-span-2 rounded-[1.5rem] border border-[var(--border)] p-4">
+          <p className="text-sm font-medium text-[var(--text,inherit)]">Billing</p>
+          <p className="mt-1 text-xs text-[var(--muted)]">Flows onto invoices raised against this account.</p>
+          <div className="mt-3 grid gap-4 md:grid-cols-2">
+            <label className="space-y-2">
+              <span className="text-sm text-[var(--muted)]">VAT number</span>
+              <input
+                value={form.vat_number}
+                onChange={(event) => setForm({ ...form, vat_number: event.target.value })}
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[var(--muted)]">Company number</span>
+              <input
+                value={form.company_number}
+                onChange={(event) => setForm({ ...form, company_number: event.target.value })}
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[var(--muted)]">Billing email</span>
+              <input
+                type="email"
+                value={form.billing_email}
+                onChange={(event) => setForm({ ...form, billing_email: event.target.value })}
+                placeholder="accounts@…"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[var(--muted)]">Payment terms (days)</span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={form.payment_terms_days}
+                onChange={(event) => setForm({ ...form, payment_terms_days: event.target.value })}
+                placeholder="e.g. 30"
+                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+              />
+            </label>
+            <label className="flex items-center gap-2 md:col-span-2">
+              <input
+                type="checkbox"
+                checked={form.po_required}
+                onChange={(event) => setForm({ ...form, po_required: event.target.checked })}
+              />
+              <span className="text-sm text-[var(--muted)]">PO number required on every invoice</span>
+            </label>
+          </div>
+        </div>
 
         <label className="space-y-2 md:col-span-2">
           <span className="text-sm text-[var(--muted)]">Notes</span>

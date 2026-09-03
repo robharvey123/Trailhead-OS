@@ -101,6 +101,18 @@ export async function PATCH(
   }
 
   if (body.website !== undefined) patch.website = sanitizeText(body.website)
+  if (body.vat_number !== undefined) patch.vat_number = sanitizeText(body.vat_number)
+  if (body.company_number !== undefined) patch.company_number = sanitizeText(body.company_number)
+  if (body.billing_email !== undefined) patch.billing_email = sanitizeText(body.billing_email)
+  if (body.payment_terms_days !== undefined) {
+    patch.payment_terms_days =
+      body.payment_terms_days === null || body.payment_terms_days === ''
+        ? null
+        : Number.isInteger(Number(body.payment_terms_days)) && Number(body.payment_terms_days) >= 0
+          ? Number(body.payment_terms_days)
+          : null
+  }
+  if (body.po_required !== undefined) patch.po_required = body.po_required === true
   if (body.industry !== undefined) patch.industry = sanitizeText(body.industry)
   if (body.address_line1 !== undefined) patch.address_line1 = sanitizeText(body.address_line1)
   if (body.address_line2 !== undefined) patch.address_line2 = sanitizeText(body.address_line2)

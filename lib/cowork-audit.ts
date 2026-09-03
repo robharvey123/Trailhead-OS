@@ -90,10 +90,12 @@ export async function revertCoworkActivity(activityId: string): Promise<RevertRe
 
   if (a.entity === 'invoice' && a.action === 'update' && a.before && 'status' in a.before) {
     const prior = a.before.status as string
-    const patch: Record<string, unknown> = { status: prior }
-    if (prior !== 'paid') patch.paid_at = null
-    const { error: e } = await supabaseService.from('invoices').update(patch).eq('id', a.entity_id)
+    const { error: e } = await supabaseService.from('invoices').update({ status: prior }).eq('id', a.entity_id)
     if (e) return { ok: false, error: e.message, status: 500 }
+    // The payments ledger owns paid_at and paid/part_paid; re-derive rather than
+    // hand-editing (no-op for draft/cancelled).
+    const { recalcInvoicePaymentState } = await import('@/lib/db/invoice-payments')
+    await recalcInvoicePaymentState(a.entity_id, supabaseService).catch(() => {})
   } else if (a.entity === 'time_entry' && a.action === 'create') {
     const { error: e } = await supabaseService.from('time_entries').delete().eq('id', a.entity_id)
     if (e) return { ok: false, error: e.message, status: 500 }

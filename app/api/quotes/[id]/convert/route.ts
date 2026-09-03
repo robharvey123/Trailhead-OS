@@ -39,7 +39,6 @@ export async function POST(
         account_id: quote.account_id ?? null,
         contact_id: quote.contact_id ?? null,
         workstream_id: quote.workstream_id ?? null,
-        pricing_tier_id: quote.pricing_tier_id ?? undefined,
         status: 'draft',
         issue_date: new Date().toISOString().slice(0, 10),
         due_date: null,
@@ -57,6 +56,8 @@ export async function POST(
         bill_to_country: billTo.bill_to_country,
         bill_to_email: billTo.bill_to_email,
         bill_to_phone: billTo.bill_to_phone,
+        bill_to_vat_number: billTo.bill_to_vat_number,
+        bill_to_company_number: billTo.bill_to_company_number,
         notes: [quote.payment_terms, quote.notes].filter(Boolean).join('\n\n') || null,
       },
       auth.supabase

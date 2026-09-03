@@ -111,14 +111,25 @@ POST /api/cowork/invoices
   "workstream": "slug — optional",
   "due_date": "YYYY-MM-DD — optional",
   "vat_rate": 20,
-  "tier": "mates|budget|standard — optional",
   "line_items": [{"description": "", "qty": 1, "unit_price": 0}],
   "notes": "optional",
   "status": "draft|sent — default draft"
 }
+Pricing tiers are gone from invoicing — a "tier" field is a 400. Price the line items directly.
 
 GET /api/cowork/invoices/[id] — full invoice with totals
-PATCH /api/cowork/invoices/[id] — update status or fields
+PATCH /api/cowork/invoices/[id] — update fields. status "paid" records a
+  full-balance ledger payment dated today (pass paid_on to back-date);
+  "part_paid" is a 409 — record a partial payment instead.
+
+GET  /api/cowork/invoices/[id]/payments — ledger + { total, amount_paid, balance }
+POST /api/cowork/invoices/[id]/payments
+  { "paid_on": "YYYY-MM-DD — default today, back-dating is normal",
+    "amount": 0,           // default: the outstanding balance
+    "method": "bank_transfer|stripe|card|cash|cheque|other",
+    "reference": "optional", "notes": "optional" }
+  Overpaying past the balance is a 400. Status and paid_at are derived from the
+  ledger — never set them directly.
 
 Always confirm line items and total with Rob before creating.
 Always create as draft unless Rob explicitly says to mark as sent.

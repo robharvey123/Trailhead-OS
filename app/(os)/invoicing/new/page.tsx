@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 export default async function NewInvoicePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ account_id?: string; pricing_tier_id?: string }>
+  searchParams?: Promise<{ account_id?: string }>
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const supabase = await createClient()
@@ -25,8 +25,8 @@ export default async function NewInvoicePage({
       contacts={contacts}
       workstreams={workstreams}
       initialAccountId={resolvedSearchParams?.account_id ?? ''}
-      initialPricingTierId={resolvedSearchParams?.pricing_tier_id ?? ''}
       vatRegistered={companySettings?.vat_registered ?? false}
+      defaultPaymentTermsDays={companySettings?.default_payment_terms_days ?? 14}
     />
   )
 }

@@ -38,6 +38,7 @@ const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
   invoice: {
     draft: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
     sent: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
+    part_paid: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
     paid: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
     overdue: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
     cancelled: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',

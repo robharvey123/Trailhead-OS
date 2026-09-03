@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import PricingTierSelector from './PricingTierSelector'
+import AccountCombobox from './AccountCombobox'
 import UnbilledExpensesWidget from './UnbilledExpensesWidget'
 import UnbilledTimeWidget from './UnbilledTimeWidget'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
@@ -13,7 +13,6 @@ import {
   type ExpenseWithRelations,
   type Invoice,
   type LineItem,
-  type PricingTier,
   type UnbilledTimeGroup,
   type Workstream,
 } from '@/lib/types'
@@ -26,29 +25,6 @@ function createEmptyLineItem(): LineItem {
     qty: 1,
     unit_price: 0,
   }
-}
-
-function buildStarterLineItems(tier: PricingTier): LineItem[] {
-  return [
-    {
-      id: crypto.randomUUID(),
-      description: 'Development (hourly)',
-      qty: 1,
-      unit_price: tier.hourly_rate,
-    },
-    {
-      id: crypto.randomUUID(),
-      description: 'Project management',
-      qty: 1,
-      unit_price: Math.round(tier.hourly_rate * 0.1),
-    },
-    {
-      id: crypto.randomUUID(),
-      description: 'Hosting & maintenance (monthly)',
-      qty: 1,
-      unit_price: tier.hosting_maintenance,
-    },
-  ]
 }
 
 function getContactLabel(contact: Contact) {
@@ -80,22 +56,31 @@ function createEmptyContact(): Contact {
   }
 }
 
+const RC_NOTE = 'VAT reverse charge applies. Customer to account for VAT.'
+const UK_COUNTRIES = new Set(['uk', 'united kingdom', 'gb', 'great britain', 'england', 'scotland', 'wales', 'northern ireland'])
+
+function addDaysIso(date: string, days: number) {
+  const d = new Date(`${date}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
 export default function InvoiceForm({
   accounts,
   contacts,
   workstreams,
   initialInvoice,
   initialAccountId = '',
-  initialPricingTierId = '',
   vatRegistered = true,
+  defaultPaymentTermsDays = 14,
 }: {
   accounts: Account[]
   contacts: Contact[]
   workstreams: Workstream[]
   initialInvoice?: Invoice
   initialAccountId?: string
-  initialPricingTierId?: string
   vatRegistered?: boolean
+  defaultPaymentTermsDays?: number
 }) {
   const router = useRouter()
   const initialContact =
@@ -144,10 +129,6 @@ export default function InvoiceForm({
   )
   const [savingAs, setSavingAs] = useState<'draft' | 'sent' | 'edit' | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [pricingTierId, setPricingTierId] = useState<string | null>(
-    initialInvoice?.pricing_tier_id ?? initialPricingTierId ?? null
-  )
-  const [showTierNotice, setShowTierNotice] = useState(false)
   const [billedExpenseIds, setBilledExpenseIds] = useState<string[]>([])
   const [billedTimeEntryIds, setBilledTimeEntryIds] = useState<string[]>([])
   const [billToName, setBillToName] = useState(initialInvoice?.bill_to_name ?? initialDerivedBillTo.bill_to_name ?? '')
@@ -157,9 +138,24 @@ export default function InvoiceForm({
   const [billToCountry, setBillToCountry] = useState(initialInvoice?.bill_to_country ?? initialDerivedBillTo.bill_to_country ?? '')
   const [billToEmail, setBillToEmail] = useState(initialInvoice?.bill_to_email ?? initialDerivedBillTo.bill_to_email ?? '')
   const [billToPhone, setBillToPhone] = useState(initialInvoice?.bill_to_phone ?? initialDerivedBillTo.bill_to_phone ?? '')
+  const [billToVatNumber, setBillToVatNumber] = useState(initialInvoice?.bill_to_vat_number ?? initialDerivedBillTo.bill_to_vat_number ?? '')
+  const [billToCompanyNumber, setBillToCompanyNumber] = useState(initialInvoice?.bill_to_company_number ?? initialDerivedBillTo.bill_to_company_number ?? '')
+  const [poNumber, setPoNumber] = useState(initialInvoice?.po_number ?? '')
+  const [vatNote, setVatNote] = useState(initialInvoice?.vat_note ?? '')
   const [isRecurring, setIsRecurring] = useState(initialInvoice?.is_recurring ?? false)
   const [recurringInterval, setRecurringInterval] = useState<'month' | 'year'>(initialInvoice?.recurring_interval ?? 'month')
   const selectionSyncReadyRef = useRef(false)
+  // Once the due date has been edited by hand it stops tracking the issue date.
+  const dueDateTouched = useRef(Boolean(initialInvoice?.due_date))
+  const prevAccountIdRef = useRef(accountId)
+
+  const selectedAccount = accounts.find((account) => account.id === accountId) ?? null
+  const accountTermsDays = selectedAccount?.payment_terms_days ?? defaultPaymentTermsDays
+  const poRequired = Boolean(selectedAccount?.po_required)
+  const nonUkVatHint =
+    vatRegistered &&
+    Boolean(billToCountry.trim()) &&
+    !UK_COUNTRIES.has(billToCountry.trim().toLowerCase())
 
   const filteredContacts = contacts.filter((contact) => {
     if (accountId && contact.account_id !== accountId) {
@@ -220,7 +216,36 @@ export default function InvoiceForm({
     setBillToCountry(nextBillTo.bill_to_country ?? '')
     setBillToEmail(nextBillTo.bill_to_email ?? '')
     setBillToPhone(nextBillTo.bill_to_phone ?? '')
+    setBillToVatNumber(nextBillTo.bill_to_vat_number ?? '')
+    setBillToCompanyNumber(nextBillTo.bill_to_company_number ?? '')
   }, [accountId, contactId, accounts, contacts])
+
+  // Picking an account pulls its defaults: sole contact, currency (new invoices
+  // only), and payment terms for the due date.
+  useEffect(() => {
+    if (prevAccountIdRef.current === accountId) return
+    prevAccountIdRef.current = accountId
+    if (!accountId) return
+    const account = accounts.find((a) => a.id === accountId) ?? null
+    if (!account) return
+
+    const accountContacts = contacts.filter((c) => c.account_id === accountId)
+    if (accountContacts.length === 1) {
+      setContactId(accountContacts[0].id)
+      setContactSearch(getContactLabel(accountContacts[0]))
+    }
+    if (!initialInvoice && account.currency) setCurrency(account.currency)
+    if (!dueDateTouched.current) {
+      setDueDate(addDaysIso(issueDate, account.payment_terms_days ?? defaultPaymentTermsDays))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId])
+
+  // The due date tracks the issue date until it is edited by hand.
+  useEffect(() => {
+    if (dueDateTouched.current || !issueDate) return
+    setDueDate(addDaysIso(issueDate, accountTermsDays))
+  }, [issueDate, accountTermsDays])
 
   function updateLineItem(id: string, patch: Partial<LineItem>) {
     setLineItems((current) =>
@@ -232,11 +257,6 @@ export default function InvoiceForm({
     setLineItems((current) =>
       current.length === 1 ? current : current.filter((item) => item.id !== id)
     )
-  }
-
-  function applyStarterItemsForTier(tier: PricingTier) {
-    setLineItems(buildStarterLineItems(tier))
-    setShowTierNotice(false)
   }
 
   function handleExpensesSelected(expenses: ExpenseWithRelations[]) {
@@ -308,6 +328,11 @@ export default function InvoiceForm({
       setSavingAs(null)
       return
     }
+    if (poRequired && !poNumber.trim()) {
+      setError(`${selectedAccount?.name ?? 'This account'} requires a PO number on every invoice.`)
+      setSavingAs(null)
+      return
+    }
 
     try {
       // Amounts are entered in GBP; store line prices in the invoice currency so the
@@ -319,7 +344,6 @@ export default function InvoiceForm({
         account_id: accountId || null,
         contact_id: contactId || null,
         workstream_id: workstreamId || null,
-        pricing_tier_id: pricingTierId,
         issue_date: issueDate,
         due_date: dueDate || null,
         vat_rate: Number(vatRate) || 0,
@@ -330,6 +354,10 @@ export default function InvoiceForm({
         bill_to_country: billToCountry || null,
         bill_to_email: billToEmail || null,
         bill_to_phone: billToPhone || null,
+        bill_to_vat_number: billToVatNumber || null,
+        bill_to_company_number: billToCompanyNumber || null,
+        po_number: poNumber || null,
+        vat_note: vatNote || null,
         notes,
         line_items: outLineItems,
         currency,
@@ -431,21 +459,14 @@ export default function InvoiceForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Account</span>
-          <select
+        <div className="space-y-2">
+          <AccountCombobox
+            label="Account"
             value={accountId}
-            onChange={(event) => setAccountId(event.target.value)}
-            className="os-select w-full"
-          >
-            <option value="">No account selected</option>
-            {accounts.map((account) => (
-              <option key={account.id} value={account.id}>
-                {account.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            selectedName={selectedAccount?.name ?? ''}
+            onChange={(account) => setAccountId(account.id)}
+          />
+        </div>
         <div className="space-y-2 md:col-span-2">
           <span className="text-sm text-[color:var(--text-2)]">Client selector</span>
           <input
@@ -579,7 +600,26 @@ export default function InvoiceForm({
           <input
             type="date"
             value={dueDate}
-            onChange={(event) => setDueDate(event.target.value)}
+            onChange={(event) => {
+              dueDateTouched.current = true
+              setDueDate(event.target.value)
+            }}
+            className="os-input w-full"
+          />
+          {!dueDateTouched.current && dueDate ? (
+            <span className="text-xs text-[color:var(--text-3)]">
+              Issue date + {accountTermsDays} days{selectedAccount?.payment_terms_days ? ` (${selectedAccount.name} terms)` : ' (default terms)'}. Edit to override.
+            </span>
+          ) : null}
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm text-[color:var(--text-2)]">
+            PO number{poRequired ? <span className="text-[color:var(--red-strong)]"> *</span> : null}
+          </span>
+          <input
+            value={poNumber}
+            onChange={(event) => setPoNumber(event.target.value)}
+            placeholder={poRequired ? `Required by ${selectedAccount?.name ?? 'this account'}` : 'Optional'}
             className="os-input w-full"
           />
         </label>
@@ -634,7 +674,9 @@ export default function InvoiceForm({
         <div>
           <h2 className="os-section-title">Bill to</h2>
           <p className="mt-1 text-sm text-[color:var(--text-2)]">
-            Address fields can be pulled from the selected account or contact, then edited per invoice.
+            {selectedAccount
+              ? `Pulled from ${selectedAccount.name}. Edit here to override on this invoice only.`
+              : 'Address fields can be pulled from the selected account or contact, then edited per invoice.'}
           </p>
         </div>
 
@@ -699,36 +741,53 @@ export default function InvoiceForm({
               className="os-input w-full"
             />
           </label>
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">VAT number</span>
+            <input
+              value={billToVatNumber}
+              onChange={(event) => setBillToVatNumber(event.target.value)}
+              placeholder="Client VAT number"
+              className="os-input w-full"
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Company number</span>
+            <input
+              value={billToCompanyNumber}
+              onChange={(event) => setBillToCompanyNumber(event.target.value)}
+              placeholder="Client company number"
+              className="os-input w-full"
+            />
+          </label>
         </div>
-      </div>
 
-      <div className="os-card-muted rounded-[1.75rem] p-4">
-        <div>
-          <h2 className="os-section-title">Pricing tier</h2>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">
-            Pick a rate structure before adding invoice line items.
-          </p>
-        </div>
-
-        <div className="mt-4">
-          <PricingTierSelector
-            value={pricingTierId}
-            autoApplyInitialSelection={!initialInvoice}
-            onChange={(tier) => {
-              setPricingTierId(tier?.id ?? null)
-            }}
-            onRatesApplied={(tier) => {
-              setPricingTierId(tier.id)
-
-              if (lineItems.length === 0) {
-                applyStarterItemsForTier(tier)
-                return
-              }
-
-              setShowTierNotice(true)
-            }}
-          />
-        </div>
+        {nonUkVatHint ? (
+          <div className="mt-4 rounded-[1.5rem] border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
+            <p>Non-UK client. Consider 0% VAT with a reverse charge note.</p>
+            {vatNote ? (
+              <label className="mt-2 block space-y-1">
+                <span className="text-xs">VAT note (printed on the PDF)</span>
+                <input value={vatNote} onChange={(event) => setVatNote(event.target.value)} className="os-input w-full" />
+              </label>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setVatNote(RC_NOTE)
+                  setVatRate('0')
+                }}
+                className="mt-2 rounded-xl border border-[color:var(--amber-strong)] px-3 py-1.5 text-xs font-medium transition hover:bg-[var(--amber-dim)]"
+              >
+                Set 0% VAT + reverse charge note
+              </button>
+            )}
+          </div>
+        ) : vatNote ? (
+          <label className="mt-4 block space-y-1">
+            <span className="text-xs text-[color:var(--text-2)]">VAT note (printed on the PDF)</span>
+            <input value={vatNote} onChange={(event) => setVatNote(event.target.value)} className="os-input w-full" />
+          </label>
+        ) : null}
       </div>
 
       {/* Unbilled time and expenses for this account */}
@@ -763,23 +822,10 @@ export default function InvoiceForm({
           </button>
         </div>
 
-        {showTierNotice ? (
-          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
-            <p>Tier updated - adjust line item rates manually if needed.</p>
-            <button
-              type="button"
-              onClick={() => setShowTierNotice(false)}
-              className="rounded-full border border-[color:var(--accent)] px-2 py-1 text-xs font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
-            >
-              Dismiss
-            </button>
-          </div>
-        ) : null}
-
         <div className="mt-4 space-y-3">
           {lineItems.length === 0 ? (
             <div className="rounded-[1.5rem] border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6 text-center text-sm text-[color:var(--text-3)]">
-              Select a pricing tier to pre-fill starter line items, or add your own manually.
+              Add a line item, or pull unbilled time and expenses from the account above.
             </div>
           ) : null}
           {lineItems.map((item) => (

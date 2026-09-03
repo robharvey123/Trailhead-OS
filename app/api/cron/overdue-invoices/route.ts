@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseService } from '@/lib/supabase/service'
 import { resend, DEFAULT_RESEND_FROM } from '@/lib/email/resend'
-import { calculateTotals, type Invoice } from '@/lib/types'
+import { calculateTotals, roundMoney, type Invoice } from '@/lib/types'
 
 export const maxDuration = 60
 
@@ -19,12 +19,13 @@ export async function GET(request: Request) {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  // Only sent invoices past their due date make the transition — this excludes
-  // already-overdue ones, so each invoice is emailed exactly once.
+  // Sent and part-paid invoices past their due date are fetched for the chase
+  // email; only 'sent' ones transition to 'overdue' (a part-paid invoice keeps
+  // its status — the ledger owns paid/part_paid). Each invoice is emailed once.
   const { data: due, error: fetchError } = await supabaseService
     .from('invoices')
     .select('*')
-    .eq('status', 'sent')
+    .in('status', ['sent', 'part_paid'])
     .lt('due_date', today)
     .not('due_date', 'is', null)
     .is('deleted_at', null)
@@ -37,11 +38,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: true, flagged: 0 })
   }
 
-  const ids = (due as Invoice[]).map((inv) => inv.id)
-  const { error: updateError } = await supabaseService
-    .from('invoices')
-    .update({ status: 'overdue' })
-    .in('id', ids)
+  const ids = (due as Invoice[]).filter((inv) => inv.status === 'sent').map((inv) => inv.id)
+  const { error: updateError } = ids.length
+    ? await supabaseService.from('invoices').update({ status: 'overdue' }).in('id', ids)
+    : { error: null }
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 })
@@ -53,8 +53,20 @@ export async function GET(request: Request) {
   if (resend && notificationEmail) {
     const fromAddress = process.env.RESEND_FROM_EMAIL ?? DEFAULT_RESEND_FROM
 
+    // Chase on the outstanding balance, not the full total — part payments count.
+    const { data: paymentRows } = await supabaseService
+      .from('invoice_payments')
+      .select('invoice_id, amount')
+      .in('invoice_id', (due as Invoice[]).map((inv) => inv.id))
+    const paidByInvoice = new Map<string, number>()
+    for (const p of (paymentRows ?? []) as Array<{ invoice_id: string; amount: number }>) {
+      paidByInvoice.set(p.invoice_id, (paidByInvoice.get(p.invoice_id) ?? 0) + Number(p.amount))
+    }
+
     for (const invoice of due as Invoice[]) {
-      const total = calculateTotals(invoice.line_items, invoice.vat_rate).total
+      const total = roundMoney(
+        calculateTotals(invoice.line_items, invoice.vat_rate).total - (paidByInvoice.get(invoice.id) ?? 0)
+      )
       const daysOverdue = invoice.due_date
         ? Math.floor((new Date(today).getTime() - new Date(invoice.due_date).getTime()) / 86400000)
         : 0
@@ -69,7 +81,7 @@ export async function GET(request: Request) {
             <p>Invoice <strong>${invoice.invoice_number}</strong> is now overdue.</p>
             <ul>
               <li>Client: ${client}</li>
-              <li>Amount: £${total.toFixed(2)}</li>
+              <li>Outstanding: £${total.toFixed(2)}</li>
               <li>Days overdue: ${daysOverdue}</li>
               <li>Due date: ${invoice.due_date}</li>
             </ul>

@@ -2,14 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendInvoicePaidNotification } from '@/lib/stripe/notifications'
 import { getStripe } from '@/lib/stripe/client'
+import { invoiceTotal, listPayments, recalcInvoicePaymentState } from '@/lib/db/invoice-payments'
+import { roundMoney, type Invoice } from '@/lib/types'
 
-async function markInvoicePaidById(invoiceId: string, paymentIntentId?: string | null) {
+/**
+ * Record a Stripe payment in the ledger and re-derive the invoice's state.
+ * `idempotencyKey` lands in invoice_payments.stripe_payment_intent_id, whose
+ * unique index makes webhook replays create exactly one row.
+ */
+async function recordStripePayment(
+  invoiceId: string,
+  opts: { paymentIntentId?: string | null; idempotencyKey: string; amountMinor?: number | null; occurredAtUnix?: number | null }
+) {
   const admin = createAdminClient()
   const { data: invoice, error } = await admin
     .from('invoices')
-    .select('id, invoice_number, status')
+    .select('id, invoice_number, status, currency, line_items, vat_rate')
     .eq('id', invoiceId)
-    .maybeSingle<{ id: string; invoice_number: string; status: string }>()
+    .maybeSingle<Pick<Invoice, 'id' | 'invoice_number' | 'status' | 'currency' | 'line_items' | 'vat_rate'>>()
 
   // A query failure is transient — throw so the caller returns 500 and Stripe
   // retries. A genuinely missing invoice is not retryable, so return quietly.
@@ -20,20 +30,40 @@ async function markInvoicePaidById(invoiceId: string, paymentIntentId?: string |
     return
   }
 
-  if (invoice.status !== 'paid') {
-    const { error: updateError } = await admin
-      .from('invoices')
-      .update({
-        status: 'paid',
-        paid_at: new Date().toISOString(),
-        stripe_payment_intent_id: paymentIntentId ?? undefined,
-      })
-      .eq('id', invoice.id)
+  if (opts.paymentIntentId) {
+    await admin.from('invoices').update({ stripe_payment_intent_id: opts.paymentIntentId }).eq('id', invoice.id)
+  }
 
-    if (updateError) {
-      throw new Error(`Failed to mark invoice ${invoice.id} paid: ${updateError.message}`)
-    }
+  // Amount from the event where present; otherwise the outstanding balance.
+  let amount = opts.amountMinor != null && Number.isFinite(opts.amountMinor) ? roundMoney(opts.amountMinor / 100) : null
+  if (amount === null || amount <= 0) {
+    const payments = await listPayments(invoice.id, admin)
+    amount = roundMoney(invoiceTotal(invoice) - payments.reduce((sum, p) => sum + p.amount, 0))
+  }
+  if (amount <= 0) {
+    await recalcInvoicePaymentState(invoice.id, admin)
+    return
+  }
 
+  const paidOn = new Date((opts.occurredAtUnix ?? Math.floor(Date.now() / 1000)) * 1000).toISOString().slice(0, 10)
+  const wasPaid = invoice.status === 'paid'
+  const { error: insertError } = await admin.from('invoice_payments').insert({
+    invoice_id: invoice.id,
+    paid_on: paidOn,
+    amount,
+    currency: invoice.currency ?? 'GBP',
+    method: 'stripe',
+    reference: opts.paymentIntentId ?? opts.idempotencyKey,
+    stripe_payment_intent_id: opts.idempotencyKey,
+  })
+  if (insertError) {
+    // 23505 = the unique index caught a replay of the same payment. Idempotent, done.
+    if (insertError.code === '23505') return
+    throw new Error(`Failed to record Stripe payment for ${invoice.id}: ${insertError.message}`)
+  }
+
+  const state = await recalcInvoicePaymentState(invoice.id, admin)
+  if (!wasPaid && state.status === 'paid') {
     await sendInvoicePaidNotification(invoice.id, invoice.invoice_number)
   }
 }
@@ -63,10 +93,13 @@ export async function POST(request: NextRequest) {
       const invoiceId = session.metadata?.invoice_id
 
       if (invoiceId) {
-        await markInvoicePaidById(
-          invoiceId,
-          typeof session.payment_intent === 'string' ? session.payment_intent : null
-        )
+        const pi = typeof session.payment_intent === 'string' ? session.payment_intent : null
+        await recordStripePayment(invoiceId, {
+          paymentIntentId: pi,
+          idempotencyKey: pi ?? `cs:${session.id}`,
+          amountMinor: typeof session.amount_total === 'number' ? session.amount_total : null,
+          occurredAtUnix: event.created,
+        })
       }
     }
 
@@ -78,8 +111,13 @@ export async function POST(request: NextRequest) {
         .eq('stripe_payment_intent_id', paymentIntent.id)
         .maybeSingle<{ id: string; status: string }>()
 
-      if (invoice && invoice.status !== 'paid') {
-        await markInvoicePaidById(invoice.id, paymentIntent.id)
+      if (invoice) {
+        await recordStripePayment(invoice.id, {
+          paymentIntentId: paymentIntent.id,
+          idempotencyKey: paymentIntent.id,
+          amountMinor: typeof paymentIntent.amount_received === 'number' ? paymentIntent.amount_received : null,
+          occurredAtUnix: event.created,
+        })
       }
     }
 
@@ -106,10 +144,14 @@ export async function POST(request: NextRequest) {
       }
 
       if (osInvoiceId) {
-        await markInvoicePaidById(
-          osInvoiceId,
-          typeof stripeInvoice.payment_intent === 'string' ? stripeInvoice.payment_intent : null
-        )
+        const pi = typeof stripeInvoice.payment_intent === 'string' ? stripeInvoice.payment_intent : null
+        const amountPaid = (stripeInvoice as { amount_paid?: number }).amount_paid
+        await recordStripePayment(osInvoiceId, {
+          paymentIntentId: pi,
+          idempotencyKey: pi ?? `in:${stripeInvoice.id}`,
+          amountMinor: typeof amountPaid === 'number' ? amountPaid : null,
+          occurredAtUnix: event.created,
+        })
       } else {
         // Don't silently drop it — surface the unmatched payment for review.
         const note = `Unmatched subscription payment: stripe_invoice=${stripeInvoice.id}, subscription=${subId ?? 'none'}`

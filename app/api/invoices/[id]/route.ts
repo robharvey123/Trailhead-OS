@@ -8,13 +8,8 @@ import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import { parseInvoiceCurrencyFields, CoworkApiError } from '@/lib/cowork-api'
 import { calculateTotals, type InvoiceStatus, type LineItem } from '@/lib/types'
 
-const INVOICE_STATUSES = new Set<InvoiceStatus>([
-  'draft',
-  'sent',
-  'paid',
-  'overdue',
-  'cancelled',
-])
+// paid / part_paid are derived from the payments ledger, never set directly.
+const SETTABLE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'overdue', 'cancelled'])
 
 async function getAuthenticatedSupabase() {
   const apiKeyAuth = await getApiKeyAuth()
@@ -156,17 +151,20 @@ export async function PATCH(
   }
 
   if (body.pricing_tier_id !== undefined) {
-    if (body.pricing_tier_id !== null && typeof body.pricing_tier_id !== 'string') {
-      return NextResponse.json(
-        { error: 'pricing_tier_id must be a string or null' },
-        { status: 400 }
-      )
-    }
-    patch.pricing_tier_id = body.pricing_tier_id
+    return NextResponse.json(
+      { error: 'pricing_tier_id is no longer supported on invoices' },
+      { status: 400 }
+    )
   }
 
   if (body.status !== undefined) {
-    if (typeof body.status !== 'string' || !INVOICE_STATUSES.has(body.status as InvoiceStatus)) {
+    if (body.status === 'paid' || body.status === 'part_paid') {
+      return NextResponse.json(
+        { error: 'Record a payment instead of setting this status directly.' },
+        { status: 409 }
+      )
+    }
+    if (typeof body.status !== 'string' || !SETTABLE_STATUSES.has(body.status as InvoiceStatus)) {
       return NextResponse.json(
         { error: 'Invalid invoice status' },
         { status: 400 }
@@ -174,14 +172,6 @@ export async function PATCH(
     }
 
     patch.status = body.status
-
-    // Keep paid_at consistent with manual status changes: stamp it when moving
-    // into 'paid' (if not already set), clear it when moving out of 'paid'.
-    if (body.status === 'paid' && !existing.paid_at) {
-      patch.paid_at = new Date().toISOString()
-    } else if (body.status !== 'paid' && existing.paid_at) {
-      patch.paid_at = null
-    }
   }
 
   if (body.issue_date !== undefined) {
@@ -235,6 +225,8 @@ export async function PATCH(
     'bill_to_country',
     'bill_to_email',
     'bill_to_phone',
+    'bill_to_vat_number',
+    'bill_to_company_number',
   ] as const
   const hasBillToPatch = billToFieldKeys.some((key) => key in body)
 
@@ -268,6 +260,19 @@ export async function PATCH(
     if (body.bill_to_phone !== undefined || accountIdChanged || contactIdChanged) {
       patch.bill_to_phone = sanitizeText(body.bill_to_phone) ?? derivedBillTo.bill_to_phone
     }
+    if (body.bill_to_vat_number !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_vat_number = sanitizeText(body.bill_to_vat_number) ?? derivedBillTo.bill_to_vat_number
+    }
+    if (body.bill_to_company_number !== undefined || accountIdChanged || contactIdChanged) {
+      patch.bill_to_company_number = sanitizeText(body.bill_to_company_number) ?? derivedBillTo.bill_to_company_number
+    }
+  }
+
+  if (body.po_number !== undefined) {
+    patch.po_number = sanitizeText(body.po_number)
+  }
+  if (body.vat_note !== undefined) {
+    patch.vat_note = sanitizeText(body.vat_note)
   }
 
   if (body.line_items !== undefined) {

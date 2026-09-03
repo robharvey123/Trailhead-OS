@@ -3,7 +3,9 @@ import { Resend } from 'resend'
 import { z } from 'zod'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getCompanySettings, getBankAccountForCurrency, renderCompanyEmailFooterHtml, type CompanySettings } from '@/lib/company-settings'
+import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
+import { listPayments } from '@/lib/db/invoice-payments'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getQuoteById } from '@/lib/db/quotes'
@@ -11,7 +13,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { DEFAULT_RESEND_FROM } from '@/lib/email/resend'
 import { renderInvoicePdf } from '@/lib/pdf/InvoicePDF'
 import { renderQuotePdf } from '@/lib/pdf/QuotePDF'
-import type { Enquiry, Invoice, QuoteListItem } from '@/lib/types'
+import { calculateTotals, roundMoney, type Enquiry, type Invoice, type InvoicePayment, type QuoteListItem } from '@/lib/types'
+import { formatMoney } from '@/lib/money'
 
 const EmailRecordSchema = z.object({
   kind: z.enum(['enquiry', 'quote', 'invoice']),
@@ -89,10 +92,20 @@ function buildQuoteEmailHtml(message: string, quote: QuoteListItem, companySetti
   `
 }
 
-function buildInvoiceEmailHtml(message: string, invoice: Invoice, companySettings: CompanySettings) {
+function buildInvoiceEmailHtml(message: string, invoice: Invoice, companySettings: CompanySettings, payments: InvoicePayment[]) {
+  const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
+  const amountPaid = roundMoney(payments.reduce((sum, p) => sum + p.amount, 0))
+  const amountDue = roundMoney(totals.total - amountPaid)
+  const currency = invoice.currency ?? 'GBP'
+  const lines = [
+    `<li>Amount due: <strong>${escapeHtml(formatMoney(Math.max(amountDue, 0), currency))}</strong>${amountPaid > 0 ? ` (${escapeHtml(formatMoney(amountPaid, currency))} already received)` : ''}</li>`,
+  ]
+  if (invoice.due_date) lines.push(`<li>Due date: <strong>${escapeHtml(invoice.due_date)}</strong></li>`)
   return `
     ${renderMessageParagraphs(message)}
     <p>Please find the attached invoice <strong>${escapeHtml(invoice.invoice_number)}</strong>.</p>
+    <ul>${lines.join('')}</ul>
+    ${invoice.stripe_payment_link ? `<p>You can pay online here: <a href="${escapeHtml(invoice.stripe_payment_link)}">${escapeHtml(invoice.stripe_payment_link)}</a></p>` : ''}
     ${renderCompanyEmailFooterHtml(companySettings)}
   `
 }
@@ -176,19 +189,21 @@ export async function POST(request: Request) {
     }
 
     const invoiceCurrency = invoice.currency ?? 'GBP'
-    const [contact, workstreams, bankAccount] = await Promise.all([
+    const [contact, invAccount, workstreams, bankAccount, payments] = await Promise.all([
       invoice.contact_id ? getContactById(invoice.contact_id, auth.supabase).catch(() => null) : null,
+      invoice.account_id ? getAccountById(invoice.account_id, auth.supabase).catch(() => null) : null,
       getWorkstreams(auth.supabase).catch(() => []),
       invoiceCurrency !== 'GBP' ? getBankAccountForCurrency(invoiceCurrency, auth.supabase).catch(() => null) : null,
+      listPayments(id, auth.supabase).catch(() => []),
     ])
     const workstream = workstreams.find((item) => item.id === invoice.workstream_id) ?? null
-    const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings, bankAccount)
+    const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings, bankAccount, invAccount, payments)
 
     await resend.emails.send({
       from: fromAddress,
       to: recipients,
       subject,
-      html: buildInvoiceEmailHtml(message, invoice, companySettings),
+      html: buildInvoiceEmailHtml(message, invoice, companySettings, payments),
       attachments: [
         {
           filename: `${invoice.invoice_number}.pdf`,

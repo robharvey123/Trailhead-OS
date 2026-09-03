@@ -9,13 +9,9 @@ import { getCompanySettings } from '@/lib/company-settings'
 import { parseInvoiceCurrencyFields, CoworkApiError } from '@/lib/cowork-api'
 import { calculateTotals, type Invoice, type InvoiceStatus, type LineItem } from '@/lib/types'
 
-const INVOICE_STATUSES = new Set<InvoiceStatus>([
-  'draft',
-  'sent',
-  'paid',
-  'overdue',
-  'cancelled',
-])
+// paid / part_paid are derived from the payments ledger, never set directly.
+const CREATABLE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'overdue', 'cancelled'])
+const LISTABLE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'part_paid', 'paid', 'overdue', 'cancelled'])
 
 async function getAuthenticatedSupabase() {
   const apiKeyAuth = await getApiKeyAuth()
@@ -92,7 +88,7 @@ export async function GET(request: NextRequest) {
     const invoices = await getInvoices(
       {
         status:
-          status && INVOICE_STATUSES.has(status as InvoiceStatus)
+          status && LISTABLE_STATUSES.has(status as InvoiceStatus)
             ? (status as InvoiceStatus)
             : undefined,
         workstream_id: searchParams.get('workstream_id') ?? undefined,
@@ -117,6 +113,12 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => ({}))
+
+  // Pricing tiers are gone from invoicing (v2 phase 1). Fail loudly on stale callers.
+  if (body.pricing_tier_id !== undefined) {
+    return NextResponse.json({ error: 'pricing_tier_id is no longer supported on invoices' }, { status: 400 })
+  }
+
   const lineItems = sanitizeLineItems(body.line_items)
 
   if (!lineItems.length) {
@@ -127,7 +129,7 @@ export async function POST(request: NextRequest) {
   }
 
   const status =
-    typeof body.status === 'string' && INVOICE_STATUSES.has(body.status as InvoiceStatus)
+    typeof body.status === 'string' && CREATABLE_STATUSES.has(body.status as InvoiceStatus)
       ? (body.status as InvoiceStatus)
       : 'draft'
 
@@ -179,12 +181,6 @@ export async function POST(request: NextRequest) {
         : typeof body.workstream_id === 'string'
           ? body.workstream_id
           : null,
-    pricing_tier_id:
-      body.pricing_tier_id === null || body.pricing_tier_id === undefined
-        ? null
-        : typeof body.pricing_tier_id === 'string'
-          ? body.pricing_tier_id
-          : null,
     status,
     issue_date:
       typeof body.issue_date === 'string' && body.issue_date.trim()
@@ -210,6 +206,10 @@ export async function POST(request: NextRequest) {
       bill_to_country: sanitizeText(body.bill_to_country) ?? derivedBillTo.bill_to_country,
       bill_to_email: sanitizeText(body.bill_to_email) ?? derivedBillTo.bill_to_email,
       bill_to_phone: sanitizeText(body.bill_to_phone) ?? derivedBillTo.bill_to_phone,
+      bill_to_vat_number: sanitizeText(body.bill_to_vat_number) ?? derivedBillTo.bill_to_vat_number,
+      bill_to_company_number: sanitizeText(body.bill_to_company_number) ?? derivedBillTo.bill_to_company_number,
+    po_number: sanitizeText(body.po_number),
+    vat_note: sanitizeText(body.vat_note),
     notes: sanitizeText(body.notes),
     is_recurring: body.is_recurring === true,
     recurring_interval:

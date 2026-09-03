@@ -19,7 +19,7 @@ export type EnquiryStatus =
   | 'under_review'
   | 'quoted'
   | 'closed'
-export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'
+export type InvoiceStatus = 'draft' | 'sent' | 'part_paid' | 'paid' | 'overdue' | 'cancelled'
 export type BlogPostStatus = 'draft' | 'published'
 export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled'
 
@@ -92,6 +92,11 @@ export interface Account {
   notes?: string
   default_hourly_rate?: number
   currency?: string
+  vat_number?: string | null
+  company_number?: string | null
+  billing_email?: string | null
+  payment_terms_days?: number | null
+  po_required?: boolean
   tags: string[]
   created_at: string
   updated_at: string
@@ -685,8 +690,6 @@ export interface Invoice {
   contact_id: string | null
   workstream_id: string | null
   engagement_id?: string | null
-  pricing_tier_id?: string
-  pricing_tier?: PricingTier
   status: InvoiceStatus
   issue_date: string
   due_date: string | null
@@ -713,6 +716,10 @@ export interface Invoice {
   bill_to_country: string | null
   bill_to_email: string | null
   bill_to_phone: string | null
+  bill_to_vat_number?: string | null
+  bill_to_company_number?: string | null
+  po_number?: string | null
+  vat_note?: string | null
   notes: string | null
   freeagent_invoice_url?: string | null
   freeagent_synced_at?: string | null
@@ -727,22 +734,27 @@ export interface InvoiceTotals {
   total: number
 }
 
+/** Round to 2dp, half up. All money maths goes through this so the OS, the PDF and Stripe's integer pence agree. */
+export const roundMoney = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
+
 export function calculateTotals(
   line_items: LineItem[],
   vat_rate: number
 ): InvoiceTotals {
-  const subtotal = line_items.reduce((sum, item) => {
-    const qty = Number.isFinite(item.qty) ? item.qty : 0
-    const unitPrice = Number.isFinite(item.unit_price) ? item.unit_price : 0
-    return sum + qty * unitPrice
-  }, 0)
+  const subtotal = roundMoney(
+    line_items.reduce((sum, item) => {
+      const qty = Number.isFinite(item.qty) ? item.qty : 0
+      const unitPrice = Number.isFinite(item.unit_price) ? item.unit_price : 0
+      return sum + roundMoney(qty * unitPrice)
+    }, 0)
+  )
   const safeVatRate = Number.isFinite(vat_rate) ? vat_rate : 0
-  const vat_amount = subtotal * (safeVatRate / 100)
+  const vat_amount = roundMoney(subtotal * (safeVatRate / 100))
 
   return {
     subtotal,
     vat_amount,
-    total: subtotal + vat_amount,
+    total: roundMoney(subtotal + vat_amount),
   }
 }
 
@@ -1979,4 +1991,29 @@ export interface WhatsAppConversationWithRelations extends WhatsAppConversation 
 export interface WhatsAppConversationWithMessages extends WhatsAppConversationWithRelations {
   /** Newest first, capped by the caller. */
   messages: WhatsAppMessage[]
+}
+
+// ── Invoice payments ledger ────────────────────────────
+
+export type InvoicePaymentMethod = 'bank_transfer' | 'stripe' | 'card' | 'cash' | 'cheque' | 'other'
+
+export interface InvoicePayment {
+  id: string
+  invoice_id: string
+  paid_on: string
+  amount: number
+  currency: string
+  method: InvoicePaymentMethod | null
+  reference: string | null
+  notes: string | null
+  stripe_payment_intent_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface InvoicePaymentState {
+  status: InvoiceStatus
+  paid_at: string | null
+  amount_paid: number
+  balance: number
 }
