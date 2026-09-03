@@ -17,6 +17,8 @@ import {
 } from './cowork-api'
 import { getEngagementRow } from './cowork-engagements'
 import { createPayment, invoiceTotal, listPayments, recalcInvoicePaymentState } from '@/lib/db/invoice-payments'
+import { fetchWiseRate } from '@/lib/fx/wise'
+import { isSupportedCurrency } from '@/lib/money'
 import { roundMoney } from '@/lib/types'
 
 /**
@@ -60,7 +62,23 @@ export async function createCoworkInvoice(body: Record<string, unknown>): Promis
   const status = body.status === undefined ? 'draft' : optionalString(body.status)
   if (status !== 'draft' && status !== 'sent') throw new CoworkApiError('status must be draft or sent', 400)
 
-  const currencyFields = parseInvoiceCurrencyFields(body)
+  // Non-GBP with no rate supplied → snapshot today's Wise mid-market rate
+  // automatically, so "raise a USD invoice" works without quoting a rate. A
+  // failed lookup falls through to the explicit supply-a-rate 400.
+  const currencyBody: Record<string, unknown> = { ...body }
+  const requestedCurrency = (optionalString(body.currency) ?? 'GBP').toUpperCase()
+  const hasRate = (body.fx_rate_quote ?? body.fx_rate_to_gbp) != null && body.fx_rate_quote !== '' && body.fx_rate_to_gbp !== ''
+  if (requestedCurrency !== 'GBP' && isSupportedCurrency(requestedCurrency) && !hasRate) {
+    try {
+      const wise = await fetchWiseRate('GBP', requestedCurrency)
+      currencyBody.fx_rate_quote = wise.rate
+      currencyBody.fx_rate_source = `${wise.source} mid-market (auto)`
+      currencyBody.fx_rate_date = wise.date
+    } catch {
+      // fall through — parseInvoiceCurrencyFields rejects with the manual-rate message
+    }
+  }
+  const currencyFields = parseInvoiceCurrencyFields(currencyBody)
 
   const contact = contactName ? await findContactByName(contactName) : null
   if (contactName && !contact) throw new CoworkApiError(`Contact not found: ${contactName}`, 400)

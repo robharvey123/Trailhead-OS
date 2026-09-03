@@ -194,6 +194,16 @@ export default function InvoiceForm({
       setFetchingRate(false)
     }
   }
+  // Auto-snapshot the rate the moment a non-GBP currency is chosen (or when a
+  // non-GBP draft is opened without one, e.g. a recurring clone flagged for
+  // re-snapshot). Never overwrites a rate that is already set; on failure the
+  // error shows and the rate can be typed manually.
+  useEffect(() => {
+    if (!isForeign || fxQuote) return
+    void fetchRate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency])
+
   const foreignLineItems = isForeign && hasValidQuote
     ? lineItems.map((li) => ({ ...li, unit_price: Math.round(li.unit_price * quote * 100) / 100 }))
     : lineItems
@@ -543,7 +553,8 @@ export default function InvoiceForm({
             <p className="text-sm font-medium text-[color:var(--text)]">Exchange rate</p>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-[color:var(--text-2)]">
-                Enter all amounts below in <strong>GBP</strong>. The client is billed in {currency} at this rate.
+                Enter all amounts below in <strong>GBP</strong>. The client is billed in {currency} at this rate
+                {fxSource ? ` — fetched automatically (${fxSource}${fxDate ? `, ${fxDate}` : ''})` : ', fetched automatically when you pick the currency'}.
               </p>
               <button
                 type="button"
@@ -551,7 +562,7 @@ export default function InvoiceForm({
                 disabled={fetchingRate}
                 className="rounded-xl border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
               >
-                {fetchingRate ? 'Fetching…' : "Fetch today's rate (Wise)"}
+                {fetchingRate ? 'Fetching…' : 'Refresh rate (Wise)'}
               </button>
             </div>
             {fxFetchError ? (

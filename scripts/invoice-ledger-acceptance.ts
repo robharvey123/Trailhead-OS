@@ -231,6 +231,21 @@ async function main() {
     const rState = (await api('GET', `/api/invoices/${rInv.id}`)).json.invoice as Record<string, unknown>
     const rBalance = (await api('GET', `/api/invoices/${rInv.id}/payments`)).json.balance
     ok('settles to zero balance and paid', rState.status === 'paid' && rBalance === 0, `${rState.status} / balance ${rBalance}`)
+
+    // ── 12: FX auto-snapshot — a USD invoice with no rate gets today's Wise rate ──
+    console.log('fx auto-snapshot')
+    const usdRes = await api('POST', '/api/invoices', {
+      account_id: created.accountId,
+      currency: 'USD',
+      line_items: [{ description: `${RUN} usd`, qty: 1, unit_price: 100 }],
+    })
+    ok('USD invoice created without supplying a rate', usdRes.status === 201, `status ${usdRes.status} ${String(usdRes.json.error ?? '')}`)
+    const usdInv = usdRes.json.invoice as Record<string, unknown>
+    if (usdInv?.id) created.invoiceIds.push(usdInv.id as string)
+    const q = Number(usdInv?.fx_rate_quote)
+    ok('fx_rate_quote auto-populated and sane', Number.isFinite(q) && q > 0.5 && q < 3, String(usdInv?.fx_rate_quote))
+    ok('fx_rate_source marks the auto snapshot', /wise.*auto/i.test(String(usdInv?.fx_rate_source ?? '')), String(usdInv?.fx_rate_source))
+    ok('fx_rate_date stamped', /^\d{4}-\d{2}-\d{2}$/.test(String(usdInv?.fx_rate_date ?? '')), String(usdInv?.fx_rate_date))
   } finally {
     // ── Cleanup: only what this run created, ids printed if anything fails ──
     console.log('\ncleanup')

@@ -116,6 +116,9 @@ POST /api/cowork/invoices
   "status": "draft|sent — default draft"
 }
 Pricing tiers are gone from invoicing — a "tier" field is a 400. Price the line items directly.
+Non-GBP invoices: omit the rate and today's Wise mid-market rate is snapshotted
+automatically (fx_rate_source "Wise mid-market (auto)"). Pass fx_rate_quote only
+to pin a specific agreed rate.
 
 GET /api/cowork/invoices/[id] — full invoice with totals
 PATCH /api/cowork/invoices/[id] — update fields. status "paid" records a

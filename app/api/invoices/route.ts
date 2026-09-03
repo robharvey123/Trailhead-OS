@@ -7,6 +7,8 @@ import { createInvoice, getInvoices } from '@/lib/db/invoices'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import { getCompanySettings } from '@/lib/company-settings'
 import { parseInvoiceCurrencyFields, CoworkApiError } from '@/lib/cowork-api'
+import { fetchWiseRate } from '@/lib/fx/wise'
+import { isSupportedCurrency } from '@/lib/money'
 import { calculateTotals, type Invoice, type InvoiceStatus, type LineItem } from '@/lib/types'
 
 // paid / part_paid are derived from the payments ledger, never set directly.
@@ -164,9 +166,26 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Non-GBP with no rate supplied → snapshot today's Wise mid-market rate
+  // automatically. A failed lookup falls through to the explicit
+  // supply-a-rate 400 rather than silently defaulting to 1.0.
+  const currencyBody: Record<string, unknown> = { ...body }
+  const requestedCurrency = typeof body.currency === 'string' ? body.currency.toUpperCase() : 'GBP'
+  const hasRate = (body.fx_rate_quote ?? body.fx_rate_to_gbp) != null && body.fx_rate_quote !== '' && body.fx_rate_to_gbp !== ''
+  if (requestedCurrency !== 'GBP' && isSupportedCurrency(requestedCurrency) && !hasRate) {
+    try {
+      const wise = await fetchWiseRate('GBP', requestedCurrency)
+      currencyBody.fx_rate_quote = wise.rate
+      currencyBody.fx_rate_source = `${wise.source} mid-market (auto)`
+      currencyBody.fx_rate_date = wise.date
+    } catch {
+      // parseInvoiceCurrencyFields will return the explicit 400 below.
+    }
+  }
+
   let currencyFields
   try {
-    currencyFields = parseInvoiceCurrencyFields(body)
+    currencyFields = parseInvoiceCurrencyFields(currencyBody)
   } catch (e) {
     if (e instanceof CoworkApiError) return NextResponse.json({ error: e.message }, { status: e.status })
     throw e
