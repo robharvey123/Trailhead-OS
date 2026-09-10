@@ -149,10 +149,10 @@ function ReportDocument({ data, narrative, spine, kind }: { data: ReportData; na
           </Section>
         ) : null}
 
-        {/* Hours — from the spine, per calendar month against the allowance. */}
+        {/* Hours — from the spine, per billing month against the allowance. */}
         <Section heading="Hours">
           <View style={styles.trHead}>
-            <Text style={[styles.th, { flex: 1 }]}>Month</Text>
+            <Text style={[styles.th, { flex: 1 }]}>Billing month</Text>
             <Text style={[styles.th, styles.right, { width: 70 }]}>Used</Text>
             <Text style={[styles.th, styles.right, { width: 80 }]}>Allowance</Text>
             <Text style={[styles.th, styles.right, { width: 60 }]}>Over</Text>

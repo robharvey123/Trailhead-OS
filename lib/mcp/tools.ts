@@ -6,6 +6,8 @@ import {
   updateEngagementTask,
 } from '@/lib/db/engagement-tasks'
 import { addNote } from '@/lib/db/notes'
+import { periodHoursFor } from '@/lib/db/engagements'
+import { billingPeriodFromStart, clampStartDay } from '@/lib/engagements/periods'
 import { getProjectById, getProjects } from '@/lib/db/projects'
 import { updateCoworkProject, updateProjectMilestone } from '@/lib/cowork-projects'
 import type { createClient as createServerClient } from '@/lib/supabase/server'
@@ -566,16 +568,24 @@ export const getCampaignStatsTool = defineTool({
 
 export const engagementHoursCheckTool = defineTool({
   name: 'engagement_hours_check',
-  description: 'Hours used vs included for an engagement this month (or a given YYYY-MM month).',
+  description:
+    "Hours used vs included for an engagement's current billing month, or the billing month that starts in a given YYYY-MM. Billing months follow the engagement's billing_month_start_day (e.g. 15th to 14th); work dated before the start date counts in month one.",
   inputSchema: z.object({ engagement: engagementRef, month: z.string().regex(/^\d{4}-\d{2}$/).optional() }),
   handler: async (input) => {
     if (!input.month) return engagementMonthUsage(input.engagement)
     const e = await getEngagementRow(input.engagement)
-    const period = `${input.month}-01`
-    const { data } = await supabaseService.from('engagement_hours_by_month').select('*').eq('engagement_id', e.id).eq('period_month', period).maybeSingle()
-    const row = data as { hours_used?: number | string; billable_hours?: number | string } | null
-    const used = Number(row?.hours_used ?? 0)
-    return { engagement_id: e.id, month: input.month, used, included: e.included_hours_monthly, over: used - (e.included_hours_monthly ?? 0) }
+    const day = clampStartDay(e.billing_month_start_day)
+    const h = await periodHoursFor(e, `${input.month}-${String(day).padStart(2, '0')}`, db)
+    const period = billingPeriodFromStart(h.period_start, e)
+    return {
+      engagement_id: e.id,
+      month: input.month,
+      period_start: period.start,
+      period_end: period.end,
+      used: h.used,
+      included: e.included_hours_monthly,
+      over: h.used - (e.included_hours_monthly ?? 0),
+    }
   },
 })
 

@@ -6,6 +6,12 @@ import type {
   Tier1MilestoneSummary,
   Tier1MilestoneWithAccount,
 } from '@/lib/types'
+import {
+  billingPeriodStartFor,
+  currentBillingPeriod,
+  type BillingPeriod,
+  type BillingPeriodBasis,
+} from '@/lib/engagements/periods'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -15,13 +21,6 @@ async function getSupabase(client?: SupabaseClient) {
 
 const ENGAGEMENT_SELECT =
   '*, notice_date, end_client:accounts!end_client_account_id(id,name), billed_via:accounts!billed_via_account_id(id,name)'
-
-function monthBounds(d = new Date()) {
-  const from = new Date(d.getFullYear(), d.getMonth(), 1)
-  const to = new Date(d.getFullYear(), d.getMonth() + 1, 0)
-  const iso = (x: Date) => x.toISOString().split('T')[0]
-  return { from: iso(from), to: iso(to) }
-}
 
 // Terminal engagement statuses — excluded by `excludeTerminal`. Case-insensitive
 // variants included so this survives any future casing/value additions.
@@ -44,33 +43,109 @@ export async function listEngagements(
   return (data ?? []) as unknown as EngagementWithRelations[]
 }
 
-/** Current-month hours used for an engagement (calendar-month aligned, no carry-forward). */
+export type EngagementHoursUsage = {
+  used: number
+  included: number | null
+  over: number
+  pct: number
+  /** The billing month these figures cover (anchored on billing_month_start_day). */
+  period: BillingPeriod
+}
+
+type HoursEngagementRef = BillingPeriodBasis & { id: string; included_hours_monthly: number | null }
+
+/**
+ * Hours used in the engagement's CURRENT billing month (billing_month_start_day
+ * anchored, no carry-forward). In month one, work dated before start_date is
+ * included, matching engagement_hours_by_month.
+ */
 export async function engagementHoursThisMonth(
-  engagementId: string,
-  includedHours: number | null,
+  engagement: HoursEngagementRef,
   client?: SupabaseClient
-): Promise<{ used: number; included: number | null; over: number; pct: number }> {
+): Promise<EngagementHoursUsage> {
   const supabase = await getSupabase(client)
-  const { from, to } = monthBounds()
-  const { data, error } = await supabase
+  const period = currentBillingPeriod(engagement)
+  let query = supabase
     .from('time_entries')
     .select('duration_minutes')
-    .eq('engagement_id', engagementId)
+    .eq('engagement_id', engagement.id)
     .eq('is_running', false)
-    .gte('entry_date', from)
-    .lte('entry_date', to)
+    .lte('entry_date', period.end)
+  if (!period.isFirst) query = query.gte('entry_date', period.start)
+  const { data, error } = await query
   if (error) throw new Error(error.message || 'Failed to load engagement hours')
   const minutes = (data ?? []).reduce((s, r) => s + (r.duration_minutes ?? 0), 0)
   const used = minutes / 60
+  const includedHours = engagement.included_hours_monthly
   const over = includedHours != null ? used - includedHours : 0
   const pct = includedHours && includedHours > 0 ? Math.round((used / includedHours) * 100) : 0
-  return { used, included: includedHours, over, pct }
+  return { used, included: includedHours, over, pct, period }
+}
+
+export type PeriodHoursRow = { used: number; billable: number; over: number; period: BillingPeriod }
+
+/**
+ * Current-billing-month hours for many engagements in one query against
+ * engagement_hours_by_month. Each engagement can have its own start day, so rows
+ * are matched on (engagement_id, period_month) rather than one shared month key.
+ */
+export async function currentPeriodHoursByEngagement(
+  engagements: Array<HoursEngagementRef>,
+  client?: SupabaseClient
+): Promise<Map<string, PeriodHoursRow>> {
+  const out = new Map<string, PeriodHoursRow>()
+  if (engagements.length === 0) return out
+  const supabase = await getSupabase(client)
+  const periods = new Map(engagements.map((e) => [e.id, currentBillingPeriod(e)]))
+  const starts = [...new Set([...periods.values()].map((p) => p.start))]
+  const { data } = await supabase
+    .from('engagement_hours_by_month')
+    .select('engagement_id, period_month, hours_used, billable_hours, hours_over')
+    .in('engagement_id', engagements.map((e) => e.id))
+    .in('period_month', starts)
+  const rows = (data ?? []) as Array<{
+    engagement_id: string
+    period_month: string
+    hours_used: number | string | null
+    billable_hours: number | string | null
+    hours_over: number | string | null
+  }>
+  for (const e of engagements) {
+    const period = periods.get(e.id)!
+    const row = rows.find((r) => r.engagement_id === e.id && r.period_month === period.start)
+    const used = Number(row?.hours_used ?? 0)
+    out.set(e.id, {
+      used,
+      billable: Number(row?.billable_hours ?? 0),
+      over: row?.hours_over != null ? Number(row.hours_over) : used - (e.included_hours_monthly ?? 0),
+      period,
+    })
+  }
+  return out
+}
+
+/** Hours for the billing month containing `dateIso` (used by the MCP month lookup). */
+export async function periodHoursFor(
+  engagement: HoursEngagementRef,
+  dateIso: string,
+  client?: SupabaseClient
+): Promise<{ used: number; billable: number; period_start: string }> {
+  const supabase = await getSupabase(client)
+  const periodStart = billingPeriodStartFor(dateIso, engagement)
+  const { data } = await supabase
+    .from('engagement_hours_by_month')
+    .select('hours_used, billable_hours')
+    .eq('engagement_id', engagement.id)
+    .eq('period_month', periodStart)
+    .maybeSingle()
+  const row = data as { hours_used?: number | string; billable_hours?: number | string } | null
+  return { used: Number(row?.hours_used ?? 0), billable: Number(row?.billable_hours ?? 0), period_start: periodStart }
 }
 
 export interface EngagementDetail {
   engagement: EngagementWithRelations
   tier1: Tier1MilestoneWithAccount[]
-  hoursThisMonth: { used: number; included: number | null; over: number; pct: number }
+  hoursThisMonth: EngagementHoursUsage
   milestoneSummary: Tier1MilestoneSummary | null
 }
 
@@ -87,7 +162,7 @@ export async function getEngagement(id: string, client?: SupabaseClient): Promis
       .select('*, account:accounts(id,name,channel)')
       .eq('engagement_id', id)
       .order('created_at', { ascending: true }),
-    engagementHoursThisMonth(id, engagement.included_hours_monthly, supabase),
+    engagementHoursThisMonth(engagement, supabase),
     supabase.from('tier1_milestone_summary').select('*').eq('engagement_id', id).maybeSingle(),
   ])
 
@@ -105,7 +180,7 @@ export async function upsertEngagement(input: EngagementInput, client?: Supabase
   const fields: (keyof EngagementInput)[] = [
     'end_client_account_id', 'billed_via_account_id', 'engagement_type', 'name', 'code', 'status', 'currency',
     'retainer_amount_monthly', 'included_hours_monthly', 'day_rate', 'performance_fee_default',
-    'start_date', 'end_date', 'notice_period_days', 'auto_renews', 'renewal_term_months',
+    'start_date', 'end_date', 'notice_period_days', 'auto_renews', 'renewal_term_months', 'billing_month_start_day',
     'approval_thresholds', 'notes',
   ]
   for (const f of fields) if (f in input) patch[f] = (input as unknown as Record<string, unknown>)[f]

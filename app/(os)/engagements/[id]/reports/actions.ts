@@ -12,7 +12,7 @@ import { sendReport } from '@/lib/reports/send'
 const VALID_KINDS: ReportKind[] = ['weekly_client', 'monthly_client', 'weekly_internal']
 
 /** Generate a draft report and route to its review screen. An explicit period
- *  overrides the kind's default (this week / last month) — pass both dates. */
+ *  overrides the kind's default (this week / previous billing month) — pass both dates. */
 export async function generateReportAction(
   engagementId: string,
   kind: ReportKind,

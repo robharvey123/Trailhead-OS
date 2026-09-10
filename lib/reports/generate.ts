@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/roles'
 import { gatherReportData, londonWeekRange, londonMonthRange, type ReportData } from './data'
 import { buildEngagementPeriodReport, type EngagementPeriodSpine } from './period-spine'
+import { previousBillingPeriod, type BillingPeriodBasis } from '@/lib/engagements/periods'
 import { generateNarrative, EMPTY_NARRATIVE, type Narrative } from './narrative'
 import { renderReportPdf } from './pdf'
 import { buildReportXlsx } from './xlsx'
@@ -14,9 +15,17 @@ const DAILY_LIMIT = 10 // per engagement per day — stops runaway regeneration
 
 export type ReportKind = 'weekly_internal' | 'weekly_client' | 'monthly_client'
 
-/** Resolve the period for a kind when not explicitly supplied. */
-export function defaultPeriod(kind: ReportKind): { start: string; end: string } {
-  if (kind === 'monthly_client') return londonMonthRange(-1) // previous calendar month
+/** Resolve the period for a kind when not explicitly supplied. Monthly reports use
+ *  the engagement's previous BILLING month (e.g. 15 Aug to 14 Sep) when the basis is
+ *  known, else the previous calendar month. */
+export function defaultPeriod(kind: ReportKind, basis?: BillingPeriodBasis): { start: string; end: string } {
+  if (kind === 'monthly_client') {
+    if (basis) {
+      const p = previousBillingPeriod(basis)
+      return { start: p.start, end: p.end }
+    }
+    return londonMonthRange(-1)
+  }
   return londonWeekRange(0) // current week
 }
 
@@ -61,9 +70,17 @@ export async function generateEngagementReport(
   const supabase = client ?? (await createClient())
   const admin = await requireAdmin(supabase)
 
-  const period = input.periodStart && input.periodEnd
-    ? { start: input.periodStart, end: input.periodEnd }
-    : defaultPeriod(input.kind)
+  let period: { start: string; end: string }
+  if (input.periodStart && input.periodEnd) {
+    period = { start: input.periodStart, end: input.periodEnd }
+  } else {
+    const { data: basis } = await supabase
+      .from('engagements')
+      .select('start_date, billing_month_start_day')
+      .eq('id', input.engagementId)
+      .maybeSingle()
+    period = defaultPeriod(input.kind, (basis as BillingPeriodBasis | null) ?? undefined)
+  }
 
   // Rate limit (per engagement per day).
   const since = new Date()

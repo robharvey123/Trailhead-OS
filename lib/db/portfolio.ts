@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { listEngagements } from './engagements'
+import { currentPeriodHoursByEngagement, listEngagements } from './engagements'
 import { getProjects } from './projects'
 import type { EngagementStatus, EngagementType, ProjectStatus } from '@/lib/types'
 
@@ -41,14 +41,6 @@ export interface PortfolioOverview {
   }
 }
 
-function monthStartISO(): string {
-  // Build the YYYY-MM-01 key directly. Going via new Date(y, m, 1).toISOString()
-  // shifts back a day in any timezone ahead of UTC (e.g. BST), so it would query the
-  // PREVIOUS month's rollup key and always read zero hours.
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
-}
-
 const ENGAGEMENT_RANK: Record<EngagementStatus, number> = { Active: 0, Paused: 1, Draft: 2, Completed: 3, Terminated: 4 }
 const PROJECT_ACTIVE: ProjectStatus[] = ['active', 'planning', 'on_hold']
 const PROJECT_RANK: Record<string, number> = { active: 0, planning: 1, on_hold: 2 }
@@ -61,18 +53,12 @@ const PROJECT_RANK: Record<string, number> = { active: 0, planning: 1, on_hold: 
  */
 export async function getPortfolioOverview(client?: SupabaseClient): Promise<PortfolioOverview> {
   const supabase = client ?? (await createClient())
-  const monthStart = monthStartISO()
-
-  const [engagements, hoursRes, projects] = await Promise.all([
+  const [engagements, projects] = await Promise.all([
     listEngagements({ excludeTerminal: true }, supabase).catch(() => []),
-    supabase.from('engagement_hours_by_month').select('engagement_id, hours_used').eq('period_month', monthStart),
     getProjects({}, supabase).catch(() => []),
   ])
-
-  const hoursMap = new Map<string, number>()
-  for (const r of (hoursRes.data ?? []) as Array<{ engagement_id: string; hours_used: number }>) {
-    hoursMap.set(r.engagement_id, Number(r.hours_used) || 0)
-  }
+  // Each engagement's CURRENT billing month (its own start day, e.g. 15th to 14th).
+  const periodHours = await currentPeriodHoursByEngagement(engagements, supabase).catch(() => new Map())
 
   const engHealth: EngagementHealth[] = engagements.map((e) => ({
     id: e.id,
@@ -84,7 +70,7 @@ export async function getPortfolioOverview(client?: SupabaseClient): Promise<Por
     currency: e.currency,
     includedHours: e.included_hours_monthly,
     retainer: e.retainer_amount_monthly,
-    hoursUsed: hoursMap.get(e.id) ?? 0,
+    hoursUsed: periodHours.get(e.id)?.used ?? 0,
     endDate: e.end_date,
   }))
   engHealth.sort((a, b) => {

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { entryDateLowerBound } from '@/lib/engagements/periods'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -141,22 +142,29 @@ export async function gatherReportData(
   const { data: eng, error: engErr } = await supabase
     .from('engagements')
     .select(
-      'id, name, code, currency, day_rate, retainer_amount_monthly, included_hours_monthly, is_billable, end_client:accounts!end_client_account_id(name), billed_via:accounts!billed_via_account_id(name)'
+      'id, name, code, currency, day_rate, retainer_amount_monthly, included_hours_monthly, is_billable, start_date, billing_month_start_day, end_client:accounts!end_client_account_id(name), billed_via:accounts!billed_via_account_id(name)'
     )
     .eq('id', engagementId)
     .maybeSingle()
   if (engErr) throw new Error(engErr.message || 'Failed to load engagement')
   if (!eng) throw new Error(`Engagement not found: ${engagementId}`)
 
+  // A period that contains the engagement start date also carries the pre-start
+  // work (it counts in billing month one), so drop the lower bound for it.
+  const entriesFrom = entryDateLowerBound(periodStart, periodEnd, {
+    start_date: (eng.start_date as string | null) ?? null,
+    billing_month_start_day: (eng.billing_month_start_day as number | null) ?? null,
+  })
+  let entriesQuery = supabase
+    .from('time_entries')
+    .select(TE_SELECT)
+    .eq('engagement_id', engagementId)
+    .eq('is_running', false)
+    .lte('entry_date', periodEnd)
+  if (entriesFrom) entriesQuery = entriesQuery.gte('entry_date', entriesFrom)
+
   const [entriesRes, tasksRes] = await Promise.all([
-    supabase
-      .from('time_entries')
-      .select(TE_SELECT)
-      .eq('engagement_id', engagementId)
-      .eq('is_running', false)
-      .gte('entry_date', periodStart)
-      .lte('entry_date', periodEnd)
-      .order('entry_date', { ascending: true }),
+    entriesQuery.order('entry_date', { ascending: true }),
     supabase
       .from('engagement_tasks')
       .select('id, title, description, client_description, completed_at, project:projects(name), assignee:people!assignee_person_id(full_name)')

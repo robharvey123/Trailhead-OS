@@ -1,6 +1,7 @@
 import { TASK_SELECT, addDays, formatTask, startOfDayIso, todayDate } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
 import { listEngagements, engagementHoursThisMonth } from '@/lib/db/engagements'
+import { daysLeftInPeriod } from '@/lib/engagements/periods'
 import { calculateTotals, type LineItem } from '@/lib/types'
 
 type ServerClient = Parameters<typeof listEngagements>[1]
@@ -17,15 +18,13 @@ const RENEWAL_WINDOW_DAYS = 45
 async function activeEngagementBriefs() {
   const engagements = await listEngagements({ excludeTerminal: true }, svc).catch(() => [])
   const now = new Date()
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  const daysLeftInMonth = Math.max(0, Math.ceil((monthEnd.getTime() - now.getTime()) / 86_400_000))
   const weekAgo = new Date(now.getTime() - 7 * 86_400_000).toISOString()
   const today = todayDate()
 
   return Promise.all(
     engagements.map(async (e) => {
       const [hours, { data: milestones }, { data: billing }] = await Promise.all([
-        engagementHoursThisMonth(e.id, e.included_hours_monthly, svc),
+        engagementHoursThisMonth(e, svc),
         supabaseService
           .from('tier1_milestones')
           .select('completed_at, is_complete, account:accounts(name)')
@@ -75,7 +74,10 @@ async function activeEngagementBriefs() {
           used: Math.round(hours.used * 100) / 100,
           included: hours.included,
           over: Math.round(hours.over * 100) / 100,
-          days_left_in_month: daysLeftInMonth,
+          // Billing month, anchored on the engagement's billing_month_start_day.
+          period_start: hours.period.start,
+          period_end: hours.period.end,
+          days_left_in_month: daysLeftInPeriod(hours.period),
         },
         milestones_moved_this_week: ((milestones ?? []) as Array<{ completed_at: string | null; is_complete: boolean; account: { name: string } | { name: string }[] | null }>).map((m) => ({
           account: Array.isArray(m.account) ? m.account[0]?.name ?? null : m.account?.name ?? null,

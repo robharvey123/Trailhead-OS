@@ -272,6 +272,7 @@ export interface Engagement {
   notice_period_days: number | null
   auto_renews: boolean
   renewal_term_months: number | null
+  billing_month_start_day: number // 1-28; billing months (hours vs allowance) roll over on this day. 1 = calendar month
   notice_date?: string | null // computed in Postgres (end_date - notice_period_days), never stored
   approval_thresholds: ApprovalThresholds
   notes: string | null
@@ -302,6 +303,7 @@ export interface EngagementInput {
   notice_period_days?: number | null
   auto_renews?: boolean
   renewal_term_months?: number | null
+  billing_month_start_day?: number
   approval_thresholds?: ApprovalThresholds
   notes?: string | null
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
 import { formatDate } from '@/lib/documents/format'
+import { formatBillingPeriod } from '@/lib/engagements/periods'
 import DocumentPreviewDrawer from '@/components/os/engagements/DocumentPreviewDrawer'
 import type { EngagementDetail, EngagementLinkCounts } from '@/lib/db/engagements'
 import type { EngagementTouchpoint } from '@/lib/db/touchpoints'
@@ -278,7 +279,7 @@ export default function EngagementDetailClient({
   function requestOverage() {
     setReqType('hours_overage')
     setReqAmount(detail.hoursThisMonth.over > 0 ? detail.hoursThisMonth.over.toFixed(1) : '')
-    setReqDesc(`Hours overage: ${detail.hoursThisMonth.over.toFixed(1)}h over the ${e.included_hours_monthly ?? '—'}h monthly cap.`)
+    setReqDesc(`Hours overage: ${detail.hoursThisMonth.over.toFixed(1)}h over the ${e.included_hours_monthly ?? '—'}h monthly cap (${formatBillingPeriod(detail.hoursThisMonth.period, { year: true })}).`)
     setTab('Approvals')
   }
 
@@ -414,7 +415,7 @@ export default function EngagementDetailClient({
         {tab === 'Overview' ? (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
             <div className="card">
-              <div className="panel-section-title">This month — hours</div>
+              <div className="panel-section-title">Billing month hours · {formatBillingPeriod(hours.period)}</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span className="td-name">{hours.used.toFixed(1)}h / {hours.included ?? '—'}h</span>
                 <span className="td-mono" style={{ color: barColor }}>{pct}%</span>

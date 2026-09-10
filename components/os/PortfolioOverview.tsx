@@ -114,7 +114,7 @@ export default function PortfolioOverview({ data }: { data: PortfolioData }) {
       <div className="flex flex-wrap items-center gap-x-8 gap-y-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-5 py-4">
         <Stat value={counts.engagementsActive} label="Active engagements" />
         <Stat value={counts.projectsActive} label="Active projects" />
-        <Stat value={`${counts.hoursThisMonth}h`} label="Logged this month" />
+        <Stat value={`${counts.hoursThisMonth}h`} label="Logged this billing month" />
         {counts.overCap > 0 ? <Stat value={counts.overCap} label="Over allowance" tone="warn" /> : null}
       </div>
 

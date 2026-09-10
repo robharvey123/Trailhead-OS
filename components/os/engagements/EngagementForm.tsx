@@ -42,6 +42,8 @@ export default function EngagementForm({
   const [noticeDays, setNoticeDays] = useState(num(initial?.notice_period_days))
   const [autoRenews, setAutoRenews] = useState(initial?.auto_renews ?? false)
   const [renewalTerm, setRenewalTerm] = useState(num(initial?.renewal_term_months))
+  const initialStartDay = initial?.billing_month_start_day ?? 1
+  const [billingStartDay, setBillingStartDay] = useState(String(initialStartDay))
   const [hoursOverage, setHoursOverage] = useState(num(at?.hours_overage_hours) || '8')
   const [travelThreshold, setTravelThreshold] = useState(num(at?.travel_amount_gbp) || '250')
   const [slotting, setSlotting] = useState(at?.slotting_fees_required ?? true)
@@ -86,6 +88,9 @@ export default function EngagementForm({
         third_party_costs_required: thirdParty,
       },
     }
+    // Billing month start day (1-28). Sent only when changed, so saves never touch it otherwise.
+    const startDayNum = Math.min(28, Math.max(1, Math.trunc(Number(billingStartDay)) || 1))
+    if (startDayNum !== initialStartDay) body.billing_month_start_day = startDayNum
     // Only stamp status on create — editing must not silently re-activate a paused/terminated engagement.
     if (!isEdit) body.status = 'Active'
     try {
@@ -143,10 +148,14 @@ export default function EngagementForm({
             </label>
           </div>
         ) : null}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="block"><span className={label}>Currency</span><input className={input} value={currency} onChange={(e) => setCurrency(e.target.value)} /></label>
           <label className="block"><span className={label}>Start date *</span><input type="date" className={input} value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
           <label className="block"><span className={label}>End date</span><input type="date" className={input} value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
+          <label className="block" title="Hours and the monthly allowance roll over on this day. 1 = calendar month. Work before the start date counts in month one.">
+            <span className={label}>Billing month starts (day)</span>
+            <input type="number" min={1} max={28} className={input} value={billingStartDay} onChange={(e) => setBillingStartDay(e.target.value)} placeholder="1" />
+          </label>
         </div>
         <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block"><span className={label}>Notice period (days)</span><input type="number" className={input} value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} placeholder="30" /></label>

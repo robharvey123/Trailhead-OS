@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { toClientSafeTask, resolveTimeEntryDescription, type ClientSafeTask } from '@/lib/engagements/client-safe'
+import { billingPeriodStartFor, billingPeriodsTouching, entryDateLowerBound, formatBillingPeriod } from '@/lib/engagements/periods'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 async function getSupabase(client?: SupabaseClient) {
@@ -31,10 +32,11 @@ export type EngagementPeriodSpine = {
   unattributed: { count: number; hours: number }
   hours: {
     used_in_period: number
-    // One row per calendar month the period touches, so a week straddling a
-    // month end reports each month against its own allowance rather than
-    // collapsing to the month of periodEnd.
-    months: Array<{ month: string; used: number; included: number | null; over: number }>
+    // One row per BILLING month the period touches (anchored on the engagement's
+    // billing_month_start_day, e.g. 15 Aug to 14 Sep), so a week straddling a
+    // rollover reports each billing month against its own allowance. `month` is the
+    // display label; reports generated before billing months stored "YYYY-MM".
+    months: Array<{ month: string; period_start?: string; period_end?: string; used: number; included: number | null; over: number }>
   }
   tier1_movements: { account_name: string; gate: string; date: string }[]
   tier1_position: { account_name: string; gates_set: number; is_complete: boolean }[]
@@ -179,6 +181,8 @@ type EngRow = {
   code: string | null
   name: string
   included_hours_monthly: number | null
+  start_date: string | null
+  billing_month_start_day: number | null
   end_client_account_id: string | null
   billed_via_account_id: string | null
 }
@@ -194,7 +198,7 @@ export async function buildEngagementPeriodReport(
 
   const engQuery = supabase
     .from('engagements')
-    .select('id, code, name, included_hours_monthly, end_client_account_id, billed_via_account_id')
+    .select('id, code, name, included_hours_monthly, start_date, billing_month_start_day, end_client_account_id, billed_via_account_id')
   const { data: eng, error: engErr } = await (isUuid(engagementRef)
     ? engQuery.eq('id', engagementRef)
     : engQuery.eq('code', engagementRef)
@@ -203,11 +207,15 @@ export async function buildEngagementPeriodReport(
   if (!eng) throw new Error(`Engagement not found: ${engagementRef}`)
   const e = eng as EngRow
 
-  // Fetch time entries from the start of the period's first calendar month
-  // through periodEnd. That covers every month the period touches, bounded by
-  // periodEnd so the figures stay time-invariant (no hours logged after the
-  // period can move a past report).
-  const firstMonthStart = `${periodStart.slice(0, 7)}-01`
+  // Fetch time entries from the start of the first BILLING month the period touches
+  // through periodEnd. That covers every billing month the period touches, bounded
+  // by periodEnd so the figures stay time-invariant (no hours logged after the
+  // period can move a past report). When that first billing month is the
+  // engagement's month one, there is no lower bound: pre-start work counts there.
+  const touchedPeriods = billingPeriodsTouching(periodStart, periodEnd, e)
+  const entriesFrom = touchedPeriods[0]?.isFirst ? null : touchedPeriods[0]?.start ?? periodStart
+  // A period containing the start date also absorbs pre-start work into its total.
+  const periodFoldsPreStart = entryDateLowerBound(periodStart, periodEnd, e) === null
 
   // Client accounts for the Granola join. Empty in.() is a 400, so fall back to a
   // no-match sentinel when the engagement has neither account set.
@@ -221,13 +229,15 @@ export async function buildEngagementPeriodReport(
       .select('id, title, description, client_description, due_date, created_at')
       .eq('engagement_id', e.id)
       .eq('client_visible', true),
-    supabase
-      .from('time_entries')
-      .select('entry_date, duration_minutes, client_description, description, task:engagement_tasks(title, client_description)')
-      .eq('engagement_id', e.id)
-      .eq('is_running', false)
-      .gte('entry_date', firstMonthStart)
-      .lte('entry_date', periodEnd),
+    (() => {
+      const q = supabase
+        .from('time_entries')
+        .select('entry_date, duration_minutes, client_description, description, task:engagement_tasks(title, client_description)')
+        .eq('engagement_id', e.id)
+        .eq('is_running', false)
+        .lte('entry_date', periodEnd)
+      return entriesFrom ? q.gte('entry_date', entriesFrom) : q
+    })(),
     supabase
       .from('tier1_milestones')
       .select('account_id, range_review_decided_at, go_live_confirmed_at, first_po_received_at, is_complete, account:accounts(name)')
@@ -288,8 +298,10 @@ export async function buildEngagementPeriodReport(
   let unattributedMinutes = 0
   for (const r of entryRows) {
     const mins = r.duration_minutes ?? 0
-    monthUsed.set(r.entry_date.slice(0, 7), (monthUsed.get(r.entry_date.slice(0, 7)) ?? 0) + mins)
-    if (r.entry_date >= periodStart && r.entry_date <= periodEnd) {
+    const bucket = billingPeriodStartFor(r.entry_date, e)
+    monthUsed.set(bucket, (monthUsed.get(bucket) ?? 0) + mins)
+    const inPeriod = r.entry_date <= periodEnd && (r.entry_date >= periodStart || periodFoldsPreStart)
+    if (inPeriod) {
       periodMinutes += mins
       const task = Array.isArray(r.task) ? r.task[0] : r.task
       const attributed = resolveTimeEntryDescription({
@@ -305,17 +317,19 @@ export async function buildEngagementPeriodReport(
     }
   }
   const used_in_period = round2(periodMinutes / 60)
-  // Every calendar month from the period's first month to periodEnd's month.
-  const months: EngagementPeriodSpine['hours']['months'] = []
-  let cursor = `${periodStart.slice(0, 7)}-01`
-  const endMonth = periodEnd.slice(0, 7)
-  while (cursor.slice(0, 7) <= endMonth) {
-    const m = cursor.slice(0, 7)
-    const used = round2((monthUsed.get(m) ?? 0) / 60)
+  // Every billing month the period touches, in order.
+  const months: EngagementPeriodSpine['hours']['months'] = touchedPeriods.map((p) => {
+    const used = round2((monthUsed.get(p.start) ?? 0) / 60)
     const over = included_monthly != null ? round2(Math.max(0, used - included_monthly)) : 0
-    months.push({ month: m, used, included: included_monthly, over })
-    cursor = addDaysIso(addDaysIso(cursor, 32).slice(0, 7) + '-01', 0)
-  }
+    return {
+      month: formatBillingPeriod(p, { year: true }),
+      period_start: p.start,
+      period_end: p.end,
+      used,
+      included: included_monthly,
+      over,
+    }
+  })
 
   // Tier 1.
   type Tier1 = {

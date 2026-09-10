@@ -15,7 +15,7 @@ import {
   todayDate,
   TIME_ENTRY_SELECT,
 } from './cowork-api'
-import { engagementHoursThisMonth, addTier1Account, removeTier1Account } from '@/lib/db/engagements'
+import { engagementHoursThisMonth, currentPeriodHoursByEngagement, addTier1Account, removeTier1Account } from '@/lib/db/engagements'
 import { contributorRate, listContributors } from '@/lib/db/contributors'
 import { getMilestone, listMilestones, markMilestoneInvoiced, upsertMilestone } from '@/lib/db/tier1'
 import { createInvoice } from '@/lib/db/invoices'
@@ -76,6 +76,7 @@ type EngRow = {
   notice_period_days: number | null
   auto_renews: boolean | null
   renewal_term_months: number | null
+  billing_month_start_day?: number | null
   notice_date: string | null
   approval_thresholds: unknown
   notes: string | null
@@ -94,8 +95,13 @@ function num(value: number | string | null | undefined): number | null {
   return value == null ? null : Number(value)
 }
 
-function monthStartStr(d = new Date()): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+/** Billing month start day: integer 1-28 (1 = calendar month). */
+function parseBillingMonthStartDay(value: unknown): number {
+  const n = typeof value === 'string' && value.trim() !== '' ? Number(value) : value
+  if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > 28) {
+    throw new CoworkApiError('billing_month_start_day must be a whole number from 1 to 28', 400)
+  }
+  return n
 }
 
 // ── Parsers ────────────────────────────────────────────────────────────────
@@ -227,6 +233,7 @@ export function formatEngagement(e: EngRow) {
     notice_period_days: e.notice_period_days,
     auto_renews: Boolean(e.auto_renews),
     renewal_term_months: e.renewal_term_months,
+    billing_month_start_day: e.billing_month_start_day ?? 1,
     notice_date: e.notice_date ?? null,
     approval_thresholds: e.approval_thresholds ?? {},
     notes: e.notes,
@@ -272,22 +279,20 @@ export async function listEngagements(
   const ids = engagements.map((e) => e.id)
   if (ids.length === 0) return []
 
-  const monthStart = monthStartStr()
-  const [summaryRes, billingRes, hoursRes] = await Promise.all([
+  const [summaryRes, billingRes, hoursBy] = await Promise.all([
     supabaseService.from('tier1_milestone_summary').select('*').in('engagement_id', ids),
     supabaseService.from('engagement_billing_summary').select('*').in('engagement_id', ids),
-    supabaseService.from('engagement_hours_by_month').select('*').in('engagement_id', ids).eq('period_month', monthStart),
+    currentPeriodHoursByEngagement(engagements, svc),
   ])
   const summaryBy = new Map((summaryRes.data ?? []).map((s) => [s.engagement_id as string, s]))
   const billingBy = new Map((billingRes.data ?? []).map((b) => [b.engagement_id as string, b]))
-  const hoursBy = new Map((hoursRes.data ?? []).map((h) => [h.engagement_id as string, h]))
 
   return engagements.map((e) => {
     const base = formatEngagement(e)
     const summary = summaryBy.get(e.id) as { total_tracked?: number; completed?: number } | undefined
     const billing = billingBy.get(e.id) as { total_outstanding?: number | string } | undefined
-    const hours = hoursBy.get(e.id) as { hours_used?: number | string; hours_over?: number | string } | undefined
-    const used = Number(hours?.hours_used ?? 0)
+    const hours = hoursBy.get(e.id)
+    const used = hours?.used ?? 0
     return {
       id: base.id,
       code: base.code,
@@ -299,8 +304,10 @@ export async function listEngagements(
       end_date: base.end_date,
       retainer_amount_monthly: base.retainer_amount_monthly,
       included_hours_monthly: base.included_hours_monthly,
+      // "this month" = the current BILLING month (billing_month_start_day anchored).
+      billing_month: hours ? { start: hours.period.start, end: hours.period.end } : null,
       hours_used_this_month: Math.round(used * 100) / 100,
-      hours_over: Math.round(Number(hours?.hours_over ?? used - (base.included_hours_monthly ?? 0)) * 100) / 100,
+      hours_over: Math.round((hours?.over ?? used - (base.included_hours_monthly ?? 0)) * 100) / 100,
       tier1_complete: Number(summary?.completed ?? 0),
       tier1_tracked: Number(summary?.total_tracked ?? 0),
       outstanding_invoice_total: Number(billing?.total_outstanding ?? 0),
@@ -310,18 +317,17 @@ export async function listEngagements(
 
 export async function getEngagementDetail(ref: string) {
   const e = await getEngagementRow(ref)
-  const monthStart = monthStartStr()
-  const [contributors, hoursRes, summaryRes, billingRes, milestones, projectsRes] = await Promise.all([
+  const [contributors, hoursBy, summaryRes, billingRes, milestones, projectsRes] = await Promise.all([
     listContributors(e.id, svc),
-    supabaseService.from('engagement_hours_by_month').select('*').eq('engagement_id', e.id).eq('period_month', monthStart).limit(1),
+    currentPeriodHoursByEngagement([e], svc),
     supabaseService.from('tier1_milestone_summary').select('*').eq('engagement_id', e.id).maybeSingle(),
     supabaseService.from('engagement_billing_summary').select('*').eq('engagement_id', e.id).maybeSingle(),
     listMilestones(e.id, svc),
     supabaseService.from('projects').select('id, name, status').eq('engagement_id', e.id).order('created_at', { ascending: true }),
   ])
 
-  const hoursRow = (hoursRes.data ?? [])[0] as { hours_used?: number | string; billable_hours?: number | string } | undefined
-  const used = Number(hoursRow?.hours_used ?? 0)
+  const hoursRow = hoursBy.get(e.id)
+  const used = hoursRow?.used ?? 0
   const included = e.included_hours_monthly
   const summary = summaryRes.data as Record<string, number | string> | null
   const billing = billingRes.data as Record<string, number | string> | null
@@ -335,11 +341,14 @@ export async function getEngagementDetail(ref: string) {
       hourly_rate_gbp: Number(c.hourly_rate_gbp),
       is_active: c.is_active,
     })),
+    // Current BILLING month, anchored on billing_month_start_day (month one includes pre-start work).
     hours_this_month: {
+      period_start: hoursRow?.period.start ?? null,
+      period_end: hoursRow?.period.end ?? null,
       used: Math.round(used * 100) / 100,
       included,
       over: Math.round((used - (included ?? 0)) * 100) / 100,
-      billable: Math.round(Number(hoursRow?.billable_hours ?? 0) * 100) / 100,
+      billable: Math.round((hoursRow?.billable ?? 0) * 100) / 100,
     },
     tier1_summary: {
       total_tracked: Number(summary?.total_tracked ?? 0),
@@ -401,6 +410,10 @@ export async function createEngagement(body: Record<string, unknown>) {
     renewal_term_months: optionalNumber(body.renewal_term_months, 'renewal_term_months'),
     approval_thresholds: parseApprovalThresholds(body.approval_thresholds) ?? {},
     notes: optionalString(body.notes),
+    // Omitted unless supplied, so the column default (1 = calendar month) applies.
+    ...(body.billing_month_start_day !== undefined && body.billing_month_start_day !== null
+      ? { billing_month_start_day: parseBillingMonthStartDay(body.billing_month_start_day) }
+      : {}),
   }
 
   const { data, error } = await supabaseService.from('engagements').insert(insert).select(ENGAGEMENT_SELECT).single()
@@ -422,6 +435,7 @@ export const ENGAGEMENT_PATCH_FIELDS = [
   'notice_period_days',
   'auto_renews',
   'renewal_term_months',
+  'billing_month_start_day',
   'notes',
   'approval_thresholds',
   'start_date',
@@ -448,6 +462,7 @@ export async function updateEngagement(ref: string, body: Record<string, unknown
   if (body.notice_period_days !== undefined) patch.notice_period_days = optionalNumber(body.notice_period_days, 'notice_period_days')
   if (body.auto_renews !== undefined) patch.auto_renews = body.auto_renews === true
   if (body.renewal_term_months !== undefined) patch.renewal_term_months = optionalNumber(body.renewal_term_months, 'renewal_term_months')
+  if (body.billing_month_start_day !== undefined) patch.billing_month_start_day = parseBillingMonthStartDay(body.billing_month_start_day ?? 1)
   if (body.notes !== undefined) patch.notes = optionalString(body.notes)
   if (body.approval_thresholds !== undefined) patch.approval_thresholds = parseApprovalThresholds(body.approval_thresholds) ?? {}
 
@@ -750,11 +765,19 @@ export async function uploadEngagementDocument(
   return { document: doc as { id: string; title: string | null; file_name: string | null; mime_type: string | null; size_bytes: number | null; type: string; created_at: string }, engagement: { id: e.id, name: e.name } }
 }
 
-/** Current-month hours used vs included for an engagement (by uuid or code). */
+/** Current billing-month hours used vs included for an engagement (by uuid or code). */
 export async function engagementMonthUsage(ref: string) {
   const e = await getEngagementRow(ref)
-  const h = await engagementHoursThisMonth(e.id, e.included_hours_monthly, svc)
-  return { engagement_id: e.id, used: h.used, included: h.included, over: h.over, pct: h.pct }
+  const h = await engagementHoursThisMonth(e, svc)
+  return {
+    engagement_id: e.id,
+    period_start: h.period.start,
+    period_end: h.period.end,
+    used: h.used,
+    included: h.included,
+    over: h.over,
+    pct: h.pct,
+  }
 }
 
 // ── Time ─────────────────────────────────────────────────────────────────────
@@ -920,7 +943,7 @@ async function resolveRateSnapshot(opts: {
 /** Did the engagement pass its monthly included hours? Null if no cap / no engagement. */
 async function overageWarning(engagement: EngRow | null): Promise<{ over_by_hours: number; included: number } | null> {
   if (!engagement || engagement.included_hours_monthly == null) return null
-  const h = await engagementHoursThisMonth(engagement.id, engagement.included_hours_monthly, svc)
+  const h = await engagementHoursThisMonth(engagement, svc)
   if (h.over > 0) return { over_by_hours: Math.round(h.over * 100) / 100, included: engagement.included_hours_monthly }
   return null
 }

@@ -71,7 +71,7 @@ export default function EngagementsClient({
 
       <div className="stats-bar">
         <div className="stat-item"><div className="stat-label">Active engagements</div><div className="stat-value">{stats.active}</div></div>
-        <div className="stat-item"><div className="stat-label">MTD hours used</div><div className="stat-value" style={{ color: 'var(--accent)' }}>{stats.mtdHours.toFixed(1)}h</div></div>
+        <div className="stat-item"><div className="stat-label">Hours this billing month</div><div className="stat-value" style={{ color: 'var(--accent)' }}>{stats.mtdHours.toFixed(1)}h</div></div>
         <div className="stat-item"><div className="stat-label">MTD retainer</div><div className="stat-value" style={{ color: 'var(--emerald)' }}>{formatCurrency(stats.mtdRetainer, 'GBP')}</div></div>
         <div className="stat-item"><div className="stat-label">Tier-1 complete this month</div><div className="stat-value">{milestonesCompletedThisMonth}</div></div>
       </div>

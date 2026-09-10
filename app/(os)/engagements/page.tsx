@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { listEngagements } from '@/lib/db/engagements'
+import { currentPeriodHoursByEngagement, listEngagements } from '@/lib/db/engagements'
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementsClient from '@/components/os/engagements/EngagementsClient'
 
@@ -21,16 +21,15 @@ export default async function EngagementsPage() {
   if (!user) redirect('/login')
 
   const monthStart = monthStartISO()
-  const [engagements, hoursRows, milestonesThisMonth] = await Promise.all([
+  const [engagements, milestonesThisMonth] = await Promise.all([
     listEngagements({}, supabase).catch(() => []),
-    supabase.from('engagement_hours_by_month').select('engagement_id, hours_used').eq('period_month', monthStart),
     supabase.from('tier1_milestones').select('id', { count: 'exact', head: true }).gte('completed_at', `${monthStart}T00:00:00Z`),
   ])
 
+  // Each engagement's CURRENT billing month (its own start day, e.g. 15th to 14th).
+  const periodHours = await currentPeriodHoursByEngagement(engagements, supabase).catch(() => new Map())
   const hoursMap: Record<string, number> = {}
-  for (const r of (hoursRows.data ?? []) as Array<{ engagement_id: string; hours_used: number }>) {
-    hoursMap[r.engagement_id] = Number(r.hours_used) || 0
-  }
+  for (const [id, h] of periodHours) hoursMap[id] = h.used
 
   return (
     <div className={`thmock ${mockupFontVars}`}>

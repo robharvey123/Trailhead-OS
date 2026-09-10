@@ -3,18 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import { getAccounts } from '@/lib/db/accounts'
 import { getProjects } from '@/lib/db/projects'
 import { getRunningTimer } from '@/lib/db/timesheet'
-import { listEngagements } from '@/lib/db/engagements'
+import { currentPeriodHoursByEngagement, listEngagements } from '@/lib/db/engagements'
 import { listPeople, getPersonByAuthUser } from '@/lib/db/people'
 import { mockupFontVars } from '@/lib/fonts'
 import TimesheetClient, { type EngagementOption } from '@/components/os/TimesheetClient'
 
 export const metadata = {
   title: 'Timesheet | Trailhead OS',
-}
-
-function monthStartISO() {
-  const d = new Date()
-  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0]
 }
 
 export default async function TimesheetPage() {
@@ -27,13 +22,11 @@ export default async function TimesheetPage() {
     redirect('/login')
   }
 
-  const monthStart = monthStartISO()
-  const [accounts, projects, runningTimer, engagements, hoursRows, people, ownPerson, taskRows] = await Promise.all([
+  const [accounts, projects, runningTimer, engagements, people, ownPerson, taskRows] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getProjects({}, supabase).catch(() => []),
     getRunningTimer(supabase).catch(() => null),
     listEngagements({ status: 'Active' }, supabase).catch(() => []),
-    supabase.from('engagement_hours_by_month').select('engagement_id, hours_used').eq('period_month', monthStart),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
     getPersonByAuthUser(user.id, supabase).catch(() => null),
     // Open engagement tasks for the optional task picker (filtered client-side by engagement).
@@ -46,17 +39,15 @@ export default async function TimesheetPage() {
       .limit(500),
   ])
 
-  const hoursMap: Record<string, number> = {}
-  for (const r of (hoursRows.data ?? []) as Array<{ engagement_id: string; hours_used: number }>) {
-    hoursMap[r.engagement_id] = Number(r.hours_used) || 0
-  }
+  // Current billing month per engagement (its own start day, e.g. 15th to 14th).
+  const periodHours = await currentPeriodHoursByEngagement(engagements, supabase).catch(() => new Map())
 
   const engagementOptions: EngagementOption[] = engagements.map((e) => ({
     id: e.id,
     name: e.name,
     included_hours_monthly: e.included_hours_monthly,
     account_id: e.end_client_account_id,
-    hours_used_mtd: hoursMap[e.id] ?? 0,
+    hours_used_mtd: periodHours.get(e.id)?.used ?? 0,
     is_billable: e.is_billable,
   }))
 
