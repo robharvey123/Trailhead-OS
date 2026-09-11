@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
 import { formatDate } from '@/lib/documents/format'
@@ -13,6 +13,9 @@ import type { EngagementTouchpoint } from '@/lib/db/touchpoints'
 import ConfirmDialog from '@/components/os/ConfirmDialog'
 import EngagementForm from '@/components/os/engagements/EngagementForm'
 import TouchpointTimeline from '@/components/os/TouchpointTimeline'
+import TimeLedger from '@/components/time/TimeLedger'
+import StartTimerButton from '@/components/time/StartTimerButton'
+import LogTimeButton from '@/components/time/LogTimeButton'
 import WhatsAppTimeline from '@/components/os/WhatsAppTimeline'
 import type { WhatsAppConversationWithMessages } from '@/lib/types'
 import {
@@ -24,7 +27,7 @@ import {
   type EngagementStatus,
   type Person,
   type Tier1MilestoneWithAccount,
-  type TimeEntry,
+  type TimeEntryLedgerRow,
 } from '@/lib/types'
 
 type Named = { id: string; name: string }
@@ -38,11 +41,6 @@ const APPROVAL_STATUS_CLASS: Record<string, string> = {
 const STATUS_CLASS: Record<string, string> = {
   Active: 'status-active', Draft: 'status-on_hold', Paused: 'status-contacted',
   Completed: 'status-listed', Terminated: 'status-declined',
-}
-
-function fmtDur(min: number) {
-  const h = Math.floor(min / 60), m = min % 60
-  return h > 0 ? `${h}h ${m}m` : `${m}m`
 }
 
 // Delegates to the shared formatter, which handles both date-only values
@@ -79,7 +77,7 @@ export default function EngagementDetailClient({
   whatsappConversations = [],
 }: {
   detail: EngagementDetail
-  timeEntries: TimeEntry[]
+  timeEntries: TimeEntryLedgerRow[]
   projects: Array<{ id: string; name: string; status: string }>
   accounts: Named[]
   documents?: EngagementDoc[]
@@ -91,8 +89,13 @@ export default function EngagementDetailClient({
   whatsappConversations?: WhatsAppConversationWithMessages[]
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const e = detail.engagement
-  const [tab, setTab] = useState<Tab>('Overview')
+  // /engagements/[id]?tab=Time&period=2026-08-15 deep-links a billing month
+  // (the hours-by-engagement report links here).
+  const initialTab = (TABS as readonly string[]).includes(searchParams.get('tab') ?? '') ? (searchParams.get('tab') as Tab) : 'Overview'
+  const initialPeriod = searchParams.get('period')
+  const [tab, setTab] = useState<Tab>(initialTab)
   const [milestones, setMilestones] = useState<Tier1MilestoneWithAccount[]>(detail.tier1)
   const [error, setError] = useState('')
   const [addAccountId, setAddAccountId] = useState('')
@@ -479,38 +482,32 @@ export default function EngagementDetailClient({
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/reports`}>Reports</Link>
-                  <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/reports`}>Reports</Link>
                   <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/tasks`}>Task board</Link>
-                  <Link className="btn btn-ghost btn-sm" href={`/timesheet`}>+ Log time on this engagement</Link>
+                  <StartTimerButton engagementId={e.id} accountId={e.end_client_account_id} />
+                  <LogTimeButton engagementId={e.id} label="+ Log time on this engagement" />
                 </div>
               </div>
             </div>
           </div>
         ) : null}
 
-        {/* TIME */}
+        {/* TIME — the shared ledger: billing-month grouping, filters, inline logging. */}
         {tab === 'Time' ? (
-          <div>
-            {timeEntries.length === 0 ? <div className="empty">No time logged on this engagement yet.</div> : (
-              <div className="overflow-x-auto">
-              <table className="data-table">
-                <thead><tr><th>Date</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th></th></tr></thead>
-                <tbody>
-                  {[...timeEntries]
-                    .sort((a, b) => b.entry_date.localeCompare(a.entry_date))
-                    .map((t) => (
-                      <tr key={t.id}>
-                        <td className="td-mono">{fmtDate(t.entry_date)}</td>
-                        <td>{t.description ?? '—'}</td>
-                        <td style={{ textAlign: 'right' }} className="td-mono">{fmtDur(t.duration_minutes)}</td>
-                        <td><span className={`pill ${t.billable ? 'billable' : 'nonbill'}`}>{t.billable ? 'Billable' : 'Non-bill'}</span></td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-              </div>
-            )}
-          </div>
+          <TimeLedger
+            rows={timeEntries}
+            scope={{ engagement_id: e.id }}
+            engagement={{
+              id: e.id,
+              code: e.code ?? null,
+              name: e.name,
+              included_hours_monthly: e.included_hours_monthly,
+              end_client_account_id: e.end_client_account_id,
+              start_date: e.start_date,
+              billing_month_start_day: e.billing_month_start_day ?? 1,
+            }}
+            hoursThisMonth={detail.hoursThisMonth}
+            initialPeriod={initialPeriod}
+          />
         ) : null}
 
         {/* CONTRIBUTORS */}

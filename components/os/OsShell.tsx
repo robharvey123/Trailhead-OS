@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import CommandPalette from './CommandPalette'
+import TimerProvider from '@/components/time/TimerProvider'
 import PushPromptBanner from '@/components/notifications/PushPromptBanner'
 
 interface OsShellProps {
@@ -69,10 +70,11 @@ export default function OsShell({
   }
 
   return (
-    // `data-sidebar` drives --os-sidebar-w (globals.css), which both the sidebar
+    <TimerProvider>
+    {/* `data-sidebar` drives --os-sidebar-w (globals.css), which both the sidebar
     // rail and <main>'s left padding read. Snapping it beats transitioning it:
-    // width/padding are layout properties, so the old 300ms transition reflowed
-    // the whole document every frame of a toggle.
+        width/padding are layout properties, so the old 300ms transition reflowed
+        the whole document every frame of a toggle. */}
     <div
       className="os-shell min-h-screen bg-[#F1F5F9] text-[#0F172A]"
       data-sidebar={collapsed ? 'collapsed' : 'expanded'}
@@ -107,5 +109,6 @@ export default function OsShell({
       <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
       {userId ? <PushPromptBanner userId={userId} /> : null}
     </div>
+    </TimerProvider>
   )
 }

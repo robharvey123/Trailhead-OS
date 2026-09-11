@@ -13,28 +13,33 @@ function formatHours(minutes: number) {
 
 export default function UnbilledTimeWidget({
   accountId,
+  engagementId,
   onSelect,
 }: {
   accountId: string
+  engagementId?: string
   onSelect?: (selected: UnbilledTimeGroup[]) => void
 }) {
   const [groups, setGroups] = useState<UnbilledTimeGroup[]>([])
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set())
-  const [loading, setLoading] = useState(Boolean(accountId))
+  const [loading, setLoading] = useState(Boolean(accountId || engagementId))
   const [fetchKey, setFetchKey] = useState(0)
 
-  // Each group is keyed by its project (null project → 'general').
-  const keyOf = (g: UnbilledTimeGroup) => g.project_id ?? 'general'
+  // Groups are engagement › project.
+  const keyOf = (g: UnbilledTimeGroup) => `${g.engagement_id ?? 'none'}|${g.project_id ?? 'general'}`
 
   useEffect(() => {
     setFetchKey((k) => k + 1)
-  }, [accountId])
+  }, [accountId, engagementId])
 
   const fetchGroups = useCallback(async () => {
-    if (!accountId) return
+    if (!accountId && !engagementId) return
 
     try {
-      const res = await fetch(`/api/timesheet/unbilled?account_id=${encodeURIComponent(accountId)}`)
+      const params = new URLSearchParams()
+      if (accountId) params.set('account_id', accountId)
+      if (engagementId) params.set('engagement_id', engagementId)
+      const res = await fetch(`/api/timesheet/unbilled?${params}`)
       const data = await res.json()
       setGroups(data.groups ?? [])
       setSelectedKeys(new Set())
@@ -43,7 +48,7 @@ export default function UnbilledTimeWidget({
     } finally {
       setLoading(false)
     }
-  }, [accountId])
+  }, [accountId, engagementId])
 
   useEffect(() => {
     fetchGroups()
@@ -123,7 +128,10 @@ export default function UnbilledTimeWidget({
                 onChange={() => toggleGroup(key)}
                 className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
               />
-              <span className="flex-1 text-sm text-[color:var(--text-2)]">{group.project_name}</span>
+              <span className="flex-1 text-sm text-[color:var(--text-2)]">
+                {group.engagement_code ? <span className="font-medium">{group.engagement_code} › </span> : null}
+                {group.project_name}
+              </span>
               <span className="text-xs text-[color:var(--text-3)]">
                 {formatHours(group.minutes)}h @ {formatMoney(group.rate)}/h
               </span>

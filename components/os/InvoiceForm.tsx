@@ -71,6 +71,7 @@ export default function InvoiceForm({
   workstreams,
   initialInvoice,
   initialAccountId = '',
+  initialEngagementId = '',
   vatRegistered = true,
   defaultPaymentTermsDays = 14,
 }: {
@@ -79,6 +80,8 @@ export default function InvoiceForm({
   workstreams: Workstream[]
   initialInvoice?: Invoice
   initialAccountId?: string
+  /** Scopes the unbilled-time widget to one engagement (from ?engagement_id=). */
+  initialEngagementId?: string
   vatRegistered?: boolean
   defaultPaymentTermsDays?: number
 }) {
@@ -801,10 +804,11 @@ export default function InvoiceForm({
         ) : null}
       </div>
 
-      {/* Unbilled time and expenses for this account */}
-      {accountId && (
+      {/* Unbilled time and expenses for this account / engagement */}
+      {(accountId || initialEngagementId) && (
         <UnbilledTimeWidget
           accountId={accountId}
+          engagementId={initialEngagementId || undefined}
           onSelect={handleTimeSelected}
         />
       )}

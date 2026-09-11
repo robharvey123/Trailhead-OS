@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getAccounts } from '@/lib/db/accounts'
 import { getProjects } from '@/lib/db/projects'
-import { getRunningTimer } from '@/lib/db/timesheet'
 import { currentPeriodHoursByEngagement, listEngagements } from '@/lib/db/engagements'
 import { listPeople, getPersonByAuthUser } from '@/lib/db/people'
 import { mockupFontVars } from '@/lib/fonts'
@@ -22,18 +21,16 @@ export default async function TimesheetPage() {
     redirect('/login')
   }
 
-  const [accounts, projects, runningTimer, engagements, people, ownPerson, taskRows] = await Promise.all([
+  const [accounts, projects, engagements, people, ownPerson, taskRows] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getProjects({}, supabase).catch(() => []),
-    getRunningTimer(supabase).catch(() => null),
     listEngagements({ status: 'Active' }, supabase).catch(() => []),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
     getPersonByAuthUser(user.id, supabase).catch(() => null),
-    // Open engagement tasks for the optional task picker (filtered client-side by engagement).
+    // Open engagement tasks for the pickers (filtered client-side by engagement/project).
     supabase
       .from('engagement_tasks')
-      .select('id, title, engagement_id')
-      .not('engagement_id', 'is', null)
+      .select('id, title, engagement_id, project_id')
       .not('status', 'in', '(done,cancelled)')
       .order('updated_at', { ascending: false })
       .limit(500),
@@ -55,11 +52,10 @@ export default async function TimesheetPage() {
     <div className={`thmock ${mockupFontVars}`}>
       <TimesheetClient
         accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
-        projects={projects.map((p) => ({ id: p.id, name: p.name, account_id: p.account_id ?? null }))}
-        initialTimer={runningTimer}
+        projects={projects.map((p) => ({ id: p.id, name: p.name, account_id: p.account_id ?? null, engagement_id: p.engagement_id ?? null }))}
         engagements={engagementOptions}
         people={people.map((p) => ({ id: p.id, name: p.full_name }))}
-        tasks={(taskRows.data ?? []) as Array<{ id: string; title: string; engagement_id: string | null }>}
+        tasks={(taskRows.data ?? []) as Array<{ id: string; title: string; engagement_id: string | null; project_id: string | null }>}
         defaultPersonId={ownPerson?.id ?? null}
       />
     </div>

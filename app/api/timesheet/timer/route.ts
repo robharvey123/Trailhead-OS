@@ -1,5 +1,6 @@
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import * as timesheet from '@/lib/db/timesheet'
+import { TimeLinkConflict } from '@/lib/time/links'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
         engagement_id: body.engagement_id,
         task_id: body.task_id,
         description: body.description,
+        billable: typeof body.billable === 'boolean' ? body.billable : null,
       },
       supabase
     )
@@ -43,6 +45,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ timer }, { status: 201 })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to start timer'
-    return NextResponse.json({ error: message }, { status: 500 })
+    const status = error instanceof TimeLinkConflict ? 409 : /not found/i.test(message) ? 404 : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }

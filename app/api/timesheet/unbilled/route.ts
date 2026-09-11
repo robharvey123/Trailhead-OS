@@ -6,16 +6,20 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const accountId = searchParams.get('account_id')
+    const engagementId = searchParams.get('engagement_id')
 
-    if (!accountId) {
+    if (!accountId && !engagementId) {
       return NextResponse.json(
-        { error: 'account_id is required' },
+        { error: 'account_id or engagement_id is required' },
         { status: 400 }
       )
     }
 
     const supabase = await createClient()
-    const groups = await getInvoiceableSummary(accountId, supabase)
+    const groups = await getInvoiceableSummary(
+      { account_id: accountId || undefined, engagement_id: engagementId || undefined },
+      supabase
+    )
 
     return NextResponse.json({ groups })
   } catch (err) {

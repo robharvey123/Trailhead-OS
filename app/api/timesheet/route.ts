@@ -1,5 +1,6 @@
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import * as timesheet from '@/lib/db/timesheet'
+import { TimeLinkConflict } from '@/lib/time/links'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -19,10 +20,15 @@ export async function GET(request: NextRequest) {
     const limit = url.searchParams.get('limit') ? parseInt(url.searchParams.get('limit')!) : 50
     const offset = url.searchParams.get('offset') ? parseInt(url.searchParams.get('offset')!) : 0
 
+    const billed = url.searchParams.get('billed')
     const entries = await timesheet.listTimeEntries(
       {
         account_id: accountId || undefined,
         project_id: projectId || undefined,
+        engagement_id: url.searchParams.get('engagement_id') || undefined,
+        task_id: url.searchParams.get('task_id') || undefined,
+        person_id: url.searchParams.get('person_id') || undefined,
+        billed: billed === 'true' ? true : billed === 'false' ? false : undefined,
         date_from: dateFrom || undefined,
         date_to: dateTo || undefined,
         billable: billable === 'true' ? true : billable === 'false' ? false : undefined,
@@ -68,6 +74,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ entry }, { status: 201 })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create time entry'
-    return NextResponse.json({ error: message }, { status: 500 })
+    const status = error instanceof TimeLinkConflict ? 409 : /not found/i.test(message) ? 404 : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }

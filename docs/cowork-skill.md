@@ -195,7 +195,7 @@ PATCH /api/cowork/engagements/[id]/milestones/[accountId] — { "gate": "range_r
 POST /api/cowork/engagements/[id]/milestones/[accountId]/invoice — raise the Tier-1 performance-fee invoice.
 
 GET /api/cowork/time — filters: engagement (code/uuid), project, from, to, billable. Returns entries + a summary (hours, billable, amount, month vs cap).
-POST /api/cowork/time — { "duration_minutes": required, one of "engagement_id"/"project_id"/"task_id" required, "entry_date": "YYYY-MM-DD (default today)", "description", "billable", "rate_snapshot", "account_id" }. Rate is snapshotted automatically; response carries a `warning` block if it crosses the monthly cap.
+POST /api/cowork/time — { "duration_minutes": required, one of "engagement_id"/"project_id"/"task_id" required, "entry_date": "YYYY-MM-DD (default today)", "description", "billable", "rate_snapshot", "account_id" }. Links are DERIVED: a task fills its engagement + project, a project fills its engagement + account, an engagement fills its end-client account — so a task_id alone produces a fully linked entry (a contradicting engagement_id is a 409). billable defaults from the engagement (internal engagements log non-billable). Rate is snapshotted automatically (explicit → contributor → project → account default; response says `rate_source`); a `warning` block appears if it crosses the monthly cap.
 
 ### Touchpoints (interactions: calls, emails, meetings, notes)
 

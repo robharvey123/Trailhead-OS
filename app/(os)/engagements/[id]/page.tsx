@@ -23,7 +23,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
   if (!detail) notFound()
 
   const [timeEntries, projectsRes, accounts, docsRes, linkCounts, contributors, people, touchpoints, whatsappConversations] = await Promise.all([
-    listTimeEntries({ engagement_id: id, limit: 300 }, supabase).catch(() => []),
+    listTimeEntries({ engagement_id: id, limit: 2000 }, supabase).catch(() => []),
     supabase.from('projects').select('id, name, status').eq('engagement_id', id),
     getAccounts({}, supabase).catch(() => []),
     supabase.from('engagement_documents').select('id, type, title, week_start, created_at, file_path, file_name, mime_type, size_bytes').eq('engagement_id', id).order('created_at', { ascending: false }),

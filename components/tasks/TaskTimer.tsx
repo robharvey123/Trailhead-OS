@@ -1,7 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+// Task-card timer, now a thin skin over the global TimerProvider: starting here
+// lights the TimerBar on every OS page, and the server resolver fills the
+// account (and anything else derivable) on the entry.
+
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTimer } from '@/components/time/TimerProvider'
 import type { TimeEntry } from '@/lib/types'
 
 /** Live HH:MM:SS for a running timer. */
@@ -24,74 +29,38 @@ export default function TaskTimer({
   taskId,
   projectId,
   engagementId,
-  initialRunning,
   loggedMinutes,
 }: {
   taskId: string
   projectId: string | null
   engagementId: string | null
-  initialRunning: TimeEntry | null
+  /** Kept for callers that still pass it; the provider is the source of truth. */
+  initialRunning?: TimeEntry | null
   loggedMinutes: number
 }) {
   const router = useRouter()
-  const [running, setRunning] = useState<TimeEntry | null>(initialRunning)
-  const [now, setNow] = useState(() => Date.now())
-  const [busy, setBusy] = useState(false)
+  const { running, elapsedSeconds, busy, start, stop } = useTimer()
   const [error, setError] = useState('')
-  const tick = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const onThisTask = running?.task_id === taskId
   const elsewhere = running != null && !onThisTask
 
-  // Tick every second only while OUR task's timer is live.
-  useEffect(() => {
-    if (onThisTask && running?.start_at) {
-      setNow(Date.now())
-      tick.current = setInterval(() => setNow(Date.now()), 1000)
-      return () => { if (tick.current) clearInterval(tick.current) }
-    }
-  }, [onThisTask, running?.start_at])
-
-  const elapsedSeconds = onThisTask && running?.start_at ? (now - new Date(running.start_at).getTime()) / 1000 : 0
-
-  async function start() {
-    setBusy(true); setError('')
+  async function onStart() {
+    setError('')
     try {
-      const res = await fetch('/api/timesheet/timer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task_id: taskId, project_id: projectId, engagement_id: engagementId }),
-      })
-      const json = await res.json()
-      if (!res.ok) { setError(json.error || 'Could not start the timer.'); return }
-      // startTimer returns the existing running timer if one was already going,
-      // which may belong to another task — the UI reflects that.
-      setRunning(json.timer as TimeEntry)
+      await start({ task_id: taskId, project_id: projectId, engagement_id: engagementId })
       router.refresh()
-    } catch {
-      setError('Could not start the timer.')
-    } finally {
-      setBusy(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not start the timer.')
     }
   }
 
-  async function stop() {
-    if (!running) return
-    setBusy(true); setError('')
+  async function onStop() {
+    setError('')
     try {
-      const res = await fetch(`/api/timesheet/timer/${running.id}/stop`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      })
-      const json = await res.json()
-      if (!res.ok) { setError(json.error || 'Could not stop the timer.'); return }
-      setRunning(null)
-      router.refresh()
-    } catch {
-      setError('Could not stop the timer.')
-    } finally {
-      setBusy(false)
+      await stop()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not stop the timer.')
     }
   }
 
@@ -105,16 +74,16 @@ export default function TaskTimer({
       {onThisTask ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <span className="td-mono" style={{ fontSize: 20, color: 'var(--accent)' }}>{fmtElapsed(elapsedSeconds)}</span>
-          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)', borderColor: 'var(--red)' }} onClick={stop} disabled={busy}>
+          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)', borderColor: 'var(--red)' }} onClick={() => void onStop()} disabled={busy}>
             {busy ? 'Stopping…' : '■ Stop'}
           </button>
         </div>
       ) : elsewhere ? (
         <p style={{ fontSize: 12, color: 'var(--text-3)' }}>
-          A timer is already running on another task. Stop it there before timing this one.
+          A timer is already running on another task. Stop it from the bar above before timing this one.
         </p>
       ) : (
-        <button className="btn btn-primary btn-sm" onClick={start} disabled={busy} style={{ justifySelf: 'start' }}>
+        <button className="btn btn-primary btn-sm" onClick={() => void onStart()} disabled={busy} style={{ justifySelf: 'start' }}>
           {busy ? 'Starting…' : '▶ Start timer'}
         </button>
       )}

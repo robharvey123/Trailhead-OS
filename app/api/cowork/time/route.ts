@@ -10,6 +10,8 @@ import {
 } from '@/lib/cowork-api'
 import { engagementMonthUsage, getEngagementRow, logTime } from '@/lib/cowork-engagements'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
+import { summariseTime } from '@/lib/time/summary'
+import type { TimeEntryLedgerRow } from '@/lib/types'
 import { supabaseService } from '@/lib/supabase/service'
 
 // GET /api/cowork/time — list completed entries with a summary.
@@ -49,15 +51,35 @@ export async function GET(request: NextRequest) {
     if (error) throw error
 
     const entries = (data ?? []).map((row) => formatTimeEntry(row as never))
-    const totalMinutes = entries.reduce((s, e) => s + e.duration_minutes, 0)
-    const billableMinutes = entries.filter((e) => e.billable).reduce((s, e) => s + e.duration_minutes, 0)
-    const amount = entries.reduce((s, e) => s + e.amount, 0)
-
+    // One set of maths (lib/time/summary) over ledger-shaped rows.
+    const ledgerRows = entries.map(
+      (e) =>
+        ({
+          id: e.id,
+          entry_date: e.entry_date,
+          duration_minutes: e.duration_minutes,
+          billable: e.billable,
+          billed: e.billed,
+          rate_snapshot: e.rate_snapshot,
+          engagement_id: e.engagement?.id ?? null,
+          project_id: e.project?.id ?? null,
+          task_id: e.task_id ?? null,
+          person_id: null,
+          engagement: e.engagement ? { id: e.engagement.id, code: e.engagement.code, name: e.engagement.name } : null,
+          project: e.project,
+          task: e.task,
+          person: null,
+        }) as unknown as TimeEntryLedgerRow
+    )
+    const s = summariseTime(ledgerRows)
     const summary: Record<string, unknown> = {
-      entry_count: entries.length,
-      total_hours: Math.round((totalMinutes / 60) * 100) / 100,
-      billable_hours: Math.round((billableMinutes / 60) * 100) / 100,
-      amount: Math.round(amount * 100) / 100,
+      entry_count: s.entry_count,
+      total_hours: s.total_hours,
+      billable_hours: s.billable_hours,
+      amount: s.amount,
+      unbilled_amount: s.unbilled_amount,
+      by_project: s.by_project,
+      by_person: s.by_person,
     }
     if (engagement) {
       const usage = await engagementMonthUsage(engagement.id)

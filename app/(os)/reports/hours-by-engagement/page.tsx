@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { hoursByEngagement } from '@/lib/db/reports'
-import { formatCurrency } from '@/lib/format'
 import { mockupFontVars } from '@/lib/fonts'
+import HoursByEngagementClient from '@/components/reports/HoursByEngagementClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,10 +27,6 @@ export default async function HoursByEngagementPage({
   const to = sp.to || def.to
 
   const rows = await hoursByEngagement(from, to, supabase).catch(() => [])
-  const totals = rows.reduce(
-    (a, r) => ({ hours: a.hours + r.total_hours, billable: a.billable + r.billable_hours, cost: a.cost + r.total_cost }),
-    { hours: 0, billable: 0, cost: 0 }
-  )
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -45,44 +40,7 @@ export default async function HoursByEngagementPage({
           </form>
         </div>
 
-        <div style={{ padding: 24 }}>
-          {rows.length === 0 ? (
-            <div className="empty">No time logged in this range.</div>
-          ) : (
-            <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Engagement</th>
-                  <th style={{ textAlign: 'right' }}>Total hours</th>
-                  <th style={{ textAlign: 'right' }}>Billable hours</th>
-                  <th style={{ textAlign: 'right' }}>Total cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr key={r.engagement_id ?? 'none'}>
-                    <td className="td-name">
-                      {r.engagement_id ? <Link href={`/engagements/${r.engagement_id}`}>{r.engagement_name}</Link> : r.engagement_name}
-                    </td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{r.total_hours.toFixed(1)}h</td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{r.billable_hours.toFixed(1)}h</td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{formatCurrency(r.total_cost, 'GBP')}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td className="total-label">Total</td>
-                  <td className="total-val" style={{ textAlign: 'right' }}>{totals.hours.toFixed(1)}h</td>
-                  <td className="total-val" style={{ textAlign: 'right' }}>{totals.billable.toFixed(1)}h</td>
-                  <td className="total-amount" style={{ textAlign: 'right' }}>{formatCurrency(totals.cost, 'GBP')}</td>
-                </tr>
-              </tfoot>
-            </table>
-            </div>
-          )}
-        </div>
+        <HoursByEngagementClient rows={rows} />
       </div>
     </div>
   )

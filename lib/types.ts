@@ -1260,10 +1260,22 @@ export interface UnbilledTimeGroup {
   project_id: string | null
   project_name: string
   engagement_id: string | null
+  engagement_code: string | null
+  engagement_name: string | null
   minutes: number
   amount: number
   rate: number
   entry_ids: string[]
+}
+
+/** A time entry with the relations the shared ledger renders. */
+export interface TimeEntryLedgerRow extends TimeEntry {
+  project?: { id: string; name: string } | null
+  task?: { id: string; title: string } | null
+  person?: { id: string; full_name: string } | null
+  engagement?: { id: string; code: string | null; name: string } | null
+  account?: { id: string; name: string } | null
+  invoice?: { id: string; invoice_number: string } | null
 }
 
 export interface RunningTimer extends TimeEntry {

@@ -353,7 +353,7 @@ export const getEngagementTool = defineTool({
 
 export const logTimeTool = defineTool({
   name: 'log_time',
-  description: 'Log completed time against an engagement, project or delivery ticket (engagement_tasks). Pass task_id to attribute the entry to a ticket — the engagement and project are derived from the ticket automatically (a task_id whose engagement conflicts with an explicit engagement_id is rejected). Snapshots a rate; warns if it takes the engagement past its monthly cap. e.g. "log 90 minutes on the Bestway pitch".',
+  description: 'Log completed time against an engagement, project or delivery ticket (engagement_tasks). Account and project are DERIVED automatically (task → engagement + project → account), so pass only what you know — a task_id alone produces a fully linked entry. A task_id whose engagement conflicts with an explicit engagement_id is rejected. billable defaults from the engagement (internal engagements log non-billable). Snapshots a rate (explicit → contributor → project → account default); warns if it takes the engagement past its monthly cap. e.g. "log 90 minutes on the Bestway pitch".',
   inputSchema: z.object({
     engagement_id: z.string().optional(),
     project_id: z.string().optional(),

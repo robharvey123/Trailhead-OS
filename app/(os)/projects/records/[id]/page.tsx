@@ -3,7 +3,9 @@ import Link from 'next/link'
 import { getProjectById } from '@/lib/db/projects'
 import { listEngagements } from '@/lib/db/engagements'
 import { listProjectTasks } from '@/lib/db/engagement-tasks'
+import { getTasksTimeTotals, listTimeEntries } from '@/lib/db/timesheet'
 import { listPeople } from '@/lib/db/people'
+import TimeLedger, { type TimeLedgerEngagement } from '@/components/time/TimeLedger'
 import { createClient } from '@/lib/supabase/server'
 import EngagementTasksClient from '@/app/(os)/engagements/[id]/tasks/EngagementTasksClient'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
@@ -55,10 +57,23 @@ export default async function ProjectDetailPage({
     .eq('project_id', id)
     .not('status', 'in', '(done,cancelled)')
 
-  const [projectTasks, taskPeople] = await Promise.all([
+  const [projectTasks, taskPeople, projectTime] = await Promise.all([
     listProjectTasks(id, supabase).catch(() => []),
     listPeople({ activeOnly: true }, supabase).catch(() => []),
+    listTimeEntries({ project_id: id, limit: 2000 }, supabase).catch(() => []),
   ])
+  const minutesByTask = await getTasksTimeTotals(projectTasks.map((t) => t.id), supabase).catch(() => ({}))
+
+  // Ledger context: the linked engagement's billing months, or calendar months.
+  let ledgerEngagement: TimeLedgerEngagement | null = null
+  if (project.engagement_id) {
+    const { data: engRow } = await supabase
+      .from('engagements')
+      .select('id, code, name, included_hours_monthly, end_client_account_id, start_date, billing_month_start_day')
+      .eq('id', project.engagement_id)
+      .maybeSingle()
+    ledgerEngagement = (engRow as TimeLedgerEngagement | null) ?? null
+  }
 
   // Milestone dependents = tasks soft-linked via custom_fields.milestone_id (no FK).
   const milestoneDependentCounts: Record<string, number> = {}
@@ -116,6 +131,22 @@ export default async function ProjectDetailPage({
       </div>
 
       <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
+        <div className="panel" style={{ overflow: 'hidden' }}>
+          <div className="panel-section-title" style={{ padding: '16px 20px 0' }}>Time</div>
+          <TimeLedger
+            rows={projectTime}
+            scope={{ project_id: id, engagement_id: project.engagement_id ?? undefined }}
+            engagement={ledgerEngagement}
+            noEngagementNote={
+              project.engagement_id
+                ? null
+                : "Time on this project won't count against any engagement allowance. Link an engagement in the status panel."
+            }
+          />
+        </div>
+      </div>
+
+      <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
         <div className="panel" style={{ padding: 20 }}>
           <div className="panel-section-title">Tasks</div>
           {project.engagement_id ? (
@@ -123,6 +154,7 @@ export default async function ProjectDetailPage({
               engagementId={project.engagement_id}
               projectId={id}
               initialTasks={projectTasks}
+              minutesByTask={minutesByTask}
               people={taskPeople.map((p) => ({ id: p.id, name: p.full_name }))}
               backHref={`/projects/records/${id}`}
             />

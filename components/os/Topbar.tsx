@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import TimerBar from '@/components/time/TimerBar'
 
 /**
  * The OS had no top chrome at all, so every page invented its own header and
@@ -61,6 +62,8 @@ export default function Topbar({ onOpenSearch }: { onOpenSearch: () => void }) {
         </ol>
       </nav>
 
+      <div className="flex min-w-0 items-center gap-2">
+      <TimerBar />
       <button
         type="button"
         onClick={onOpenSearch}
@@ -75,6 +78,7 @@ export default function Topbar({ onOpenSearch }: { onOpenSearch: () => void }) {
           ⌘K
         </kbd>
       </button>
+      </div>
     </div>
   )
 }

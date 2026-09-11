@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { entryDateLowerBound } from '@/lib/engagements/periods'
+import { formatBillingPeriod } from '@/lib/engagements/periods'
+import { bucketByBillingMonth, summariseTime } from '@/lib/time/summary'
+import type { TimeEntryLedgerRow } from '@/lib/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -114,6 +117,8 @@ export interface ReportData {
     by_person: Array<{ name: string; hours: number }>
     by_project: Array<{ name: string; hours: number }>
     by_day: Array<{ date: string; hours: number }>
+    /** Billing-month buckets for the period (engagement anchor day, pre-start folds into month one). */
+    months?: Array<{ period_start: string; period_end: string; label: string; hours: number; billable_hours: number; value: number }>
   }
   totals: {
     hours: number
@@ -124,7 +129,7 @@ export interface ReportData {
 }
 
 const TE_SELECT =
-  'entry_date, duration_minutes, billable, rate_snapshot, description, client_description, person:people(full_name), project:projects(id, name), task:engagement_tasks(id, title, client_description)'
+  'entry_date, duration_minutes, billable, billed, rate_snapshot, description, client_description, person:people(full_name), project:projects(id, name), task:engagement_tasks(id, title, client_description)'
 
 /**
  * One query bundle of everything a report (PDF, XLSX, LLM) needs for an
@@ -180,6 +185,7 @@ export async function gatherReportData(
     entry_date: string
     duration_minutes: number | null
     billable: boolean
+    billed?: boolean
     rate_snapshot: number | null
     description: string | null
     client_description: string | null
@@ -227,16 +233,46 @@ export async function gatherReportData(
     project_name: firstRelation(t.project)?.name ?? null,
   }))
 
-  // Aggregations
-  const total = round2(time_entries.reduce((s, e) => s + e.hours, 0))
-  const billable = round2(time_entries.filter((e) => e.billable).reduce((s, e) => s + e.hours, 0))
-  const value_gbp = round2(time_entries.reduce((s, e) => s + e.value, 0))
+  // Aggregations — one set of maths (lib/time/summary) shared with every other
+  // time reader, over ledger-shaped rows built from the same raw select.
+  const ledgerRows = (entriesRes.data as unknown as RawEntry[]).map((r, i) => {
+    const person = firstRelation(r.person)
+    const project = firstRelation(r.project)
+    const task = firstRelation(r.task)
+    return {
+      id: String(i),
+      entry_date: r.entry_date,
+      duration_minutes: r.duration_minutes ?? 0,
+      billable: r.billable,
+      billed: Boolean(r.billed),
+      rate_snapshot: Number(r.rate_snapshot ?? 0),
+      person_id: person ? person.full_name : null,
+      project_id: project?.id ?? null,
+      task_id: task?.id ?? null,
+      person: person ? { id: person.full_name, full_name: person.full_name } : null,
+      project: project ? { id: project.id, name: project.name } : null,
+      task: task ? { id: task.id, title: task.title } : null,
+    } as unknown as TimeEntryLedgerRow
+  })
+  const s = summariseTime(ledgerRows)
+  const total = s.total_hours
+  const billable = s.billable_hours
+  const value_gbp = s.amount
 
-  const by_person = groupHours(time_entries, (e) => e.person_full_name ?? 'Unattributed')
-  const by_project = groupHours(time_entries, (e) => e.project?.name ?? 'No project')
-  const by_day = groupHours(time_entries, (e) => e.work_date)
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((d) => ({ date: d.name, hours: d.hours }))
+  const by_person = s.by_person.map((g) => ({ name: g.name, hours: g.hours }))
+  const by_project = s.by_project.map((g) => ({ name: g.name, hours: g.hours }))
+  const by_day = s.by_day.map((d) => ({ date: d.date, hours: d.hours }))
+  const months = bucketByBillingMonth(ledgerRows, {
+    start_date: (eng.start_date as string | null) ?? null,
+    billing_month_start_day: (eng.billing_month_start_day as number | null) ?? null,
+  }).map((b) => ({
+    period_start: b.period.start,
+    period_end: b.period.end,
+    label: formatBillingPeriod(b.period, { year: true }),
+    hours: b.summary.total_hours,
+    billable_hours: b.summary.billable_hours,
+    value: b.summary.amount,
+  }))
 
   const includedHours = eng.included_hours_monthly as number | null
   const totals: ReportData['totals'] = { hours: total, value_gbp }
@@ -261,19 +297,13 @@ export async function gatherReportData(
     period: { start: periodStart, end: periodEnd, working_days: workingDays(periodStart, periodEnd) },
     time_entries,
     tasks_completed,
-    hours_summary: { total, billable, non_billable: round2(total - billable), by_person, by_project, by_day },
+    hours_summary: { total, billable, non_billable: round2(total - billable), by_person, by_project, by_day, months },
     totals,
   }
 }
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100
-}
-
-function groupHours(entries: ReportTimeEntry[], key: (e: ReportTimeEntry) => string) {
-  const map = new Map<string, number>()
-  for (const e of entries) map.set(key(e), (map.get(key(e)) ?? 0) + e.hours)
-  return [...map.entries()].map(([name, hours]) => ({ name, hours: round2(hours) })).sort((a, b) => b.hours - a.hours)
 }
 
 // ── Internal weekly scan (cross-engagement) ───────────────────────────────────

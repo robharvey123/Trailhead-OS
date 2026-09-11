@@ -13,10 +13,13 @@ export async function POST(
       return authResponse
     }
 
-    const body = await request.json()
+    // Body is an optional patch merged over the stored row before the final
+    // links + rate are resolved: { description?, engagement_id?, project_id?,
+    // task_id?, account_id?, billable?, rate_snapshot? }. {} still valid.
+    const body = await request.json().catch(() => ({}))
 
     const { id } = await params
-    const stopped = await timesheet.stopTimer(id, body.rate_snapshot, supabase)
+    const stopped = await timesheet.stopTimer(id, body ?? {}, supabase)
 
     return NextResponse.json({ entry: stopped })
   } catch (error) {

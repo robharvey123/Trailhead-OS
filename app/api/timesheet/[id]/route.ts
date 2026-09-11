@@ -1,5 +1,6 @@
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import * as timesheet from '@/lib/db/timesheet'
+import { TimeLinkConflict } from '@/lib/time/links'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
@@ -46,7 +47,8 @@ export async function PATCH(
     return NextResponse.json({ entry: updated })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update time entry'
-    return NextResponse.json({ error: message }, { status: 500 })
+    const status = error instanceof TimeLinkConflict ? 409 : /not found/i.test(message) ? 404 : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }
 
