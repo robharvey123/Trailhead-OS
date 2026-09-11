@@ -117,7 +117,10 @@ function ReportDocument({ data, narrative, spine, kind }: { data: ReportData; na
           <Text style={styles.chip}>{KIND_LABEL(kind)}</Text>
           <Text style={styles.title}>{e.name}</Text>
           <Text style={styles.subtitle}>{client}</Text>
-          <Text style={styles.subtitle}>{fmtDate(spine.engagement.period_start)} to {fmtDate(spine.engagement.period_end)}</Text>
+          <Text style={styles.subtitle}>
+            {fmtDate(spine.engagement.period_start)} to {fmtDate(spine.engagement.period_end)}
+            {spine.engagement.includes_pre_start_from ? ` (includes pre-engagement work from ${fmtDate(spine.engagement.includes_pre_start_from)})` : ''}
+          </Text>
           {e.billed_via ? <Text style={styles.subtitle}>Billed via {e.billed_via}</Text> : null}
         </View>
         <View style={styles.coverCompany}>

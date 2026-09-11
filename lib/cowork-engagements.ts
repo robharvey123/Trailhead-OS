@@ -858,6 +858,7 @@ export async function logTime(body: Record<string, unknown>): Promise<LogTimeRes
       end_at: null,
       duration_minutes: durationMinutes,
       description: optionalString(body.description),
+      client_description: optionalString(body.client_description),
       billable: links.billable,
       rate_snapshot: links.rate_snapshot,
       currency_snapshot: 'GBP',
@@ -937,6 +938,7 @@ export async function patchCoworkTimeEntry(id: string, body: Record<string, unkn
   const updates: Record<string, unknown> = {}
 
   if ('description' in body) updates.description = optionalString(body.description)
+  if ('client_description' in body) updates.client_description = optionalString(body.client_description)
   if (body.duration_minutes !== undefined) updates.duration_minutes = requiredPositiveInt(body.duration_minutes, 'duration_minutes')
   if (body.entry_date !== undefined) updates.entry_date = optionalDate(body.entry_date, 'entry_date') ?? cur.entry_date
   if (body.billable !== undefined) updates.billable = parseBooleanBody(body.billable, 'billable') ?? true

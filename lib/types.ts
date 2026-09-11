@@ -1238,6 +1238,8 @@ export interface TimeEntry {
   end_at: string | null
   duration_minutes: number
   description: string | null
+  /** One line the client may see on reports; internal `description` never reaches clients. */
+  client_description?: string | null
   billable: boolean
   rate_snapshot: number
   currency_snapshot: string
@@ -1271,7 +1273,7 @@ export interface UnbilledTimeGroup {
 /** A time entry with the relations the shared ledger renders. */
 export interface TimeEntryLedgerRow extends TimeEntry {
   project?: { id: string; name: string } | null
-  task?: { id: string; title: string } | null
+  task?: { id: string; title: string; client_description?: string | null } | null
   person?: { id: string; full_name: string } | null
   engagement?: { id: string; code: string | null; name: string } | null
   account?: { id: string; name: string } | null

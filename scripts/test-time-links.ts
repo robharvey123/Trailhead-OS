@@ -177,15 +177,26 @@ async function main() {
     ok('[2026-09-15..] holds the last', p2?.rows.length === 1)
     ok('month one flagged as first', p1?.period.isFirst === true)
 
-    // ── 8. cowork filter control (live server only) ──
+    // ── 8 + 9. live cowork controls (only with COWORK_BASE + COWORK_API_KEY) ──
     if (process.env.COWORK_BASE && process.env.COWORK_API_KEY) {
-      console.log('cowork filter control')
-      const res = await fetch(`${process.env.COWORK_BASE}/api/cowork/time?engagement_id=00000000-0000-0000-0000-000000000000`, {
-        headers: { Authorization: `Bearer ${process.env.COWORK_API_KEY}` },
-      })
+      console.log('cowork live controls')
+      const H = { Authorization: `Bearer ${process.env.COWORK_API_KEY}`, 'Content-Type': 'application/json' }
+      const res = await fetch(`${process.env.COWORK_BASE}/api/cowork/time?engagement_id=00000000-0000-0000-0000-000000000000`, { headers: H })
       ok('garbage engagement_id still 404s (never the full table)', res.status === 404, `status ${res.status}`)
+
+      // Cowork log with a client description round-trips it, fully linked from the task alone.
+      const post = await fetch(`${process.env.COWORK_BASE}/api/cowork/time`, {
+        method: 'POST',
+        headers: H,
+        body: JSON.stringify({ task_id: created.taskId, duration_minutes: 30, description: `${RUN} internal`, client_description: `${RUN} client line` }),
+      })
+      // The route returns the formatted entry at the TOP level (plus warning when over cap).
+      const posted = (await post.json()) as { id?: string; client_description?: string | null; account?: { id: string } | null; project?: { id: string } | null; rate_source?: string }
+      if (posted.id) created.entryIds.push(posted.id)
+      ok('cowork POST echoes client_description', post.status === 201 && posted.client_description === `${RUN} client line`, `status ${post.status} ${posted.client_description ?? ''}`)
+      ok('cowork POST fully linked from task alone (account + project + contributor rate)', posted.account?.id === created.accountId && posted.project?.id === created.projectId && posted.rate_source === 'contributor', JSON.stringify({ a: posted.account?.id === created.accountId, p: posted.project?.id === created.projectId, rs: posted.rate_source }))
     } else {
-      console.log('cowork filter control — skipped (set COWORK_BASE + COWORK_API_KEY to run)')
+      console.log('cowork live controls — skipped (set COWORK_BASE + COWORK_API_KEY to run)')
     }
   } finally {
     console.log('\ncleanup')

@@ -49,7 +49,10 @@ export async function buildReportXlsx(data: ReportData): Promise<Buffer> {
   s.addRow(['Engagement', data.engagement.name])
   if (data.engagement.code) s.addRow(['Code', data.engagement.code])
   s.addRow(['Client', data.engagement.end_client ?? '—'])
-  s.addRow(['Period', `${data.period.start} to ${data.period.end}`])
+  const periodLabel = data.period.includes_pre_start_from
+    ? `${data.period.start} to ${data.period.end} (includes pre-engagement work from ${data.period.includes_pre_start_from})`
+    : `${data.period.start} to ${data.period.end}`
+  s.addRow(['Period', periodLabel])
   s.addRow([])
   const sHead = s.addRow(['Metric', 'Hours'])
   styleHeader(sHead)
@@ -59,16 +62,25 @@ export async function buildReportXlsx(data: ReportData): Promise<Buffer> {
     s.addRow(['Hours over allowance', over ?? 0])
   }
 
-  // ── Detail (Date, Description, Hours — nothing else) ────────────────────────
+  // ── Detail (Date, Description, Hours, Phase — nothing else) ─────────────────
+  // Phase marks pre-engagement rows (dated before the contract start, folded
+  // into month one) so a client never wonders why May work sits in August.
   const d = wb.addWorksheet('Detail')
   d.columns = [
     { header: 'Date', key: 'date', width: 14 },
     { header: 'Description', key: 'description', width: 70 },
     { header: 'Hours', key: 'hours', width: 10 },
+    { header: 'Phase', key: 'phase', width: 16 },
   ]
   styleHeader(d.getRow(1))
+  const startDate = data.engagement.start_date ?? null
   for (const e of entries) {
-    d.addRow({ date: e.entry_date, description: e.description, hours: e.hours })
+    d.addRow({
+      date: e.entry_date,
+      description: e.description,
+      hours: e.hours,
+      phase: startDate && e.entry_date < startDate ? 'Pre-engagement' : '',
+    })
   }
   const dTotal = d.addRow({ description: 'Total', hours: totalHours })
   dTotal.font = { bold: true }

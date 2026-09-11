@@ -6,7 +6,7 @@ import { summariseTicket } from '@/lib/tickets/summarise'
 
 /** Relations the shared ledger (engagement Time tab, project Time panel) renders. */
 export const TIME_LEDGER_SELECT =
-  '*, project:projects(id, name), task:engagement_tasks(id, title), person:people(id, full_name), engagement:engagements(id, code, name), account:accounts(id, name), invoice:invoices(id, invoice_number)'
+  '*, project:projects(id, name), task:engagement_tasks(id, title, client_description), person:people(id, full_name), engagement:engagements(id, code, name), account:accounts(id, name), invoice:invoices(id, invoice_number)'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -126,6 +126,7 @@ export async function createTimeEntry(
     entry_date?: string
     duration_minutes: number
     description?: string | null
+    client_description?: string | null
     billable?: boolean
     rate_snapshot?: number
   },
@@ -158,6 +159,7 @@ export async function createTimeEntry(
     end_at: null,
     duration_minutes: Math.round(data.duration_minutes),
     description: data.description?.trim() || null,
+    client_description: data.client_description?.trim() || null,
     billable: links.billable,
     rate_snapshot: links.rate_snapshot,
     currency_snapshot: 'GBP',
@@ -224,6 +226,11 @@ export async function updateTimeEntry(
 
   if ('description' in data) {
     patch.description = data.description?.trim() || null
+  }
+
+  // Client-safe line. Text only, so a billed row may still gain one.
+  if ('client_description' in data) {
+    patch.client_description = data.client_description?.trim() || null
   }
 
   if ('billable' in data && data.billable !== undefined) {

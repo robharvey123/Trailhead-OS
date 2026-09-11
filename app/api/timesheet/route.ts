@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
         entry_date: body.entry_date,
         duration_minutes: body.duration_minutes,
         description: body.description,
+        client_description: body.client_description,
         billable: body.billable,
         rate_snapshot: body.rate_snapshot,
       },

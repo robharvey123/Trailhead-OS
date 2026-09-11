@@ -21,7 +21,7 @@ export async function GET() {
       user ? getPersonByAuthUser(user.id, supabase).catch(() => null) : null,
       supabase
         .from('engagement_tasks')
-        .select('id, title, engagement_id, project_id')
+        .select('id, title, engagement_id, project_id, client_description')
         .not('status', 'in', '(done,cancelled)')
         .order('updated_at', { ascending: false })
         .limit(500),
@@ -41,7 +41,7 @@ export async function GET() {
         is_billable: e.is_billable,
       })),
       people: people.map((p) => ({ id: p.id, name: p.full_name })),
-      tasks: (taskRows.data ?? []) as Array<{ id: string; title: string; engagement_id: string | null; project_id: string | null }>,
+      tasks: (taskRows.data ?? []) as Array<{ id: string; title: string; engagement_id: string | null; project_id: string | null; client_description: string | null }>,
       defaultPersonId: ownPerson?.id ?? null,
     })
   } catch (error) {

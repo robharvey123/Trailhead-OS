@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import { resolveTimeEntryDescription, UNATTRIBUTED_LABEL } from '@/lib/engagements/client-safe'
 import type { TimeEntry } from '@/lib/types'
 
 export type EngagementOption = {
@@ -14,7 +15,7 @@ export type EngagementOption = {
 }
 type Named = { id: string; name: string }
 type ProjectOpt = Named & { account_id: string | null; engagement_id?: string | null }
-type TaskOpt = { id: string; title: string; engagement_id: string | null; project_id?: string | null }
+type TaskOpt = { id: string; title: string; engagement_id: string | null; project_id?: string | null; client_description?: string | null }
 
 /** The option lists this form renders — served ready-made by GET /api/timesheet/options. */
 export type TimeEntryFormOptions = {
@@ -70,6 +71,7 @@ export default function TimeEntryForm({
   const [hours, setHours] = useState(entry ? String(Math.floor(entry.duration_minutes / 60)) : '0')
   const [minutes, setMinutes] = useState(entry ? String(entry.duration_minutes % 60) : '0')
   const [description, setDescription] = useState(entry?.description ?? '')
+  const [clientDescription, setClientDescription] = useState(entry?.client_description ?? '')
   const [billable, setBillable] = useState(entry?.billable ?? true)
   const [rateOverride, setRateOverride] = useState(editing && entry ? String(entry.rate_snapshot) : '')
   const [preview, setPreview] = useState<{ rate_snapshot: number; rate_source: string } | null>(null)
@@ -192,6 +194,7 @@ export default function TimeEntryForm({
         entry_date: date,
         duration_minutes: duration,
         description: description || null,
+        client_description: clientDescription || null,
         billable,
       }
       if (rateOverride.trim() !== '') payload.rate_snapshot = Number(rateOverride)
@@ -218,6 +221,15 @@ export default function TimeEntryForm({
       setBusy(false)
     }
   }
+
+  // What the client artefacts would print for this entry, resolved with the
+  // same pure chain the exports use (entry line, then the task's).
+  const selectedTask = tasks.find((t) => t.id === taskId) ?? null
+  const clientPreview = resolveTimeEntryDescription({
+    entry_client_description: clientDescription,
+    task_client_description: selectedTask?.client_description ?? null,
+    task_title: selectedTask?.title ?? null,
+  })
 
   const lockedEngagement = lock.engagement_id ? engagements.find((e) => e.id === lock.engagement_id) : null
   const lockedProject = lock.project_id ? projects.find((p) => p.id === lock.project_id) : null
@@ -309,6 +321,25 @@ export default function TimeEntryForm({
           </div>
 
           <div><label className={label}>Description</label><textarea className={`${input} min-h-[5rem] resize-y`} value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+
+          {!assign ? (
+            <div>
+              <label className={label}>Client description</label>
+              <textarea rows={2} className={`${input} resize-y`} value={clientDescription} onChange={(e) => setClientDescription(e.target.value)} />
+              <p className="mt-1 text-[11px] text-[var(--text-3)]">
+                Shown on client reports. Leave blank to use the linked task&apos;s client description or title. Internal description above is never shown to clients.
+              </p>
+              {clientPreview ? (
+                <p className="mt-1 text-[11px] text-[var(--text-2)]">
+                  Exports as: <span className="font-medium text-[var(--text)]">{clientPreview}</span>
+                </p>
+              ) : (
+                <p className="mt-1 text-[11px] font-medium text-[var(--amber)]">
+                  Would export as &quot;{UNATTRIBUTED_LABEL}&quot;
+                </p>
+              )}
+            </div>
+          ) : null}
 
           {!assign ? (
             <>

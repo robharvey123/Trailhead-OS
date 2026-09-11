@@ -98,8 +98,10 @@ export interface ReportData {
     retainer: number | null
     included_hours: number | null
     is_billable: boolean
+    /** Engagement contract start; rows before it are pre-engagement work folded into month one. */
+    start_date?: string | null
   }
-  period: { start: string; end: string; working_days: number }
+  period: { start: string; end: string; working_days: number; includes_pre_start_from?: string | null }
   time_entries: ReportTimeEntry[]
   tasks_completed: Array<{
     id: string
@@ -274,6 +276,16 @@ export async function gatherReportData(
     value: b.summary.amount,
   }))
 
+  // Pre-start fold marker: when the period absorbs pre-start work (no lower
+  // bound on the entries query) and rows actually pre-date the contract start,
+  // client artefacts say so instead of silently mixing it in.
+  const engStartDate = (eng.start_date as string | null) ?? null
+  let includesPreStartFrom: string | null = null
+  if (!entriesFrom && engStartDate && time_entries.length) {
+    const earliest = time_entries.reduce((min, e) => (e.work_date < min ? e.work_date : min), time_entries[0].work_date)
+    if (earliest < engStartDate) includesPreStartFrom = earliest
+  }
+
   const includedHours = eng.included_hours_monthly as number | null
   const totals: ReportData['totals'] = { hours: total, value_gbp }
   if (includedHours != null) {
@@ -293,8 +305,9 @@ export async function gatherReportData(
       retainer: (eng.retainer_amount_monthly as number | null) ?? null,
       included_hours: includedHours,
       is_billable: Boolean(eng.is_billable),
+      start_date: engStartDate,
     },
-    period: { start: periodStart, end: periodEnd, working_days: workingDays(periodStart, periodEnd) },
+    period: { start: periodStart, end: periodEnd, working_days: workingDays(periodStart, periodEnd), includes_pre_start_from: includesPreStartFrom },
     time_entries,
     tasks_completed,
     hours_summary: { total, billable, non_billable: round2(total - billable), by_person, by_project, by_day, months },

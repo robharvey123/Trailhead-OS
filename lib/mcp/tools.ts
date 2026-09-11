@@ -362,6 +362,7 @@ export const logTimeTool = defineTool({
     duration_minutes: z.number().int().positive(),
     entry_date: isoDate.optional(),
     description: z.string().nullable().optional(),
+    client_description: z.string().nullable().optional().describe('one line the client may see; internal description never reaches client reports'),
     billable: z.boolean().optional(),
     rate_snapshot: z.number().optional(),
   }),

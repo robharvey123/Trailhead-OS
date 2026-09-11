@@ -30,7 +30,7 @@ export default async function TimesheetPage() {
     // Open engagement tasks for the pickers (filtered client-side by engagement/project).
     supabase
       .from('engagement_tasks')
-      .select('id, title, engagement_id, project_id')
+      .select('id, title, engagement_id, project_id, client_description')
       .not('status', 'in', '(done,cancelled)')
       .order('updated_at', { ascending: false })
       .limit(500),
@@ -55,7 +55,7 @@ export default async function TimesheetPage() {
         projects={projects.map((p) => ({ id: p.id, name: p.name, account_id: p.account_id ?? null, engagement_id: p.engagement_id ?? null }))}
         engagements={engagementOptions}
         people={people.map((p) => ({ id: p.id, name: p.full_name }))}
-        tasks={(taskRows.data ?? []) as Array<{ id: string; title: string; engagement_id: string | null; project_id: string | null }>}
+        tasks={(taskRows.data ?? []) as Array<{ id: string; title: string; engagement_id: string | null; project_id: string | null; client_description: string | null }>}
         defaultPersonId={ownPerson?.id ?? null}
       />
     </div>

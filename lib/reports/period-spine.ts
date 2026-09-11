@@ -24,7 +24,7 @@ export type SpineCompletedTask = ClientSafeTask & { completed_at: string; reopen
 export type SpineInProgressTask = ClientSafeTask & { started_at: string | null }
 
 export type EngagementPeriodSpine = {
-  engagement: { code: string | null; name: string; period_start: string; period_end: string }
+  engagement: { code: string | null; name: string; period_start: string; period_end: string; includes_pre_start_from?: string | null }
   completed: SpineCompletedTask[]
   in_progress: SpineInProgressTask[]
   scheduled_next: ClientSafeTask[]
@@ -407,8 +407,18 @@ export async function buildEngagementPeriodReport(
     .map((r) => ({ raised_at: dateOf(r.raised_at), title: r.title, status: r.status, detail: r.detail }))
     .sort((a, b) => a.raised_at.localeCompare(b.raised_at) || a.title.localeCompare(b.title))
 
+  // Pre-start fold marker for the PDF period line: earliest entry only when the
+  // period absorbs pre-start work and rows actually pre-date the contract start.
+  let includesPreStartFrom: string | null = null
+  if (periodFoldsPreStart && e.start_date) {
+    for (const r of entryRows) {
+      const d = r.entry_date
+      if (d < e.start_date && (includesPreStartFrom === null || d < includesPreStartFrom)) includesPreStartFrom = d
+    }
+  }
+
   return {
-    engagement: { code: e.code, name: e.name, period_start: periodStart, period_end: periodEnd },
+    engagement: { code: e.code, name: e.name, period_start: periodStart, period_end: periodEnd, includes_pre_start_from: includesPreStartFrom },
     completed: buckets.completed,
     in_progress: buckets.in_progress,
     scheduled_next: buckets.scheduled_next,
