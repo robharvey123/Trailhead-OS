@@ -12,11 +12,12 @@ type ExpenseRow = Expense & {
   workstreams: { label: string; colour: string } | null
   accounts: Account | null
   projects: { id: string; name: string } | null
+  engagements: { id: string; code: string; name: string } | null
   invoices: { id: string; invoice_number: string } | null
 }
 
 const EXPENSE_SELECT =
-  '*, workstreams(label, colour), accounts(*), projects(id, name), invoices(id, invoice_number)'
+  '*, workstreams(label, colour), accounts(*), projects(id, name), engagements(id, code, name), invoices(id, invoice_number)'
 
 async function getSupabase(client?: SupabaseClient) {
   return client ?? createClient()
@@ -28,6 +29,7 @@ function mapExpense(row: ExpenseRow): ExpenseWithRelations {
     workstream: row.workstreams ?? undefined,
     account: row.accounts ?? undefined,
     project: row.projects ?? undefined,
+    engagement: row.engagements ?? undefined,
     invoice: row.invoices ?? undefined,
   }
 }
@@ -36,6 +38,7 @@ export interface ExpenseFilters {
   workstream_id?: string
   account_id?: string
   project_id?: string
+  engagement_id?: string
   category?: ExpenseCategory
   billable?: boolean
   billed?: boolean
@@ -62,6 +65,9 @@ export async function getExpenses(
   }
   if (filters.project_id) {
     query = query.eq('project_id', filters.project_id)
+  }
+  if (filters.engagement_id) {
+    query = query.eq('engagement_id', filters.engagement_id)
   }
   if (filters.category) {
     query = query.eq('category', filters.category)

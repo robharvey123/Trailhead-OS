@@ -197,6 +197,25 @@ POST /api/cowork/engagements/[id]/milestones/[accountId]/invoice — raise the T
 GET /api/cowork/time — filters: engagement (code/uuid), project, from, to, billable. Returns entries + a summary (hours, billable, amount, month vs cap).
 POST /api/cowork/time — { "duration_minutes": required, one of "engagement_id"/"project_id"/"task_id" required, "entry_date": "YYYY-MM-DD (default today)", "description", "client_description" (one line the client may see on reports; internal "description" never reaches clients — entries with neither a client_description nor a linked task print as "(unattributed time)"), "billable", "rate_snapshot", "account_id" }. Links are DERIVED: a task fills its engagement + project, a project fills its engagement + account, an engagement fills its end-client account — so a task_id alone produces a fully linked entry (a contradicting engagement_id is a 409). billable defaults from the engagement (internal engagements log non-billable). Rate is snapshotted automatically (explicit → contributor → project → account default; response says `rate_source`); a `warning` block appears if it crosses the monthly cap.
 
+### Expenses
+
+GET /api/cowork/expenses
+Query params: engagement_id (code or uuid), project_id, account_id, category, billable, billed, from, to, limit (default 100, max 500). Returns { expenses, summary } with totals, by_category and by_engagement; mixed-currency lists report per currency under by_currency, never converted.
+
+POST /api/cowork/expenses
+{ "description": required, "amount": required positive, "date": "YYYY-MM-DD (default today)", "currency": "GBP default", "category": "travel|software|equipment|meals|subscriptions|other (default other)", "engagement_id": "code or uuid", "project_id", "account_id" or "account_name", "workstream": "slug", "billable", "tax_deductible" (default true), "notes", "receipt_url" }
+Links are DERIVED like time entries: project fills engagement + account, engagement fills its end-client account. A project on a different engagement than the one named is a 409. billable defaults to true on a billable engagement, else false.
+
+GET /api/cowork/expenses/[id]
+PATCH /api/cowork/expenses/[id] — same fields. A billed expense rejects amount/currency/date/billable changes (release it first). billed and invoice_id are never patchable here.
+DELETE /api/cowork/expenses/[id] — hard delete; 409 while billed.
+POST /api/cowork/expenses/[id]/receipt — multipart file field, or JSON { filename, content_base64, content_type }. 10 MB cap.
+
+POST /api/cowork/expenses/bill    { "expense_ids": [], "invoice_id" } — appends one line item per expense ("Expense: <description> (<date>)") to a draft or sent invoice and marks them billed. Currency must match the invoice (409 otherwise); totals derive from line_items automatically.
+POST /api/cowork/expenses/release { "expense_ids": [] } — takes them back off the invoice (line items removed, billed reset). 409 once the invoice is paid or part paid.
+
+Fast path for the monthly Qola invoice: POST /api/cowork/invoices with "include_unbilled_expenses": true (or "expense_ids": []) bills every unbilled billable expense on the engagement onto the new invoice in one request; a failure rolls the invoice back.
+
 ### Touchpoints (interactions: calls, emails, meetings, notes)
 
 GET /api/cowork/touchpoints
@@ -249,7 +268,7 @@ Campaigns ALWAYS land in draft. Never start one without Rob's explicit go-ahead 
 GET /api/cowork/activity — filters: engagement, entity, from, to, limit. Every write above is recorded here for Rob to review.
 POST /api/cowork/activity/[id]/revert — reverses the reversible cases only (invoice status change, time-entry create, milestone gate).
 
-> MCP: the same operations are available as MCP tools at /api/mcp (list_engagements, get_engagement, log_time, set_milestone_gate, raise_listing_invoice, list_invoices, raise_invoice, mark_invoice_paid, find_account, create_account, add_tier1_account, upload_engagement_document, list/get outreach, engagement_hours_check, recent_cowork_activity). REST and MCP share the same logic.
+> MCP: the same operations are available as MCP tools at /api/mcp (list_engagements, get_engagement, log_time, log_expense, list_expenses, bill_expenses, set_milestone_gate, raise_listing_invoice, list_invoices, raise_invoice, mark_invoice_paid, find_account, create_account, add_tier1_account, upload_engagement_document, list/get outreach, engagement_hours_check, recent_cowork_activity). REST and MCP share the same logic.
 
 ## Workstream routing rules
 

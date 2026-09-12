@@ -74,6 +74,8 @@ export type RevertResult = { ok: true; entity: string; summary: string } | { ok:
  *   - invoice status change  → restore the prior status (from `before`)
  *   - time_entry create      → delete the entry
  *   - tier1_milestone gate   → restore the prior gate dates (from `before`)
+ *   - expense create         → delete the expense (409 once it has been billed)
+ *   - expense bill           → release the expenses back off the invoice
  * Anything else is a 400 — there is no generic revert. Stamps reverted_at so a
  * revert can't be applied twice.
  */
@@ -99,6 +101,23 @@ export async function revertCoworkActivity(activityId: string): Promise<RevertRe
   } else if (a.entity === 'time_entry' && a.action === 'create') {
     const { error: e } = await supabaseService.from('time_entries').delete().eq('id', a.entity_id)
     if (e) return { ok: false, error: e.message, status: 500 }
+  } else if (a.entity === 'expense' && a.action === 'create') {
+    const { data: exp } = await supabaseService.from('expenses').select('id, billed').eq('id', a.entity_id).maybeSingle()
+    if (!exp) return { ok: false, error: 'Expense no longer exists', status: 404 }
+    if ((exp as { billed: boolean }).billed) return { ok: false, error: 'Expense has since been billed; release it from its invoice first', status: 409 }
+    const { error: e } = await supabaseService.from('expenses').delete().eq('id', a.entity_id)
+    if (e) return { ok: false, error: e.message, status: 500 }
+  } else if (a.entity === 'expense' && a.action === 'update' && (a as { payload?: Record<string, unknown> | null }).payload?.billed_via === 'bill') {
+    const payload = (a as { payload?: { expense_ids?: string[] } | null }).payload
+    const ids = Array.isArray(payload?.expense_ids) ? payload.expense_ids : []
+    if (ids.length === 0) return { ok: false, error: 'No expense ids recorded on this activity row', status: 400 }
+    const { releaseCoworkExpenses } = await import('@/lib/cowork-expenses')
+    try {
+      await releaseCoworkExpenses({ expense_ids: ids })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Release failed'
+      return { ok: false, error: msg, status: 500 }
+    }
   } else if (a.entity === 'tier1_milestone' && a.before) {
     const gateCols = ['range_review_decided_at', 'go_live_confirmed_at', 'first_po_received_at']
     const patch: Record<string, unknown> = {}

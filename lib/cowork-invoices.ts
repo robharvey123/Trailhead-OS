@@ -17,6 +17,8 @@ import {
 } from './cowork-api'
 import { getEngagementRow } from './cowork-engagements'
 import { createPayment, invoiceTotal, listPayments, recalcInvoicePaymentState } from '@/lib/db/invoice-payments'
+import { billCoworkExpenses, unbilledExpensesFor } from '@/lib/cowork-expenses'
+import { softDeleteInvoice } from '@/lib/db/invoices'
 import { fetchWiseRate } from '@/lib/fx/wise'
 import { isSupportedCurrency } from '@/lib/money'
 import { roundMoney } from '@/lib/types'
@@ -137,8 +139,35 @@ export async function createCoworkInvoice(body: Record<string, unknown>): Promis
     .select(INVOICE_SELECT)
     .single()
   if (error) throw new CoworkApiError(error.message || 'Failed to create invoice', 500)
+
+  // Optional: pull expenses onto the new invoice in the same request. A failure
+  // here soft-deletes the just-created invoice so a bad expense id never leaves
+  // an orphan draft behind.
+  let expenseIds = Array.isArray(body.expense_ids) ? (body.expense_ids as string[]) : []
+  const invoiceId = (data as { id: string }).id
+  if (body.include_unbilled_expenses === true) {
+    const scope = engagement ? { engagement_id: engagement.id } : account?.id ? { account_id: account.id } : null
+    if (scope) {
+      const unbilled = await unbilledExpensesFor(scope)
+      expenseIds = [...new Set([...expenseIds, ...unbilled.expenses.map((e) => e.id)])]
+    }
+  }
+  let invoiceRow = data
+  if (expenseIds.length) {
+    try {
+      const billed = await billCoworkExpenses({ expense_ids: expenseIds, invoice_id: invoiceId })
+      void billed
+      const { data: refreshed, error: refErr } = await supabaseService.from('invoices').select(INVOICE_SELECT).eq('id', invoiceId).single()
+      if (refErr) throw new CoworkApiError(refErr.message, 500)
+      invoiceRow = refreshed
+    } catch (e) {
+      await softDeleteInvoice(invoiceId, supabaseService as never).catch(() => {})
+      throw e
+    }
+  }
+
   return {
-    invoice: formatInvoice(data as never),
+    invoice: formatInvoice(invoiceRow as never),
     engagement: engagement ? { id: engagement.id, name: engagement.name } : null,
   }
 }

@@ -69,6 +69,7 @@ export async function PATCH(
     if ('workstream_id' in body) patch.workstream_id = body.workstream_id || null
     if ('account_id' in body) patch.account_id = body.account_id || null
     if ('project_id' in body) patch.project_id = body.project_id || null
+    if ('engagement_id' in body) patch.engagement_id = body.engagement_id || null
     if ('billable' in body) patch.billable = Boolean(body.billable)
     if ('billed' in body) patch.billed = Boolean(body.billed)
     if ('invoice_id' in body) patch.invoice_id = body.invoice_id || null

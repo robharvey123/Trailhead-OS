@@ -1206,11 +1206,13 @@ export interface Expense {
   workstream_id: string | null
   account_id: string | null
   project_id: string | null
+  engagement_id: string | null
   billable: boolean
   billed: boolean
   invoice_id: string | null
   tax_deductible: boolean
   notes: string | null
+  source: 'os' | 'cowork' | 'import'
   user_id: string
 }
 
@@ -1218,6 +1220,7 @@ export interface ExpenseWithRelations extends Expense {
   workstream?: { label: string; colour: string }
   account?: Account
   project?: { id: string; name: string }
+  engagement?: { id: string; code: string; name: string }
   invoice?: { id: string; invoice_number: string }
 }
 

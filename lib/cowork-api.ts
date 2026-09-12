@@ -347,6 +347,31 @@ export const TIME_ENTRY_SELECT = `
   task:engagement_tasks(id, title)
 `
 
+export const EXPENSE_SELECT = `
+  id,
+  date,
+  description,
+  amount,
+  currency,
+  category,
+  billable,
+  billed,
+  tax_deductible,
+  notes,
+  receipt_url,
+  source,
+  engagement_id,
+  project_id,
+  account_id,
+  invoice_id,
+  created_at,
+  updated_at,
+  engagements(id, code, name),
+  projects(id, name),
+  accounts(id, name),
+  invoices(id, invoice_number)
+`
+
 export const PROJECT_SELECT = `
   id,
   name,
@@ -1121,6 +1146,68 @@ export function formatTouchpoint(row: TouchpointRow) {
     contact: contact ? { id: contact.id, name: contact.name } : null,
     engagement: engagement ? { id: engagement.id, code: engagement.code, name: engagement.name } : null,
     created_at: row.created_at,
+  }
+}
+
+const EXPENSE_CATEGORIES = new Set(['travel', 'software', 'equipment', 'meals', 'subscriptions', 'other'])
+
+export function parseExpenseCategory(value: unknown, fallback = 'other') {
+  if (value === null || value === undefined || value === '') return fallback
+  if (typeof value !== 'string' || !EXPENSE_CATEGORIES.has(value)) {
+    throw new CoworkApiError('category must be travel, software, equipment, meals, subscriptions, or other', 400)
+  }
+  return value
+}
+
+type ExpenseRow = {
+  id: string
+  date: string
+  description: string
+  amount: number | string
+  currency: string
+  category: string
+  billable: boolean
+  billed: boolean
+  tax_deductible: boolean
+  notes: string | null
+  receipt_url: string | null
+  source: string
+  engagement_id: string | null
+  project_id: string | null
+  account_id: string | null
+  invoice_id: string | null
+  created_at: string
+  updated_at: string
+  engagements?: RelationValue<{ id: string; code: string | null; name: string }>
+  projects?: RelationValue<NamedRelation>
+  accounts?: RelationValue<NamedRelation>
+  invoices?: RelationValue<{ id: string; invoice_number: string }>
+}
+
+export function formatExpense(row: ExpenseRow) {
+  const engagement = firstRelation(row.engagements)
+  const project = firstRelation(row.projects)
+  const account = firstRelation(row.accounts)
+  const invoice = firstRelation(row.invoices)
+  return {
+    id: row.id,
+    date: row.date,
+    description: row.description,
+    amount: Number(row.amount),
+    currency: row.currency,
+    category: row.category,
+    billable: row.billable,
+    billed: row.billed,
+    tax_deductible: row.tax_deductible,
+    notes: row.notes,
+    receipt_url: row.receipt_url,
+    source: row.source,
+    engagement: engagement ? { id: engagement.id, code: engagement.code, name: engagement.name } : null,
+    project: project ? { id: project.id, name: project.name } : null,
+    account: account ? { id: account.id, name: account.name } : null,
+    invoice: invoice ? { id: invoice.id, invoice_number: invoice.invoice_number } : null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
   }
 }
 

@@ -18,6 +18,8 @@ import {
 import { engagementHoursThisMonth, currentPeriodHoursByEngagement, addTier1Account, removeTier1Account } from '@/lib/db/engagements'
 import { listContributors } from '@/lib/db/contributors'
 import { resolveTimeLinks, TimeLinkConflict, type RateSource } from '@/lib/time/links'
+import { unbilledExpensesFor } from '@/lib/cowork-expenses'
+import { currentBillingPeriod } from '@/lib/engagements/periods'
 import { getMilestone, listMilestones, markMilestoneInvoiced, upsertMilestone } from '@/lib/db/tier1'
 import { createInvoice } from '@/lib/db/invoices'
 import type { EngagementStatus, EngagementType, Tier1MilestoneWithAccount } from '@/lib/types'
@@ -280,11 +282,16 @@ export async function listEngagements(
   const ids = engagements.map((e) => e.id)
   if (ids.length === 0) return []
 
-  const [summaryRes, billingRes, hoursBy] = await Promise.all([
+  const [summaryRes, billingRes, hoursBy, unbilledExpRes] = await Promise.all([
     supabaseService.from('tier1_milestone_summary').select('*').in('engagement_id', ids),
     supabaseService.from('engagement_billing_summary').select('*').in('engagement_id', ids),
     currentPeriodHoursByEngagement(engagements, svc),
+    supabaseService.from('expenses').select('engagement_id, amount').eq('billable', true).eq('billed', false).in('engagement_id', ids),
   ])
+  const unbilledExpBy = new Map<string, number>()
+  for (const r of (unbilledExpRes.data ?? []) as Array<{ engagement_id: string; amount: number | string }>) {
+    unbilledExpBy.set(r.engagement_id, Math.round(((unbilledExpBy.get(r.engagement_id) ?? 0) + Number(r.amount)) * 100) / 100)
+  }
   const summaryBy = new Map((summaryRes.data ?? []).map((s) => [s.engagement_id as string, s]))
   const billingBy = new Map((billingRes.data ?? []).map((b) => [b.engagement_id as string, b]))
 
@@ -312,6 +319,7 @@ export async function listEngagements(
       tier1_complete: Number(summary?.completed ?? 0),
       tier1_tracked: Number(summary?.total_tracked ?? 0),
       outstanding_invoice_total: Number(billing?.total_outstanding ?? 0),
+      unbilled_expenses: unbilledExpBy.get(e.id) ?? 0,
     }
   })
 }
@@ -373,8 +381,33 @@ export async function getEngagementDetail(ref: string) {
           last_payment_at: (billing.last_payment_at as string | null) ?? null,
         }
       : { invoice_count: 0, currency_count: 0, currencies: [], total_invoiced: 0, total_paid: 0, total_outstanding: 0, total_draft: 0, next_due_date: null, last_payment_at: null },
+    expenses: await engagementExpensesBlock(e),
     milestones: milestones.map((m) => formatMilestone(m as Tier1MilestoneWithAccount)),
     projects: (projectsRes.data ?? []) as Array<{ id: string; name: string; status: string }>,
+  }
+}
+
+/**
+ * Expense rollup for engagement detail: unbilled billable, plus this billing
+ * period's total (billingPeriod anchored on the engagement's start day; month
+ * one absorbs pre-start expenses, matching the hours rules).
+ */
+async function engagementExpensesBlock(e: EngRow) {
+  const unbilled = await unbilledExpensesFor({ engagement_id: e.id })
+  const period = currentBillingPeriod({
+    start_date: (e as { start_date?: string | null }).start_date ?? null,
+    billing_month_start_day: (e as { billing_month_start_day?: number | null }).billing_month_start_day ?? 1,
+  })
+  let q = supabaseService.from('expenses').select('amount, currency').eq('engagement_id', e.id).lte('date', period.end)
+  if (!period.isFirst) q = q.gte('date', period.start)
+  const { data } = await q
+  const rows = (data ?? []) as Array<{ amount: number | string; currency: string }>
+  const currencies = [...new Set([...unbilled.currencies, ...rows.map((r) => r.currency)])]
+  return {
+    unbilled_billable_count: unbilled.count,
+    unbilled_billable_total: unbilled.total,
+    this_period_total: Math.round(rows.reduce((s, r) => s + Number(r.amount), 0) * 100) / 100,
+    currency: currencies.length === 1 ? currencies[0] : currencies.length === 0 ? 'GBP' : 'mixed',
   }
 }
 
@@ -783,7 +816,7 @@ export async function engagementMonthUsage(ref: string) {
 
 // ── Time ─────────────────────────────────────────────────────────────────────
 
-async function rpcScalar(fn: 'owner_user_id' | 'owner_person_id'): Promise<string | null> {
+export async function rpcScalar(fn: 'owner_user_id' | 'owner_person_id'): Promise<string | null> {
   const { data, error } = await supabaseService.rpc(fn)
   if (error) throw new CoworkApiError(error.message || `Failed to resolve ${fn}`, 500)
   return (data as string | null) ?? null

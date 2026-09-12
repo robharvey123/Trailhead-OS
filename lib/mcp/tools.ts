@@ -34,6 +34,7 @@ import {
   uploadEngagementDocument,
 } from '@/lib/cowork-engagements'
 import { createCoworkInvoice, listCoworkInvoices, setInvoiceStatus } from '@/lib/cowork-invoices'
+import { billCoworkExpenses, createCoworkExpense, listCoworkExpenses, unbilledExpensesFor } from '@/lib/cowork-expenses'
 import { getCampaignDetail, listCampaigns } from '@/lib/cowork-outreach'
 import { listCoworkActivity, recordCoworkWrite } from '@/lib/cowork-audit'
 import {
@@ -453,6 +454,8 @@ export const raiseInvoiceTool = defineTool({
     due_date: isoDate.optional(),
     vat_rate: z.number().optional(),
     notes: z.string().optional(),
+    expense_ids: z.array(z.string()).optional().describe('unbilled billable expense ids to pull onto the invoice as line items'),
+    include_unbilled_expenses: z.boolean().optional().describe('true = pull every unbilled billable expense on the engagement (or account) onto the invoice'),
   }),
   handler: async (input) => {
     const { invoice, engagement } = await createCoworkInvoice(input as Record<string, unknown>)
@@ -629,6 +632,93 @@ export const recentCoworkActivityTool = defineTool({
   },
 })
 
+export const logExpenseTool = defineTool({
+  name: 'log_expense',
+  description: 'Record a business expense, optionally against an engagement, project or account. Links are DERIVED (project → engagement + account, engagement → end-client account). billable defaults to true on a billable engagement. Amount is in the expense\'s own currency (default GBP). e.g. "log £38.50 train to Bestway meeting on Qola, billable".',
+  inputSchema: z.object({
+    description: z.string().min(1),
+    amount: z.number().positive(),
+    date: isoDate.optional(),
+    currency: z.string().optional(),
+    category: z.enum(['travel', 'software', 'equipment', 'meals', 'subscriptions', 'other']).optional(),
+    engagement_id: z.string().optional(),
+    project_id: z.string().optional(),
+    account_id: z.string().optional(),
+    account_name: z.string().optional(),
+    billable: z.boolean().optional(),
+    tax_deductible: z.boolean().optional(),
+    notes: z.string().nullable().optional(),
+  }),
+  handler: async (input) => {
+    const expense = await createCoworkExpense(input as Record<string, unknown>)
+    const label = expense.engagement?.code ?? expense.project?.name ?? expense.account?.name ?? 'general'
+    void recordCoworkWrite({
+      action: 'create', entity: 'expense', entityId: expense.id,
+      entityLabel: `${expense.currency} ${expense.amount} ${expense.category}`,
+      engagementId: expense.engagement?.id ?? null,
+      summary: `Logged ${expense.currency} ${expense.amount.toFixed(2)} ${expense.category} on ${label} (${expense.billable ? 'billable' : 'non-billable'})`,
+      payload: input as Record<string, unknown>,
+    })
+    return expense
+  },
+})
+
+export const listExpensesTool = defineTool({
+  name: 'list_expenses',
+  description: 'List expenses with a summary (totals, by category, by engagement). Filter by engagement (code or uuid), project, account, category, billable, billed, or unbilled_only.',
+  inputSchema: z.object({
+    engagement_id: z.string().optional(),
+    project_id: z.string().optional(),
+    account_id: z.string().optional(),
+    category: z.enum(['travel', 'software', 'equipment', 'meals', 'subscriptions', 'other']).optional(),
+    billable: z.boolean().optional(),
+    billed: z.boolean().optional(),
+    unbilled_only: z.boolean().optional(),
+    from: isoDate.optional(),
+    to: isoDate.optional(),
+    limit: z.number().int().positive().max(500).optional(),
+  }),
+  handler: async (input) =>
+    listCoworkExpenses({
+      engagementRef: input.engagement_id,
+      projectId: input.project_id,
+      accountId: input.account_id,
+      category: input.category,
+      billable: input.unbilled_only ? true : input.billable,
+      billed: input.unbilled_only ? false : input.billed,
+      from: input.from,
+      to: input.to,
+      limit: input.limit,
+    }),
+})
+
+export const billExpensesTool = defineTool({
+  name: 'bill_expenses',
+  description: 'Put unbilled billable expenses onto a draft or sent invoice as line items and mark them billed. Pass expense_ids, or an engagement (code or uuid) to bill every unbilled billable expense on it.',
+  inputSchema: z.object({
+    expense_ids: z.array(z.string()).optional(),
+    engagement: z.string().optional(),
+    invoice_id: z.string().min(1),
+  }),
+  handler: async (input) => {
+    let ids = input.expense_ids ?? []
+    if (!ids.length && input.engagement) {
+      const eng = await getEngagementRow(input.engagement)
+      const unbilled = await unbilledExpensesFor({ engagement_id: eng.id })
+      ids = unbilled.expenses.map((e) => e.id)
+    }
+    const result = await billCoworkExpenses({ expense_ids: ids, invoice_id: input.invoice_id })
+    const total = result.expenses.reduce((s, e) => s + e.amount, 0)
+    void recordCoworkWrite({
+      action: 'update', entity: 'expense', entityId: result.invoice.id, entityLabel: result.invoice.invoice_number,
+      engagementId: (result.invoice as { engagement?: { id: string } | null }).engagement?.id ?? null,
+      summary: `Billed ${result.expenses.length} expense${result.expenses.length === 1 ? '' : 's'} (${result.invoice.currency} ${total.toFixed(2)}) onto ${result.invoice.invoice_number}`,
+      payload: { billed_via: 'bill', expense_ids: ids, invoice_id: input.invoice_id },
+    })
+    return result
+  },
+})
+
 export const tools: McpTool[] = [
   whoami,
   listProjects,
@@ -643,6 +733,9 @@ export const tools: McpTool[] = [
   listEngagementsTool,
   getEngagementTool,
   logTimeTool,
+  logExpenseTool,
+  listExpensesTool,
+  billExpensesTool,
   setMilestoneGateTool,
   raiseListingInvoiceTool,
   listInvoicesTool,

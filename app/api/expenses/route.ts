@@ -30,6 +30,9 @@ export async function GET(request: Request) {
     const projectId = searchParams.get('project_id')
     if (projectId) filters.project_id = projectId
 
+    const engagementId = searchParams.get('engagement_id')
+    if (engagementId) filters.engagement_id = engagementId
+
     const category = searchParams.get('category')
     if (category && VALID_CATEGORIES.includes(category as ExpenseCategory)) {
       filters.category = category as ExpenseCategory
@@ -105,11 +108,13 @@ export async function POST(request: Request) {
       workstream_id: body.workstream_id || null,
       account_id: body.account_id || null,
       project_id: body.project_id || null,
+      engagement_id: body.engagement_id || null,
       billable: Boolean(body.billable),
       billed: false,
       invoice_id: null,
       tax_deductible: body.tax_deductible !== false,
       notes: body.notes?.trim() || null,
+      source: 'os' as const,
       user_id: user.id,
     }
 

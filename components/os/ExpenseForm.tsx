@@ -22,13 +22,17 @@ function formatMoney(value: number) {
   return `£${value.toFixed(2)}`
 }
 
+export type ExpenseEngagementOption = { id: string; code: string | null; name: string; end_client_account_id: string | null }
+
 export default function ExpenseForm({
   accounts,
   workstreams,
+  engagements = [],
   initialExpense,
 }: {
   accounts: Account[]
   workstreams: Workstream[]
+  engagements?: ExpenseEngagementOption[]
   initialExpense?: Expense
 }) {
   const router = useRouter()
@@ -47,6 +51,7 @@ export default function ExpenseForm({
   )
   const [workstreamId, setWorkstreamId] = useState(initialExpense?.workstream_id ?? '')
   const [accountId, setAccountId] = useState(initialExpense?.account_id ?? '')
+  const [engagementId, setEngagementId] = useState(initialExpense?.engagement_id ?? '')
   const [billable, setBillable] = useState(initialExpense?.billable ?? false)
   const [taxDeductible, setTaxDeductible] = useState(initialExpense?.tax_deductible ?? true)
   const [notes, setNotes] = useState(initialExpense?.notes ?? '')
@@ -82,6 +87,7 @@ export default function ExpenseForm({
         category,
         workstream_id: workstreamId || null,
         account_id: accountId || null,
+        engagement_id: engagementId || null,
         billable,
         tax_deductible: taxDeductible,
         notes: notes.trim() || null,
@@ -252,6 +258,27 @@ export default function ExpenseForm({
             {accounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
                 {acc.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm text-[color:var(--text-2)]">Engagement</span>
+          <select
+            value={engagementId}
+            onChange={(e) => {
+              const id = e.target.value
+              setEngagementId(id)
+              const eng = engagements.find((x) => x.id === id)
+              if (eng?.end_client_account_id && !accountId) setAccountId(eng.end_client_account_id)
+            }}
+            className="os-select w-full"
+          >
+            <option value="">No engagement</option>
+            {engagements.map((eng) => (
+              <option key={eng.id} value={eng.id}>
+                {eng.code ? `${eng.code} · ${eng.name}` : eng.name}
               </option>
             ))}
           </select>
