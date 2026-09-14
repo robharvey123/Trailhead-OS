@@ -1,11 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { formatMoney } from '@/lib/money'
 import type { ExpenseWithRelations } from '@/lib/types'
 
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
-}
+
 
 export default function UnbilledExpensesWidget({
   accountId,
@@ -117,7 +116,7 @@ export default function UnbilledExpensesWidget({
             <span className="flex-1 text-sm text-[color:var(--text-2)]">{expense.description}</span>
             <span className="text-xs text-[color:var(--text-3)]">{expense.date}</span>
             <span className="text-sm font-medium text-[color:var(--text)]">
-              {formatMoney(Number(expense.amount))}
+              {formatMoney(Number(expense.amount), expense.currency || 'GBP')}
             </span>
           </label>
         ))}
