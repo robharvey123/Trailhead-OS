@@ -45,7 +45,7 @@ export default async function GrowthClustersPage({
           </p>
           <h1 className="mt-2 os-page-title">Topic clusters</h1>
           <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Approving a cluster creates a content-programme Project on the existing Gantt.
+            Approving a cluster marks it worth writing for. Generate a brief when you are ready.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -126,8 +126,8 @@ export default async function GrowthClustersPage({
                 {cluster.status === 'proposed' ? (
                   <>
                     <form action={approveClusterAction.bind(null, site.id, cluster.id)}>
-                      <PendingButton variant="primary" pendingLabel="Creating project…">
-                        Approve → create project
+                      <PendingButton variant="primary" pendingLabel="Approving…">
+                        Approve
                       </PendingButton>
                     </form>
                     <form action={archiveClusterAction.bind(null, site.id, cluster.id)}>
@@ -139,14 +139,6 @@ export default async function GrowthClustersPage({
                   <form action={generateBriefAction.bind(null, site.id, cluster.id)}>
                     <PendingButton pendingLabel="Writing brief…">Generate brief</PendingButton>
                   </form>
-                ) : null}
-                {cluster.project_id ? (
-                  <Link
-                    href={`/projects/records/${cluster.project_id}`}
-                    className="text-sm text-[color:var(--accent-strong)] underline decoration-[color:var(--border)] underline-offset-2"
-                  >
-                    View project
-                  </Link>
                 ) : null}
               </div>
             </div>

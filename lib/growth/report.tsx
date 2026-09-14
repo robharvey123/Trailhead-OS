@@ -44,7 +44,7 @@ export interface SeoReportData {
     providers: Array<{ provider: string; runs: number; rate: number }>
     competitors: Array<{ name: string; count: number }>
   }
-  nextMonth: Array<{ project: string; phase: string; start: string }>
+  nextMonth: Array<{ title: string; stage: string }>
   /** E4: paid + blended. Present only when the site has an ads account. */
   paid: {
     channels: Array<{ channel: string; clicks: number; impressions: number; spend: number | null; conversions: number | null; cpa: number | null }>
@@ -122,33 +122,57 @@ export async function buildSeoReportData(siteId: string, month: string): Promise
     })
   )
 
-  // Next month's plan: phases of cluster projects starting in the month after.
-  const { data: clusters } = await supabase
-    .from('seo_clusters')
-    .select('project_id')
-    .eq('site_id', siteId)
-    .not('project_id', 'is', null)
-  const projectIds = (clusters ?? []).map((c) => c.project_id as string)
-  let nextMonth: SeoReportData['nextMonth'] = []
-  if (projectIds.length > 0) {
-    const nextEnd = monthRange(
-      new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 1))
-        .toISOString()
-        .slice(0, 7)
-    ).end
-    const { data: phases } = await supabase
-      .from('project_phases')
-      .select('name, start_date, projects!inner(name)')
-      .in('project_id', projectIds)
-      .gte('start_date', end)
-      .lt('start_date', nextEnd)
-      .order('start_date')
-    nextMonth = (phases ?? []).map((p) => ({
-      project: (p.projects as unknown as { name: string }).name,
-      phase: p.name as string,
-      start: p.start_date as string,
-    }))
+  // Next month's plan: what is actually in the content pipeline. Articles in
+  // flight first (closest to landing), then approved briefs with no article
+  // yet, then approved clusters with no brief yet.
+  const ARTICLE_STAGE: Record<string, string> = {
+    drafting: 'In draft',
+    review: 'In review',
+    approved: 'Ready to publish',
   }
+  const [pipelineArticlesRes, approvedBriefsRes, approvedClustersRes] = await Promise.all([
+    supabase
+      .from('seo_articles')
+      .select('title, status, brief_id')
+      .eq('site_id', siteId)
+      .in('status', ['drafting', 'review', 'approved'])
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('seo_briefs')
+      .select('id, title, cluster_id')
+      .eq('site_id', siteId)
+      .eq('status', 'approved')
+      .order('approved_at', { ascending: true, nullsFirst: false }),
+    supabase
+      .from('seo_clusters')
+      .select('id, name, priority')
+      .eq('site_id', siteId)
+      .eq('status', 'approved')
+      .order('priority', { ascending: false }),
+  ])
+  const pipelineArticles = pipelineArticlesRes.data ?? []
+  const approvedBriefs = approvedBriefsRes.data ?? []
+  const approvedClusters = approvedClustersRes.data ?? []
+
+  const briefIdsWithArticle = new Set(
+    pipelineArticles.map((a) => a.brief_id as string).filter(Boolean)
+  )
+  const clusterIdsWithBrief = new Set(
+    approvedBriefs.map((b) => b.cluster_id as string).filter(Boolean)
+  )
+
+  const nextMonth: SeoReportData['nextMonth'] = [
+    ...pipelineArticles.map((a) => ({
+      title: a.title as string,
+      stage: ARTICLE_STAGE[a.status as string] ?? 'In progress',
+    })),
+    ...approvedBriefs
+      .filter((b) => !briefIdsWithArticle.has(b.id as string))
+      .map((b) => ({ title: b.title as string, stage: 'Brief ready to draft' })),
+    ...approvedClusters
+      .filter((c) => !clusterIdsWithBrief.has(c.id as string))
+      .map((c) => ({ title: c.name as string, stage: 'Topic approved, brief to write' })),
+  ].slice(0, 8)
 
   const monthDate = new Date(`${month}-01T00:00:00Z`)
   // E4: paid channels + equivalent media value (only when an ads account is linked).
@@ -442,7 +466,7 @@ function SeoReportDocument({ data }: { data: SeoReportData }) {
           ) : (
             data.nextMonth.map((p, i) => (
               <Text key={i} style={styles.li}>
-                • {p.project} — {p.phase} (from {new Date(p.start).toLocaleDateString('en-GB')})
+                • {p.title} ({p.stage})
               </Text>
             ))
           )}

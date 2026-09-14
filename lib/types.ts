@@ -1653,7 +1653,6 @@ export interface SeoCluster {
   intent: string | null
   priority: number
   target_url: string | null
-  project_id: string | null
   status: SeoClusterStatus
   method: 'model' | 'serp_overlap'
   rationale: string | null

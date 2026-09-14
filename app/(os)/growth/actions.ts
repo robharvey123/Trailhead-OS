@@ -155,65 +155,23 @@ export async function approveClusterAction(siteId: string, clusterId: string) {
   const supabase = createServiceClient()
 
   try {
-    const { data: cluster } = await supabase
+    // Approval is a curation signal, nothing more. A content programme is not a
+    // Project: Projects in the OS are build work and consulting engagements.
+    const { data: cluster, error } = await supabase
       .from('seo_clusters')
-      .select('*, seo_sites!inner(name, workstream_id)')
+      .update({ status: 'approved' })
       .eq('id', clusterId)
-      .single()
-    if (!cluster) throw new Error('Cluster not found')
-
-    const { data: keywords } = await supabase
-      .from('seo_keywords')
-      .select('keyword')
-      .eq('cluster_id', clusterId)
-
-    // The content programme becomes a Project so it lands on the existing Gantt.
-    const { createProject } = await import('@/lib/db/projects')
-    const site = cluster.seo_sites as { name: string; workstream_id: string | null }
-    const brief = [
-      `Content programme for the "${cluster.name}" topic cluster (${site.name}).`,
-      `Pillar keyword: ${cluster.pillar_keyword ?? 'n/a'}. Intent: ${cluster.intent ?? 'n/a'}.`,
-      `Keywords: ${(keywords ?? []).map((k) => k.keyword).join(', ')}`,
-    ].join('\n')
-
-    const project = await createProject({
-      name: `Content: ${cluster.name}`,
-      description: `SEO content cluster targeting "${cluster.pillar_keyword ?? cluster.name}"`,
-      brief,
-      status: 'planning',
-      start_date: new Date().toISOString().slice(0, 10),
-      workstream_id: site.workstream_id ?? undefined,
-    })
-
-    // Heuristic planner — generates phases/milestones/tasks on the Gantt. It
-    // needs a workstream; without one the project still exists, just unplanned.
-    let planned = false
-    if (site.workstream_id) {
-      const { planProjectFromBrief } = await import('@/lib/project-planner')
-      await planProjectFromBrief({
-        projectId: project.id,
-        projectName: project.name,
-        workstreamId: site.workstream_id,
-        pricingTierId: null,
-        startDate: project.start_date ?? new Date().toISOString().slice(0, 10),
-        brief,
-      })
-      planned = true
-    }
-
-    const { error } = await supabase
-      .from('seo_clusters')
-      .update({ status: 'approved', project_id: project.id })
-      .eq('id', clusterId)
+      .eq('status', 'proposed')
+      .select('name')
+      .maybeSingle()
     if (error) throw new Error(error.message)
+    if (!cluster) throw new Error('Cluster not found, or it was not in proposed status')
 
     revalidatePath(`/growth/${siteId}/clusters`)
     revalidatePath(`/growth/${siteId}`)
     redirect(
       `/growth/${siteId}/clusters?notice=${encodeURIComponent(
-        planned
-          ? `Cluster approved — project "${project.name}" created and planned`
-          : `Cluster approved — project "${project.name}" created (no workstream on the site, so no auto-plan)`
+        `"${cluster.name}" approved, generate a brief for it when you are ready`
       )}`
     )
   } catch (err) {
@@ -221,7 +179,6 @@ export async function approveClusterAction(siteId: string, clusterId: string) {
     redirect(`/growth/${siteId}/clusters?error=${encodeURIComponent(errMessage(err))}`)
   }
 }
-
 export async function archiveClusterAction(siteId: string, clusterId: string) {
   await requireAdmin()
   const { createClient: createServiceClient } = await import('@/lib/supabase/service')
