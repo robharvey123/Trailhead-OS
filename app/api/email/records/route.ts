@@ -6,6 +6,8 @@ import { getCompanySettings, getBankAccountForCurrency, renderCompanyEmailFooter
 import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { listPayments } from '@/lib/db/invoice-payments'
+import { getRemittanceAccountsForCurrency } from '@/lib/db/remittance-accounts'
+import { OUR_CHARGES_LINE, remittanceDisplayFields } from '@/lib/remittance'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getQuoteById } from '@/lib/db/quotes'
@@ -13,7 +15,7 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { DEFAULT_RESEND_FROM } from '@/lib/email/resend'
 import { renderInvoicePdf } from '@/lib/pdf/InvoicePDF'
 import { renderQuotePdf } from '@/lib/pdf/QuotePDF'
-import { calculateTotals, roundMoney, type Enquiry, type Invoice, type InvoicePayment, type QuoteListItem } from '@/lib/types'
+import { calculateTotals, roundMoney, type Enquiry, type Invoice, type InvoicePayment, type QuoteListItem, type RemittanceAccount } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
 
 const EmailRecordSchema = z.object({
@@ -92,7 +94,30 @@ function buildQuoteEmailHtml(message: string, quote: QuoteListItem, companySetti
   `
 }
 
-function buildInvoiceEmailHtml(message: string, invoice: Invoice, companySettings: CompanySettings, payments: InvoicePayment[]) {
+function buildRemittanceHtml(invoice: Invoice, accounts: RemittanceAccount[]) {
+  if (accounts.length === 0) return ''
+  const blocks = accounts
+    .map((a) => {
+      const rows = remittanceDisplayFields(a)
+        .map(([k, v]) => `${escapeHtml(k)}: ${escapeHtml(v)}`)
+        .join('<br />')
+      return `<p style="margin:8px 0 0"><strong>${escapeHtml(a.label)}</strong><br />${rows}${a.notes ? `<br /><em>${escapeHtml(a.notes)}</em>` : ''}</p>`
+    })
+    .join('')
+  const charges = accounts.some((a) => a.rail === 'swift')
+    ? `<p style="margin:8px 0 0;font-size:12px;color:#475569">${escapeHtml(OUR_CHARGES_LINE)}</p>`
+    : ''
+  return `
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e2e8f0">
+      <p style="margin:0;font-weight:600">How to pay (${escapeHtml(invoice.currency ?? 'GBP')})</p>
+      ${blocks}
+      <p style="margin:8px 0 0"><strong>Payment reference: ${escapeHtml(invoice.invoice_number)}</strong></p>
+      ${charges}
+    </div>
+  `
+}
+
+function buildInvoiceEmailHtml(message: string, invoice: Invoice, companySettings: CompanySettings, payments: InvoicePayment[], remittanceAccounts: RemittanceAccount[]) {
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
   const amountPaid = roundMoney(payments.reduce((sum, p) => sum + p.amount, 0))
   const amountDue = roundMoney(totals.total - amountPaid)
@@ -106,6 +131,7 @@ function buildInvoiceEmailHtml(message: string, invoice: Invoice, companySetting
     <p>Please find the attached invoice <strong>${escapeHtml(invoice.invoice_number)}</strong>.</p>
     <ul>${lines.join('')}</ul>
     ${invoice.stripe_payment_link ? `<p>You can pay online here: <a href="${escapeHtml(invoice.stripe_payment_link)}">${escapeHtml(invoice.stripe_payment_link)}</a></p>` : ''}
+    ${buildRemittanceHtml(invoice, remittanceAccounts)}
     ${renderCompanyEmailFooterHtml(companySettings)}
   `
 }
@@ -189,21 +215,22 @@ export async function POST(request: Request) {
     }
 
     const invoiceCurrency = invoice.currency ?? 'GBP'
-    const [contact, invAccount, workstreams, bankAccount, payments] = await Promise.all([
+    const [contact, invAccount, workstreams, bankAccount, payments, remittanceAccounts] = await Promise.all([
       invoice.contact_id ? getContactById(invoice.contact_id, auth.supabase).catch(() => null) : null,
       invoice.account_id ? getAccountById(invoice.account_id, auth.supabase).catch(() => null) : null,
       getWorkstreams(auth.supabase).catch(() => []),
       invoiceCurrency !== 'GBP' ? getBankAccountForCurrency(invoiceCurrency, auth.supabase).catch(() => null) : null,
       listPayments(id, auth.supabase).catch(() => []),
+      getRemittanceAccountsForCurrency(invoiceCurrency, auth.supabase).catch(() => []),
     ])
     const workstream = workstreams.find((item) => item.id === invoice.workstream_id) ?? null
-    const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings, bankAccount, invAccount, payments)
+    const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings, bankAccount, invAccount, payments, remittanceAccounts)
 
     await resend.emails.send({
       from: fromAddress,
       to: recipients,
       subject,
-      html: buildInvoiceEmailHtml(message, invoice, companySettings, payments),
+      html: buildInvoiceEmailHtml(message, invoice, companySettings, payments, remittanceAccounts),
       attachments: [
         {
           filename: `${invoice.invoice_number}.pdf`,

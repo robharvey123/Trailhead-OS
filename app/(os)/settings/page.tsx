@@ -3,6 +3,8 @@ import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
 import CompanySettingsForm from '@/components/os/CompanySettingsForm'
 import PaymentDetailsForm from '@/components/os/PaymentDetailsForm'
+import RemittanceAccountsSection from '@/components/os/RemittanceAccountsSection'
+import { listRemittanceAccounts } from '@/lib/db/remittance-accounts'
 import PricingTierSettings from '@/components/os/PricingTierSettings'
 import { getCompanySettings } from '@/lib/company-settings'
 import { getWorkstreams } from '@/lib/db/workstreams'
@@ -30,6 +32,7 @@ export default async function SettingsPage() {
   let pricingTiers: PricingTier[] = []
   let googleEmail: string | null = null
   const companySettings = await getCompanySettings(supabase)
+  const remittanceAccounts = await listRemittanceAccounts(supabase).catch(() => [])
   const profile = await getCurrentProfile(supabase)
   let linkedPersonName: string | null = null
   if (profile?.person_id) {
@@ -285,6 +288,17 @@ export default async function SettingsPage() {
 
         <div className="mt-6">
           <PaymentDetailsForm company={companySettings} />
+        </div>
+
+        <div className="mt-8 border-t border-[color:var(--border)] pt-6">
+          <h2 className="os-section-title">Remittance details</h2>
+          <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
+            Beneficiary blocks printed on invoice PDFs and emails, per currency and rail. When a currency has
+            active accounts here they replace the legacy payment block above for that currency.
+          </p>
+          <div className="mt-4">
+            <RemittanceAccountsSection initialAccounts={remittanceAccounts} />
+          </div>
         </div>
       </section>
     </div>

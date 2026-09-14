@@ -1,11 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { formatMoney } from '@/lib/money'
 import type { UnbilledTimeGroup } from '@/lib/types'
-
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
-}
 
 function formatHours(minutes: number) {
   return (minutes / 60).toFixed(2)

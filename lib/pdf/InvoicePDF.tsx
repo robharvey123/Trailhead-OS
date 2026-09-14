@@ -9,7 +9,8 @@ import {
   renderToBuffer,
 } from '@react-pdf/renderer'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
-import { calculateTotals, roundMoney, type Account, type Contact, type Invoice, type InvoicePayment, type Workstream } from '@/lib/types'
+import { calculateTotals, roundMoney, type Account, type Contact, type Invoice, type InvoicePayment, type RemittanceAccount, type Workstream } from '@/lib/types'
+import { OUR_CHARGES_LINE, remittanceDisplayFields } from '@/lib/remittance'
 import { formatMoney } from '@/lib/money'
 import type { CompanySettings, CompanyBankAccount } from '@/lib/company-settings'
 
@@ -129,6 +130,40 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTop: '1 solid #e2e8f0',
   },
+  remitBox: {
+    marginTop: 10,
+    border: '1 solid #e2e8f0',
+    borderRadius: 4,
+    padding: 10,
+  },
+  remitLabel: {
+    fontSize: 9,
+    fontWeight: 700,
+    marginBottom: 4,
+  },
+  remitRow: {
+    flexDirection: 'row',
+    marginBottom: 2,
+  },
+  remitKey: {
+    width: 130,
+    fontSize: 8,
+    color: '#64748b',
+  },
+  remitValue: {
+    flex: 1,
+    fontSize: 9,
+  },
+  remitReference: {
+    marginTop: 8,
+    fontSize: 10,
+    fontWeight: 700,
+  },
+  remitNote: {
+    marginTop: 6,
+    fontSize: 8,
+    color: '#475569',
+  },
   bankGrid: {
     flexDirection: 'row',
     gap: 48,
@@ -176,6 +211,7 @@ function InvoiceDocument({
   companySettings,
   bankAccount = null,
   payments = [],
+  remittanceAccounts = [],
 }: {
   invoice: Invoice
   contact: Contact | null
@@ -184,6 +220,7 @@ function InvoiceDocument({
   companySettings: CompanySettings | null
   bankAccount?: CompanyBankAccount | null
   payments?: InvoicePayment[]
+  remittanceAccounts?: RemittanceAccount[]
 }) {
   const totals = calculateTotals(invoice.line_items, invoice.vat_rate)
   const billTo = getInvoiceBillToDisplay(invoice, contact, account)
@@ -210,7 +247,10 @@ function InvoiceDocument({
         bank_address: null,
       }
     : null)
-  const showPayment = Boolean(bank && (bank.account_number || bank.iban))
+  // Remittance accounts (Settings, per currency and rail) supersede the legacy
+  // bank block for their currency. Never both; nothing prints when neither exists.
+  const hasRemittance = remittanceAccounts.length > 0
+  const showPayment = !hasRemittance && Boolean(bank && (bank.account_number || bank.iban))
   const currency = invoice.currency ?? 'GBP'
   const fxRate = invoice.fx_rate_to_gbp ?? 1
   const isForeign = currency !== 'GBP'
@@ -337,6 +377,31 @@ function InvoiceDocument({
           </View>
         ) : null}
 
+        {hasRemittance ? (
+          <View style={styles.bankDetails}>
+            <Text style={styles.sectionTitle}>How to pay ({currency})</Text>
+            {remittanceAccounts.map((acct) => (
+              <View key={acct.id} style={styles.remitBox} wrap={false}>
+                <Text style={styles.remitLabel}>{acct.label}</Text>
+                {remittanceDisplayFields(acct).map(([k, v]) => (
+                  <View key={k} style={styles.remitRow}>
+                    <Text style={styles.remitKey}>{k}</Text>
+                    <Text style={styles.remitValue}>{v}</Text>
+                  </View>
+                ))}
+                {acct.notes ? <Text style={styles.remitNote}>{acct.notes}</Text> : null}
+              </View>
+            ))}
+            <Text style={styles.remitReference}>Payment reference: {invoice.invoice_number}</Text>
+            {remittanceAccounts.some((a) => a.rail === 'swift') ? (
+              <Text style={styles.remitNote}>{OUR_CHARGES_LINE}</Text>
+            ) : null}
+            {companySettings?.payment_terms ? (
+              <Text style={{ ...styles.muted, marginTop: 6 }}>{companySettings.payment_terms}</Text>
+            ) : null}
+          </View>
+        ) : null}
+
         {isForeign ? (
           <View style={styles.fxNote}>
             <Text>
@@ -426,7 +491,8 @@ export async function renderInvoicePdf(
   companySettings: CompanySettings | null = null,
   bankAccount: CompanyBankAccount | null = null,
   account: Account | null = null,
-  payments: InvoicePayment[] = []
+  payments: InvoicePayment[] = [],
+  remittanceAccounts: RemittanceAccount[] = []
 ) {
   return renderToBuffer(
     <InvoiceDocument
@@ -437,6 +503,7 @@ export async function renderInvoicePdf(
       companySettings={companySettings}
       bankAccount={bankAccount}
       payments={payments}
+      remittanceAccounts={remittanceAccounts}
     />
   )
 }

@@ -2035,3 +2035,31 @@ export interface InvoicePaymentState {
   amount_paid: number
   balance: number
 }
+
+// ── Remittance accounts (invoice How to pay blocks) ────
+
+export type RemittanceRail = 'uk_local' | 'sepa' | 'swift' | 'us_local'
+
+export interface RemittanceAccount {
+  id: string
+  currency: 'GBP' | 'EUR' | 'USD'
+  rail: RemittanceRail
+  label: string
+  beneficiary_name: string
+  beneficiary_address: string | null
+  bank_name: string | null
+  bank_address: string | null
+  /** Stored unspaced and uppercase; printed in 4-character groups. */
+  iban: string | null
+  bic: string | null
+  intermediary_bic: string | null
+  account_number: string | null
+  sort_code: string | null
+  routing_number: string | null
+  account_type: string | null
+  notes: string | null
+  sort_order: number
+  active: boolean
+  created_at: string
+  updated_at: string
+}
