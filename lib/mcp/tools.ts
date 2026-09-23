@@ -23,6 +23,7 @@ import {
 import {
   addTier1,
   confirmEngagementDocumentUpload,
+  createEngagement,
   createEngagementDocumentUpload,
   engagementMonthUsage,
   getEngagementDetail,
@@ -34,6 +35,7 @@ import {
   patchCoworkTimeEntry,
   raiseMilestoneInvoiceByAccount,
   setMilestone,
+  updateEngagement,
   uploadEngagementDocument,
 } from '@/lib/cowork-engagements'
 import { createCoworkInvoice, listCoworkInvoices, setInvoiceStatus } from '@/lib/cowork-invoices'
@@ -368,6 +370,98 @@ export const getEngagementTool = defineTool({
   description: 'Full engagement detail (hours, tier-1, billing, contributors, projects). Accepts the engagement code (e.g. QOLA-UKEU-26) or the uuid.',
   inputSchema: z.object({ id: engagementRef }),
   handler: async (input) => getEngagementDetail(input.id),
+})
+
+// ── Engagement lifecycle ──────────────────────────────────────────────────────
+
+// Mirrors lib/types.ts. Client types are billable, internal ones are not (the DB
+// derives is_billable from the type), which is why the tool descriptions say so:
+// picking the wrong type silently makes every logged hour non-billable.
+const engagementType = z.enum(['client_consulting', 'client_app_build', 'internal_app_build', 'internal_ops'])
+const engagementStatus = z.enum(['Draft', 'Active', 'Paused', 'Completed', 'Terminated'])
+const approvalThresholds = z.object({
+  hours_overage_hours: z.number().optional(),
+  travel_amount_gbp: z.number().optional(),
+  slotting_fees_required: z.boolean().optional(),
+  exhibition_required: z.boolean().optional(),
+  third_party_costs_required: z.boolean().optional(),
+})
+
+/** Commercial terms, shared by create and update so the two cannot drift. */
+const engagementTerms = {
+  code: z.string().nullable().optional().describe('short human reference, e.g. QOLA-UKEU-26; must be unique'),
+  currency: z.string().optional().describe('ISO code, default GBP'),
+  retainer_amount_monthly: z.number().nullable().optional(),
+  included_hours_monthly: z.number().nullable().optional().describe('monthly hours the retainer covers; engagement_hours_check measures against this'),
+  day_rate: z.number().nullable().optional(),
+  performance_fee_default: z.number().nullable().optional().describe('default Tier 1 listing fee per account'),
+  end_date: isoDate.nullable().optional(),
+  notice_period_days: z.number().nullable().optional(),
+  auto_renews: z.boolean().optional(),
+  renewal_term_months: z.number().nullable().optional(),
+  billing_month_start_day: z.number().int().min(1).max(28).optional().describe('day the billing month rolls over, 1-28 (e.g. 15 = 15th to 14th). Default 1 = calendar month'),
+  approval_thresholds: approvalThresholds.optional().describe('spend/hours levels above which Rob must approve'),
+  notes: z.string().nullable().optional(),
+}
+
+export const createEngagementTool = defineTool({
+  name: 'create_engagement',
+  description:
+    'Create an engagement (a contracted piece of work for one end client — the thing time, expenses, invoices and Tier 1 listings all hang off). Required: name, start_date, and the end client, which you may give as end_client_account_name (matched case-insensitively on the exact name) instead of a uuid — use find_account or create_account first if you are unsure it exists. engagement_type is client_consulting | client_app_build | internal_app_build | internal_ops and defaults to client_consulting; the two client types are billable and the two internal ones are NOT, so an internal type makes every hour logged against it non-billable at a 0 rate. status is Draft | Active | Paused | Completed | Terminated and defaults to Draft — set Active if work starts now. Set code (e.g. QOLA-UKEU-26) so you and Rob can refer to it by name afterwards; a duplicate code is refused (409). billed_via_account_* differs from the end client only when a third party pays (e.g. billing a distributor for a brand’s work).',
+  inputSchema: z.object({
+    name: z.string().min(1),
+    start_date: isoDate,
+    end_client_account_id: z.string().optional(),
+    end_client_account_name: z.string().optional().describe('exact account name; one of end_client_account_id / end_client_account_name is required'),
+    billed_via_account_id: z.string().nullable().optional(),
+    billed_via_account_name: z.string().optional().describe('only when someone other than the end client is invoiced'),
+    engagement_type: engagementType.optional(),
+    status: engagementStatus.optional(),
+    ...engagementTerms,
+  }),
+  handler: async (input) => {
+    const body = Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined))
+    const engagement = await createEngagement(body)
+    void recordCoworkWrite({
+      action: 'create', entity: 'engagement', entityId: engagement.id,
+      entityLabel: engagement.code ?? engagement.name, engagementId: engagement.id,
+      summary: `Created engagement "${engagement.name}"${engagement.code ? ` (${engagement.code})` : ''}, end client ${engagement.end_client?.name ?? '—'}, status ${engagement.status}`,
+      payload: body,
+    })
+    return engagement
+  },
+})
+
+export const updateEngagementTool = defineTool({
+  name: 'update_engagement',
+  description:
+    'Amend an engagement (code like QOLA-UKEU-26, or uuid). Supply only the fields to change — an empty patch is refused. Use it to activate a draft (status:"Active"), revise terms mid-engagement (included_hours_monthly, retainer_amount_monthly, day_rate, performance_fee_default), set an end_date or notice, or fix a name or code. Two to be careful with: changing engagement_type between a client and an internal type flips whether the engagement is billable, and changing billing_month_start_day moves every billing period boundary, so hours already reported for a month can land in a different one. Neither this nor anything else re-rates time already logged — rate_snapshot on an existing entry is history; amend those with update_time_entry. There is no delete: end an engagement with status "Completed" or "Terminated".',
+  inputSchema: z.object({
+    engagement: engagementRef,
+    name: z.string().optional(),
+    status: engagementStatus.optional(),
+    engagement_type: engagementType.optional(),
+    start_date: isoDate.optional().describe('cannot be cleared'),
+    end_client_account_id: z.string().optional(),
+    end_client_account_name: z.string().optional(),
+    billed_via_account_id: z.string().nullable().optional(),
+    billed_via_account_name: z.string().optional(),
+    ...engagementTerms,
+  }),
+  handler: async (input) => {
+    const { engagement: ref, ...rest } = input
+    // updateEngagement branches on `!== undefined`, so an unsupplied key must not
+    // reach it — otherwise a nullable field would read as "clear this".
+    const body = Object.fromEntries(Object.entries(rest).filter(([, value]) => value !== undefined))
+    const engagement = await updateEngagement(ref, body)
+    void recordCoworkWrite({
+      action: 'update', entity: 'engagement', entityId: engagement.id,
+      entityLabel: engagement.code ?? engagement.name, engagementId: engagement.id,
+      summary: `Updated engagement "${engagement.name}" (${Object.keys(body).join(', ')})`,
+      payload: body,
+    })
+    return engagement
+  },
 })
 
 export const logTimeTool = defineTool({
@@ -818,6 +912,8 @@ export const tools: McpTool[] = [
   briefing,
   listEngagementsTool,
   getEngagementTool,
+  createEngagementTool,
+  updateEngagementTool,
   logTimeTool,
   updateTimeEntryTool,
   logExpenseTool,

@@ -177,16 +177,34 @@ async function main() {
     'create_engagement_document_upload',
     'confirm_engagement_document_upload',
     'update_time_entry',
+    'create_engagement',
+    'update_engagement',
   ]) {
     ok(`tools/list includes ${expected}`, names.includes(expected))
   }
   ok('every tool has a description', listed.every((tool) => Boolean(tool.description?.trim())))
   ok('every tool has an input schema', listed.every((tool) => Boolean(tool.inputSchema)))
 
+  const byName = new Map(listed.map((tool) => [tool.name, tool]))
+  const createSchema = JSON.stringify(byName.get('create_engagement')?.inputSchema ?? {})
+  ok('create_engagement requires name + start_date',
+    /"required":\[[^\]]*"name"[^\]]*"start_date"/.test(createSchema) ||
+      (/"name"/.test(createSchema) && /"start_date"/.test(createSchema)))
+  for (const value of ['client_consulting', 'internal_ops', 'Draft', 'Terminated']) {
+    ok(`create_engagement advertises "${value}"`, createSchema.includes(`"${value}"`))
+  }
+  const updateSchema = JSON.stringify(byName.get('update_engagement')?.inputSchema ?? {})
+  ok('update_engagement takes an engagement ref', /"engagement"/.test(updateSchema))
+  for (const value of ['Active', 'Paused', 'Completed']) {
+    ok(`update_engagement advertises "${value}"`, updateSchema.includes(`"${value}"`))
+  }
+  const createDescription = tools.find((tool) => tool.name === 'create_engagement')?.description ?? ''
+  ok('create_engagement warns that internal types are non-billable', /non-billable/i.test(createDescription))
+
   // Task 6: engagement arguments must advertise the code form, or Claude sends a
   // uuid it does not have.
   const codeExample = tools.filter((tool) => /QOLA-UKEU-26|code or uuid|code like/i.test(tool.description))
-  ok('engagement-referencing tools mention the code form', codeExample.length >= 14, `${codeExample.length} tools`)
+  ok('engagement-referencing tools mention the code form', codeExample.length >= 16, `${codeExample.length} tools`)
   const logTimeDescription = tools.find((tool) => tool.name === 'log_time')?.description ?? ''
   ok('log_time warns about the 0 rate snapshot', /snapshots its rate at 0|rate at 0/.test(logTimeDescription))
 
