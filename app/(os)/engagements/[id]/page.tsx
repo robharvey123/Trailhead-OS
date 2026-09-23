@@ -26,7 +26,7 @@ export default async function EngagementDetailPage({ params }: { params: Promise
     listTimeEntries({ engagement_id: id, limit: 2000 }, supabase).catch(() => []),
     supabase.from('projects').select('id, name, status').eq('engagement_id', id),
     getAccounts({}, supabase).catch(() => []),
-    supabase.from('engagement_documents').select('id, type, title, week_start, created_at, file_path, file_name, mime_type, size_bytes').eq('engagement_id', id).order('created_at', { ascending: false }),
+    supabase.from('engagement_documents').select('id, type, title, week_start, created_at, file_path, file_name, mime_type, size_bytes').eq('engagement_id', id).eq('upload_state', 'live').order('created_at', { ascending: false }),
     engagementLinkCounts(id, supabase).catch(() => ({ projects: 0, timeEntries: 0, milestones: 0, approvals: 0, documents: 0, touchpoints: 0 })),
     listContributors(id, supabase).catch(() => []),
     listPeople({ activeOnly: true }, supabase).catch(() => []),

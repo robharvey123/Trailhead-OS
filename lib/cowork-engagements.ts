@@ -738,6 +738,9 @@ export async function listEngagementDocuments(ref: string) {
     .from('engagement_documents')
     .select('id, type, title, file_name, mime_type, size_bytes, week_start, created_at')
     .eq('engagement_id', e.id)
+    // Reserved-but-unconfirmed uploads are not documents yet — see
+    // createEngagementDocumentUpload. Every list filters them out.
+    .eq('upload_state', 'live')
     .order('created_at', { ascending: false })
   if (error) throw new CoworkApiError(error.message || 'Failed to load documents', 500)
   return data ?? []
@@ -797,6 +800,176 @@ export async function uploadEngagementDocument(
     throw new CoworkApiError(insErr.message || 'Failed to save document', 500)
   }
   return { document: doc as { id: string; title: string | null; file_name: string | null; mime_type: string | null; size_bytes: number | null; type: string; created_at: string }, engagement: { id: e.id, name: e.name } }
+}
+
+/**
+ * Supabase fixes the lifetime of a signed upload URL at 2 hours and the JS SDK
+ * exposes no override, so that is what `expires_at` reports. Do not shorten the
+ * reported value: an agent that believes the URL died at 15 minutes abandons a
+ * URL that still works. The short-lived half of the guarantee is the pending
+ * record, which is invisible to every document list and unconfirmable after a
+ * day.
+ */
+const SIGNED_UPLOAD_URL_TTL_MS = 2 * 60 * 60 * 1000
+const PENDING_UPLOAD_MAX_AGE_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Step 1 of a two-step upload: reserve a storage path and a pending document row,
+ * and hand back a signed URL the caller PUTs the bytes to. Base64 through an MCP
+ * tool call costs ~30k tokens for an 88 KB PDF; this costs a few hundred.
+ *
+ * The row is 'pending' and therefore invisible until
+ * `confirmEngagementDocumentUpload` sees the object in storage. Path convention
+ * and bucket match `uploadEngagementDocument` exactly, so both kinds of upload
+ * download and delete through the same code.
+ */
+export async function createEngagementDocumentUpload(
+  ref: string,
+  body: { file_name?: unknown; title?: unknown; mime_type?: unknown }
+) {
+  const e = await getEngagementRow(ref)
+  const fileName = optionalString(body.file_name)
+  if (!fileName) throw new CoworkApiError('file_name is required', 400)
+
+  const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120) || 'file'
+  const path = `${e.id}/${Date.now()}-${safeName}`
+  const mime = optionalString(body.mime_type) ?? guessMime(safeName)
+
+  const { data: signed, error: signErr } = await supabaseService.storage
+    .from('engagement-docs')
+    .createSignedUploadUrl(path)
+  if (signErr || !signed) {
+    throw new CoworkApiError(signErr?.message || 'Failed to create an upload URL', 500)
+  }
+
+  const { data: doc, error: insErr } = await supabaseService
+    .from('engagement_documents')
+    .insert({
+      engagement_id: e.id,
+      type: 'upload',
+      title: optionalString(body.title) ?? fileName,
+      file_path: path,
+      file_name: fileName,
+      mime_type: mime,
+      size_bytes: null,
+      upload_state: 'pending',
+    })
+    .select('id, title, file_name, mime_type, created_at')
+    .single()
+  // No object exists yet, so a failed insert leaves nothing to roll back; the
+  // signed URL simply goes unused and expires.
+  if (insErr) throw new CoworkApiError(insErr.message || 'Failed to reserve the document', 500)
+
+  return {
+    document_id: (doc as { id: string }).id,
+    upload_url: signed.signedUrl,
+    method: 'PUT' as const,
+    headers: { 'content-type': mime },
+    expires_at: new Date(Date.now() + SIGNED_UPLOAD_URL_TTL_MS).toISOString(),
+    file_name: fileName,
+    mime_type: mime,
+    engagement: { id: e.id, name: e.name, code: e.code },
+    next_step:
+      'PUT the file bytes to upload_url, then call confirm_engagement_document_upload with this document_id.',
+  }
+}
+
+/**
+ * Step 2: check the object landed, record its real size and make the document
+ * live. A missing object is an error and leaves the record pending, so the caller
+ * can retry the PUT against the same (still valid) URL.
+ */
+export async function confirmEngagementDocumentUpload(documentId: string) {
+  const id = optionalString(documentId)
+  if (!id) throw new CoworkApiError('document_id is required', 400)
+
+  const { data: row, error: loadErr } = await supabaseService
+    .from('engagement_documents')
+    .select('id, engagement_id, type, title, file_name, file_path, mime_type, size_bytes, upload_state, created_at')
+    .eq('id', id)
+    .maybeSingle()
+  if (loadErr) throw new CoworkApiError(loadErr.message || 'Failed to load the document', 500)
+  if (!row) throw new CoworkApiError(`Document not found: ${id}`, 404)
+
+  const doc = row as {
+    id: string
+    engagement_id: string
+    type: string
+    title: string | null
+    file_name: string | null
+    file_path: string | null
+    mime_type: string | null
+    size_bytes: number | null
+    upload_state: string
+    created_at: string
+  }
+
+  if (doc.upload_state === 'live') {
+    // Idempotent: a repeated confirm is a no-op, not an error.
+    const e = await getEngagementRow(doc.engagement_id)
+    return {
+      document: { ...doc, upload_state: 'live' },
+      engagement: { id: e.id, name: e.name },
+      already_confirmed: true,
+    }
+  }
+
+  if (!doc.file_path) throw new CoworkApiError('Document has no reserved storage path', 500)
+
+  if (Date.now() - new Date(doc.created_at).getTime() > PENDING_UPLOAD_MAX_AGE_MS) {
+    throw new CoworkApiError(
+      'This upload was reserved over 24 hours ago and has expired. Call create_engagement_document_upload again.',
+      410
+    )
+  }
+
+  // Storage has no stat-one-object call; list the prefix and match the name.
+  const slash = doc.file_path.lastIndexOf('/')
+  const prefix = slash === -1 ? '' : doc.file_path.slice(0, slash)
+  const objectName = doc.file_path.slice(slash + 1)
+  const { data: objects, error: listErr } = await supabaseService.storage
+    .from('engagement-docs')
+    .list(prefix, { search: objectName, limit: 100 })
+  if (listErr) throw new CoworkApiError(listErr.message || 'Failed to check storage', 500)
+
+  const object = (objects ?? []).find((candidate) => candidate.name === objectName)
+  if (!object) {
+    throw new CoworkApiError(
+      `No file has been uploaded for document ${id} yet. PUT the bytes to the upload_url, then confirm again.`,
+      409
+    )
+  }
+
+  const size = (object.metadata as { size?: number } | null)?.size ?? null
+  if (size === 0) {
+    throw new CoworkApiError(`The uploaded file for document ${id} is empty.`, 400)
+  }
+  if (size != null && size > MAX_DOC_BYTES) {
+    throw new CoworkApiError('Document exceeds the 25 MB limit', 400)
+  }
+
+  const { data: updated, error: updErr } = await supabaseService
+    .from('engagement_documents')
+    .update({ upload_state: 'live', size_bytes: size })
+    .eq('id', id)
+    .select('id, type, title, file_name, mime_type, size_bytes, created_at')
+    .single()
+  if (updErr) throw new CoworkApiError(updErr.message || 'Failed to confirm the document', 500)
+
+  const e = await getEngagementRow(doc.engagement_id)
+  return {
+    document: updated as {
+      id: string
+      type: string
+      title: string | null
+      file_name: string | null
+      mime_type: string | null
+      size_bytes: number | null
+      created_at: string
+    },
+    engagement: { id: e.id, name: e.name },
+    already_confirmed: false,
+  }
 }
 
 /** Current billing-month hours used vs included for an engagement (by uuid or code). */

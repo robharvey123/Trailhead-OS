@@ -10,6 +10,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .from('engagement_documents')
       .select('*')
       .eq('engagement_id', id)
+      // Reserved-but-unconfirmed two-step uploads are not documents yet.
+      .eq('upload_state', 'live')
       .order('created_at', { ascending: false })
     if (error) throw new Error(error.message)
     return NextResponse.json({ documents: data ?? [] })

@@ -22,6 +22,8 @@ import {
 } from '@/lib/cowork-api'
 import {
   addTier1,
+  confirmEngagementDocumentUpload,
+  createEngagementDocumentUpload,
   engagementMonthUsage,
   getEngagementDetail,
   getEngagementRow,
@@ -29,6 +31,7 @@ import {
   listEngagementDocuments,
   listEngagements as listEngagementsFn,
   logTime,
+  patchCoworkTimeEntry,
   raiseMilestoneInvoiceByAccount,
   setMilestone,
   uploadEngagementDocument,
@@ -222,7 +225,7 @@ export const updateProjectMilestoneTool = defineTool({
 export const listEngagementTasks = defineTool({
   name: 'list_engagement_tasks',
   description:
-    'List engagement_tasks (the ticket board) scoped to one project, optionally filtered by status and/or priority.',
+    'List engagement_tasks (the ticket board) scoped to one project, optionally filtered by status (backlog|in_progress|review|done|cancelled) and/or priority (low|normal|high|urgent — note "normal", not "medium").',
   inputSchema: z.object({
     project_id: z.string().min(1),
     status: engagementTaskStatus.optional(),
@@ -242,7 +245,7 @@ export const listEngagementTasks = defineTool({
 export const bulkCreateEngagementTasksTool = defineTool({
   name: 'bulk_create_engagement_tasks',
   description:
-    'Insert many engagement_tasks against one project in a single call — for importing a roadmap from Claude. Tasks inherit the project’s engagement.',
+    'Insert many engagement_tasks against one project in a single call — for importing a roadmap from Claude. Tasks inherit the project’s engagement. Per task: status is backlog|in_progress|review|done|cancelled and priority is low|normal|high|urgent (engagement tickets use "normal", not "medium").',
   inputSchema: z.object({
     project_id: z.string().min(1),
     tasks: z
@@ -277,7 +280,7 @@ export const bulkCreateEngagementTasksTool = defineTool({
 export const updateEngagementTaskTool = defineTool({
   name: 'update_engagement_task',
   description:
-    'Patch an engagement task (ticket board). Supply only the fields to change: title, description, status, priority, due_date, labels, position.',
+    'Patch an engagement task (ticket board). Supply only the fields to change: title, description, status (backlog|in_progress|review|done|cancelled), priority (low|normal|high|urgent — "normal", not "medium"), due_date, labels, position.',
   inputSchema: z.object({
     id: z.string().min(1),
     title: z.string().optional(),
@@ -336,27 +339,42 @@ export const briefing = defineTool({
 
 // ── Engagements / time / milestones / invoices (delegate to shared modules) ───
 
-const engagementRef = z.string().min(1) // uuid or code
+// Every engagement argument takes either form: the uuid, or the human code Rob
+// actually uses (e.g. QOLA-UKEU-26). getEngagementRow does the lookup.
+const engagementRef = z
+  .string()
+  .min(1)
+  .describe('engagement code (e.g. QOLA-UKEU-26) or uuid')
+
+/**
+ * The time-entry link resolver in lib/time/links works in uuids (it is shared
+ * with the REST routes), but Rob and Claude both talk in engagement codes.
+ * Translate at the MCP boundary so every tool here accepts either form — and get
+ * a clear "Engagement not found" instead of an FK error on a bad id.
+ */
+async function engagementUuid(ref: string): Promise<string> {
+  return (await getEngagementRow(ref)).id
+}
 
 export const listEngagementsTool = defineTool({
   name: 'list_engagements',
-  description: 'Active engagements with hours used this month and billing position. Filter by status/account.',
+  description: 'Active engagements with hours used this month and billing position. Filter by status/account. Use this to look up an engagement code (e.g. QOLA-UKEU-26) when you only know the client name.',
   inputSchema: z.object({ status: z.string().optional(), account: z.string().optional(), limit: z.number().optional() }),
   handler: async (input) => listEngagementsFn({ status: input.status as never, accountId: undefined, limit: input.limit }),
 })
 
 export const getEngagementTool = defineTool({
   name: 'get_engagement',
-  description: 'Full engagement detail (hours, tier-1, billing, contributors, projects). Accepts the code or the uuid.',
+  description: 'Full engagement detail (hours, tier-1, billing, contributors, projects). Accepts the engagement code (e.g. QOLA-UKEU-26) or the uuid.',
   inputSchema: z.object({ id: engagementRef }),
   handler: async (input) => getEngagementDetail(input.id),
 })
 
 export const logTimeTool = defineTool({
   name: 'log_time',
-  description: 'Log completed time against an engagement, project or delivery ticket (engagement_tasks). Account and project are DERIVED automatically (task → engagement + project → account), so pass only what you know — a task_id alone produces a fully linked entry. A task_id whose engagement conflicts with an explicit engagement_id is rejected. billable defaults from the engagement (internal engagements log non-billable). Snapshots a rate (explicit → contributor → project → account default); warns if it takes the engagement past its monthly cap. e.g. "log 90 minutes on the Bestway pitch".',
+  description: 'Log completed time against an engagement, project or delivery ticket (engagement_tasks). ALWAYS link the entry to an engagement — directly via engagement_id (code like QOLA-UKEU-26, or uuid), or via a task_id/project_id that belongs to one. An entry with no engagement snapshots its rate at 0 and is worth nothing on an invoice or a client report; fix one with update_time_entry. Account and project are DERIVED automatically (task → engagement + project → account), so pass only what you know — a task_id alone produces a fully linked entry. A task_id whose engagement conflicts with an explicit engagement_id is rejected. billable defaults from the engagement (internal engagements log non-billable). Snapshots a rate (explicit → contributor → project → account default); warns if it takes the engagement past its monthly cap. e.g. "log 90 minutes on the Bestway pitch".',
   inputSchema: z.object({
-    engagement_id: z.string().optional(),
+    engagement_id: z.string().optional().describe('engagement code (e.g. QOLA-UKEU-26) or uuid'),
     project_id: z.string().optional(),
     task_id: z.string().optional(),
     account_id: z.string().optional(),
@@ -368,21 +386,58 @@ export const logTimeTool = defineTool({
     rate_snapshot: z.number().optional(),
   }),
   handler: async (input) => {
-    const { entry, warning } = await logTime(input as Record<string, unknown>)
+    const body: Record<string, unknown> = { ...input }
+    if (input.engagement_id) body.engagement_id = await engagementUuid(input.engagement_id)
+    const { entry, warning } = await logTime(body)
     const label = entry.engagement?.code ?? entry.project?.name ?? entry.account?.name ?? 'general'
     void recordCoworkWrite({
       action: 'create', entity: 'time_entry', entityId: entry.id, entityLabel: `${entry.hours}h on ${label}`,
       engagementId: entry.engagement?.id ?? null,
       summary: `Logged ${entry.hours}h on ${label} at £${entry.rate_snapshot}/h${warning ? ` — over cap by ${warning.over_by_hours}h` : ''}`,
-      payload: input as Record<string, unknown>,
+      payload: body,
     })
     return warning ? { ...entry, warning } : entry
   },
 })
 
+export const updateTimeEntryTool = defineTool({
+  name: 'update_time_entry',
+  description:
+    "Amend a time entry that is already logged (there is no delete — correct the entry instead). Supply the entry id plus only the fields to change: duration_minutes, entry_date, description, client_description, billable, task_id, engagement_id, project_id. Links behave as they do on log_time: attaching a task_id backfills its engagement and project, and a task whose engagement contradicts an explicit engagement_id is rejected. The snapshot rate is history and is preserved as-is; it is re-resolved only when the engagement changes (including an unlinked entry gaining one, which is how you fix an entry snapshotted at 0), or on resnapshot_rate:true. An explicit rate_snapshot always wins.",
+  inputSchema: z.object({
+    id: z.string().min(1),
+    duration_minutes: z.number().int().positive().optional(),
+    entry_date: isoDate.optional(),
+    description: z.string().nullable().optional(),
+    client_description: z.string().nullable().optional().describe('one line the client may see; internal description never reaches client reports'),
+    billable: z.boolean().optional(),
+    task_id: z.string().nullable().optional(),
+    engagement_id: z.string().nullable().optional().describe('engagement code (e.g. QOLA-UKEU-26) or uuid; null unlinks'),
+    project_id: z.string().nullable().optional(),
+    rate_snapshot: z.number().optional(),
+    resnapshot_rate: z.boolean().optional(),
+  }),
+  handler: async (input) => {
+    const { id, ...rest } = input
+    // Only keys actually supplied may reach the patcher: it branches on `in body`,
+    // so an undefined task_id would read as "unlink the task".
+    const body = Object.fromEntries(Object.entries(rest).filter(([, value]) => value !== undefined))
+    if (typeof body.engagement_id === 'string') body.engagement_id = await engagementUuid(body.engagement_id)
+    const { entry, warning, rate_change } = await patchCoworkTimeEntry(id, body)
+    const label = entry.engagement?.code ?? entry.project?.name ?? entry.account?.name ?? 'general'
+    void recordCoworkWrite({
+      action: 'update', entity: 'time_entry', entityId: entry.id, entityLabel: `${entry.hours}h on ${label}`,
+      engagementId: entry.engagement?.id ?? null,
+      summary: `Amended time entry — ${entry.hours}h on ${label} at £${entry.rate_snapshot}/h${rate_change ? ` (rate ${rate_change.from}→${rate_change.to}: ${rate_change.reason})` : ''}`,
+      payload: body,
+    })
+    return { ...entry, ...(warning ? { warning } : {}), ...(rate_change ? { rate_change } : {}) }
+  },
+})
+
 export const setMilestoneGateTool = defineTool({
   name: 'set_milestone_gate',
-  description: 'Set or clear a Tier 1 gate (range_review_decided | go_live_confirmed | first_po_received) for an account on an engagement. e.g. "Booker range review decided today". Pass date:null to clear.',
+  description: 'Set or clear a Tier 1 gate (range_review_decided | go_live_confirmed | first_po_received) for an account on an engagement (code like QOLA-UKEU-26, or uuid). e.g. "Booker range review decided today". Pass date:null to clear.',
   inputSchema: z.object({
     engagement: engagementRef,
     account_id: z.string().optional(),
@@ -418,7 +473,7 @@ export const setMilestoneGateTool = defineTool({
 
 export const raiseListingInvoiceTool = defineTool({
   name: 'raise_listing_invoice',
-  description: 'Raise the Tier 1 performance-fee invoice from a completed milestone (engagement + account).',
+  description: 'Raise the Tier 1 performance-fee invoice from a completed milestone (engagement + account). The engagement takes its code (e.g. QOLA-UKEU-26) or uuid.',
   inputSchema: z.object({ engagement: engagementRef, account_id: z.string().min(1) }),
   handler: async (input) => {
     const engagement = await getEngagementRow(input.engagement)
@@ -435,8 +490,8 @@ export const raiseListingInvoiceTool = defineTool({
 
 export const listInvoicesTool = defineTool({
   name: 'list_invoices',
-  description: 'List invoices, filterable by status and engagement. Excludes soft-deleted.',
-  inputSchema: z.object({ status: z.string().optional(), engagement: z.string().optional(), limit: z.number().optional() }),
+  description: 'List invoices, filterable by status and engagement (code like QOLA-UKEU-26, or uuid). Excludes soft-deleted.',
+  inputSchema: z.object({ status: z.string().optional(), engagement: engagementRef.optional(), limit: z.number().optional() }),
   handler: async (input) => {
     const engagementId = input.engagement ? (await getEngagementRow(input.engagement)).id : null
     return listCoworkInvoices({ status: input.status, engagementId, limit: input.limit })
@@ -445,10 +500,10 @@ export const listInvoicesTool = defineTool({
 
 export const raiseInvoiceTool = defineTool({
   name: 'raise_invoice',
-  description: 'Create a retainer/overage invoice. line_items:[{description,qty,unit_price}]; engagement_id links it and defaults the account.',
+  description: 'Create a retainer/overage invoice. line_items:[{description,qty,unit_price}]; engagement_id (code like QOLA-UKEU-26, or uuid) links it and defaults the account.',
   inputSchema: z.object({
     line_items: z.array(z.object({ description: z.string(), qty: z.number(), unit_price: z.number() })).min(1),
-    engagement_id: z.string().optional(),
+    engagement_id: engagementRef.optional(),
     account_name: z.string().optional(),
     status: z.enum(['draft', 'sent']).optional(),
     due_date: isoDate.optional(),
@@ -537,7 +592,7 @@ export const createAccountTool = defineTool({
 
 export const addTier1AccountTool = defineTool({
   name: 'add_tier1_account',
-  description: 'Attach a target account to an engagement as a Tier 1 listing. account_name with create_if_missing creates it.',
+  description: 'Attach a target account to an engagement (code like QOLA-UKEU-26, or uuid) as a Tier 1 listing. account_name with create_if_missing creates it.',
   inputSchema: z.object({
     engagement: engagementRef,
     account_id: z.string().optional(),
@@ -573,7 +628,7 @@ export const getCampaignStatsTool = defineTool({
 export const engagementHoursCheckTool = defineTool({
   name: 'engagement_hours_check',
   description:
-    "Hours used vs included for an engagement's current billing month, or the billing month that starts in a given YYYY-MM. Billing months follow the engagement's billing_month_start_day (e.g. 15th to 14th); work dated before the start date counts in month one.",
+    "Hours used vs included for an engagement (code like QOLA-UKEU-26, or uuid) for its current billing month, or the billing month that starts in a given YYYY-MM. Billing months follow the engagement's billing_month_start_day (e.g. 15th to 14th); work dated before the start date counts in month one.",
   inputSchema: z.object({ engagement: engagementRef, month: z.string().regex(/^\d{4}-\d{2}$/).optional() }),
   handler: async (input) => {
     if (!input.month) return engagementMonthUsage(input.engagement)
@@ -595,7 +650,7 @@ export const engagementHoursCheckTool = defineTool({
 
 export const uploadEngagementDocumentTool = defineTool({
   name: 'upload_engagement_document',
-  description: 'Upload a document to an engagement. Provide file_name plus content_base64 (any file) or content (utf-8 text, e.g. a markdown note). Optional title and mime_type.',
+  description: 'Upload a small document to an engagement (code like QOLA-UKEU-26, or uuid) in ONE call. Provide file_name plus content (utf-8 text, e.g. a markdown note) or content_base64. Optional title and mime_type. Base64 is expensive — ~30k tokens for an 88 KB PDF — so for a PDF, image, deck or spreadsheet use create_engagement_document_upload instead.',
   inputSchema: z.object({
     engagement: engagementRef,
     file_name: z.string().min(1),
@@ -615,17 +670,48 @@ export const uploadEngagementDocumentTool = defineTool({
   },
 })
 
+export const createEngagementDocumentUploadTool = defineTool({
+  name: 'create_engagement_document_upload',
+  description:
+    "Start a large-file upload to an engagement (code like QOLA-UKEU-26, or the uuid) WITHOUT putting the file through the conversation. Use this for PDFs, images, decks and spreadsheets: base64 through upload_engagement_document costs ~30k tokens for an 88 KB PDF, this costs a few hundred. Returns { upload_url, method: 'PUT', headers, expires_at, document_id }. Next: PUT the raw bytes to upload_url with the returned content-type header (e.g. curl -X PUT -H 'content-type: application/pdf' --data-binary @file.pdf '<upload_url>'), then call confirm_engagement_document_upload with the document_id. The document stays invisible until confirmed. For a short markdown or text note, upload_engagement_document in one call is still simpler.",
+  inputSchema: z.object({
+    engagement: engagementRef,
+    file_name: z.string().min(1),
+    title: z.string().optional(),
+    mime_type: z.string().optional().describe('inferred from the file extension when omitted'),
+  }),
+  handler: async (input) => createEngagementDocumentUpload(input.engagement, input as Record<string, unknown>),
+})
+
+export const confirmEngagementDocumentUploadTool = defineTool({
+  name: 'confirm_engagement_document_upload',
+  description:
+    "Finish an upload started by create_engagement_document_upload: checks the file reached storage, records its size and makes the document live, so it then shows in list_engagement_documents and on the engagement's Documents tab. Errors (and leaves the record pending, so you can retry the PUT) when no file has arrived yet.",
+  inputSchema: z.object({ document_id: z.string().min(1) }),
+  handler: async (input) => {
+    const { document, engagement, already_confirmed } = await confirmEngagementDocumentUpload(input.document_id)
+    if (!already_confirmed) {
+      void recordCoworkWrite({
+        action: 'create', entity: 'engagement_document', entityId: document.id, entityLabel: document.file_name, engagementId: engagement.id,
+        summary: `Uploaded document "${document.title ?? document.file_name}" to ${engagement.name}`,
+        payload: { file_name: document.file_name, mime_type: document.mime_type, size_bytes: document.size_bytes, via: 'signed_upload' },
+      })
+    }
+    return { ...document, already_confirmed }
+  },
+})
+
 export const listEngagementDocumentsTool = defineTool({
   name: 'list_engagement_documents',
-  description: 'List documents on an engagement (uploaded files and markdown docs).',
+  description: 'List documents on an engagement (code like QOLA-UKEU-26, or uuid): uploaded files and markdown docs. Uploads still awaiting confirmation are not listed.',
   inputSchema: z.object({ engagement: engagementRef }),
   handler: async (input) => listEngagementDocuments(input.engagement),
 })
 
 export const recentCoworkActivityTool = defineTool({
   name: 'recent_cowork_activity',
-  description: 'Recent Cowork writes (the change log), newest first. Filter by engagement/entity.',
-  inputSchema: z.object({ engagement: z.string().optional(), entity: z.string().optional(), limit: z.number().optional() }),
+  description: 'Recent Cowork writes (the change log), newest first. Filter by engagement (code like QOLA-UKEU-26, or uuid) and/or entity.',
+  inputSchema: z.object({ engagement: engagementRef.optional(), entity: z.string().optional(), limit: z.number().optional() }),
   handler: async (input) => {
     const engagementId = input.engagement ? (await getEngagementRow(input.engagement)).id : undefined
     return listCoworkActivity({ engagementId, entity: input.entity, limit: input.limit })
@@ -634,14 +720,14 @@ export const recentCoworkActivityTool = defineTool({
 
 export const logExpenseTool = defineTool({
   name: 'log_expense',
-  description: 'Record a business expense, optionally against an engagement, project or account. Links are DERIVED (project → engagement + account, engagement → end-client account). billable defaults to true on a billable engagement. Amount is in the expense\'s own currency (default GBP). e.g. "log £38.50 train to Bestway meeting on Qola, billable".',
+  description: 'Record a business expense, optionally against an engagement (code like QOLA-UKEU-26, or uuid), project or account. Links are DERIVED (project → engagement + account, engagement → end-client account). billable defaults to true on a billable engagement. Amount is in the expense\'s own currency (default GBP). e.g. "log £38.50 train to Bestway meeting on Qola, billable".',
   inputSchema: z.object({
     description: z.string().min(1),
     amount: z.number().positive(),
     date: isoDate.optional(),
     currency: z.string().optional(),
     category: z.enum(['travel', 'software', 'equipment', 'meals', 'subscriptions', 'other']).optional(),
-    engagement_id: z.string().optional(),
+    engagement_id: engagementRef.optional(),
     project_id: z.string().optional(),
     account_id: z.string().optional(),
     account_name: z.string().optional(),
@@ -667,7 +753,7 @@ export const listExpensesTool = defineTool({
   name: 'list_expenses',
   description: 'List expenses with a summary (totals, by category, by engagement). Filter by engagement (code or uuid), project, account, category, billable, billed, or unbilled_only.',
   inputSchema: z.object({
-    engagement_id: z.string().optional(),
+    engagement_id: engagementRef.optional(),
     project_id: z.string().optional(),
     account_id: z.string().optional(),
     category: z.enum(['travel', 'software', 'equipment', 'meals', 'subscriptions', 'other']).optional(),
@@ -697,7 +783,7 @@ export const billExpensesTool = defineTool({
   description: 'Put unbilled billable expenses onto a draft or sent invoice as line items and mark them billed. Pass expense_ids, or an engagement (code or uuid) to bill every unbilled billable expense on it.',
   inputSchema: z.object({
     expense_ids: z.array(z.string()).optional(),
-    engagement: z.string().optional(),
+    engagement: engagementRef.optional(),
     invoice_id: z.string().min(1),
   }),
   handler: async (input) => {
@@ -733,6 +819,7 @@ export const tools: McpTool[] = [
   listEngagementsTool,
   getEngagementTool,
   logTimeTool,
+  updateTimeEntryTool,
   logExpenseTool,
   listExpensesTool,
   billExpensesTool,
@@ -748,6 +835,8 @@ export const tools: McpTool[] = [
   getCampaignStatsTool,
   engagementHoursCheckTool,
   uploadEngagementDocumentTool,
+  createEngagementDocumentUploadTool,
+  confirmEngagementDocumentUploadTool,
   listEngagementDocumentsTool,
   recentCoworkActivityTool,
 ]

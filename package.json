@@ -18,7 +18,8 @@
     "crm:promote-placeholders": "tsx scripts/promote-placeholder-contacts.ts",
     "test:whatsapp-parser": "tsx scripts/whatsapp-parser-guard.ts",
     "test:invoice-ledger": "tsx scripts/invoice-ledger-acceptance.ts",
-    "test:time-links": "tsx scripts/test-time-links.ts"
+    "test:time-links": "tsx scripts/test-time-links.ts",
+    "test:mcp-connector": "tsx scripts/mcp-connector-guard.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
