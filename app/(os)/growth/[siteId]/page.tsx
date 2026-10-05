@@ -300,6 +300,7 @@ export default async function GrowthSitePage({
     { label: 'Approved', count: data.briefs.filter((b) => b.status === 'approved').length },
     { label: 'Drafting', count: data.articles.filter((a) => a.status === 'drafting').length },
     { label: 'Review', count: reviewArticles + approvedArticles },
+    { label: 'Publishing', count: data.articles.filter((a) => a.status === 'publishing').length },
     { label: 'Published', count: data.articles.filter((a) => a.status === 'published').length },
   ]
 
@@ -322,7 +323,9 @@ export default async function GrowthSitePage({
   // ── The engine as a checklist — done-states derived from live data ──
   const anyClusterApproved = data.clusters.some((c) => c.status === 'approved')
   const anyBriefApproved = data.briefs.some((b) => b.status === 'approved' || b.status === 'drafted')
-  const anyArticleReady = data.articles.some((a) => a.status === 'approved' || a.status === 'published')
+  const anyArticleReady = data.articles.some(
+    (a) => a.status === 'approved' || a.status === 'publishing' || a.status === 'published'
+  )
   const anyPublished = data.articles.some((a) => a.status === 'published')
   const pipelineSteps = [
     {

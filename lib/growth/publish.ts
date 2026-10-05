@@ -423,13 +423,170 @@ async function updateWordpressAsDraft(site: SeoSite, publishedUrl: string, title
 /** Squash-merge a publish PR from inside the OS — the human gate already
  *  happened at approve + publish, so this is one less GitHub round-trip, not an
  *  approval bypass. Deletes the seo/* branch afterwards (best-effort). */
+// ── Commit checks: never merge a PR whose build is failing ─────────────────
+
+export interface PrCheckState {
+  /** 'none' means the repo reports no checks at all — nothing to wait for. */
+  state: 'success' | 'failure' | 'pending' | 'none'
+  /** Failing contexts and where to read the build, for publish_error. */
+  failures: Array<{ context: string; url: string | null }>
+  headSha: string
+}
+
+/** Conclusions that mean "do not merge this". */
+const FAILED_CONCLUSIONS = new Set(['failure', 'timed_out', 'cancelled', 'action_required', 'startup_failure'])
+
+/**
+ * Checks that say nothing about whether the build succeeded, and so must not
+ * count as a passing signal.
+ *
+ * "Vercel Preview Comments" is the trap. Vercel registers it within about a
+ * second of a PR opening and immediately completes it `success`, while the
+ * actual build reports separately as a commit status with context "Vercel" and
+ * takes seconds to minutes. Any gate that merges on "nothing is failing and
+ * something passed" therefore merges before the build has said a word — which
+ * is exactly how PR #10 merged 7 seconds after opening, into a failed build.
+ */
+const COSMETIC_CHECK_NAMES = new Set(['Vercel Preview Comments'])
+
+/** The commit-status context Vercel reports the deployment under. */
+const VERCEL_BUILD_CONTEXT = 'Vercel'
+
+function parsePrUrl(prUrl: string): { owner: string; repo: string; number: string } {
+  const match = prUrl.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/)
+  if (!match) throw new Error(`Not a GitHub PR URL: ${prUrl}`)
+  return { owner: match[1], repo: match[2], number: match[3] }
+}
+
+/**
+ * Combined verdict for a PR head, across BOTH of GitHub's check surfaces: the
+ * legacy commit statuses (which is what Vercel posts, context "Vercel") and
+ * check runs (GitHub Actions). Either one failing is a failure.
+ */
+export async function prChecks(prUrl: string): Promise<PrCheckState> {
+  const token = process.env.GITHUB_PUBLISH_TOKEN
+  if (!token) throw new Error('GITHUB_PUBLISH_TOKEN is not configured')
+  const { owner, repo, number } = parsePrUrl(prUrl)
+
+  const pr = await gh<{ head: { sha: string } }>(token, `/repos/${owner}/${repo}/pulls/${number}`)
+  const sha = pr.head.sha
+
+  const [status, checks] = await Promise.all([
+    gh<{
+      state: string
+      statuses: Array<{ state: string; context: string; target_url: string | null }>
+    }>(token, `/repos/${owner}/${repo}/commits/${sha}/status`),
+    gh<{
+      check_runs: Array<{
+        name: string
+        status: string
+        conclusion: string | null
+        html_url: string | null
+        app?: { slug?: string } | null
+      }>
+    }>(token, `/repos/${owner}/${repo}/commits/${sha}/check-runs`),
+  ])
+
+  const failures: PrCheckState['failures'] = []
+  let pending = false
+  let signals = 0
+  let vercelConnected = false
+  let vercelBuildReported = false
+
+  for (const entry of status.statuses ?? []) {
+    if (entry.context === VERCEL_BUILD_CONTEXT) {
+      vercelConnected = true
+      // A pending Vercel status still counts as "has spoken": we know the build
+      // exists and `pending` below makes us wait for its verdict.
+      if (entry.state !== 'pending') vercelBuildReported = true
+    }
+    signals++
+    if (entry.state === 'failure' || entry.state === 'error') {
+      failures.push({ context: entry.context, url: entry.target_url })
+    } else if (entry.state === 'pending') {
+      pending = true
+    }
+  }
+  for (const run of checks.check_runs ?? []) {
+    // The Vercel app being present at all proves the repo deploys on Vercel, so
+    // its build status is owed to us even before it appears.
+    if (run.app?.slug === 'vercel') vercelConnected = true
+    if (COSMETIC_CHECK_NAMES.has(run.name)) continue
+    signals++
+    if (run.status !== 'completed') {
+      pending = true
+    } else if (run.conclusion && FAILED_CONCLUSIONS.has(run.conclusion)) {
+      failures.push({ context: run.name, url: run.html_url })
+    }
+  }
+
+  if (failures.length > 0) return { state: 'failure', failures, headSha: sha }
+  if (pending) return { state: 'pending', failures: [], headSha: sha }
+  // Vercel is wired up but has not reported the deployment yet. NOT success:
+  // this is the window PR #10 merged in.
+  if (vercelConnected && !vercelBuildReported) return { state: 'pending', failures: [], headSha: sha }
+  if (signals === 0) return { state: 'none', failures: [], headSha: sha }
+  return { state: 'success', failures: [], headSha: sha }
+}
+
+/** How long to wait for a build before refusing to merge. Brookweald's preview
+ *  takes about a minute; anything much longer is a problem to look at, not to
+ *  merge through. */
+const CHECK_WAIT_MS = 150_000
+const CHECK_POLL_MS = 6_000
+
+/**
+ * How long "this PR reports no checks at all" has to hold before we believe it.
+ *
+ * This window is the whole bug. A PR that CI has not registered yet is
+ * indistinguishable from a repo that has no CI — both report zero checks — and
+ * a freshly opened PR is always in that state for a few seconds. Vercel's status
+ * on PR #10 arrived 7 seconds after the PR opened, and the merge happened inside
+ * that gap, so the gate saw nothing to wait for and merged a failing build.
+ * Waiting out the gap costs a check-less repo one short pause per publish and
+ * costs a Vercel-connected repo nothing, because its status arrives first.
+ */
+const CHECK_APPEAR_GRACE_MS = 45_000
+
+/**
+ * Poll until the PR head gives a verdict we can act on: a failure, a success,
+ * or "no checks here" that survived the grace window above.
+ */
+export async function waitForPrChecks(prUrl: string): Promise<PrCheckState> {
+  const started = Date.now()
+  let last = await prChecks(prUrl)
+  while (
+    (last.state === 'pending' && Date.now() - started < CHECK_WAIT_MS) ||
+    (last.state === 'none' && Date.now() - started < CHECK_APPEAR_GRACE_MS)
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, CHECK_POLL_MS))
+    last = await prChecks(prUrl)
+  }
+  return last
+}
+
+/** Thrown when checks block the merge, so callers can record it verbatim. */
+export class ChecksBlockedMerge extends Error {
+  constructor(message: string, readonly checks: PrCheckState) {
+    super(message)
+    this.name = 'ChecksBlockedMerge'
+  }
+}
+
+/**
+ * Merge a publish PR — but only once its checks pass.
+ *
+ * Gated here rather than in the callers because both routes to a merge (the
+ * per-site auto_merge option and the manual button) run through this function,
+ * and both merged with the token's identity, so neither could be told apart
+ * after the fact. PR #10 on brookweald-site merged in the same second Vercel
+ * reported a failed preview build, which broke main.
+ */
 export async function mergePublishPr(prUrl: string): Promise<string> {
   const token = process.env.GITHUB_PUBLISH_TOKEN
   if (!token) throw new Error('GITHUB_PUBLISH_TOKEN is not configured')
 
-  const match = prUrl.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/)
-  if (!match) throw new Error(`Not a GitHub PR URL: ${prUrl}`)
-  const [, owner, repo, number] = match
+  const { owner, repo, number } = parsePrUrl(prUrl)
 
   const pr = await gh<{ merged: boolean; state: string; head: { ref: string } }>(
     token,
@@ -437,6 +594,24 @@ export async function mergePublishPr(prUrl: string): Promise<string> {
   )
   if (pr.merged) return 'Already merged — the article is live (or deploying).'
   if (pr.state !== 'open') throw new Error('The pull request is closed without being merged — reopen it on GitHub first')
+
+  const checks = await waitForPrChecks(prUrl)
+  if (checks.state === 'failure') {
+    const detail = checks.failures
+      .map((f) => (f.url ? `${f.context} — ${f.url}` : f.context))
+      .join('; ')
+    throw new ChecksBlockedMerge(
+      `Not merged: the build on this pull request failed (${detail}). The PR is still open — fix the build, then publish again.`,
+      checks
+    )
+  }
+  if (checks.state === 'pending') {
+    throw new ChecksBlockedMerge(
+      `Not merged: the build on this pull request was still running after ${Math.round(CHECK_WAIT_MS / 1000)}s. ` +
+        `The PR is still open (${prUrl}) — publish again once it finishes.`,
+      checks
+    )
+  }
 
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${number}/merge`, {
     method: 'PUT',
@@ -530,4 +705,140 @@ async function publishViaWordpressDraft(article: SeoArticle, site: SeoSite): Pro
   }
   const post = (await res.json()) as { id: number; link: string }
   return { url: post.link, ref: String(post.id) }
+}
+
+// ── Publish verification: 'publishing' → 'published' only when the URL answers ─
+
+/** Give up on an article that never goes live, rather than polling forever. */
+const PUBLISH_VERIFY_GIVE_UP_MS = 6 * 60 * 60 * 1000
+
+export interface VerifyResult {
+  articleId: string
+  outcome: 'published' | 'waiting' | 'blocked' | 'gave_up'
+  detail: string
+}
+
+/** Does the published URL actually serve the article? */
+export async function publishedUrlIsLive(url: string): Promise<{ live: boolean; status: number }> {
+  try {
+    // HEAD first (cheap); some hosts don't implement it, so fall back to GET.
+    let res = await fetch(url, { method: 'HEAD', redirect: 'follow' })
+    if (res.status === 405 || res.status === 501) {
+      res = await fetch(url, { method: 'GET', redirect: 'follow' })
+    }
+    return { live: res.status === 200, status: res.status }
+  } catch {
+    return { live: false, status: 0 }
+  }
+}
+
+/**
+ * Advance one article in the 'publishing' state.
+ *
+ * The three things that have to be true before an article counts as published:
+ * its PR is merged, its checks did not fail, and its URL returns 200. This is
+ * the single place that decides, shared by the verify cron and the button on
+ * the article page, so the two cannot disagree.
+ */
+export async function verifyPublishingArticle(articleId: string): Promise<VerifyResult> {
+  const { createClient } = await import('@/lib/supabase/service')
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from('seo_articles')
+    .select('id, status, published_url, publish_ref, publishing_since')
+    .eq('id', articleId)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  const article = data as Pick<
+    SeoArticle,
+    'id' | 'status' | 'published_url' | 'publish_ref' | 'publishing_since'
+  > | null
+  if (!article) throw new Error('Article not found')
+  if (article.status !== 'publishing') {
+    return { articleId, outcome: 'waiting', detail: `Not publishing (status ${article.status})` }
+  }
+
+  const prUrl = article.publish_ref
+  const url = article.published_url
+  if (!url) return { articleId, outcome: 'blocked', detail: 'No published_url to verify' }
+
+  // 1. The PR must be merged — and if its build failed, say so instead of waiting.
+  if (prUrl?.startsWith('http')) {
+    const token = process.env.GITHUB_PUBLISH_TOKEN
+    if (!token) return { articleId, outcome: 'waiting', detail: 'GITHUB_PUBLISH_TOKEN is not configured' }
+    const { owner, repo, number } = parsePrUrl(prUrl)
+    const pr = await gh<{ merged: boolean; state: string }>(token, `/repos/${owner}/${repo}/pulls/${number}`)
+    if (!pr.merged) {
+      const checks = await prChecks(prUrl)
+      const detail =
+        checks.state === 'failure'
+          ? `Build failed on the open pull request (${checks.failures
+              .map((f) => (f.url ? `${f.context} — ${f.url}` : f.context))
+              .join('; ')}). Fix it, then publish again.`
+          : `Pull request still open (${prUrl}), checks ${checks.state}.`
+      if (checks.state === 'failure') {
+        await supabase.from('seo_articles').update({ publish_error: detail }).eq('id', articleId)
+        return { articleId, outcome: 'blocked', detail }
+      }
+      return { articleId, outcome: 'waiting', detail }
+    }
+  }
+
+  // 2. Merged — now the URL has to answer. A site deploy takes a minute or two,
+  //    so "not yet" is normal and just means check again next tick.
+  const { live, status } = await publishedUrlIsLive(url)
+  if (live) {
+    const { error: upErr } = await supabase
+      .from('seo_articles')
+      .update({
+        status: 'published',
+        published_at: new Date().toISOString(),
+        publish_error: null,
+        publishing_since: null,
+      })
+      .eq('id', articleId)
+    if (upErr) throw new Error(upErr.message)
+    return { articleId, outcome: 'published', detail: `${url} returned 200` }
+  }
+
+  const since = article.publishing_since ? new Date(article.publishing_since).getTime() : Date.now()
+  if (Date.now() - since > PUBLISH_VERIFY_GIVE_UP_MS) {
+    const detail = `Merged, but ${url} has not returned 200 in 6 hours (last status ${status || 'unreachable'}). Check the site deploy.`
+    await supabase.from('seo_articles').update({ publish_error: detail }).eq('id', articleId)
+    return { articleId, outcome: 'gave_up', detail }
+  }
+
+  return {
+    articleId,
+    outcome: 'waiting',
+    detail: `Merged; waiting for ${url} to answer (last status ${status || 'unreachable'})`,
+  }
+}
+
+/** Sweep every article stuck in 'publishing'. Driven by the verify cron. */
+export async function verifyPublishingArticles(): Promise<VerifyResult[]> {
+  const { createClient } = await import('@/lib/supabase/service')
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('seo_articles')
+    .select('id')
+    .eq('status', 'publishing')
+    .order('publishing_since', { ascending: true })
+    .limit(25)
+  if (error) throw new Error(error.message)
+
+  const results: VerifyResult[] = []
+  for (const row of (data ?? []) as Array<{ id: string }>) {
+    try {
+      results.push(await verifyPublishingArticle(row.id))
+    } catch (err) {
+      results.push({
+        articleId: row.id,
+        outcome: 'blocked',
+        detail: err instanceof Error ? err.message : 'Verification failed',
+      })
+    }
+  }
+  return results
 }

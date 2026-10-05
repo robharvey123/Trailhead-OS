@@ -1585,7 +1585,17 @@ export type SeoKeywordSource =
   | 'google_ads'
 export type SeoClusterStatus = 'proposed' | 'approved' | 'archived'
 export type SeoBriefStatus = 'proposed' | 'approved' | 'rejected' | 'drafted'
-export type SeoArticleStatus = 'drafting' | 'review' | 'approved' | 'published' | 'archived'
+/**
+ * 'publishing' sits between approved and published: the PR is open (or merged)
+ * but the article is not confirmed live. Only 'published' means the URL answers.
+ */
+export type SeoArticleStatus =
+  | 'drafting'
+  | 'review'
+  | 'approved'
+  | 'publishing'
+  | 'published'
+  | 'archived'
 export type SeoLinkTargetStatus = 'identified' | 'researching' | 'outreach' | 'won' | 'lost'
 
 export interface SeoSite {
@@ -1889,6 +1899,8 @@ export interface SeoArticle {
   publish_path: string | null
   /** Last publish failure, cleared on success. */
   publish_error: string | null
+  /** When the article entered 'publishing', so the verifier can stop trying. */
+  publishing_since: string | null
   created_at: string
   updated_at: string
 }

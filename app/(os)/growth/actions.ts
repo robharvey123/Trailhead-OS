@@ -280,36 +280,53 @@ export async function publishArticleAction(siteId: string, articleId: string) {
     const { data: site } = await supabase.from('seo_sites').select('*').eq('id', siteId).single()
     if (!site) throw new Error('Site not found')
 
-    const { publishArticle, mergePublishPr } = await import('@/lib/growth/publish')
+    const { publishArticle, mergePublishPr, verifyPublishingArticle } = await import(
+      '@/lib/growth/publish'
+    )
     const result = await publishArticle(article, site)
 
-    // Opt-in per site: merge the PR immediately. The human gates (approve +
-    // publish) already ran in the OS — this only removes the GitHub round-trip.
-    let autoMerged = false
-    if (
-      site.cms_type === 'github' &&
-      (site.cms_config as { auto_merge?: boolean } | null)?.auto_merge &&
-      result.ref.startsWith('http')
-    ) {
-      try {
-        await mergePublishPr(result.ref)
-        autoMerged = true
-      } catch {
-        autoMerged = false // PR stays open; merge by hand from the article page
-      }
-    }
+    // A GitHub publish is not live yet: the PR has to merge and the URL has to
+    // answer. It enters 'publishing' and only the verifier promotes it.
+    // WordPress and the internal blog create a draft that is deliberately NOT
+    // live, so there is nothing to poll and they stay on the old behaviour.
+    const needsVerification = site.cms_type === 'github' && result.ref.startsWith('http')
 
     const { error } = await supabase
       .from('seo_articles')
       .update({
-        status: 'published',
-        published_at: new Date().toISOString(),
+        status: needsVerification ? 'publishing' : 'published',
+        published_at: needsVerification ? null : new Date().toISOString(),
+        publishing_since: needsVerification ? new Date().toISOString() : null,
         published_url: result.url,
         publish_ref: result.ref,
         publish_error: null,
       })
       .eq('id', articleId)
     if (error) throw new Error(error.message)
+
+    // Opt-in per site: merge the PR immediately. The human gates (approve +
+    // publish) already ran in the OS — this only removes the GitHub round-trip.
+    // mergePublishPr refuses on a failing build, and that refusal is recorded
+    // rather than swallowed: the PR stays open and the article stays
+    // 'publishing' with the reason on it.
+    let mergeNote = ''
+    if (needsVerification && (site.cms_config as { auto_merge?: boolean } | null)?.auto_merge) {
+      try {
+        await mergePublishPr(result.ref)
+      } catch (mergeErr) {
+        const detail = errMessage(mergeErr)
+        await supabase.from('seo_articles').update({ publish_error: detail }).eq('id', articleId)
+        revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+        redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(detail)}`)
+      }
+      // Merged: give the site deploy a moment, then confirm the URL answers.
+      // Still 'publishing' if it does not — the cron keeps checking.
+      const verified = await verifyPublishingArticle(articleId)
+      mergeNote =
+        verified.outcome === 'published'
+          ? ' Merged and live.'
+          : ` Merged; waiting for ${result.url} to answer (checked again every 5 minutes).`
+    }
 
     // An article nobody sees earns nothing — distribution is a task, due today.
     const { createEngineTaskOnce } = await import('@/lib/growth/tasks')
@@ -346,9 +363,7 @@ export async function publishArticleAction(siteId: string, articleId: string) {
     redirect(
       `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(
         site.cms_type === 'github'
-          ? autoMerged
-            ? 'Pull request opened and merged — live once the site deploy finishes. Distribution task created for today.'
-            : 'Pull request opened — merge it to go live. Distribution task created for today.'
+          ? `Pull request opened.${mergeNote || ' Merge it once its build passes — the article is marked published only when its URL answers.'} Distribution task created for today.`
           : site.cms_type === 'internal'
             ? 'Draft created on the marketing blog — review and publish it from /blog. Distribution task created for today.'
             : 'WordPress draft created — publish it from WP admin. Distribution task created for today.'
@@ -375,16 +390,48 @@ export async function mergeArticlePrAction(siteId: string, articleId: string) {
   try {
     const { data: article } = await supabase
       .from('seo_articles')
-      .select('publish_ref')
+      .select('publish_ref, status')
       .eq('id', articleId)
       .single()
     if (!article?.publish_ref?.startsWith('http')) {
       throw new Error('This article has no publish pull request')
     }
-    const { mergePublishPr } = await import('@/lib/growth/publish')
-    const message = await mergePublishPr(article.publish_ref)
+    const { mergePublishPr, verifyPublishingArticle } = await import('@/lib/growth/publish')
+    let message: string
+    try {
+      message = await mergePublishPr(article.publish_ref)
+    } catch (mergeErr) {
+      // A failing build is not a transient error to flash and lose: it stays on
+      // the article so the next attempt starts from what went wrong.
+      const detail = errMessage(mergeErr)
+      await supabase.from('seo_articles').update({ publish_error: detail }).eq('id', articleId)
+      revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+      redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(detail)}`)
+    }
+    const verified = await verifyPublishingArticle(articleId)
     revalidatePath(`/growth/${siteId}/articles/${articleId}`)
-    redirect(`/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(message)}`)
+    revalidatePath(`/growth/${siteId}/articles`)
+    redirect(
+      `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(
+        verified.outcome === 'published' ? `${message} Confirmed live.` : message
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
+/** Re-check a 'publishing' article now, instead of waiting for the cron tick. */
+export async function verifyPublishAction(siteId: string, articleId: string) {
+  await requireAdmin()
+  const { verifyPublishingArticle } = await import('@/lib/growth/publish')
+  try {
+    const result = await verifyPublishingArticle(articleId)
+    revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+    revalidatePath(`/growth/${siteId}/articles`)
+    const key = result.outcome === 'blocked' || result.outcome === 'gave_up' ? 'error' : 'notice'
+    redirect(`/growth/${siteId}/articles/${articleId}?${key}=${encodeURIComponent(result.detail)}`)
   } catch (err) {
     if (err && typeof err === 'object' && 'digest' in err) throw err
     redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(errMessage(err))}`)

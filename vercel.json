@@ -50,6 +50,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/growth-publish-verify",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/cron/growth-tasks",
       "schedule": "0 6 * * *"
     },

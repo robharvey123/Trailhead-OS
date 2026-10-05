@@ -7,6 +7,8 @@ const STATUS_STYLE: Record<string, string> = {
   drafting: 'border-amber-300 bg-amber-50 text-amber-700',
   review: 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
   approved: 'border-emerald-300 bg-emerald-50 text-emerald-700',
+  // Amber, like drafting: in flight, not done.
+  publishing: 'border-amber-300 bg-amber-50 text-amber-700',
   published: 'border-emerald-400 bg-emerald-50 text-emerald-800',
   archived: 'border-[color:var(--border)] text-[color:var(--text-3)]',
 }

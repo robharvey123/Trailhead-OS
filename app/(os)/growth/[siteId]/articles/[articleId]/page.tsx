@@ -12,6 +12,7 @@ import {
   publishArticleAction,
   regenerateArticleAction,
   retryDraftAction,
+  verifyPublishAction,
 } from '../../../actions'
 
 // The Regenerate action runs draftArticle inline, and a full article is the
@@ -76,12 +77,18 @@ export default async function GrowthArticleDetailPage({
             </PendingButton>
           </form>
         ) : null}
-        {article.status === 'published' && article.publish_ref?.startsWith('http') ? (
-          <form action={mergeArticlePrAction.bind(null, site.id, article.id)}>
-            <PendingButton variant="primary" pendingLabel="Merging…">
-              Merge PR → go live
-            </PendingButton>
-          </form>
+        {article.status === 'publishing' && article.publish_ref?.startsWith('http') ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <form action={mergeArticlePrAction.bind(null, site.id, article.id)}>
+              {/* Waits for the build and refuses on failure — see mergePublishPr. */}
+              <PendingButton variant="primary" pendingLabel="Checking build, then merging…">
+                Merge PR → go live
+              </PendingButton>
+            </form>
+            <form action={verifyPublishAction.bind(null, site.id, article.id)}>
+              <PendingButton pendingLabel="Checking…">Check status</PendingButton>
+            </form>
+          </div>
         ) : null}
         {article.body_mdx && (article.status === 'review' || article.status === 'approved') ? (
           <form action={regenerateArticleAction.bind(null, site.id, article.id)}>
@@ -133,6 +140,43 @@ export default async function GrowthArticleDetailPage({
               second one.
             </span>
           ) : null}
+        </div>
+      ) : null}
+
+      {article.status === 'publishing' ? (
+        <div className="os-card p-6">
+          <h2 className="text-sm font-semibold text-[color:var(--text)]">Publishing</h2>
+          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+            Not live yet. It counts as published once the pull request is merged{' '}
+            <em>and</em>{' '}
+            {article.published_url ? (
+              <a
+                href={article.published_url}
+                target="_blank"
+                rel="noreferrer"
+                className="break-all text-[color:var(--accent-strong)] underline underline-offset-2"
+              >
+                {article.published_url}
+              </a>
+            ) : (
+              'its URL'
+            )}{' '}
+            returns 200. Checked every five minutes.
+            {article.publish_ref?.startsWith('http') ? (
+              <>
+                <br />
+                Pull request:{' '}
+                <a
+                  href={article.publish_ref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="break-all text-[color:var(--accent-strong)] underline underline-offset-2"
+                >
+                  {article.publish_ref}
+                </a>
+              </>
+            ) : null}
+          </p>
         </div>
       ) : null}
 
