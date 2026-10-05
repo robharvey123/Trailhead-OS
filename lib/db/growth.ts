@@ -97,6 +97,8 @@ export interface UpdateSeoSiteInput {
   workstream_id: string | null
   client_account_id: string | null
   brand_voice: string | null
+  /** Only set when brand_voice actually changed — see updateSeoSiteAction. */
+  brand_voice_updated_at?: string
   icp: string | null
   is_client: boolean
   cms_type?: 'none' | 'github' | 'wordpress' | 'internal'

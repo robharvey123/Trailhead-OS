@@ -1607,6 +1607,8 @@ export interface SeoSite {
   cms_type: SeoCmsType
   cms_config: Record<string, unknown>
   brand_voice: string | null
+  /** When brand_voice last changed, for the stale-draft warning at publish. */
+  brand_voice_updated_at: string | null
   icp: string | null
   gsc_property: string | null
   is_client: boolean
@@ -1901,6 +1903,8 @@ export interface SeoArticle {
   publish_error: string | null
   /** When the article entered 'publishing', so the verifier can stop trying. */
   publishing_since: string | null
+  /** When the body was last written by the model (first draft or regenerate). */
+  drafted_at: string | null
   created_at: string
   updated_at: string
 }

@@ -69,12 +69,23 @@ export async function updateSeoSiteAction(siteId: string, formData: FormData) {
       | 'internal'
     let cmsConfig: Record<string, unknown> = {}
     if (cmsType === 'github') {
+      // cms_config is rebuilt from the form, so anything the form does not
+      // render has to be carried across explicitly or a settings save drops it.
+      const existingGithub = await getSeoSiteById(siteId)
+      const storedGithub = (existingGithub?.cms_config ?? {}) as {
+        required_checks?: unknown
+        path_map?: unknown
+      }
       cmsConfig = {
         repo: String(formData.get('cms_repo') ?? '').trim(),
         base_branch: String(formData.get('cms_base_branch') ?? '').trim() || 'main',
         content_dir: String(formData.get('cms_content_dir') ?? '').trim() || 'content/blog',
         author: String(formData.get('cms_author') ?? '').trim() || null,
         auto_merge: formData.get('cms_auto_merge') === 'on',
+        ...(storedGithub.required_checks !== undefined
+          ? { required_checks: storedGithub.required_checks }
+          : {}),
+        ...(storedGithub.path_map !== undefined ? { path_map: storedGithub.path_map } : {}),
       }
     } else if (cmsType === 'wordpress') {
       const existing = await getSeoSiteById(siteId)
@@ -87,12 +98,21 @@ export async function updateSeoSiteAction(siteId: string, formData: FormData) {
       }
     }
 
+    // Stamp the voice change, not the save: the publish gate warns when an
+    // article was drafted before the voice it is written in was replaced, and
+    // touching the timestamp on every unrelated settings save would make every
+    // article look stale.
+    const nextBrandVoice = String(formData.get('brand_voice') ?? '').trim() || null
+    const before = await getSeoSiteById(siteId)
+    const brandVoiceChanged = (before?.brand_voice ?? null) !== nextBrandVoice
+
     await updateSeoSite(siteId, {
       name: String(formData.get('name') ?? '').trim(),
       gsc_property: String(formData.get('gsc_property') ?? '').trim() || null,
       workstream_id: String(formData.get('workstream_id') ?? '') || null,
       client_account_id: clientAccountId,
-      brand_voice: String(formData.get('brand_voice') ?? '').trim() || null,
+      brand_voice: nextBrandVoice,
+      ...(brandVoiceChanged ? { brand_voice_updated_at: new Date().toISOString() } : {}),
       icp: String(formData.get('icp') ?? '').trim() || null,
       is_client: isClient,
       cms_type: cmsType,
@@ -280,9 +300,8 @@ export async function publishArticleAction(siteId: string, articleId: string) {
     const { data: site } = await supabase.from('seo_sites').select('*').eq('id', siteId).single()
     if (!site) throw new Error('Site not found')
 
-    const { publishArticle, mergePublishPr, verifyPublishingArticle } = await import(
-      '@/lib/growth/publish'
-    )
+    const { publishArticle, mergePublishPr, verifyPublishingArticle, requiredContextsForSite } =
+      await import('@/lib/growth/publish')
     const result = await publishArticle(article, site)
 
     // A GitHub publish is not live yet: the PR has to merge and the URL has to
@@ -312,7 +331,7 @@ export async function publishArticleAction(siteId: string, articleId: string) {
     let mergeNote = ''
     if (needsVerification && (site.cms_config as { auto_merge?: boolean } | null)?.auto_merge) {
       try {
-        await mergePublishPr(result.ref)
+        await mergePublishPr(result.ref, { requiredContexts: requiredContextsForSite(site) })
       } catch (mergeErr) {
         const detail = errMessage(mergeErr)
         await supabase.from('seo_articles').update({ publish_error: detail }).eq('id', articleId)
@@ -396,10 +415,19 @@ export async function mergeArticlePrAction(siteId: string, articleId: string) {
     if (!article?.publish_ref?.startsWith('http')) {
       throw new Error('This article has no publish pull request')
     }
-    const { mergePublishPr, verifyPublishingArticle } = await import('@/lib/growth/publish')
+    const { data: site } = await supabase
+      .from('seo_sites')
+      .select('cms_config')
+      .eq('id', siteId)
+      .single()
+    const { mergePublishPr, verifyPublishingArticle, requiredContextsForSite } = await import(
+      '@/lib/growth/publish'
+    )
     let message: string
     try {
-      message = await mergePublishPr(article.publish_ref)
+      message = await mergePublishPr(article.publish_ref, {
+        requiredContexts: site ? requiredContextsForSite(site) : undefined,
+      })
     } catch (mergeErr) {
       // A failing build is not a transient error to flash and lose: it stays on
       // the article so the next attempt starts from what went wrong.

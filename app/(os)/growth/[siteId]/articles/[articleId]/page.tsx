@@ -20,6 +20,17 @@ import {
 // its own ceiling. Server actions inherit this segment's limit.
 export const maxDuration = 300
 
+function publishLabel(cmsType: string): string {
+  if (cmsType === 'wordpress') return 'Create WordPress draft'
+  if (cmsType === 'internal') return 'Draft to marketing blog'
+  return 'Open publish PR'
+}
+
+function formatDay(iso: string | null): string {
+  if (!iso) return 'an unknown date'
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export default async function GrowthArticleDetailPage({
   params,
   searchParams,
@@ -35,6 +46,17 @@ export default async function GrowthArticleDetailPage({
     getSeoArticleById(articleId, supabase),
   ])
   if (!site || !article || article.site_id !== site.id) notFound()
+
+  // Voice drift: this copy was written to a brand_voice that has since been
+  // replaced, so it reads in the old voice. Not a blocker — it is Rob's call —
+  // but publishing it should be a deliberate choice rather than a default.
+  const voiceChangedAt = site.brand_voice_updated_at
+  const voiceIsStale = Boolean(
+    voiceChangedAt && article.drafted_at && new Date(article.drafted_at) < new Date(voiceChangedAt)
+  )
+  const voiceStaleWarning = voiceIsStale
+    ? `This was drafted on ${formatDay(article.drafted_at)}, before the brand voice changed on ${formatDay(voiceChangedAt)} — it is written in the old voice. Regenerate first if you want the new one.`
+    : null
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -68,13 +90,20 @@ export default async function GrowthArticleDetailPage({
         ) : null}
         {article.status === 'approved' ? (
           <form action={publishArticleAction.bind(null, site.id, article.id)}>
-            <PendingButton variant="primary" pendingLabel="Publishing…">
-              {site.cms_type === 'wordpress'
-                ? 'Create WordPress draft'
-                : site.cms_type === 'internal'
-                  ? 'Draft to marketing blog'
-                  : 'Open publish PR'}
-            </PendingButton>
+            {voiceStaleWarning ? (
+              <ConfirmPendingButton
+                confirmLabel="Publish the old-voice draft"
+                pendingLabel="Publishing…"
+                warning={voiceStaleWarning}
+                variant="primary"
+              >
+                {publishLabel(site.cms_type)}
+              </ConfirmPendingButton>
+            ) : (
+              <PendingButton variant="primary" pendingLabel="Publishing…">
+                {publishLabel(site.cms_type)}
+              </PendingButton>
+            )}
           </form>
         ) : null}
         {article.status === 'publishing' && article.publish_ref?.startsWith('http') ? (
@@ -115,6 +144,11 @@ export default async function GrowthArticleDetailPage({
         ) : null}
       </div>
 
+      {voiceStaleWarning && article.status !== 'published' ? (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+          {voiceStaleWarning}
+        </div>
+      ) : null}
       {resolved?.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {resolved.error}

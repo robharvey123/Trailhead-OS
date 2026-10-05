@@ -76,6 +76,8 @@ export async function processDraftQueue(): Promise<DraftTickResult> {
         token_cost: draft.token_cost,
         status: 'review',
         error: null,
+        // When this copy was written, for the stale-voice warning at publish.
+        drafted_at: new Date().toISOString(),
       })
       .eq('id', article.id)
     if (saveError) throw new Error(saveError.message)
@@ -185,6 +187,7 @@ export async function regenerateArticleDraft(articleId: string): Promise<Regener
       // Back to the pre-approval state — new copy has not been read yet.
       status: 'review',
       error: null,
+      drafted_at: new Date().toISOString(),
     })
     .eq('id', articleId)
   if (saveError) throw new Error(saveError.message)

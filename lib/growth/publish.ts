@@ -155,6 +155,20 @@ async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T
   return (await res.json()) as T
 }
 
+/**
+ * GET where being refused is survivable: 403 and 404 return null instead of
+ * throwing, so one unreadable endpoint cannot take a whole verdict down.
+ */
+async function ghTolerant<T>(token: string, path: string): Promise<T | null> {
+  const res = await fetch(`https://api.github.com${path}`, { headers: ghHeaders(token, false) })
+  if (res.status === 403 || res.status === 404) return null
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`GitHub ${path} failed (${res.status}): ${body.slice(0, 300)}`)
+  }
+  return (await res.json()) as T
+}
+
 /** GET where "not there" is an expected answer: 404 returns null, not a throw. */
 async function ghOptional<T>(token: string, path: string): Promise<T | null> {
   const res = await fetch(`https://api.github.com${path}`, { headers: ghHeaders(token, false) })
@@ -452,6 +466,35 @@ const COSMETIC_CHECK_NAMES = new Set(['Vercel Preview Comments'])
 /** The commit-status context Vercel reports the deployment under. */
 const VERCEL_BUILD_CONTEXT = 'Vercel'
 
+/**
+ * Contexts that must report before a merge is allowed, whatever else passes.
+ *
+ * This exists because GITHUB_PUBLISH_TOKEN cannot read check runs — the live
+ * token returns 403 "Resource not accessible by personal access token" on
+ * /check-runs — so "is Vercel wired up?" cannot be answered from the check-run
+ * app slug in production, only in a session with broader GitHub access. Commit
+ * statuses ARE readable with repo scope, and the Vercel deployment is a commit
+ * status, so the gate is anchored on that instead and no longer depends on a
+ * permission the token does not have.
+ *
+ * Override per site with cms_config.required_checks (an empty array disables
+ * the requirement, for a GitHub repo that does not deploy on Vercel).
+ */
+const DEFAULT_REQUIRED_CONTEXTS = [VERCEL_BUILD_CONTEXT]
+
+export interface CheckOptions {
+  /** Contexts that must report a verdict before merging. */
+  requiredContexts?: string[]
+}
+
+/** Required check contexts for a site, honouring a cms_config override. */
+export function requiredContextsForSite(site: Pick<SeoSite, 'cms_config'>): string[] {
+  const config = (site.cms_config ?? {}) as { required_checks?: unknown }
+  return Array.isArray(config.required_checks)
+    ? config.required_checks.filter((c): c is string => typeof c === 'string')
+    : DEFAULT_REQUIRED_CONTEXTS
+}
+
 function parsePrUrl(prUrl: string): { owner: string; repo: string; number: string } {
   const match = prUrl.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/)
   if (!match) throw new Error(`Not a GitHub PR URL: ${prUrl}`)
@@ -463,10 +506,11 @@ function parsePrUrl(prUrl: string): { owner: string; repo: string; number: strin
  * legacy commit statuses (which is what Vercel posts, context "Vercel") and
  * check runs (GitHub Actions). Either one failing is a failure.
  */
-export async function prChecks(prUrl: string): Promise<PrCheckState> {
+export async function prChecks(prUrl: string, options: CheckOptions = {}): Promise<PrCheckState> {
   const token = process.env.GITHUB_PUBLISH_TOKEN
   if (!token) throw new Error('GITHUB_PUBLISH_TOKEN is not configured')
   const { owner, repo, number } = parsePrUrl(prUrl)
+  const requiredContexts = options.requiredContexts ?? DEFAULT_REQUIRED_CONTEXTS
 
   const pr = await gh<{ head: { sha: string } }>(token, `/repos/${owner}/${repo}/pulls/${number}`)
   const sha = pr.head.sha
@@ -476,13 +520,16 @@ export async function prChecks(prUrl: string): Promise<PrCheckState> {
       state: string
       statuses: Array<{ state: string; context: string; target_url: string | null }>
     }>(token, `/repos/${owner}/${repo}/commits/${sha}/status`),
-    gh<{
+    // Tolerated, not required: the publish token is forbidden from reading check
+    // runs (403). Throwing there took the whole gate down and put a raw GitHub
+    // error on the article instead of a build verdict. Commit statuses carry the
+    // Vercel deployment, so losing this costs us only GitHub Actions results.
+    ghTolerant<{
       check_runs: Array<{
         name: string
         status: string
         conclusion: string | null
         html_url: string | null
-        app?: { slug?: string } | null
       }>
     }>(token, `/repos/${owner}/${repo}/commits/${sha}/check-runs`),
   ])
@@ -490,16 +537,8 @@ export async function prChecks(prUrl: string): Promise<PrCheckState> {
   const failures: PrCheckState['failures'] = []
   let pending = false
   let signals = 0
-  let vercelConnected = false
-  let vercelBuildReported = false
 
   for (const entry of status.statuses ?? []) {
-    if (entry.context === VERCEL_BUILD_CONTEXT) {
-      vercelConnected = true
-      // A pending Vercel status still counts as "has spoken": we know the build
-      // exists and `pending` below makes us wait for its verdict.
-      if (entry.state !== 'pending') vercelBuildReported = true
-    }
     signals++
     if (entry.state === 'failure' || entry.state === 'error') {
       failures.push({ context: entry.context, url: entry.target_url })
@@ -507,10 +546,7 @@ export async function prChecks(prUrl: string): Promise<PrCheckState> {
       pending = true
     }
   }
-  for (const run of checks.check_runs ?? []) {
-    // The Vercel app being present at all proves the repo deploys on Vercel, so
-    // its build status is owed to us even before it appears.
-    if (run.app?.slug === 'vercel') vercelConnected = true
+  for (const run of checks?.check_runs ?? []) {
     if (COSMETIC_CHECK_NAMES.has(run.name)) continue
     signals++
     if (run.status !== 'completed') {
@@ -519,12 +555,18 @@ export async function prChecks(prUrl: string): Promise<PrCheckState> {
       failures.push({ context: run.name, url: run.html_url })
     }
   }
+  // A required context that has not reported a verdict yet is the whole reason
+  // this gate exists: PR #21 sat for an hour with NO checks at all, and PR #10
+  // merged in the 7 seconds before Vercel spoke. Absent is pending, not success.
+  const reported = new Set<string>()
+  for (const entry of status.statuses ?? []) {
+    if (entry.state !== 'pending') reported.add(entry.context)
+  }
+  const awaiting = requiredContexts.filter((context) => !reported.has(context))
 
   if (failures.length > 0) return { state: 'failure', failures, headSha: sha }
   if (pending) return { state: 'pending', failures: [], headSha: sha }
-  // Vercel is wired up but has not reported the deployment yet. NOT success:
-  // this is the window PR #10 merged in.
-  if (vercelConnected && !vercelBuildReported) return { state: 'pending', failures: [], headSha: sha }
+  if (awaiting.length > 0) return { state: 'pending', failures: [], headSha: sha }
   if (signals === 0) return { state: 'none', failures: [], headSha: sha }
   return { state: 'success', failures: [], headSha: sha }
 }
@@ -552,15 +594,15 @@ const CHECK_APPEAR_GRACE_MS = 45_000
  * Poll until the PR head gives a verdict we can act on: a failure, a success,
  * or "no checks here" that survived the grace window above.
  */
-export async function waitForPrChecks(prUrl: string): Promise<PrCheckState> {
+export async function waitForPrChecks(prUrl: string, options: CheckOptions = {}): Promise<PrCheckState> {
   const started = Date.now()
-  let last = await prChecks(prUrl)
+  let last = await prChecks(prUrl, options)
   while (
     (last.state === 'pending' && Date.now() - started < CHECK_WAIT_MS) ||
     (last.state === 'none' && Date.now() - started < CHECK_APPEAR_GRACE_MS)
   ) {
     await new Promise((resolve) => setTimeout(resolve, CHECK_POLL_MS))
-    last = await prChecks(prUrl)
+    last = await prChecks(prUrl, options)
   }
   return last
 }
@@ -582,7 +624,7 @@ export class ChecksBlockedMerge extends Error {
  * after the fact. PR #10 on brookweald-site merged in the same second Vercel
  * reported a failed preview build, which broke main.
  */
-export async function mergePublishPr(prUrl: string): Promise<string> {
+export async function mergePublishPr(prUrl: string, options: CheckOptions = {}): Promise<string> {
   const token = process.env.GITHUB_PUBLISH_TOKEN
   if (!token) throw new Error('GITHUB_PUBLISH_TOKEN is not configured')
 
@@ -595,7 +637,7 @@ export async function mergePublishPr(prUrl: string): Promise<string> {
   if (pr.merged) return 'Already merged — the article is live (or deploying).'
   if (pr.state !== 'open') throw new Error('The pull request is closed without being merged — reopen it on GitHub first')
 
-  const checks = await waitForPrChecks(prUrl)
+  const checks = await waitForPrChecks(prUrl, options)
   if (checks.state === 'failure') {
     const detail = checks.failures
       .map((f) => (f.url ? `${f.context} — ${f.url}` : f.context))
@@ -607,8 +649,9 @@ export async function mergePublishPr(prUrl: string): Promise<string> {
   }
   if (checks.state === 'pending') {
     throw new ChecksBlockedMerge(
-      `Not merged: the build on this pull request was still running after ${Math.round(CHECK_WAIT_MS / 1000)}s. ` +
-        `The PR is still open (${prUrl}) — publish again once it finishes.`,
+      `Not merged: no build verdict on this pull request after ${Math.round(CHECK_WAIT_MS / 1000)}s ` +
+        `(waiting on ${(options.requiredContexts ?? DEFAULT_REQUIRED_CONTEXTS).join(', ') || 'checks'}). ` +
+        `The PR is still open (${prUrl}) — publish again once its build has run.`,
       checks
     )
   }
@@ -746,13 +789,13 @@ export async function verifyPublishingArticle(articleId: string): Promise<Verify
 
   const { data, error } = await supabase
     .from('seo_articles')
-    .select('id, status, published_url, publish_ref, publishing_since')
+    .select('id, site_id, status, published_url, publish_ref, publishing_since')
     .eq('id', articleId)
     .maybeSingle()
   if (error) throw new Error(error.message)
   const article = data as Pick<
     SeoArticle,
-    'id' | 'status' | 'published_url' | 'publish_ref' | 'publishing_since'
+    'id' | 'site_id' | 'status' | 'published_url' | 'publish_ref' | 'publishing_since'
   > | null
   if (!article) throw new Error('Article not found')
   if (article.status !== 'publishing') {
@@ -770,17 +813,29 @@ export async function verifyPublishingArticle(articleId: string): Promise<Verify
     const { owner, repo, number } = parsePrUrl(prUrl)
     const pr = await gh<{ merged: boolean; state: string }>(token, `/repos/${owner}/${repo}/pulls/${number}`)
     if (!pr.merged) {
-      const checks = await prChecks(prUrl)
+      const { data: siteRow } = await supabase
+        .from('seo_sites')
+        .select('cms_config')
+        .eq('id', article.site_id)
+        .maybeSingle()
+      const checks = await prChecks(prUrl, {
+        requiredContexts: siteRow
+          ? requiredContextsForSite(siteRow as Pick<SeoSite, 'cms_config'>)
+          : undefined,
+      })
       const detail =
         checks.state === 'failure'
           ? `Build failed on the open pull request (${checks.failures
               .map((f) => (f.url ? `${f.context} — ${f.url}` : f.context))
               .join('; ')}). Fix it, then publish again.`
-          : `Pull request still open (${prUrl}), checks ${checks.state}.`
+          : `Pull request still open (${prUrl}) and not merged — build verdict ${checks.state}. Merge it from the article page once its build passes.`
       if (checks.state === 'failure') {
         await supabase.from('seo_articles').update({ publish_error: detail }).eq('id', articleId)
         return { articleId, outcome: 'blocked', detail }
       }
+      // No failure any more: clear whatever the last attempt left behind, or a
+      // fixed build still reads as broken on the article screen.
+      await supabase.from('seo_articles').update({ publish_error: null }).eq('id', articleId)
       return { articleId, outcome: 'waiting', detail }
     }
   }
