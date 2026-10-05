@@ -123,6 +123,18 @@ export default async function GrowthArticleDetailPage({
           Draft failed: {article.error}
         </div>
       ) : null}
+      {article.publish_error && article.status !== 'published' ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Publish failed: {article.publish_error}
+          {article.publish_branch ? (
+            <span className="mt-1 block text-red-600">
+              Publishing again resumes the branch{' '}
+              <code className="font-mono">{article.publish_branch}</code> rather than opening a
+              second one.
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {article.status === 'published' ? (
         <div className="os-card p-6">

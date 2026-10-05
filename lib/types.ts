@@ -1883,6 +1883,12 @@ export interface SeoArticle {
   draft_started_at: string | null
   error: string | null
   publish_ref: string | null
+  /** Branch a publish attempt owns, so a retry resumes it rather than orphaning it. */
+  publish_branch: string | null
+  /** Content file that attempt writes. Reused on retry so the path stays stable. */
+  publish_path: string | null
+  /** Last publish failure, cleared on success. */
+  publish_error: string | null
   created_at: string
   updated_at: string
 }

@@ -37,6 +37,7 @@ interface WordpressCmsConfig {
 export async function publishArticle(article: SeoArticle, site: SeoSite): Promise<PublishResult> {
   if (!article.body_mdx) throw new Error('Article has no body to publish')
   if (!article.slug) throw new Error('Article has no slug')
+  await assertSlugIsFree(article)
 
   switch (site.cms_type) {
     case 'github':
@@ -48,6 +49,52 @@ export async function publishArticle(article: SeoArticle, site: SeoSite): Promis
     default:
       throw new Error('Set the site’s CMS in settings before publishing (GitHub, WordPress, or the Trailhead marketing blog)')
   }
+}
+
+/**
+ * Refuse to publish over another article's slug on the same site.
+ *
+ * Approving a brief twice inserts a second seo_articles row with the same slug
+ * (there is no uniqueness on it), and the GitHub filename is date-prefixed — so
+ * publishing the duplicate on a different day does not collide on the filename,
+ * it quietly adds a SECOND content file carrying the same frontmatter slug. The
+ * site then has two pages competing for one URL, which is worse than an error.
+ * Checked for every CMS, since the internal blog and WordPress have the same
+ * problem by a different route.
+ */
+async function assertSlugIsFree(article: SeoArticle): Promise<void> {
+  const { createClient } = await import('@/lib/supabase/service')
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('seo_articles')
+    .select('id, title, status')
+    .eq('site_id', article.site_id)
+    .eq('slug', article.slug)
+    .neq('id', article.id)
+    .in('status', ['approved', 'published'])
+    .limit(1)
+  if (error) throw new Error(error.message)
+  const clash = (data ?? [])[0] as { title: string; status: string } | undefined
+  if (clash) {
+    throw new Error(
+      `Another article on this site already uses the slug "${article.slug}" — "${clash.title}" (${clash.status}). ` +
+        'Change this article\'s slug, or archive the other one, before publishing.'
+    )
+  }
+}
+
+/**
+ * Record the branch and file a publish attempt owns, the moment the branch
+ * exists. Everything after that point can fail, and without this the next click
+ * cuts a fresh branch and opens a second PR instead of resuming this one.
+ */
+async function recordPublishAttempt(articleId: string, branch: string, path: string): Promise<void> {
+  const { createClient } = await import('@/lib/supabase/service')
+  const supabase = createClient()
+  await supabase
+    .from('seo_articles')
+    .update({ publish_branch: branch, publish_path: path })
+    .eq('id', articleId)
 }
 
 // ── Internal: draft in this app's own blog_posts (trailheadholdings.uk) ─────
@@ -87,16 +134,31 @@ async function publishToInternalBlog(article: SeoArticle): Promise<PublishResult
 
 // ── GitHub: branch + MDX file + pull request ────────────────────────────────
 
+function ghHeaders(token: string, hasBody: boolean): HeadersInit {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+  }
+}
+
 async function gh<T>(token: string, path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`https://api.github.com${path}`, {
     ...init,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-    },
+    headers: ghHeaders(token, Boolean(init?.body)),
   })
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`GitHub ${path} failed (${res.status}): ${body.slice(0, 300)}`)
+  }
+  return (await res.json()) as T
+}
+
+/** GET where "not there" is an expected answer: 404 returns null, not a throw. */
+async function ghOptional<T>(token: string, path: string): Promise<T | null> {
+  const res = await fetch(`https://api.github.com${path}`, { headers: ghHeaders(token, false) })
+  if (res.status === 404) return null
   if (!res.ok) {
     const body = await res.text().catch(() => '')
     throw new Error(`GitHub ${path} failed (${res.status}): ${body.slice(0, 300)}`)
@@ -136,48 +198,97 @@ async function publishViaGithubPr(article: SeoArticle, site: SeoSite): Promise<P
   }
   const baseBranch = config.base_branch ?? 'main'
   const contentDir = (config.content_dir ?? 'content/blog').replace(/^\/|\/$/g, '')
-  // Date-prefixed filename per the target repo's convention (slug still comes
-  // from frontmatter, so the URL is stable regardless).
-  const filePath = `${contentDir}/${new Date().toISOString().slice(0, 10)}-${slug}.mdx`
 
-  const baseRef = await gh<{ object: { sha: string } }>(
+  // Both of these are sticky once an attempt has started. The branch name is
+  // DELIBERATELY deterministic (it used to carry a timestamp, which guaranteed a
+  // fresh branch per click and so made resuming impossible), and the file path
+  // is remembered because the default name is date-prefixed per the target
+  // repo's convention — recomputing it the next day would write a second file
+  // for the same article. Slug still comes from frontmatter, so the public URL
+  // does not depend on either.
+  const branch = article.publish_branch ?? `seo/${slug}`
+  const filePath =
+    article.publish_path ?? `${contentDir}/${new Date().toISOString().slice(0, 10)}-${slug}.mdx`
+  const encodedPath = filePath.split('/').map(encodeURIComponent).join('/')
+
+  // ── 1. Branch: reuse it if a previous attempt left it behind ──────────────
+  const existingBranch = await ghOptional<{ object: { sha: string } }>(
     token,
-    `/repos/${repo}/git/ref/${encodeURIComponent(`heads/${baseBranch}`)}`
+    `/repos/${repo}/git/ref/${encodeURIComponent(`heads/${branch}`)}`
   )
+  if (!existingBranch) {
+    const baseRef = await gh<{ object: { sha: string } }>(
+      token,
+      `/repos/${repo}/git/ref/${encodeURIComponent(`heads/${baseBranch}`)}`
+    )
+    await gh(token, `/repos/${repo}/git/refs`, {
+      method: 'POST',
+      body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: baseRef.object.sha }),
+    })
+  }
 
-  // Branch names must be unique — suffix a timestamp so republish attempts
-  // never collide with an old branch.
-  const branch = `seo/${slug}-${Date.now().toString(36)}`
-  await gh(token, `/repos/${repo}/git/refs`, {
-    method: 'POST',
-    body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: baseRef.object.sha }),
-  })
+  // The branch exists from here on, so claim it before anything else can fail.
+  await recordPublishAttempt(article.id, branch, filePath)
 
-  await gh(token, `/repos/${repo}/contents/${filePath}`, {
+  // ── 2. File: GitHub needs the blob sha to overwrite an existing path ──────
+  // Without it the PUT fails 422 "sha wasn't supplied", which is what happened
+  // whenever the file was already on the branch — either left by an earlier
+  // attempt, or inherited from base because a previous PR had merged it.
+  const existingFile = await ghOptional<{ sha: string }>(
+    token,
+    `/repos/${repo}/contents/${encodedPath}?ref=${encodeURIComponent(branch)}`
+  )
+  await gh(token, `/repos/${repo}/contents/${encodedPath}`, {
     method: 'PUT',
     body: JSON.stringify({
-      message: `content: add "${article.title}"`,
+      message: `content: ${existingFile ? 'update' : 'add'} "${article.title}"`,
       content: Buffer.from(mdxFile(article, slug, config.author), 'utf8').toString('base64'),
       branch,
+      ...(existingFile ? { sha: existingFile.sha } : {}),
     }),
   })
 
-  const pr = await gh<{ html_url: string }>(token, `/repos/${repo}/pulls`, {
-    method: 'POST',
-    body: JSON.stringify({
-      title: `Article: ${article.title}`,
-      head: branch,
-      base: baseBranch,
-      body: [
-        `Adds \`${filePath}\` from the Growth engine.`,
-        '',
-        article.meta_description ? `> ${article.meta_description}` : '',
-        '',
-        `Target keyword: ${slug.replace(/-/g, ' ')} · ${article.word_count ?? '?'} words.`,
-        'Preview deploy will render the article; merge to publish.',
-      ].join('\n'),
-    }),
-  })
+  // ── 3. PR: reuse the open one for this branch rather than stacking another ─
+  const owner = repo.split('/')[0]
+  const openPrs = await gh<Array<{ html_url: string }>>(
+    token,
+    `/repos/${repo}/pulls?state=open&head=${encodeURIComponent(`${owner}:${branch}`)}`
+  )
+  const existingPr = openPrs[0]
+  if (existingPr) {
+    return { url: `https://${site.domain}/blog/${slug}`, ref: existingPr.html_url }
+  }
+
+  let pr: { html_url: string }
+  try {
+    pr = await gh<{ html_url: string }>(token, `/repos/${repo}/pulls`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title: `Article: ${article.title}`,
+        head: branch,
+        base: baseBranch,
+        body: [
+          `Adds \`${filePath}\` from the Growth engine.`,
+          '',
+          article.meta_description ? `> ${article.meta_description}` : '',
+          '',
+          `Target keyword: ${slug.replace(/-/g, ' ')} · ${article.word_count ?? '?'} words.`,
+          'Preview deploy will render the article; merge to publish.',
+        ].join('\n'),
+      }),
+    })
+  } catch (err) {
+    // Reusing a branch whose PR already merged, with content that has not
+    // changed since, leaves nothing to open a PR about. Say so plainly rather
+    // than passing GitHub's wording through.
+    if (err instanceof Error && /No commits between/i.test(err.message)) {
+      throw new Error(
+        `This article is already merged into ${baseBranch} as ${filePath} and nothing has changed since. ` +
+          'Regenerate it first if you want a new version.'
+      )
+    }
+    throw err
+  }
 
   return { url: `https://${site.domain}/blog/${slug}`, ref: pr.html_url }
 }

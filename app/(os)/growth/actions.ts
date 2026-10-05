@@ -306,6 +306,7 @@ export async function publishArticleAction(siteId: string, articleId: string) {
         published_at: new Date().toISOString(),
         published_url: result.url,
         publish_ref: result.ref,
+        publish_error: null,
       })
       .eq('id', articleId)
     if (error) throw new Error(error.message)
@@ -355,6 +356,14 @@ export async function publishArticleAction(siteId: string, articleId: string) {
     )
   } catch (err) {
     if (err && typeof err === 'object' && 'digest' in err) throw err
+    // Durable, unlike the redirect's query string: publishViaGithubPr has
+    // already recorded the branch it owns, so this says why that attempt
+    // stopped and the next click resumes it.
+    await supabase
+      .from('seo_articles')
+      .update({ publish_error: errMessage(err) })
+      .eq('id', articleId)
+    revalidatePath(`/growth/${siteId}/articles/${articleId}`)
     redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(errMessage(err))}`)
   }
 }
