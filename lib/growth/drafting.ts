@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/service'
 import { draftArticle } from '@/lib/growth/ai'
 import { pushToUser } from '@/lib/push/server'
-import type { SeoArticle, SeoBrief, SeoSite } from '@/lib/types'
+import type { SeoArticle, SeoArticleStatus, SeoBrief, SeoSite } from '@/lib/types'
 
 /**
  * Draft queue worker (growth-draft cron). One article per tick, claimed with a
@@ -107,4 +107,87 @@ async function notifyDraftReady(articleId: string, siteId: string, title: string
   } catch {
     /* never let a push failure mark the draft as failed */
   }
+}
+
+/** Statuses a re-draft is allowed from. */
+const REGENERATABLE_STATUSES = ['review', 'approved'] as const
+
+export interface RegenerateResult {
+  articleId: string
+  wordCount: number
+  previousStatus: SeoArticleStatus
+}
+
+/**
+ * Re-draft an article that has already been drafted, in place.
+ *
+ * Runs the same `draftArticle` job the queue worker runs, against the article's
+ * CURRENT brief and site rows — so a brand_voice, ICP or outline edited since
+ * the first draft is what the new copy is written to. The row keeps its id and
+ * slug, so inbound links, the publish_ref and anything referencing the article
+ * still resolve.
+ *
+ * Deliberately synchronous rather than re-queued, for two reasons: the queue
+ * worker only claims articles with a null body_mdx (so a re-queue would mean
+ * destroying the existing draft first and leaving the article empty if the model
+ * call then failed), and the Growth actions already run model calls inline —
+ * generateBrief and generateClusters are the same shape. The existing body is
+ * overwritten only once the new draft is in hand.
+ *
+ * Published articles are refused: the body is already out in a PR, a WordPress
+ * draft or the marketing blog, and silently re-drafting underneath that would
+ * leave publish_ref and published_url pointing at copy that no longer exists
+ * here. Re-draft before approving, or publish again after.
+ */
+export async function regenerateArticleDraft(articleId: string): Promise<RegenerateResult> {
+  const supabase = createClient()
+
+  const { data: articleRow, error: articleError } = await supabase
+    .from('seo_articles')
+    .select('*')
+    .eq('id', articleId)
+    .maybeSingle()
+  if (articleError) throw new Error(articleError.message)
+  const article = articleRow as SeoArticle | null
+  if (!article) throw new Error('Article not found')
+
+  if (!REGENERATABLE_STATUSES.includes(article.status as (typeof REGENERATABLE_STATUSES)[number])) {
+    throw new Error(
+      article.status === 'published'
+        ? 'A published article cannot be re-drafted — it is already out in a PR, WordPress draft or the blog'
+        : `Only articles in review or approved can be re-drafted (this one is ${article.status})`
+    )
+  }
+  if (!article.brief_id) throw new Error('Article has no brief to re-draft from')
+
+  const [{ data: brief }, { data: site }] = await Promise.all([
+    supabase.from('seo_briefs').select('*').eq('id', article.brief_id).single<SeoBrief>(),
+    supabase.from('seo_sites').select('*').eq('id', article.site_id).single<SeoSite>(),
+  ])
+  if (!brief) throw new Error('Brief not found — it may have been deleted')
+  if (!site) throw new Error('Site not found')
+
+  // Model call first: a failure here leaves the existing draft untouched.
+  const draft = await draftArticle(brief, site)
+
+  const { error: saveError } = await supabase
+    .from('seo_articles')
+    .update({
+      body_mdx: draft.body_mdx,
+      meta_description: draft.meta_description,
+      schema_jsonld: draft.schema_jsonld,
+      word_count: draft.word_count,
+      // Kept in step with the body: the article screen shows these next to the
+      // copy, so leaving the first draft's values would misreport which model
+      // wrote what is on screen and what it cost.
+      model_used: draft.model_used,
+      token_cost: draft.token_cost,
+      // Back to the pre-approval state — new copy has not been read yet.
+      status: 'review',
+      error: null,
+    })
+    .eq('id', articleId)
+  if (saveError) throw new Error(saveError.message)
+
+  return { articleId, wordCount: draft.word_count, previousStatus: article.status }
 }

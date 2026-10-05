@@ -397,6 +397,30 @@ export async function retryDraftAction(siteId: string, articleId: string) {
   )
 }
 
+/**
+ * Re-draft an article in place from its brief, using the site's current
+ * brand_voice. Same id and slug; status drops back to review for a fresh read.
+ * Runs the model call inline (10-60s), like generateBriefAction — the page uses
+ * ConfirmPendingButton so the wait is visible and the click cannot be repeated.
+ */
+export async function regenerateArticleAction(siteId: string, articleId: string) {
+  await requireAdmin()
+  const { regenerateArticleDraft } = await import('@/lib/growth/drafting')
+  try {
+    const { wordCount } = await regenerateArticleDraft(articleId)
+    revalidatePath(`/growth/${siteId}/articles/${articleId}`)
+    revalidatePath(`/growth/${siteId}/articles`)
+    redirect(
+      `/growth/${siteId}/articles/${articleId}?notice=${encodeURIComponent(
+        `Re-drafted from the brief — ${wordCount.toLocaleString('en-GB')} words, back in review`
+      )}`
+    )
+  } catch (err) {
+    if (err && typeof err === 'object' && 'digest' in err) throw err
+    redirect(`/growth/${siteId}/articles/${articleId}?error=${encodeURIComponent(errMessage(err))}`)
+  }
+}
+
 // ── Phase 5: link building ───────────────────────────────────────────────────
 
 export async function importProspectsAction(siteId: string, formData: FormData) {

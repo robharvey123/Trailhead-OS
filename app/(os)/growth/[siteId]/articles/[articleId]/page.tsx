@@ -4,8 +4,20 @@ import ReactMarkdown from 'react-markdown'
 import { blogMarkdownClassName } from '@/lib/blog'
 import { getSeoArticleById, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
+import { ConfirmPendingButton } from '@/components/growth/ConfirmPendingButton'
 import { PendingButton } from '@/components/growth/PendingButton'
-import { approveArticleAction, mergeArticlePrAction, publishArticleAction, retryDraftAction } from '../../../actions'
+import {
+  approveArticleAction,
+  mergeArticlePrAction,
+  publishArticleAction,
+  regenerateArticleAction,
+  retryDraftAction,
+} from '../../../actions'
+
+// The Regenerate action runs draftArticle inline, and a full article is the
+// longest model call in the OS — the same reason /api/cron/growth-draft raises
+// its own ceiling. Server actions inherit this segment's limit.
+export const maxDuration = 300
 
 export default async function GrowthArticleDetailPage({
   params,
@@ -69,6 +81,19 @@ export default async function GrowthArticleDetailPage({
             <PendingButton variant="primary" pendingLabel="Merging…">
               Merge PR → go live
             </PendingButton>
+          </form>
+        ) : null}
+        {article.body_mdx && (article.status === 'review' || article.status === 'approved') ? (
+          <form action={regenerateArticleAction.bind(null, site.id, article.id)}>
+            <ConfirmPendingButton
+              confirmLabel="Overwrite the draft"
+              pendingLabel="Re-drafting…"
+              warning={`This replaces the current copy, meta description and schema for "${article.title}" with a fresh draft from the brief. The old version is not kept.${
+                article.status === 'approved' ? ' The article goes back to review, so it will need approving again.' : ''
+              }`}
+            >
+              Regenerate
+            </ConfirmPendingButton>
           </form>
         ) : null}
         {article.status === 'drafting' && article.error ? (
