@@ -3,18 +3,13 @@ import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
   ACCOUNT_SELECT,
   accountCounts,
-  findAccountByExactName,
   formatAccount,
   getWorkstreamBySlug,
   jsonError,
-  optionalNumber,
-  optionalString,
   parseAccountStatus,
   parseLimit,
-  parseTags,
-  requiredString,
 } from '@/lib/cowork-api'
-import { recordCoworkWrite } from '@/lib/cowork-audit'
+import { createCoworkAccount } from '@/lib/cowork-accounts'
 import { supabaseService } from '@/lib/supabase/service'
 
 // GET /api/cowork/accounts — list accounts with contact + open-task counts.
@@ -71,59 +66,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json().catch(() => ({}))
-    const name = requiredString(body.name, 'name')
-
-    const existing = await findAccountByExactName(name)
+    const { existing, account } = await createCoworkAccount(body)
     if (existing) {
-      const { contacts, openTasks } = await accountCounts([existing.id])
       return Response.json(
-        {
-          error: `An account named "${existing.name}" already exists`,
-          account: formatAccount(existing as never, {
-            contacts: contacts.get(existing.id) ?? 0,
-            open_tasks: openTasks.get(existing.id) ?? 0,
-          }),
-        },
+        { error: `An account named "${account.name}" already exists`, account },
         { status: 409 }
       )
     }
-
-    const workstreamSlug = optionalString(body.workstream)
-    const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
-
-    const { data, error } = await supabaseService
-      .from('accounts')
-      .insert({
-        name,
-        website: optionalString(body.website),
-        industry: optionalString(body.industry),
-        status: parseAccountStatus(body.status),
-        channel: optionalString(body.channel),
-        source: optionalString(body.source),
-        address_line1: optionalString(body.address_line1),
-        address_line2: optionalString(body.address_line2),
-        city: optionalString(body.city),
-        postcode: optionalString(body.postcode),
-        country: optionalString(body.country),
-        notes: optionalString(body.notes),
-        tags: parseTags(body.tags) ?? [],
-        default_hourly_rate: optionalNumber(body.default_hourly_rate, 'default_hourly_rate'),
-        hq_address: optionalString(body.hq_address),
-        workstream_id: workstream?.id ?? null,
-      })
-      .select(ACCOUNT_SELECT)
-      .single()
-    if (error) throw error
-
-    const account = formatAccount(data as never, { contacts: 0, open_tasks: 0 })
-    void recordCoworkWrite({
-      action: 'create',
-      entity: 'account',
-      entityId: account.id,
-      entityLabel: account.name,
-      summary: `Created account "${account.name}"${account.status ? ` (${account.status})` : ''}`,
-      payload: body,
-    })
     return Response.json(account, { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create account')

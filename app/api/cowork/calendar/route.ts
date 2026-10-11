@@ -6,14 +6,10 @@ import {
   formatCalendarEvent,
   getWorkstreamBySlug,
   jsonError,
-  optionalIsoDatetime,
-  optionalString,
   parseDateParam,
-  requiredString,
   todayDate,
 } from '@/lib/cowork-api'
-import { pushEventToGoogle } from '@/lib/google/calendar'
-import { recordCoworkWrite } from '@/lib/cowork-audit'
+import { createCoworkCalendarEvent } from '@/lib/cowork-calendar'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -56,6 +52,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST — create. Optional contact_id / project_id / engagement_id links (uuid,
+// must exist). Pushed to Google when a Google account is connected.
 export async function POST(request: NextRequest) {
   if (!validateCoworkToken(request)) {
     return Response.json({ error: 'Unauthorised' }, { status: 401 })
@@ -63,64 +61,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json().catch(() => ({}))
-    const title = requiredString(body.title, 'title')
-    const startAt = optionalIsoDatetime(body.start_at, 'start_at')
-    const endAt = optionalIsoDatetime(body.end_at, 'end_at')
-
-    if (!startAt || !endAt) {
-      return Response.json({ error: 'start_at and end_at are required' }, { status: 400 })
-    }
-
-    if (new Date(endAt).getTime() < new Date(startAt).getTime()) {
-      return Response.json({ error: 'end_at must be on or after start_at' }, { status: 400 })
-    }
-
-    const workstreamSlug = optionalString(body.workstream)
-    const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
-
-    const { data, error } = await supabaseService
-      .from('calendar_events')
-      .insert({
-        title,
-        start_at: startAt,
-        end_at: endAt,
-        all_day: body.all_day === true,
-        location: optionalString(body.location),
-        description: optionalString(body.description),
-        workstream_id: workstream?.id ?? null,
-        colour: optionalString(body.colour),
-      })
-      .select(CALENDAR_EVENT_SELECT)
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    void (async () => {
-      const { data: tokenRow } = await supabaseService
-        .from('google_tokens')
-        .select('id')
-        .limit(1)
-        .maybeSingle()
-
-      if (!tokenRow) {
-        return
-      }
-
-      await pushEventToGoogle(data as never)
-    })().catch(() => {})
-
-    const event = formatCalendarEvent(data as never)
-    void recordCoworkWrite({
-      action: 'create',
-      entity: 'calendar_event',
-      entityId: event.id,
-      entityLabel: event.title,
-      summary: `Added calendar event "${event.title}" on ${event.start_at.slice(0, 16).replace('T', ' ')}`,
-      payload: body,
-    })
-    return Response.json(event, { status: 201 })
+    return Response.json(await createCoworkCalendarEvent(body), { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create calendar event')
   }

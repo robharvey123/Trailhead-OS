@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
-import { formatEnquiry, jsonError, parseEnquiryStatus, parseLimit } from '@/lib/cowork-api'
+import { ENQUIRY_SELECT, formatEnquiry, jsonError, parseEnquiryStatus, parseLimit } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabaseService
       .from('enquiries')
-      .select('id, biz_name, contact_name, contact_email, contact_phone, biz_type, project_type, top_features, pain_points, timeline, budget, status, created_at')
+      .select(ENQUIRY_SELECT)
       .eq('status', status)
       .order('created_at', { ascending: false })
       .limit(limit)

@@ -972,6 +972,50 @@ export async function confirmEngagementDocumentUpload(documentId: string) {
   }
 }
 
+/**
+ * Permanently delete one engagement document — the row and its stored object, as
+ * the OS drawer's delete does (a storage failure does not block the row delete,
+ * same as the UI). Works on reserved-but-unconfirmed uploads too. Returns the
+ * deleted row for the audit log, which the call site writes.
+ */
+export async function deleteEngagementDocument(ref: string, documentId: string) {
+  const e = await getEngagementRow(ref)
+  const { data: doc, error: loadErr } = await supabaseService
+    .from('engagement_documents')
+    .select('id, type, title, file_name, file_path, mime_type, size_bytes, upload_state, created_at')
+    .eq('id', documentId)
+    .eq('engagement_id', e.id)
+    .maybeSingle()
+  if (loadErr) throw new CoworkApiError(loadErr.message || 'Failed to load the document', 500)
+  if (!doc) throw new CoworkApiError('Document not found on this engagement', 404)
+
+  const filePath = (doc as { file_path: string | null }).file_path
+  if (filePath) {
+    await supabaseService.storage.from('engagement-docs').remove([filePath]).then(() => {}, () => {})
+  }
+  const { error } = await supabaseService
+    .from('engagement_documents')
+    .delete()
+    .eq('id', documentId)
+    .eq('engagement_id', e.id)
+  if (error) throw new CoworkApiError(error.message || 'Failed to delete the document', 500)
+
+  return {
+    document: doc as {
+      id: string
+      type: string
+      title: string | null
+      file_name: string | null
+      file_path: string | null
+      mime_type: string | null
+      size_bytes: number | null
+      upload_state: string
+      created_at: string
+    },
+    engagement: { id: e.id, name: e.name },
+  }
+}
+
 /** Current billing-month hours used vs included for an engagement (by uuid or code). */
 export async function engagementMonthUsage(ref: string) {
   const e = await getEngagementRow(ref)
@@ -1120,10 +1164,14 @@ type RawTimeEntry = {
   person_id: string | null
   rate_snapshot: number | string | null
   entry_date: string
+  billed: boolean | null
 }
 
+/** Link fields a billed entry may not change — same rule as updateTimeEntry in lib/db/timesheet.ts. */
+const BILLED_LOCKED_LINKS = ['task_id', 'engagement_id', 'project_id', 'account_id'] as const
+
 /**
- * Amend an existing time entry (never deletes). Linking a task backfills the
+ * Amend an existing time entry. Linking a task backfills the
  * engagement/project from the ticket (deriveLinks rules; a contradicting
  * engagement_id is a 409). The snapshot rate is HISTORY: it is only recomputed when
  * the entry moves to a different engagement (including null → engagement, which is
@@ -1134,12 +1182,21 @@ type RawTimeEntry = {
 export async function patchCoworkTimeEntry(id: string, body: Record<string, unknown>): Promise<PatchTimeResult> {
   const { data: current, error: loadErr } = await supabaseService
     .from('time_entries')
-    .select('id, engagement_id, project_id, task_id, account_id, person_id, rate_snapshot, entry_date')
+    .select('id, engagement_id, project_id, task_id, account_id, person_id, rate_snapshot, entry_date, billed')
     .eq('id', id)
     .maybeSingle()
   if (loadErr) throw new CoworkApiError(loadErr.message || 'Failed to load time entry', 500)
   if (!current) throw new CoworkApiError(`time entry ${id} not found`, 404)
   const cur = current as RawTimeEntry
+
+  // A billed entry is filed on an invoice: its links are frozen (text, duration
+  // and the like may still be corrected), matching the UI.
+  if (cur.billed && BILLED_LOCKED_LINKS.some((field) => field in body)) {
+    throw new CoworkApiError(
+      'This entry is billed; unlink it from its invoice before changing where it is filed.',
+      409
+    )
+  }
 
   const updates: Record<string, unknown> = {}
 
@@ -1250,4 +1307,22 @@ export async function patchCoworkTimeEntry(id: string, body: Record<string, unkn
   const warning = await overageWarning(nextEngagement)
   if (warning) result.warning = warning
   return result
+}
+
+/**
+ * Permanently delete a time entry. Refused (409) once billed: the hours are on an
+ * invoice, so release them from it first. Returns the deleted row for the audit
+ * log, which the call site writes (same as log_time / update_time_entry).
+ */
+export async function deleteCoworkTimeEntry(id: string) {
+  const entry = await getCoworkTimeEntry(id) // 404 if missing
+  if (entry.billed) {
+    throw new CoworkApiError(
+      'This entry is billed and cannot be deleted; release it from its invoice first.',
+      409
+    )
+  }
+  const { error } = await supabaseService.from('time_entries').delete().eq('id', id).eq('billed', false)
+  if (error) throw new CoworkApiError(error.message || 'Failed to delete time entry', 500)
+  return entry
 }

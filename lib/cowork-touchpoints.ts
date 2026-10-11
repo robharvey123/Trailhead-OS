@@ -97,3 +97,21 @@ export async function createCoworkTouchpoint(body: unknown) {
   if (error) throw new CoworkApiError(error.message || 'Failed to create touchpoint', 500)
   return formatTouchpoint(data as never)
 }
+
+/**
+ * Permanently delete a touchpoint (as the OS route does). Returns the deleted row
+ * for the audit log, which the call site writes.
+ */
+export async function deleteCoworkTouchpoint(id: string) {
+  const { data, error: loadErr } = await supabaseService
+    .from('touchpoints')
+    .select(TOUCHPOINT_SELECT)
+    .eq('id', id)
+    .maybeSingle()
+  if (loadErr) throw new CoworkApiError(loadErr.message || 'Failed to load touchpoint', 500)
+  if (!data) throw new CoworkApiError('Touchpoint not found', 404)
+
+  const { error } = await supabaseService.from('touchpoints').delete().eq('id', id)
+  if (error) throw new CoworkApiError(error.message || 'Failed to delete touchpoint', 500)
+  return formatTouchpoint(data as never)
+}

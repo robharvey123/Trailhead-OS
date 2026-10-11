@@ -1,17 +1,12 @@
 import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
-  ACCOUNT_SELECT,
   accountCounts,
   formatAccount,
   getAccountById,
-  getWorkstreamBySlug,
   jsonError,
-  optionalNumber,
-  optionalString,
-  parseAccountStatus,
-  parseTags,
 } from '@/lib/cowork-api'
+import { updateCoworkAccount } from '@/lib/cowork-accounts'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
 import { supabaseService } from '@/lib/supabase/service'
 
@@ -31,58 +26,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
+// PATCH — any of ACCOUNT_PATCH_FIELDS (lib/cowork-accounts.ts). Blank name is a
+// 400; renaming onto another account's name is a 409.
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!validateCoworkToken(request)) {
     return Response.json({ error: 'Unauthorised' }, { status: 401 })
   }
   try {
     const { id } = await params
-    await getAccountById(id) // 404 if missing
     const body = await request.json().catch(() => ({}))
-    const patch: Record<string, unknown> = {}
-
-    if (body.name !== undefined) {
-      const name = optionalString(body.name)
-      if (!name) return Response.json({ error: 'name must be a non-empty string' }, { status: 400 })
-      patch.name = name
-    }
-    if (body.website !== undefined) patch.website = optionalString(body.website)
-    if (body.industry !== undefined) patch.industry = optionalString(body.industry)
-    if (body.status !== undefined) patch.status = parseAccountStatus(body.status)
-    if (body.channel !== undefined) patch.channel = optionalString(body.channel)
-    if (body.source !== undefined) patch.source = optionalString(body.source)
-    if (body.address_line1 !== undefined) patch.address_line1 = optionalString(body.address_line1)
-    if (body.address_line2 !== undefined) patch.address_line2 = optionalString(body.address_line2)
-    if (body.city !== undefined) patch.city = optionalString(body.city)
-    if (body.postcode !== undefined) patch.postcode = optionalString(body.postcode)
-    if (body.country !== undefined) patch.country = optionalString(body.country)
-    if (body.notes !== undefined) patch.notes = optionalString(body.notes)
-    if (body.tags !== undefined) patch.tags = parseTags(body.tags) ?? []
-    if (body.default_hourly_rate !== undefined) patch.default_hourly_rate = optionalNumber(body.default_hourly_rate, 'default_hourly_rate')
-    if (body.hq_address !== undefined) patch.hq_address = optionalString(body.hq_address)
-    if (body.workstream !== undefined) {
-      const slug = optionalString(body.workstream)
-      patch.workstream_id = slug ? (await getWorkstreamBySlug(slug)).id : null
-    }
-
-    if (Object.keys(patch).length === 0) {
-      return Response.json({ error: 'No changes supplied' }, { status: 400 })
-    }
-
-    const { data, error } = await supabaseService.from('accounts').update(patch).eq('id', id).select(ACCOUNT_SELECT).single()
-    if (error) throw error
-
-    const { contacts, openTasks } = await accountCounts([id])
-    const account = formatAccount(data as never, { contacts: contacts.get(id) ?? 0, open_tasks: openTasks.get(id) ?? 0 })
-    void recordCoworkWrite({
-      action: 'update',
-      entity: 'account',
-      entityId: account.id,
-      entityLabel: account.name,
-      summary: `Updated account "${account.name}" (${Object.keys(patch).join(', ')})`,
-      payload: body,
-    })
-    return Response.json(account)
+    return Response.json(await updateCoworkAccount(id, body))
   } catch (error) {
     return jsonError(error, 'Failed to update account')
   }
@@ -151,6 +104,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       entityId: id,
       entityLabel: account.name,
       summary: `Deleted account "${account.name}" (had no references)`,
+      payload: account,
     })
     return Response.json({ ok: true, deleted: id })
   } catch (error) {

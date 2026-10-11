@@ -5,12 +5,10 @@ import {
   formatContact,
   getWorkstreamBySlug,
   jsonError,
-  optionalString,
   parseContactStatus,
   parseLimit,
-  requiredString,
 } from '@/lib/cowork-api'
-import { recordCoworkWrite } from '@/lib/cowork-audit'
+import { createCoworkContact } from '@/lib/cowork-contacts'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
@@ -68,39 +66,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json().catch(() => ({}))
-    const workstreamSlug = optionalString(body.workstream)
-    const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
-
-    const { data, error } = await supabaseService
-      .from('contacts')
-      .insert({
-        name: requiredString(body.name, 'name'),
-        company: optionalString(body.company),
-        email: optionalString(body.email),
-        phone: optionalString(body.phone),
-        role: optionalString(body.role),
-        workstream_id: workstream?.id ?? null,
-        account_id: optionalString(body.account_id),
-        status: parseContactStatus(body.status),
-        notes: optionalString(body.notes),
-      })
-      .select(CONTACT_SELECT)
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    const contact = formatContact(data as never)
-    void recordCoworkWrite({
-      action: 'create',
-      entity: 'contact',
-      entityId: contact.id,
-      entityLabel: contact.name,
-      summary: `Created contact "${contact.name}"${contact.company ? ` at ${contact.company}` : ''}`,
-      payload: body,
-    })
-    return Response.json(contact, { status: 201 })
+    return Response.json(await createCoworkContact(body), { status: 201 })
   } catch (error) {
     return jsonError(error, 'Failed to create contact')
   }
