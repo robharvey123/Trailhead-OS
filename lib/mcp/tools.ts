@@ -9,7 +9,17 @@ import { addNote } from '@/lib/db/notes'
 import { periodHoursFor } from '@/lib/db/engagements'
 import { billingPeriodFromStart, clampStartDay } from '@/lib/engagements/periods'
 import { getProjectById, getProjects } from '@/lib/db/projects'
-import { updateCoworkProject, updateProjectMilestone } from '@/lib/cowork-projects'
+import {
+  createCoworkProject,
+  createProjectMilestone,
+  createProjectPhase,
+  deleteProjectMilestone,
+  deleteProjectPhase,
+  updateCoworkProject,
+  updateProjectMilestone,
+  updateProjectPhase,
+} from '@/lib/cowork-projects'
+import { createCoworkTask, listCoworkTasks, updateCoworkTask } from '@/lib/cowork-tasks'
 import type { createClient as createServerClient } from '@/lib/supabase/server'
 import { supabaseService } from '@/lib/supabase/service'
 import {
@@ -181,7 +191,7 @@ export const getProject = defineTool({
 export const updateProjectTool = defineTool({
   name: 'update_project',
   description:
-    'Patch a project. Supply only the fields to change: name, description, status, start_date, end_date, account_id, engagement_id. Setting engagement_id links the project to an engagement (so bulk_create_engagement_tasks tickets inherit it and hours reconcile); null clears the link. Linking is refused (409) when the engagement’s end client differs from the project’s account.',
+    'Patch a project. Supply only the fields to change: name, description, brief, status, start_date, end_date, estimated_end_date, workstream (slug), tier (pricing tier slug), hourly_rate, currency, colour, account_id, engagement_id. Setting engagement_id links the project to an engagement (so bulk_create_engagement_tasks tickets inherit it and hours reconcile); null clears the link. Linking is refused (409) when the engagement’s end client differs from the project’s account.',
   inputSchema: z.object({
     id: z.string().min(1).optional(),
     project_id: z.string().min(1).optional(),
@@ -190,6 +200,13 @@ export const updateProjectTool = defineTool({
     status: projectStatus.optional(),
     start_date: isoDate.nullable().optional(),
     end_date: isoDate.nullable().optional(),
+    brief: z.string().nullable().optional(),
+    estimated_end_date: isoDate.nullable().optional(),
+    workstream: z.string().optional(),
+    tier: z.string().nullable().optional(),
+    hourly_rate: z.number().nonnegative().nullable().optional(),
+    currency: z.string().nullable().optional(),
+    colour: z.string().nullable().optional(),
     account_id: z.string().uuid().nullable().optional(),
     engagement_id: z.string().uuid().nullable().optional(),
   }),
@@ -207,13 +224,14 @@ export const updateProjectTool = defineTool({
 export const updateProjectMilestoneTool = defineTool({
   name: 'update_project_milestone',
   description:
-    'Patch one project milestone: completed (stamps/clears completed_at), date, name. Use get_project to find milestone ids.',
+    'Patch one project milestone: completed (stamps/clears completed_at), date, name, description. Use get_project to find milestone ids.',
   inputSchema: z.object({
     project_id: z.string().min(1),
     milestone_id: z.string().min(1),
     completed: z.boolean().optional(),
     date: isoDate.optional(),
     name: z.string().optional(),
+    description: z.string().nullable().optional(),
   }),
   handler: async (input) => {
     const { project_id, milestone_id, ...rest } = input
@@ -899,12 +917,214 @@ export const billExpensesTool = defineTool({
   },
 })
 
+function definedOnly<T extends Record<string, unknown>>(input: T) {
+  return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined))
+}
+
+const taskPriority = z.enum(['low', 'medium', 'high', 'urgent'])
+const taskColumn = z.enum(['backlog', 'in-progress', 'review', 'done'])
+const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, 'must be HH:MM')
+
+export const createProjectTool = defineTool({
+  name: 'create_project',
+  description:
+    'Create a project in a workstream (slug). plan defaults to true and runs the AI planner, which needs a brief and builds a generic phase/milestone/task template. Pass plan:false for a bare project and add phases, milestones and tasks yourself. Optional engagement_id is linked before any planning.',
+  inputSchema: z.object({
+    name: z.string().min(1),
+    workstream: z.string().min(1),
+    brief: z.string().optional(),
+    plan: z.boolean().optional(),
+    description: z.string().optional(),
+    status: projectStatus.optional(),
+    start_date: isoDate.optional(),
+    end_date: isoDate.optional(),
+    tier: z.string().optional(),
+    account_id: z.string().uuid().optional(),
+    account_name: z.string().optional(),
+    engagement_id: z.string().uuid().optional(),
+  }),
+  handler: async (input) => createCoworkProject(definedOnly(input)),
+})
+
+export const createProjectPhaseTool = defineTool({
+  name: 'create_project_phase',
+  description:
+    'Add a phase to a project. Appends after the last phase unless sort_order is given.',
+  inputSchema: z.object({
+    project_id: z.string().min(1),
+    name: z.string().min(1),
+    description: z.string().optional(),
+    sort_order: z.number().int().optional(),
+    start_date: isoDate.optional(),
+    end_date: isoDate.optional(),
+  }),
+  handler: async ({ project_id, ...rest }) => createProjectPhase(project_id, definedOnly(rest)),
+})
+
+export const updateProjectPhaseTool = defineTool({
+  name: 'update_project_phase',
+  description:
+    'Patch one project phase: name, description, sort_order, start_date, end_date. Use get_project to find phase ids.',
+  inputSchema: z.object({
+    project_id: z.string().min(1),
+    phase_id: z.string().min(1),
+    name: z.string().optional(),
+    description: z.string().nullable().optional(),
+    sort_order: z.number().int().optional(),
+    start_date: isoDate.nullable().optional(),
+    end_date: isoDate.nullable().optional(),
+  }),
+  handler: async ({ project_id, phase_id, ...rest }) =>
+    updateProjectPhase(project_id, phase_id, definedOnly(rest)),
+})
+
+export const deleteProjectPhaseTool = defineTool({
+  name: 'delete_project_phase',
+  description:
+    'Permanently delete a project phase. Its tasks stay on the project with no phase. Logged to the activity log with the deleted row.',
+  inputSchema: z.object({
+    project_id: z.string().min(1),
+    phase_id: z.string().min(1),
+  }),
+  handler: async ({ project_id, phase_id }) => deleteProjectPhase(project_id, phase_id),
+})
+
+export const createProjectMilestoneTool = defineTool({
+  name: 'create_project_milestone',
+  description: 'Add a milestone to a project.',
+  inputSchema: z.object({
+    project_id: z.string().min(1),
+    name: z.string().min(1),
+    date: isoDate,
+    description: z.string().optional(),
+    completed: z.boolean().optional(),
+  }),
+  handler: async ({ project_id, ...rest }) => createProjectMilestone(project_id, definedOnly(rest)),
+})
+
+export const deleteProjectMilestoneTool = defineTool({
+  name: 'delete_project_milestone',
+  description:
+    'Permanently delete a project milestone. Logged to the activity log with the deleted row.',
+  inputSchema: z.object({
+    project_id: z.string().min(1),
+    milestone_id: z.string().min(1),
+  }),
+  handler: async ({ project_id, milestone_id }) => deleteProjectMilestone(project_id, milestone_id),
+})
+
+export const listTasksTool = defineTool({
+  name: 'list_tasks',
+  description:
+    'List OS kanban tasks (not engagement tickets). Filters: workstream slug, project_id, priority, due (today|overdue|this_week|all), master.',
+  inputSchema: z.object({
+    workstream: z.string().optional(),
+    project_id: z.string().optional(),
+    priority: taskPriority.optional(),
+    due: z.enum(['today', 'overdue', 'this_week', 'all']).optional(),
+    master: z.boolean().optional(),
+    limit: z.number().int().min(1).max(200).optional(),
+  }),
+  handler: async (input) =>
+    listCoworkTasks({
+      workstreamSlug: input.workstream ?? null,
+      projectId: input.project_id ?? null,
+      priority: input.priority ?? null,
+      due: input.due,
+      master: input.master,
+      limit: input.limit,
+    }),
+})
+
+export const createTaskTool = defineTool({
+  name: 'create_task',
+  description:
+    'Create an OS kanban task. Priorities are low|medium|high|urgent (not "normal"). Lands in Backlog unless column is given. phase_id implies its project.',
+  inputSchema: z.object({
+    title: z.string().min(1),
+    workstream: z.string().min(1),
+    description: z.string().optional(),
+    priority: taskPriority.optional(),
+    column: taskColumn.optional(),
+    due_date: isoDate.optional(),
+    due_time: hhmm.optional(),
+    start_date: isoDate.optional(),
+    project_id: z.string().uuid().optional(),
+    phase_id: z.string().uuid().optional(),
+    account_id: z.string().uuid().optional(),
+    contact_id: z.string().uuid().optional(),
+    estimated_hours: z.number().int().nonnegative().optional(),
+    tags: z.array(z.string()).optional(),
+    is_master_todo: z.boolean().optional(),
+  }),
+  handler: async (input) => {
+    const task = await createCoworkTask(definedOnly(input))
+    void recordCoworkWrite({
+      action: 'create',
+      entity: 'task',
+      entityId: task.id,
+      entityLabel: task.title,
+      summary: `Created task "${task.title}"`,
+      payload: input,
+    })
+    return task
+  },
+})
+
+export const updateTaskTool = defineTool({
+  name: 'update_task',
+  description:
+    'Patch an OS kanban task. Any of: title, description, priority, column (backlog|in-progress|review|done), workstream (slug; re-homes the card), due_date, due_time, start_date, completed_at, project_id, phase_id, account_id, contact_id, estimated_hours, actual_hours, tags, is_master_todo. null clears a nullable field.',
+  inputSchema: z.object({
+    id: z.string().min(1),
+    title: z.string().optional(),
+    description: z.string().nullable().optional(),
+    priority: taskPriority.optional(),
+    column: taskColumn.optional(),
+    workstream: z.string().optional(),
+    due_date: isoDate.nullable().optional(),
+    due_time: hhmm.nullable().optional(),
+    start_date: isoDate.nullable().optional(),
+    completed_at: z.string().nullable().optional(),
+    project_id: z.string().uuid().nullable().optional(),
+    phase_id: z.string().uuid().nullable().optional(),
+    account_id: z.string().uuid().nullable().optional(),
+    contact_id: z.string().uuid().nullable().optional(),
+    estimated_hours: z.number().int().nonnegative().nullable().optional(),
+    actual_hours: z.number().int().nonnegative().nullable().optional(),
+    tags: z.array(z.string()).optional(),
+    is_master_todo: z.boolean().optional(),
+  }),
+  handler: async ({ id, ...rest }) => {
+    const body = definedOnly(rest)
+    const task = await updateCoworkTask(id, body)
+    void recordCoworkWrite({
+      action: 'update',
+      entity: 'task',
+      entityId: task.id,
+      entityLabel: task.title,
+      summary: `Updated task "${task.title}" (${Object.keys(body).join(', ')})`,
+      payload: body,
+    })
+    return task
+  },
+})
+
 export const tools: McpTool[] = [
   whoami,
   listProjects,
   getProject,
+  createProjectTool,
   updateProjectTool,
+  createProjectPhaseTool,
+  updateProjectPhaseTool,
+  deleteProjectPhaseTool,
+  createProjectMilestoneTool,
   updateProjectMilestoneTool,
+  deleteProjectMilestoneTool,
+  listTasksTool,
+  createTaskTool,
+  updateTaskTool,
   listEngagementTasks,
   bulkCreateEngagementTasksTool,
   updateEngagementTaskTool,
