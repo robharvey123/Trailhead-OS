@@ -1,16 +1,13 @@
 import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
 import {
-  CONTACT_SELECT,
   TASK_SELECT,
   formatContact,
   formatTask,
   getContactById,
-  getWorkstreamBySlug,
   jsonError,
-  optionalString,
-  parseContactStatus,
 } from '@/lib/cowork-api'
+import { archiveCoworkContact, updateCoworkContact } from '@/lib/cowork-contacts'
 import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(
@@ -59,6 +56,7 @@ export async function GET(
   }
 }
 
+// PATCH — any of CONTACT_PATCH_FIELDS (lib/cowork-contacts.ts).
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -69,56 +67,14 @@ export async function PATCH(
 
   try {
     const { id } = await params
-    await getContactById(id)
-
     const body = await request.json().catch(() => ({}))
-    const patch: Record<string, unknown> = {}
-
-    if (body.name !== undefined) {
-      const name = optionalString(body.name)
-      if (!name) {
-        return Response.json({ error: 'name is required' }, { status: 400 })
-      }
-      patch.name = name
-    }
-
-    if (body.company !== undefined) patch.company = optionalString(body.company)
-    if (body.email !== undefined) patch.email = optionalString(body.email)
-    if (body.phone !== undefined) patch.phone = optionalString(body.phone)
-    if (body.role !== undefined) patch.role = optionalString(body.role)
-    if (body.account_id !== undefined) patch.account_id = optionalString(body.account_id)
-    if (body.notes !== undefined) patch.notes = optionalString(body.notes)
-
-    if (body.status !== undefined) {
-      patch.status = parseContactStatus(body.status)
-    }
-
-    if (body.workstream !== undefined) {
-      const slug = optionalString(body.workstream)
-      patch.workstream_id = slug ? (await getWorkstreamBySlug(slug)).id : null
-    }
-
-    if (Object.keys(patch).length === 0) {
-      return Response.json({ error: 'No changes supplied' }, { status: 400 })
-    }
-
-    const { data, error } = await supabaseService
-      .from('contacts')
-      .update(patch)
-      .eq('id', id)
-      .select(CONTACT_SELECT)
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    return Response.json(formatContact(data as never))
+    return Response.json(await updateCoworkContact(id, body))
   } catch (error) {
     return jsonError(error, 'Failed to update contact')
   }
 }
 
+// DELETE — soft archive (status → archived); the row is never removed.
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -129,18 +85,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await getContactById(id)
-
-    const { error } = await supabaseService
-      .from('contacts')
-      .update({ status: 'archived' })
-      .eq('id', id)
-
-    if (error) {
-      throw error
-    }
-
-    return Response.json({ archived: true })
+    return Response.json(await archiveCoworkContact(id))
   } catch (error) {
     return jsonError(error, 'Failed to archive contact')
   }

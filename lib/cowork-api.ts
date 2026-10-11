@@ -6,7 +6,10 @@ import { SUPPORTED_CURRENCIES, isSupportedCurrency, quoteToRateToGbp, rateToGbpT
 
 const TASK_PRIORITIES = new Set<TaskPriority>(['low', 'medium', 'high', 'urgent'])
 const CONTACT_STATUSES = new Set(['lead', 'active', 'inactive', 'archived'])
-const ENQUIRY_STATUSES = new Set(['new', 'reviewed', 'converted'])
+// Same set as EnquiryStatus in lib/types.ts and the UI route /api/enquiries/[id].
+const ENQUIRY_STATUSES = new Set([
+  'new', 'reviewed', 'converted', 'received', 'under_review', 'quoted', 'closed',
+])
 const INVOICE_STATUSES = new Set<InvoiceStatus>(['draft', 'sent', 'part_paid', 'paid', 'overdue', 'cancelled'])
 const PROJECT_STATUSES = new Set(['planning', 'active', 'on_hold', 'completed', 'cancelled'])
 const ACCOUNT_STATUSES = new Set([
@@ -71,6 +74,11 @@ type CalendarEventRow = {
   description: string | null
   colour: string | null
   workstream_id: string | null
+  contact_id: string | null
+  project_id: string | null
+  engagement_id: string | null
+  source: string | null
+  read_only: boolean | null
   created_at: string
   updated_at: string
   workstreams?: RelationValue<WorkstreamShape>
@@ -88,6 +96,16 @@ type ContactRow = {
   account_id: string | null
   status: string
   notes: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  postcode: string | null
+  country: string | null
+  channel: string | null
+  website: string | null
+  tags: string[] | null
+  do_not_email: boolean | null
+  do_not_call: boolean | null
   created_at: string
   updated_at: string
   workstreams?: RelationValue<WorkstreamShape>
@@ -140,6 +158,13 @@ type AccountRow = {
   workstream_id: string | null
   default_hourly_rate: number | string | null
   hq_address: string | null
+  size: string | null
+  email_contact: string | null
+  vat_number: string | null
+  company_number: string | null
+  billing_email: string | null
+  payment_terms_days: number | null
+  po_required: boolean | null
   created_at: string
   updated_at: string
   workstreams?: RelationValue<WorkstreamShape>
@@ -190,6 +215,11 @@ type EnquiryRow = {
   timeline: string | null
   budget: string | null
   status: string
+  internal_notes?: string | null
+  internal_notes_updated_at?: string | null
+  converted_contact_id?: string | null
+  account_id?: string | null
+  project_id?: string | null
   created_at: string
 }
 
@@ -253,6 +283,11 @@ export const CALENDAR_EVENT_SELECT = `
   description,
   colour,
   workstream_id,
+  contact_id,
+  project_id,
+  engagement_id,
+  source,
+  read_only,
   created_at,
   updated_at,
   workstreams(id, slug, label),
@@ -270,6 +305,16 @@ export const CONTACT_SELECT = `
   account_id,
   status,
   notes,
+  address_line1,
+  address_line2,
+  city,
+  postcode,
+  country,
+  channel,
+  website,
+  tags,
+  do_not_email,
+  do_not_call,
   created_at,
   updated_at,
   workstreams(id, slug, label),
@@ -322,6 +367,13 @@ export const ACCOUNT_SELECT = `
   workstream_id,
   default_hourly_rate,
   hq_address,
+  size,
+  email_contact,
+  vat_number,
+  company_number,
+  billing_email,
+  payment_terms_days,
+  po_required,
   created_at,
   updated_at,
   workstreams(id, slug, label)
@@ -381,6 +433,9 @@ export const EXPENSE_SELECT = `
   accounts(id, name),
   invoices(id, invoice_number)
 `
+
+export const ENQUIRY_SELECT =
+  'id, biz_name, contact_name, contact_email, contact_phone, biz_type, project_type, top_features, pain_points, timeline, budget, status, internal_notes, internal_notes_updated_at, converted_contact_id, account_id, project_id, created_at'
 
 export const PROJECT_SELECT = `
   id,
@@ -523,7 +578,7 @@ export function parseContactStatus(value: unknown, fallback = 'lead') {
 export function parseEnquiryStatus(value: string | null, fallback = 'new') {
   if (!value) return fallback
   if (!ENQUIRY_STATUSES.has(value)) {
-    throw new CoworkApiError('status must be new, reviewed, or converted', 400)
+    throw new CoworkApiError(`status must be one of ${[...ENQUIRY_STATUSES].join(', ')}`, 400)
   }
   return value
 }
@@ -944,6 +999,22 @@ export function isUuid(value: string) {
   return UUID_RE.test(value)
 }
 
+/**
+ * A nullable uuid link on a write (contact_id, project_id, engagement_id, …).
+ * null / '' clears it; anything else must be a uuid of a row that exists in
+ * `table`, or it is a 400 — a typo'd id must never be written as a dangling link.
+ */
+export async function optionalLinkedId(value: unknown, field: string, table: string) {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value !== 'string' || !isUuid(value)) {
+    throw new CoworkApiError(`${field} must be a uuid or null`, 400)
+  }
+  const { data, error } = await supabaseService.from(table).select('id').eq('id', value).maybeSingle()
+  if (error) throw new CoworkApiError(error.message || `Failed to check ${field}`, 500)
+  if (!data) throw new CoworkApiError(`${field} not found: ${value}`, 400)
+  return value
+}
+
 export async function getAccountById(id: string) {
   const { data, error } = await supabaseService
     .from('accounts')
@@ -1010,6 +1081,11 @@ export function formatCalendarEvent(row: CalendarEventRow) {
     description: row.description,
     colour: row.colour,
     workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
+    contact_id: row.contact_id ?? null,
+    project_id: row.project_id ?? null,
+    engagement_id: row.engagement_id ?? null,
+    source: row.source ?? 'manual',
+    read_only: row.read_only === true,
     google_synced: Boolean(googleSync?.id),
   }
 }
@@ -1027,6 +1103,18 @@ export function formatContact(row: ContactRow) {
     role: row.role,
     status: row.status,
     notes: row.notes,
+    address: {
+      line1: row.address_line1 ?? null,
+      line2: row.address_line2 ?? null,
+      city: row.city ?? null,
+      postcode: row.postcode ?? null,
+      country: row.country ?? null,
+    },
+    channel: row.channel ?? null,
+    website: row.website ?? null,
+    tags: row.tags ?? [],
+    do_not_email: row.do_not_email === true,
+    do_not_call: row.do_not_call === true,
     workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
     account: account ? { id: account.id, name: account.name } : null,
     created_at: row.created_at,
@@ -1103,6 +1191,11 @@ export function formatEnquiry(row: EnquiryRow) {
     timeline: row.timeline,
     budget: row.budget,
     status: row.status,
+    internal_notes: row.internal_notes ?? null,
+    internal_notes_updated_at: row.internal_notes_updated_at ?? null,
+    converted_contact_id: row.converted_contact_id ?? null,
+    account_id: row.account_id ?? null,
+    project_id: row.project_id ?? null,
     created_at: row.created_at,
   }
 }
@@ -1129,6 +1222,13 @@ export function formatAccount(row: AccountRow, counts: { contacts: number; open_
     workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
     default_hourly_rate: row.default_hourly_rate != null ? Number(row.default_hourly_rate) : null,
     hq_address: row.hq_address,
+    size: row.size ?? null,
+    email_contact: row.email_contact ?? null,
+    vat_number: row.vat_number ?? null,
+    company_number: row.company_number ?? null,
+    billing_email: row.billing_email ?? null,
+    payment_terms_days: row.payment_terms_days ?? null,
+    po_required: row.po_required === true,
     contact_count: counts.contacts,
     open_task_count: counts.open_tasks,
     created_at: row.created_at,

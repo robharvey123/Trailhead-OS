@@ -23,18 +23,25 @@ import { createCoworkTask, listCoworkTasks, updateCoworkTask } from '@/lib/cowor
 import type { createClient as createServerClient } from '@/lib/supabase/server'
 import { supabaseService } from '@/lib/supabase/service'
 import {
-  ACCOUNT_SELECT,
   accountCounts,
   findAccountByExactName,
   formatAccount,
-  optionalString,
-  parseAccountStatus,
 } from '@/lib/cowork-api'
+import { createCoworkAccount, updateCoworkAccount } from '@/lib/cowork-accounts'
+import { updateCoworkContact } from '@/lib/cowork-contacts'
+import { updateCoworkCalendarEvent } from '@/lib/cowork-calendar'
+import { updateCoworkEnquiry } from '@/lib/cowork-enquiries'
+import { updateCoworkSettings } from '@/lib/cowork-settings'
+import { deleteCoworkTouchpoint } from '@/lib/cowork-touchpoints'
+import { ACCOUNT_SIZE_OPTIONS } from '@/lib/crm/account-options'
+import { formatMoney } from '@/lib/money'
 import {
   addTier1,
   confirmEngagementDocumentUpload,
   createEngagement,
   createEngagementDocumentUpload,
+  deleteCoworkTimeEntry,
+  deleteEngagementDocument,
   engagementMonthUsage,
   getEngagementDetail,
   getEngagementRow,
@@ -48,7 +55,14 @@ import {
   updateEngagement,
   uploadEngagementDocument,
 } from '@/lib/cowork-engagements'
-import { createCoworkInvoice, listCoworkInvoices, setInvoiceStatus } from '@/lib/cowork-invoices'
+import {
+  createCoworkInvoice,
+  deleteCoworkInvoice,
+  deleteCoworkPayment,
+  listCoworkInvoices,
+  setInvoiceStatus,
+  updateCoworkPayment,
+} from '@/lib/cowork-invoices'
 import { billCoworkExpenses, createCoworkExpense, listCoworkExpenses, unbilledExpensesFor } from '@/lib/cowork-expenses'
 import { getCampaignDetail, listCampaigns } from '@/lib/cowork-outreach'
 import { listCoworkActivity, recordCoworkWrite } from '@/lib/cowork-audit'
@@ -515,7 +529,7 @@ export const logTimeTool = defineTool({
 export const updateTimeEntryTool = defineTool({
   name: 'update_time_entry',
   description:
-    "Amend a time entry that is already logged (there is no delete — correct the entry instead). Supply the entry id plus only the fields to change: duration_minutes, entry_date, description, client_description, billable, task_id, engagement_id, project_id. Links behave as they do on log_time: attaching a task_id backfills its engagement and project, and a task whose engagement contradicts an explicit engagement_id is rejected. The snapshot rate is history and is preserved as-is; it is re-resolved only when the engagement changes (including an unlinked entry gaining one, which is how you fix an entry snapshotted at 0), or on resnapshot_rate:true. An explicit rate_snapshot always wins.",
+    "Amend a time entry that is already logged (to remove one entirely use delete_time_entry). Supply the entry id plus only the fields to change: duration_minutes, entry_date, description, client_description, billable, task_id, engagement_id, project_id. On a billed entry the links (task_id, engagement_id, project_id, account_id) are frozen and changing them is refused (409); text, duration and date can still be corrected. Links behave as they do on log_time: attaching a task_id backfills its engagement and project, and a task whose engagement contradicts an explicit engagement_id is rejected. The snapshot rate is history and is preserved as-is; it is re-resolved only when the engagement changes (including an unlinked entry gaining one, which is how you fix an entry snapshotted at 0), or on resnapshot_rate:true. An explicit rate_snapshot always wins.",
   inputSchema: z.object({
     id: z.string().min(1),
     duration_minutes: z.number().int().positive().optional(),
@@ -663,43 +677,47 @@ export const findAccountTool = defineTool({
   },
 })
 
+const accountSize = z.enum(ACCOUNT_SIZE_OPTIONS as unknown as [string, ...string[]])
+
+/** Account fields shared by create_account and update_account. */
+const accountFields = {
+  website: z.string().nullable().optional(),
+  industry: z.string().nullable().optional(),
+  status: z.string().optional().describe('prospect|contacted|active|listed|declined|on_hold|inactive|archived'),
+  channel: z.string().nullable().optional(),
+  source: z.string().nullable().optional(),
+  address_line1: z.string().nullable().optional(),
+  address_line2: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  postcode: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
+  hq_address: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional(),
+  default_hourly_rate: z.number().nonnegative().nullable().optional(),
+  workstream: z.string().nullable().optional().describe('workstream slug'),
+  size: accountSize.nullable().optional(),
+  email_contact: z.string().nullable().optional(),
+  vat_number: z.string().nullable().optional(),
+  company_number: z.string().nullable().optional(),
+  billing_email: z.string().nullable().optional().describe('where invoices go; used for the invoice bill-to email'),
+  payment_terms_days: z.number().int().nonnegative().nullable().optional().describe('sets the due date on new invoices'),
+  po_required: z.boolean().optional(),
+}
+
 export const createAccountTool = defineTool({
   name: 'create_account',
-  description: 'Create an account, duplicate-safe: on a name match it returns the existing row (existing:true) and creates nothing.',
-  inputSchema: z.object({
-    name: z.string().min(1),
-    website: z.string().nullable().optional(),
-    industry: z.string().nullable().optional(),
-    status: z.string().optional(),
-    channel: z.string().nullable().optional(),
-    notes: z.string().nullable().optional(),
-  }),
-  handler: async (input) => {
-    const existing = await findAccountByExactName(input.name)
-    if (existing) {
-      const { contacts, openTasks } = await accountCounts([existing.id])
-      return { existing: true, account: formatAccount(existing as never, { contacts: contacts.get(existing.id) ?? 0, open_tasks: openTasks.get(existing.id) ?? 0 }) }
-    }
-    const { data, error } = await supabaseService
-      .from('accounts')
-      .insert({
-        name: input.name,
-        website: optionalString(input.website),
-        industry: optionalString(input.industry),
-        status: parseAccountStatus(input.status),
-        channel: optionalString(input.channel),
-        notes: optionalString(input.notes),
-      })
-      .select(ACCOUNT_SELECT)
-      .single()
-    if (error) throw new Error(error.message || 'Failed to create account')
-    const account = formatAccount(data as never, { contacts: 0, open_tasks: 0 })
-    void recordCoworkWrite({
-      action: 'create', entity: 'account', entityId: account.id, entityLabel: account.name,
-      summary: `Created account "${account.name}"`, payload: input as Record<string, unknown>,
-    })
-    return { existing: false, account }
-  },
+  description: 'Create an account, duplicate-safe: on a case-insensitive name match it returns the existing row (existing:true) and creates nothing. Accepts the billing fields too (vat_number, company_number, billing_email, payment_terms_days, po_required).',
+  inputSchema: z.object({ name: z.string().min(1), ...accountFields }),
+  handler: async (input) => createCoworkAccount(definedOnly(input)),
+})
+
+export const updateAccountTool = defineTool({
+  name: 'update_account',
+  description:
+    'Patch an account. Supply the id plus only the fields to change: name, website, industry, status, channel, source, address_line1, address_line2, city, postcode, country, hq_address, notes, tags, default_hourly_rate, workstream (slug), size, email_contact, vat_number, company_number, billing_email, payment_terms_days, po_required. null clears a field. A blank name is refused (400); renaming onto another account\'s name is refused (409). Accounts cannot be deleted from MCP.',
+  inputSchema: z.object({ id: z.string().min(1), name: z.string().optional(), ...accountFields }),
+  handler: async ({ id, ...rest }) => updateCoworkAccount(id, definedOnly(rest)),
 })
 
 export const addTier1AccountTool = defineTool({
@@ -1110,6 +1128,209 @@ export const updateTaskTool = defineTool({
   },
 })
 
+export const updateContactTool = defineTool({
+  name: 'update_contact',
+  description:
+    'Patch a CRM contact. Supply the id plus only the fields to change: name, company, email, phone, role, status (lead|active|inactive|archived), notes, account_id, workstream (slug), address_line1, address_line2, city, postcode, country, channel, website, tags, do_not_email, do_not_call. null clears a field. do_not_email removes the contact from outreach audiences; do_not_call keeps them off the call queue.',
+  inputSchema: z.object({
+    id: z.string().min(1),
+    name: z.string().optional(),
+    company: z.string().nullable().optional(),
+    email: z.string().nullable().optional(),
+    phone: z.string().nullable().optional(),
+    role: z.string().nullable().optional(),
+    status: z.enum(['lead', 'active', 'inactive', 'archived']).optional(),
+    notes: z.string().nullable().optional(),
+    account_id: z.string().uuid().nullable().optional(),
+    workstream: z.string().nullable().optional(),
+    address_line1: z.string().nullable().optional(),
+    address_line2: z.string().nullable().optional(),
+    city: z.string().nullable().optional(),
+    postcode: z.string().nullable().optional(),
+    country: z.string().nullable().optional(),
+    channel: z.string().nullable().optional(),
+    website: z.string().nullable().optional(),
+    tags: z.array(z.string()).optional(),
+    do_not_email: z.boolean().optional(),
+    do_not_call: z.boolean().optional(),
+  }),
+  handler: async ({ id, ...rest }) => updateCoworkContact(id, definedOnly(rest)),
+})
+
+export const updateCalendarEventTool = defineTool({
+  name: 'update_calendar_event',
+  description:
+    'Patch a calendar event: title, start_at, end_at (ISO datetimes; end_at must not be before start_at), all_day, location, description, colour, workstream (slug), contact_id, project_id, engagement_id (uuids, must exist; null unlinks). Linking engagement_id counts the event as a meeting held on that engagement. Refused (409) on read-only events pulled from a feed or a secondary Google/Microsoft calendar. Re-pushes to Google when the event is synced there.',
+  inputSchema: z.object({
+    id: z.string().min(1),
+    title: z.string().optional(),
+    start_at: z.string().optional(),
+    end_at: z.string().optional(),
+    all_day: z.boolean().optional(),
+    location: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+    colour: z.string().nullable().optional(),
+    workstream: z.string().nullable().optional(),
+    contact_id: z.string().uuid().nullable().optional(),
+    project_id: z.string().uuid().nullable().optional(),
+    engagement_id: z.string().uuid().nullable().optional(),
+  }),
+  handler: async ({ id, ...rest }) => updateCoworkCalendarEvent(id, definedOnly(rest)),
+})
+
+export const updateEnquiryTool = defineTool({
+  name: 'update_enquiry',
+  description:
+    'Triage an enquiry: status (new|reviewed|converted|received|under_review|quoted|closed), internal_notes (replaces the notes; stamps who/when), converted_contact_id (an existing contact uuid, or null). The client\'s submitted answers cannot be changed.',
+  inputSchema: z.object({
+    id: z.string().min(1),
+    status: z.enum(['new', 'reviewed', 'converted', 'received', 'under_review', 'quoted', 'closed']).optional(),
+    internal_notes: z.string().nullable().optional(),
+    converted_contact_id: z.string().uuid().nullable().optional(),
+  }),
+  handler: async ({ id, ...rest }) => updateCoworkEnquiry(id, definedOnly(rest)),
+})
+
+export const updateSettingsTool = defineTool({
+  name: 'update_settings',
+  description:
+    'Patch the company settings that print on invoices and emails: company_name, address_line1, address_line2, city, postcode, country, company_email, company_number, email_signature, vat_registered, vat_number, default_payment_terms_days (0–365). Bank and payment details (bank name, account name, sort code, account number, IBAN, BIC/SWIFT, payment terms text) are NOT accepted — they can only be changed on the Settings page, and a request naming any of them is refused (400) with nothing written.',
+  inputSchema: z.object({
+    company_name: z.string().optional(),
+    address_line1: z.string().nullable().optional(),
+    address_line2: z.string().nullable().optional(),
+    city: z.string().nullable().optional(),
+    postcode: z.string().nullable().optional(),
+    country: z.string().nullable().optional(),
+    company_email: z.string().nullable().optional(),
+    company_number: z.string().nullable().optional(),
+    email_signature: z.string().nullable().optional(),
+    vat_registered: z.boolean().optional(),
+    vat_number: z.string().nullable().optional(),
+    default_payment_terms_days: z.number().int().min(0).max(365).optional(),
+  }),
+  handler: async (input) => updateCoworkSettings(definedOnly(input)),
+})
+
+export const deleteTimeEntryTool = defineTool({
+  name: 'delete_time_entry',
+  description:
+    'PERMANENTLY delete a time entry (logged to the activity log with the deleted row). Refused (409) when the entry is billed — release it from its invoice first. To fix a wrong entry prefer update_time_entry.',
+  inputSchema: z.object({ id: z.string().min(1) }),
+  handler: async ({ id }) => {
+    const entry = await deleteCoworkTimeEntry(id)
+    const label = entry.engagement?.code ?? entry.project?.name ?? entry.account?.name ?? 'general'
+    void recordCoworkWrite({
+      action: 'delete', entity: 'time_entry', entityId: entry.id, entityLabel: `${entry.hours}h on ${label}`,
+      engagementId: entry.engagement?.id ?? null,
+      summary: `Deleted time entry — ${entry.hours}h on ${label} from ${entry.entry_date}`,
+      payload: entry,
+    })
+    return { deleted: true, entry }
+  },
+})
+
+const paymentMethod = z.enum(['bank_transfer', 'stripe', 'card', 'cash', 'cheque', 'other'])
+
+export const updateInvoicePaymentTool = defineTool({
+  name: 'update_invoice_payment',
+  description:
+    'Correct a recorded invoice payment: paid_on (YYYY-MM-DD, not in the future), amount (> 0, and the payments together may not exceed the invoice total), method, reference, notes. The invoice status and paid date are re-derived from the ledger afterwards. Payment ids come from GET /api/cowork/invoices/{id}/payments.',
+  inputSchema: z.object({
+    invoice_id: z.string().min(1),
+    payment_id: z.string().min(1),
+    paid_on: isoDate.optional(),
+    amount: z.number().positive().optional(),
+    method: paymentMethod.nullable().optional(),
+    reference: z.string().nullable().optional(),
+    notes: z.string().nullable().optional(),
+  }),
+  handler: async ({ invoice_id, payment_id, ...rest }) => {
+    const body = definedOnly(rest)
+    const { payment, invoice, before, priorStatus } = await updateCoworkPayment(invoice_id, payment_id, body)
+    void recordCoworkWrite({
+      action: 'update', entity: 'invoice_payment', entityId: payment.id, entityLabel: invoice.invoice_number,
+      engagementId: invoice.engagement?.id ?? null,
+      summary: `Corrected a payment on ${invoice.invoice_number} — now ${formatMoney(payment.amount, invoice.currency)} on ${payment.paid_on} (${Object.keys(before).join(', ')})${invoice.status !== priorStatus ? `; invoice now ${invoice.status} (was ${priorStatus})` : ''}`,
+      before, payload: body,
+    })
+    return { payment, invoice }
+  },
+})
+
+export const deleteInvoicePaymentTool = defineTool({
+  name: 'delete_invoice_payment',
+  description:
+    'PERMANENTLY delete a recorded invoice payment (logged with the deleted row). The invoice status and paid date are re-derived, so a paid invoice drops back to sent/overdue/part_paid.',
+  inputSchema: z.object({ invoice_id: z.string().min(1), payment_id: z.string().min(1) }),
+  handler: async ({ invoice_id, payment_id }) => {
+    const { payment, invoice, priorStatus } = await deleteCoworkPayment(invoice_id, payment_id)
+    void recordCoworkWrite({
+      action: 'delete', entity: 'invoice_payment', entityId: payment.id, entityLabel: invoice.invoice_number,
+      engagementId: invoice.engagement?.id ?? null,
+      summary: `Deleted a ${formatMoney(payment.amount, invoice.currency)} payment dated ${payment.paid_on} from ${invoice.invoice_number}${invoice.status !== priorStatus ? `; invoice now ${invoice.status} (was ${priorStatus})` : ''}`,
+      payload: payment,
+    })
+    return { deleted: true, invoice }
+  },
+})
+
+export const deleteInvoiceTool = defineTool({
+  name: 'delete_invoice',
+  description:
+    'Delete an invoice. This is a SOFT delete (hidden from every list, recoverable from the database) and releases any billed time entries and expenses back to unbilled. Refused (409) when the invoice has any payment recorded or is paid/part_paid — delete the payments first, or set status cancelled instead.',
+  inputSchema: z.object({ id: z.string().min(1) }),
+  handler: async ({ id }) => {
+    const { invoice, released } = await deleteCoworkInvoice(id)
+    const releasedNote = [
+      released.time_entries ? `${released.time_entries} time entr${released.time_entries === 1 ? 'y' : 'ies'}` : null,
+      released.expenses ? `${released.expenses} expense${released.expenses === 1 ? '' : 's'}` : null,
+    ].filter(Boolean)
+    void recordCoworkWrite({
+      action: 'delete', entity: 'invoice', entityId: invoice.id, entityLabel: invoice.invoice_number,
+      engagementId: invoice.engagement?.id ?? null,
+      summary: `Deleted ${invoice.status} invoice ${invoice.invoice_number}${invoice.account ? `, ${invoice.account.name}` : ''} (soft delete${releasedNote.length ? `; released ${releasedNote.join(' and ')} back to unbilled` : ''})`,
+      payload: { ...invoice, released },
+    })
+    return { deleted: true, soft: true, invoice_number: invoice.invoice_number, released }
+  },
+})
+
+export const deleteEngagementDocumentTool = defineTool({
+  name: 'delete_engagement_document',
+  description:
+    'PERMANENTLY delete an engagement document and its stored file (not recoverable; logged with the deleted row). The engagement takes its code (e.g. QOLA-UKEU-26) or uuid; document ids come from list_engagement_documents.',
+  inputSchema: z.object({ engagement: engagementRef, document_id: z.string().min(1) }),
+  handler: async ({ engagement: ref, document_id }) => {
+    const { document, engagement } = await deleteEngagementDocument(ref, document_id)
+    void recordCoworkWrite({
+      action: 'delete', entity: 'engagement_document', entityId: document.id, entityLabel: document.file_name,
+      engagementId: engagement.id,
+      summary: `Deleted document "${document.title ?? document.file_name ?? document.id}" from ${engagement.name}`,
+      payload: document,
+    })
+    return { deleted: true }
+  },
+})
+
+export const deleteTouchpointTool = defineTool({
+  name: 'delete_touchpoint',
+  description:
+    'PERMANENTLY delete a touchpoint (call/email/message/meeting/note log entry). Logged to the activity log with the deleted row.',
+  inputSchema: z.object({ id: z.string().min(1) }),
+  handler: async ({ id }) => {
+    const touchpoint = await deleteCoworkTouchpoint(id)
+    const target = touchpoint.engagement?.name ?? touchpoint.account?.name ?? touchpoint.contact?.name
+    void recordCoworkWrite({
+      action: 'delete', entity: 'touchpoint', entityId: touchpoint.id, entityLabel: touchpoint.subject,
+      engagementId: touchpoint.engagement?.id ?? null,
+      summary: `Deleted ${touchpoint.type} touchpoint "${touchpoint.subject}"${target ? ` (${target})` : ''}`,
+      payload: touchpoint,
+    })
+    return { deleted: true }
+  },
+})
+
 export const tools: McpTool[] = [
   whoami,
   listProjects,
@@ -1136,6 +1357,7 @@ export const tools: McpTool[] = [
   updateEngagementTool,
   logTimeTool,
   updateTimeEntryTool,
+  deleteTimeEntryTool,
   logExpenseTool,
   listExpensesTool,
   billExpensesTool,
@@ -1144,8 +1366,17 @@ export const tools: McpTool[] = [
   listInvoicesTool,
   raiseInvoiceTool,
   markInvoicePaidTool,
+  updateInvoicePaymentTool,
+  deleteInvoicePaymentTool,
+  deleteInvoiceTool,
   findAccountTool,
   createAccountTool,
+  updateAccountTool,
+  updateContactTool,
+  updateCalendarEventTool,
+  updateEnquiryTool,
+  updateSettingsTool,
+  deleteTouchpointTool,
   addTier1AccountTool,
   listOutreachCampaignsTool,
   getCampaignStatsTool,
@@ -1154,5 +1385,6 @@ export const tools: McpTool[] = [
   createEngagementDocumentUploadTool,
   confirmEngagementDocumentUploadTool,
   listEngagementDocumentsTool,
+  deleteEngagementDocumentTool,
   recentCoworkActivityTool,
 ]
