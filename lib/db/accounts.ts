@@ -268,6 +268,15 @@ function sanitizeAccountPayload(data: AccountMutationInput) {
   if ('postcode' in data) payload.postcode = data.postcode?.trim() || null
   if ('country' in data) payload.country = data.country?.trim() || 'UK'
   if ('notes' in data) payload.notes = data.notes?.trim() || null
+  if ('vat_number' in data) payload.vat_number = data.vat_number?.trim() || null
+  if ('company_number' in data) payload.company_number = data.company_number?.trim() || null
+  if ('billing_email' in data) payload.billing_email = data.billing_email?.trim() || null
+  if ('payment_terms_days' in data) {
+    const days = data.payment_terms_days
+    payload.payment_terms_days =
+      typeof days === 'number' && Number.isInteger(days) && days >= 0 ? days : null
+  }
+  if ('po_required' in data) payload.po_required = data.po_required === true
   if ('tags' in data) payload.tags = data.tags ?? []
   if ('record_type' in data) payload.record_type = (data as Record<string, unknown>).record_type ?? 'sales'
 
