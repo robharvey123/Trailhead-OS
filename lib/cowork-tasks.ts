@@ -8,8 +8,11 @@ import {
   getTaskById,
   getWorkstreamBySlug,
   optionalDate,
+  isUuid,
   optionalIsoDatetime,
+  optionalNumber,
   optionalString,
+  parseTags,
   parseColumnKey,
   parsePriority,
   requiredString,
@@ -43,7 +46,99 @@ export const TASK_PATCH_FIELDS = [
   'completed_at',
   'column',
   'status',
+  'workstream',
+  'project_id',
+  'phase_id',
+  'account_id',
+  'contact_id',
+  'due_time',
+  'estimated_hours',
+  'actual_hours',
+  'tags',
 ]
+
+function nullableUuid(value: unknown, field: string): string | null {
+  if (value === null || value === '') return null
+  if (typeof value !== 'string' || !isUuid(value)) {
+    throw new CoworkApiError(`${field} must be a uuid or null`, 400)
+  }
+  return value
+}
+
+function optionalTime(value: unknown, field: string) {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value)) {
+    throw new CoworkApiError(`${field} must be HH:MM`, 400)
+  }
+  return value
+}
+
+function optionalHours(value: unknown, field: string) {
+  const hours = optionalNumber(value, field)
+  if (hours !== null && !Number.isInteger(hours)) {
+    throw new CoworkApiError(`${field} must be a whole number of hours`, 400)
+  }
+  return hours
+}
+
+async function assertExists(table: string, id: string, field: string) {
+  const { data, error } = await supabaseService.from(table).select('id').eq('id', id).maybeSingle()
+  if (error) throw new CoworkApiError(error.message || `Failed to check ${field}`, 500)
+  if (!data) throw new CoworkApiError(`${field} not found: ${id}`, 400)
+}
+
+/**
+ * A phase belongs to one project, so a task's phase and project must agree.
+ * Returns the phase's project id; callers use it to fill project_id when only
+ * phase_id was supplied.
+ */
+async function phaseProjectId(phaseId: string) {
+  const { data, error } = await supabaseService
+    .from('project_phases')
+    .select('project_id')
+    .eq('id', phaseId)
+    .maybeSingle()
+  if (error) throw new CoworkApiError(error.message || 'Failed to load phase', 500)
+  if (!data) throw new CoworkApiError(`phase_id not found: ${phaseId}`, 400)
+  return data.project_id as string
+}
+
+/**
+ * Resolves project_id / phase_id together so the pair always agrees: a phase
+ * implies its project, both sent must match (409 otherwise), and moving a
+ * task to another project drops a phase that belonged to the old one.
+ */
+async function resolveProjectAndPhase(
+  body: Record<string, unknown>,
+  current: { project_id: string | null; phase_id: string | null }
+) {
+  const patch: Record<string, unknown> = {}
+  const projectSent = body.project_id !== undefined
+  const phaseSent = body.phase_id !== undefined
+  const projectId = projectSent ? nullableUuid(body.project_id, 'project_id') : null
+  const phaseId = phaseSent ? nullableUuid(body.phase_id, 'phase_id') : null
+
+  if (projectSent) {
+    if (projectId) await assertExists('projects', projectId, 'project_id')
+    patch.project_id = projectId
+  }
+
+  if (phaseSent) {
+    patch.phase_id = phaseId
+    if (phaseId) {
+      const owner = await phaseProjectId(phaseId)
+      if (projectSent && projectId !== owner) {
+        throw new CoworkApiError('phase_id belongs to a different project than project_id', 409)
+      }
+      patch.project_id = owner
+    }
+  } else if (projectSent && current.phase_id) {
+    const owner = await phaseProjectId(current.phase_id).catch(() => null)
+    if (owner !== projectId) patch.phase_id = null
+  }
+
+  return patch
+}
 
 export interface ListCoworkTasksFilters {
   workstreamSlug?: string | null
@@ -122,19 +217,30 @@ export async function createCoworkTask(body: Record<string, unknown>) {
   const startDate = optionalDate(body.start_date, 'start_date')
   const description = optionalString(body.description)
   const isMasterTodo = body.is_master_todo === true
+  const columnValue = body.column !== undefined ? body.column : body.status
+  const columnId =
+    columnValue !== undefined && columnValue !== null
+      ? await getColumnIdForWorkstream(workstream.id, parseColumnKey(columnValue))
+      : backlogColumnId
+  const links = await resolveProjectAndPhase(body, { project_id: null, phase_id: null })
 
   const { data, error } = await supabaseService
     .from('tasks')
     .insert({
       title,
       workstream_id: workstream.id,
-      project_id: optionalString(body.project_id),
-      column_id: backlogColumnId,
+      project_id: (links.project_id as string | null | undefined) ?? null,
+      phase_id: (links.phase_id as string | null | undefined) ?? null,
+      column_id: columnId,
       priority,
       due_date: dueDate,
       start_date: startDate,
+      due_time: optionalTime(body.due_time, 'due_time'),
+      estimated_hours: optionalHours(body.estimated_hours, 'estimated_hours'),
+      tags: parseTags(body.tags) ?? [],
       description,
       is_master_todo: isMasterTodo,
+      completed_at: columnValue === 'done' ? new Date().toISOString() : null,
       contact_id: optionalString(body.contact_id),
       account_id: optionalString(body.account_id),
     })
@@ -196,17 +302,57 @@ export async function updateCoworkTask(id: string, body: Record<string, unknown>
     patch.completed_at = optionalIsoDatetime(body.completed_at, 'completed_at')
   }
 
+  if (body.due_time !== undefined) patch.due_time = optionalTime(body.due_time, 'due_time')
+  if (body.estimated_hours !== undefined) {
+    patch.estimated_hours = optionalHours(body.estimated_hours, 'estimated_hours')
+  }
+  if (body.actual_hours !== undefined) {
+    patch.actual_hours = optionalHours(body.actual_hours, 'actual_hours')
+  }
+  if (body.tags !== undefined) patch.tags = parseTags(body.tags) ?? []
+
+  if (body.account_id !== undefined) {
+    const accountId = nullableUuid(body.account_id, 'account_id')
+    if (accountId) await assertExists('accounts', accountId, 'account_id')
+    patch.account_id = accountId
+  }
+
+  if (body.contact_id !== undefined) {
+    const contactId = nullableUuid(body.contact_id, 'contact_id')
+    if (contactId) await assertExists('contacts', contactId, 'contact_id')
+    patch.contact_id = contactId
+  }
+
+  if (body.project_id !== undefined || body.phase_id !== undefined) {
+    Object.assign(
+      patch,
+      await resolveProjectAndPhase(body, {
+        project_id: existingTask.project_id,
+        phase_id: existingTask.phase_id ?? null,
+      })
+    )
+  }
+
   // `status` is an alias for `column` — the obvious field name cost twenty
   // minutes of live probing (23 Aug). Same enum, `column` wins if both sent.
+  // Moving workstream re-homes the card on the new board: the named column if
+  // one was sent, otherwise Backlog, since column ids are per-workstream.
   const columnValue = body.column !== undefined ? body.column : body.status
-  if (columnValue !== undefined) {
-    if (!existingTask.workstream_id) {
+  let targetWorkstreamId = existingTask.workstream_id
+  if (body.workstream !== undefined) {
+    const workstream = await getWorkstreamBySlug(requiredString(body.workstream, 'workstream'))
+    targetWorkstreamId = workstream.id
+    patch.workstream_id = workstream.id
+  }
+
+  if (columnValue !== undefined || body.workstream !== undefined) {
+    if (!targetWorkstreamId) {
       throw new CoworkApiError('Task has no workstream to move within', 400)
     }
 
     patch.column_id = await getColumnIdForWorkstream(
-      existingTask.workstream_id,
-      parseColumnKey(columnValue)
+      targetWorkstreamId,
+      columnValue !== undefined ? parseColumnKey(columnValue) : 'backlog'
     )
   }
 

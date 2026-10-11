@@ -44,9 +44,14 @@ type TaskRow = {
   is_master_todo: boolean
   workstream_id: string | null
   project_id: string | null
+  phase_id: string | null
   column_id: string | null
   contact_id: string | null
   account_id: string | null
+  due_time: string | null
+  estimated_hours: number | null
+  actual_hours: number | null
+  tags: string[] | null
   created_at: string
   updated_at: string
   workstreams?: RelationValue<WorkstreamShape>
@@ -221,9 +226,14 @@ export const TASK_SELECT = `
   is_master_todo,
   workstream_id,
   project_id,
+  phase_id,
   column_id,
   contact_id,
   account_id,
+  due_time,
+  estimated_hours,
+  actual_hours,
+  tags,
   created_at,
   updated_at,
   workstreams(id, slug, label),
@@ -975,6 +985,11 @@ export function formatTask(row: TaskRow) {
     is_master_todo: row.is_master_todo,
     workstream: workstream ? { slug: workstream.slug, label: workstream.label } : null,
     project: project ? { id: project.id, name: project.name } : null,
+    phase_id: row.phase_id ?? null,
+    due_time: row.due_time ?? null,
+    estimated_hours: row.estimated_hours ?? null,
+    actual_hours: row.actual_hours ?? null,
+    tags: row.tags ?? [],
     column: column?.label ?? 'Unassigned',
     contact: contact ? { id: contact.id, name: contact.name } : null,
     account: account ? { id: account.id, name: account.name } : null,
