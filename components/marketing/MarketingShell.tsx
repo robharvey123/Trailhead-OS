@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { buildAppLoginHref, buildMarketingHref } from '@/lib/site'
+import { buildAppLoginHref, buildMarketingHref, WHATSAPP_HREF } from '@/lib/site'
 import {
   BUSINESSES,
   UTILITY_NAV,
@@ -416,6 +416,14 @@ export default function MarketingShell({
                   className="plan-label text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
                 >
                   +44 7346 808412
+                </a>
+                <a
+                  href={WHATSAPP_HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="plan-label text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
+                >
+                  WhatsApp +44 7346 808412
                 </a>
               </div>
             </div>

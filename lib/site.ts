@@ -31,3 +31,7 @@ export function buildAppLoginHref(isLocalhost: boolean) {
     ? '/login?site=app'
     : 'https://app.trailheadholdings.uk/login'
 }
+
+/** WhatsApp Business number for the marketing site, as a wa.me deep link. */
+export const WHATSAPP_NUMBER = '+44 7346 808412'
+export const WHATSAPP_HREF = 'https://wa.me/447346808412'

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { buildMarketingHref } from '@/lib/site'
+import { buildMarketingHref, WHATSAPP_HREF } from '@/lib/site'
 
 interface ContactDetailsCardProps {
   includeLegalNote?: boolean
@@ -39,6 +39,15 @@ export default function ContactDetailsCard({
           style={{ fontStretch: '86%' }}
         >
           +44 7346 808412
+        </a>
+        <a
+          href={WHATSAPP_HREF}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1.5 block text-[1.0625rem] font-bold text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
+          style={{ fontStretch: '86%' }}
+        >
+          WhatsApp +44 7346 808412
         </a>
       </div>
 
