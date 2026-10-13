@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { Archivo, Martian_Mono } from 'next/font/google'
 import MarketingShell from '@/components/marketing/MarketingShell'
+import GoogleAnalytics from '@/components/marketing/GoogleAnalytics'
 import { isLocalDevelopmentHost } from '@/lib/site'
 import { SITE_DEFAULTS } from '@/lib/seo'
 import './bay.css'
@@ -38,9 +39,11 @@ export default async function MarketingLayout({
 }) {
   const host = (await headers()).get('host') || ''
   const isLocalhost = isLocalDevelopmentHost(host)
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
   return (
     <div className={`${archivo.variable} ${martianMono.variable}`}>
+      {gaId && !isLocalhost ? <GoogleAnalytics measurementId={gaId} /> : null}
       <MarketingShell isLocalhost={isLocalhost}>{children}</MarketingShell>
     </div>
   )

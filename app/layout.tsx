@@ -62,7 +62,11 @@ export const metadata: Metadata = {
     shortcut: '/icon.svg',
     apple: '/apple-icon.svg',
   },
-  // verification: { google: 'REPLACE_WITH_GSC_TOKEN', other: { 'msvalidate.01': 'REPLACE_WITH_BING_TOKEN' } },
+  // Search Console HTML-tag verification. Set NEXT_PUBLIC_GSC_VERIFICATION to the
+  // content value from the "HTML tag" method; omit the env var and no tag renders.
+  ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } }
+    : {}),
 }
 
 export const viewport: Viewport = {
