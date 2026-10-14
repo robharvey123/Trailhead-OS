@@ -24,6 +24,9 @@ export function OrganizationJsonLd() {
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     founder: { '@type': 'Person', name: SITE_DEFAULTS.founder },
+    // The company, not Rob's career: trading since November 2025. The
+    // 'since 2013' copy elsewhere is Rob's time in NGP.
+    foundingDate: '2025-11',
     address: {
       '@type': 'PostalAddress',
       addressLocality: SITE_DEFAULTS.addressLocality,

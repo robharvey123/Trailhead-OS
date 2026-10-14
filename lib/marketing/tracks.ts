@@ -66,7 +66,7 @@ const TRACKS: Record<Track, TrackTokens> = {
     track: 'holdings',
     wordmark: 'HOLDINGS LTD',
     bayCode: 'BAY 00',
-    bayMeasure: 'EST. 2014 · BRENTWOOD, ESSEX',
+    bayMeasure: 'EST. 2025 · BRENTWOOD, ESSEX',
     // The homepage's own sections are the three businesses, and those are
     // tier one now, so the rail keeps the registration facts instead.
     sections: [],

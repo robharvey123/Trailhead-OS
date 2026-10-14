@@ -51,7 +51,7 @@ const doors = [
     ],
     href: '/consulting',
     cta: 'Enter Trailhead Commercial',
-    meta: 'SINCE 2014 · 6 MARKETS',
+    meta: 'SINCE 2013 · 6 MARKETS',
     key: 'var(--key-com)',
     keyInk: '#ffffff',
   },
@@ -122,7 +122,7 @@ export default async function MarketingHomePage() {
               <p className="plan-label text-[var(--ink)]">Trailhead</p>
               <p className="plan-label mt-1 text-[var(--ink-3)]">Holdings Ltd</p>
               <div className="ticket-rule">
-                <p className="plan-data text-[var(--ink-2)]">EST. 2014</p>
+                <p className="plan-data text-[var(--ink-2)]">EST. 2025</p>
                 <p className="plan-data mt-1 text-[var(--ink-2)]">
                   BRENTWOOD
                   <br />
@@ -144,7 +144,7 @@ export default async function MarketingHomePage() {
             </p>
 
             <p className="plan-note mt-5 text-[var(--ink-2)]">
-              One operator · Two businesses · Since 2014
+              One operator · Two businesses · In NGP since 2013
             </p>
           </div>
         </div>
