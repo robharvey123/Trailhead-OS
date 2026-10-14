@@ -38,9 +38,9 @@ const METADATA_IMAGE_PATTERN =
   /^\/(opengraph-image|twitter-image|icon|apple-icon)(\/|$)/
 
 // Retired marketing paths. These pages had indexed history and backlinks, and
-// the fallback below redirects any unknown path to '/' as a 307, which tells
-// Google the old page is gone and the homepage replaced it, losing the page's
-// ranking. Each retiree therefore gets an explicit 301 to its successor.
+// the fallback below answers any unknown path with a 404, which tells Google the
+// old page is gone and drops its ranking. Each retiree therefore gets an
+// explicit 301 to its successor.
 const marketingPermanentRedirects: Record<string, string> = {
   '/web-app-design': '/studio',
   '/products': '/labs',
@@ -61,8 +61,8 @@ function getMarketingRewritePath(pathname: string) {
     return pathname
   }
 
-  // Every public marketing route lives here. A path missing from this list is
-  // redirected to '/' by the caller, so adding a page means adding it here too.
+  // Every public marketing route lives here. A path missing from this list gets
+  // a 404 from the caller, so adding a page means adding it here too.
   const marketingRoots = [
     '/blog',
     '/consulting',
@@ -137,7 +137,13 @@ export async function middleware(request: NextRequest) {
     const marketingRewritePath = getMarketingRewritePath(pathname)
 
     if (!marketingRewritePath) {
-      return NextResponse.redirect(new URL('/', request.url))
+      // Unknown path: let the marketing catch-all (app/(marketing)/marketing/
+      // [...path]) answer with the marketing 404 and a real 404 status. This
+      // used to 307 to '/', which search engines treat as a soft 404 and which
+      // hid genuinely dead links.
+      const notFoundUrl = request.nextUrl.clone()
+      notFoundUrl.pathname = `/marketing${pathname}`
+      return NextResponse.rewrite(notFoundUrl)
     }
 
     if (marketingRewritePath === pathname) {
