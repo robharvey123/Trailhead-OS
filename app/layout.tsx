@@ -8,16 +8,24 @@ import { SiteGraphJsonLd } from '@/components/JsonLd'
 // The .thmock design system reads these two as --sans / --mono (app/globals.css).
 // Loaded here via next/font so they are self-hosted and preloaded rather than
 // pulled from fonts.googleapis.com with a render-blocking @import.
+//
+// Not preloaded: this layout wraps the public marketing site too, which sets in
+// Archivo and never uses either face, so preloading them put about 88KB of
+// unused fonts on every marketing page's critical path. Without the preload a
+// browser fetches each file only when CSS on the page actually asks for it,
+// which the OS app still does on first paint.
 const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
