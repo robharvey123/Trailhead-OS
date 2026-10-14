@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { SITE_URL, SITE_DEFAULTS } from '@/lib/seo'
-import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/JsonLd'
+import { SiteGraphJsonLd } from '@/components/JsonLd'
 
 // The .thmock design system reads these two as --sans / --mono (app/globals.css).
 // Loaded here via next/font so they are self-hosted and preloaded rather than
@@ -132,8 +132,7 @@ ambition lives in FIRST VIEWPORT and the rail readout.
 -->`,
           }}
         />
-        <OrganizationJsonLd />
-        <WebSiteJsonLd />
+        <SiteGraphJsonLd />
         {children}
         {/* Every toast.success/toast.error call site in the app depends on this
             being mounted. Without it sonner silently discards them all. */}

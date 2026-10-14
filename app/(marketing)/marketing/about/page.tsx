@@ -4,14 +4,14 @@ import type { Metadata } from 'next'
 import PlanIcon from '@/components/marketing/PlanIcon'
 import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
-import { AboutPageJsonLd } from '@/components/JsonLd'
+import { AboutPageJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { absoluteUrl, buildMetadata, SITE_DEFAULTS } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
   title: 'About Rob Harvey, Founder',
   description:
-    'Trailhead Holdings Ltd is a UK company run by Rob Harvey: thirteen years in nicotine and FMCG sales, now running a commercial consultancy, a software studio and three owned products.',
+    'Rob Harvey has worked in nicotine and FMCG sales since 2013. Trailhead Holdings is the company he runs: a consultancy, a software studio and three products.',
   path: '/about',
   // This page owns the "who is behind it" queries. Service keywords stay with
   // /consulting and /studio.
@@ -98,6 +98,7 @@ export default async function AboutPage() {
 
   return (
     <div>
+      <BreadcrumbJsonLd items={[{ name: 'About', path: '/about' }]} />
       <AboutPageJsonLd url={absoluteUrl('/about')} />
 
       {/* ---- Hero: the operator, because the operator is the company ---- */}

@@ -4,14 +4,14 @@ import type { Metadata } from 'next'
 import PlanIcon from '@/components/marketing/PlanIcon'
 import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
-import { ProfessionalServiceJsonLd } from '@/components/JsonLd'
+import { BreadcrumbJsonLd, ProfessionalServiceJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { absoluteUrl, buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Trailhead Studio: Bespoke Software & Web Apps',
   description:
-    'Trailhead Studio designs and builds bespoke software for UK businesses: internal tools, offline field apps, client portals and full web apps, all built in-house.',
+    'Trailhead Studio designs and builds bespoke software for UK businesses: internal tools, offline field apps, client portals and web apps, all built in-house.',
   path: '/studio',
   // This page owns the software keyword pool; /consulting owns the consulting
   // pool and the homepage carries brand terms only.
@@ -377,6 +377,7 @@ export default async function StudioPage() {
 
   return (
     <div>
+      <BreadcrumbJsonLd items={[{ name: 'Studio', path: '/studio' }]} />
       <ProfessionalServiceJsonLd
         name="Trailhead Studio"
         description="Bespoke software for UK businesses: internal tools, offline-capable field apps, client portals, marketing sites and full web app builds, designed and built in-house."

@@ -8,6 +8,7 @@ import { getPublishedBlogPosts } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata } from '@/lib/seo'
+import { BreadcrumbJsonLd } from '@/components/JsonLd'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Blog, Notes on NGP, FMCG and Building Products',
@@ -34,6 +35,7 @@ export default async function MarketingBlogPage({
 
   return (
     <div>
+      <BreadcrumbJsonLd items={[{ name: 'Blog', path: '/blog' }]} />
       <section className="pt-10 pb-8 md:pt-16 md:pb-10">
         <div className="bay">
           <div className="bay-code hidden lg:block">

@@ -10,13 +10,17 @@ import { getPublishedBlogPostBySlug } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata, absoluteUrl } from '@/lib/seo'
-import { BlogPostingJsonLd } from '@/components/JsonLd'
+import { BlogPostingJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd'
 
 // Rendered per request, never prerendered. The page (and the marketing layout)
 // read headers() and the cookie-bound Supabase client, so generateStaticParams
 // made every post a static route that threw DYNAMIC_SERVER_USAGE at runtime:
 // each post, and every unknown slug, returned a 500 instead of the post or a 404.
 export const dynamic = 'force-dynamic'
+
+function stripLeadingTitle(body: string) {
+  return body.replace(/^\s*#\s[^\n]*\n+/, '')
+}
 
 export async function generateMetadata({
   params,
@@ -67,7 +71,12 @@ export default async function MarketingBlogPostPage({
             url={absoluteUrl(`/blog/${post.slug}`)}
             datePublished={post.published_at ?? post.created_at}
             dateModified={post.updated_at ?? post.published_at ?? post.created_at}
-            authorName="Rob Harvey"
+          />
+          <BreadcrumbJsonLd
+            items={[
+              { name: 'Blog', path: '/blog' },
+              { name: post.title, path: `/blog/${post.slug}` },
+            ]}
           />
 
           {/* The filing block sits in the gutter beside the piece, the way a
@@ -113,7 +122,13 @@ export default async function MarketingBlogPostPage({
             ) : null}
 
             <div className={`mt-8 ${blogMarkdownClassName}`}>
-              <ReactMarkdown>{post.body}</ReactMarkdown>
+              {/* The page already prints the title as its H1. Posts written in
+                  the editor often open with the same "# Title" line, and any
+                  other "#" heading would be a second H1, so the leading title
+                  is dropped and the rest demoted to H2. */}
+              <ReactMarkdown components={{ h1: 'h2' }}>
+                {stripLeadingTitle(post.body)}
+              </ReactMarkdown>
             </div>
 
             <div className="ticket mt-14 max-w-md">
