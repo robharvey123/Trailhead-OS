@@ -6,20 +6,17 @@ import ReactMarkdown from 'react-markdown'
 import PlanIcon from '@/components/marketing/PlanIcon'
 import Reveal from '@/components/marketing/Reveal'
 import { blogMarkdownClassName, formatBlogDate } from '@/lib/blog'
-import { getPublishedBlogPostBySlug, getPublishedBlogPosts } from '@/lib/db/blog-posts'
+import { getPublishedBlogPostBySlug } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata, absoluteUrl } from '@/lib/seo'
 import { BlogPostingJsonLd } from '@/components/JsonLd'
 
-export async function generateStaticParams() {
-  try {
-    const posts = await getPublishedBlogPosts()
-    return posts.map((p) => ({ slug: p.slug }))
-  } catch {
-    return []
-  }
-}
+// Rendered per request, never prerendered. The page (and the marketing layout)
+// read headers() and the cookie-bound Supabase client, so generateStaticParams
+// made every post a static route that threw DYNAMIC_SERVER_USAGE at runtime:
+// each post, and every unknown slug, returned a 500 instead of the post or a 404.
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({
   params,
