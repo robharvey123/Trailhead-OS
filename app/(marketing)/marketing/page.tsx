@@ -91,7 +91,7 @@ const labsStrip = [
     code: 'LAB-02',
     name: 'MVP Cricket',
     line: 'Club management for grassroots cricket, with Play-Cricket sync and automated MVP scoring.',
-    price: '£19 / CLUB / MO',
+    price: 'FREE · CLUB £9.99 / MO',
     state: 'live' as const,
   },
   {

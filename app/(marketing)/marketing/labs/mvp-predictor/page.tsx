@@ -43,6 +43,68 @@ const howItWorks = [
   },
 ]
 
+// The rules as built, from the product's locked decisions. Club-specific
+// money (entry fees, prize amounts) is deliberately absent: each club sets
+// its own, and the platform never holds it.
+const seasonRules: Array<[string, string]> = [
+  ['Scoring', '3 points for the exact score, 1 for the right result.'],
+  ['Fixtures', 'Every Premier League fixture, gameweek by gameweek. Results arrive from a live feed, so nobody marks anything by hand.'],
+  ['Tables', 'Weekly, monthly and season leaderboards, all updating as results land.'],
+  ['Season', 'Your best 30 of the 38 gameweeks count, so a missed weekend does not end anyone’s season.'],
+  ['Weekly pot', 'The outright top score takes it. A tie rolls the pot into the next gameweek.'],
+  ['Bonus slips', 'Season-long questions answered in two windows, for the longer calls.'],
+  ['Late joiners', 'Members can join up to the final kickoff of gameweek 4.'],
+]
+
+const clubControls = [
+  {
+    code: 'CLB-01',
+    title: 'Your name, your colours',
+    description:
+      'The competition carries your club’s name, crest and colour. Members see their club, not ours.',
+  },
+  {
+    code: 'CLB-02',
+    title: 'Your members, by invite',
+    description:
+      'Members join from an invite link the club shares. Club admins see who has joined and mark who has paid.',
+  },
+  {
+    code: 'CLB-03',
+    title: 'Your money, your prizes',
+    description:
+      'The club sets the entry fee and how prizes are split, and collects entries itself. None of it passes through the platform.',
+  },
+]
+
+const questions = [
+  {
+    question: 'Does the entry money go through you?',
+    answer:
+      'No. The club collects entries and pays prizes directly. MVP Predictor charges the club a flat subscription for the platform and never handles, holds or takes a share of members’ money.',
+  },
+  {
+    question: 'What does it cost?',
+    answer:
+      'A flat subscription per club. The price will be published here before clubs are taken on, and it will not change with the size of your entry pot.',
+  },
+  {
+    question: 'Who keeps the scores?',
+    answer:
+      'Nobody. Fixtures and results come from a live data feed, and the scoring and every leaderboard update automatically.',
+  },
+  {
+    question: 'Can members join after the season starts?',
+    answer:
+      'Yes, up to the final kickoff of gameweek 4. After that the competition is closed to new entries for the season.',
+  },
+  {
+    question: 'Where did it come from?',
+    answer:
+      'A World Cup 2026 prediction competition built for one club’s committee and run through the whole tournament. MVP Predictor is that build, turned into a product any club can run.',
+  },
+]
+
 export default async function MvpPredictorPage() {
   const host = (await headers()).get('host') || ''
   const isLocalhost = isLocalDevelopmentHost(host)
@@ -106,6 +168,80 @@ export default async function MvpPredictorPage() {
                     {item.description}
                   </p>
                 </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- The rules, as a ruled list ---- */}
+      <Reveal className="rail">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">SEASON</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">38 gameweeks</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">How a season plays out</h2>
+            <dl className="mt-8 border-t border-[var(--ink)]">
+              {seasonRules.map(([label, rule]) => (
+                <div
+                  key={label}
+                  className="grid gap-x-8 gap-y-1 border-b border-[var(--hair)] py-4 md:grid-cols-[10rem_minmax(0,1fr)] md:items-baseline"
+                >
+                  <dt className="plan-label text-[var(--ink)]">{label}</dt>
+                  <dd className="plan-body plan-body-sm">{rule}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- What the club controls ---- */}
+      <Reveal className="rail bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">CLUB</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">3 facings</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">What the club controls</h2>
+            <div className="facings mt-8 md:grid-cols-3">
+              {clubControls.map((item) => (
+                <div key={item.code} className="facing bg-[var(--plan)]">
+                  <p className="plan-data text-[var(--ink-3)]">{item.code}</p>
+                  <h3 className="plan-h3 mt-3">{item.title}</h3>
+                  <p className="plan-body mt-3 plan-body-sm">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- Questions ---- */}
+      <Reveal className="rail">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">FAQ</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Asked first</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">Questions clubs ask</h2>
+            <div className="mt-8 border-t border-[var(--ink)]">
+              {questions.map((item) => (
+                <details key={item.question} className="group border-b border-[var(--hair)]">
+                  <summary className="plan-h3 flex max-w-3xl cursor-pointer list-none items-center justify-between gap-4 py-4 marker:content-none">
+                    {item.question}
+                    <PlanIcon
+                      name="cross"
+                      size={15}
+                      className="text-[var(--ink-2)] transition-transform group-open:rotate-45"
+                    />
+                  </summary>
+                  <p className="plan-body pb-5 plan-body-sm">{item.answer}</p>
+                </details>
               ))}
             </div>
           </div>
