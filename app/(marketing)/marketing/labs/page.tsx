@@ -81,7 +81,7 @@ const products: LabsProduct[] = [
     screenshot: '/labs/mvp-cricket.webp',
     screenshotAlt:
       'MVP Cricket on a phone: the club MVP leaderboard for the 2026 season, players ranked by points across matches played',
-    pricing: 'Tiered, from £19 a month',
+    pricing: 'Free leaderboard, then from £9.99 a month',
     href: 'https://mvpcricket.app',
     external: true,
     ctaLabel: 'Visit mvpcricket.app',
@@ -90,7 +90,8 @@ const products: LabsProduct[] = [
         'Club management software for grassroots cricket: Play-Cricket sync, automated MVP scoring, leaderboards and member notifications.',
       url: 'https://mvpcricket.app',
       applicationCategory: 'SportsApplication',
-      price: { amount: '19', currency: 'GBP', unitText: 'per club per month' },
+      // The Club plan; the leaderboard-only plan is free.
+      price: { amount: '9.99', currency: 'GBP', unitText: 'per club per month' },
     },
   },
   {
@@ -110,6 +111,46 @@ const products: LabsProduct[] = [
       url: absoluteUrl('/labs/mvp-predictor'),
       applicationCategory: 'SportsApplication',
     },
+  },
+]
+
+// Side by side, from each product's own pricing page (checked 14 Oct 2026).
+// If a product site changes its prices, this table and the facings above
+// change with it.
+const atAGlance: Array<{ name: string; forWho: string; pricing: string; start: string }> = [
+  {
+    name: 'Engineer OS',
+    forWho: 'UK field service teams of 5 to 100 engineers',
+    pricing: '£15, £25 or £40 per engineer a month by plan. Admins free. 20% off annual.',
+    start: '14-day trial, no card. A live demo opens without a form.',
+  },
+  {
+    name: 'MVP Cricket',
+    forWho: 'Volunteer-run grassroots cricket clubs',
+    pricing: 'Leaderboard free forever. Club £9.99 a month or £99 a year. Premier £19.99 a month or £199 a year.',
+    start: 'Start on the free plan and upgrade when the season needs it.',
+  },
+  {
+    name: 'MVP Predictor',
+    forWho: 'Clubs running a Premier League prediction competition',
+    pricing: 'A flat club subscription, published before launch.',
+    start: 'Register interest; not yet taking competitions.',
+  },
+]
+
+// Where each product came from. The pattern is the reason Labs exists.
+const origins = [
+  {
+    step: 'Built for one business',
+    detail: 'Each product starts as a bespoke build for a real operation with a real problem: a fire and security contractor, a cricket club, a club committee running a World Cup prediction competition.',
+  },
+  {
+    step: 'Proved in the field',
+    detail: 'It runs that business for long enough to show it works: a full cricket season, a whole tournament, live jobs on engineers’ phones.',
+  },
+  {
+    step: 'Opened to everyone',
+    detail: 'Only then is it rebuilt as a product other businesses can sign up to, with its own site, its own pricing and its own support.',
   },
 ]
 
@@ -238,6 +279,80 @@ export default async function LabsPage() {
                 </article>
               ))}
             </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- At a glance ---- */}
+      <Reveal className="rail bg-[var(--plan-recess)]">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">TERMS</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">Side by side</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">The three, side by side</h2>
+            <div className="mt-8 border-t border-[var(--ink)]">
+              {atAGlance.map((row) => (
+                <div
+                  key={row.name}
+                  className="grid gap-x-8 gap-y-2 border-b border-[var(--hair)] py-5 md:grid-cols-[10rem_repeat(3,minmax(0,1fr))]"
+                >
+                  <h3 className="plan-h3">{row.name}</h3>
+                  <div>
+                    <p className="plan-data text-[var(--ink-3)]">FOR</p>
+                    <p className="plan-body mt-1 plan-body-sm">{row.forWho}</p>
+                  </div>
+                  <div>
+                    <p className="plan-data text-[var(--ink-3)]">PRICING</p>
+                    <p className="plan-body mt-1 plan-body-sm">{row.pricing}</p>
+                  </div>
+                  <div>
+                    <p className="plan-data text-[var(--ink-3)]">TO START</p>
+                    <p className="plan-body mt-1 plan-body-sm">{row.start}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="plan-body mt-4 plan-body-xs">
+              Engineer OS prices exclude VAT. Each product&rsquo;s own site has
+              the current plans and the full feature list.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ---- How a product gets here ---- */}
+      <Reveal className="rail">
+        <div className="bay py-12 md:py-16">
+          <div className="bay-code">
+            <p className="plan-data text-[var(--ink-3)]">ORIGIN</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">3 stages</p>
+          </div>
+          <div className="min-w-0">
+            <h2 className="plan-h2 rack-target">How a product gets here</h2>
+            <p className="plan-body mt-4">
+              None of these started as a gap spotted in a market report. Each
+              one followed the same three steps.
+            </p>
+            <ol className="facings mt-8 md:grid-cols-3">
+              {origins.map((origin, index) => (
+                <li key={origin.step} className="facing">
+                  <p className="plan-data text-[var(--ink-3)]">
+                    STAGE {String(index + 1).padStart(2, '0')}
+                  </p>
+                  <h3 className="plan-h3 mt-3">{origin.step}</h3>
+                  <p className="plan-body mt-3 plan-body-sm">{origin.detail}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="plan-body mt-8">
+              <span className="key-state key-live mr-2">Live</span> means a
+              product is running with paying customers, and we carry its
+              support, billing and uptime.{' '}
+              <span className="key-state key-build mx-2">In build</span> means it
+              is real work in progress, not yet taking customers.
+            </p>
           </div>
         </div>
       </Reveal>
