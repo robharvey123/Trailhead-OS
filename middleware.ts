@@ -64,6 +64,7 @@ function getMarketingRewritePath(pathname: string) {
   // Every public marketing route lives here. A path missing from this list gets
   // a 404 from the caller, so adding a page means adding it here too.
   const marketingRoots = [
+    '/about',
     '/blog',
     '/consulting',
     '/studio',
