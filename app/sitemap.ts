@@ -18,6 +18,7 @@ const STATIC_ROUTES: {
   // sitemap advertising redirects is a crawl-budget leak.
   { path: '/labs', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/labs/mvp-predictor', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/about', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/contact', changeFrequency: 'yearly', priority: 0.6 },
   { path: '/blog', changeFrequency: 'weekly', priority: 0.9 },
   // These are real, indexable routes and were missing from the sitemap.

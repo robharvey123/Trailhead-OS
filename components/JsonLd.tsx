@@ -57,6 +57,41 @@ type ProfessionalServiceProps = {
   serviceTypes: string[]
 }
 
+// The /about page: an AboutPage whose subject is the founder, tied to the same
+// Organization node the sitewide markup describes. Gives search engines one
+// place that says who Rob is and how he relates to the company.
+export function AboutPageJsonLd({ url }: { url: string }) {
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    url,
+    name: `About ${SITE_DEFAULTS.name}`,
+    about: {
+      '@type': 'Organization',
+      name: SITE_DEFAULTS.legalName,
+      url: SITE_URL,
+      foundingDate: '2025-11',
+    },
+    mainEntity: {
+      '@type': 'Person',
+      name: SITE_DEFAULTS.founder,
+      jobTitle: 'Founder and Director',
+      image: `${SITE_URL}/rob-harvey.webp`,
+      worksFor: { '@type': 'Organization', name: SITE_DEFAULTS.legalName, url: SITE_URL },
+      knowsAbout: [
+        'Next generation nicotine products',
+        'FMCG route to market',
+        'Market entry',
+        'Distributor strategy',
+        'Pricing architecture',
+        'Bespoke software development',
+      ],
+      sameAs: SITE_DEFAULTS.sameAs,
+    },
+  }
+  return <JsonLd data={data} />
+}
+
 // Per-track service markup: /consulting and /studio are separate offers with
 // separate buyers, so each carries its own ProfessionalService node under the
 // Trailhead Holdings parent Organization.

@@ -57,6 +57,7 @@ export const BUSINESSES: BusinessNavItem[] = [
 
 /** Always present, on every track, beside the businesses. */
 export const UTILITY_NAV: TrackNavItem[] = [
+  { label: 'About', href: '/about' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contact', href: '/contact' },
 ]

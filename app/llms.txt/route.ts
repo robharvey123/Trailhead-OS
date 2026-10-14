@@ -27,6 +27,7 @@ Internal tools, client portals, offline-capable field apps, marketing sites and 
 
 ## Other pages
 - Home: ${SITE_URL}/
+- About (company and founder): ${SITE_URL}/about
 - Contact: ${SITE_URL}/contact
 - Blog: ${SITE_URL}/blog
 - Privacy: ${SITE_URL}/privacy
