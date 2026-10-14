@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import PlanIcon from '@/components/marketing/PlanIcon'
 import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
-import { SoftwareApplicationJsonLd } from '@/components/JsonLd'
+import { BreadcrumbJsonLd, SoftwareApplicationJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { absoluteUrl, buildMetadata } from '@/lib/seo'
 
@@ -119,6 +119,7 @@ export default async function LabsPage() {
 
   return (
     <div>
+      <BreadcrumbJsonLd items={[{ name: 'Labs', path: '/labs' }]} />
       {products.map((product) => (
         <SoftwareApplicationJsonLd
           key={`jsonld-${product.name}`}

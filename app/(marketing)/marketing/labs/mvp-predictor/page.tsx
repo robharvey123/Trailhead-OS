@@ -4,7 +4,8 @@ import type { Metadata } from 'next'
 import PlanIcon from '@/components/marketing/PlanIcon'
 import Reveal from '@/components/marketing/Reveal'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
-import { buildMetadata } from '@/lib/seo'
+import { absoluteUrl, buildMetadata } from '@/lib/seo'
+import { BreadcrumbJsonLd, SoftwareApplicationJsonLd } from '@/components/JsonLd'
 
 // MVP Predictor is the one Labs product with no marketing site of its own yet,
 // so its page lives here until mvppredictor.com is wired up. Then it
@@ -48,6 +49,17 @@ export default async function MvpPredictorPage() {
 
   return (
     <div>
+      {/* The product's own entity lives on its own page; /labs carries the
+          same @id, so both describe one product. No offers until a price is
+          set, and no ratings that do not exist. */}
+      <SoftwareApplicationJsonLd
+        name="MVP Predictor"
+        description="White-label football prediction competitions for clubs, run on a flat club subscription."
+        url={absoluteUrl('/labs/mvp-predictor')}
+        applicationCategory="SportsApplication"
+        mainEntityOfPage={absoluteUrl('/labs/mvp-predictor')}
+      />
+      <BreadcrumbJsonLd items={[{ name: 'Labs', path: '/labs' }, { name: 'MVP Predictor', path: '/labs/mvp-predictor' }]} />
       <section className="pt-10 pb-10 md:pt-14 md:pb-12">
         <div className="bay">
           <div className="bay-code bay-code-lead">

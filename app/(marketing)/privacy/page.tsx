@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import LegalPageShell from '@/components/marketing/LegalPageShell'
 import { isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata } from '@/lib/seo'
+import { BreadcrumbJsonLd } from '@/components/JsonLd'
 
 // Built with buildMetadata so the page carries its own canonical. It used to
 // set only a title and inherited the root layout's canonical, which pointed
@@ -20,6 +21,7 @@ export default async function PrivacyPage() {
 
   return (
     <LegalPageShell isLocalhost={isLocalhost}>
+      <BreadcrumbJsonLd items={[{ name: 'Privacy Policy', path: '/privacy' }]} />
       <h1
         className="text-[clamp(2rem,4.4vw,3.25rem)] leading-[0.98] font-bold text-[var(--ink)]"
         style={{ fontStretch: '80%', letterSpacing: '-0.02em' }}

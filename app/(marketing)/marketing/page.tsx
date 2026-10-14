@@ -10,9 +10,11 @@ import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Trailhead Holdings: Commercial Strategy & Software',
+  // The template appends "| Trailhead Holdings", so the brand still closes the
+  // title; the front carries what the business does.
+  title: 'NGP & FMCG Consulting and Bespoke Software',
   description:
-    'Trailhead Holdings runs two businesses: Trailhead Commercial for NGP and FMCG consulting, and Trailhead Studio for bespoke software, plus the Trailhead Labs product portfolio.',
+    'Trailhead Holdings runs Trailhead Commercial (NGP and FMCG consulting), Trailhead Studio (bespoke software) and Trailhead Labs, its own software products.',
   path: '/',
   // Brand terms only. The consulting and software keyword pools belong to
   // /consulting and /studio. The homepage competing for both diluted all three.
@@ -165,12 +167,15 @@ export default async function MarketingHomePage() {
               }
             >
               <div className="flex items-baseline justify-between gap-4">
-                <p
+                {/* The business name is the heading; the line below it is display
+                    copy. It used to be the other way round, which gave the
+                    homepage the same H2 as the /consulting H1. */}
+                <h2
                   className="plan-label"
                   style={{ color: 'var(--key-ink)' }}
                 >
                   {door.eyebrow}
-                </p>
+                </h2>
                 <p
                   className="plan-data opacity-70"
                   style={{ color: 'var(--key-ink)' }}
@@ -179,12 +184,12 @@ export default async function MarketingHomePage() {
                 </p>
               </div>
 
-              <h2
+              <p
                 className="plan-h2 mt-4 max-w-[18ch]"
                 style={{ color: 'var(--key-ink)' }}
               >
                 {door.title}
-              </h2>
+              </p>
 
               <p className="plan-body mt-4 max-w-[46ch]">{door.description}</p>
 

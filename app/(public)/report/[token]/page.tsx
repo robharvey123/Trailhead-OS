@@ -8,7 +8,8 @@ import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
  * These are private client reports reached by an unguessable token. Without this
  * they inherited the root layout's `index, follow`, so any token URL that leaked
  * through a referrer header, a forwarded link or a crawled email was eligible
- * for the search index. Belt and braces: robots.txt also disallows /report/.
+ * for the search index. robots.txt deliberately does not block /report/,
+ * or crawlers could never read this tag.
  */
 export const metadata: Metadata = {
   robots: {

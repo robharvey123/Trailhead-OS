@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import Sidebar from '@/components/os/Sidebar'
 import DiscoveryOSClient, {
@@ -5,6 +6,12 @@ import DiscoveryOSClient, {
 } from '@/components/os/DiscoveryOSClient'
 import PublicDiscoveryForm from '@/components/discovery/PublicDiscoveryForm'
 import { createClient } from '@/lib/supabase/server'
+
+// A private intake form, reached from a link Rob sends. Kept out of the index
+// with noindex rather than robots.txt, so crawlers can actually read the tag.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 
 export default async function DiscoveryPage({
   searchParams,

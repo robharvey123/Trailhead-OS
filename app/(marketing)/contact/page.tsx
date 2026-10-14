@@ -5,9 +5,10 @@ import ContactForm, { type ContactTrack } from '@/components/marketing/ContactFo
 import Reveal from '@/components/marketing/Reveal'
 import { isLocalDevelopmentHost } from '@/lib/site'
 import { buildMetadata } from '@/lib/seo'
+import { BreadcrumbJsonLd } from '@/components/JsonLd'
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Contact Trailhead Holdings',
+  title: 'Contact Rob Harvey',
   description:
     'Talk to Rob Harvey about NGP and FMCG commercial strategy, a bespoke software build, or one of the Trailhead Labs products. UK-based, replies within 24 hours.',
   path: '/contact',
@@ -49,6 +50,7 @@ export default async function ContactPage({
 
   return (
     <Reveal>
+      <BreadcrumbJsonLd items={[{ name: 'Contact', path: '/contact' }]} />
       <div className="pt-10 pb-16 md:pt-16 md:pb-20">
         <div className="bay">
           <div className="bay-code hidden lg:block">

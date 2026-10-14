@@ -4,14 +4,14 @@ import type { Metadata } from 'next'
 import PlanIcon from '@/components/marketing/PlanIcon'
 import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
-import { ProfessionalServiceJsonLd } from '@/components/JsonLd'
+import { BreadcrumbJsonLd, ProfessionalServiceJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
 import { absoluteUrl, buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Trailhead Commercial: NGP & FMCG Consulting',
   description:
-    'Commercial strategy, market entry and route-to-market for nicotine, reduced-risk and FMCG brands. Thirteen years operating in the category, six markets, one exit.',
+    'Commercial strategy, market entry and route to market for nicotine, reduced-risk and FMCG brands. Thirteen years in the category, six markets, one exit.',
   path: '/consulting',
   // This page owns the consulting keyword pool; the homepage carries brand
   // terms only and /studio owns the software pool.
@@ -211,6 +211,7 @@ export default async function ConsultingPage() {
 
   return (
     <div>
+      <BreadcrumbJsonLd items={[{ name: 'Commercial', path: '/consulting' }]} />
       <ProfessionalServiceJsonLd
         name="Trailhead Commercial"
         description="NGP and FMCG commercial consulting: market entry, route to market, pricing and interim commercial leadership for nicotine and reduced-risk brands."
@@ -232,9 +233,17 @@ export default async function ConsultingPage() {
           </div>
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start">
             <div className="min-w-0">
-            <h1 className="plan-display rack max-w-[16ch]">
-              You have a brand. It needs to sell somewhere it isn&rsquo;t
-              selling yet.
+            {/* The display line carries the voice; the second line carries the
+                search terms, so the H1 says what the page is about. It sits
+                below the statement, never above it as a kicker. */}
+            <h1 className="rack">
+              <span className="plan-display block max-w-[16ch]">
+                You have a brand. It needs to sell somewhere it isn&rsquo;t
+                selling yet.
+              </span>
+              <span className="plan-h3 mt-5 block text-[var(--ink-2)]">
+                NGP and FMCG commercial consulting
+              </span>
             </h1>
             <p className="plan-lede mt-7">
               Maybe that is a new market, a distributor who has gone quiet, or

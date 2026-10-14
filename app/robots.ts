@@ -10,12 +10,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        // /report/ serves tokenised client reports and /discovery is a private
-        // intake form — neither should ever be indexed, even if a URL leaks.
-        disallow: ['/api/', '/_next/', '/admin', '/report/', '/discovery'],
+        // Only API routes are blocked. /_next/ must stay crawlable: it serves
+        // the CSS and JS Google needs to render the pages. /report/ and
+        // /discovery are kept out of the index with a noindex tag on the page
+        // instead, which a crawler can only see if robots.txt lets it in.
+        // (The Host directive is Yandex-only and Google ignores it.)
+        disallow: ['/api/', '/admin'],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
-    host: SITE_URL,
   }
 }
