@@ -200,6 +200,7 @@ export default async function LabsPage() {
                     width={418}
                     height={849}
                     className="mt-5 max-w-[13rem]"
+                    sizes="13rem"
                   />
 
                   {/* The shelf ticket: the price is the point of a ticket, so

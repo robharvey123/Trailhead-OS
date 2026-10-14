@@ -541,6 +541,9 @@ export default async function StudioPage() {
                     width={project.screenshotWidth ?? 1600}
                     height={project.screenshotHeight ?? 1000}
                     className="mt-7"
+                    // The facing column: viewport less the bay padding below
+                    // 60rem, less the gutter above it, capped by the 78rem bay.
+                    sizes="(min-width: 78rem) 63rem, (min-width: 60rem) calc(100vw - 15rem), calc(100vw - 2.5rem)"
                   />
 
                   <div className="mt-7 grid gap-8 lg:grid-cols-2">

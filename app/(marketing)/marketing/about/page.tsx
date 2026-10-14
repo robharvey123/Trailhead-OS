@@ -148,6 +148,7 @@ export default async function AboutPage() {
                 width={1066}
                 height={1600}
                 className="max-w-[15rem]"
+                sizes="15rem"
                 priority
               />
               <div className="ticket mt-4 max-w-[15rem]">

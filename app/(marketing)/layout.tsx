@@ -18,10 +18,13 @@ const archivo = Archivo({
   display: 'swap',
 })
 
+// Not preloaded: it sets only the small data labels, so it can arrive after
+// Archivo without holding up the headline. Swap shows a system mono meanwhile.
 const martianMono = Martian_Mono({
   variable: '--font-martian',
   subsets: ['latin'],
   display: 'swap',
+  preload: false,
 })
 
 export const metadata: Metadata = {

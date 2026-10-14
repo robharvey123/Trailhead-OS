@@ -19,6 +19,7 @@ export default function PlateSlot({
   height,
   className = '',
   priority = false,
+  sizes,
 }: {
   /** Omit until the real asset exists. Never point this at stock or a mockup. */
   src?: string
@@ -28,6 +29,12 @@ export default function PlateSlot({
   height: number
   className?: string
   priority?: boolean
+  /**
+   * How wide the plate renders, as an `<img sizes>` value. Without it Next
+   * assumes the full viewport and offers 2x a 3840px file, so a 240px portrait
+   * was preloaded at 3840px.
+   */
+  sizes?: string
 }) {
   if (!src) return null
 
@@ -40,6 +47,7 @@ export default function PlateSlot({
           width={width}
           height={height}
           priority={priority}
+          sizes={sizes}
           className="block h-auto w-full"
         />
       </div>
