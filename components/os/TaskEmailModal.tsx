@@ -22,6 +22,21 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
   const [errorMessage, setErrorMessage] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Start each opening with a clean form. This is the "adjust state when a
+  // prop changes" pattern: done during render rather than in an effect, so
+  // React skips the extra render pass a setState-in-effect would cause.
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      setRecipients([])
+      setInputValue('')
+      setMessage('')
+      setSendState('idle')
+      setErrorMessage('')
+    }
+  }
+
   useEffect(() => {
     if (!open) return
 
@@ -35,11 +50,6 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
 
   useEffect(() => {
     if (open) {
-      setRecipients([])
-      setInputValue('')
-      setMessage('')
-      setSendState('idle')
-      setErrorMessage('')
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''

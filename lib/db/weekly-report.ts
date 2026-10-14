@@ -169,7 +169,7 @@ export async function getWeeklyReportData(
 
   // Project summaries — count tasks per project
   const projectIds = projects.map((p) => p.id)
-  let projectTaskCounts: Record<string, { total: number; completed: number }> = {}
+  const projectTaskCounts: Record<string, { total: number; completed: number }> = {}
 
   if (projectIds.length > 0) {
     const [totalResult, completedResult] = await Promise.all([
