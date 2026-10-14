@@ -32,7 +32,9 @@ export const metadata: Metadata = {
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
   formatDetection: { email: false, address: false, telephone: false },
-  alternates: { canonical: SITE_URL },
+  // No site-wide canonical here: every child page inherited it, so any page
+  // without its own (privacy and terms did) canonicalised to the homepage.
+  // Pages set their own through buildMetadata.
   openGraph: {
     type: 'website',
     siteName: SITE_DEFAULTS.name,

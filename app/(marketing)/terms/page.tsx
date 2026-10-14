@@ -2,10 +2,17 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import LegalPageShell from '@/components/marketing/LegalPageShell'
 import { isLocalDevelopmentHost } from '@/lib/site'
+import { buildMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
+// Built with buildMetadata so the page carries its own canonical. It used to
+// set only a title and inherited the root layout's canonical, which pointed
+// search engines at the homepage and kept this page out of the index.
+export const metadata: Metadata = buildMetadata({
   title: 'Terms of Service',
-}
+  description:
+    'The terms that govern use of the Trailhead Holdings website and our consulting, studio and labs services.',
+  path: '/terms',
+})
 
 export default async function TermsPage() {
   const host = (await headers()).get('host') || ''
