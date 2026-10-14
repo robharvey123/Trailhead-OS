@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import PlanIcon from '@/components/marketing/PlanIcon'
 import Reveal from '@/components/marketing/Reveal'
 import { blogMarkdownClassName, formatBlogDate } from '@/lib/blog'
@@ -126,7 +127,7 @@ export default async function MarketingBlogPostPage({
                   the editor often open with the same "# Title" line, and any
                   other "#" heading would be a second H1, so the leading title
                   is dropped and the rest demoted to H2. */}
-              <ReactMarkdown components={{ h1: 'h2' }}>
+              <ReactMarkdown components={{ h1: 'h2' }} remarkPlugins={[remarkGfm]}>
                 {stripLeadingTitle(post.body)}
               </ReactMarkdown>
             </div>

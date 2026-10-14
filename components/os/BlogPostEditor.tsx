@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   blogMarkdownClassName,
   parseTagList,
@@ -250,7 +251,9 @@ export default function BlogPostEditor({
               {preview ? (
                 <div className="min-h-[460px] rounded-3xl border border-[color:var(--border)] bg-white p-6">
                   <div className={blogMarkdownClassName}>
-                    <ReactMarkdown>
+                    {/* Same plugins as the public post page, so the preview
+                        matches what gets published. */}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {body || 'Nothing to preview yet.'}
                     </ReactMarkdown>
                   </div>
