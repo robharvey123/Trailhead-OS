@@ -129,8 +129,8 @@ const trackRecord = [
       '£1M+ annual revenue. National UK distribution secured through Unitas.',
   },
   {
-    period: '2014–20',
-    years: 6,
+    period: '2013–20',
+    years: 7,
     company: 'EOS Leisure',
     role: 'Founder and CCO',
     summary:
@@ -451,7 +451,7 @@ export default async function ConsultingPage() {
         <div className="bay py-12 md:py-16">
           <div className="bay-code">
             <p className="plan-data text-[var(--ink-3)]">ELEVATION</p>
-            <p className="plan-note mt-1 text-[var(--ink-3)]">2014–26</p>
+            <p className="plan-note mt-1 text-[var(--ink-3)]">2013–26</p>
           </div>
           <div className="min-w-0">
             <h2 className="plan-h2 rack-target">Track record</h2>

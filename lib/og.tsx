@@ -141,7 +141,7 @@ export function OgCard({
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', ...labelStyle }}>Est. 2014</div>
+        <div style={{ display: 'flex', ...labelStyle }}>Est. 2025</div>
       </div>
 
       <Rail />
