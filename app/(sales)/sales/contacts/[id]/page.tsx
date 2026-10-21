@@ -4,6 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getSalesContactRecord } from '@/lib/sales/data'
 import EligibilityBadge from '@/components/sales/EligibilityBadge'
 import ContactActions from './ContactActions'
+import PipelinePanel from './PipelinePanel'
+import FollowUpEmail from './FollowUpEmail'
+import { OUTCOME_LABELS, type OutcomeCode, type PipelineStage } from '@/lib/sales/queue'
 
 export const metadata = { title: 'Contact | Sales | Trailhead OS' }
 
@@ -14,9 +17,9 @@ function fmt(v: string | null) {
 export default async function SalesContactPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const record = await getSalesContactRecord(supabase, id)
+  const [record, { data: { user } }] = await Promise.all([getSalesContactRecord(supabase, id), supabase.auth.getUser()])
   if (!record) notFound()
-  const { contact: c, campaigns, touchpoints } = record
+  const { contact: c, campaigns, touchpoints, followUps } = record
   const unsubscribed = Boolean(c.do_not_email) || c.eligibility?.reason === 'unsubscribed'
 
   return (
@@ -75,8 +78,40 @@ export default async function SalesContactPage({ params }: { params: Promise<{ i
               </div>
             ))
           )}
+          {followUps.length > 0 ? (
+            <div className="mt-4 border-t border-[var(--border)] pt-3">
+              <p className="text-sm font-medium">Follow-ups</p>
+              <ul className="mt-2 space-y-1 text-sm">
+                {followUps.map((f) => (
+                  <li key={f.id} className="flex flex-wrap justify-between gap-2">
+                    <span className="min-w-0 truncate">{f.subject}</span>
+                    <span className="text-xs text-[color:var(--text-3)]">{f.first_opened_at ? `Opened ${fmt(f.first_opened_at)}` : `${f.status} ${fmt(f.sent_at)}`}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </section>
       </div>
+
+      <section className="panel p-4" aria-label="Pipeline">
+        <PipelinePanel
+          contactId={c.id}
+          stage={c.pipeline_stage as PipelineStage}
+          ownerIsMe={Boolean(user && c.owner_user_id === user.id)}
+          ownedByOther={Boolean(c.owner_user_id && user && c.owner_user_id !== user.id)}
+          nextActionAt={c.next_action_at}
+          nextActionNote={c.next_action_note}
+          lostReason={c.lost_reason}
+          disqualifiedReason={c.disqualified_reason}
+          recontactAfter={c.recontact_after}
+          orgId={c.engineer_os_org_id}
+        />
+      </section>
+
+      <section className="panel p-4" aria-label="Follow-up email">
+        <FollowUpEmail contactId={c.id} contactEmail={c.email} blocked={unsubscribed || c.eligibility?.reason === 'bounced'} />
+      </section>
 
       <section className="panel p-4">
         <ContactActions contactId={c.id} unsubscribed={unsubscribed} />
@@ -90,7 +125,10 @@ export default async function SalesContactPage({ params }: { params: Promise<{ i
           <ol className="mt-3 space-y-3">
             {touchpoints.map((t) => (
               <li key={t.id} className="text-sm">
-                <p className="font-medium">{t.subject} <span className="text-xs font-normal text-[color:var(--text-3)]">{t.type} · {fmt(t.occurred_at)}</span></p>
+                <p className="font-medium">
+                  {t.outcome_code ? `${t.outcome_code} · ${OUTCOME_LABELS[t.outcome_code as OutcomeCode] ?? t.subject}` : t.subject}{' '}
+                  <span className="text-xs font-normal text-[color:var(--text-3)]">{t.type} · {fmt(t.occurred_at)}{t.duration_seconds ? ` · ${Math.round(t.duration_seconds / 60)} min` : ''}</span>
+                </p>
                 {t.body ? <p className="mt-0.5 whitespace-pre-wrap text-[color:var(--text-2)]">{t.body}</p> : null}
               </li>
             ))}

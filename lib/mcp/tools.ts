@@ -22,6 +22,8 @@ import {
 import { createCoworkTask, listCoworkTasks, updateCoworkTask } from '@/lib/cowork-tasks'
 import type { createClient as createServerClient } from '@/lib/supabase/server'
 import { supabaseService } from '@/lib/supabase/service'
+import { getOwnerUserId } from '@/lib/auth/owner'
+import { getSalesDashboard, getSalesQueue, OUTCOME_CODES, PIPELINE_STAGES } from '@/lib/sales/queue'
 import {
   accountCounts,
   findAccountByExactName,
@@ -1331,6 +1333,132 @@ export const deleteTouchpointTool = defineTool({
   },
 })
 
+// ── Sales pipeline (owner-scoped; only contacts on the sales lists) ───────────
+
+const salesOutcome = z.enum(OUTCOME_CODES as unknown as [string, ...string[]])
+const salesStage = z.enum(PIPELINE_STAGES as unknown as [string, ...string[]])
+
+async function assertSalesScope(contactId: string) {
+  const { data, error } = await supabaseService.rpc('contact_in_sales_scope', { p_contact_id: contactId })
+  if (error) throw new Error(error.message)
+  if (data !== true) throw new Error('That contact is not on a sales list (Engineer OS / MVP Cricket tags).')
+}
+
+async function mcpOwnerId(): Promise<string> {
+  const id = await getOwnerUserId(supabaseService)
+  if (!id) throw new Error('Could not resolve the owner account.')
+  return id
+}
+
+export const logCallOutcomeTool = defineTool({
+  name: 'log_call_outcome',
+  description:
+    'Log a sales outcome on a contact (as Rob) and apply the stage rule: NA/VM/GK/CB move new to contacted; CB needs next_action_at; CONV moves to conversation; DEMO to demo_booked (with next_action_at it books a 30-minute calendar entry); TRIAL to trial; WON to customer; DQ and LOST need a reason (LOST sets recontact in 180 days). summary is required for CONV, DEMO, DQ and LOST. Only contacts on the sales lists.',
+  inputSchema: z.object({
+    contact_id: z.string().min(1),
+    outcome_code: salesOutcome,
+    summary: z.string().max(4000).optional(),
+    next_action_at: z.string().datetime({ offset: true }).optional(),
+    next_action_note: z.string().max(500).optional(),
+    duration_seconds: z.number().int().min(0).max(21600).optional(),
+    channel: z.enum(['call', 'email', 'demo', 'meeting', 'linkedin']).optional(),
+    reason: z.string().max(1000).optional(),
+  }),
+  handler: async (input) => {
+    await assertSalesScope(input.contact_id)
+    const { data, error } = await supabaseService.rpc('log_sales_outcome', {
+      p_contact_id: input.contact_id,
+      p_outcome: input.outcome_code,
+      p_summary: input.summary ?? null,
+      p_channel: input.channel ?? 'call',
+      p_next_action_at: input.next_action_at ?? null,
+      p_next_action_note: input.next_action_note ?? null,
+      p_duration_seconds: input.duration_seconds ?? null,
+      p_reason: input.reason ?? null,
+      p_logged_by: await mcpOwnerId(),
+    })
+    if (error) throw new Error(error.message)
+    const result = data as { touchpoint_id: string; stage_before: string; stage_after: string }
+    void recordCoworkWrite({
+      action: 'create', entity: 'touchpoint', entityId: result.touchpoint_id, entityLabel: input.outcome_code,
+      summary: `Logged ${input.outcome_code} on a sales contact (${result.stage_before} to ${result.stage_after})`,
+      payload: input,
+    })
+    return result
+  },
+})
+
+export const setPipelineStageTool = defineTool({
+  name: 'set_pipeline_stage',
+  description:
+    'Move a sales contact to a pipeline stage (as Rob). reason is required for disqualified and lost. Stages: new, contacted, conversation, demo_booked, trial, customer, disqualified, lost.',
+  inputSchema: z.object({
+    contact_id: z.string().min(1),
+    stage: salesStage,
+    reason: z.string().max(1000).optional(),
+  }),
+  handler: async (input) => {
+    await assertSalesScope(input.contact_id)
+    const { data, error } = await supabaseService.rpc('set_pipeline_stage', {
+      p_contact_id: input.contact_id,
+      p_stage: input.stage,
+      p_reason: input.reason ?? null,
+      p_logged_by: await mcpOwnerId(),
+    })
+    if (error) throw new Error(error.message)
+    const result = data as { stage_before: string; stage_after: string; changed: boolean }
+    if (result.changed) {
+      void recordCoworkWrite({
+        action: 'update', entity: 'contact', entityId: input.contact_id, entityLabel: input.stage,
+        summary: `Moved a sales contact from ${result.stage_before} to ${result.stage_after}`,
+        payload: input,
+      })
+    }
+    return result
+  },
+})
+
+export const salesDashboardTool = defineTool({
+  name: 'sales_dashboard',
+  description:
+    'Sales dashboard for this week and last week (Monday start, Europe/London): dials, conversations (CONV+DEMO+TRIAL+WON), demos booked, demos run, trials, won, lost; the stage funnel; and list health (new remaining, CTPS-clear, screened over 21 days ago, needs screening).',
+  inputSchema: z.object({}),
+  handler: async () => getSalesDashboard(supabaseService),
+})
+
+export const listQueueTool = defineTool({
+  name: 'list_queue',
+  description:
+    "Today's sales call queue in order (callbacks due, warm follow-ups, trials, then CTPS-clear new/contacted). Pass user_id to see one user's queue (their own and unclaimed contacts); omit it for everything. Only CTPS-clear numbers appear.",
+  inputSchema: z.object({
+    user_id: z.string().min(1).optional(),
+    limit: z.number().int().min(1).max(200).optional(),
+  }),
+  handler: async ({ user_id, limit }) => {
+    const rows = await getSalesQueue(supabaseService, { forUserId: user_id ?? null })
+    return {
+      count: rows.length,
+      rows: rows.slice(0, limit ?? 50).map((r) => ({
+        contact_id: r.id,
+        bucket: r.bucket,
+        company: r.company,
+        name: r.name,
+        role: r.role,
+        phone: r.phone,
+        sub_trade: r.sub_trade,
+        city: r.city,
+        size_signal: r.size_signal,
+        stage: r.pipeline_stage,
+        owner_user_id: r.owner_user_id,
+        next_action_at: r.next_action_at,
+        last_touch: r.lastTouch ? { subject: r.lastTouch.subject, outcome_code: r.lastTouch.outcome_code, occurred_at: r.lastTouch.occurred_at } : null,
+        emails_sent: r.emailStats.sent,
+        emails_opened: r.emailStats.opened,
+      })),
+    }
+  },
+})
+
 export const tools: McpTool[] = [
   whoami,
   listProjects,
@@ -1387,4 +1515,8 @@ export const tools: McpTool[] = [
   listEngagementDocumentsTool,
   deleteEngagementDocumentTool,
   recentCoworkActivityTool,
+  logCallOutcomeTool,
+  setPipelineStageTool,
+  salesDashboardTool,
+  listQueueTool,
 ]

@@ -100,7 +100,19 @@ export async function listSalesProducts(supabase: SupabaseClient): Promise<Sales
 }
 
 export interface SalesContactRecord {
-  contact: SalesContactRow & { notes: string | null; website: string | null; status: string | null }
+  contact: SalesContactRow & {
+    notes: string | null
+    website: string | null
+    status: string | null
+    pipeline_stage: string
+    owner_user_id: string | null
+    next_action_at: string | null
+    next_action_note: string | null
+    lost_reason: string | null
+    disqualified_reason: string | null
+    recontact_after: string | null
+    engineer_os_org_id: string | null
+  }
   campaigns: Array<{
     recipient_id: string
     campaign_name: string
@@ -116,20 +128,21 @@ export interface SalesContactRecord {
       first_clicked_at: string | null
     }>
   }>
-  touchpoints: Array<{ id: string; type: string; subject: string; body: string | null; occurred_at: string }>
+  touchpoints: Array<{ id: string; type: string; subject: string; body: string | null; occurred_at: string; outcome_code: string | null; duration_seconds: number | null }>
+  followUps: Array<{ id: string; subject: string; status: string; sent_at: string; first_opened_at: string | null; from_email: string }>
 }
 
 export async function getSalesContactRecord(supabase: SupabaseClient, contactId: string): Promise<SalesContactRecord | null> {
   const prefixes = await getSalesScopePrefixes(supabase)
   const { data: contact } = await supabase
     .from('contacts')
-    .select(`${CONTACT_COLUMNS}, notes, website, status`)
+    .select(`${CONTACT_COLUMNS}, notes, website, status, pipeline_stage, owner_user_id, next_action_at, next_action_note, lost_reason, disqualified_reason, recontact_after, engineer_os_org_id`)
     .eq('id', contactId)
     .is('merged_into', null)
     .maybeSingle()
   if (!contact || !tagsInScope((contact as { tags: string[] }).tags, prefixes)) return null
 
-  const [eligibility, { data: recipients }, { data: touchpoints }] = await Promise.all([
+  const [eligibility, { data: recipients }, { data: touchpoints }, { data: followUps }] = await Promise.all([
     getCallEligibility(supabase, [contactId]),
     supabase
       .from('outreach_recipients')
@@ -137,10 +150,16 @@ export async function getSalesContactRecord(supabase: SupabaseClient, contactId:
       .eq('contact_id', contactId),
     supabase
       .from('touchpoints')
-      .select('id, type, subject, body, occurred_at')
+      .select('id, type, subject, body, occurred_at, outcome_code, duration_seconds')
       .eq('contact_id', contactId)
       .order('occurred_at', { ascending: false })
       .limit(100),
+    supabase
+      .from('sales_follow_up_sends')
+      .select('id, subject, status, sent_at, first_opened_at, from_email')
+      .eq('contact_id', contactId)
+      .order('sent_at', { ascending: false })
+      .limit(50),
   ])
 
   const recs = (recipients ?? []) as Array<{ id: string; campaign_id: string; status: string; stopped_reason: string | null }>
@@ -170,5 +189,6 @@ export async function getSalesContactRecord(supabase: SupabaseClient, contactId:
       sends: sendRows.filter((s) => s.recipient_id === r.id),
     })),
     touchpoints: (touchpoints ?? []) as SalesContactRecord['touchpoints'],
+    followUps: (followUps ?? []) as SalesContactRecord['followUps'],
   }
 }
