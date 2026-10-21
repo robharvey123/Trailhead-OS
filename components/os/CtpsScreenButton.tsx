@@ -50,6 +50,7 @@ export default function CtpsScreenButton() {
         <span className="text-xs">
           {summary.attempted} checked · {summary.clear} clear · {summary.registered} registered · {summary.failed} failed
           {summary.skipped ? ` · ${summary.skipped} skipped` : ''}
+          {summary.outOfScope ? ` · ${summary.outOfScope} not on a sales list` : ''}
           {summary.creditsUsed ? ` · ${summary.creditsUsed} credits` : ''}
           {summary.stoppedReason ? ` · ${STOPPED[summary.stoppedReason]}` : ''}
         </span>

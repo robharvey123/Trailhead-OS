@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { getSalesScopePrefixes, tagsInScope } from '@/lib/sales/data'
 import { isConfigured, lookupTps, normaliseUkPhone, type CtpsLookupResult } from './datasoap'
 
 /**
@@ -11,6 +12,11 @@ import { isConfigured, lookupTps, normaliseUkPhone, type CtpsLookupResult } from
  * 20261024100000) refuses ctps_* changes when is_sales() is true; is_sales() is
  * false for the service role, so these writes pass the guard, and ctps_checks
  * has no RLS policies at all (service role only).
+ *
+ * Only sales-list contacts are screened: tagged with a sales_scope_tag_prefixes
+ * prefix (the sales seat's scope) and not archived. Consulting and other CRM
+ * contacts are never looked up, so they never cost a credit. The view
+ * contacts_needing_ctps (migration 20261027110000) applies the same rule.
  *
  * A failed lookup leaves the contact untouched: unscreened is uncallable, which
  * is the safe state. The next nightly run picks it up again.
@@ -26,6 +32,8 @@ export interface ScreenSummary {
   failed: number
   /** No phone, not a UK number, or not reached because the run stopped. */
   skipped: number
+  /** Not on a sales list (no sales tag) or archived: never screened. */
+  outOfScope: number
   creditsUsed: number
   /**
    * insufficient_credit: Data Soap -98. provider_rejected: -99 (token) or -92
@@ -48,7 +56,7 @@ interface ContactPhone {
 }
 
 function emptySummary(): ScreenSummary {
-  return { attempted: 0, clear: 0, registered: 0, failed: 0, skipped: 0, creditsUsed: 0, stoppedReason: null }
+  return { attempted: 0, clear: 0, registered: 0, failed: 0, skipped: 0, outOfScope: 0, creditsUsed: 0, stoppedReason: null }
 }
 
 /** Run `worker` over `items` with at most `limit` in flight. */
@@ -73,16 +81,26 @@ export async function screenContacts(
   if (!isConfigured()) return { ...summary, stoppedReason: 'not_configured' }
 
   const ids = Array.from(new Set(contactIds))
-  const rows: Array<{ id: string; phone: string | null }> = []
+  type Row = { id: string; phone: string | null; tags: string[] | null; status: string | null; merged_into: string | null }
+  const rows: Row[] = []
   for (let i = 0; i < ids.length; i += CHUNK) {
-    const { data, error } = await supabase.from('contacts').select('id, phone').in('id', ids.slice(i, i + CHUNK))
+    const { data, error } = await supabase
+      .from('contacts')
+      .select('id, phone, tags, status, merged_into')
+      .in('id', ids.slice(i, i + CHUNK))
     if (error) throw new Error(`could not load contacts to screen: ${error.message}`)
-    rows.push(...((data ?? []) as Array<{ id: string; phone: string | null }>))
+    rows.push(...((data ?? []) as Row[]))
   }
+  // An unreadable or empty scope screens nobody (fails closed, costs nothing).
+  const prefixes = await getSalesScopePrefixes(supabase)
 
   // Group by normalised number so a shared number (e.g. a switchboard) is billed once.
   const groups = new Map<string, ContactPhone[]>()
   for (const row of rows) {
+    if (row.merged_into || row.status === 'archived' || !tagsInScope(row.tags, prefixes)) {
+      summary.outOfScope++
+      continue
+    }
     const phone = row.phone?.trim()
     const normalised = phone ? normaliseUkPhone(phone) : null
     if (!phone || !normalised) {

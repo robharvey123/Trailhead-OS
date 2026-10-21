@@ -12,13 +12,29 @@ vi.mock('./datasoap', async (importOriginal) => {
 
 const { screenContacts } = await import('./screen')
 
-type Contact = { id: string; phone: string | null; ctps_registered: boolean | null; ctps_checked_at: string | null }
+type Contact = {
+  id: string
+  phone: string | null
+  ctps_registered: boolean | null
+  ctps_checked_at: string | null
+  tags?: string[]
+  status?: string
+  merged_into?: string | null
+}
+
+/** A sales-list prospect unless overridden. */
+const c = (id: string, phone: string | null, extra: Partial<Contact> = {}): Contact => ({
+  id, phone, ctps_registered: null, ctps_checked_at: null, tags: ['Engineer OS - plumbers'], status: 'lead', merged_into: null, ...extra,
+})
 
 /** Just enough of the supabase-js query builder for screen.ts. */
 function fakeDb(contacts: Contact[], opts: { auditFails?: boolean } = {}) {
   const audit: Array<Record<string, unknown>> = []
   const client = {
     from(table: string) {
+      if (table === 'sales_scope_tag_prefixes') {
+        return { select: () => ({ order: async () => ({ data: [{ prefix: 'Engineer OS' }, { prefix: 'MVP Cricket' }], error: null }) }) }
+      }
       if (table === 'ctps_checks') {
         return {
           insert: async (rows: Array<Record<string, unknown>>) => {
@@ -31,7 +47,9 @@ function fakeDb(contacts: Contact[], opts: { auditFails?: boolean } = {}) {
       return {
         select: () => ({
           in: async (_col: string, ids: string[]) => ({
-            data: contacts.filter((c) => ids.includes(c.id)).map(({ id, phone }) => ({ id, phone })),
+            data: contacts
+              .filter((row) => ids.includes(row.id))
+              .map(({ id, phone, tags, status, merged_into }) => ({ id, phone, tags, status, merged_into })),
             error: null,
           }),
         }),
@@ -66,7 +84,7 @@ describe('screenContacts', () => {
 
   it('does nothing when Data Soap is not configured', async () => {
     configured = false
-    const { client, audit } = fakeDb([{ id: 'a', phone: '07700900123', ctps_registered: null, ctps_checked_at: null }])
+    const { client, audit } = fakeDb([c('a', '07700900123')])
     const s = await screenContacts(client, ['a'], 'cron')
     expect(s.stoppedReason).toBe('not_configured')
     expect(lookupTps).not.toHaveBeenCalled()
@@ -75,11 +93,11 @@ describe('screenContacts', () => {
 
   it('bills a shared number once and applies it to every contact', async () => {
     const contacts: Contact[] = [
-      { id: 'a', phone: '07700 900123', ctps_registered: null, ctps_checked_at: null },
-      { id: 'b', phone: '+447700900123', ctps_registered: null, ctps_checked_at: null },
-      { id: 'c', phone: '01245 123456', ctps_registered: null, ctps_checked_at: null },
-      { id: 'd', phone: null, ctps_registered: null, ctps_checked_at: null },
-      { id: 'e', phone: '+1 212 555 0100', ctps_registered: null, ctps_checked_at: null },
+      c('a', '07700 900123'),
+      c('b', '+447700900123'),
+      c('c', '01245 123456'),
+      c('d', null),
+      c('e', '+1 212 555 0100'),
     ]
     lookupTps.mockImplementation(async (p) => (p.startsWith('012') ? { ...clear('441245123456'), ctps: true } : clear('447700900123')))
     const { client, audit } = fakeDb(contacts)
@@ -92,9 +110,7 @@ describe('screenContacts', () => {
   })
 
   it('leaves the contact unscreened on failure and stops on -98', async () => {
-    const contacts: Contact[] = Array.from({ length: 12 }, (_, i) => ({
-      id: `c${i}`, phone: `0770090${String(i).padStart(4, '0')}`, ctps_registered: null, ctps_checked_at: null,
-    }))
+    const contacts: Contact[] = Array.from({ length: 12 }, (_, i) => c(`c${i}`, `0770090${String(i).padStart(4, '0')}`))
     lookupTps.mockResolvedValue({ ok: false, phoneNormalised: 'x', code: -98, message: 'insufficient credit', retryable: false })
     const { client, audit } = fakeDb(contacts)
     const s = await screenContacts(client, contacts.map((c) => c.id), 'cron')
@@ -108,7 +124,7 @@ describe('screenContacts', () => {
   })
 
   it('does not mark a contact screened when the audit row cannot be written', async () => {
-    const contacts: Contact[] = [{ id: 'a', phone: '07700900123', ctps_registered: null, ctps_checked_at: null }]
+    const contacts: Contact[] = [c('a', '07700900123')]
     lookupTps.mockResolvedValue(clear('447700900123'))
     const { client } = fakeDb(contacts, { auditFails: true })
     const s = await screenContacts(client, ['a'], 'mcp')
@@ -116,8 +132,25 @@ describe('screenContacts', () => {
     expect(contacts[0].ctps_checked_at).toBeNull()
   })
 
+  it('never looks up consulting, archived or merged contacts', async () => {
+    const contacts: Contact[] = [
+      c('sales', '07700900123'),
+      c('cricket', '07700900124', { tags: ['mvp cricket clubs'] }),
+      c('consulting', '07700900125', { tags: ['consulting'] }),
+      c('untagged', '07700900126', { tags: [] }),
+      c('archived', '07700900127', { status: 'archived' }),
+      c('merged', '07700900128', { merged_into: 'sales' }),
+    ]
+    lookupTps.mockImplementation(async (p) => clear(p))
+    const { client } = fakeDb(contacts)
+    const s = await screenContacts(client, contacts.map((x) => x.id), 'import')
+    expect(lookupTps).toHaveBeenCalledTimes(2)
+    expect(s).toMatchObject({ attempted: 2, clear: 2, outOfScope: 4, skipped: 0 })
+    expect(contacts.find((x) => x.id === 'consulting')?.ctps_checked_at).toBeNull()
+  })
+
   it('does not write a result onto a phone that changed mid-run', async () => {
-    const contacts: Contact[] = [{ id: 'a', phone: '07700900123', ctps_registered: null, ctps_checked_at: null }]
+    const contacts: Contact[] = [c('a', '07700900123')]
     lookupTps.mockImplementation(async () => {
       contacts[0].phone = '07700900999'
       return clear('447700900123')
