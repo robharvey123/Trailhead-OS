@@ -106,7 +106,7 @@ export default function OutcomeLogger({
                 setError(null)
                 setDone(null)
               }}
-              className={`rounded-md border px-2.5 py-1.5 text-xs font-semibold transition ${tone} ${
+              className={`tap rounded-md border px-2.5 py-1.5 text-xs font-semibold transition ${tone} ${
                 active ? 'bg-[var(--accent-strong)] text-white' : 'bg-[var(--surface)] text-[color:var(--text)] hover:bg-[var(--surface-2)]'
               }`}
             >

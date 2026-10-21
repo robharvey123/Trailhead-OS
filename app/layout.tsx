@@ -62,6 +62,11 @@ export const metadata: Metadata = {
     description: SITE_DEFAULTS.description,
     // Same reasoning as openGraph above — let the file convention supply it.
   },
+  appleWebApp: {
+    capable: true,
+    title: 'Trailhead OS',
+    statusBarStyle: 'default',
+  },
   robots: {
     index: true,
     follow: true,
@@ -70,7 +75,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     shortcut: '/icon.svg',
-    apple: '/apple-icon.svg',
+    // iPadOS/iOS Home Screen icons must be PNG; the SVG was ignored.
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   // Search Console HTML-tag verification. Set NEXT_PUBLIC_GSC_VERIFICATION to the
   // content value from the "HTML tag" method; omit the env var and no tag renders.
