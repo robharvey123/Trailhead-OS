@@ -8,6 +8,8 @@ import type {
   OutreachTemplate,
 } from '@/lib/types'
 
+import { getCallEligibility, NEEDS_SCREENING } from '@/lib/outreach/call-eligibility'
+
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 async function getSupabase(client?: SupabaseClient) {
@@ -151,12 +153,12 @@ export interface CallQueueRow {
 }
 
 /**
- * The follow-up call queue: recipients with at least one delivered-or-later send,
- * whose contact is callable. A number is callable ONLY if it has been CTPS-screened
- * (ctps_checked_at is not null) AND is not registered AND is not do_not_call.
- * Screening must have HAPPENED — an unscreened number is invisible here, never
- * callable, because calling a CTPS-registered number is a PECR reg 21 breach.
- * Earliest delivery first.
+ * The follow-up call queue: recipients with at least one delivered-or-later send
+ * whose contact passes the shared call-eligibility rule (lib/outreach/
+ * call-eligibility.ts): CTPS-screened within 28 days and clear, not
+ * do_not_call, not unsubscribed, not bounced, has a phone. Calling a
+ * CTPS-registered number is a PECR reg 21 breach, so anything the rule can't
+ * confirm is left out. Earliest delivery first.
  */
 export async function getCallQueue(client?: SupabaseClient): Promise<CallQueueRow[]> {
   const supabase = await getSupabase(client)
@@ -164,13 +166,10 @@ export async function getCallQueue(client?: SupabaseClient): Promise<CallQueueRo
     .from('outreach_recipients')
     .select(`
       id, contact_id, call_status, call_last_at,
-      contact:contacts!inner(id, name, company, phone, website, sub_trade, size_signal, do_not_call, ctps_registered, ctps_checked_at),
+      contact:contacts!inner(id, name, company, phone, website, sub_trade, size_signal),
       sends:outreach_sends!inner(status, delivered_at)
     `)
     .in('sends.status', ['delivered', 'opened', 'clicked'])
-    .not('contact.do_not_call', 'is', true)
-    .not('contact.ctps_registered', 'is', true)
-    .not('contact.ctps_checked_at', 'is', null)
 
   type Raw = {
     id: string
@@ -180,38 +179,45 @@ export async function getCallQueue(client?: SupabaseClient): Promise<CallQueueRo
     contact: { id: string; name: string; company: string | null; phone: string | null; website: string | null; sub_trade: string | null; size_signal: string | null }
     sends: Array<{ status: string; delivered_at: string | null }>
   }
-  const rows = ((data ?? []) as unknown as Raw[]).map((r) => {
-    const delivered = r.sends.map((s) => s.delivered_at).filter((d): d is string => Boolean(d)).sort()
-    return {
-      recipient_id: r.id,
-      contact_id: r.contact_id,
-      name: r.contact.name,
-      company: r.contact.company,
-      phone: r.contact.phone,
-      website: r.contact.website,
-      sub_trade: r.contact.sub_trade,
-      size_signal: r.contact.size_signal,
-      call_status: r.call_status,
-      call_last_at: r.call_last_at,
-      first_delivered_at: delivered[0] ?? null,
-    }
-  })
+  const raw = (data ?? []) as unknown as Raw[]
+  const eligibility = await getCallEligibility(supabase, raw.map((r) => r.contact_id))
+  const rows = raw
+    .filter((r) => eligibility.get(r.contact_id)?.eligible === true)
+    .map((r) => {
+      const delivered = r.sends.map((s) => s.delivered_at).filter((d): d is string => Boolean(d)).sort()
+      return {
+        recipient_id: r.id,
+        contact_id: r.contact_id,
+        name: r.contact.name,
+        company: r.contact.company,
+        phone: r.contact.phone,
+        website: r.contact.website,
+        sub_trade: r.contact.sub_trade,
+        size_signal: r.contact.size_signal,
+        call_status: r.call_status,
+        call_last_at: r.call_last_at,
+        first_delivered_at: delivered[0] ?? null,
+      }
+    })
   rows.sort((a, b) => (a.first_delivered_at ?? '').localeCompare(b.first_delivered_at ?? ''))
   return rows
 }
 
 /**
- * Delivered prospects that are NOT yet CTPS-screened (ctps_checked_at is null) and
- * aren't do_not_call. These are hidden from the call queue on purpose — the count
- * makes the compliance gap loud instead of silently swallowing contacts.
+ * Delivered prospects hidden from the call queue only because their CTPS screen
+ * is missing or older than 28 days (not do_not_call, unsubscribed or bounced).
+ * The count keeps the compliance gap loud instead of silently swallowing contacts.
  */
 export async function getUnscreenedCallCount(client?: SupabaseClient): Promise<number> {
   const supabase = await getSupabase(client)
   const { data } = await supabase
     .from('outreach_recipients')
-    .select('id, contact:contacts!inner(ctps_checked_at, do_not_call), sends:outreach_sends!inner(status)')
+    .select('contact_id, sends:outreach_sends!inner(status)')
     .in('sends.status', ['delivered', 'opened', 'clicked'])
-    .not('contact.do_not_call', 'is', true)
-    .is('contact.ctps_checked_at', null)
-  return (data ?? []).length
+  const ids = ((data ?? []) as Array<{ contact_id: string }>).map((r) => r.contact_id)
+  const eligibility = await getCallEligibility(supabase, ids)
+  return new Set(ids.filter((id) => {
+    const e = eligibility.get(id)
+    return e ? NEEDS_SCREENING.has(e.reason) : false
+  })).size
 }

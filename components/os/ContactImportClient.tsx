@@ -91,6 +91,8 @@ function autoMap(csvHeader: string): FieldKey | '' {
 
 type ImportResult = {
   inserted: number
+  /** Existing contacts whose CTPS result was applied (matched by email). */
+  updated?: number
   rejected: Array<{ row: number; reason: string }>
 }
 
@@ -652,6 +654,11 @@ export default function ContactImportClient({
                 <h2 className="text-lg font-semibold text-[color:var(--text)]">Import complete</h2>
                 <p className="mt-1 text-sm text-[color:var(--text-2)]">
                   {result.inserted} contact{result.inserted !== 1 && 's'} imported successfully.
+                  {(result.updated ?? 0) > 0 && (
+                    <span>
+                      {' '}CTPS result applied to {result.updated} existing contact{result.updated !== 1 && 's'}.
+                    </span>
+                  )}
                   {result.rejected.length > 0 && (
                     <span className="text-[color:var(--amber-strong)]">
                       {' '}{result.rejected.length} row{result.rejected.length !== 1 && 's'} rejected.
