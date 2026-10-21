@@ -105,7 +105,10 @@ function getOsRewritePath(pathname: string) {
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const isAppSubdomain = hostname.startsWith('app.')
-  const isLocalhost = isLocalDevelopmentHost(hostname)
+  // Vercel preview deployments (*.vercel.app) behave like localhost: the OS by
+  // default, the marketing site with ?site=marketing. Without this a preview
+  // only ever served marketing, so OS changes could not be checked before merge.
+  const isLocalhost = isLocalDevelopmentHost(hostname) || process.env.VERCEL_ENV === 'preview'
   const siteParam = request.nextUrl.searchParams.get('site')
   const isMarketingSite = isLocalhost
     ? siteParam === 'marketing'

@@ -1,7 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { resend, DEFAULT_RESEND_FROM } from '@/lib/email/resend'
 
-const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk').replace(/\/$/, '')
+// On a Vercel preview, links must open that preview (its branch alias), not
+// production, or a seat invited from a preview lands on code that isn't live.
+const APP_URL = (
+  process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_BRANCH_URL
+    ? `https://${process.env.VERCEL_BRANCH_URL}`
+    : process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk'
+).replace(/\/$/, '')
 export const SALES_WELCOME_PATH = '/sales/welcome'
 
 /** Roles a sales invite may (re)assign. Anything else is an existing staff login and is left alone. */
