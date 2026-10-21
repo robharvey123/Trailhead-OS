@@ -45,6 +45,9 @@ next-env.d.ts
 # Local CRM import data (contains contact PII — never commit)
 /data/*.xlsx
 /data/*.csv
+# Anything generated under data/ (e.g. scripts/export-ctps-screening.ts writes
+# data/ctps/*.csv with phone numbers).
+/data/**
 
 # Impeccable working evidence — review screenshots and served decision pages.
 # The durable records (DESIGN.md, PRODUCT.md, ASSETS.md, design.json, surfaces/)

@@ -42,6 +42,25 @@ function parseBool(value: unknown): boolean | null {
   return null
 }
 
+/**
+ * A CTPS screening result: registered true/false AND the date the number was
+ * screened (YYYY-MM-DD or ISO). Both are required, and the date can't be in
+ * the future, because a guessed or partial result would make a number look
+ * callable.
+ */
+function parseCtpsResult(row: ImportRow):
+  | { ok: true; registered: boolean; checkedAt: string }
+  | { ok: false; error: string } {
+  const registered = parseBool(row.ctps_registered)
+  const rawDate = sanitizeText(row.ctps_checked_at)
+  if (registered === null) return { ok: false, error: 'CTPS result needs ctps_registered (true/false)' }
+  if (!rawDate) return { ok: false, error: 'CTPS result needs ctps_checked_at (YYYY-MM-DD)' }
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? `${rawDate}T12:00:00Z` : rawDate)
+  if (Number.isNaN(d.getTime())) return { ok: false, error: `ctps_checked_at "${rawDate}" is not a date` }
+  if (d.getTime() > Date.now() + 24 * 60 * 60 * 1000) return { ok: false, error: `ctps_checked_at "${rawDate}" is in the future` }
+  return { ok: true, registered, checkedAt: d.toISOString() }
+}
+
 type ImportRow = {
   name?: string
   company?: string
@@ -145,10 +164,18 @@ export async function POST(request: NextRequest) {
   // Duplicate guard: pre-load existing contact emails (lowercased). Rows whose
   // email already exists are rejected rather than inserted a second time; the set
   // also grows as we insert, so duplicates within the same file are caught too.
-  const { data: existingContacts } = await auth.supabase.from('contacts').select('email').not('email', 'is', null)
+  const { data: existingContacts } = await auth.supabase.from('contacts').select('id, email, merged_into').not('email', 'is', null)
   const existingEmails = new Set((existingContacts ?? []).map((c) => (c.email as string).toLowerCase()))
+  // Live (unmerged) contacts by email, for the CTPS round-trip below.
+  const liveContactByEmail = new Map(
+    (existingContacts ?? [])
+      .filter((c) => !c.merged_into)
+      .map((c) => [(c.email as string).toLowerCase(), c.id as string]),
+  )
+  const seenInFile = new Set<string>()
 
   const inserted: Array<{ row: number; name: string; id: string }> = []
+  const updated: Array<{ row: number; name: string; id: string }> = []
   const rejected: Array<{ row: number; reason: string }> = []
 
   for (let i = 0; i < rows.length; i++) {
@@ -161,6 +188,29 @@ export async function POST(request: NextRequest) {
     }
 
     const emailLower = sanitizeText(row.email)?.toLowerCase() ?? null
+
+    // CTPS round-trip: a row whose email matches an existing contact and which
+    // carries screening results updates ONLY that contact's ctps_registered and
+    // ctps_checked_at. Every other column in the row is ignored for existing
+    // contacts, so a screening file can never overwrite CRM data.
+    const existingId = emailLower && !seenInFile.has(emailLower) ? liveContactByEmail.get(emailLower) : undefined
+    const hasCtps = Boolean(sanitizeText(row.ctps_registered) || sanitizeText(row.ctps_checked_at))
+    if (existingId && hasCtps) {
+      seenInFile.add(emailLower!)
+      const parsed = parseCtpsResult(row)
+      if (!parsed.ok) {
+        rejected.push({ row: i + 1, reason: parsed.error })
+        continue
+      }
+      const { error } = await auth.supabase
+        .from('contacts')
+        .update({ ctps_registered: parsed.registered, ctps_checked_at: parsed.checkedAt })
+        .eq('id', existingId)
+      if (error) rejected.push({ row: i + 1, reason: error.message })
+      else updated.push({ row: i + 1, name, id: existingId })
+      continue
+    }
+
     if (emailLower && existingEmails.has(emailLower)) {
       rejected.push({ row: i + 1, reason: 'duplicate email' })
       continue
@@ -179,6 +229,18 @@ export async function POST(request: NextRequest) {
       ? workstreamMap.get(row.workstream) ?? null
       : null
     const workstreamId = rowWorkstreamId || globalWorkstreamId
+
+    // New contacts may carry screening results too (e.g. reserves screened
+    // before import). Both CTPS columns or neither.
+    let newCtps: { registered: boolean | null; checkedAt: string | null } = { registered: null, checkedAt: null }
+    if (hasCtps) {
+      const parsed = parseCtpsResult(row)
+      if (!parsed.ok) {
+        rejected.push({ row: i + 1, reason: parsed.error })
+        continue
+      }
+      newCtps = { registered: parsed.registered, checkedAt: parsed.checkedAt }
+    }
 
     const resolvedAccountId = await resolveAccountId(row, workstreamId)
 
@@ -200,8 +262,8 @@ export async function POST(request: NextRequest) {
         website: sanitizeText(row.website),
         sub_trade: sanitizeText(row.sub_trade),
         size_signal: sanitizeText(row.size_signal),
-        ctps_registered: parseBool(row.ctps_registered),
-        ctps_checked_at: sanitizeText(row.ctps_checked_at),
+        ctps_registered: newCtps.registered,
+        ctps_checked_at: newCtps.checkedAt,
         status,
         notes: sanitizeText(row.notes),
         tags,
@@ -231,5 +293,5 @@ export async function POST(request: NextRequest) {
       .upsert(projectLinks, { onConflict: 'project_id,contact_id' })
   }
 
-  return NextResponse.json({ inserted: inserted.length, rejected }, { status: 201 })
+  return NextResponse.json({ inserted: inserted.length, updated: updated.length, rejected }, { status: 201 })
 }
