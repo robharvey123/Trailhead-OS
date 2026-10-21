@@ -16,7 +16,7 @@ const publicRoutes = [
   '/api/auth/google',
   '/api/auth/google/callback',
 ]
-const publicRoutePrefixes = ['/report', '/auth/claim', '/auth/confirm', '/auth/accept']
+const publicRoutePrefixes = ['/report', '/auth/claim', '/auth/confirm', '/auth/accept', '/auth/forgot']
 
 // The Sales Lead seat (profiles.role = 'sales') is deny-by-default: it may reach
 // only these prefixes (plus the public routes above). Everything else redirects

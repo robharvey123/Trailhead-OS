@@ -1,15 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { resend, DEFAULT_RESEND_FROM } from '@/lib/email/resend'
+import { appUrl } from '@/lib/auth/app-url'
 
-// On a Vercel preview, links must open that preview (its branch alias), not
-// production, or a seat invited from a preview lands on code that isn't live.
-// CLI preview deploys have no branch, so fall back to the deployment's own URL.
-const PREVIEW_HOST = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
-const APP_URL = (
-  process.env.VERCEL_ENV === 'preview' && PREVIEW_HOST
-    ? `https://${PREVIEW_HOST}`
-    : process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk'
-).replace(/\/$/, '')
 export const SALES_WELCOME_PATH = '/sales/welcome'
 
 /** Roles a sales invite may (re)assign. Anything else is an existing staff login and is left alone. */
@@ -80,7 +72,7 @@ export async function inviteSalesUser(input: { email: string; displayName: strin
   if (profileError) return { ok: false, error: `Could not set the Sales Lead role: ${profileError.message}` }
 
   const params = new URLSearchParams({ token_hash: gen.data.properties.hashed_token, type, next: SALES_WELCOME_PATH })
-  const link = `${APP_URL}/auth/confirm?${params.toString()}`
+  const link = `${appUrl()}/auth/confirm?${params.toString()}`
 
   let emailed = false
   if (resend) {

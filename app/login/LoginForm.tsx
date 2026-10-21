@@ -82,6 +82,10 @@ export default function LoginForm({ nextPath, initialMessage = null }: { nextPat
           </button>
         </form>
 
+        <p className="mt-4 text-center text-sm">
+          <a href="/auth/forgot" className="text-slate-300 hover:text-white">Forgot password?</a>
+        </p>
+
         {message ? (
           <p className="mt-4 text-sm text-slate-200">{message}</p>
         ) : null}
