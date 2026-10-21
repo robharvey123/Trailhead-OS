@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { isLocalDevelopmentHost } from '@/lib/site'
+import { safeEqual } from '@/lib/auth/safe-equal'
 
 const publicRoutes = [
   '/',
@@ -164,15 +165,19 @@ export async function middleware(request: NextRequest) {
         return url
       })()
     : null
+  // x-api-key-verified is only ever set by this middleware (below). Drop any
+  // copy the client sent so it can never reach getApiKeyAuth() forged.
+  const sanitisedHeaders = new Headers(request.headers)
+  sanitisedHeaders.delete('x-api-key-verified')
   const response = rewriteUrl
-    ? NextResponse.rewrite(rewriteUrl)
-    : NextResponse.next({ request })
+    ? NextResponse.rewrite(rewriteUrl, { request: { headers: sanitisedHeaders } })
+    : NextResponse.next({ request: { headers: sanitisedHeaders } })
 
   // API key bypass for programmatic access (e.g. cowork agent)
   // Early return before Supabase session check, signal downstream via header
   if (isApiRequest) {
     const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '')
-    if (apiKey && apiKey === process.env.COWORK_API_KEY) {
+    if (safeEqual(apiKey, process.env.COWORK_API_KEY)) {
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-api-key-verified', 'true')
       return NextResponse.next({ request: { headers: requestHeaders } })

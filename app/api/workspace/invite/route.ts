@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdminSession } from '@/lib/api/auth'
 
 const InviteSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -10,6 +11,8 @@ const InviteSchema = z.object({
 })
 
 export async function POST(request: Request) {
+  const gate = await requireAdminSession()
+  if (!gate.ok) return gate.response
   const body = await request.json().catch(() => null)
   const parsed = InviteSchema.safeParse(body)
   if (!parsed.success) {

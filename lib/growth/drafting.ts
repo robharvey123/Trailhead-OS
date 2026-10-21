@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/service'
 import { draftArticle } from '@/lib/growth/ai'
 import { pushToUser } from '@/lib/push/server'
 import type { SeoArticle, SeoArticleStatus, SeoBrief, SeoSite } from '@/lib/types'
+import { getOwnerUserId } from '@/lib/auth/owner'
 
 /**
  * Draft queue worker (growth-draft cron). One article per tick, claimed with a
@@ -96,8 +97,7 @@ export async function processDraftQueue(): Promise<DraftTickResult> {
 async function notifyDraftReady(articleId: string, siteId: string, title: string, siteName: string): Promise<void> {
   try {
     const supabase = createClient()
-    const { data } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1 })
-    const userId = data?.users?.[0]?.id
+    const userId = await getOwnerUserId(supabase)
     if (!userId) return
     await pushToUser(userId, {
       title: 'Draft ready to review',

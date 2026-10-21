@@ -3,6 +3,7 @@ import { syncAllGoogleAccounts } from '@/lib/google/calendar'
 import { syncAllMicrosoftAccounts } from '@/lib/microsoft/calendar'
 import { syncAllFeeds } from '@/lib/calendar/feeds'
 import { supabaseService } from '@/lib/supabase/service'
+import { getOwnerUserId } from '@/lib/auth/owner'
 
 export const maxDuration = 60
 
@@ -12,9 +13,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Look up the single user's ID for RLS-compatible inserts
-  const { data: users } = await supabaseService.auth.admin.listUsers({ perPage: 1 })
-  const userId = users?.users?.[0]?.id
+  // The OS owner's ID for RLS-compatible inserts
+  const userId = await getOwnerUserId(supabaseService)
 
   if (!userId) {
     return NextResponse.json({ error: 'No user found' }, { status: 500 })
