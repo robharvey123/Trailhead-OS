@@ -36,8 +36,8 @@ export default function SalesShell({
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[color:var(--text)]">
-      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--surface)]">
+    <div className="sales-shell min-h-screen bg-[var(--bg)] text-[color:var(--text)]">
+      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--surface)] pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <Link href="/sales/dashboard" className="text-sm font-semibold tracking-tight">
             Trailhead OS <span className="text-[color:var(--text-3)]">· Sales</span>
@@ -50,7 +50,7 @@ export default function SalesShell({
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`rounded-lg px-3 py-1.5 text-sm transition ${
+                  className={`tap inline-flex items-center rounded-lg px-3 py-1.5 text-sm transition ${
                     active
                       ? 'bg-[var(--surface-2)] font-medium text-[color:var(--text)]'
                       : 'text-[color:var(--text-2)] hover:bg-[var(--surface-2)]'
@@ -63,10 +63,10 @@ export default function SalesShell({
           </nav>
           <div className="flex items-center gap-3 text-sm text-[color:var(--text-2)]">
             {isOwnerView ? (
-              <Link href="/dashboard" className="hover:text-[color:var(--text)]">Back to OS</Link>
+              <Link href="/dashboard" className="tap inline-flex items-center hover:text-[color:var(--text)]">Back to OS</Link>
             ) : null}
             {displayName ? <span className="hidden sm:inline">{displayName}</span> : null}
-            <button type="button" onClick={signOut} className="rounded-lg px-2 py-1 hover:bg-[var(--surface-2)]">
+            <button type="button" onClick={signOut} className="tap rounded-lg px-2 py-1 hover:bg-[var(--surface-2)]">
               Sign out
             </button>
           </div>

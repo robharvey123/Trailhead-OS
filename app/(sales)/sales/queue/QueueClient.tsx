@@ -73,7 +73,7 @@ export default function QueueClient({ initialRows }: { initialRows: QueueRow[] }
                       <span>
                         Last: {r.lastTouch ? `${r.lastTouch.outcome_code ? OUTCOME_LABELS[r.lastTouch.outcome_code] : r.lastTouch.subject} ${fmt(r.lastTouch.occurred_at)}` : 'no touchpoints yet'}
                       </span>
-                      <Link href={`/sales/contacts/${r.id}`} className="hover:underline">Open record</Link>
+                      <Link href={`/sales/contacts/${r.id}`} className="tap inline-flex items-center hover:underline">Open record</Link>
                     </div>
                     {r.lastTouch?.body ? <p className="mt-1 line-clamp-2 text-xs text-[color:var(--text-3)]">{r.lastTouch.body}</p> : null}
                     {active ? (
@@ -81,7 +81,7 @@ export default function QueueClient({ initialRows }: { initialRows: QueueRow[] }
                         <OutcomeLogger contactId={r.id} onLogged={() => advance(r.id)} />
                       </div>
                     ) : (
-                      <button type="button" onClick={() => setActiveId(r.id)} className="mt-2 text-xs text-[color:var(--accent-strong)] hover:underline">
+                      <button type="button" onClick={() => setActiveId(r.id)} className="tap mt-2 text-xs text-[color:var(--accent-strong)] hover:underline">
                         Log an outcome
                       </button>
                     )}

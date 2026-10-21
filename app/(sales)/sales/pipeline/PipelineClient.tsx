@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 import {
   DndContext,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   useDraggable,
   useDroppable,
@@ -17,7 +18,7 @@ import { PIPELINE_STAGES, STAGE_LABELS, type PipelineContact, type PipelineStage
 
 type Card = PipelineContact
 
-function CardView({ c, dragging }: { c: Card; dragging?: boolean }) {
+function CardView({ c, dragging, onPick }: { c: Card; dragging?: boolean; onPick?: (to: PipelineStage) => void }) {
   return (
     <div className={`rounded-md border border-[var(--border)] bg-[var(--surface)] p-2.5 text-sm shadow-sm ${dragging ? 'opacity-60' : ''}`}>
       <Link href={`/sales/contacts/${c.id}`} className="font-medium hover:underline" onPointerDown={(e) => e.stopPropagation()}>
@@ -31,21 +32,38 @@ function CardView({ c, dragging }: { c: Card; dragging?: boolean }) {
       ) : null}
       {c.pipeline_stage === 'lost' && c.lost_reason ? <p className="mt-1 text-xs text-[color:var(--text-3)]">Lost: {c.lost_reason}</p> : null}
       {c.pipeline_stage === 'disqualified' && c.disqualified_reason ? <p className="mt-1 text-xs text-[color:var(--text-3)]">DQ: {c.disqualified_reason}</p> : null}
+      {onPick ? (
+        // Tap alternative to dragging (iPad, keyboard, screen readers).
+        <select
+          aria-label={`Move ${c.company ?? c.name} to`}
+          value=""
+          onPointerDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          onChange={(e) => {
+            if (e.target.value) onPick(e.target.value as PipelineStage)
+          }}
+          className="mt-2 w-full rounded border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[color:var(--text-2)]"
+        >
+          <option value="">Move to…</option>
+          {PIPELINE_STAGES.filter((s) => s !== c.pipeline_stage).map((s) => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
+        </select>
+      ) : null}
     </div>
   )
 }
 
-function DraggableCard({ c }: { c: Card }) {
+function DraggableCard({ c, onPick }: { c: Card; onPick: (to: PipelineStage) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: c.id })
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined
   return (
-    <li ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab touch-none list-none" aria-roledescription="Draggable contact">
-      <CardView c={c} dragging={isDragging} />
+    <li ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab touch-manipulation list-none" aria-roledescription="Draggable contact">
+      <CardView c={c} dragging={isDragging} onPick={onPick} />
     </li>
   )
 }
 
-function Column({ stage, cards }: { stage: PipelineStage; cards: Card[] }) {
+function Column({ stage, cards, onPick }: { stage: PipelineStage; cards: Card[]; onPick: (id: string, to: PipelineStage) => void }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage })
   return (
     <section
@@ -57,7 +75,7 @@ function Column({ stage, cards }: { stage: PipelineStage; cards: Card[] }) {
         {STAGE_LABELS[stage]} <span className="tabular-nums">{cards.length}</span>
       </h2>
       <ul className="flex min-h-24 flex-1 flex-col gap-2 px-2 pb-2">
-        {cards.map((c) => <DraggableCard key={c.id} c={c} />)}
+        {cards.map((c) => <DraggableCard key={c.id} c={c} onPick={(to) => onPick(c.id, to)} />)}
       </ul>
     </section>
   )
@@ -80,7 +98,13 @@ export default function PipelineClient({
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor))
+  // Touch (iPad): press and hold to drag, so a normal swipe still scrolls the
+  // board and the columns. Mouse: drag after a 6px move.
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+    useSensor(KeyboardSensor),
+  )
 
   const subTrades = useMemo(() => Array.from(new Set(contacts.map((c) => c.sub_trade).filter(Boolean) as string[])).sort(), [contacts])
 
@@ -107,17 +131,20 @@ export default function PipelineClient({
     })
   }
 
-  function onDragEnd(e: DragEndEvent) {
-    const id = String(e.active.id)
-    const to = e.over?.id as PipelineStage | undefined
+  function requestMove(id: string, to: PipelineStage) {
     const card = contacts.find((c) => c.id === id)
-    if (!to || !card || card.pipeline_stage === to) return
+    if (!card || card.pipeline_stage === to) return
     if (to === 'lost' || to === 'disqualified') {
       setPendingMove({ id, to })
       setReason('')
       return
     }
     move(id, to)
+  }
+
+  function onDragEnd(e: DragEndEvent) {
+    const to = e.over?.id as PipelineStage | undefined
+    if (to) requestMove(String(e.active.id), to)
   }
 
   const select = 'filter-select'
@@ -147,14 +174,14 @@ export default function PipelineClient({
             {subTrades.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
-        <span className="text-xs text-[color:var(--text-3)]">{visible.length} shown. Drag a card to change its stage.</span>
+        <span className="text-xs text-[color:var(--text-3)]">{visible.length} shown. Drag a card (press and hold on iPad) or use Move to.</span>
       </div>
       {error ? <p role="alert" className="text-sm text-[color:var(--red)]">{error}</p> : null}
 
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
         <div className="flex gap-3 overflow-x-auto pb-4">
           {PIPELINE_STAGES.map((stage) => (
-            <Column key={stage} stage={stage} cards={visible.filter((c) => c.pipeline_stage === stage)} />
+            <Column key={stage} stage={stage} cards={visible.filter((c) => c.pipeline_stage === stage)} onPick={requestMove} />
           ))}
         </div>
       </DndContext>
