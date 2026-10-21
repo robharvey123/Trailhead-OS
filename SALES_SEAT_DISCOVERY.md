@@ -372,3 +372,16 @@ Section 7, D8, covers which database the preview uses.
 - an `auth.uid() is null` bypass in `enforce_profile_role_change()`
 
 The Phase B migration brings the role-guard function into the repo so local and production match.
+
+## 9. Phase B verification on production (21 October 2026)
+
+- **Migrations:** all five applied to production through the Supabase connector and recorded in `supabase_migrations.schema_migrations`. Rob chose to rely on Supabase's daily backups plus a targeted rollback script (kept outside the repo in `~/Backups`) instead of a `pg_dump`. A rolled-back dry run against production came first.
+- **Anon key:** gets 401 from every gated view, `report_tokens`, the archive table, `contact_call_eligibility`, the merge RPC and `dm_directory`, and lists nothing in Storage.
+- **Rob's walkthrough on the deployed preview:** he invited a test seat (`robharvey123+salestest@gmail.com`). The scanner-safe link signed it in, the welcome page set its password and marked the invite claimed, and it landed on `/sales/dashboard`. The forgot-password flow also worked end to end for Rob's own login.
+- **RLS as that seat** (impersonated in a rolled-back transaction on production):
+  - it sees all 100 in-scope contacts and none outside the tags
+  - zero rows from invoices, invoice payments, expenses, time entries, engagements, accounts, enquiries, company settings, projects, people, raw campaigns, `account_overview`, `engagement_hours_by_month` and Storage
+  - it can read the campaign name, the 3 shared products and the 291 sends for its contacts
+  - updating or deleting contacts outside its scope affects 0 rows
+- **Not done, by Rob's decision:** the agent-driven browser walkthrough as the sales role on the preview (denied routes and APIs in the browser, notes and unsubscribe on a production contact). The same checks passed on the local stack, and the RLS layer is verified on production as above.
+- **Cleanup:** the test seat was downgraded to `contractor` afterwards.
