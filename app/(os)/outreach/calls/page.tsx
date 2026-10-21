@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCallQueue, getUnscreenedCallCount } from '@/lib/db/outreach'
 import { mockupFontVars } from '@/lib/fonts'
+import CtpsScreenButton from '@/components/os/CtpsScreenButton'
 import { logCallOutcome } from './actions'
 
 export const metadata = { title: 'Call queue | Trailhead OS' }
@@ -27,9 +28,12 @@ export default async function CallQueuePage() {
         </div>
 
         {unscreened > 0 ? (
-          <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 text-sm text-[color:var(--amber-strong)]">
-            ⚠ {unscreened} delivered {unscreened === 1 ? 'prospect is' : 'prospects are'} not CTPS-screened in the last 28 days and are hidden from this queue.
-            Screen the numbers, then import the results (CRM, Contacts, Import) before calling them.
+          <div className="space-y-3 rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 text-sm text-[color:var(--amber-strong)]">
+            <p>
+              ⚠ {unscreened} delivered {unscreened === 1 ? 'prospect is' : 'prospects are'} not CTPS-screened in the last 28 days and are hidden from this queue.
+              Numbers are screened automatically through Data Soap every night at 04:30 UTC, or screen them now.
+            </p>
+            <CtpsScreenButton />
           </div>
         ) : null}
 

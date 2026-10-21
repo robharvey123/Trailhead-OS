@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import { getApiKeyAuth } from '@/lib/api/auth'
 import { crmNormaliseName } from '@/lib/crm/normalise'
+import { screenContacts, type ScreenSummary } from '@/lib/ctps/screen'
+import { supabaseService } from '@/lib/supabase/service'
 import type { ContactStatus } from '@/lib/types'
 
 /** Per-company account decision from the import review step, keyed by normalised company. */
 type AccountDecision = { company_norm: string; action: 'link' | 'create' | 'skip'; account_id?: string; account_name?: string }
 
 const CONTACT_STATUSES = new Set<ContactStatus>(['lead', 'active', 'inactive', 'archived'])
+
+// New rows are CTPS-screened through Data Soap after the insert loop.
+export const maxDuration = 300
 
 async function getAuthenticatedSupabase() {
   const apiKeyAuth = await getApiKeyAuth()
@@ -175,6 +180,8 @@ export async function POST(request: NextRequest) {
   const seenInFile = new Set<string>()
 
   const inserted: Array<{ row: number; name: string; id: string }> = []
+  // Inserted without screening results in the file: screened via Data Soap below.
+  const toScreen: string[] = []
   const updated: Array<{ row: number; name: string; id: string }> = []
   const rejected: Array<{ row: number; reason: string }> = []
 
@@ -278,6 +285,7 @@ export async function POST(request: NextRequest) {
     } else {
       inserted.push({ row: i + 1, name, id: contact.id })
       if (emailLower) existingEmails.add(emailLower)
+      if (!newCtps.checkedAt && sanitizeText(row.phone)) toScreen.push(contact.id)
     }
   }
 
@@ -293,5 +301,17 @@ export async function POST(request: NextRequest) {
       .upsert(projectLinks, { onConflict: 'project_id,contact_id' })
   }
 
-  return NextResponse.json({ inserted: inserted.length, updated: updated.length, rejected }, { status: 201 })
+  // Rows that arrived with ctps_checked_at were screened externally and are left
+  // alone. A screening failure never fails the import: those contacts simply
+  // stay unscreened (uncallable) until the nightly ctps-screen cron.
+  let ctps: ScreenSummary | { error: string } | null = null
+  if (toScreen.length > 0) {
+    try {
+      ctps = await screenContacts(supabaseService, toScreen, 'import')
+    } catch (error) {
+      ctps = { error: error instanceof Error ? error.message : 'CTPS screening failed' }
+    }
+  }
+
+  return NextResponse.json({ inserted: inserted.length, updated: updated.length, rejected, ctps }, { status: 201 })
 }

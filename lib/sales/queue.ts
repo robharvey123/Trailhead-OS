@@ -272,7 +272,19 @@ export interface SalesDashboardData {
   lastWeek: WeekStats
   weekStartsAt: string
   funnel: Array<{ stage: PipelineStage; count: number }>
-  listHealth: { newRemaining: number; ctpsClear: number; screenedOver21Days: number; needsScreening: number }
+  listHealth: {
+    newRemaining: number
+    ctpsClear: number
+    screenedOver21Days: number
+    needsScreening: number
+    /**
+     * Latest lookup by the nightly ctps-screen cron. ctps_checks is service-role
+     * only, so this is null on the sales seat's own client.
+     */
+    lastScreenRunAt: string | null
+    /** TPS credits left on the Data Soap account; null when not configured or unreachable. */
+    datasoapTpsCredits: number | null
+  }
 }
 
 function emptyWeek(): WeekStats {
@@ -311,7 +323,13 @@ export async function getSalesDashboard(supabase: SupabaseClient, now: Date = ne
     if (code === 'LOST') w.lost++
   }
 
-  const eligibility = await getCallEligibility(supabase, ids)
+  const [eligibility, lastScreenRunAt, datasoapTpsCredits] = await Promise.all([
+    getCallEligibility(supabase, ids),
+    getLastCronScreenAt(supabase),
+    // Dynamic: client components import this module for its constants, and the
+    // Data Soap client must stay out of the browser bundle.
+    import('@/lib/ctps/datasoap').then((m) => m.getTpsCredits()),
+  ])
   const cutoff21 = now.getTime() - 21 * DAY
   const funnel = PIPELINE_STAGES.map((stage) => ({ stage, count: contacts.filter((c) => c.pipeline_stage === stage).length }))
   let ctpsClear = 0
@@ -335,6 +353,19 @@ export async function getSalesDashboard(supabase: SupabaseClient, now: Date = ne
       ctpsClear,
       screenedOver21Days,
       needsScreening,
+      lastScreenRunAt,
+      datasoapTpsCredits,
     },
   }
+}
+
+async function getLastCronScreenAt(supabase: SupabaseClient): Promise<string | null> {
+  const { data } = await supabase
+    .from('ctps_checks')
+    .select('checked_at')
+    .eq('source', 'cron')
+    .order('checked_at', { ascending: false })
+    .limit(1)
+    .maybeSingle<{ checked_at: string }>()
+  return data?.checked_at ?? null
 }
