@@ -295,6 +295,15 @@ create policy "authenticated full access" on invoices
 
 ---
 
+## Sales seat & CTPS (Oct 2026)
+
+- [x] One 28-day call-eligibility rule (`contact_call_eligibility`) and CSV screening round-trip
+- [x] Automatic CTPS/TPS screening via Data Soap: nightly `/api/cron/ctps-screen`, screen on import/`create_contact`/phone change, `ctps_checks` audit, "Screen now" on the call queue
+- [x] MCP `create_contact` (duplicate-safe, screens the phone on creation)
+> Note: Data Soap lookup path taken as `POST /v2` from the v2 docs summary (docs not reachable from the build sandbox); overridable with `DATASOAP_LOOKUP_PATH`. Confirm with the first live lookup.
+
+---
+
 ## Notes & decisions log
 
 > Agent: add timestamped notes here when you make a significant architectural decision or hit a blocker.

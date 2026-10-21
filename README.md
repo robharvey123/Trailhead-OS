@@ -81,6 +81,21 @@ Open `/workspace/:id/settings` to configure:
 2) Set environment variables (same as local) in the Vercel project settings.
 3) Cron schedules are read from `vercel.json`; pushes to `main` deploy automatically.
 
+## CTPS screening
+
+A number may only be phoned when it was screened against TPS/CTPS in the last 28 days and is clear (PECR reg 21). The rule lives in the view `contact_call_eligibility`; screening is automatic through the Data Soap validation API (`lib/ctps/datasoap.ts`, `lib/ctps/screen.ts`).
+
+- **Sales-list contacts only**: a contact is screened only when one of its tags starts with a `sales_scope_tag_prefixes` prefix (currently "Engineer OS", "MVP Cricket"; the sales seat's scope) and it is not archived. Consulting clients and other CRM contacts carry no sales tag, so they are never looked up and never cost a credit. To bring a contact into screening, give it a sales tag.
+- **Nightly**: `/api/cron/ctps-screen` runs at 04:30 UTC and screens up to 500 contacts from `contacts_needing_ctps` (sales-list, not archived, has a phone, not `do_not_call`, never screened or screened over 28 days ago), never-screened first. Each distinct number is looked up once per run.
+- **On creation**: the MCP `create_contact` tool and CSV import (`/api/contacts/import`) screen new numbers straight away. Imported rows that already carry `ctps_checked_at` are left as they are. `update_contact` re-screens a changed phone.
+- **Phone changes**: the trigger `trg_contacts_phone_change_resets_ctps` nulls `ctps_registered`/`ctps_checked_at` whenever `phone` changes, so a new number is unscreened (uncallable) until it is checked.
+- **Manual**: "Screen now" on Outreach, Call queue (admin only, `POST /api/outreach/ctps/screen`).
+- **Failures** leave the contact unscreened, which is the safe state; the next nightly run retries it.
+- **Audit**: every paid lookup (and every failed one) is a row in `ctps_checks` (service role only): raw and normalised number, `tps`, `ctps`, credits, error code, source, timestamp. This is the PECR evidence.
+- **Credits**: the sales dashboard (`sales_dashboard` MCP tool) shows `datasoapTpsCredits` and `lastScreenRunAt`. If a run hits Data Soap -98 (no credit) or the token/account is rejected, the run stops and an email goes to `NOTIFICATION_EMAIL`. Top up TPS credits in the Data Soap account; the next nightly run carries on. To run it straight away: `curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/ctps-screen`.
+- **Sales seat**: `contacts_sales_guard` stops the seat changing `ctps_*`, `phone` or `email`, or clearing `do_not_call`. It can set `do_not_call`. It cannot trigger screening.
+- **Env**: `DATASOAP_API_TOKEN` (required), `DATASOAP_API_URL` (default `https://api.datasoap.co.uk/v2`), `DATASOAP_LOOKUP_PATH` (default empty: the lookup is `POST /v2`).
+
 ## Conventional commits
 
 Use Conventional Commits for all changes:

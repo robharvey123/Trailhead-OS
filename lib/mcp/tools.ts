@@ -30,7 +30,8 @@ import {
   formatAccount,
 } from '@/lib/cowork-api'
 import { createCoworkAccount, updateCoworkAccount } from '@/lib/cowork-accounts'
-import { updateCoworkContact } from '@/lib/cowork-contacts'
+import { createProspectContact, updateCoworkContact } from '@/lib/cowork-contacts'
+import { screenContacts } from '@/lib/ctps/screen'
 import { updateCoworkCalendarEvent } from '@/lib/cowork-calendar'
 import { updateCoworkEnquiry } from '@/lib/cowork-enquiries'
 import { updateCoworkSettings } from '@/lib/cowork-settings'
@@ -1156,7 +1157,71 @@ export const updateContactTool = defineTool({
     do_not_email: z.boolean().optional(),
     do_not_call: z.boolean().optional(),
   }),
-  handler: async ({ id, ...rest }) => updateCoworkContact(id, definedOnly(rest)),
+  handler: async ({ id, ...rest }) => {
+    const before = rest.phone !== undefined ? await contactCtps(id) : null
+    const contact = await updateCoworkContact(id, definedOnly(rest))
+    // A new number was nulled to unscreened by trg_contacts_phone_change_resets_ctps;
+    // screen it now rather than waiting for the nightly run.
+    if (before && contact.phone && contact.phone !== before.phone) {
+      await screenContacts(supabaseService, [id], 'mcp').catch(() => null)
+      return { ...contact, ctps: await contactCtps(id).then((c) => c.ctps) }
+    }
+    return contact
+  },
+})
+
+/** A contact's phone and CTPS result: { registered, checked_at }, or null when unscreened. */
+async function contactCtps(id: string) {
+  const { data, error } = await supabaseService
+    .from('contacts')
+    .select('phone, ctps_registered, ctps_checked_at')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  const row = data as { phone: string | null; ctps_registered: boolean | null; ctps_checked_at: string | null } | null
+  return {
+    phone: row?.phone ?? null,
+    ctps: row?.ctps_checked_at && row.ctps_registered !== null
+      ? { registered: row.ctps_registered, checked_at: row.ctps_checked_at }
+      : null,
+  }
+}
+
+export const createContactTool = defineTool({
+  name: 'create_contact',
+  description:
+    'Create a prospect contact (the thing outreach campaigns and the sales call queue run on; accounts are a different, billing-level object). Duplicate-safe: a case-insensitive email match, or a (company, normalised phone) match, returns the existing row (existing:true) and creates nothing. For a sales-list prospect (tags starting with a sales scope prefix such as "Engineer OS" or "MVP Cricket") the phone is CTPS/TPS screened immediately via Data Soap so the contact becomes callable without a manual CSV; the result is returned as ctps: { registered, checked_at } or ctps: null if screening was not possible (it will be picked up by the nightly screen). Contacts without a sales tag (e.g. consulting clients) are never screened and never appear on the call queue. Fields: name (required), company, email, email_greeting, phone, role, website, city, postcode, country, channel, sub_trade, size_signal, status (lead|active|inactive|archived, default lead), notes, tags (string[]), workstream (slug, resolved like create_account), account_name (optional; linked via find-or-create account by case-insensitive name).',
+  inputSchema: z.object({
+    name: z.string().min(1),
+    company: z.string().nullable().optional(),
+    email: z.string().email().nullable().optional(),
+    email_greeting: z.string().nullable().optional(),
+    phone: z.string().nullable().optional(),
+    role: z.string().nullable().optional(),
+    website: z.string().nullable().optional(),
+    city: z.string().nullable().optional(),
+    postcode: z.string().nullable().optional(),
+    country: z.string().nullable().optional(),
+    channel: z.string().nullable().optional(),
+    sub_trade: z.string().nullable().optional(),
+    size_signal: z.string().nullable().optional(),
+    status: z.enum(['lead', 'active', 'inactive', 'archived']).optional(),
+    notes: z.string().nullable().optional(),
+    tags: z.array(z.string()).optional(),
+    workstream: z.string().nullable().optional().describe('workstream slug'),
+    account_name: z.string().nullable().optional(),
+  }),
+  handler: async (input) => {
+    const result = await createProspectContact(definedOnly(input))
+    const id = result.contact.id
+    if (!result.existing && result.contact.phone) {
+      // Never fail the create over screening: unscreened stays uncallable and
+      // the nightly ctps-screen cron retries it.
+      await screenContacts(supabaseService, [id], 'mcp').catch(() => null)
+    }
+    const { ctps } = await contactCtps(id)
+    return { id, existing: result.existing, ctps, contact: result.contact }
+  },
 })
 
 export const updateCalendarEventTool = defineTool({
@@ -1421,7 +1486,7 @@ export const setPipelineStageTool = defineTool({
 export const salesDashboardTool = defineTool({
   name: 'sales_dashboard',
   description:
-    'Sales dashboard for this week and last week (Monday start, Europe/London): dials, conversations (CONV+DEMO+TRIAL+WON), demos booked, demos run, trials, won, lost; the stage funnel; and list health (new remaining, CTPS-clear, screened over 21 days ago, needs screening).',
+    'Sales dashboard for this week and last week (Monday start, Europe/London): dials, conversations (CONV+DEMO+TRIAL+WON), demos booked, demos run, trials, won, lost; the stage funnel; and list health (new remaining, CTPS-clear, screened over 21 days ago, needs screening, last nightly CTPS screen run, Data Soap TPS credits left).',
   inputSchema: z.object({}),
   handler: async () => getSalesDashboard(supabaseService),
 })
@@ -1500,6 +1565,7 @@ export const tools: McpTool[] = [
   findAccountTool,
   createAccountTool,
   updateAccountTool,
+  createContactTool,
   updateContactTool,
   updateCalendarEventTool,
   updateEnquiryTool,

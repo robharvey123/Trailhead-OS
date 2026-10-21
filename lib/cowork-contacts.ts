@@ -12,7 +12,9 @@ import {
   parseTags,
   requiredString,
 } from '@/lib/cowork-api'
+import { createCoworkAccount } from '@/lib/cowork-accounts'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
+import { normaliseUkPhone } from '@/lib/ctps/datasoap'
 import { supabaseService } from '@/lib/supabase/service'
 
 /**
@@ -112,6 +114,118 @@ export async function createCoworkContact(body: Record<string, unknown>) {
     payload: body,
   })
   return contact
+}
+
+/** Escape LIKE wildcards so an ilike match is an exact case-insensitive match. */
+function likeExact(value: string) {
+  return value.replace(/[\\%_]/g, (c) => `\\${c}`)
+}
+
+/** Compare phones as UK numbers when they are, else as bare digits. */
+function phoneKey(phone: string | null | undefined) {
+  if (!phone?.trim()) return null
+  return normaliseUkPhone(phone) ?? (phone.replace(/\D/g, '') || null)
+}
+
+/**
+ * The live (unmerged) contact a new prospect would duplicate: same email
+ * (case-insensitive), or same company (case-insensitive) and same phone.
+ */
+async function findDuplicateContact(email: string | null, company: string | null, phone: string | null) {
+  if (email) {
+    const { data, error } = await supabaseService
+      .from('contacts')
+      .select('id, email')
+      .is('merged_into', null)
+      .ilike('email', likeExact(email))
+    if (error) throw new CoworkApiError(error.message || 'Failed to check for duplicates', 500)
+    const hit = ((data ?? []) as Array<{ id: string; email: string | null }>).find(
+      (c) => c.email?.trim().toLowerCase() === email.toLowerCase(),
+    )
+    if (hit) return hit.id
+  }
+  const key = phoneKey(phone)
+  if (company && key) {
+    const { data, error } = await supabaseService
+      .from('contacts')
+      .select('id, company, phone')
+      .is('merged_into', null)
+      .ilike('company', likeExact(company))
+    if (error) throw new CoworkApiError(error.message || 'Failed to check for duplicates', 500)
+    const hit = ((data ?? []) as Array<{ id: string; company: string | null; phone: string | null }>).find(
+      (c) => c.company?.trim().toLowerCase() === company.toLowerCase() && phoneKey(c.phone) === key,
+    )
+    if (hit) return hit.id
+  }
+  return null
+}
+
+/**
+ * MCP `create_contact`: a sales prospect (outreach and the call queue run on
+ * contacts). Duplicate-safe: an email match, or a company + phone match,
+ * returns the existing contact with `existing: true` and creates nothing.
+ * Column set matches /api/contacts/import. `account_name` finds or creates the
+ * account (case-insensitive, via createCoworkAccount). CTPS screening is the
+ * caller's job (it needs the new id).
+ */
+export async function createProspectContact(body: Record<string, unknown>) {
+  const name = requiredString(body.name, 'name')
+  const email = optionalString(body.email)
+  const company = optionalString(body.company)
+  const phone = optionalString(body.phone)
+
+  const duplicateId = await findDuplicateContact(email, company, phone)
+  if (duplicateId) return { existing: true as const, contact: formatContact(await getContactById(duplicateId)) }
+
+  const workstreamSlug = optionalString(body.workstream)
+  const workstreamId = workstreamSlug ? (await getWorkstreamBySlug(workstreamSlug)).id : null
+
+  let accountId: string | null = null
+  const accountName = optionalString(body.account_name)
+  if (accountName) {
+    const { account } = await createCoworkAccount({ name: accountName, status: 'prospect', workstream: workstreamSlug })
+    accountId = account.id
+  }
+
+  const country = optionalString(body.country)
+  const { data, error } = await supabaseService
+    .from('contacts')
+    .insert({
+      name,
+      company,
+      email,
+      email_greeting: optionalString(body.email_greeting),
+      phone,
+      role: optionalString(body.role),
+      city: optionalString(body.city),
+      postcode: optionalString(body.postcode),
+      ...(country ? { country } : {}), // else the column default ('UK')
+      channel: optionalString(body.channel),
+      website: optionalString(body.website),
+      sub_trade: optionalString(body.sub_trade),
+      size_signal: optionalString(body.size_signal),
+      ctps_registered: null,
+      ctps_checked_at: null,
+      status: parseContactStatus(body.status),
+      notes: optionalString(body.notes),
+      tags: parseTags(body.tags) ?? [],
+      account_id: accountId,
+      workstream_id: workstreamId,
+    })
+    .select(CONTACT_SELECT)
+    .single()
+  if (error) throw new CoworkApiError(error.message || 'Failed to create contact', 500)
+
+  const contact = formatContact(data as never)
+  void recordCoworkWrite({
+    action: 'create',
+    entity: 'contact',
+    entityId: contact.id,
+    entityLabel: contact.name,
+    summary: `Created prospect "${contact.name}"${contact.company ? ` at ${contact.company}` : ''}`,
+    payload: body,
+  })
+  return { existing: false as const, contact }
 }
 
 /** PATCH /api/cowork/crm/[id] and the MCP `update_contact` tool. */

@@ -179,6 +179,7 @@ async function main() {
     'update_time_entry',
     'create_engagement',
     'update_engagement',
+    'create_contact',
   ]) {
     ok(`tools/list includes ${expected}`, names.includes(expected))
   }
