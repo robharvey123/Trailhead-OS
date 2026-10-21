@@ -215,6 +215,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: '/crm/meetings', label: 'Meetings', icon: <IconMeetings className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/meetings') },
       { href: '/deals', label: 'Deals', icon: <IconDeals className={ICON_CLASS} />, match: (p) => p.startsWith('/deals') },
       { href: '/outreach', label: 'Outreach', icon: <IconOutreach className={ICON_CLASS} />, match: (p) => p.startsWith('/outreach') },
+      { href: '/sales/dashboard', label: 'Sales seat', icon: <IconContacts className={ICON_CLASS} />, match: (p) => p.startsWith('/sales') },
       { href: '/enquiries', label: 'Enquiries', icon: <IconEnquiries className={ICON_CLASS} />, match: (p) => p.startsWith('/enquiries'), badgeKey: 'enquiries' },
     ],
   },

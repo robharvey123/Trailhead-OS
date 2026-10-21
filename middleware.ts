@@ -16,7 +16,14 @@ const publicRoutes = [
   '/api/auth/google',
   '/api/auth/google/callback',
 ]
-const publicRoutePrefixes = ['/report', '/auth/claim']
+const publicRoutePrefixes = ['/report', '/auth/claim', '/auth/confirm', '/auth/accept', '/auth/forgot']
+
+// The Sales Lead seat (profiles.role = 'sales') is deny-by-default: it may reach
+// only these prefixes (plus the public routes above). Everything else redirects
+// to its dashboard, or 403s for /api. RLS is the real control; this keeps the
+// seat off the 30-odd service-role API routes and every finance page.
+const SALES_ALLOWED_PREFIXES = ['/sales', '/api/sales', '/auth', '/logout']
+const SALES_HOME = '/sales/dashboard'
 // /api/cron/* is invoked by Vercel Cron with no session cookie, so the middleware
 // must not redirect it to /login (that 307 silently blocked every cron since the
 // middleware shipped). Each cron route enforces its own CRON_SECRET check.
@@ -98,7 +105,10 @@ function getOsRewritePath(pathname: string) {
 export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const isAppSubdomain = hostname.startsWith('app.')
-  const isLocalhost = isLocalDevelopmentHost(hostname)
+  // Vercel preview deployments (*.vercel.app) behave like localhost: the OS by
+  // default, the marketing site with ?site=marketing. Without this a preview
+  // only ever served marketing, so OS changes could not be checked before merge.
+  const isLocalhost = isLocalDevelopmentHost(hostname) || process.env.VERCEL_ENV === 'preview'
   const siteParam = request.nextUrl.searchParams.get('site')
   const isMarketingSite = isLocalhost
     ? siteParam === 'marketing'
@@ -220,14 +230,30 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
+  const role = user
+    ? ((await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()).data?.role as string | undefined)
+    : undefined
+
+  if (user && role === 'sales') {
+    const inAllowedPrefix = SALES_ALLOWED_PREFIXES.some(
+      (route) => pathname === route || pathname.startsWith(`${route}/`)
+    )
+    // '/' and '/login' are public routes, but the seat's home is its dashboard.
+    if (pathname === '/' || pathname === '/login' || (!inAllowedPrefix && !isPublic)) {
+      if (isApiRequest) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+      return NextResponse.redirect(new URL(SALES_HOME, request.url))
+    }
+    return response
+  }
+
   if (user && pathname === '/login') {
     return NextResponse.redirect(new URL('/workspaces', request.url))
   }
 
   // Admin-only area: only owner/admin profiles may enter /admin/*.
   if (user && (pathname === '/admin' || pathname.startsWith('/admin/'))) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-    const role = profile?.role
     if (role !== 'owner' && role !== 'admin') {
       return NextResponse.redirect(new URL('/', request.url))
     }

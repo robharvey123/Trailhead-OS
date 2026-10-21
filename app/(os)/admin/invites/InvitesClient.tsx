@@ -24,24 +24,29 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
   const [personPick, setPersonPick] = useState('')
   const [newName, setNewName] = useState('')
   const [newRate, setNewRate] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [createdLink, setCreatedLink] = useState<{ link: string; emailed: boolean } | null>(null)
+  const [createdLink, setCreatedLink] = useState<{ link: string; emailed: boolean; kind: 'claim' | 'sales_link' } | null>(null)
+  const isSales = role === 'sales'
   const [copied, setCopied] = useState(false)
 
   async function submit() {
     if (!email.trim()) { setError('Email is required.'); return }
-    if (personPick === '__new__' && !newName.trim()) { setError('New person needs a name.'); return }
+    if (!isSales && personPick === '__new__' && !newName.trim()) { setError('New person needs a name.'); return }
     setBusy(true); setError(''); setCreatedLink(null)
     try {
       const res = await createInvite({
         email: email.trim(),
         role,
-        personId: personPick && personPick !== '__new__' ? personPick : undefined,
-        newPerson: personPick === '__new__' ? { fullName: newName.trim(), defaultRate: newRate ? Number(newRate) : undefined } : undefined,
+        // The Sales Lead seat is never linked to a person (no engagement/time access).
+        personId: !isSales && personPick && personPick !== '__new__' ? personPick : undefined,
+        newPerson: !isSales && personPick === '__new__' ? { fullName: newName.trim(), defaultRate: newRate ? Number(newRate) : undefined } : undefined,
+        displayName: isSales ? displayName.trim() || undefined : undefined,
       })
-      setCreatedLink({ link: res.link, emailed: res.emailed })
-      setEmail(''); setPersonPick(''); setNewName(''); setNewRate('')
+      if (!res.ok) { setError(res.error); return }
+      setCreatedLink({ link: res.link, emailed: res.emailed, kind: res.kind })
+      setEmail(''); setPersonPick(''); setNewName(''); setNewRate(''); setDisplayName('')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create invite')
@@ -91,7 +96,16 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
               </select>
             </div>
           </div>
-          <div style={{ marginTop: 12 }}>
+          {isSales ? (
+            <div style={{ marginTop: 12 }}>
+              <label className={label}>Display name</label>
+              <input className={input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Francesca Harvey" />
+              <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 6 }}>
+                Sales Lead: sees /sales only (queue, pipeline, dashboard) and only contacts tagged for sales campaigns. They get an emailed sign-in link and choose a password on first sign-in. Inviting the same email again sends a fresh link.
+              </p>
+            </div>
+          ) : null}
+          <div style={{ marginTop: 12, display: isSales ? 'none' : undefined }}>
             <label className={label}>Link to person</label>
             <select className={input} value={personPick} onChange={(e) => setPersonPick(e.target.value)}>
               <option value="">— none</option>
@@ -99,7 +113,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
               <option value="__new__">➕ Create new person…</option>
             </select>
           </div>
-          {personPick === '__new__' ? (
+          {!isSales && personPick === '__new__' ? (
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
               <div><label className={label}>Full name *</label><input className={input} value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
               <div><label className={label}>Default rate £/h</label><input className={input} type="number" value={newRate} onChange={(e) => setNewRate(e.target.value)} placeholder="optional" /></div>
@@ -113,12 +127,17 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
           {createdLink ? (
             <div style={{ marginTop: 14, padding: 12, borderRadius: 6, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
               <p style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 6 }}>
-                Invite created{createdLink.emailed ? ' and emailed' : ' (email not sent — share this link)'}. Claim link:
+                {createdLink.kind === 'sales_link'
+                  ? (createdLink.emailed ? 'Sales Lead login ready and sign-in link emailed. ' : 'Sales Lead login ready, but the email did not send. Share this one-time sign-in link privately: ')
+                  : `Invite created${createdLink.emailed ? ' and emailed' : ' (email not sent, so share this link)'}. Claim link:`}
               </p>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input className={input} readOnly value={createdLink.link} onFocus={(e) => e.currentTarget.select()} />
-                <button className="btn btn-ghost btn-sm" onClick={copyLink}>{copied ? 'Copied' : 'Copy'}</button>
-              </div>
+              {/* An emailed Sales Lead link signs in as that person, so it isn't shown. */}
+              {createdLink.kind === 'sales_link' && createdLink.emailed ? null : (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input className={input} readOnly value={createdLink.link} onFocus={(e) => e.currentTarget.select()} />
+                  <button className="btn btn-ghost btn-sm" onClick={copyLink}>{copied ? 'Copied' : 'Copy'}</button>
+                </div>
+              )}
             </div>
           ) : null}
         </div>
