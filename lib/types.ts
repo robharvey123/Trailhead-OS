@@ -310,16 +310,17 @@ export interface EngagementInput {
 
 // ── Auth, roles & invites ──────────────────────────────
 
-export type UserRole = 'owner' | 'admin' | 'employee' | 'contractor'
+export type UserRole = 'owner' | 'admin' | 'employee' | 'contractor' | 'sales'
 
 /** Roles an admin is allowed to assign via the invite UI (owner is DB-only). */
-export const ASSIGNABLE_ROLES: UserRole[] = ['admin', 'employee', 'contractor']
+export const ASSIGNABLE_ROLES: UserRole[] = ['admin', 'employee', 'contractor', 'sales']
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   owner: 'Owner',
   admin: 'Admin',
   employee: 'Employee',
   contractor: 'Contractor',
+  sales: 'Sales Lead',
 }
 
 export interface NotificationSettings {

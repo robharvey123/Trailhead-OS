@@ -27,6 +27,10 @@ export async function getRoleForUser(userId: string, client?: SupabaseClient): P
 }
 
 export const roleIsAdmin = (role: UserRole | null | undefined) => !!role && ADMIN_ROLES.includes(role)
+/** The Sales Lead seat: /sales only, scoped contacts only (enforced in RLS and middleware). */
+export const roleIsSales = (role: UserRole | null | undefined) => role === 'sales'
+/** Who may open /sales: the seat itself, plus owner/admin (to see what it sees). */
+export const roleCanUseSales = (role: UserRole | null | undefined) => roleIsSales(role) || roleIsAdmin(role)
 export const roleIsEmployee = (role: UserRole | null | undefined) => !!role && EMPLOYEE_ROLES.includes(role)
 
 export async function isAdmin(client?: SupabaseClient): Promise<boolean> {
