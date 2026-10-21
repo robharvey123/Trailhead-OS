@@ -83,6 +83,17 @@ back as a tool result with `isError: true` and a human-readable message.
 | `add_note` | **`task_id`**, `title?`, `body?` | created note |
 | `briefing` | — | today's brief (tasks, calendar, enquiries, invoices) |
 
+### Sales pipeline tools
+
+These act as Rob (the owner) and refuse any contact that isn't on a sales list, meaning a tag starting `Engineer OS` or `MVP Cricket`. The stage rules live in the database functions `log_sales_outcome` and `set_pipeline_stage`, shared with `/sales`.
+
+| Tool | Input (required **bold**) | Returns |
+|---|---|---|
+| `log_call_outcome` | **`contact_id`**, **`outcome_code`** (`NA` `VM` `GK` `CB` `CONV` `DEMO` `TRIAL` `WON` `DQ` `LOST`), `summary?` (required for CONV/DEMO/DQ/LOST), `next_action_at?` (required for CB), `next_action_note?`, `duration_seconds?`, `channel?`, `reason?` (required for DQ/LOST) | `{ touchpoint_id, stage_before, stage_after, next_action_at, calendar_event_id }` |
+| `set_pipeline_stage` | **`contact_id`**, **`stage`**, `reason?` (required for disqualified/lost) | `{ stage_before, stage_after, changed }` |
+| `sales_dashboard` | none | this week and last week tiles, stage funnel, list health |
+| `list_queue` | `user_id?`, `limit?` | `{ count, rows[] }`: today's queue in order, CTPS-clear numbers only |
+
 ### Enums
 - project `status`: `planning` · `active` · `on_hold` · `completed` · `cancelled`
 - engagement task `status`: `backlog` · `in_progress` · `review` · `done` · `cancelled`
