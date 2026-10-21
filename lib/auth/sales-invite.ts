@@ -3,9 +3,11 @@ import { resend, DEFAULT_RESEND_FROM } from '@/lib/email/resend'
 
 // On a Vercel preview, links must open that preview (its branch alias), not
 // production, or a seat invited from a preview lands on code that isn't live.
+// CLI preview deploys have no branch, so fall back to the deployment's own URL.
+const PREVIEW_HOST = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
 const APP_URL = (
-  process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_BRANCH_URL
-    ? `https://${process.env.VERCEL_BRANCH_URL}`
+  process.env.VERCEL_ENV === 'preview' && PREVIEW_HOST
+    ? `https://${PREVIEW_HOST}`
     : process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.trailheadholdings.uk'
 ).replace(/\/$/, '')
 export const SALES_WELCOME_PATH = '/sales/welcome'
