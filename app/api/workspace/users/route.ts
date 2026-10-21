@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import type { User } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdminSession } from '@/lib/api/auth'
 
 const QuerySchema = z.object({ workspaceId: z.string().uuid() })
 const ChangePasswordSchema = z.object({ userId: z.string(), password: z.string().min(6) })
@@ -12,6 +13,8 @@ type WorkspaceMemberRow = {
 }
 
 export async function GET(request: Request) {
+  const gate = await requireAdminSession()
+  if (!gate.ok) return gate.response
   const { searchParams } = new URL(request.url)
   const workspaceId = searchParams.get('workspaceId')
   const parsed = QuerySchema.safeParse({ workspaceId })
@@ -41,6 +44,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const gate = await requireAdminSession()
+  if (!gate.ok) return gate.response
   const body = await request.json().catch(() => null)
   const parsed = ChangePasswordSchema.safeParse(body)
   if (!parsed.success) {

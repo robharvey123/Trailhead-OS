@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/service'
 import { getCompetitorBacklinks } from '@/lib/growth/dataforseo'
 import { pushToUser } from '@/lib/push/server'
+import { getOwnerUserId } from '@/lib/auth/owner'
 
 /**
  * Link building on the CRM's rails (Growth Phase 5). A prospect's company is a
@@ -106,8 +107,7 @@ export async function importLinkProspects(
 export async function notifyLinkWon(siteName: string, domain: string, wonUrl: string): Promise<void> {
   try {
     const supabase = createClient()
-    const { data } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1 })
-    const userId = data?.users?.[0]?.id
+    const userId = await getOwnerUserId(supabase)
     if (!userId) return
     await pushToUser(userId, {
       title: `Link won for ${siteName} 🎉`,

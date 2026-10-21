@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { DashboardCharts, DashboardInsights } from '@/app/(app)/workspace/[workspaceId]/dashboard/charts-lazy'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/format'
@@ -77,19 +76,6 @@ type MonthlySummary = {
   totalShipped: number
   sellOut: number
   variance: number
-}
-
-function createAnonClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    }
-  )
 }
 
 function buildMonthlyMap(
@@ -214,8 +200,10 @@ export default async function PublicReportPage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
-  const anonSupabase = createAnonClient()
-  const { data: tokenRow, error: tokenError } = await anonSupabase
+  // Token lookup uses the service role: anon has no access to report_tokens,
+  // so the table can't be enumerated with the public key.
+  const adminSupabase = createAdminClient()
+  const { data: tokenRow, error: tokenError } = await adminSupabase
     .from('report_tokens')
     .select('id, workspace_id, label, expires_at')
     .eq('token', token)
@@ -231,8 +219,6 @@ export default async function PublicReportPage({
   if (expired) {
     return <ExpiredReportPage />
   }
-
-  const adminSupabase = createAdminClient()
 
   const { data: workspace } = await adminSupabase
     .from('workspaces')
