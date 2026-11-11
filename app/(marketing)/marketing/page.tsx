@@ -30,13 +30,8 @@ export const metadata: Metadata = buildMetadata({
 /**
  * The two doors. Consulting and software builds are separate businesses with
  * separate buyers, so the homepage's only job is to establish who Trailhead is
- * and get the visitor into the right track.
- *
- * Under the bay plan each door is a brand block: a full facing of one keyed
- * colour standing hard against its neighbour, exactly as two brands sit
- * adjacent in a bay. The price flash never prints on the block itself — it
- * prints on the white shelf-edge ticket at its foot, which is both where it
- * belongs physically and the only place red stays legible against yellow.
+ * and get the visitor into the right track. The two cards overlap the foot of
+ * the hero, so they are the first thing on the page after the statement.
  */
 const doors = [
   {
@@ -52,10 +47,8 @@ const doors = [
       'Interim commercial leadership while you hire',
     ],
     href: '/consulting',
-    cta: 'Enter Trailhead Commercial',
+    cta: 'Explore Trailhead Commercial',
     meta: 'SINCE 2013 · 6 MARKETS',
-    key: 'var(--key-com)',
-    keyInk: '#ffffff',
   },
   {
     code: 'SEL-02',
@@ -71,11 +64,16 @@ const doors = [
       'Rebuilds of ageing sites for speed, search and maintainability',
     ],
     href: '/studio',
-    cta: 'Enter Trailhead Studio',
+    cta: 'Explore Trailhead Studio',
     meta: 'BUILT IN-HOUSE · YOU OWN THE CODE',
-    key: 'var(--key-studio)',
-    keyInk: 'var(--ink)',
   },
+]
+
+/** Facts only, each already stated elsewhere on the site. */
+const heroFacts = [
+  { label: 'In NGP and FMCG since', value: '2013' },
+  { label: 'Markets worked', value: '6' },
+  { label: 'Products we run', value: '3' },
 ]
 
 /** One line each, linking straight through to each product's own site. */
@@ -116,112 +114,108 @@ export default async function MarketingHomePage() {
 
   return (
     <div>
-      {/* ---- Hero: the plan's title block, hung from the header rail ---- */}
-      <section className="pt-7 pb-12 md:pt-8 md:pb-14">
+      {/* ---- Hero ---- */}
+      <section className="th-hero !pb-[clamp(9rem,16vw,12rem)]">
         <div className="bay">
-          {/* The title block sits in the gutter beside the statement on
-              desktop and below it on a phone, so it never reads as a caption
-              stacked above the heading. */}
-          <div className="bay-code order-2 hidden lg:order-1 lg:block">
-            <div className="ticket">
-              <p className="plan-label text-[var(--ink)]">Trailhead</p>
-              <p className="plan-label mt-1 text-[var(--ink-3)]">Holdings Ltd</p>
-              <div className="ticket-rule">
-                <p className="plan-data text-[var(--ink-2)]">EST. 2025</p>
-                <p className="plan-data mt-1 text-[var(--ink-2)]">
-                  BRENTWOOD
-                  <br />
-                  ESSEX
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="order-1 min-w-0 lg:order-2">
-            <h1 className="plan-display rack max-w-[19ch]">
+          <div className="min-w-0">
+            <p className="th-eyebrow rack">Trailhead Holdings Ltd</p>
+            <h1 className="plan-display rack mt-6 max-w-[19ch]">
               Thirteen years selling in hard markets. Now building the software
               too.
             </h1>
-            <p className="plan-lede mt-5">
+            <p className="plan-lede mt-6">
               Trailhead Holdings is two businesses run by one operator.
               Commercial strategy for nicotine and FMCG brands. Bespoke software
               for companies that have outgrown their spreadsheets.
             </p>
 
-            <p className="plan-note mt-5 text-[var(--ink-2)]">
-              One operator · Two businesses · In NGP since 2013
-            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link
+                href={buildMarketingHref('/consulting', isLocalhost)}
+                className="flash"
+              >
+                Commercial strategy
+                <PlanIcon name="right" />
+              </Link>
+              <Link
+                href={buildMarketingHref('/studio', isLocalhost)}
+                className="flash-ghost"
+              >
+                Bespoke software
+                <PlanIcon name="right" />
+              </Link>
+            </div>
+
+            <dl className="mt-12 flex flex-wrap gap-x-12 gap-y-6 border-t border-[var(--hair)] pt-7">
+              {heroFacts.map((fact) => (
+                <div key={fact.label}>
+                  <dt className="plan-label text-[var(--ink-3)]">{fact.label}</dt>
+                  <dd className="plan-figure mt-2">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
       </section>
 
-      {/* ---- The two doors, standing as brand blocks in one bay ---- */}
-      <section className="rail">
-        <div className="grid lg:grid-cols-2">
-          {doors.map((door) => (
-            <article
-              key={door.eyebrow}
-              className="brand-block flex flex-col border-b border-[var(--ink)] p-6 pt-7 md:p-8 md:pt-9 lg:border-b-0 lg:[&+&]:border-l lg:[&+&]:border-[var(--ink)]"
-              style={
-                {
-                  '--key': door.key,
-                  '--key-ink': door.keyInk,
-                } as React.CSSProperties
-              }
-            >
-              <div className="flex items-baseline justify-between gap-4">
-                {/* The business name is the heading; the line below it is display
-                    copy. It used to be the other way round, which gave the
-                    homepage the same H2 as the /consulting H1. */}
-                <h2
-                  className="plan-label"
-                  style={{ color: 'var(--key-ink)' }}
-                >
-                  {door.eyebrow}
-                </h2>
-                <p
-                  className="plan-data opacity-70"
-                  style={{ color: 'var(--key-ink)' }}
-                >
-                  {door.code}
-                </p>
-              </div>
-
-              <p
-                className="plan-h2 mt-4 max-w-[18ch]"
-                style={{ color: 'var(--key-ink)' }}
+      {/* ---- The two doors, lifted over the foot of the hero ---- */}
+      <section className="relative z-10 -mt-[clamp(6rem,11vw,8.5rem)] pb-14 md:pb-20">
+        <div className="bay">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {doors.map((door) => (
+              <article
+                key={door.eyebrow}
+                className="group relative flex flex-col overflow-hidden rounded-[1.5rem] border border-[var(--hair)] bg-[var(--card)] p-7 shadow-[var(--shadow-lg)] transition-transform duration-300 hover:-translate-y-1 md:p-9"
               >
-                {door.title}
-              </p>
-
-              <p className="plan-body mt-4 max-w-[46ch]">{door.description}</p>
-
-              {/* The spec list, ruled the way a facing's contents are listed. */}
-              <ul className="mt-6 flex-1">
-                {door.points.map((point) => (
-                  <li
-                    key={point}
-                    className="border-t py-2.5 plan-body-sm leading-snug"
-                    style={{
-                      borderColor:
-                        'color-mix(in srgb, var(--key-ink) 26%, transparent)',
-                      color:
-                        'color-mix(in srgb, var(--key-ink) 88%, var(--key))',
-                    }}
-                  >
-                    {point}
-                  </li>
-                ))}
-              </ul>
-
-              {/* The shelf-edge ticket: white card, the price flash printed on
-                  it rather than on the block. */}
-              <div className="ticket mt-7">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="plan-data text-[var(--ink-3)]">{door.code}</p>
-                  <p className="plan-data text-[var(--ink-3)]">{door.meta}</p>
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--blue),var(--blue-bright))]"
+                />
+                <div className="flex items-baseline justify-between gap-4">
+                  {/* The business name is the heading; the line below it is
+                      display copy, so the homepage does not repeat the H1 of
+                      the page it links to. */}
+                  <h2 className="plan-label text-[var(--blue-ink)]">
+                    {door.eyebrow}
+                  </h2>
+                  <p className="plan-data hidden text-[var(--ink-3)] sm:block">{door.meta}</p>
                 </div>
-                <div className="ticket-rule">
+
+                <p className="plan-h2 mt-5 max-w-[19ch] !text-[clamp(1.6rem,2.5vw,2.15rem)]">
+                  {door.title}
+                </p>
+
+                <p className="plan-body mt-4 max-w-[48ch]">{door.description}</p>
+
+                <ul className="mt-6 flex flex-1 flex-col gap-3">
+                  {door.points.map((point) => (
+                    <li
+                      key={point}
+                      className="plan-body plan-body-sm flex items-start gap-3"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 18 18"
+                        className="mt-[3px] shrink-0"
+                      >
+                        <circle cx="9" cy="9" r="9" fill="var(--blue)" opacity="0.14" />
+                        <path
+                          d="M5.2 9.3l2.5 2.4 5-5.2"
+                          fill="none"
+                          stroke="var(--blue-ink)"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-8">
                   <Link
                     href={buildMarketingHref(door.href, isLocalhost)}
                     className="flash"
@@ -230,15 +224,15 @@ export default async function MarketingHomePage() {
                     <PlanIcon name="right" />
                   </Link>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ---- Labs: three facings, each with a real price ticket ---- */}
       <Reveal className="rail bg-[var(--plan-recess)]">
-        <div className="bay py-12 md:py-16">
+        <div className="bay py-14 md:py-20">
           <div className="bay-code">
             <p className="plan-data text-[var(--ink-3)]">BAY 03</p>
             <p className="plan-note mt-1 text-[var(--ink-3)]">Labs</p>

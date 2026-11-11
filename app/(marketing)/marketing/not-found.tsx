@@ -22,7 +22,7 @@ export default async function MarketingNotFound() {
         </div>
 
         <div className="min-w-0">
-          <h1 className="plan-display rack max-w-[14ch]">That page isn&rsquo;t on the shelf</h1>
+          <h1 className="plan-display rack max-w-[14ch]">That page isn&rsquo;t here</h1>
           <p className="plan-lede mt-7">
             The link may be out of date, or the page has moved. Everything we do is
             one click from here.

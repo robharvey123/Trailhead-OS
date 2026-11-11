@@ -41,19 +41,19 @@ const registration = [
 // The three tracks, one line each. The detail lives on each track's own page.
 const tracks = [
   {
-    code: 'BAY 01',
+    code: '01',
     name: 'Trailhead Commercial',
     line: 'Market entry, route to market, pricing and interim commercial leadership for nicotine, reduced-risk and FMCG brands.',
     href: '/consulting',
   },
   {
-    code: 'BAY 02',
+    code: '02',
     name: 'Trailhead Studio',
     line: 'Bespoke software for businesses that have outgrown spreadsheets, WhatsApp and memory. Built in-house; you own the code.',
     href: '/studio',
   },
   {
-    code: 'BAY 03',
+    code: '03',
     name: 'Trailhead Labs',
     line: 'Products we own and run: Engineer OS and MVP Cricket, both live with paying customers, and MVP Golf in early access.',
     href: '/labs',
@@ -102,7 +102,7 @@ export default async function AboutPage() {
       <AboutPageJsonLd url={absoluteUrl('/about')} />
 
       {/* ---- Hero: the operator, because the operator is the company ---- */}
-      <section className="pt-10 pb-10 md:pt-16 md:pb-12">
+      <section className="th-hero pt-10 pb-10 md:pt-16 md:pb-12">
         <div className="bay">
           <div className="bay-code hidden lg:block">
             <p className="plan-data text-[var(--ink-3)]">BAY 00</p>
