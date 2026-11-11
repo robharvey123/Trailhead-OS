@@ -178,7 +178,7 @@ export default async function LabsPage() {
       ))}
 
       {/* ---- Hero ---- */}
-      <section className="pt-10 pb-10 md:pt-16 md:pb-12">
+      <section className="th-hero pt-10 pb-10 md:pt-16 md:pb-12">
         <div className="bay">
           <div className="bay-code hidden lg:block">
             <p className="plan-data text-[var(--ink-3)]">BAY 03</p>

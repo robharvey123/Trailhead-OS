@@ -101,7 +101,7 @@ export default function ContactForm({ track }: { track?: ContactTrack }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-[var(--ink)] bg-[var(--plan)] p-5 md:p-7"
+      className="rounded-[1.25rem] border border-[var(--hair)] bg-[var(--card)] p-5 shadow-[var(--shadow-lg)] md:p-7"
     >
       {/* Honeypot: hidden off-screen (not display:none, which some bots skip). */}
       <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>

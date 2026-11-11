@@ -225,7 +225,7 @@ export default async function ConsultingPage() {
       />
 
       {/* ---- Hero ---- */}
-      <section className="scroll-mt-24 pt-10 pb-10 md:pt-16 md:pb-12">
+      <section className="th-hero scroll-mt-24 pt-10 pb-10 md:pt-16 md:pb-12">
         <div className="bay">
           <div className="bay-code hidden lg:block">
             <p className="plan-data text-[var(--ink-3)]">BAY 01</p>
@@ -386,7 +386,7 @@ export default async function ConsultingPage() {
                 {categories.map((category) => (
                   <li
                     key={category}
-                    className="plan-label border border-[var(--hair)] bg-[var(--card)] px-2.5 py-2 text-[var(--ink-2)]"
+                    className="plan-label rounded-full border border-[var(--hair)] bg-[var(--card)] px-3 py-2 text-[var(--ink-2)]"
                   >
                     {category}
                   </li>

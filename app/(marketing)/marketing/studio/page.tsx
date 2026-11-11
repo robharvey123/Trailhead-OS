@@ -391,7 +391,7 @@ export default async function StudioPage() {
       />
 
       {/* ---- Hero: the claim, and the artifact that proves it, together ---- */}
-      <section className="pt-10 pb-12 md:pt-16 md:pb-16">
+      <section className="th-hero pt-10 pb-12 md:pt-16 md:pb-16">
         <div className="bay">
           <div className="bay-code hidden lg:block">
             <p className="plan-data text-[var(--ink-3)]">BAY 02</p>
@@ -589,7 +589,7 @@ export default async function StudioPage() {
                       {project.stack.map((tech) => (
                         <li
                           key={tech}
-                          className="plan-data border border-[var(--hair)] px-2 py-1.5 text-[var(--ink-2)]"
+                          className="plan-data rounded-full border border-[var(--hair)] px-3 py-1.5 text-[var(--ink-2)]"
                         >
                           {tech.toUpperCase()}
                         </li>
@@ -653,7 +653,7 @@ export default async function StudioPage() {
                     {concept.features.map((feature) => (
                       <li
                         key={feature}
-                        className="plan-data border border-[var(--hair)] px-2 py-1.5 text-[var(--ink-2)]"
+                        className="plan-data rounded-full border border-[var(--hair)] px-3 py-1.5 text-[var(--ink-2)]"
                       >
                         {feature.toUpperCase()}
                       </li>

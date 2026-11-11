@@ -18,15 +18,42 @@ interface MarketingShellProps {
 }
 
 /**
- * The chrome is the top rail of the bay plan.
+ * The site chrome: a navy glass header and a navy footer, both carrying the
+ * reverse logo exactly as the brand guidelines draw it.
  *
- * Navigation is two-tier, the way a plan is read: pick the bay, then the
- * shelf. The header carries the three businesses, always, with the current one
- * marked; the rail beneath carries that bay's own sections. The pathname
- * decides which block colour the chrome is keyed to, so a visitor on
- * /consulting is standing in front of the Commercial bay and a visitor on
- * /studio in front of Studio's, without the site splitting into two codebases.
+ * Navigation is two-tier. The header carries the three businesses, always,
+ * with the current one marked in brand blue; a slim bar beneath carries that
+ * business's own sections where it has any.
  */
+
+/** The reverse lockup: three pale bars, the tallest in brand blue, the
+ * wordmark in Georgia. Colours and spacing follow Brand Guidelines v1.0. */
+function TrailheadLogo() {
+  return (
+    <span className="flex items-center gap-3">
+      <svg
+        aria-hidden="true"
+        width="34"
+        height="28"
+        viewBox="0 0 46 38"
+        className="shrink-0"
+      >
+        <rect x="0" y="28" width="10" height="10" rx="2" fill="#F1F5F9" />
+        <rect x="12" y="18" width="10" height="20" rx="2" fill="#F1F5F9" />
+        <rect x="24" y="8" width="10" height="30" rx="2" fill="#F1F5F9" />
+        <rect x="36" y="0" width="10" height="38" rx="2" fill="#0EA5E9" />
+      </svg>
+      <span className="flex flex-col leading-none">
+        <span className="font-[Georgia,serif] text-[1.125rem] font-bold tracking-[-0.5px] text-[#F1F5F9]">
+          Trailhead
+        </span>
+        <span className="mt-[5px] font-[Georgia,serif] text-[0.625rem] tracking-[1.5px] text-[#94A3B8]">
+          HOLDINGS LTD
+        </span>
+      </span>
+    </span>
+  )
+}
 export default function MarketingShell({
   children,
   isLocalhost,
@@ -95,49 +122,25 @@ export default function MarketingShell({
     )
 
   const navLinkClass =
-    'plan-label text-[var(--ink-2)] transition-colors hover:text-[var(--flash)]'
+    'text-[0.875rem] font-medium text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]'
+  const footerLinkClass =
+    'text-[0.9375rem] text-[var(--ink-2)] transition-colors hover:text-[var(--flash)]'
 
   return (
     <div className="bay-plan min-h-screen" data-track={track}>
-      <header className="sticky top-0 z-40 bg-[var(--plan)]">
-        <div className="mx-auto flex w-full max-w-[78rem] items-center justify-between gap-6 px-5 py-3.5 md:px-8">
+      <header className="th-dark sticky top-0 z-40 border-b border-white/10 bg-[rgba(11,17,32,0.94)] backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[72rem] items-center justify-between gap-6 px-5 py-3.5 md:px-8">
           <Link
             href={buildMarketingHref('/', isLocalhost)}
-            className="flex items-center gap-3"
-            aria-label={`Trailhead ${tokens.wordmark.replace(' LTD', '')}, home`}
+            aria-label="Trailhead Holdings, home"
           >
-            {/* Four ascending bars, the last one carrying the track's key. The
-                mark is a fixed brand commitment; only its keyed bar moves. */}
-            <svg
-              aria-hidden="true"
-              width="30"
-              height="34"
-              viewBox="0 0 46 48"
-              className="shrink-0"
-            >
-              <rect x="0" y="28" width="10" height="10" rx="2" fill="var(--ink)" />
-              <rect x="12" y="18" width="10" height="20" rx="2" fill="var(--ink)" />
-              <rect x="24" y="8" width="10" height="30" rx="2" fill="var(--ink)" />
-              <rect x="36" y="0" width="10" height="38" rx="2" fill="var(--key-deep)" />
-            </svg>
-            <span className="flex flex-col leading-none">
-              <span
-                className="text-[1.0625rem] font-bold tracking-[0.02em] text-[var(--ink)]"
-                style={{ fontStretch: '84%' }}
-              >
-                TRAILHEAD
-              </span>
-              <span className="plan-label mt-[3px] text-[var(--ink-3)]">
-                {tokens.wordmark}
-              </span>
-            </span>
+            <TrailheadLogo />
           </Link>
 
-          <div className="hidden items-center gap-6 md:flex">
+          <div className="hidden items-center gap-7 lg:flex">
             {/* Tier one: the three businesses, constant everywhere. The active
-                one is underlined in its own key so you can see which bay you
-                are standing in without reading the wordmark. */}
-            <nav aria-label="Businesses" className="flex items-center gap-5">
+                one carries a brand-blue rule. */}
+            <nav aria-label="Businesses" className="flex items-center gap-6">
               {BUSINESSES.map((item) => {
                 const active = item.track === track
                 return (
@@ -145,10 +148,10 @@ export default function MarketingShell({
                     key={item.href}
                     href={buildMarketingHref(item.href, isLocalhost)}
                     aria-current={active ? 'page' : undefined}
-                    className={`plan-label border-b-2 pb-1 transition-colors ${
+                    className={`relative py-1.5 text-[0.875rem] font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:transition-colors ${
                       active
-                        ? 'border-[var(--key-deep)] text-[var(--ink)]'
-                        : 'border-transparent text-[var(--ink-2)] hover:text-[var(--flash)]'
+                        ? 'text-[var(--ink)] after:bg-[var(--blue)]'
+                        : 'text-[var(--ink-2)] after:bg-transparent hover:text-[var(--ink)]'
                     }`}
                   >
                     {item.label}
@@ -159,27 +162,28 @@ export default function MarketingShell({
 
             <span aria-hidden="true" className="h-4 w-px bg-[var(--hair)]" />
 
-            <nav aria-label="Secondary" className="flex items-center gap-5">
+            <nav aria-label="Secondary" className="flex items-center gap-6">
               {UTILITY_NAV.map((item) => renderNavItem(item, navLinkClass))}
             </nav>
 
-            {tokens.cta ? (
-              <Link href={buildMarketingHref(tokens.cta.href, isLocalhost)} className="flash">
-                {tokens.cta.label}
+            <div className="flex items-center gap-2.5">
+              <Link
+                href={buildAppLoginHref(isLocalhost)}
+                className="rounded-full px-3.5 py-2 text-[0.875rem] font-medium text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]"
+              >
+                Log in
               </Link>
-            ) : null}
-
-            <Link
-              href={buildAppLoginHref(isLocalhost)}
-              className="plan-label border border-[var(--hair)] px-3 py-2 text-[var(--ink-2)] transition-colors hover:border-[var(--ink)] hover:text-[var(--ink)]"
-            >
-              Log in
-            </Link>
+              <Link
+                href={buildMarketingHref(tokens.cta?.href ?? '/contact', isLocalhost)}
+                className="flash !px-4 !py-2.5 !text-[0.875rem]"
+              >
+                {tokens.cta?.label ?? 'Start a conversation'}
+              </Link>
+            </div>
           </div>
 
-          {/* Below md the nav above is hidden. Without this trigger the header
-              was a logo and nothing else, so the pages holding every named
-              client, price and outcome were unreachable on a phone. */}
+          {/* Below lg the nav above is hidden, so this trigger is the only
+              route to the rest of the site on a phone. */}
           <button
             ref={menuButtonRef}
             type="button"
@@ -187,7 +191,7 @@ export default function MarketingShell({
             aria-expanded={menuOpen}
             aria-controls={menuId}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            className="flex h-11 w-11 items-center justify-center border border-[var(--ink)] text-[var(--ink)] transition-colors hover:bg-[var(--ink)] hover:text-[var(--plan)] md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--hair)] text-[var(--ink)] transition-colors hover:bg-white/10 lg:hidden"
           >
             <svg
               aria-hidden="true"
@@ -197,6 +201,7 @@ export default function MarketingShell({
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
+              strokeLinecap="round"
             >
               {menuOpen ? (
                 <>
@@ -214,74 +219,29 @@ export default function MarketingShell({
           </button>
         </div>
 
-        {/* The rail. Every band on every page hangs from this line, and it
-            prints which bay the visitor is standing in. */}
-        <div className="rail bg-[var(--plan)]">
-          <div className="mx-auto flex w-full max-w-[78rem] items-center justify-between gap-4 px-5 pt-2 pb-1.5 md:px-8">
-            {/* Tier two: the shelves in this bay, or the bay's measure where
-                it has none. */}
-            <span className="flex min-w-0 items-baseline gap-3">
-              <span className="plan-data shrink-0 text-[var(--ink-3)]">
-                {tokens.bayCode}
-              </span>
-              <span aria-hidden="true" className="text-[var(--hair)]">
-                |
-              </span>
-              {tokens.sections.length ? (
-                <nav
-                  aria-label="Sections in this bay"
-                  className="flex min-w-0 flex-wrap items-baseline gap-x-4 gap-y-1"
-                >
-                  {tokens.sections.map((item) =>
-                    renderNavItem(
-                      item,
-                      'plan-data whitespace-nowrap text-[var(--ink-2)] transition-colors hover:text-[var(--flash)]'
-                    )
-                  )}
-                </nav>
-              ) : (
-                <span className="plan-data truncate text-[var(--ink-3)]">
-                  {tokens.bayMeasure}
-                </span>
+        {/* Tier two: the sections of the business the visitor is in. */}
+        {tokens.sections.length ? (
+          <div className="hidden border-t border-white/[0.07] lg:block">
+            <nav
+              aria-label="Sections on this page"
+              className="mx-auto flex w-full max-w-[72rem] items-center gap-6 px-8 py-2"
+            >
+              {tokens.sections.map((item) =>
+                renderNavItem(
+                  item,
+                  'whitespace-nowrap text-[0.8125rem] text-[var(--ink-3)] transition-colors hover:text-[var(--flash)]'
+                )
               )}
-            </span>
-
-            {/* The dimension callout: a measured span with extension ticks and
-                arrowheads, the way a bay width is called out on a plan. It is
-                drawn, not lettered — the contract asked for a dimension and a
-                text strip is not one. */}
-            <span className="hidden flex-1 items-center gap-2 px-4 sm:flex">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 200 12"
-                preserveAspectRatio="none"
-                className="h-3 w-full text-[var(--hair)]"
-              >
-                <path
-                  d="M1 0v12M199 0v12"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  vectorEffect="non-scaling-stroke"
-                />
-                <path
-                  d="M1 6h198M5 3L1 6l4 3M195 3l4 3-4 3"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
-            </span>
-
-            <span className="plan-data hidden shrink-0 text-[var(--ink-3)] sm:block">
-              TRAILHEADHOLDINGS.UK
-            </span>
+            </nav>
           </div>
-        </div>
+        ) : null}
 
         {menuOpen ? (
-          <div id={menuId} className="border-t border-[var(--ink)] bg-[var(--plan)] md:hidden">
-            <div className="mx-auto flex w-full max-w-[78rem] flex-col px-5">
+          <div
+            id={menuId}
+            className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-[var(--hair)] bg-[var(--navy-deep)] lg:hidden"
+          >
+            <div className="mx-auto flex w-full max-w-[72rem] flex-col px-5">
               <nav aria-label="Businesses, mobile" className="flex flex-col">
                 {BUSINESSES.map((item) => {
                   const active = item.track === track
@@ -291,7 +251,7 @@ export default function MarketingShell({
                       href={buildMarketingHref(item.href, isLocalhost)}
                       onClick={() => setMenuOpen(false)}
                       aria-current={active ? 'page' : undefined}
-                      className={`plan-label flex items-center justify-between border-b border-[var(--hair)] py-4 ${
+                      className={`flex items-center justify-between border-b border-[var(--hair)] py-4 font-[Georgia,serif] text-[1.375rem] font-bold tracking-[-0.01em] ${
                         active ? 'text-[var(--ink)]' : 'text-[var(--ink-2)]'
                       }`}
                     >
@@ -299,7 +259,7 @@ export default function MarketingShell({
                       {active ? (
                         <span
                           aria-hidden="true"
-                          className="h-1.5 w-6 bg-[var(--key-deep)]"
+                          className="h-1 w-7 rounded-full bg-[var(--blue)]"
                         />
                       ) : null}
                     </Link>
@@ -307,16 +267,15 @@ export default function MarketingShell({
                 })}
               </nav>
 
-              {/* Tier two, indented under the bay it belongs to. */}
               {tokens.sections.length ? (
                 <nav
-                  aria-label="Sections in this bay, mobile"
+                  aria-label="Sections on this page, mobile"
                   className="flex flex-col border-b border-[var(--hair)] py-2 pl-4"
                 >
                   {tokens.sections.map((item) =>
                     renderNavItem(
                       item,
-                      'plan-data py-2.5 text-[var(--ink-2)]'
+                      'py-2.5 text-[0.9375rem] text-[var(--ink-3)]'
                     )
                   )}
                 </nav>
@@ -326,12 +285,12 @@ export default function MarketingShell({
                 {UTILITY_NAV.map((item) =>
                   renderNavItem(
                     item,
-                    'plan-label border-b border-[var(--hair)] py-4 text-[var(--ink-2)]'
+                    'border-b border-[var(--hair)] py-4 text-[1rem] font-medium text-[var(--ink-2)]'
                   )
                 )}
               </nav>
 
-              <div className="flex flex-col gap-3 py-5">
+              <div className="flex flex-col gap-3 py-6">
                 <Link
                   href={buildMarketingHref(tokens.cta?.href ?? '/contact', isLocalhost)}
                   onClick={() => setMenuOpen(false)}
@@ -354,105 +313,123 @@ export default function MarketingShell({
 
       <main>{children}</main>
 
-      {/* The footer is the bottom rail: the plan's title block, carrying the
-          registration facts and a second full route to every page — on mobile,
-          where the nav sits behind a menu, this is the only one always in view. */}
-      <footer className="rail mt-0 bg-[var(--plan-recess)]">
-        <div className="mx-auto w-full max-w-[78rem] px-5 py-10 md:px-8 md:py-12">
-          <div className="grid gap-8 border-b border-[var(--hair)] pb-8 md:grid-cols-[minmax(0,1fr)_auto]">
+      {/* The footer carries a second full route to every page: on mobile,
+          where the nav sits behind a menu, it is the only one always in view. */}
+      <footer className="th-dark border-t border-white/10 bg-[#070b16]">
+        <div className="mx-auto w-full max-w-[72rem] px-5 pt-14 pb-10 md:px-8 md:pt-16">
+          <div className="grid gap-10 border-b border-[var(--hair)] pb-12 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
             <div>
-              <p className="plan-data text-[var(--ink-3)]">INDEX</p>
-              <nav
-                aria-label="Footer"
-                className="mt-3 flex flex-wrap gap-x-6 gap-y-3"
+              <Link
+                href={buildMarketingHref('/', isLocalhost)}
+                aria-label="Trailhead Holdings, home"
+                className="inline-block"
               >
-                {[
-                  ...BUSINESSES,
-                  ...tokens.sections,
-                  ...UTILITY_NAV,
-                ].map((item) =>
-                  item.external ? (
-                    <a
-                      key={`footer-${item.href}`}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={navLinkClass}
-                    >
-                      {item.label}
-                    </a>
-                  ) : (
-                    <Link
-                      key={`footer-${item.href}`}
-                      href={navHref(item)}
-                      className={navLinkClass}
-                    >
-                      {item.label}
-                    </Link>
-                  )
-                )}
-                {tokens.track !== 'holdings' ? (
-                  <Link
-                    href={buildMarketingHref('/', isLocalhost)}
-                    className={navLinkClass}
-                  >
-                    Trailhead Holdings
-                  </Link>
-                ) : null}
-              </nav>
+                <TrailheadLogo />
+              </Link>
+              <p className="mt-5 max-w-[26ch] font-[Georgia,serif] text-[1.125rem] leading-snug text-[var(--ink)]">
+                Commercial strategy. Digital products. Built to last.
+              </p>
             </div>
 
-            <div className="md:text-right">
-              <p className="plan-data text-[var(--ink-3)]">DIRECT</p>
-              <div className="mt-3 flex flex-col gap-2 md:items-end">
-                <a
-                  href="mailto:info@trailheadholdings.uk"
-                  className="plan-label text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
-                >
-                  info@trailheadholdings.uk
-                </a>
-                <a
-                  href="tel:+447346808412"
-                  className="plan-label text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
-                >
-                  +44 7346 808412
-                </a>
-                <a
-                  href={WHATSAPP_HREF}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="plan-label text-[var(--ink)] transition-colors hover:text-[var(--flash)]"
-                >
-                  WhatsApp +44 7346 808412
-                </a>
-              </div>
+            <nav aria-label="Footer, businesses">
+              <p className="plan-label text-[var(--ink-3)]">Businesses</p>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                {BUSINESSES.map((item) => (
+                  <li key={`footer-${item.href}`}>
+                    <Link href={navHref(item)} className={footerLinkClass}>
+                      Trailhead {item.label}
+                    </Link>
+                  </li>
+                ))}
+                {tokens.sections.map((item) => (
+                  <li key={`footer-${item.href}`}>
+                    {item.external ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={footerLinkClass}
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link href={navHref(item)} className={footerLinkClass}>
+                        {item.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <nav aria-label="Footer, company">
+              <p className="plan-label text-[var(--ink-3)]">Company</p>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                <li>
+                  <Link
+                    href={buildMarketingHref('/', isLocalhost)}
+                    className={footerLinkClass}
+                  >
+                    Home
+                  </Link>
+                </li>
+                {UTILITY_NAV.map((item) => (
+                  <li key={`footer-${item.href}`}>
+                    {renderNavItem(item, footerLinkClass)}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div>
+              <p className="plan-label text-[var(--ink-3)]">Direct</p>
+              <ul className="mt-4 flex flex-col gap-2.5">
+                <li>
+                  <a
+                    href="mailto:info@trailheadholdings.uk"
+                    className={footerLinkClass}
+                  >
+                    info@trailheadholdings.uk
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+447346808412" className={footerLinkClass}>
+                    +44 7346 808412
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={WHATSAPP_HREF}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={footerLinkClass}
+                  >
+                    WhatsApp
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between">
-            <p className="plan-data text-[var(--ink-3)]">
-              © 2026 TRAILHEAD HOLDINGS LTD · BRENTWOOD, ESSEX · REGISTERED IN
-              ENGLAND &amp; WALES
+          <div className="mt-7 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <p className="text-[0.8125rem] text-[var(--ink-3)]">
+              © 2026 Trailhead Holdings Ltd · Brentwood, Essex · Registered in
+              England &amp; Wales
             </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              <Link
-                href={buildMarketingHref('/privacy', isLocalhost)}
-                className={navLinkClass}
-              >
-                Privacy
-              </Link>
-              <Link
-                href={buildMarketingHref('/terms', isLocalhost)}
-                className={navLinkClass}
-              >
-                Terms
-              </Link>
-              <Link
-                href={buildMarketingHref('/contact', isLocalhost)}
-                className={navLinkClass}
-              >
-                Contact
-              </Link>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {[
+                ['Privacy', '/privacy'],
+                ['Terms', '/terms'],
+                ['Contact', '/contact'],
+              ].map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={buildMarketingHref(href, isLocalhost)}
+                  className="text-[0.8125rem] text-[var(--ink-3)] transition-colors hover:text-[var(--flash)]"
+                >
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

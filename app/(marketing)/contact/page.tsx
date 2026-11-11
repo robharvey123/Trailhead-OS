@@ -28,9 +28,9 @@ const defaultCopy =
   "Whether you're looking for commercial consultancy, a development partner, or just want to find out more, we'd love to hear from you."
 
 const trackBay: Record<ContactTrack, string> = {
-  commercial: 'BAY 01 · COMMERCIAL',
-  studio: 'BAY 02 · STUDIO',
-  labs: 'BAY 03 · LABS',
+  commercial: 'TRAILHEAD COMMERCIAL',
+  studio: 'TRAILHEAD STUDIO',
+  labs: 'TRAILHEAD LABS',
 }
 
 // What happens after the form is sent. Every step is a promise the site
@@ -111,7 +111,7 @@ export default async function ContactPage({
           <div className="bay-code hidden lg:block">
             <p className="plan-note text-[var(--ink-3)]">Enquiry</p>
             <p className="plan-data mt-1 text-[var(--ink-3)]">
-              {track ? trackBay[track] : 'ANY BAY'}
+              {track ? trackBay[track] : 'ANY BUSINESS'}
             </p>
           </div>
 

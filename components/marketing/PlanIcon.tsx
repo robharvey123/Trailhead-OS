@@ -38,8 +38,8 @@ export default function PlanIcon({
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      strokeLinecap="butt"
-      strokeLinejoin="miter"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={`shrink-0 ${className}`.trim()}
     >
       <path d={PATHS[name]} />

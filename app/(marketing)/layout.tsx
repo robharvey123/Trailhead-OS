@@ -1,31 +1,14 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import { Archivo, Martian_Mono } from 'next/font/google'
 import MarketingShell from '@/components/marketing/MarketingShell'
 import GoogleAnalytics from '@/components/marketing/GoogleAnalytics'
 import { isLocalDevelopmentHost } from '@/lib/site'
 import { SITE_DEFAULTS } from '@/lib/seo'
 import './bay.css'
 
-// One family across its width axis does the whole signage job: condensed for
-// the shelf-edge caps, normal for reading, the way a real retail signage
-// system prints every rail height from one face. The mono is admitted for
-// codes, prices, dates and dimensions only.
-const archivo = Archivo({
-  variable: '--font-archivo',
-  subsets: ['latin'],
-  axes: ['wdth'],
-  display: 'swap',
-})
-
-// Not preloaded: it sets only the small data labels, so it can arrive after
-// Archivo without holding up the headline. Swap shows a system mono meanwhile.
-const martianMono = Martian_Mono({
-  variable: '--font-martian',
-  subsets: ['latin'],
-  display: 'swap',
-  preload: false,
-})
+// Type follows the brand guidelines: Georgia for display (a system face, so
+// nothing to load) and Inter for everything else, which the root layout
+// already provides as --font-inter.
 
 export const metadata: Metadata = {
   title: {
@@ -45,7 +28,7 @@ export default async function MarketingLayout({
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
   return (
-    <div className={`${archivo.variable} ${martianMono.variable}`}>
+    <div>
       {gaId && !isLocalhost ? <GoogleAnalytics measurementId={gaId} /> : null}
       <MarketingShell isLocalhost={isLocalhost}>{children}</MarketingShell>
     </div>

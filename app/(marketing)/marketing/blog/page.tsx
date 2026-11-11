@@ -36,7 +36,7 @@ export default async function MarketingBlogPage({
   return (
     <div>
       <BreadcrumbJsonLd items={[{ name: 'Blog', path: '/blog' }]} />
-      <section className="pt-10 pb-8 md:pt-16 md:pb-10">
+      <section className="th-hero pt-10 pb-8 md:pt-16 md:pb-10">
         <div className="bay">
           <div className="bay-code hidden lg:block">
             <p className="plan-data text-[var(--ink-3)]">BAY 04</p>
