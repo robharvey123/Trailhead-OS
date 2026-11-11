@@ -58,6 +58,9 @@ const marketingPermanentRedirects: Record<string, string> = {
   '/mvp-cricket': 'https://mvpcricket.app',
   // BrightFire is client work, not a product: its case study lives on /studio.
   '/bright-fire': '/studio',
+  // MVP Predictor was dropped before launch. Its page had been indexed, so
+  // it 301s to the portfolio rather than falling through to a 404.
+  '/labs/mvp-predictor': '/labs',
 }
 
 function getMarketingRewritePath(pathname: string) {

@@ -6,16 +6,16 @@ import PlateSlot from '@/components/marketing/PlateSlot'
 import Reveal from '@/components/marketing/Reveal'
 import { BreadcrumbJsonLd, SoftwareApplicationJsonLd } from '@/components/JsonLd'
 import { buildMarketingHref, isLocalDevelopmentHost } from '@/lib/site'
-import { absoluteUrl, buildMetadata } from '@/lib/seo'
+import { buildMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = buildMetadata({
   title: 'Trailhead Labs',
   description:
-    'The software products Trailhead builds, sells and runs: Engineer OS for UK field service teams, MVP Cricket for grassroots clubs, and MVP Predictor.',
+    'The software products Trailhead builds, sells and runs: Engineer OS for UK field service teams, MVP Cricket for grassroots clubs, and MVP Golf for golf societies.',
   path: '/labs',
   // Labs chases no keyword pool of its own. Each product's own domain is the
   // canonical home, and this page just routes to them.
-  keywords: ['Trailhead Labs', 'Engineer OS', 'MVP Cricket', 'MVP Predictor'],
+  keywords: ['Trailhead Labs', 'Engineer OS', 'MVP Cricket', 'MVP Golf'],
 })
 
 type LabsProduct = {
@@ -96,19 +96,21 @@ const products: LabsProduct[] = [
   },
   {
     code: 'LAB-03',
-    name: 'MVP Predictor',
+    name: 'MVP Golf',
     status: 'In build',
     sector: 'Sports SaaS',
     summary:
-      'White-label Premier League prediction competitions for clubs. Clubs pay a flat subscription, members predict, and the entry money never touches the platform.',
-    pricing: null,
-    href: '/labs/mvp-predictor',
-    external: false,
-    ctaLabel: 'How it works',
+      'The society app your members will actually open. A society website with event pages, memberships and entry fees paid straight into the society’s own Stripe account, the draw, offline scoring on the day, live leaderboards and a season-long Order of Merit.',
+    origin:
+      'Built alongside MVP Cricket on the same idea: give members something worth opening and the admin looks after itself. In early access, by invite.',
+    pricing: 'Free to use, 1% on card payments',
+    href: 'https://mvpgolf.app',
+    external: true,
+    ctaLabel: 'Visit mvpgolf.app',
     jsonLd: {
       description:
-        'White-label football prediction competitions for clubs, run on a flat club subscription.',
-      url: absoluteUrl('/labs/mvp-predictor'),
+        'Golf society management: society website, memberships and event payments, the draw, offline scoring, leaderboards and an Order of Merit.',
+      url: 'https://mvpgolf.app',
       applicationCategory: 'SportsApplication',
     },
   },
@@ -131,10 +133,10 @@ const atAGlance: Array<{ name: string; forWho: string; pricing: string; start: s
     start: 'Start on the free plan and upgrade when the season needs it.',
   },
   {
-    name: 'MVP Predictor',
-    forWho: 'Clubs running a Premier League prediction competition',
-    pricing: 'A flat club subscription, published before launch.',
-    start: 'Register interest; not yet taking competitions.',
+    name: 'MVP Golf',
+    forWho: 'Golf societies run by a volunteer organiser or small committee',
+    pricing: 'Free to use, no subscription. 1% on card payments, on top of Stripe’s fee. Cash and bank transfer carry no fee.',
+    start: 'Early access by invite. Request it at mvpgolf.app.',
   },
 ]
 
@@ -142,11 +144,11 @@ const atAGlance: Array<{ name: string; forWho: string; pricing: string; start: s
 const origins = [
   {
     step: 'Built for one business',
-    detail: 'Each product starts as a bespoke build for a real operation with a real problem: a fire and security contractor, a cricket club, a club committee running a World Cup prediction competition.',
+    detail: 'Each product starts as a bespoke build for a real operation with a real problem: a fire and security contractor, a cricket club.',
   },
   {
     step: 'Proved in the field',
-    detail: 'It runs that business for long enough to show it works: a full cricket season, a whole tournament, live jobs on engineers’ phones.',
+    detail: 'It runs that business for long enough to show it works: a full cricket season, live jobs on engineers’ phones.',
   },
   {
     step: 'Opened to everyone',
@@ -333,7 +335,7 @@ export default async function LabsPage() {
             <h2 className="plan-h2 rack-target">How a product gets here</h2>
             <p className="plan-body mt-4">
               None of these started as a gap spotted in a market report. Each
-              one followed the same three steps.
+              one follows the same three steps.
             </p>
             <ol className="facings mt-8 md:grid-cols-3">
               {origins.map((origin, index) => (
@@ -351,7 +353,7 @@ export default async function LabsPage() {
               product is running with paying customers, and we carry its
               support, billing and uptime.{' '}
               <span className="key-state key-build mx-2">In build</span> means it
-              is real work in progress, not yet taking customers.
+              is real work in progress, not yet open to everyone.
             </p>
           </div>
         </div>

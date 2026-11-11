@@ -9,7 +9,7 @@ related_targets: ["app/(marketing)/marketing/consulting/page.tsx","app/(marketin
 
 ## Scope and mode
 
-`app/(marketing)`: `/`, `/consulting`, `/studio`, `/labs`, `/labs/mvp-predictor`, `/blog`, `/blog/[slug]`, `/contact`, `/privacy`, `/terms`.
+`app/(marketing)`: `/`, `/consulting`, `/studio`, `/labs`, `/blog`, `/blog/[slug]`, `/contact`, `/privacy`, `/terms`.
 
 **Persuade**, with two exceptions that keep their own register: `/blog` and `/blog/[slug]` are **Read**, and the legal pages are Read at their narrowest — one measure, ruled headings, nothing competing.
 

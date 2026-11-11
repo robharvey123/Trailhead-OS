@@ -107,11 +107,11 @@ const TRACKS: Record<Track, TrackTokens> = {
     bayCode: 'BAY 03',
     bayMeasure: 'OWNED PRODUCTS · LIVE BILLING',
     // Labs sells nothing on this domain, so its shelves are the products
-    // themselves and two of the three lead off-site.
+    // themselves and all three lead off-site.
     sections: [
       { label: 'Engineer OS', href: 'https://engineeros.uk', external: true },
       { label: 'MVP Cricket', href: 'https://mvpcricket.app', external: true },
-      { label: 'MVP Predictor', href: '/labs/mvp-predictor' },
+      { label: 'MVP Golf', href: 'https://mvpgolf.app', external: true },
     ],
     cta: null,
   },

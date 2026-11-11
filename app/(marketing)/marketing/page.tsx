@@ -96,9 +96,9 @@ const labsStrip = [
   },
   {
     code: 'LAB-03',
-    name: 'MVP Predictor',
-    line: 'White-label football prediction competitions for clubs, in build.',
-    price: 'PRICE NOT SET',
+    name: 'MVP Golf',
+    line: 'Golf society management with event payments, offline scoring and an Order of Merit, in early access.',
+    price: 'FREE · 1% ON CARD',
     state: 'build' as const,
   },
 ]

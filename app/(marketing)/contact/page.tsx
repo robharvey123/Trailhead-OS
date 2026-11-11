@@ -80,8 +80,8 @@ const briefs: Array<{ track: ContactTrack; title: string; points: string[] }> = 
     track: 'labs',
     title: 'One of our products',
     points: [
-      'Which product: Engineer OS, MVP Cricket or MVP Predictor',
-      'The size of your team or club',
+      'Which product: Engineer OS, MVP Cricket or MVP Golf',
+      'The size of your team, club or society',
       'What you use now, if anything',
       'When you would want to start',
     ],

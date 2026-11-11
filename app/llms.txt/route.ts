@@ -22,7 +22,7 @@ Internal tools, client portals, offline-capable field apps, marketing sites and 
 ## Trailhead Labs: products
 - Engineer OS (job management for UK field service teams, from £15 per engineer/month): https://engineeros.uk
 - MVP Cricket (grassroots cricket club management SaaS; free leaderboard plan, paid plans from £9.99/month or £99/year): https://mvpcricket.app
-- MVP Predictor (white-label football prediction competitions for clubs, in build): ${SITE_URL}/labs/mvp-predictor
+- MVP Golf (golf society management: society website, memberships and event payments, the draw, offline scoring, leaderboards and Order of Merit; early access by invite, free to use with 1% on card payments): https://mvpgolf.app
 - Portfolio: ${SITE_URL}/labs
 
 ## Other pages

@@ -49,7 +49,7 @@ What remains open is noted at the end of this section.
   lands, delete the `ILLUSTRATIVE` key with it; a real capture must never carry
   a label that says it is a drawing, and the drawing must never lose the label.
 - **MVP Cricket** — a leaderboard or the MVP scoring view.
-- **MVP Predictor** — only once it has a real screen. It is keyed `In build`;
+- **MVP Golf** — only once it has a real screen. It is keyed `In build`;
   leave it text-only until then.
 - **Format:** 1600 × 1000 or wider, real data (obfuscate names if needed), no
   device mockup frame — the ticket around it is the frame.

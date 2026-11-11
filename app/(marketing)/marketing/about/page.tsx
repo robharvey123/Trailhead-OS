@@ -55,7 +55,7 @@ const tracks = [
   {
     code: 'BAY 03',
     name: 'Trailhead Labs',
-    line: 'Products we own and run: Engineer OS and MVP Cricket, both live with paying customers, and MVP Predictor in build.',
+    line: 'Products we own and run: Engineer OS and MVP Cricket, both live with paying customers, and MVP Golf in early access.',
     href: '/labs',
   },
 ]
