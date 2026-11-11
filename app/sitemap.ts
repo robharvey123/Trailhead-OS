@@ -14,10 +14,9 @@ const STATIC_ROUTES: {
   { path: '/consulting', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/studio', changeFrequency: 'monthly', priority: 0.9 },
   // Retired paths (/web-app-design, /products, /engineer-os, /mvp-cricket,
-  // /bright-fire) 301 in middleware.ts and must NOT be listed here. A
+  // /bright-fire, /labs/mvp-predictor) 301 in middleware.ts and must NOT be listed here. A
   // sitemap advertising redirects is a crawl-budget leak.
   { path: '/labs', changeFrequency: 'monthly', priority: 0.8 },
-  { path: '/labs/mvp-predictor', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/about', changeFrequency: 'monthly', priority: 0.7 },
   { path: '/contact', changeFrequency: 'yearly', priority: 0.6 },
   { path: '/blog', changeFrequency: 'weekly', priority: 0.9 },

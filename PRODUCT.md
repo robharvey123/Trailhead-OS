@@ -22,7 +22,7 @@ Trailhead Holdings Ltd is a UK founder-led holding company operated by one perso
 
 - **Trailhead Commercial** — commercial strategy for nicotine, reduced-risk and FMCG brands: market entry, route to market, pricing and portfolio, interim commercial leadership.
 - **Trailhead Studio** — bespoke software: internal tools, client portals, offline-capable field apps, full product builds, rebuilds of ageing sites.
-- **Trailhead Labs** — Engineer OS, MVP Cricket, MVP Predictor. Each has its own domain; this site only routes to them.
+- **Trailhead Labs** — Engineer OS, MVP Cricket, MVP Golf. Each has its own domain; this site only routes to them.
 
 Success is a started conversation: an enquiry that arrives already knowing which of the two businesses it wants.
 
@@ -42,7 +42,7 @@ A neighbouring consultancy cannot truthfully claim the software; a neighbouring 
 
 ## Capabilities and Constraints
 
-- Routes in scope: `/`, `/consulting`, `/studio`, `/labs`, `/labs/mvp-predictor`, `/blog`, `/blog/[slug]`, `/contact`, `/privacy`, `/terms`.
+- Routes in scope: `/`, `/consulting`, `/studio`, `/labs`, `/blog`, `/blog/[slug]`, `/contact`, `/privacy`, `/terms`.
 - Content is server-rendered. Blog content is Supabase-backed and rendered through `react-markdown`; legal pages are long-form prose.
 - Scroll reveal must keep content present in the HTML and only CSS-hidden, with a `<noscript>` override — a JS failure must never leave a crawler a hero and a blank page.
 - The site must work with the header nav hidden below `md`, so the footer carries a second full route to every page.
@@ -63,7 +63,7 @@ Real, in the repo or verifiable:
 - Named operating history: Dholakia Tobacco (2024–26), RoarLabs (2023–24), Flonq (2022–23), V&YOU (2020–22), EOS Leisure (2014–20, £1,500 start-up to £5M+ turnover, £4M raised, exit 2019).
 - One live client engagement: Qola, UK and EU commercial, Aug 2026 to date, initial term to Nov 2026.
 - Two client projects with real detail: Bright Fire Services (live, productised into Engineer OS) and Yasin & Co Solicitors (in build, audit delivered, scope agreed).
-- Live products with paying customers and real pricing: Engineer OS (from £15 per engineer per month, engineeros.uk), MVP Cricket (from £19 per month, mvpcricket.app). MVP Predictor is in build.
+- Live products with paying customers and real pricing: Engineer OS (from £15 per engineer per month, engineeros.uk), MVP Cricket (from £19 per month, mvpcricket.app). MVP Golf (mvpgolf.app) is in early access by invite: free to use, 1% on card payments.
 - Three published blog posts, Supabase-backed.
 
 **Confirmed to exist but not yet located on disk — Rob to supply paths:** photography of Rob, product screenshots (Engineer OS / MVP Cricket / BrightFire), and client or company logos. Until those files land, the design must stand without them and expose them as first-class slots rather than faking them. The current Studio hero fakes a job board in `div`s; that is a placeholder to be replaced with a real screenshot, not a pattern to extend.
