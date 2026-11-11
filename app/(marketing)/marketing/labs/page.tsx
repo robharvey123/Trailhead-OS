@@ -103,6 +103,9 @@ const products: LabsProduct[] = [
       'The society app your members will actually open. A society website with event pages, memberships and entry fees paid straight into the society’s own Stripe account, the draw, offline scoring on the day, live leaderboards and a season-long Order of Merit.',
     origin:
       'Built alongside MVP Cricket on the same idea: give members something worth opening and the admin looks after itself. In early access, by invite.',
+    screenshot: '/labs/mvp-golf.webp',
+    screenshotAlt:
+      'MVP Golf on a phone: a live stableford leaderboard for a demo society, players ranked by points with holes played',
     pricing: 'Free to use, 1% on card payments',
     href: 'https://mvpgolf.app',
     external: true,
@@ -237,14 +240,25 @@ export default async function LabsPage() {
                     </p>
                   ) : null}
 
-                  <PlateSlot
-                    src={product.screenshot}
-                    alt={product.screenshotAlt ?? `${product.name} in use`}
-                    width={418}
-                    height={849}
-                    className="mt-5 max-w-[13rem]"
-                    sizes="13rem"
-                  />
+                  {/* The screenshot is the most clickable thing on the card,
+                      so it leads to the product's own site too. */}
+                  {product.screenshot ? (
+                    <a
+                      href={product.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visit the ${product.name} site`}
+                      className="mt-5 block max-w-[13rem] transition-opacity hover:opacity-85"
+                    >
+                      <PlateSlot
+                        src={product.screenshot}
+                        alt={product.screenshotAlt ?? `${product.name} in use`}
+                        width={418}
+                        height={849}
+                        sizes="13rem"
+                      />
+                    </a>
+                  ) : null}
 
                   {/* The shelf ticket: the price is the point of a ticket, so
                       an unset price prints as unset rather than disappearing. */}

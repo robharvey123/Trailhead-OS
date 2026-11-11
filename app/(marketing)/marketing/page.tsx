@@ -78,11 +78,12 @@ const doors = [
   },
 ]
 
-/** One line each. The full story lives on each product's own site, via /labs. */
+/** One line each, linking straight through to each product's own site. */
 const labsStrip = [
   {
     code: 'LAB-01',
     name: 'Engineer OS',
+    href: 'https://engineeros.uk',
     line: 'Job management for UK field service teams, from £15 per engineer a month.',
     price: '£15 / ENGINEER / MO',
     state: 'live' as const,
@@ -90,6 +91,7 @@ const labsStrip = [
   {
     code: 'LAB-02',
     name: 'MVP Cricket',
+    href: 'https://mvpcricket.app',
     line: 'Club management for grassroots cricket, with Play-Cricket sync and automated MVP scoring.',
     price: 'FREE · CLUB £9.99 / MO',
     state: 'live' as const,
@@ -97,6 +99,7 @@ const labsStrip = [
   {
     code: 'LAB-03',
     name: 'MVP Golf',
+    href: 'https://mvpgolf.app',
     line: 'Golf society management with event payments, offline scoring and an Order of Merit, in early access.',
     price: 'FREE · 1% ON CARD',
     state: 'build' as const,
@@ -250,9 +253,11 @@ export default async function MarketingHomePage() {
 
             <div className="facings mt-8 sm:grid-cols-3">
               {labsStrip.map((product) => (
-                <Link
+                <a
                   key={product.name}
-                  href={buildMarketingHref('/labs', isLocalhost)}
+                  href={product.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="facing group flex flex-col bg-[var(--plan)] transition-colors hover:bg-[var(--card)]"
                 >
                   <div className="flex items-baseline justify-between gap-3">
@@ -276,13 +281,23 @@ export default async function MarketingHomePage() {
                   <p className="plan-data mt-6 border-t border-[var(--hair)] pt-3 text-[var(--ink)]">
                     {product.price}
                     <PlanIcon
-                      name="right"
+                      name="external"
                       className="float-right mt-0.5 text-[var(--flash)] transition-transform group-hover:translate-x-0.5"
                     />
                   </p>
-                </Link>
+                </a>
               ))}
             </div>
+
+            <p className="plan-body mt-6 plan-body-sm">
+              <Link
+                href={buildMarketingHref('/labs', isLocalhost)}
+                className="plan-label inline-flex items-center gap-2 text-[var(--ink-2)] transition-colors hover:text-[var(--flash)]"
+              >
+                All three, side by side
+                <PlanIcon name="right" size={13} />
+              </Link>
+            </p>
           </div>
         </div>
       </Reveal>
