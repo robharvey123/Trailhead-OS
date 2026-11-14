@@ -208,7 +208,7 @@ body {
 .tiptap-body .ProseMirror:focus { outline: none; }
 /* The editor is a focusable region with no border of its own, so it needs the
    ring back — inset, because the surrounding compose panel clips an outer one. */
-.tiptap-body .ProseMirror:focus-visible { outline: 2px solid var(--accent-strong, #0369A1); outline-offset: -2px; }
+.tiptap-body .ProseMirror:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .tiptap-body .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--text-3); float: left; height: 0; pointer-events: none; }
 
 @keyframes os-shake {
@@ -243,12 +243,12 @@ body {
 }
 
 .fc {
-  --fc-border-color: var(--border, rgba(51, 65, 85, 0.7));
+  --fc-border-color: var(--border);
   --fc-page-bg-color: transparent;
-  --fc-neutral-bg-color: var(--surface-2, rgba(15, 23, 42, 0.65));
-  --fc-list-event-hover-bg-color: var(--surface-2, rgba(30, 41, 59, 0.75));
-  --fc-today-bg-color: color-mix(in srgb, var(--accent, #38bdf8) 9%, transparent);
-  color: var(--text, #e2e8f0);
+  --fc-neutral-bg-color: var(--surface-2);
+  --fc-list-event-hover-bg-color: var(--surface-2);
+  --fc-today-bg-color: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--text);
   /* Inherit the app's body font (Inter) rather than FullCalendar defaults. */
   font-family: var(--sans);
 }
@@ -256,7 +256,7 @@ body {
 
 /* Month/year header — serif, matching the app's section titles. */
 .fc .fc-toolbar-title {
-  color: var(--text, #f8fafc);
+  color: var(--text);
   font-family: var(--serif);
   font-size: 1.4rem;
   font-weight: 700;
@@ -266,7 +266,7 @@ body {
 /* Time-axis and slot labels: times are figures, so Inter with tabular figures. */
 .fc .fc-timegrid-axis-cushion,
 .fc .fc-timegrid-slot-label-cushion {
-  color: var(--text-3, #94a3b8);
+  color: var(--text-3);
   font-family: var(--sans);
   font-variant-numeric: tabular-nums;
   font-size: 0.72rem;
@@ -274,7 +274,7 @@ body {
 }
 
 .fc .fc-daygrid-day-number {
-  color: var(--text-2, #cbd5e1);
+  color: var(--text-2);
   padding: 0.55rem;
   font-size: 0.82rem;
   font-weight: 500;
@@ -283,7 +283,7 @@ body {
 /* Day-of-week headers: the label style. */
 .fc .fc-col-header-cell-cushion {
   padding: 0.75rem 0.25rem;
-  color: var(--text-3, #94a3b8);
+  color: var(--text-3);
   font-family: var(--sans);
   font-size: 0.72rem;
   font-weight: 600;
@@ -293,13 +293,13 @@ body {
 
 /* Today: accent the date number, not just the column header. */
 .fc .fc-day-today .fc-daygrid-day-number {
-  color: var(--accent, #38bdf8);
+  color: var(--accent);
   font-weight: 800;
 }
 
 /* Empty days a touch lighter so busy vs quiet weeks read at a glance. */
 .fc .fc-daygrid-day {
-  background: color-mix(in srgb, var(--surface, transparent) 35%, transparent);
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
 }
 .fc .fc-day-today {
   background: var(--fc-today-bg-color);
@@ -315,23 +315,23 @@ body {
   text-transform: capitalize;
 }
 .fc .fc-button-primary {
-  border-color: var(--border, rgba(71, 85, 105, 0.9));
-  background: #ffffff;
-  color: var(--text-2, #cbd5e1);
+  border-color: var(--border);
+  background: var(--bg);
+  color: var(--text-2);
 }
 
 .fc .fc-button-primary:hover,
 .fc .fc-button-primary:focus {
-  border-color: var(--border-light, var(--accent));
-  background: var(--surface-2, rgba(30, 41, 59, 0.95));
-  color: var(--text, #f8fafc);
+  border-color: var(--border-light);
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  border-color: var(--accent, rgba(56, 189, 248, 0.85));
-  background: var(--accent-dim, rgba(14, 116, 144, 0.9));
-  color: var(--accent-strong, var(--accent));
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent-strong);
 }
 
 /* "Today" is the only context-resetting control, so it reads as primary:
@@ -350,7 +350,7 @@ body {
 .fc .fc-scrollgrid,
 .fc .fc-theme-standard td,
 .fc .fc-theme-standard th {
-  border-color: var(--border, rgba(51, 65, 85, 0.7));
+  border-color: var(--border);
 }
 /* Soft rounded grid, matching the app's cards. */
 .fc .fc-scrollgrid {
@@ -387,7 +387,7 @@ body {
   width: 5px;
   height: 5px;
   border-radius: var(--radius-pill);
-  background: var(--text-3, #94a3b8);
+  background: var(--text-3);
   display: inline-block;
   animation: typing-bounce 1.2s infinite ease-in-out;
 }
@@ -400,12 +400,12 @@ body {
 
 /* Current-time indicator (week/day views) — clear accent line + arrow. */
 .fc .fc-timegrid-now-indicator-line {
-  border-color: var(--red, #ef4444);
+  border-color: var(--red);
   border-top-width: 2px;
 }
 .fc .fc-timegrid-now-indicator-arrow {
-  border-color: var(--red, #ef4444);
-  color: var(--red, #ef4444);
+  border-color: var(--red);
+  color: var(--red);
 }
 
 /* Event text — the app's body font (Inter), matching everything else. */
@@ -439,7 +439,7 @@ body {
   color: var(--text-3);
 }
 .fc .fc-list-event:hover td {
-  background: color-mix(in srgb, var(--accent) 6%, var(--surface, transparent));
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
 }
 .fc .fc-list-event-title { color: var(--text); }
 .fc .fc-list-event-time { color: var(--text-3); }
@@ -830,7 +830,7 @@ body {
 /* live timer pill */
 .thmock .timer {
   display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: var(--radius-pill);
-  background: linear-gradient(135deg, #FEF2F2, #FEE2E2); border: 1px solid var(--red);
+  background: var(--red-dim); border: 1px solid var(--red);
   box-shadow: var(--shadow-sm);
   font-variant-numeric: tabular-nums;
 }
@@ -844,7 +844,7 @@ body {
 .thmock .timer-meta b { font-weight: 700; }
 .thmock .timer-meta span { color: var(--text-3); font-size: 10px; }
 .thmock .timer-clock { font-size: 13px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; min-width: 62px; text-align: right; }
-.thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: var(--radius-pill); width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.thmock .timer-stop { background: var(--red); color: #ffffff; border: none; border-radius: var(--radius-pill); width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 
 /* panels / cards */
 .thmock .panel { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); }
@@ -933,15 +933,12 @@ body {
 .thmock .reader-subject { font-family: var(--serif); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .thmock .reader-meta-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
 .thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-strong); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
-.thmock .acct-chip:hover { background: var(--accent-strong); color: white; } /* was --accent, 2.77:1 — fails AA */
+.thmock .acct-chip:hover { background: var(--accent-strong); color: var(--bg); } /* was --accent, 2.77:1 — fails AA */
 .thmock .meta-chip { padding: 3px 8px; border-radius: var(--radius-control); font-size: 12px; background: var(--surface-2); color: var(--text-3); }
 .thmock .reader-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 .thmock .reader-body { flex: 1; overflow-y: auto; padding: 0 24px; }
 .thmock .message { padding: 18px 0; border-bottom: 1px solid var(--border); }
 .thmock .message-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-.thmock .avatar { width: 36px; height: 36px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
-.thmock .avatar.inbound { background: linear-gradient(135deg, #0EA5E9, #38BDF8); }
-.thmock .avatar.outbound { background: linear-gradient(135deg, #059669, #34D399); }
 .thmock .msg-from { font-size: 14px; font-weight: 700; color: var(--text); }
 .thmock .msg-to { font-size: 12px; color: var(--text-3); margin-top: 2px; }
 .thmock .msg-time { font-size: 12px; color: var(--text-3); }
