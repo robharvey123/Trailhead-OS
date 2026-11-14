@@ -135,27 +135,27 @@ export default async function RefreshWorksheetPage({
       {/* 1. Header numbers */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="os-card p-5">
-          <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Clicks · 28 days</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums text-[color:var(--text)]">
+          <p className="os-label">Clicks · 28 days</p>
+          <p className="stat-value mt-2">
             {fmt(stats.clicks)}
             <Delta now={stats.clicks} prev={stats.prevClicks} />
           </p>
         </div>
         <div className="os-card p-5">
-          <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Impressions · 28 days</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums text-[color:var(--text)]">
+          <p className="os-label">Impressions · 28 days</p>
+          <p className="stat-value mt-2">
             {fmt(stats.impressions)}
             <Delta now={stats.impressions} prev={stats.prevImpressions} />
           </p>
         </div>
         <div className="os-card p-5">
-          <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Queries ranked for</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{stats.queries.length}</p>
+          <p className="os-label">Queries ranked for</p>
+          <p className="stat-value mt-2">{stats.queries.length}</p>
           <p className="mt-1 text-xs text-[color:var(--text-3)]">avg position {stats.position ?? '—'}</p>
         </div>
         <div className="os-card p-5">
-          <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Estimated upside</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums text-[color:var(--text)]">+{fmt(stats.estimatedUpside)} clicks/mo</p>
+          <p className="os-label">Estimated upside</p>
+          <p className="stat-value mt-2">+{fmt(stats.estimatedUpside)} clicks/mo</p>
           <p className="mt-1 text-xs text-[color:var(--text-3)]" title={CTR_MODEL_LABEL}>
             if every 4-30 query reached position 3 — a model, not a measurement
           </p>
@@ -183,11 +183,11 @@ export default async function RefreshWorksheetPage({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[480px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                    <th className="py-2 pr-3 font-medium">Query</th>
-                    <th className="py-2 pr-3 text-right font-medium">Impr.</th>
-                    <th className="py-2 pr-3 text-right font-medium">Pos.</th>
-                    <th className="py-2 text-right font-medium">+clicks/mo at 3</th>
+                  <tr className="border-b border-[color:var(--border)]">
+                    <th className="os-label py-2 pr-3">Query</th>
+                    <th className="os-label py-2 pr-3 text-right">Impr.</th>
+                    <th className="os-label py-2 pr-3 text-right">Pos.</th>
+                    <th className="os-label py-2 text-right">+clicks/mo at 3</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -215,15 +215,15 @@ export default async function RefreshWorksheetPage({
           ) : (
             <dl className="mt-3 space-y-3 text-sm">
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Title ({payload.page.title?.length ?? 0} chars)</dt>
+                <dt className="os-label">Title ({payload.page.title?.length ?? 0} chars)</dt>
                 <dd className="text-[color:var(--text)]">{payload.page.title ?? <span className="text-[var(--red-strong)]">missing</span>}</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Meta description ({payload.page.meta_description?.length ?? 0} chars)</dt>
+                <dt className="os-label">Meta description ({payload.page.meta_description?.length ?? 0} chars)</dt>
                 <dd className="text-[color:var(--text-2)]">{payload.page.meta_description ?? <span className="text-[var(--red-strong)]">missing</span>}</dd>
               </div>
               <div>
-                <dt className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Outline · {payload.page.word_count.toLocaleString('en-GB')} words</dt>
+                <dt className="os-label">Outline · {payload.page.word_count.toLocaleString('en-GB')} words</dt>
                 <dd>
                   <ul className="mt-1 space-y-0.5 text-[color:var(--text-2)]">
                     {payload.page.h1.map((h) => (
@@ -261,7 +261,7 @@ export default async function RefreshWorksheetPage({
               <>
                 {payload.gap_headings.length > 0 ? (
                   <div className="mt-3 rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[var(--amber-strong)]">Content gap — on 3+ of the top 5, absent here</p>
+                    <p className="os-label text-[var(--amber-strong)]!">Content gap — on 3+ of the top 5, absent here</p>
                     <ul className="mt-2 space-y-1 text-sm text-[var(--amber-strong)]">
                       {payload.gap_headings.map((h) => (
                         <li key={h}>• {h}</li>

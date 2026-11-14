@@ -30,14 +30,14 @@ export default async function OutreachPage() {
         {campaigns.length === 0 ? (
           <div className="empty">No campaigns yet. Create one, or run the Engineer OS seed.</div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="panel overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Campaign</th><th>Status</th><th style={{ textAlign: 'right' }}>Audience</th>
-                <th style={{ textAlign: 'right' }}>Sent</th><th style={{ textAlign: 'right' }}>Delivered</th>
-                <th style={{ textAlign: 'right' }}>Opened</th><th style={{ textAlign: 'right' }}>Replied</th>
-                <th style={{ textAlign: 'right' }}>Stopped</th>
+                <th>Campaign</th><th>Status</th><th className="text-right!">Audience</th>
+                <th className="text-right!">Sent</th><th className="text-right!">Delivered</th>
+                <th className="text-right!">Opened</th><th className="text-right!">Replied</th>
+                <th className="text-right!">Stopped</th>
               </tr>
             </thead>
             <tbody>
@@ -48,12 +48,12 @@ export default async function OutreachPage() {
                     <div className="td-sub">{c.audience_name ?? 'No audience'}</div>
                   </td>
                   <td><span className="meta-chip">{OUTREACH_CAMPAIGN_STATUS_LABELS[c.status]}</span></td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.audience_size ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.sent ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.delivered ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.opened ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.replied ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.stopped ?? 0}</td>
+                  <td className="td-num text-right">{c.stats?.audience_size ?? 0}</td>
+                  <td className="td-num text-right">{c.stats?.sent ?? 0}</td>
+                  <td className="td-num text-right">{c.stats?.delivered ?? 0}</td>
+                  <td className="td-num text-right">{c.stats?.opened ?? 0}</td>
+                  <td className="td-num text-right">{c.stats?.replied ?? 0}</td>
+                  <td className="td-num text-right">{c.stats?.stopped ?? 0}</td>
                 </tr>
               ))}
             </tbody>

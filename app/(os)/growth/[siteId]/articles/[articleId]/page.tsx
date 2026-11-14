@@ -85,7 +85,7 @@ export default async function GrowthArticleDetailPage({
               <form action={approveArticleAction.bind(null, site.id, article.id)}>
                 <button
                   type="submit"
-                  className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                  className="btn btn-primary"
                 >
                   Approve article
                 </button>
@@ -139,7 +139,7 @@ export default async function GrowthArticleDetailPage({
               <form action={retryDraftAction.bind(null, site.id, article.id)}>
                 <button
                   type="submit"
-                  className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                  className="btn btn-ghost"
                 >
                   Retry draft
                 </button>
@@ -150,7 +150,7 @@ export default async function GrowthArticleDetailPage({
       />
 
       {voiceStaleWarning && article.status !== 'published' ? (
-        <div className="rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] px-4 py-3 text-sm text-[var(--amber-strong)] dark:border-[var(--amber)]/40 dark:bg-[var(--amber-dim)] dark:text-[var(--amber-strong)]">
+        <div className="rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] px-4 py-3 text-sm text-[var(--amber-strong)]">
           {voiceStaleWarning}
         </div>
       ) : null}

@@ -117,11 +117,11 @@ export default async function GrowthKeywordsPage({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                    <th className="py-2 pr-3 font-medium">Severity</th>
-                    <th className="py-2 pr-3 font-medium">Issue</th>
-                    <th className="py-2 pr-3 font-medium">URL</th>
-                    <th className="py-2 font-medium">Detail</th>
+                  <tr className="border-b border-[color:var(--border)]">
+                    <th className="os-label py-2 pr-3">Severity</th>
+                    <th className="os-label py-2 pr-3">Issue</th>
+                    <th className="os-label py-2 pr-3">URL</th>
+                    <th className="os-label py-2">Detail</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -170,14 +170,14 @@ export default async function GrowthKeywordsPage({
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                      <th className="py-2 pr-3 font-medium">Page</th>
-                      <th className="py-2 pr-3 text-right font-medium">Clicks</th>
-                      <th className="py-2 pr-3 text-right font-medium">vs prior</th>
-                      <th className="py-2 pr-3 text-right font-medium">Impr.</th>
-                      <th className="py-2 pr-3 text-right font-medium">Pos.</th>
-                      <th className="py-2 pr-3 text-right font-medium">Queries</th>
-                      <th className="py-2 font-medium">Worksheet</th>
+                    <tr className="border-b border-[color:var(--border)]">
+                      <th className="os-label py-2 pr-3">Page</th>
+                      <th className="os-label py-2 pr-3 text-right">Clicks</th>
+                      <th className="os-label py-2 pr-3 text-right">vs prior</th>
+                      <th className="os-label py-2 pr-3 text-right">Impr.</th>
+                      <th className="os-label py-2 pr-3 text-right">Pos.</th>
+                      <th className="os-label py-2 pr-3 text-right">Queries</th>
+                      <th className="os-label py-2">Worksheet</th>
                     </tr>
                   </thead>
                   <tbody>

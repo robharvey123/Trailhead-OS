@@ -27,8 +27,7 @@ export default async function GrowthGapPage({
     gapKeywords(siteId).catch(() => []),
     suggestCompetitors(site, resolved?.labs === '1').catch(() => []),
   ])
-  const inputClass =
-    'rounded-control border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  const inputClass = 'os-input px-3 py-2 text-sm'
 
   return (
     <div className="space-y-6">
@@ -68,10 +67,10 @@ export default async function GrowthGapPage({
                   </div>
                   <div className="flex gap-2">
                     <form action={pullCompetitorAction.bind(null, site.id, c.domain)}>
-                      <PendingButton pendingLabel="Pulling…">Re-pull</PendingButton>
+                      <PendingButton className="btn-sm" pendingLabel="Pulling…">Re-pull</PendingButton>
                     </form>
                     <form action={toggleCompetitorAction.bind(null, site.id, c.id, !c.tracked)}>
-                      <PendingButton pendingLabel="Saving…">{c.tracked ? 'Untrack' : 'Track'}</PendingButton>
+                      <PendingButton className="btn-sm" pendingLabel="Saving…">{c.tracked ? 'Untrack' : 'Track'}</PendingButton>
                     </form>
                   </div>
                 </li>
@@ -105,7 +104,7 @@ export default async function GrowthGapPage({
                   <form action={addCompetitorAction.bind(null, site.id)}>
                     <input type="hidden" name="domain" value={s.domain} />
                     <input type="hidden" name="added_by" value={s.source} />
-                    <PendingButton pendingLabel="Pulling…">Add</PendingButton>
+                    <PendingButton className="btn-sm" pendingLabel="Pulling…">Add</PendingButton>
                   </form>
                 </li>
               ))}

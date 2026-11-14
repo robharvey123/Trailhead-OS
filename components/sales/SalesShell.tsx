@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import TrailheadLogo from '@/components/brand/TrailheadLogo'
 
 const NAV = [
   { href: '/sales/dashboard', label: 'Dashboard' },
@@ -36,10 +37,11 @@ export default function SalesShell({
   }
 
   return (
-    <div className="sales-shell min-h-screen bg-[var(--bg)] text-[color:var(--text)]">
-      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--surface)] pt-[env(safe-area-inset-top)]">
+    <div className="sales-shell min-h-screen bg-[var(--surface)] text-[color:var(--text)]">
+      <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg)] pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link href="/sales/dashboard" className="text-sm font-semibold tracking-tight">
+          <Link href="/sales/dashboard" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+            <TrailheadLogo variant="positive" markOnly size={24} />
             Trailhead OS <span className="text-[color:var(--text-3)]">· Sales</span>
           </Link>
           <nav className="flex flex-1 items-center gap-1" aria-label="Sales">
@@ -52,8 +54,8 @@ export default function SalesShell({
                   aria-current={active ? 'page' : undefined}
                   className={`tap inline-flex items-center rounded-control px-3 py-1.5 text-sm transition ${
                     active
-                      ? 'bg-[var(--surface-2)] font-medium text-[color:var(--text)]'
-                      : 'text-[color:var(--text-2)] hover:bg-[var(--surface-2)]'
+                      ? 'bg-[var(--accent-dim)] font-semibold text-[color:var(--accent-strong)]'
+                      : 'text-[color:var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[color:var(--text)]'
                   }`}
                 >
                   {item.label}

@@ -33,7 +33,7 @@ export function ConfirmPendingButton({
       <button
         type="button"
         onClick={() => setArmed(true)}
-        className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+        className="btn btn-ghost"
       >
         {children}
       </button>
@@ -41,8 +41,8 @@ export function ConfirmPendingButton({
   }
 
   return (
-    <div className="rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] p-3 dark:border-[var(--amber)]/40 dark:bg-[var(--amber-dim)]">
-      <p className="text-sm text-[var(--amber-strong)] dark:text-[var(--amber-strong)]">{warning}</p>
+    <div className="rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] p-3">
+      <p className="text-sm text-[var(--amber-strong)]">{warning}</p>
       <div className="mt-3 flex items-center gap-2">
         <PendingButton variant={variant} pendingLabel={pendingLabel}>
           {confirmLabel}
@@ -50,7 +50,7 @@ export function ConfirmPendingButton({
         <button
           type="button"
           onClick={() => setArmed(false)}
-          className="rounded-card px-3 py-2 text-sm text-[color:var(--text-2)] transition hover:text-[color:var(--text)]"
+          className="btn btn-text"
         >
           Cancel
         </button>

@@ -88,7 +88,7 @@ export default async function EnquiriesPage({
               <Link
                 key={enquiry.id}
                 href={`/enquiries/${enquiry.id}`}
-                className="block rounded-card border border-[color:var(--border)] bg-white p-5 transition hover:border-[color:var(--border-light)]"
+                className="block rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-5 transition hover:border-[color:var(--border-light)]"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>

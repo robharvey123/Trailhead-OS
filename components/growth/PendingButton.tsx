@@ -21,17 +21,15 @@ export function PendingButton({
 }) {
   const { pending } = useFormStatus()
 
-  const base =
-    variant === 'primary'
-      ? 'rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]'
-      : 'rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]'
+  // The look comes from the shared `.btn` classes; `className` is for layout and `btn-sm`.
+  const base = variant === 'primary' ? 'btn btn-primary' : 'btn btn-ghost'
 
   return (
     <button
       type="submit"
       disabled={pending}
       aria-busy={pending}
-      className={`${base} ${className} inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60`}
+      className={`${base} ${className}`.trim()}
     >
       {pending ? (
         <>

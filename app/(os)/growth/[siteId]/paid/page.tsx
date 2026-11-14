@@ -64,8 +64,7 @@ export default async function GrowthPaidPage({
     trailingTrend(siteId, 6).catch(() => []),
   ])
   const wastedGroups = groupWastedTerms(wasted)
-  const inputClass =
-    'rounded-control border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  const inputClass = 'os-input px-3 py-2 text-sm'
 
   const tabs = [
     { key: 'search', label: `Search · Google${googleAccounts.length ? '' : ' (not linked)'}` },
@@ -109,8 +108,8 @@ export default async function GrowthPaidPage({
         <div className="grid gap-4 sm:grid-cols-2">
           {pace.map((p) => (
             <div key={p.platform} className="os-card p-5">
-              <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">{p.platform === 'google' ? 'Google Ads' : 'Meta'} · month to date</p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(p.spendMtd, currency)}</p>
+              <p className="os-label">{p.platform === 'google' ? 'Google Ads' : 'Meta'} · month to date</p>
+              <p className="stat-value mt-2">{money(p.spendMtd, currency)}</p>
               <p className="mt-1 text-xs text-[color:var(--text-3)]">
                 projects to {money(p.projectedMonthEnd, currency)}
                 {p.target ? ` vs ${money(p.target, currency)} target` : ' — set a monthly media budget in settings for pacing alerts'}
@@ -226,12 +225,12 @@ export default async function GrowthPaidPage({
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full min-w-[520px] text-left text-sm">
                     <thead>
-                      <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                        <th className="py-2 pr-3 font-medium">Keyword</th>
-                        <th className="py-2 pr-3 text-right font-medium">Organic</th>
-                        <th className="py-2 pr-3 text-right font-medium">CPA</th>
-                        <th className="py-2 pr-3 text-right font-medium">Optional/mo</th>
-                        <th className="py-2 text-right font-medium">Payback</th>
+                      <tr className="border-b border-[color:var(--border)]">
+                        <th className="os-label py-2 pr-3">Keyword</th>
+                        <th className="os-label py-2 pr-3 text-right">Organic</th>
+                        <th className="os-label py-2 pr-3 text-right">CPA</th>
+                        <th className="os-label py-2 pr-3 text-right">Optional/mo</th>
+                        <th className="os-label py-2 text-right">Payback</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -287,7 +286,7 @@ export default async function GrowthPaidPage({
                   ))}
                 </ul>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Negatives, ready to paste</p>
+                  <p className="os-label">Negatives, ready to paste</p>
                   <textarea readOnly rows={10} value={wasted.map((t) => t.search_term).join('\n')} className={`mt-1 w-full ${inputClass} text-xs`} />
                 </div>
               </div>
@@ -300,15 +299,15 @@ export default async function GrowthPaidPage({
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                      <th className="py-2 pr-3 font-medium">Keyword</th>
-                      <th className="py-2 pr-3 font-medium">Match</th>
-                      <th className="py-2 pr-3 text-right font-medium">Cost</th>
-                      <th className="py-2 pr-3 text-right font-medium">Clicks</th>
-                      <th className="py-2 pr-3 text-right font-medium">Conv</th>
-                      <th className="py-2 pr-3 text-right font-medium">QS</th>
-                      <th className="py-2 pr-3 font-medium">Landing page exp.</th>
-                      <th className="py-2 text-right font-medium">Impr. share</th>
+                    <tr className="border-b border-[color:var(--border)]">
+                      <th className="os-label py-2 pr-3">Keyword</th>
+                      <th className="os-label py-2 pr-3">Match</th>
+                      <th className="os-label py-2 pr-3 text-right">Cost</th>
+                      <th className="os-label py-2 pr-3 text-right">Clicks</th>
+                      <th className="os-label py-2 pr-3 text-right">Conv</th>
+                      <th className="os-label py-2 pr-3 text-right">QS</th>
+                      <th className="os-label py-2 pr-3">Landing page exp.</th>
+                      <th className="os-label py-2 text-right">Impr. share</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -359,14 +358,14 @@ export default async function GrowthPaidPage({
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[800px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                      <th className="py-2 pr-3 font-medium">Creative</th>
-                      <th className="py-2 pr-3 font-medium">Headline / text</th>
-                      <th className="py-2 pr-3 text-right font-medium">Spend</th>
-                      <th className="py-2 pr-3 text-right font-medium">Reach</th>
-                      <th className="py-2 pr-3 text-right font-medium">Freq.</th>
-                      <th className="py-2 pr-3 text-right font-medium">CTR</th>
-                      <th className="py-2 text-right font-medium">Conv</th>
+                    <tr className="border-b border-[color:var(--border)]">
+                      <th className="os-label py-2 pr-3">Creative</th>
+                      <th className="os-label py-2 pr-3">Headline / text</th>
+                      <th className="os-label py-2 pr-3 text-right">Spend</th>
+                      <th className="os-label py-2 pr-3 text-right">Reach</th>
+                      <th className="os-label py-2 pr-3 text-right">Freq.</th>
+                      <th className="os-label py-2 pr-3 text-right">CTR</th>
+                      <th className="os-label py-2 text-right">Conv</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -404,13 +403,13 @@ export default async function GrowthPaidPage({
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full min-w-[600px] text-left text-sm">
                     <thead>
-                      <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                        <th className="py-2 pr-3 font-medium">Channel</th>
-                        <th className="py-2 pr-3 text-right font-medium">Clicks</th>
-                        <th className="py-2 pr-3 text-right font-medium">Impressions</th>
-                        <th className="py-2 pr-3 text-right font-medium">Spend</th>
-                        <th className="py-2 pr-3 text-right font-medium">Conversions</th>
-                        <th className="py-2 text-right font-medium">CPA</th>
+                      <tr className="border-b border-[color:var(--border)]">
+                        <th className="os-label py-2 pr-3">Channel</th>
+                        <th className="os-label py-2 pr-3 text-right">Clicks</th>
+                        <th className="os-label py-2 pr-3 text-right">Impressions</th>
+                        <th className="os-label py-2 pr-3 text-right">Spend</th>
+                        <th className="os-label py-2 pr-3 text-right">Conversions</th>
+                        <th className="os-label py-2 text-right">CPA</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -429,13 +428,13 @@ export default async function GrowthPaidPage({
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div className="rounded-card border border-[color:var(--border)] p-4">
-                    <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Equivalent media value of organic</p>
-                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(blended.equivalentMediaValue, currency)}</p>
+                    <p className="os-label">Equivalent media value of organic</p>
+                    <p className="stat-value mt-1">{money(blended.equivalentMediaValue, currency)}</p>
                     <p className="mt-1 text-xs text-[color:var(--text-3)]">What this month&apos;s organic clicks would have cost at your Ads CPCs (DataForSEO CPC where never bought). A model, not revenue.</p>
                   </div>
                   <div className="rounded-card border border-[color:var(--border)] p-4">
-                    <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Blended CAC (paid channels)</p>
-                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(blended.blendedCac, currency)}</p>
+                    <p className="os-label">Blended CAC (paid channels)</p>
+                    <p className="stat-value mt-1">{money(blended.blendedCac, currency)}</p>
                     <p className="mt-1 text-xs text-[color:var(--text-3)]">Google and Meta attribute differently and can double count; treat as directional.</p>
                   </div>
                 </div>
@@ -447,11 +446,11 @@ export default async function GrowthPaidPage({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[480px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                    <th className="py-2 pr-3 font-medium">Month</th>
-                    <th className="py-2 pr-3 text-right font-medium">Paid spend</th>
-                    <th className="py-2 pr-3 text-right font-medium">Organic clicks</th>
-                    <th className="py-2 text-right font-medium">Blended CAC</th>
+                  <tr className="border-b border-[color:var(--border)]">
+                    <th className="os-label py-2 pr-3">Month</th>
+                    <th className="os-label py-2 pr-3 text-right">Paid spend</th>
+                    <th className="os-label py-2 pr-3 text-right">Organic clicks</th>
+                    <th className="os-label py-2 text-right">Blended CAC</th>
                   </tr>
                 </thead>
                 <tbody>

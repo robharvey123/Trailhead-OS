@@ -6,6 +6,7 @@ import { getCurrentProfile, roleCanUseSales } from '@/lib/auth/roles'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { resend } from '@/lib/email/resend'
 import { isSuppressed } from '@/lib/outreach/suppression'
+import { BRAND } from '@/lib/brand'
 import { getCompanySettings } from '@/lib/company-settings'
 import { checkSenderAddress } from '@/lib/sales/sender'
 
@@ -122,8 +123,8 @@ export async function sendFollowUpEmail(contactId: string, input: { subject: str
   const settings = await getCompanySettings(admin)
   const html = [
     ...body.split(/\n{2,}/).map((p) => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`),
-    '<hr style="border:none;border-top:1px solid #ddd;margin:24px 0 12px">',
-    `<p style="font-size:12px;color:#666;margin:0">${escapeHtml(settings.company_name)}. Reply to this email if you would rather not hear from us again.</p>`,
+    `<hr style="border:none;border-top:1px solid ${BRAND.border};margin:24px 0 12px">`,
+    `<p style="font-size:12px;color:${BRAND.slate};margin:0">${escapeHtml(settings.company_name)}. Reply to this email if you would rather not hear from us again.</p>`,
   ].join('\n')
 
   const { data: sent, error: sendError } = await resend.emails.send({

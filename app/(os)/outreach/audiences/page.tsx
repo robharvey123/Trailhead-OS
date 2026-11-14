@@ -21,15 +21,15 @@ export default async function AudiencesPage() {
         {audiences.length === 0 ? (
           <div className="empty">No audiences yet. The Engineer OS seed creates one.</div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="panel overflow-x-auto">
           <table className="data-table">
-            <thead><tr><th>Name</th><th>Description</th><th style={{ textAlign: 'right' }}>Members</th></tr></thead>
+            <thead><tr><th>Name</th><th>Description</th><th className="text-right!">Members</th></tr></thead>
             <tbody>
               {audiences.map((a) => (
                 <tr key={a.id}>
                   <td className="td-name">{a.name}</td>
                   <td className="td-sub">{a.description ?? '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{a.member_count}</td>
+                  <td className="td-num text-right">{a.member_count}</td>
                 </tr>
               ))}
             </tbody>

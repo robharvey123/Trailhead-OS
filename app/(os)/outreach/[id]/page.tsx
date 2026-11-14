@@ -51,7 +51,7 @@ export default async function CampaignDetailPage({
   ])
   const isRunning = campaign.status === 'running'
   const userEmail = userData?.user?.email ?? ''
-  const input = 'os-input rounded-control px-3 py-2 text-sm'
+  const input = 'os-input px-3 py-2 text-sm'
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -94,8 +94,8 @@ export default async function CampaignDetailPage({
         ) : null}
 
         {/* Schedule editor */}
-        <div className="os-card rounded-card p-6">
-          <h2 className="text-lg font-semibold text-white">Schedule</h2>
+        <div className="os-card p-6">
+          <h2 className="os-section-title">Schedule</h2>
           <p className="mt-1 text-sm text-[var(--text-2)]">Editable any time — a change takes effect on the next tick, no pause needed.</p>
           <form action={updateCampaignScheduleAction} className="mt-4 space-y-4">
             <input type="hidden" name="id" value={campaign.id} />
@@ -109,15 +109,15 @@ export default async function CampaignDetailPage({
             </div>
             <div className="flex flex-wrap items-end gap-3">
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--text-2)]">Start</span>
+                <span className="field-label block">Start</span>
                 <input name="send_window_start" type="time" className={input} defaultValue={hm(campaign.send_window_start)} />
               </label>
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--text-2)]">End</span>
+                <span className="field-label block">End</span>
                 <input name="send_window_end" type="time" className={input} defaultValue={hm(campaign.send_window_end)} />
               </label>
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--text-2)]">Timezone</span>
+                <span className="field-label block">Timezone</span>
                 <input name="timezone" className={input} defaultValue={campaign.timezone} />
               </label>
               <button className="btn btn-ghost btn-sm">Save schedule</button>
@@ -126,8 +126,8 @@ export default async function CampaignDetailPage({
         </div>
 
         {/* Steps */}
-        <div className="os-card rounded-card p-6">
-          <h2 className="text-lg font-semibold text-white">Sequence</h2>
+        <div className="os-card p-6">
+          <h2 className="os-section-title">Sequence</h2>
           {isRunning ? (
             <p className="mt-1 text-sm text-[color:var(--amber-strong)]">Steps are locked while the campaign is running — recipients hold a step position that would shift onto the wrong email. Pause to edit.</p>
           ) : null}
@@ -136,14 +136,14 @@ export default async function CampaignDetailPage({
           ) : (
             <div className="overflow-x-auto">
             <table className="data-table mt-3">
-              <thead><tr><th>Step</th><th>Template</th><th style={{ textAlign: 'right' }}>Delay (days)</th><th></th></tr></thead>
+              <thead><tr><th>Step</th><th>Template</th><th className="text-right!">Delay (days)</th><th></th></tr></thead>
               <tbody>
                 {steps.map((s) => (
                   <tr key={s.id}>
                     <td className="td-num">{s.step_number}</td>
                     <td>{s.template_name ?? '—'}</td>
-                    <td style={{ textAlign: 'right' }} className="td-num">{s.delay_days}</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="td-num text-right">{s.delay_days}</td>
+                    <td className="text-right">
                       {!isRunning ? (
                         <form action={removeCampaignStepAction}>
                           <input type="hidden" name="id" value={campaign.id} />
@@ -162,15 +162,15 @@ export default async function CampaignDetailPage({
             <form action={addCampaignStepAction} className="mt-4 flex flex-wrap items-end gap-3">
               <input type="hidden" name="id" value={campaign.id} />
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--text-2)]">Template</span>
+                <span className="field-label block">Template</span>
                 <select name="template_id" className={input} defaultValue="">
                   <option value="" disabled>Choose…</option>
                   {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </label>
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--text-2)]">Delay (days after previous)</span>
-                <input name="delay_days" type="number" min={0} defaultValue={steps.length === 0 ? 0 : 3} className={input} style={{ width: 90 }} />
+                <span className="field-label block">Delay (days after previous)</span>
+                <input name="delay_days" type="number" min={0} defaultValue={steps.length === 0 ? 0 : 3} className={`${input} w-[90px]`} />
               </label>
               <button className="btn btn-primary btn-sm">Add step</button>
             </form>
@@ -178,8 +178,8 @@ export default async function CampaignDetailPage({
         </div>
 
         {/* Send test */}
-        <div className="os-card rounded-card p-6">
-          <h2 className="text-lg font-semibold text-white">Send test</h2>
+        <div className="os-card p-6">
+          <h2 className="os-section-title">Send test</h2>
           {steps.length === 0 ? (
             <p className="mt-2 text-sm text-[var(--text-2)]">Add a step first — there’s nothing to render yet.</p>
           ) : audienceContacts.length === 0 ? (
@@ -190,11 +190,11 @@ export default async function CampaignDetailPage({
               <form action={sendTestEmailAction} className="mt-4 flex flex-wrap items-end gap-3">
                 <input type="hidden" name="id" value={campaign.id} />
                 <label className="space-y-1 text-sm">
-                  <span className="block text-[var(--text-2)]">To</span>
-                  <input name="to_email" type="email" required defaultValue={userEmail} className={input} style={{ minWidth: 220 }} />
+                  <span className="field-label block">To</span>
+                  <input name="to_email" type="email" required defaultValue={userEmail} className={`${input} min-w-[220px]`} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="block text-[var(--text-2)]">As contact</span>
+                  <span className="field-label block">As contact</span>
                   <select name="contact_id" className={input} defaultValue={audienceContacts[0]?.id}>
                     {audienceContacts.map((c) => (
                       <option key={c.id} value={c.id}>{(c.company ?? c.name)}{c.channel ? ` · ${c.channel}` : ''}</option>
@@ -202,7 +202,7 @@ export default async function CampaignDetailPage({
                   </select>
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="block text-[var(--text-2)]">Step</span>
+                  <span className="field-label block">Step</span>
                   <select name="step_number" className={input} defaultValue={steps[0]?.step_number}>
                     {steps.map((s) => <option key={s.id} value={s.step_number}>{s.step_number}. {s.template_name ?? '—'}</option>)}
                   </select>
@@ -214,13 +214,13 @@ export default async function CampaignDetailPage({
         </div>
 
         {/* Recipients */}
-        <div className="os-card rounded-card p-6">
+        <div className="os-card p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-white">Recipients ({campaign.stats?.recipients ?? recipients.length})</h2>
-            <div className="flex flex-wrap gap-1">
-              <Link href={`/outreach/${id}`} className={`btn btn-ghost btn-sm ${!statusFilter ? 'active' : ''}`}>All</Link>
+            <h2 className="os-section-title">Recipients ({campaign.stats?.recipients ?? recipients.length})</h2>
+            <div className="range-chips flex-wrap">
+              <Link href={`/outreach/${id}`} className={`range-chip ${!statusFilter ? 'active' : ''}`}>All</Link>
               {OUTREACH_RECIPIENT_STATUSES.map((s) => (
-                <Link key={s} href={`/outreach/${id}?status=${s}`} className={`btn btn-ghost btn-sm ${statusFilter === s ? 'active' : ''}`}>
+                <Link key={s} href={`/outreach/${id}?status=${s}`} className={`range-chip ${statusFilter === s ? 'active' : ''}`}>
                   {OUTREACH_RECIPIENT_STATUS_LABELS[s]}
                 </Link>
               ))}
@@ -232,7 +232,7 @@ export default async function CampaignDetailPage({
             <div className="overflow-x-auto">
             <table className="data-table mt-3">
               <thead>
-                <tr><th>Contact</th><th>Company</th><th>Status</th><th style={{ textAlign: 'right' }}>Step</th><th>Next send</th><th>Stopped</th></tr>
+                <tr><th>Contact</th><th>Company</th><th>Status</th><th className="text-right!">Step</th><th>Next send</th><th>Stopped</th></tr>
               </thead>
               <tbody>
                 {recipients.map((r) => (
@@ -240,7 +240,7 @@ export default async function CampaignDetailPage({
                     <td className="td-name">{r.contact?.name ?? '—'}<div className="td-sub">{r.contact?.email}</div></td>
                     <td>{r.contact?.company ?? '—'}</td>
                     <td><span className="meta-chip">{OUTREACH_RECIPIENT_STATUS_LABELS[r.status]}</span></td>
-                    <td style={{ textAlign: 'right' }} className="td-num">{r.current_step}</td>
+                    <td className="td-num text-right">{r.current_step}</td>
                     <td className="td-num">{fmt(r.next_send_at)}</td>
                     <td>{r.stopped_reason ?? '—'}</td>
                   </tr>

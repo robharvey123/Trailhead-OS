@@ -1,7 +1,7 @@
 export default function DashboardLoading() {
   return (
     <div className="mx-auto max-w-[780px] space-y-6">
-      <div className="rounded-card border border-[color:var(--border)] bg-white p-6">
+      <div className="rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6">
         <div className="h-4 w-28 animate-pulse rounded-pill bg-[var(--surface-2)]" />
         <div className="mt-4 h-10 w-72 animate-pulse rounded-card bg-[var(--surface-2)]" />
         <div className="mt-3 h-4 w-full max-w-[420px] animate-pulse rounded-pill bg-[var(--surface-2)]" />
@@ -16,7 +16,7 @@ export default function DashboardLoading() {
       </div>
 
       {Array.from({ length: 4 }).map((_, sectionIndex) => (
-        <div key={sectionIndex} className="rounded-card border border-[color:var(--border)] bg-white p-5">
+        <div key={sectionIndex} className="rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-5">
           <div className="h-4 w-24 animate-pulse rounded-pill bg-[var(--surface-2)]" />
           <div className="mt-3 h-6 w-48 animate-pulse rounded-card bg-[var(--surface-2)]" />
           <div className="mt-2 h-4 w-full max-w-[320px] animate-pulse rounded-pill bg-[var(--surface-2)]" />

@@ -140,7 +140,7 @@ export default async function SettingsPage() {
               <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">{user?.email ?? 'Unknown user'}</p>
             </div>
             {roleIsAdmin(profile.role) ? (
-              <Link href="/admin/invites" className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]">
+              <Link href="/admin/invites" className="btn btn-ghost">
                 Manage invites
               </Link>
             ) : null}
@@ -184,19 +184,19 @@ export default async function SettingsPage() {
           <h2 className="mt-2 os-section-title">Signed-in access</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Email</p>
+              <p className="os-label">Email</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{user?.email ?? 'Unknown user'}</p>
             </div>
             <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Workspace count</p>
+              <p className="os-label">Workspace count</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{workspaces.length}</p>
             </div>
             <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">New enquiries</p>
+              <p className="os-label">New enquiries</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{newEnquiryCount}</p>
             </div>
             <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Draft invoices</p>
+              <p className="os-label">Draft invoices</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{draftInvoiceCount}</p>
             </div>
           </div>
@@ -244,7 +244,7 @@ export default async function SettingsPage() {
           </div>
           <Link
             href="/analytics"
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+            className="btn btn-ghost"
           >
             Open workspace list
           </Link>
@@ -263,7 +263,7 @@ export default async function SettingsPage() {
                 className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 transition hover:border-[color:var(--border-light)]"
               >
                 <p className="text-sm font-medium text-[color:var(--text)]">{workspace.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+                <p className="os-label mt-1">
                   Workspace settings
                 </p>
               </Link>

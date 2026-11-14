@@ -24,8 +24,7 @@ const STATUS_STYLE: Record<string, string> = {
   lost: 'border-[color:var(--border)] text-[color:var(--text-3)]',
 }
 
-const INPUT_CLASS =
-  'rounded-control border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+const INPUT_CLASS = 'os-input px-3 py-2 text-sm'
 
 export default async function GrowthLinksPage({
   params,
@@ -109,7 +108,7 @@ export default async function GrowthLinksPage({
               </PendingButton>
             </form>
             <form action={draftPitchesBatchAction.bind(null, site.id)}>
-              <PendingButton variant="primary" pendingLabel="Writing pitches… (~2 min)">
+              <PendingButton pendingLabel="Writing pitches… (~2 min)">
                 Draft pitches
               </PendingButton>
             </form>
@@ -177,28 +176,28 @@ export default async function GrowthLinksPage({
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {target.status !== 'outreach' && !target.contact_search_at ? (
                     <form action={findContactAction.bind(null, site.id, target.id)}>
-                      <PendingButton className="px-3 py-1.5" pendingLabel="Searching…">
+                      <PendingButton className="btn-sm" pendingLabel="Searching…">
                         Find contact
                       </PendingButton>
                     </form>
                   ) : null}
                   {target.status !== 'outreach' && target.contact_id ? (
                     <form action={draftPitchAction.bind(null, site.id, target.id)}>
-                      <PendingButton className="px-3 py-1.5" pendingLabel="Writing…">
+                      <PendingButton className="btn-sm" pendingLabel="Writing…">
                         {target.pitch_generated_at ? 'Redraft pitch' : 'Draft pitch'}
                       </PendingButton>
                     </form>
                   ) : null}
                   {target.status !== 'outreach' && target.contact_id && target.pitch_subject ? (
                     <form action={approvePitchAction.bind(null, site.id, target.id)}>
-                      <PendingButton variant="primary" className="px-3 py-1.5" pendingLabel="Queueing…">
+                      <PendingButton variant="primary" className="btn-sm" pendingLabel="Queueing…">
                         Approve &amp; queue send
                       </PendingButton>
                     </form>
                   ) : null}
                   {target.status !== 'outreach' ? (
                     <form action={markLinkOutreachAction.bind(null, site.id, target.id)}>
-                      <PendingButton className="px-3 py-1.5" pendingLabel="Marking…">
+                      <PendingButton className="btn-sm" pendingLabel="Marking…">
                         Sent manually
                       </PendingButton>
                     </form>
@@ -214,7 +213,7 @@ export default async function GrowthLinksPage({
                     />
                     <button
                       type="submit"
-                      className="rounded-card border border-[var(--emerald)]/40 bg-[var(--emerald-dim)] px-3 py-1.5 text-sm font-medium text-[var(--emerald-strong)] transition hover:border-[var(--emerald)]"
+                      className="btn btn-ghost btn-sm"
                     >
                       Won
                     </button>
@@ -222,7 +221,7 @@ export default async function GrowthLinksPage({
                   <form action={markLinkLostAction.bind(null, site.id, target.id)}>
                     <button
                       type="submit"
-                      className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-sm text-[color:var(--text-3)] transition hover:border-[var(--red)]/40 hover:text-[var(--red-strong)]"
+                      className="btn btn-ghost btn-sm"
                     >
                       Lost
                     </button>

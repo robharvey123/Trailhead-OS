@@ -86,8 +86,8 @@ export default function OutcomeLogger({
     })
   }
 
-  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]'
+  const input = 'os-input w-full px-3 py-2 text-sm'
+  const label = 'field-label block'
 
   return (
     <div className="space-y-3">
@@ -106,8 +106,10 @@ export default function OutcomeLogger({
                 setError(null)
                 setDone(null)
               }}
-              className={`tap rounded-control border px-2.5 py-1.5 text-xs font-semibold transition ${tone} ${
-                active ? 'bg-[var(--accent-strong)] text-white' : 'bg-[var(--surface)] text-[color:var(--text)] hover:bg-[var(--surface-2)]'
+              className={`tap rounded-control border px-2.5 py-1.5 text-xs font-semibold transition ${
+                active
+                  ? 'border-[var(--accent-strong)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
+                  : `${tone} bg-[var(--surface)] text-[color:var(--text)] hover:bg-[var(--surface-2)]`
               }`}
             >
               {c}
@@ -161,7 +163,7 @@ export default function OutcomeLogger({
           {pending ? 'Logging…' : code ? `Log ${OUTCOME_LABELS[code]}` : 'Log outcome'}
         </button>
         <span role="status" className="text-xs">
-          {error ? <span className="text-[color:var(--red)]">{error}</span> : done ? <span className="text-[color:var(--text-2)]">{done}</span> : null}
+          {error ? <span className="text-[color:var(--red-strong)]">{error}</span> : done ? <span className="text-[color:var(--text-2)]">{done}</span> : null}
         </span>
       </div>
     </div>

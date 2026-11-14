@@ -20,7 +20,7 @@ type Card = PipelineContact
 
 function CardView({ c, dragging, onPick }: { c: Card; dragging?: boolean; onPick?: (to: PipelineStage) => void }) {
   return (
-    <div className={`rounded-control border border-[var(--border)] bg-[var(--surface)] p-2.5 text-sm shadow-[var(--shadow-sm)] ${dragging ? 'opacity-60' : ''}`}>
+    <div className={`rounded-control border border-[var(--border)] bg-[var(--bg)] p-2.5 text-sm shadow-[var(--shadow-sm)] ${dragging ? 'opacity-60' : ''}`}>
       <Link href={`/sales/contacts/${c.id}`} className="font-medium hover:underline" onPointerDown={(e) => e.stopPropagation()}>
         {c.company ?? c.name}
       </Link>
@@ -43,7 +43,7 @@ function CardView({ c, dragging, onPick }: { c: Card; dragging?: boolean; onPick
           onChange={(e) => {
             if (e.target.value) onPick(e.target.value as PipelineStage)
           }}
-          className="mt-2 w-full rounded-control border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[color:var(--text-2)]"
+          className="os-select mt-2 w-full px-2 py-1 text-xs"
         >
           <option value="">Move to…</option>
           {PIPELINE_STAGES.filter((s) => s !== c.pipeline_stage).map((s) => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
@@ -71,7 +71,7 @@ function Column({ stage, cards, onPick }: { stage: PipelineStage; cards: Card[];
       aria-label={`${STAGE_LABELS[stage]}, ${cards.length}`}
       className={`flex w-56 shrink-0 flex-col rounded-control border border-[var(--border)] bg-[var(--surface-2)] ${isOver ? 'ring-2 ring-[var(--accent)]' : ''}`}
     >
-      <h2 className="flex items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-[color:var(--text-2)]">
+      <h2 className="os-label flex items-center justify-between px-3 py-2">
         {STAGE_LABELS[stage]} <span className="tabular-nums">{cards.length}</span>
       </h2>
       <ul className="flex min-h-24 flex-1 flex-col gap-2 px-2 pb-2">
@@ -176,7 +176,7 @@ export default function PipelineClient({
         </label>
         <span className="text-xs text-[color:var(--text-3)]">{visible.length} shown. Drag a card (press and hold on iPad) or use Move to.</span>
       </div>
-      {error ? <p role="alert" className="text-sm text-[color:var(--red)]">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
         <div className="flex gap-3 overflow-x-auto pb-4">
@@ -187,8 +187,8 @@ export default function PipelineClient({
       </DndContext>
 
       {pendingMove ? (
-        <div role="dialog" aria-modal="true" aria-labelledby="reason-title" className="fixed inset-0 z-30 flex items-center justify-center bg-black/30 p-4">
-          <div className="panel w-full max-w-md p-5">
+        <div role="dialog" aria-modal="true" aria-labelledby="reason-title" className="fixed inset-0 z-30 flex items-center justify-center bg-[var(--navy)]/45 p-4">
+          <div className="w-full max-w-md rounded-card border border-[var(--border)] bg-[var(--bg)] p-5 shadow-[var(--shadow-lg)]">
             <h2 id="reason-title" className="text-base font-semibold">
               Why {pendingMove.to === 'lost' ? 'lost' : 'disqualified'}?
             </h2>
@@ -199,7 +199,7 @@ export default function PipelineClient({
               autoFocus
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="mt-3 w-full rounded-control border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+              className="os-input mt-3 w-full px-3 py-2 text-sm"
             />
             <div className="mt-4 flex justify-end gap-2">
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPendingMove(null)}>Cancel</button>

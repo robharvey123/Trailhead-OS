@@ -37,19 +37,19 @@ export default async function MeetingsPage() {
               <Link
                 key={meeting.id}
                 href={`/crm/meetings/${meeting.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[var(--border)] bg-[var(--surface)] p-4 transition hover:border-[var(--accent)]/40"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[var(--border)] bg-[var(--bg)] p-4 shadow-[var(--shadow-sm)] transition hover:border-[var(--border-light)]"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</p>
-                  <p className="text-xs text-[var(--text-2)]">{fmtDate(meeting.meeting_date)}</p>
+                  <p className="truncate text-sm font-semibold text-[var(--text)]">{meeting.title || 'Untitled meeting'}</p>
+                  <p className="text-xs text-[var(--text-3)]">{fmtDate(meeting.meeting_date)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {meeting.account ? (
-                    <span className="rounded-pill border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--text-2)]">
+                    <span className="tag-chip">
                       {meeting.account.name}
                     </span>
                   ) : null}
-                  <span className="rounded-pill border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--text-2)]">
+                  <span className="tag-chip">
                     {meeting.attendees.length} attendee{meeting.attendees.length !== 1 ? 's' : ''}
                   </span>
                 </div>

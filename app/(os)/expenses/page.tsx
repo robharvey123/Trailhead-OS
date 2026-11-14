@@ -120,7 +120,7 @@ export default async function ExpensesPage({
         actions={
           <Link
             href="/expenses/new"
-            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary"
           >
             Add expense
           </Link>
@@ -155,7 +155,7 @@ export default async function ExpensesPage({
           <select
             name="workstream_id"
             defaultValue={resolved?.workstream_id ?? ''}
-            className="os-select rounded-control px-3 py-2 text-sm"
+            className="os-select px-3 py-2 text-sm"
           >
             <option value="">All workstreams</option>
             {workstreams.map((ws) => (
@@ -168,7 +168,7 @@ export default async function ExpensesPage({
           <select
             name="account_id"
             defaultValue={resolved?.account_id ?? ''}
-            className="os-select rounded-control px-3 py-2 text-sm"
+            className="os-select px-3 py-2 text-sm"
           >
             <option value="">All accounts</option>
             {accounts.map((acc) => (
@@ -181,7 +181,7 @@ export default async function ExpensesPage({
           <select
             name="category"
             defaultValue={resolved?.category ?? ''}
-            className="os-select rounded-control px-3 py-2 text-sm"
+            className="os-select px-3 py-2 text-sm"
           >
             <option value="">All categories</option>
             {(Object.keys(CATEGORY_LABELS) as ExpenseCategory[]).map((cat) => (
@@ -195,18 +195,18 @@ export default async function ExpensesPage({
             type="date"
             name="date_from"
             defaultValue={resolved?.date_from ?? ''}
-            className="os-input rounded-control px-3 py-2 text-sm"
+            className="os-input px-3 py-2 text-sm"
           />
           <input
             type="date"
             name="date_to"
             defaultValue={resolved?.date_to ?? ''}
-            className="os-input rounded-control px-3 py-2 text-sm"
+            className="os-input px-3 py-2 text-sm"
           />
 
           <button
             type="submit"
-            className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:bg-[var(--surface-3)]"
+            className="btn btn-ghost"
           >
             Filter
           </button>
@@ -222,17 +222,17 @@ export default async function ExpensesPage({
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+              <thead className="text-left">
                 <tr>
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3">Description</th>
-                  <th className="pb-3">Category</th>
-                  <th className="pb-3">Workstream / Account</th>
-                  <th className="pb-3 text-right">Amount</th>
-                  <th className="pb-3">Billable</th>
-                  <th className="pb-3">Billed</th>
-                  <th className="pb-3">Receipt</th>
-                  <th className="pb-3">Actions</th>
+                  <th className="os-label pb-3">Date</th>
+                  <th className="os-label pb-3">Description</th>
+                  <th className="os-label pb-3">Category</th>
+                  <th className="os-label pb-3">Workstream / Account</th>
+                  <th className="os-label pb-3 text-right">Amount</th>
+                  <th className="os-label pb-3">Billable</th>
+                  <th className="os-label pb-3">Billed</th>
+                  <th className="os-label pb-3">Receipt</th>
+                  <th className="os-label pb-3">Actions</th>
                 </tr>
               </thead>
               <tbody>

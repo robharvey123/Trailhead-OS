@@ -54,7 +54,7 @@ export default async function GrowthBriefDetailPage({
               <form action={approveBriefAction.bind(null, site.id, brief.id)}>
                 <button
                   type="submit"
-                  className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                  className="btn btn-primary"
                 >
                   Approve &amp; queue draft
                 </button>
@@ -62,7 +62,7 @@ export default async function GrowthBriefDetailPage({
               <form action={rejectBriefAction.bind(null, site.id, brief.id)}>
                 <button
                   type="submit"
-                  className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[var(--red)]/40 hover:text-[var(--red-strong)]"
+                  className="btn btn-ghost"
                 >
                   Reject
                 </button>
@@ -108,7 +108,7 @@ export default async function GrowthBriefDetailPage({
         </ol>
         {(outline.faq ?? []).length > 0 ? (
           <>
-            <h3 className="mt-5 text-xs uppercase tracking-wide text-[color:var(--text-3)]">
+            <h3 className="os-label mt-5">
               FAQ (from People Also Ask)
             </h3>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[color:var(--text-2)]">

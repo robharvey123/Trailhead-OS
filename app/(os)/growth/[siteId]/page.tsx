@@ -438,7 +438,7 @@ export default async function GrowthSitePage({
             ) : null}
             <div className="group relative" tabIndex={0}>
               <div className="os-card flex items-center gap-3 px-5 py-3">
-                <span className="text-2xl font-semibold tabular-nums text-[color:var(--text)]">
+                <span className="stat-value">
                   {latestScore ? latestScore.score : '—'}
                 </span>
                 <span className="text-xs leading-tight text-[color:var(--text-3)]">
@@ -447,7 +447,7 @@ export default async function GrowthSitePage({
                   Score
                 </span>
               </div>
-              <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-card border border-[color:var(--border)] bg-white p-4 shadow-[var(--shadow-lg)] group-focus-within:visible group-hover:visible">
+              <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-4 shadow-[var(--shadow-lg)] group-focus-within:visible group-hover:visible">
                 {latestScore ? (
                   <>
                     <p className="text-xs text-[color:var(--text-2)]">{latestScore.breakdown.summary}</p>
@@ -531,9 +531,9 @@ export default async function GrowthSitePage({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {stats.map((stat) => (
           <div key={stat.label} className="os-card p-5">
-            <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">{stat.label}</p>
+            <p className="os-label">{stat.label}</p>
             <div className="mt-2 flex items-center gap-2">
-              <span className="text-2xl font-semibold tabular-nums text-[color:var(--text)]">
+              <span className="stat-value">
                 {stat.value}
               </span>
               <DeltaChip delta={stat.delta} goodWhenDown={stat.deltaGoodWhenDown} />
@@ -643,7 +643,7 @@ export default async function GrowthSitePage({
               </ul>
               {topCompetitors.length > 0 ? (
                 <>
-                  <h3 className="mt-5 text-xs uppercase tracking-wide text-[color:var(--text-3)]">
+                  <h3 className="os-label mt-5">
                     Named instead of us
                   </h3>
                   <ul className="mt-2 space-y-1.5">
@@ -696,7 +696,7 @@ export default async function GrowthSitePage({
             rows={2}
             required
             placeholder="job management software, field service app, digital job sheets"
-            className="min-w-64 grow rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+            className="os-textarea min-w-64 grow px-4 py-2.5 text-sm"
           />
           <PendingButton variant="primary" pendingLabel="Queueing with DataForSEO…">
             Queue research (Google Ads ideas)
@@ -708,7 +708,7 @@ export default async function GrowthSitePage({
             rows={1}
             required
             placeholder="Up to 5 seeds for Labs suggestions + related keywords (instant, tagged by source)"
-            className="min-w-64 grow rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+            className="os-textarea min-w-64 grow px-4 py-2.5 text-sm"
           />
           <PendingButton pendingLabel="Asking DataForSEO Labs…">Expand with Labs</PendingButton>
         </form>

@@ -7,7 +7,7 @@ export default function OsLoading() {
           <div className="h-10 w-48 animate-pulse rounded-card bg-[var(--surface-3)]" />
           <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="rounded-card border border-[color:var(--border)] bg-white p-5">
+              <div key={index} className="rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-5">
                 <div className="h-6 w-32 animate-pulse rounded-card bg-[var(--surface-3)]" />
                 <div className="mt-4 space-y-3">
                   {Array.from({ length: 4 }).map((__, lineIndex) => (

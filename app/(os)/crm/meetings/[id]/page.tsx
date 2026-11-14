@@ -57,8 +57,8 @@ export default async function MeetingDetailPage({
         />
 
         {meeting.attendees.length > 0 ? (
-          <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Attendees</h2>
+          <div className="os-card p-6">
+            <h2 className="os-label">Attendees</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {meeting.attendees.map((attendee, i) => {
                 const matched = contactByEmail.get(attendee.email.trim().toLowerCase())
@@ -67,14 +67,14 @@ export default async function MeetingDetailPage({
                   <Link
                     key={`${attendee.email}-${i}`}
                     href={`/crm/contacts/${matched.id}`}
-                    className="rounded-pill border border-[var(--accent)]/40 px-3 py-1 text-xs text-[var(--accent-strong)] transition hover:border-[var(--accent)]"
+                    className="rounded-pill border border-[var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[var(--accent-strong)] transition hover:bg-[var(--bg)]"
                   >
                     {label}
                   </Link>
                 ) : (
                   <span
                     key={`${attendee.email}-${i}`}
-                    className="rounded-pill border border-[var(--border)] px-3 py-1 text-xs text-[var(--text-2)]"
+                    className="rounded-pill border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]"
                   >
                     {label}
                   </span>
@@ -92,8 +92,8 @@ export default async function MeetingDetailPage({
           allContacts={allContacts}
         />
 
-        <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Summary</h2>
+        <div className="os-card p-6">
+          <h2 className="os-label">Summary</h2>
           <div className="mt-3">
             <MeetingSummary markdown={meeting.summary_md} />
           </div>

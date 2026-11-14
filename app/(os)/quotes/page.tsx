@@ -56,7 +56,7 @@ export default async function QuotesPage({
         actions={
           <Link
             href="/quotes/new"
-            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary"
           >
             New quote
           </Link>
@@ -66,11 +66,11 @@ export default async function QuotesPage({
       <div className="grid gap-4 md:grid-cols-2">
         <div className="os-card p-5">
           <p className="os-eyebrow">Sent quote value</p>
-          <p className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{formatMoney(sentValue)}</p>
+          <p className="stat-value mt-3">{formatMoney(sentValue)}</p>
         </div>
         <div className="os-card p-5">
           <p className="os-eyebrow">Accepted this month</p>
-          <p className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{acceptedThisMonth}</p>
+          <p className="stat-value mt-3">{acceptedThisMonth}</p>
         </div>
       </div>
 
@@ -101,16 +101,16 @@ export default async function QuotesPage({
           </div>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+            <thead className="text-left">
               <tr>
-                <th className="pb-3">Quote no.</th>
-                <th className="pb-3">Title</th>
-                <th className="pb-3">Account</th>
-                <th className="pb-3">Contact</th>
-                <th className="pb-3">Workstream</th>
-                <th className="pb-3 text-right">Total</th>
-                <th className="pb-3">Status</th>
-                <th className="pb-3">Actions</th>
+                <th className="os-label pb-3">Quote no.</th>
+                <th className="os-label pb-3">Title</th>
+                <th className="os-label pb-3">Account</th>
+                <th className="os-label pb-3">Contact</th>
+                <th className="os-label pb-3">Workstream</th>
+                <th className="os-label pb-3 text-right">Total</th>
+                <th className="os-label pb-3">Status</th>
+                <th className="os-label pb-3">Actions</th>
               </tr>
             </thead>
             <tbody>

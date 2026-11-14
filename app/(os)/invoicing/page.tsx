@@ -113,7 +113,7 @@ export default async function InvoicingPage({
         actions={
           <Link
             href="/invoicing/new"
-            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary"
           >
             New invoice
           </Link>
@@ -155,17 +155,17 @@ export default async function InvoicingPage({
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+              <thead className="text-left">
                 <tr>
-                  <th className="pb-3">Invoice no.</th>
-                  <th className="pb-3">Client</th>
-                  <th className="pb-3">Workstream</th>
-                  <th className="pb-3">Issue date</th>
-                  <th className="pb-3">Due date</th>
-                  <th className="pb-3 text-right">Total</th>
-                  <th className="pb-3">Status</th>
-                  <th className="pb-3">Stripe</th>
-                  <th className="pb-3">Actions</th>
+                  <th className="os-label pb-3">Invoice no.</th>
+                  <th className="os-label pb-3">Client</th>
+                  <th className="os-label pb-3">Workstream</th>
+                  <th className="os-label pb-3">Issue date</th>
+                  <th className="os-label pb-3">Due date</th>
+                  <th className="os-label pb-3 text-right">Total</th>
+                  <th className="os-label pb-3">Status</th>
+                  <th className="os-label pb-3">Stripe</th>
+                  <th className="os-label pb-3">Actions</th>
                 </tr>
               </thead>
               <tbody>

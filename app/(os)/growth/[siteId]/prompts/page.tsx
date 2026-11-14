@@ -7,8 +7,7 @@ import { PendingButton } from '@/components/growth/PendingButton'
 import { addPromptAction, seedPromptsAction, togglePromptAction } from '../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
-const INPUT_CLASS =
-  'rounded-control border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+const INPUT_CLASS = 'os-input px-3 py-2 text-sm'
 
 export default async function GrowthPromptsPage({
   params,
@@ -79,7 +78,7 @@ export default async function GrowthPromptsPage({
         <input name="category" placeholder="category (optional)" className={`w-40 ${INPUT_CLASS}`} />
         <button
           type="submit"
-          className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+          className="btn btn-ghost"
         >
           Add
         </button>
@@ -104,7 +103,7 @@ export default async function GrowthPromptsPage({
               <form action={togglePromptAction.bind(null, site.id, prompt.id, !prompt.active)}>
                 <button
                   type="submit"
-                  className="shrink-0 rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                  className="btn btn-ghost btn-sm shrink-0"
                 >
                   {prompt.active ? 'Deactivate' : 'Activate'}
                 </button>

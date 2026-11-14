@@ -19,8 +19,8 @@ const METRICS: Array<{ key: keyof WeekStats; label: string }> = [
 function Tile({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
     <div className="card">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="os-label">{label}</p>
+      <p className="stat-value mt-1">{value}</p>
       {hint ? <p className="mt-1 text-xs text-[color:var(--text-3)]">{hint}</p> : null}
     </div>
   )
@@ -44,7 +44,7 @@ export default async function SalesDashboardPage() {
         <h2 id="week-title" className="text-sm font-semibold">Activity</h2>
         <table className="data-table mt-2">
           <thead>
-            <tr><th>Metric</th><th className="text-right">This week</th><th className="text-right">Last week</th></tr>
+            <tr><th>Metric</th><th className="text-right!">This week</th><th className="text-right!">Last week</th></tr>
           </thead>
           <tbody>
             {METRICS.map((m) => (
@@ -93,7 +93,7 @@ export default async function SalesDashboardPage() {
           <ul className="mt-3 grid gap-2 sm:grid-cols-3">
             {products.map((p) => (
               <li key={p.id}>
-                <Link href={`/sales/products/${p.id}`} className="card block hover:border-[var(--accent)]">
+                <Link href={`/sales/products/${p.id}`} className="card block hover:border-[var(--accent)]!">
                   <span className="block text-sm font-medium">{p.name}</span>
                   {p.status ? <span className="mt-1 block text-xs capitalize text-[color:var(--text-3)]">{p.status}</span> : null}
                 </Link>

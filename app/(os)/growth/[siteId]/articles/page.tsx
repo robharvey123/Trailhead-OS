@@ -55,7 +55,7 @@ export default async function GrowthArticlesPage({
             <Link
               key={article.id}
               href={`/growth/${site.id}/articles/${article.id}`}
-              className="os-card block p-5 transition hover:border-[color:var(--accent)]"
+              className="block rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-5 shadow-[var(--shadow-sm)] transition hover:border-[color:var(--border-light)]"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

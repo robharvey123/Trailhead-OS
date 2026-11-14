@@ -7,7 +7,7 @@ import { createSeoSiteAction } from './actions'
 import PageHeader from '@/components/ui/PageHeader'
 
 const INPUT_CLASS =
-  'w-full rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  'os-input w-full px-4 py-2.5 text-sm'
 
 export default async function GrowthPage({
   searchParams,
@@ -41,7 +41,7 @@ export default async function GrowthPage({
           <Link
             key={site.id}
             href={`/growth/${site.id}`}
-            className="os-card block p-6 transition hover:border-[color:var(--accent)]"
+            className="block rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-sm)] transition hover:border-[color:var(--border-light)]"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -83,15 +83,15 @@ export default async function GrowthPage({
         </summary>
         <form action={createSeoSiteAction} className="mt-5 grid gap-4 md:grid-cols-2">
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Name</span>
+            <span className="field-label">Name</span>
             <input name="name" required placeholder="Engineer OS" className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Domain</span>
+            <span className="field-label">Domain</span>
             <input name="domain" required placeholder="engineeros.uk" className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Search Console property</span>
+            <span className="field-label">Search Console property</span>
             <input
               name="gsc_property"
               placeholder="sc-domain:engineeros.uk"
@@ -102,7 +102,7 @@ export default async function GrowthPage({
             </span>
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Workstream</span>
+            <span className="field-label">Workstream</span>
             <select name="workstream_id" defaultValue="" className={`mt-1.5 ${INPUT_CLASS}`}>
               <option value="">None</option>
               {workstreams.map((w) => (
@@ -113,7 +113,7 @@ export default async function GrowthPage({
             </select>
           </label>
           <label className="block text-sm md:col-span-2">
-            <span className="text-[color:var(--text-2)]">
+            <span className="field-label">
               Ideal customer profile — who should find this site?
             </span>
             <textarea
@@ -124,7 +124,7 @@ export default async function GrowthPage({
             />
           </label>
           <label className="block text-sm md:col-span-2">
-            <span className="text-[color:var(--text-2)]">Brand voice</span>
+            <span className="field-label">Brand voice</span>
             <textarea
               name="brand_voice"
               rows={2}
@@ -134,11 +134,11 @@ export default async function GrowthPage({
           </label>
           <div className="flex flex-wrap items-end gap-4 md:col-span-2">
             <label className="flex items-center gap-2 text-sm text-[color:var(--text-2)]">
-              <input type="checkbox" name="is_client" className="h-4 w-4 accent-[var(--accent)]" />
+              <input type="checkbox" name="is_client" />
               Client site
             </label>
             <label className="block grow text-sm">
-              <span className="text-[color:var(--text-2)]">CRM account (required for client sites)</span>
+              <span className="field-label">CRM account (required for client sites)</span>
               <select name="client_account_id" defaultValue="" className={`mt-1.5 ${INPUT_CLASS}`}>
                 <option value="">—</option>
                 {accounts.map((a) => (
@@ -152,7 +152,7 @@ export default async function GrowthPage({
           <div className="md:col-span-2">
             <button
               type="submit"
-              className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+              className="btn btn-primary"
             >
               Add site
             </button>

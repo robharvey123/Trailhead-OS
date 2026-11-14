@@ -58,7 +58,7 @@ export default async function GrowthClustersPage({
               </form>
             ) : null}
             <form action={generateOverlapClustersAction.bind(null, site.id)}>
-              <PendingButton variant="primary" className="px-4 py-3 font-semibold" pendingLabel="Measuring SERP overlap…">
+              <PendingButton variant="primary" pendingLabel="Measuring SERP overlap…">
                 Cluster by SERP overlap
               </PendingButton>
             </form>
@@ -125,18 +125,18 @@ export default async function GrowthClustersPage({
                 {cluster.status === 'proposed' ? (
                   <>
                     <form action={approveClusterAction.bind(null, site.id, cluster.id)}>
-                      <PendingButton variant="primary" pendingLabel="Approving…">
+                      <PendingButton className="btn-sm" variant="primary" pendingLabel="Approving…">
                         Approve
                       </PendingButton>
                     </form>
                     <form action={archiveClusterAction.bind(null, site.id, cluster.id)}>
-                      <PendingButton pendingLabel="Archiving…">Archive</PendingButton>
+                      <PendingButton className="btn-sm" pendingLabel="Archiving…">Archive</PendingButton>
                     </form>
                   </>
                 ) : null}
                 {cluster.status !== 'archived' ? (
                   <form action={generateBriefAction.bind(null, site.id, cluster.id)}>
-                    <PendingButton pendingLabel="Writing brief…">Generate brief</PendingButton>
+                    <PendingButton className="btn-sm" pendingLabel="Writing brief…">Generate brief</PendingButton>
                   </form>
                 ) : null}
               </div>

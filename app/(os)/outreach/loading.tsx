@@ -1,8 +1,7 @@
 import { SkeletonBar, TableSkeleton } from '@/components/os/skeletons'
 
 /**
- * Outreach is the hybrid: a `.data-table` with no panel around it, inside the
- * page's own `max-w-5xl` wrapper.
+ * Outreach is a `.data-table` inside a white panel, under the page header.
  */
 export default function OutreachLoading() {
   return (
@@ -19,7 +18,9 @@ export default function OutreachLoading() {
             ))}
           </div>
         </div>
-        <TableSkeleton columns={8} rows={6} />
+        <div className="panel">
+          <TableSkeleton columns={8} rows={6} />
+        </div>
       </div>
     </div>
   )
