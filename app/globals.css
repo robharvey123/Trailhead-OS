@@ -309,8 +309,8 @@ body {
   font-family: var(--sans);
   font-size: 0.78rem;
   font-weight: 600;
-  border-radius: var(--radius-control);
-  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.9rem;
   box-shadow: none;
   text-transform: capitalize;
 }
@@ -334,17 +334,17 @@ body {
   color: var(--accent-strong, var(--accent));
 }
 
-/* "Today" is the only context-resetting control — make it read as primary.
-   Uses --accent-strong, same as .btn-primary: white on --accent was 2.77:1, failing AA. */
+/* "Today" is the only context-resetting control, so it reads as primary:
+   brand blue with navy type, the same as .btn-primary. */
 .fc .fc-today-button:not(:disabled) {
-  background: var(--accent-strong, #0369a1);
-  border-color: var(--accent-strong, #0369a1);
-  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--on-accent);
   opacity: 1;
 }
 .fc .fc-today-button:not(:disabled):hover {
-  background: var(--accent-hover, #075985);
-  border-color: var(--accent-hover, #075985);
+  background: var(--blue-bright);
+  border-color: var(--blue-bright);
 }
 
 .fc .fc-scrollgrid,
@@ -582,7 +582,9 @@ body {
 
 /* Page chrome */
 .thmock .os-page { background: var(--surface); color: var(--text); }
-.thmock .os-page-title { font-family: var(--serif); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+/* One page title size: 26px, 22px below md. Rendered by components/ui/PageHeader. */
+.thmock .os-page-title { font-family: var(--serif); font-size: 22px; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+@media (min-width: 768px) { .thmock .os-page-title { font-size: 26px; } }
 .thmock .os-section-title { font-family: var(--serif); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
 .thmock .os-eyebrow { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); }
 
@@ -611,7 +613,7 @@ body {
 .thmock .os-input:focus-visible,
 .thmock .os-select:focus-visible,
 .thmock .os-textarea:focus-visible {
-  outline: 2px solid var(--accent-strong);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -670,29 +672,43 @@ body {
 .thmock .tag-chip button { background: none; border: none; color: inherit; cursor: pointer; opacity: 0.6; padding: 0; }
 .thmock .tag-chip button:hover { opacity: 1; }
 
-/* buttons */
+/* buttons
+   One source for every button in the OS. components/ui/Button.tsx renders these
+   classes, and the class names are also written directly in older call sites.
+   There is one filled style: the brand-blue pill with navy type (6.44:1). */
 .thmock .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: var(--radius-control);
-  font-family: var(--sans);
-  font-size: 12px; font-weight: 600; cursor: pointer; border: none;
-  transition: all 0.15s; letter-spacing: 0.02em;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 18px; border-radius: var(--radius-pill);
+  font-family: var(--sans); font-size: 14px; font-weight: 600; line-height: 1.25;
+  white-space: nowrap; text-decoration: none;
+  cursor: pointer; border: 1px solid transparent;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
-/* Background uses --accent-strong, not --accent: white-on-#0EA5E9 was 2.77:1 (fails AA
-   4.5:1). --accent itself is left alone because it's shared far beyond button backgrounds
-   (borders, focus rings, chart accents), so darkening it globally risked side effects that
-   weren't verified safe everywhere — scoping the fix to the button is the surgical option. */
-.thmock .btn-primary { background: var(--accent-strong); color: white; box-shadow: var(--shadow-sm); }
-.thmock .btn-primary:hover { background: var(--accent-hover); }
-.thmock .btn-ghost { background: #ffffff; color: var(--text-2); border: 1px solid var(--border); }
-.thmock .btn-ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-light); }
-.thmock .btn-sm { padding: 5px 10px; font-size: 11px; }
-.thmock .btn:disabled { opacity: 0.55; cursor: default; }
+.thmock .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* primary: brand blue, navy type. White on #0EA5E9 is 2.77:1 and is never used. */
+.thmock .btn-primary { background: var(--blue); color: var(--on-accent); }
+.thmock .btn-primary:hover { background: var(--blue-bright); }
+/* secondary: white pill, 1px border, navy type. `.btn-ghost` is the older name
+   for the same thing and is kept so existing call sites did not need renaming. */
+.thmock .btn-secondary,
+.thmock .btn-ghost { background: var(--bg); color: var(--text); border-color: var(--border-light); }
+.thmock .btn-secondary:hover,
+.thmock .btn-ghost:hover { background: var(--surface-2); border-color: var(--text-3); }
+/* ghost: text only */
+.thmock .btn-text { background: transparent; color: var(--text-2); padding-left: 10px; padding-right: 10px; }
+.thmock .btn-text:hover { background: var(--surface-2); color: var(--text); }
+/* danger: red type and border on white. Solid red only inside a confirm dialog. */
+.thmock .btn-danger { background: var(--bg); color: var(--red-strong); border-color: var(--red); }
+.thmock .btn-danger:hover { background: var(--red-dim); }
+.thmock .btn-danger-solid { background: var(--red); color: #ffffff; }
+.thmock .btn-danger-solid:hover { background: var(--red-strong); }
+.thmock .btn-sm { padding: 5px 12px; font-size: 12px; }
+.thmock .btn:disabled, .thmock .btn[aria-disabled='true'] { opacity: 0.55; cursor: default; }
 
 /* topbar within page */
 .thmock .topbar {
   height: 56px; min-height: 56px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 24px; gap: 16px; background: var(--surface);
+  display: flex; align-items: center; padding: 0 24px; gap: 16px;
 }
 .thmock .topbar-title { font-family: var(--serif); font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
 /* CRM detail panel account name — larger serif display */
@@ -704,7 +720,7 @@ body {
 .thmock .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 
 /* stats bar */
-.thmock .stats-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
+.thmock .stats-bar { display: flex; border-bottom: 1px solid var(--border); }
 .thmock .stat-item { flex: 1; padding: 14px 20px; border-right: 1px solid var(--border); }
 .thmock .stat-item:last-child { border-right: none; }
 /* Figures are never Georgia: Inter 600 with tabular figures. */
@@ -715,7 +731,7 @@ body {
 /* filter bar + search + selects */
 .thmock .filterbar {
   padding: 12px 24px; border-bottom: 1px solid var(--border);
-  display: flex; gap: 10px; align-items: center; background: var(--surface); flex-wrap: wrap;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
 }
 .thmock .search-wrap { position: relative; flex: 1; max-width: 320px; }
 .thmock .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-3); }
@@ -725,13 +741,13 @@ body {
 }
 .thmock .search-input::placeholder { color: var(--text-3); }
 .thmock .search-input:focus { border-color: var(--accent); }
-.thmock .search-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thmock .search-input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .thmock .filter-select {
   background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control);
   padding: 7px 10px; font-family: var(--sans); font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
 }
 .thmock .filter-select:focus { border-color: var(--accent); }
-.thmock .filter-select:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thmock .filter-select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .thmock .filter-date {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-3);
@@ -810,7 +826,10 @@ body {
 .thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: var(--radius-pill); width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 
 /* panels / cards */
-.thmock .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.thmock .panel { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); }
+/* The strips inside a panel are square; keep them inside its rounded corners. */
+.thmock .panel > :first-child { border-top-left-radius: calc(var(--radius-card) - 1px); border-top-right-radius: calc(var(--radius-card) - 1px); }
+.thmock .panel > :last-child { border-bottom-left-radius: calc(var(--radius-card) - 1px); border-bottom-right-radius: calc(var(--radius-card) - 1px); }
 .thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 12px 14px; }
 .thmock .panel-section-title {
   font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3);
@@ -819,13 +838,14 @@ body {
 }
 
 /* tabs (account detail) */
-.thmock .tabbar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 24px; background: var(--surface); }
+.thmock .tabbar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 24px; }
 .thmock .tab {
   padding: 12px 14px; font-size: 12px; font-weight: 600; color: var(--text-3); cursor: pointer;
   background: none; border: none; border-bottom: 2px solid transparent; font-family: var(--sans);
 }
 .thmock .tab:hover { color: var(--text-2); }
-.thmock .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent); } /* text was --accent, 2.65:1 — fails AA */
+.thmock .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent-strong); } /* brand blue is 2.77:1 on white, so the rule is blue ink */
+.thmock .tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 
 /* bulk action bar */
 .thmock .bulkbar {
@@ -839,6 +859,16 @@ body {
 
 /* empty state */
 .thmock .empty { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
+.thmock .empty-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+
+/* Badge tones (components/ui/Badge.tsx). The existing status token pairs. */
+.thmock .status-accent { color: var(--accent-strong); background: var(--accent-dim); }
+.thmock .status-green { color: var(--green-strong); background: var(--green-dim); }
+.thmock .status-amber { color: var(--amber-strong); background: var(--amber-dim); }
+.thmock .status-red { color: var(--red-strong); background: var(--red-dim); }
+.thmock .status-emerald { color: var(--emerald-strong); background: var(--emerald-dim); }
+.thmock .status-grey { color: var(--grey-strong); background: var(--grey-dim); }
+.thmock .status-badge.no-dot::before { display: none; }
 
 /* ---- inbox 3-pane ---- */
 .thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 120px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-card); }
@@ -898,7 +928,7 @@ body {
 .thmock .reader-reply { border-top: 1px solid var(--border); background: var(--surface); padding: 14px 24px; }
 .thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 10px 12px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
 .thmock .reply-input:focus { border-color: var(--accent); }
-.thmock .reply-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thmock .reply-input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .thmock .reply-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
 
 /* scrollbars (3.12) */
