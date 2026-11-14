@@ -177,7 +177,6 @@ export default function MasterTaskListClient({
             type="checkbox"
             checked={table.getIsAllRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
-            className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)]"
           />
         ),
         cell: ({ row }) => (
@@ -185,7 +184,6 @@ export default function MasterTaskListClient({
             type="checkbox"
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
-            className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)]"
           />
         ),
       }),
@@ -333,13 +331,13 @@ export default function MasterTaskListClient({
         actions={
           <>
             <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-1">
+          <div className="inline-flex rounded-control border border-[color:var(--border)] bg-[var(--bg)] p-1">
             {(['table', 'kanban'] as const).map((mode) => (
               <button
                 key={mode}
                 type="button"
                 onClick={() => setViewMode(mode)}
-                className={`rounded-card px-4 py-2 text-sm font-medium capitalize transition ${
+                className={`rounded-control px-4 py-2 text-sm font-medium capitalize transition ${
                   viewMode === mode
                     ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                     : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'
@@ -353,7 +351,7 @@ export default function MasterTaskListClient({
           <button
             type="button"
             onClick={() => setCreatingTask(true)}
-            className="relative z-10 rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary relative z-10"
           >
             New task
           </button>
@@ -485,7 +483,6 @@ export default function MasterTaskListClient({
             type="checkbox"
             checked={masterOnly}
             onChange={(event) => setMasterOnly(event.target.checked)}
-            className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)]"
           />
           <span className="text-sm text-[color:var(--text-2)]">
             Show only master to-do tasks
@@ -572,7 +569,7 @@ export default function MasterTaskListClient({
           <button
             type="button"
             onClick={clearAllFilters}
-            className="ml-auto rounded-pill border border-[color:var(--border)] px-3 py-1 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="btn btn-ghost btn-sm ml-auto"
           >
             Clear all
           </button>
@@ -599,7 +596,7 @@ export default function MasterTaskListClient({
                 }
               )
             }
-            className="rounded-card border border-[color:var(--red)] px-4 py-2 text-sm text-[color:var(--red-strong)]"
+            className="btn btn-danger btn-sm"
           >
             Mark complete
           </button>
@@ -641,7 +638,7 @@ export default function MasterTaskListClient({
                 }
               )
             }
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
+            className="btn btn-ghost btn-sm"
           >
             Change priority
           </button>
@@ -672,7 +669,7 @@ export default function MasterTaskListClient({
                 }
               )
             }}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
+            className="btn btn-ghost btn-sm"
           >
             Add/remove master flag
           </button>
@@ -682,14 +679,14 @@ export default function MasterTaskListClient({
               setEmailModalTasks(selectedTasks)
               setEmailModalOpen(true)
             }}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
+            className="btn btn-ghost btn-sm"
           >
             Email selected
           </button>
           <button
             type="button"
             onClick={() => setHardDeleteOpen(true)}
-            className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)]"
+            className="btn btn-danger btn-sm"
           >
             Delete selected
           </button>
@@ -744,7 +741,7 @@ export default function MasterTaskListClient({
       ) : (
         <div className="os-card overflow-x-auto p-0">
           <table className="min-w-full divide-y divide-[color:var(--border)] text-sm">
-            <thead className="bg-[var(--surface-2)] text-[10px] font-bold uppercase tracking-[1px] text-[color:var(--text-2)]">
+            <thead className="bg-[var(--surface)]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -753,7 +750,7 @@ export default function MasterTaskListClient({
                         <button
                           type="button"
                           onClick={header.column.getToggleSortingHandler()}
-                          className="inline-flex items-center gap-2"
+                          className="os-label inline-flex items-center gap-2"
                         >
                           {flexRender(
                             header.column.columnDef.header,

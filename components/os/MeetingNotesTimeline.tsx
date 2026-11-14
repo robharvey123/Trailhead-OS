@@ -19,9 +19,9 @@ function fmtDate(iso: string) {
 
 export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWithRelations[] }) {
   return (
-    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">
+    <div className="os-card p-6">
       <div>
-        <h2 className="text-lg font-semibold text-[color:var(--text)]">Meeting notes</h2>
+        <h2 className="os-section-title">Meeting notes</h2>
         <p className="text-sm text-[var(--text-2)]">Google Meet transcripts and AI summaries from calls.</p>
       </div>
 
@@ -35,7 +35,7 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
             const badge = CONFIDENCE_STYLE[note.match_confidence]
             const s = note.summary
             return (
-              <div key={note.id} className="rounded-card border border-[var(--border)] bg-[var(--surface-2)] p-4">
+              <div key={note.id} className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-pill border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--text-2)]">Meet</span>
@@ -52,7 +52,7 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
                     ) : null}
                     {s.decisions.length > 0 ? (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text)]">Decisions</p>
+                        <p className="os-label">Decisions</p>
                         <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--text-2)]">
                           {s.decisions.map((d, i) => <li key={i}>{d}</li>)}
                         </ul>
@@ -60,7 +60,7 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
                     ) : null}
                     {s.nextSteps.length > 0 ? (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text)]">Next steps</p>
+                        <p className="os-label">Next steps</p>
                         <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--text-2)]">
                           {s.nextSteps.map((n, i) => <li key={i}>{n}</li>)}
                         </ul>
@@ -73,10 +73,10 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
 
                 {note.transcript ? (
                   <details className="mt-3">
-                    <summary className="cursor-pointer text-sm text-[var(--text-2)] transition hover:text-[color:var(--text)]">
+                    <summary className="cursor-pointer text-sm text-[var(--text-2)] transition hover:text-[var(--text)]">
                       Transcript
                     </summary>
-                    <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-card border border-[var(--border)] bg-[var(--bg)] p-3 text-xs text-[var(--text-2)]">
+                    <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-card border border-[var(--border)] bg-[var(--bg)] p-3 font-sans text-xs text-[var(--text-2)]">
                       {note.transcript}
                     </pre>
                   </details>

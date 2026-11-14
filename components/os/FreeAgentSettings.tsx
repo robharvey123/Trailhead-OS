@@ -75,7 +75,7 @@ export default function FreeAgentSettings({
           {connectedAt ? <span className="text-xs text-[color:var(--text-3)]">Connected {new Date(connectedAt).toLocaleString('en-GB')}</span> : null}
           <a
             href="/api/freeagent/connect"
-            className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            className="btn btn-ghost"
           >
             Reconnect
           </a>
@@ -83,7 +83,7 @@ export default function FreeAgentSettings({
             type="button"
             onClick={disconnect}
             disabled={pending || busy}
-            className="rounded-card border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red)] transition hover:bg-[var(--red-dim)] disabled:opacity-60"
+            className="btn btn-danger"
           >
             {busy ? 'Disconnecting…' : 'Disconnect'}
           </button>
@@ -91,7 +91,7 @@ export default function FreeAgentSettings({
       ) : (
         <a
           href="/api/freeagent/connect"
-          className="mt-4 inline-block rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="btn btn-primary mt-4"
         >
           Connect FreeAgent
         </a>

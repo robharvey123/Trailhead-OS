@@ -169,7 +169,7 @@ export default function ExpenseForm({
       <div className="os-card space-y-6 p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Date</span>
+            <span className="field-label block">Date</span>
             <input
               type="date"
               value={date}
@@ -179,7 +179,7 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Category</span>
+            <span className="field-label block">Category</span>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
@@ -194,7 +194,7 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Description</span>
+            <span className="field-label block">Description</span>
             <input
               type="text"
               value={description}
@@ -205,7 +205,7 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Amount (£)</span>
+            <span className="field-label block">Amount (£)</span>
             <input
               type="number"
               min="0"
@@ -218,17 +218,17 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Currency</span>
+            <span className="field-label block">Currency</span>
             <input
               type="text"
               value={currency}
               disabled
-              className="os-input w-full text-[color:var(--text-2)] opacity-50"
+              className="os-input w-full opacity-50"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
+            <span className="field-label block">Workstream</span>
             <select
               value={workstreamId}
               onChange={(e) => setWorkstreamId(e.target.value)}
@@ -244,7 +244,7 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Account</span>
+            <span className="field-label block">Account</span>
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
@@ -260,7 +260,7 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Engagement</span>
+            <span className="field-label block">Engagement</span>
             <select
               value={engagementId}
               onChange={(e) => {
@@ -281,7 +281,7 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Notes</span>
+            <span className="field-label block">Notes</span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -292,7 +292,7 @@ export default function ExpenseForm({
           </label>
 
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Receipt</span>
+            <span className="field-label block">Receipt</span>
             <input
               type="file"
               accept="image/*,.pdf"
@@ -319,7 +319,6 @@ export default function ExpenseForm({
               type="checkbox"
               checked={billable}
               onChange={(e) => setBillable(e.target.checked)}
-              className="h-5 w-5 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
             />
             <span className="text-sm text-[color:var(--text-2)]">Billable to client</span>
           </label>
@@ -329,7 +328,6 @@ export default function ExpenseForm({
               type="checkbox"
               checked={taxDeductible}
               onChange={(e) => setTaxDeductible(e.target.checked)}
-              className="h-5 w-5 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
             />
             <span className="text-sm text-[color:var(--text-2)]">Tax deductible</span>
           </label>
@@ -362,7 +360,7 @@ export default function ExpenseForm({
             type="button"
             onClick={handleSubmit}
             disabled={saving || deleting}
-            className="rounded-card bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Saving…' : isEdit ? 'Update expense' : 'Save expense'}
           </button>
@@ -371,7 +369,7 @@ export default function ExpenseForm({
             type="button"
             onClick={() => router.back()}
             disabled={saving || deleting}
-            className="rounded-card border border-[color:var(--border)] px-6 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)] disabled:opacity-50"
+            className="btn btn-ghost"
           >
             Cancel
           </button>
@@ -381,7 +379,7 @@ export default function ExpenseForm({
               type="button"
               onClick={handleDelete}
               disabled={saving || deleting}
-              className="ml-auto rounded-card border border-[color:var(--red)] px-6 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-50"
+              className="btn btn-danger ml-auto"
             >
               {deleting ? 'Deleting…' : 'Delete'}
             </button>

@@ -264,7 +264,7 @@ export default function EmailThread({
               setSendError(null)
             }}
             disabled={!contact_email}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
+            className="btn btn-ghost"
           >
             {composing ? 'Close compose' : 'Compose'}
           </button>
@@ -347,7 +347,7 @@ export default function EmailThread({
                       <p className="text-sm font-medium text-[color:var(--text)]">
                         {latestMessage.subject || '(No subject)'}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                      <p className="os-label mt-1">
                         {latestMessage.from_address || 'Unknown sender'} to{' '}
                         {(latestMessage.to_addresses ?? []).join(', ') || 'Unknown recipient'}
                       </p>
@@ -370,14 +370,14 @@ export default function EmailThread({
                       {thread.messages.map(message => (
                         <article
                           key={message.gmail_message_id ?? `${thread.id}-${getMessageDate(message)}`}
-                          className="rounded-card border border-[color:var(--border)] bg-white p-4"
+                          className="rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-4"
                         >
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
                               <p className="text-sm font-medium text-[color:var(--text)]">
                                 {message.subject || '(No subject)'}
                               </p>
-                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                              <p className="os-label mt-1">
                                 {message.from_address || 'Unknown sender'}
                               </p>
                               <p className="mt-1 text-xs text-[color:var(--text-3)]">
@@ -412,7 +412,7 @@ export default function EmailThread({
         <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-5">
           <div className="space-y-4">
             <label className="block space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">To</span>
+              <span className="field-label block">To</span>
               <input
                 value={contact_email}
                 readOnly
@@ -421,7 +421,7 @@ export default function EmailThread({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Subject</span>
+              <span className="field-label block">Subject</span>
               <input
                 value={subject}
                 onChange={event => setSubject(event.target.value)}
@@ -430,7 +430,7 @@ export default function EmailThread({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Body</span>
+              <span className="field-label block">Body</span>
               <textarea
                 value={body}
                 onChange={event => setBody(event.target.value)}
@@ -448,7 +448,7 @@ export default function EmailThread({
                   setComposing(false)
                   setSendError(null)
                 }}
-                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -456,7 +456,7 @@ export default function EmailThread({
                 type="button"
                 onClick={handleSend}
                 disabled={sending}
-                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="btn btn-primary"
               >
                 {sending ? 'Sending...' : 'Send'}
               </button>

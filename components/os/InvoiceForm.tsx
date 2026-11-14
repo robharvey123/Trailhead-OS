@@ -477,7 +477,7 @@ export default function InvoiceForm({
             />
           </div>
           <div className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Client selector</span>
+            <span className="field-label block">Client selector</span>
             <input
               value={contactSearch}
               onChange={(event) => setContactSearch(event.target.value)}
@@ -499,7 +499,7 @@ export default function InvoiceForm({
           </div>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
+            <span className="field-label block">Workstream</span>
             <select
               value={workstreamId}
               onChange={(event) => setWorkstreamId(event.target.value)}
@@ -514,7 +514,7 @@ export default function InvoiceForm({
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
+            <span className="field-label block">VAT rate (%)</span>
             <input
               type="number"
               min="0"
@@ -526,7 +526,7 @@ export default function InvoiceForm({
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Currency</span>
+            <span className="field-label block">Currency</span>
             <select
               value={currency}
               onChange={(event) => setCurrency(event.target.value)}
@@ -538,7 +538,7 @@ export default function InvoiceForm({
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
+            <span className="field-label block">Issue date</span>
             <input
               type="date"
               value={issueDate}
@@ -548,7 +548,7 @@ export default function InvoiceForm({
           </label>
 
           {isForeign ? (
-            <div className="md:col-span-2 rounded-card border border-[color:var(--border)] bg-[color:var(--surface-2)] p-4">
+            <div className="md:col-span-2 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-4">
               <p className="text-sm font-medium text-[color:var(--text)]">Exchange rate</p>
               <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs text-[color:var(--text-2)]">
@@ -559,7 +559,7 @@ export default function InvoiceForm({
                   type="button"
                   onClick={() => void fetchRate()}
                   disabled={fetchingRate}
-                  className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
+                  className="btn btn-ghost btn-sm"
                 >
                   {fetchingRate ? 'Fetching…' : 'Refresh rate (Wise)'}
                 </button>
@@ -569,7 +569,7 @@ export default function InvoiceForm({
               ) : null}
               <div className="mt-3 grid gap-3 md:grid-cols-3">
                 <label className="space-y-1">
-                  <span className="text-xs text-[color:var(--text-2)]">1 GBP = … {currency}</span>
+                  <span className="field-label block">1 GBP = … {currency}</span>
                   <input
                     type="number" min="0" step="0.0001" inputMode="decimal"
                     value={fxQuote}
@@ -584,7 +584,7 @@ export default function InvoiceForm({
                   ) : null}
                 </label>
                 <label className="space-y-1">
-                  <span className="text-xs text-[color:var(--text-2)]">Rate source</span>
+                  <span className="field-label block">Rate source</span>
                   <input
                     type="text"
                     value={fxSource}
@@ -594,7 +594,7 @@ export default function InvoiceForm({
                   />
                 </label>
                 <label className="space-y-1">
-                  <span className="text-xs text-[color:var(--text-2)]">Rate date</span>
+                  <span className="field-label block">Rate date</span>
                   <input
                     type="date"
                     value={fxDate ?? ''}
@@ -606,7 +606,7 @@ export default function InvoiceForm({
             </div>
           ) : null}
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Due date</span>
+            <span className="field-label block">Due date</span>
             <input
               type="date"
               value={dueDate}
@@ -623,7 +623,7 @@ export default function InvoiceForm({
             ) : null}
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">
+            <span className="field-label block">
               PO number{poRequired ? <span className="text-[color:var(--red-strong)]"> *</span> : null}
             </span>
             <input
@@ -647,7 +647,7 @@ export default function InvoiceForm({
                   className={`h-6 w-11 rounded-pill transition-colors ${isRecurring ? 'bg-[var(--accent)]' : 'bg-[var(--surface-3)]'}`}
                 />
                 <div
-                  className={`absolute top-0.5 h-5 w-5 rounded-pill bg-white shadow-[var(--shadow-sm)] transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
+                  className={`absolute top-0.5 h-5 w-5 rounded-pill bg-[var(--bg)] shadow-[var(--shadow-sm)] transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
                 />
               </div>
               <span className="text-sm text-[color:var(--text-2)]">Recurring invoice</span>
@@ -655,14 +655,14 @@ export default function InvoiceForm({
 
             {isRecurring && (
               <div className="mt-3">
-                <span className="mb-2 block text-sm text-[color:var(--text-2)]">Billing cycle</span>
+                <span className="os-label mb-2 block">Billing cycle</span>
                 <div className="flex gap-2">
                   {(['month', 'year'] as const).map((interval) => (
                     <button
                       key={interval}
                       type="button"
                       onClick={() => setRecurringInterval(interval)}
-                      className={`rounded-card border px-4 py-2 text-sm transition-colors ${
+                      className={`rounded-control border px-4 py-2 text-sm transition-colors ${
                         recurringInterval === interval
                           ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                           : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
@@ -680,7 +680,7 @@ export default function InvoiceForm({
           </div>
         </div>
 
-        <div className="os-card-muted rounded-card p-4">
+        <div className="os-card-muted p-4">
           <div>
             <h2 className="os-section-title">Bill to</h2>
             <p className="mt-1 text-sm text-[color:var(--text-2)]">
@@ -692,7 +692,7 @@ export default function InvoiceForm({
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <label className="space-y-2 md:col-span-2">
-              <span className="text-sm text-[color:var(--text-2)]">Recipient name</span>
+              <span className="field-label block">Recipient name</span>
               <input
                 value={billToName}
                 onChange={(event) => setBillToName(event.target.value)}
@@ -701,7 +701,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2 md:col-span-2">
-              <span className="text-sm text-[color:var(--text-2)]">Address</span>
+              <span className="field-label block">Address</span>
               <textarea
                 value={billToAddress}
                 onChange={(event) => setBillToAddress(event.target.value)}
@@ -711,7 +711,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">City</span>
+              <span className="field-label block">City</span>
               <input
                 value={billToCity}
                 onChange={(event) => setBillToCity(event.target.value)}
@@ -719,7 +719,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Postcode</span>
+              <span className="field-label block">Postcode</span>
               <input
                 value={billToPostcode}
                 onChange={(event) => setBillToPostcode(event.target.value)}
@@ -727,7 +727,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Country</span>
+              <span className="field-label block">Country</span>
               <input
                 value={billToCountry}
                 onChange={(event) => setBillToCountry(event.target.value)}
@@ -735,7 +735,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Recipient email</span>
+              <span className="field-label block">Recipient email</span>
               <input
                 type="email"
                 value={billToEmail}
@@ -744,7 +744,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2 md:col-span-2">
-              <span className="text-sm text-[color:var(--text-2)]">Recipient phone</span>
+              <span className="field-label block">Recipient phone</span>
               <input
                 value={billToPhone}
                 onChange={(event) => setBillToPhone(event.target.value)}
@@ -752,7 +752,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">VAT number</span>
+              <span className="field-label block">VAT number</span>
               <input
                 value={billToVatNumber}
                 onChange={(event) => setBillToVatNumber(event.target.value)}
@@ -761,7 +761,7 @@ export default function InvoiceForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Company number</span>
+              <span className="field-label block">Company number</span>
               <input
                 value={billToCompanyNumber}
                 onChange={(event) => setBillToCompanyNumber(event.target.value)}
@@ -786,7 +786,7 @@ export default function InvoiceForm({
                     setVatNote(RC_NOTE)
                     setVatRate('0')
                   }}
-                  className="mt-2 rounded-card border border-[color:var(--amber-strong)] px-3 py-1.5 text-xs font-medium transition hover:bg-[var(--amber-dim)]"
+                  className="btn btn-ghost btn-sm mt-2"
                 >
                   Set 0% VAT + reverse charge note
                 </button>
@@ -794,7 +794,7 @@ export default function InvoiceForm({
             </div>
           ) : vatNote ? (
             <label className="mt-4 block space-y-1">
-              <span className="text-xs text-[color:var(--text-2)]">VAT note (printed on the PDF)</span>
+              <span className="field-label block">VAT note (printed on the PDF)</span>
               <input value={vatNote} onChange={(event) => setVatNote(event.target.value)} className="os-input w-full" />
             </label>
           ) : null}
@@ -816,7 +816,7 @@ export default function InvoiceForm({
           />
         )}
 
-        <div className="os-card-muted rounded-card p-4">
+        <div className="os-card-muted p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="os-section-title">Line items</h2>
@@ -827,7 +827,7 @@ export default function InvoiceForm({
               onClick={() => {
                 setLineItems((current) => [...current, createEmptyLineItem()])
               }}
-              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              className="btn btn-ghost btn-sm"
             >
               Add line item
             </button>
@@ -842,7 +842,7 @@ export default function InvoiceForm({
             {lineItems.map((item) => (
               <div
                 key={item.id}
-                className="grid gap-3 rounded-card border border-[color:var(--border)] bg-white p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
+                className="grid gap-3 rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
               >
                 <input
                   value={item.description}
@@ -850,7 +850,7 @@ export default function InvoiceForm({
                     updateLineItem(item.id, { description: event.target.value })
                   }
                   placeholder="Description"
-                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                  className="os-input px-4 py-3 text-sm"
                 />
                 <input
                   type="number"
@@ -860,7 +860,7 @@ export default function InvoiceForm({
                   onChange={(event) =>
                     updateLineItem(item.id, { qty: Number(event.target.value) })
                   }
-                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                  className="os-input px-4 py-3 text-sm"
                 />
                 <input
                   type="number"
@@ -872,15 +872,15 @@ export default function InvoiceForm({
                       unit_price: Number(event.target.value),
                     })
                   }
-                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                  className="os-input px-4 py-3 text-sm"
                 />
-                <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+                <div className="flex items-center rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
                   {formatMoney(item.qty * item.unit_price, 'GBP')}
                 </div>
                 <button
                   type="button"
                   onClick={() => removeLineItem(item.id)}
-                  className="rounded-card border border-[color:var(--red)] px-4 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)]"
+                  className="btn btn-danger btn-sm self-center"
                 >
                   Remove
                 </button>
@@ -891,7 +891,7 @@ export default function InvoiceForm({
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Notes</span>
+            <span className="field-label block">Notes</span>
             <textarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
@@ -900,7 +900,7 @@ export default function InvoiceForm({
             />
           </label>
 
-          <div className="os-card-muted rounded-card p-5">
+          <div className="os-card-muted p-5">
             <h2 className="os-section-title">Invoice summary</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4">
@@ -916,7 +916,7 @@ export default function InvoiceForm({
                 <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, 'GBP')}</dd>
               </div>
               {isForeign ? (
-                <div className="flex items-center justify-between gap-4 rounded-card bg-[color:var(--accent-dim)] px-3 py-2">
+                <div className="flex items-center justify-between gap-4 rounded-control bg-[var(--accent-dim)] px-3 py-2">
                   <dt className="text-sm font-medium text-[color:var(--text)]">
                     Client billed{fxQuote ? ` · 1 GBP = ${fxQuote} ${currency}` : ''}
                   </dt>
@@ -938,14 +938,14 @@ export default function InvoiceForm({
                 type="button"
                 onClick={() => submitInvoice('edit')}
                 disabled={savingAs !== null}
-                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {savingAs === 'edit' ? 'Saving...' : 'Save'}
               </button>
               <button
                 type="button"
                 onClick={() => router.push(`/invoicing/${initialInvoice.id}`)}
-                className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -956,7 +956,7 @@ export default function InvoiceForm({
                 type="button"
                 onClick={() => submitInvoice('draft')}
                 disabled={savingAs !== null}
-                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
               </button>
@@ -964,7 +964,7 @@ export default function InvoiceForm({
                 type="button"
                 onClick={() => submitInvoice('sent')}
                 disabled={savingAs !== null}
-                className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+                className="btn btn-ghost"
               >
                 {savingAs === 'sent' ? 'Saving...' : 'Mark as sent'}
               </button>

@@ -193,11 +193,11 @@ export default function MasterTaskKanban({
               key={column.id}
               onDrop={(event) => handleDrop(event, column.id)}
               onDragOver={handleDragOver}
-              className="os-card flex min-h-[28rem] w-[20rem] min-w-[20rem] flex-shrink-0 flex-col rounded-card p-4"
+              className="os-card flex min-h-[28rem] w-[20rem] min-w-[20rem] flex-shrink-0 flex-col p-4"
             >
               <div className="flex items-start justify-between gap-3 border-b border-[color:var(--border)] pb-4">
                 <div>
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--text-2)]">
+                  <h2 className="os-label">
                     {column.label}
                   </h2>
                   <p className="mt-1 text-xs text-[color:var(--text-3)]">{column.helper}</p>

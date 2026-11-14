@@ -253,8 +253,8 @@ export default function EnquiryDetailActions({
 
   return (
     <div className="space-y-6">
-      <section className="os-card rounded-card p-6">
-        <p className="os-eyebrow tracking-[0.28em]">Status</p>
+      <section className="os-card p-6">
+        <p className="os-eyebrow">Status</p>
         <StatusBadge
           status={enquiry.status}
           kind="enquiry"
@@ -264,14 +264,14 @@ export default function EnquiryDetailActions({
           {linkedProject ? (
             <Link
               href={`/projects/records/${linkedProject.id}`}
-              className="block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              className="btn btn-ghost w-full"
             >
               View linked project
             </Link>
           ) : (
             <Link
               href={createProjectHref}
-              className="block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              className="btn btn-ghost w-full"
             >
               Create linked project
             </Link>
@@ -281,7 +281,7 @@ export default function EnquiryDetailActions({
             <>
               <Link
                 href={`/quotes/${generatedQuoteId}`}
-                className="block rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-center text-sm font-semibold text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
+                className="btn btn-ghost w-full"
               >
                 View generated quote →
               </Link>
@@ -293,7 +293,7 @@ export default function EnquiryDetailActions({
                 defaultRecipient={generatedQuoteEmail}
                 defaultSubject={`Quote for ${enquiry.biz_name}`}
                 defaultMessage={`Hi,\n\nPlease find the attached quote for ${enquiry.biz_name}.\n\nBest,\nRob`}
-                buttonClassName="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                buttonClassName="btn btn-ghost w-full"
                 fullWidth
               />
               <button
@@ -303,7 +303,7 @@ export default function EnquiryDetailActions({
                   setShowGenerateModal(true)
                 }}
                 disabled={loadingAction !== null}
-                className="flex w-full items-center justify-center gap-2 rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm font-semibold text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-ghost w-full"
               >
                 Revise stages and generate new quote
               </button>
@@ -318,7 +318,7 @@ export default function EnquiryDetailActions({
                   setShowGenerateModal(true)
                 }}
                 disabled={loadingAction !== null}
-                className="flex w-full items-center justify-center gap-2 rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm font-semibold text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-ghost w-full"
               >
                 <svg
                   aria-hidden="true"
@@ -339,7 +339,7 @@ export default function EnquiryDetailActions({
               type="button"
               onClick={handleMarkReviewed}
               disabled={loadingAction !== null}
-              className="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+              className="btn btn-ghost w-full"
             >
               {loadingAction === 'review' ? 'Marking...' : 'Mark as reviewed'}
             </button>
@@ -348,7 +348,7 @@ export default function EnquiryDetailActions({
           {enquiry.converted_contact_id ? (
             <Link
               href={`/crm/contacts/${enquiry.converted_contact_id}`}
-              className="block rounded-card bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+              className="btn btn-primary w-full"
             >
               View converted contact
             </Link>
@@ -357,7 +357,7 @@ export default function EnquiryDetailActions({
               type="button"
               onClick={handleConvert}
               disabled={loadingAction !== null}
-              className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              className="btn btn-primary w-full"
             >
               {loadingAction === 'convert' ? 'Converting...' : 'Convert to contact'}
             </button>
@@ -366,8 +366,8 @@ export default function EnquiryDetailActions({
         {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
       </section>
 
-      <section className="os-card rounded-card p-6">
-        <p className="os-eyebrow tracking-[0.28em]">Meta</p>
+      <section className="os-card p-6">
+        <p className="os-eyebrow">Meta</p>
         <dl className="mt-4 space-y-4 text-sm">
           <div>
             <dt className="text-[color:var(--text-3)]">Enquiry ID</dt>
@@ -383,7 +383,7 @@ export default function EnquiryDetailActions({
       </section>
 
       {showGenerateModal ? (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-[rgba(15,23,42,0.45)] px-4 py-8">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-[var(--navy)]/45 px-4 py-8">
           <button
             type="button"
             aria-label="Close quote revision modal"
@@ -395,7 +395,7 @@ export default function EnquiryDetailActions({
             }}
           />
 
-          <div className="relative mx-auto my-4 w-full max-w-5xl rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)] max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="relative mx-auto my-4 w-full max-w-5xl rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)] max-h-[calc(100vh-4rem)] overflow-y-auto">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="os-section-title">Select pricing tier</h2>
@@ -411,7 +411,7 @@ export default function EnquiryDetailActions({
                   }
                   setShowGenerateModal(false)
                 }}
-                className="rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+                className="btn btn-ghost btn-sm"
                 disabled={loadingAction === 'generate'}
               >
                 Close
@@ -420,7 +420,7 @@ export default function EnquiryDetailActions({
 
             <div className="mt-6">
               {linkedProject ? (
-                <div className="mb-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-5">
+                <div className="mb-6 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-semibold text-[color:var(--text)]">Project stages</h3>
@@ -431,7 +431,7 @@ export default function EnquiryDetailActions({
                     <button
                       type="button"
                       onClick={() => setRevisionScope((current) => [...current, createEmptyPhase()])}
-                      className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                      className="btn btn-ghost btn-sm"
                     >
                       Add stage
                     </button>
@@ -439,9 +439,9 @@ export default function EnquiryDetailActions({
 
                   <div className="mt-4 space-y-4">
                     {revisionScope.map((phase, index) => (
-                      <div key={`${phase.phase}-${index}`} className="rounded-card border border-[color:var(--border)] bg-white p-4">
+                      <div key={`${phase.phase}-${index}`} className="rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-4">
                         <div className="mb-4 flex items-center justify-between gap-3">
-                          <span className="os-eyebrow tracking-[0.18em]">
+                          <span className="os-eyebrow">
                             Stage {index + 1}
                           </span>
                           <button
@@ -451,7 +451,7 @@ export default function EnquiryDetailActions({
                                 current.length === 1 ? current : current.filter((_, phaseIndex) => phaseIndex !== index)
                               )
                             }
-                            className="rounded-card border border-[color:var(--red)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)]"
+                            className="btn btn-danger btn-sm"
                           >
                             Remove
                           </button>
@@ -459,7 +459,7 @@ export default function EnquiryDetailActions({
 
                         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
                           <label className="space-y-2">
-                            <span className="text-sm text-[color:var(--text-2)]">Stage name</span>
+                            <span className="field-label block">Stage name</span>
                             <input
                               value={phase.phase}
                               onChange={(event) =>
@@ -469,12 +469,12 @@ export default function EnquiryDetailActions({
                                   )
                                 )
                               }
-                              className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                              className="os-input w-full px-4 py-3 text-sm"
                             />
                           </label>
 
                           <label className="space-y-2">
-                            <span className="text-sm text-[color:var(--text-2)]">Duration</span>
+                            <span className="field-label block">Duration</span>
                             <input
                               value={phase.duration}
                               onChange={(event) =>
@@ -484,13 +484,13 @@ export default function EnquiryDetailActions({
                                   )
                                 )
                               }
-                              className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                              className="os-input w-full px-4 py-3 text-sm"
                             />
                           </label>
                         </div>
 
                         <label className="mt-4 block space-y-2">
-                          <span className="text-sm text-[color:var(--text-2)]">Description</span>
+                          <span className="field-label block">Description</span>
                           <textarea
                             value={phase.description}
                             onChange={(event) =>
@@ -501,12 +501,12 @@ export default function EnquiryDetailActions({
                               )
                             }
                             rows={3}
-                            className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                            className="os-input w-full px-4 py-3 text-sm"
                           />
                         </label>
 
                         <label className="mt-4 block space-y-2">
-                          <span className="text-sm text-[color:var(--text-2)]">Deliverables</span>
+                          <span className="field-label block">Deliverables</span>
                           <textarea
                             value={deliverablesToText(phase.deliverables)}
                             onChange={(event) =>
@@ -519,7 +519,7 @@ export default function EnquiryDetailActions({
                               )
                             }
                             rows={3}
-                            className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                            className="os-input w-full px-4 py-3 text-sm"
                           />
                           <p className="text-xs text-[color:var(--text-3)]">Use one deliverable per line or separate with commas.</p>
                         </label>
@@ -538,7 +538,7 @@ export default function EnquiryDetailActions({
                 onChange={setSelectedTier}
               />
 
-              <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-5">
+              <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-5">
                 <div>
                   <h3 className="text-lg font-semibold text-[color:var(--text)]">Quote guidance</h3>
                   <p className="mt-1 text-sm text-[color:var(--text-2)]">
@@ -548,7 +548,7 @@ export default function EnquiryDetailActions({
 
                 <div className="mt-4 grid gap-4 md:grid-cols-3">
                   <label className="space-y-2">
-                    <span className="text-sm text-[color:var(--text-2)]">Pricing posture</span>
+                    <span className="field-label block">Pricing posture</span>
                     <select
                       value={guidance.pricingPosture}
                       onChange={(event) =>
@@ -557,7 +557,7 @@ export default function EnquiryDetailActions({
                           pricingPosture: event.target.value as QuoteGuidanceState['pricingPosture'],
                         }))
                       }
-                      className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                      className="os-input w-full px-4 py-3 text-sm"
                     >
                       <option value="conservative">Conservative</option>
                       <option value="balanced">Balanced</option>
@@ -566,7 +566,7 @@ export default function EnquiryDetailActions({
                   </label>
 
                   <label className="space-y-2">
-                    <span className="text-sm text-[color:var(--text-2)]">Budget handling</span>
+                    <span className="field-label block">Budget handling</span>
                     <select
                       value={guidance.budgetAlignment}
                       onChange={(event) =>
@@ -575,7 +575,7 @@ export default function EnquiryDetailActions({
                           budgetAlignment: event.target.value as QuoteGuidanceState['budgetAlignment'],
                         }))
                       }
-                      className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                      className="os-input w-full px-4 py-3 text-sm"
                     >
                       <option value="respect">Stay close to stated budget</option>
                       <option value="flexible">Treat budget as soft guidance</option>
@@ -584,7 +584,7 @@ export default function EnquiryDetailActions({
                   </label>
 
                   <label className="space-y-2">
-                    <span className="text-sm text-[color:var(--text-2)]">Delivery model</span>
+                    <span className="field-label block">Delivery model</span>
                     <select
                       value={guidance.deliveryBias}
                       onChange={(event) =>
@@ -593,7 +593,7 @@ export default function EnquiryDetailActions({
                           deliveryBias: event.target.value as QuoteGuidanceState['deliveryBias'],
                         }))
                       }
-                      className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                      className="os-input w-full px-4 py-3 text-sm"
                     >
                       <option value="best_fit">Let the model choose</option>
                       <option value="fixed">Bias toward fixed price</option>
@@ -605,7 +605,7 @@ export default function EnquiryDetailActions({
 
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <label className="space-y-2">
-                    <span className="text-sm text-[color:var(--text-2)]">Must include</span>
+                    <span className="field-label block">Must include</span>
                     <textarea
                       value={guidance.mustInclude}
                       onChange={(event) =>
@@ -613,12 +613,12 @@ export default function EnquiryDetailActions({
                       }
                       rows={4}
                       placeholder="Examples: discovery workshop, training, hosting, phased rollout"
-                      className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                      className="os-input w-full px-4 py-3 text-sm"
                     />
                   </label>
 
                   <label className="space-y-2">
-                    <span className="text-sm text-[color:var(--text-2)]">Must avoid</span>
+                    <span className="field-label block">Must avoid</span>
                     <textarea
                       value={guidance.mustAvoid}
                       onChange={(event) =>
@@ -626,13 +626,13 @@ export default function EnquiryDetailActions({
                       }
                       rows={4}
                       placeholder="Examples: mobile app, deep integrations, admin portal in v1"
-                      className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                      className="os-input w-full px-4 py-3 text-sm"
                     />
                   </label>
                 </div>
 
                 <label className="mt-4 block space-y-2">
-                  <span className="text-sm text-[color:var(--text-2)]">Additional notes</span>
+                  <span className="field-label block">Additional notes</span>
                   <textarea
                     value={guidance.notes}
                     onChange={(event) =>
@@ -640,7 +640,7 @@ export default function EnquiryDetailActions({
                     }
                     rows={4}
                     placeholder="Anything commercial or delivery-specific you want the quote to reflect."
-                    className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                    className="os-input w-full px-4 py-3 text-sm"
                   />
                 </label>
               </div>
@@ -663,7 +663,7 @@ export default function EnquiryDetailActions({
                 type="button"
                 onClick={handleGenerateQuote}
                 disabled={!selectedTier || loadingAction === 'generate'}
-                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {loadingAction === 'generate' ? 'Generating quote...' : 'Generate quote'}
               </button>

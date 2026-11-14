@@ -226,7 +226,7 @@ export default function InvoiceDetailClient({
           <>
             <a
               href={`/api/invoices/${invoice.id}/pdf`}
-              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              className="btn btn-ghost"
             >
               Download PDF
             </a>
@@ -238,7 +238,7 @@ export default function InvoiceDetailClient({
               defaultRecipient={billTo.bill_to_email ?? contact?.email ?? null}
               defaultSubject={`Invoice ${invoice.invoice_number}`}
               defaultMessage={`Hi,\n\nPlease find the attached invoice ${invoice.invoice_number}.\n\nThank you.`}
-              buttonClassName="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              buttonClassName="btn btn-ghost"
               // Emailing the invoice IS sending it. Without this the client has
               // the invoice while the OS still records it as a draft.
               onSent={async () => {
@@ -251,7 +251,7 @@ export default function InvoiceDetailClient({
                   href={faUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                  className="btn btn-ghost"
                 >
                   In FreeAgent ↗
                 </a>
@@ -260,7 +260,7 @@ export default function InvoiceDetailClient({
                   type="button"
                   onClick={sendToFreeAgent}
                   disabled={faPending}
-                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-60"
+                  className="btn btn-ghost"
                 >
                   {faPending ? 'Sending…' : 'Send to FreeAgent'}
                 </button>
@@ -270,7 +270,7 @@ export default function InvoiceDetailClient({
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(true)}
-                className="rounded-card border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red)] transition hover:bg-[var(--red-dim)]"
+                className="btn btn-danger"
               >
                 Delete
               </button>
@@ -278,7 +278,7 @@ export default function InvoiceDetailClient({
             {invoice.status === 'draft' ? (
               <Link
                 href={`/invoicing/${invoice.id}/edit`}
-                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                className="btn btn-primary"
               >
                 Edit
               </Link>
@@ -306,18 +306,18 @@ export default function InvoiceDetailClient({
       <div className="os-card p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Issue date</p>
+            <p className="os-label">Issue date</p>
             <p className="mt-2 text-sm text-[color:var(--text-2)]">{invoice.issue_date}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Due date</p>
+            <p className="os-label">Due date</p>
             <p className="mt-2 text-sm text-[color:var(--text-2)]">{invoice.due_date ?? '—'}</p>
             {invoice.po_number ? (
               <p className="mt-1 text-sm text-[color:var(--text-2)]">PO number: {invoice.po_number}</p>
             ) : null}
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Bill to</p>
+            <p className="os-label">Bill to</p>
             <p className="mt-2 text-sm text-[color:var(--text-2)]">{billTo.bill_to_name ?? '—'}</p>
             {billTo.bill_to_address ? (
               <p className="mt-1 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{billTo.bill_to_address}</p>
@@ -344,7 +344,7 @@ export default function InvoiceDetailClient({
             ) : null}
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Workstream</p>
+            <p className="os-label">Workstream</p>
             <div className="mt-2">
               {workstream ? (
                 <WorkstreamBadge
@@ -364,7 +364,7 @@ export default function InvoiceDetailClient({
         <h2 className="os-section-title">Line items</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+            <thead className="os-label text-left [&_th]:font-semibold">
               <tr>
                 <th className="pb-3">Description</th>
                 <th className="pb-3 text-right">Qty</th>
@@ -468,7 +468,7 @@ export default function InvoiceDetailClient({
             ) : paymentLink ? (
               <div className="mt-4 space-y-4">
                 <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-                  <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Payment link</p>
+                  <p className="os-label">Payment link</p>
                   <p className="mt-2 break-all text-sm text-[color:var(--text-2)]">{truncatedPaymentLink}</p>
                   <p className="mt-2 text-xs text-[color:var(--text-3)]">Client can pay online at this link.</p>
                 </div>
@@ -476,7 +476,7 @@ export default function InvoiceDetailClient({
                   <button
                     type="button"
                     onClick={() => void handleCopyLink()}
-                    className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                    className="btn btn-ghost"
                   >
                     {copied ? 'Copied!' : 'Copy'}
                   </button>
@@ -484,7 +484,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => void generatePaymentLink()}
                     disabled={paymentLoading}
-                    className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                    className="btn btn-ghost"
                   >
                     {paymentLoading ? 'Generating...' : 'Resend link'}
                   </button>
@@ -496,7 +496,7 @@ export default function InvoiceDetailClient({
                   type="button"
                   onClick={() => void generatePaymentLink()}
                   disabled={paymentLoading}
-                  className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                  className="btn btn-ghost"
                 >
                   {paymentLoading ? 'Generating...' : 'Send payment link'}
                 </button>
@@ -509,7 +509,7 @@ export default function InvoiceDetailClient({
                 <button
                   type="button"
                   onClick={() => setShowRecurringModal(true)}
-                  className="rounded-card border border-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
+                  className="btn btn-ghost"
                 >
                   Set up recurring payment
                 </button>
@@ -526,7 +526,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => updateStatus('sent')}
                     disabled={updatingStatus !== null}
-                    className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                    className="btn btn-primary"
                   >
                     {updatingStatus === 'sent' ? 'Updating...' : 'Mark as sent (already emailed)'}
                   </button>
@@ -534,7 +534,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => setCancelConfirmOpen(true)}
                     disabled={updatingStatus !== null}
-                    className="rounded-card border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-60"
+                    className="btn btn-danger"
                   >
                     Cancel invoice
                   </button>
@@ -545,7 +545,7 @@ export default function InvoiceDetailClient({
                   <button
                     type="button"
                     onClick={() => setRecordPaymentOpen(true)}
-                    className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                    className="btn btn-primary"
                   >
                     Record payment
                   </button>
@@ -553,7 +553,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => updateStatus('overdue')}
                     disabled={updatingStatus !== null}
-                    className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-60"
+                    className="btn btn-ghost"
                   >
                     {updatingStatus === 'overdue' ? 'Updating...' : 'Mark as overdue'}
                   </button>
@@ -561,7 +561,7 @@ export default function InvoiceDetailClient({
                     type="button"
                     onClick={() => setCancelConfirmOpen(true)}
                     disabled={updatingStatus !== null}
-                    className="rounded-card border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-60"
+                    className="btn btn-danger"
                   >
                     Cancel invoice
                   </button>
@@ -571,7 +571,7 @@ export default function InvoiceDetailClient({
                 <button
                   type="button"
                   onClick={() => setRecordPaymentOpen(true)}
-                  className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                  className="btn btn-primary"
                 >
                   Record payment
                 </button>
@@ -583,16 +583,16 @@ export default function InvoiceDetailClient({
       </div>
 
       {showRecurringModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] px-4">
-          <div className="w-full max-w-md rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45 px-4">
+          <div className="w-full max-w-md rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
             <h2 className="os-section-title">Set up recurring payment</h2>
             <p className="mt-2 text-sm text-[color:var(--text-2)]">
               Confirm the recurring amount and billing interval for this invoice.
             </p>
 
             <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Amount</p>
-              <p className="mt-2 text-2xl font-semibold text-[color:var(--text)]">{formatMoney(totals.total, invoice.currency)}</p>
+              <p className="os-label">Amount</p>
+              <p className="stat-value mt-2">{formatMoney(totals.total, invoice.currency)}</p>
             </div>
 
             <div className="mt-6 flex gap-3">
@@ -601,7 +601,7 @@ export default function InvoiceDetailClient({
                   key={interval}
                   type="button"
                   onClick={() => setRecurringInterval(interval)}
-                  className={`flex-1 rounded-card border px-4 py-3 text-sm font-medium transition ${
+                  className={`flex-1 rounded-control border px-4 py-3 text-sm font-medium transition ${
                     recurringInterval === interval
                       ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                       : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
@@ -616,7 +616,7 @@ export default function InvoiceDetailClient({
               <button
                 type="button"
                 onClick={() => setShowRecurringModal(false)}
-                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -624,7 +624,7 @@ export default function InvoiceDetailClient({
                 type="button"
                 onClick={() => void createRecurringSubscription()}
                 disabled={subscriptionLoading}
-                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="btn btn-primary"
               >
                 {subscriptionLoading ? 'Setting up...' : 'Confirm recurring payment'}
               </button>

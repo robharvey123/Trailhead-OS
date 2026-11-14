@@ -54,8 +54,8 @@ function toOption(entity: EntityKind, row: Row): EntityOption {
 }
 
 const inputClass =
-  'w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 pr-8 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none disabled:opacity-50'
-const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]'
+  'os-input w-full px-3 py-2 pr-8 text-sm disabled:opacity-50'
+const labelClass = 'field-label block'
 
 export default function EntityCombobox({
   label,
@@ -213,7 +213,7 @@ export default function EntityCombobox({
         <div
           id={listId}
           role="listbox"
-          className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-card border border-[color:var(--border)] bg-[var(--surface)] shadow-[0_12px_40px_rgba(15,23,42,0.12)]"
+          className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-card border border-[color:var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]"
         >
           {loading ? (
             <p className="px-3 py-2 text-sm text-[color:var(--text-3)]">Searching…</p>

@@ -56,9 +56,9 @@ export default function MeetingLinksEditor({
   }
 
   return (
-    <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Linked records</h2>
-      {error ? <p className="mt-2 text-xs text-[color:var(--red)]">{error}</p> : null}
+    <div className="os-card p-6">
+      <h2 className="os-label">Linked records</h2>
+      {error ? <p className="mt-2 text-xs text-[var(--red-strong)]">{error}</p> : null}
 
       <LinkSection
         label="Accounts"
@@ -108,12 +108,12 @@ function LinkSection({
 
   return (
     <div className="mt-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-2)]">{label}</p>
+      <p className="field-label">{label}</p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {linked.map((item) => (
-          <span key={item.id} className="inline-flex items-center gap-1.5 rounded-pill border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-[color:var(--text)]">
-            <a href={`${hrefBase}/${item.id}`} className="hover:text-[color:var(--accent)]" title={item.sub ?? item.name}>{item.name}</a>
-            <button type="button" onClick={() => onRemove(item)} className="text-[var(--text-2)] transition hover:text-[color:var(--red)]" aria-label={`Unlink ${item.name}`}>✕</button>
+          <span key={item.id} className="inline-flex items-center gap-1.5 rounded-pill border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-[var(--text)]">
+            <a href={`${hrefBase}/${item.id}`} className="hover:text-[var(--accent-strong)]" title={item.sub ?? item.name}>{item.name}</a>
+            <button type="button" onClick={() => onRemove(item)} className="text-[var(--text-2)] transition hover:text-[var(--red-strong)]" aria-label={`Unlink ${item.name}`}>✕</button>
           </span>
         ))}
         {linked.length === 0 ? <span className="text-xs text-[var(--text-2)]">None linked yet.</span> : null}
@@ -126,10 +126,10 @@ function LinkSection({
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder={placeholder}
-          className="w-full rounded-control border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[color:var(--accent)]"
+          className="os-input w-full px-3 py-2 text-sm"
         />
         {open && matches.length > 0 ? (
-          <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-control border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-lg)]">
+          <div className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-control border border-[var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]">
             {matches.map((m) => (
               <button
                 key={m.id}
@@ -137,7 +137,7 @@ function LinkSection({
                 onMouseDown={(e) => { e.preventDefault(); onAdd(m); setQuery(''); setOpen(false) }}
                 className="flex w-full flex-col items-start px-3 py-1.5 text-left hover:bg-[var(--surface-2)]"
               >
-                <span className="text-sm text-[color:var(--text)]">{m.name}</span>
+                <span className="text-sm text-[var(--text)]">{m.name}</span>
                 {m.sub ? <span className="text-[11px] text-[var(--text-2)]">{m.sub}</span> : null}
               </button>
             ))}

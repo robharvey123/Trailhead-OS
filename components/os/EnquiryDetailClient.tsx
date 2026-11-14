@@ -182,7 +182,7 @@ function renderInput(
           value={value}
           onChange={(event) => onChange(event.target.value)}
           rows={field.rows ?? 4}
-          className="os-textarea mt-3 w-full rounded-control px-4 py-3 text-sm"
+          className="os-textarea mt-3 w-full px-4 py-3 text-sm"
         />
         {field.kind === 'list' ? (
           <p className="mt-2 text-xs text-[color:var(--text-3)]">Use one item per line or separate with commas.</p>
@@ -196,7 +196,7 @@ function renderInput(
       type={field.kind}
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="os-input mt-3 w-full rounded-control px-4 py-3 text-sm"
+      className="os-input mt-3 w-full px-4 py-3 text-sm"
     />
   )
 }
@@ -393,7 +393,7 @@ export default function EnquiryDetailClient({
               defaultRecipient={enquiry.contact_email}
               defaultSubject={`Discovery summary - ${enquiry.biz_name}`}
               defaultMessage={`Hi,\n\nPlease find the discovery summary for ${enquiry.biz_name} below.\n\nBest,\nRob`}
-              buttonClassName="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              buttonClassName="btn btn-ghost"
             />
             {editing ? (
               <>
@@ -401,7 +401,7 @@ export default function EnquiryDetailClient({
                   type="button"
                   onClick={saveChanges}
                   disabled={saving}
-                  className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                  className="btn btn-primary"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>
@@ -411,7 +411,7 @@ export default function EnquiryDetailClient({
                     resetForm()
                     setEditing(false)
                   }}
-                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                  className="btn btn-ghost"
                 >
                   Cancel
                 </button>
@@ -423,7 +423,7 @@ export default function EnquiryDetailClient({
                   resetForm()
                   setEditing(true)
                 }}
-                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost"
               >
                 Edit submission
               </button>
@@ -467,7 +467,7 @@ export default function EnquiryDetailClient({
             {editing ? (
               <div className="mt-6 grid gap-4 md:grid-cols-3">
                 <label className="space-y-2">
-                  <span className="text-sm text-[color:var(--text-2)]">Status</span>
+                  <span className="field-label block">Status</span>
                   <select
                     value={form.status}
                     onChange={(event) =>
@@ -476,7 +476,7 @@ export default function EnquiryDetailClient({
                         status: event.target.value as EnquiryStatus,
                       }))
                     }
-                    className="os-select w-full rounded-control px-4 py-3 text-sm"
+                    className="os-select w-full px-4 py-3 text-sm"
                   >
                     {ENQUIRY_STATUSES.map((status) => (
                       <option key={status} value={status}>
@@ -506,13 +506,13 @@ export default function EnquiryDetailClient({
               </div>
             ) : (
               <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <div className="os-card-muted rounded-card p-4">
+                <div className="os-card-muted p-4">
                   <p className="os-eyebrow">Status</p>
                   <div className="mt-3">
                     <StatusBadge status={enquiry.status} kind="enquiry" />
                   </div>
                 </div>
-                <div className="os-card-muted rounded-card p-4">
+                <div className="os-card-muted p-4">
                   <p className="os-eyebrow">Linked account</p>
                   <div className="mt-3">
                     {linkedAccount ? (
@@ -527,7 +527,7 @@ export default function EnquiryDetailClient({
                     )}
                   </div>
                 </div>
-                <div className="os-card-muted rounded-card p-4">
+                <div className="os-card-muted p-4">
                   <p className="os-eyebrow">Linked project</p>
                   <div className="mt-3">
                     {linkedProjectSummary ? (
@@ -542,7 +542,7 @@ export default function EnquiryDetailClient({
                         <p className="text-sm text-[color:var(--text-2)]">—</p>
                         <Link
                           href={createProjectHref}
-                          className="inline-flex rounded-card border border-[color:var(--border)] px-3 py-2 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                          className="btn btn-ghost btn-sm"
                         >
                           Create linked project
                         </Link>
@@ -557,7 +557,7 @@ export default function EnquiryDetailClient({
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               {FIELD_CONFIG.map((field) => (
-                <div key={field.key} className="os-card-muted rounded-card p-4">
+                <div key={field.key} className="os-card-muted p-4">
                   <p className="os-eyebrow">
                     {field.label}
                   </p>
@@ -600,7 +600,7 @@ export default function EnquiryDetailClient({
               onChange={(event) => setInternalNotes(event.target.value)}
               rows={10}
               placeholder="Add your internal recommendations, delivery assumptions, phase changes, pricing considerations, and anything the draft quote should account for."
-              className="os-textarea mt-5 w-full rounded-control px-4 py-4 text-sm"
+              className="os-textarea mt-5 w-full px-4 py-4 text-sm"
             />
           </section>
 
