@@ -4,6 +4,7 @@ import { formatBlogDate } from '@/lib/blog'
 import { getAllBlogPosts } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingSiteUrl, isLocalDevelopmentHost } from '@/lib/site'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default async function OsBlogPage() {
   const host = (await headers()).get('host') || ''
@@ -13,22 +14,18 @@ export default async function OsBlogPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="os-eyebrow">
-            Content
-          </p>
-          <h1 className="os-page-title mt-2">
-            Blog
-          </h1>
-        </div>
-        <Link
-          href="/blog/new"
-          className="inline-flex items-center justify-center rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-        >
-          New post
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Blog"
+        actions={
+          <Link
+            href="/blog/new"
+            className="inline-flex items-center justify-center rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          >
+            New post
+          </Link>
+        }
+      />
 
       <div className="overflow-hidden rounded-card border border-[color:var(--border)] bg-white">
         <div className="overflow-x-auto">

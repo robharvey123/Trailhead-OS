@@ -3,6 +3,7 @@ import { getEnquiries } from '@/lib/db/enquiries'
 import { getQuotes } from '@/lib/db/quotes'
 import { createClient } from '@/lib/supabase/server'
 import StatusBadge from '@/components/os/StatusBadge'
+import PageHeader from '@/components/ui/PageHeader'
 import type { EnquiryStatus } from '@/lib/types'
 
 const ENQUIRY_TABS = [
@@ -50,15 +51,11 @@ export default async function EnquiriesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Clients</p>
-          <h1 className="mt-2 os-page-title">Enquiries</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Discovery form submissions waiting for review or conversion.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Clients"
+        title="Enquiries"
+        description="Discovery form submissions waiting for review or conversion."
+      />
 
       <div className="flex flex-wrap gap-2">
         {ENQUIRY_TABS.map((tab) => {

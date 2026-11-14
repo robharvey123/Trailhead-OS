@@ -10,6 +10,7 @@ import { formatBillingPeriod } from '@/lib/engagements/periods'
 import DocumentPreviewDrawer from '@/components/os/engagements/DocumentPreviewDrawer'
 import type { EngagementDetail, EngagementLinkCounts } from '@/lib/db/engagements'
 import type { EngagementTouchpoint } from '@/lib/db/touchpoints'
+import PageHeader from '@/components/ui/PageHeader'
 import ConfirmDialog from '@/components/os/ConfirmDialog'
 import EngagementForm from '@/components/os/engagements/EngagementForm'
 import TouchpointTimeline from '@/components/os/TouchpointTimeline'
@@ -345,19 +346,24 @@ export default function EngagementDetailClient({
   const tier1AccountIds = new Set(milestones.map((m) => m.account_id))
 
   return (
-    <div className="panel overflow-hidden">
-      <div className="topbar">
-        <Link href="/engagements" className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Engagements</Link>
-        <span className="topbar-title">{e.name}</span>
-        <span className={`status-badge ${STATUS_CLASS[e.status] ?? 'status-on_hold'}`}>{e.status}</span>
-        <span className="acct-pill matched">◈ {e.end_client?.name ?? 'End client'}</span>
-        {e.billed_via && e.billed_via.id !== e.end_client_account_id ? <span className="acct-pill outbound">via {e.billed_via.name}</span> : null}
-        <div className="topbar-actions">
+    <>
+    <PageHeader
+      back={{ href: '/engagements', label: 'Engagements' }}
+      title={e.name}
+      description={
+        <span className="flex flex-wrap items-center gap-2">
+          <span className={`status-badge ${STATUS_CLASS[e.status] ?? 'status-on_hold'}`}>{e.status}</span>
+          <span className="acct-pill matched">◈ {e.end_client?.name ?? 'End client'}</span>
+          {e.billed_via && e.billed_via.id !== e.end_client_account_id ? <span className="acct-pill outbound">via {e.billed_via.name}</span> : null}
           <span className="meta-chip">{e.retainer_amount_monthly != null ? `${formatCurrency(e.retainer_amount_monthly, e.currency)}/mo` : '—'}</span>
           <span className="meta-chip">{e.day_rate != null ? `${formatCurrency(e.day_rate, e.currency)}/day` : ''}</span>
           <span className="meta-chip">fee {e.performance_fee_default != null ? formatCurrency(e.performance_fee_default, e.currency) : '—'}</span>
+        </span>
+      }
+      actions={
+        <>
           <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>Edit</button>
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
             <button className="btn btn-ghost btn-sm" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>⋯</button>
             {menuOpen ? (
               <>
@@ -402,9 +408,10 @@ export default function EngagementDetailClient({
               </>
             ) : null}
           </div>
-        </div>
-      </div>
-
+        </>
+      }
+    />
+    <div className="panel overflow-hidden">
       <div className="tabbar">
         {TABS.map((t) => (
           <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>{t}</button>
@@ -869,5 +876,6 @@ export default function EngagementDetailClient({
 
       <DocumentPreviewDrawer engagementId={e.id} doc={previewDoc} onClose={() => setPreviewDoc(null)} />
     </div>
+    </>
   )
 }

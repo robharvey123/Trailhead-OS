@@ -7,6 +7,7 @@ import { formatCurrency } from '@/lib/format'
 import { summariseTime } from '@/lib/time/summary'
 import { useTimer } from '@/components/time/TimerProvider'
 import type { TimeEntryLedgerRow } from '@/lib/types'
+import PageHeader from '@/components/ui/PageHeader'
 import TimeEntryForm, { type EngagementOption } from './TimeEntryForm'
 
 export type { EngagementOption }
@@ -201,11 +202,12 @@ export default function TimesheetClient({
   )
 
   return (
-    <div className="panel overflow-hidden">
-      <div className="topbar">
-        <span className="topbar-title">Timesheet</span>
-        <span className="topbar-count">{RANGE_LABELS[range]}</span>
-        <div className="topbar-actions">
+    <>
+    <PageHeader
+      title="Timesheet"
+      count={RANGE_LABELS[range]}
+      actions={
+        <>
           <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(null); setFormOpen(true) }}>+ Add entry</button>
           {timer ? (
             <div className="timer">
@@ -234,9 +236,10 @@ export default function TimesheetClient({
               <button className="btn btn-primary btn-sm" onClick={() => void startFromPickers()} disabled={timerBusy}>▶ Start timer</button>
             </>
           )}
-        </div>
-      </div>
-
+        </>
+      }
+    />
+    <div className="panel overflow-hidden">
       <div className="stats-bar">
         <div className="stat-item"><div className="stat-label">Today</div><div className="stat-value">{fmtDur(totals.todayMinutes)}</div><div className="stat-sub">{formatCurrency(totals.todayAmount, 'GBP')}</div></div>
         <div className="stat-item"><div className="stat-label">{RANGE_LABELS[range].replace('…', '')}</div><div className="stat-value" style={{ color: 'var(--accent)' }}>{fmtDur(totals.minutes)}</div><div className="stat-sub">{formatCurrency(totals.summary.amount, 'GBP')}</div></div>
@@ -354,5 +357,6 @@ export default function TimesheetClient({
         />
       ) : null}
     </div>
+    </>
   )
 }

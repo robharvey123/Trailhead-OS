@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCampaign, listCampaignSteps, listRecipients, listTemplates, listAudienceContacts } from '@/lib/db/outreach'
 import { OUTREACH_CAMPAIGN_STATUS_LABELS, OUTREACH_RECIPIENT_STATUSES, OUTREACH_RECIPIENT_STATUS_LABELS, type OutreachRecipientStatus } from '@/lib/types'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import {
   startCampaignAction, pauseCampaignAction, resumeCampaignAction, cancelCampaignAction,
   updateCampaignScheduleAction, addCampaignStepAction, removeCampaignStepAction, sendTestEmailAction,
@@ -54,18 +55,20 @@ export default async function CampaignDetailPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-5xl space-y-6 p-6">
-        <div>
-          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
-          <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-semibold text-white">{campaign.name}</h1>
-              <p className="mt-1 text-sm text-[var(--text-2)]">
+      <div className="os-narrow space-y-6">
+        <PageHeader
+          back={{ href: '/outreach', label: 'Outreach' }}
+          title={campaign.name}
+          description={
+            <>
+              <span className="block">
                 {campaign.from_name} &lt;{campaign.from_email}&gt; · reply-to {campaign.reply_to ?? '—'} · cap {campaign.daily_send_cap}/day
-              </p>
-              <p className="mt-1 text-sm text-[var(--text-2)]">🗓 {scheduleLabel(campaign.send_days, campaign.send_window_start, campaign.send_window_end, campaign.timezone)}</p>
-            </div>
-            <div className="flex items-center gap-2">
+              </span>
+              <span className="mt-1 block">🗓 {scheduleLabel(campaign.send_days, campaign.send_window_start, campaign.send_window_end, campaign.timezone)}</span>
+            </>
+          }
+          actions={
+            <>
               <span className="meta-chip">{OUTREACH_CAMPAIGN_STATUS_LABELS[campaign.status]}</span>
               {campaign.status === 'draft' ? (
                 <form action={startCampaignAction}><input type="hidden" name="id" value={campaign.id} /><button className="btn btn-primary btn-sm">Start</button></form>
@@ -79,9 +82,9 @@ export default async function CampaignDetailPage({
               {campaign.status !== 'completed' && campaign.status !== 'cancelled' ? (
                 <form action={cancelCampaignAction}><input type="hidden" name="id" value={campaign.id} /><button className="btn btn-ghost btn-sm">Cancel</button></form>
               ) : null}
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {errorMsg ? (
           <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] p-4 text-sm text-[color:var(--red-strong)]">⚠ {errorMsg}</div>

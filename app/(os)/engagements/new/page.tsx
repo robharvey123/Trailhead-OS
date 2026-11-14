@@ -16,7 +16,7 @@ export default async function NewEngagementPage() {
   const accounts = await getAccounts({}, supabase).catch(() => [])
 
   return (
-    <div className={`thmock ${mockupFontVars}`} style={{ padding: 24 }}>
+    <div className={`thmock ${mockupFontVars}`}>
       <EngagementForm accounts={accounts.map((a) => ({ id: a.id, name: a.name }))} />
     </div>
   )

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { ProjectDetail as ProjectDetailType } from '@/lib/types'
 import ProjectStatusBadge from './ProjectStatusBadge'
 import WorkstreamBadge from './WorkstreamBadge'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function ProjectDetail({
   project,
@@ -12,15 +13,12 @@ export default function ProjectDetail({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Projects</p>
-          <h1 className="os-page-title mt-2">{project.name}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            {project.description || project.brief || 'No summary added yet.'}
-          </p>
-        </div>
-        <div className="flex gap-3">
+      <PageHeader
+        eyebrow="Projects"
+        title={project.name}
+        description={project.description || project.brief || 'No summary added yet.'}
+        actions={
+          <>
           <ProjectStatusBadge status={project.status} />
           <Link
             href={`/projects/records/${project.id}/edit`}
@@ -28,8 +26,9 @@ export default function ProjectDetail({
           >
             Edit
           </Link>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         {project.workstream ? (

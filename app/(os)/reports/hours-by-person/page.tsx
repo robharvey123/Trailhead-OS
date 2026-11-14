@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { hoursByPerson } from '@/lib/db/reports'
 import { formatCurrency } from '@/lib/format'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,16 +31,17 @@ export default async function HoursByPersonPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="panel overflow-hidden">
-        <div className="topbar">
-          <span className="topbar-title">Hours by person</span>
-          <form method="get" className="topbar-actions" style={{ gap: 6 }}>
+      <PageHeader
+        title="Hours by person"
+        actions={
+          <form method="get" className="flex items-center gap-1.5">
             <input type="date" name="from" defaultValue={from} className="filter-select" />
             <input type="date" name="to" defaultValue={to} className="filter-select" />
             <button type="submit" className="btn btn-primary btn-sm">Apply</button>
           </form>
-        </div>
-
+        }
+      />
+      <div className="panel overflow-hidden">
         <div style={{ padding: 24, display: 'grid', gap: 16 }}>
           {rows.length === 0 ? (
             <div className="empty">No time logged in this range.</div>

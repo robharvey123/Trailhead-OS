@@ -5,6 +5,7 @@ import { listMyTasks } from '@/lib/db/engagement-tasks'
 import { listPeople } from '@/lib/db/people'
 import { listEngagements } from '@/lib/db/engagements'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import MyWorkClient from '../my-work/MyWorkClient'
 
 export const dynamic = 'force-dynamic'
@@ -20,9 +21,9 @@ export default async function TasksPage() {
   if (!profile.person_id) {
     return (
       <div className={`thmock ${mockupFontVars}`}>
-        <div className="panel" style={{ padding: 24 }}>
-          <h1 className="topbar-title">My work</h1>
-          <p style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 8 }}>
+        <PageHeader title="Tasks" />
+        <div className="panel p-6">
+          <p className="text-[13px] text-[var(--text-2)]">
             Your login isn’t linked to a person record yet, so there are no tasks to show. Ask an admin to link one.
           </p>
         </div>

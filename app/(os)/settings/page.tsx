@@ -2,6 +2,7 @@ import Link from 'next/link'
 import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
 import CompanySettingsForm from '@/components/os/CompanySettingsForm'
+import PageHeader from '@/components/ui/PageHeader'
 import PaymentDetailsForm from '@/components/os/PaymentDetailsForm'
 import RemittanceAccountsSection from '@/components/os/RemittanceAccountsSection'
 import { listRemittanceAccounts } from '@/lib/db/remittance-accounts'
@@ -124,13 +125,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="os-narrow space-y-6">
-      <div>
-        <p className="os-eyebrow">System</p>
-        <h1 className="mt-2 os-page-title">Settings</h1>
-        <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
-          A control panel for the core OS surfaces, live workspace settings, and the current signed-in account.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="System"
+        title="Settings"
+        description="A control panel for the core OS surfaces, live workspace settings, and the current signed-in account."
+      />
 
       {profile ? (
         <section className="os-card p-6">

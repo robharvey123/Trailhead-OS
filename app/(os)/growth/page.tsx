@@ -4,6 +4,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import { createSeoSiteAction } from './actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 const INPUT_CLASS =
   'w-full rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
@@ -23,13 +24,11 @@ export default async function GrowthPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">Growth</p>
-        <h1 className="mt-2 os-page-title">Growth engine</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Keyword research, content pipeline and search visibility per site.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Growth"
+        title="Growth engine"
+        description="Keyword research, content pipeline and search visibility per site."
+      />
 
       {resolved?.error ? (
         <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">

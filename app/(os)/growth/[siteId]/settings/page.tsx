@@ -5,6 +5,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import { updateGrowthBudgetsAction, updateSeoSiteAction } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 const INPUT_CLASS =
   'w-full rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
@@ -29,19 +30,21 @@ export default async function GrowthSiteSettingsPage({
   const updateAction = updateSeoSiteAction.bind(null, site.id)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <p className="os-eyebrow">
+    <div className="os-narrow space-y-6">
+      <PageHeader
+        eyebrow={
           <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
             {site.name}
           </Link>
-        </p>
-        <h1 className="mt-2 os-page-title">Site settings</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          {site.domain} — the ICP and brand voice feed every cluster, brief and draft. If clusters
-          come back generic, sharpen these before touching prompts.
-        </p>
-      </div>
+        }
+        title="Site settings"
+        description={
+          <>
+            {site.domain} — the ICP and brand voice feed every cluster, brief and draft. If clusters
+            come back generic, sharpen these before touching prompts.
+          </>
+        }
+      />
 
       {resolved?.error ? (
         <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">

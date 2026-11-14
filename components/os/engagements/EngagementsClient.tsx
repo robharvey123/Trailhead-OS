@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { formatCurrency } from '@/lib/format'
 import type { EngagementWithRelations } from '@/lib/types'
+import PageHeader from '@/components/ui/PageHeader'
 
 const STATUS_CLASS: Record<string, string> = {
   Active: 'status-active', Draft: 'status-on_hold', Paused: 'status-contacted',
@@ -51,18 +52,20 @@ export default function EngagementsClient({
   }, [engagements, hoursMap])
 
   return (
-    <div className="panel overflow-hidden">
-      <div className="topbar">
-        <span className="topbar-title">Engagements</span>
-        <span className="topbar-count">{engagements.length}</span>
-        <div className="topbar-actions">
+    <>
+    <PageHeader
+      title="Engagements"
+      count={engagements.length}
+      actions={
+        <>
           <button className="btn btn-ghost btn-sm" onClick={seedQola} disabled={seeding}>
             {seeding ? 'Seeding…' : 'Seed Qola demo engagement'}
           </button>
           <Link className="btn btn-primary btn-sm" href="/engagements/new">+ New engagement</Link>
-        </div>
-      </div>
-
+        </>
+      }
+    />
+    <div className="panel overflow-hidden">
       {toast ? (
         <div style={{ padding: '10px 24px', background: 'var(--accent-dim)', borderBottom: '1px solid var(--accent)', color: 'var(--accent-strong)', fontSize: 13 }}>
           {toast}
@@ -117,5 +120,6 @@ export default function EngagementsClient({
         </table>
       </div>
     </div>
+    </>
   )
 }

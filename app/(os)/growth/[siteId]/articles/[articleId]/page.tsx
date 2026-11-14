@@ -14,6 +14,7 @@ import {
   retryDraftAction,
   verifyPublishAction,
 } from '../../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 // The Regenerate action runs draftArticle inline, and a full article is the
 // longest model call in the OS — the same reason /api/cron/growth-draft raises
@@ -59,90 +60,94 @@ export default async function GrowthArticleDetailPage({
     : null
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link
-              href={`/growth/${site.id}/articles`}
-              className="hover:text-[color:var(--accent-strong)]"
-            >
-              {site.name} · Articles
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">{article.title}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+    <div className="os-narrow space-y-6">
+      <PageHeader
+        eyebrow={
+          <Link
+            href={`/growth/${site.id}/articles`}
+            className="hover:text-[color:var(--accent-strong)]"
+          >
+            {site.name} · Articles
+          </Link>
+        }
+        title={article.title}
+        description={
+          <>
             {article.status}
             {article.word_count ? ` · ${article.word_count.toLocaleString('en-GB')} words` : ''}
             {article.model_used ? ` · ${article.model_used}` : ''}
             {article.token_cost !== null ? ` · ~$${article.token_cost.toFixed(2)} tokens` : ''}
-          </p>
-        </div>
-        {article.status === 'review' ? (
-          <form action={approveArticleAction.bind(null, site.id, article.id)}>
-            <button
-              type="submit"
-              className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-            >
-              Approve article
-            </button>
-          </form>
-        ) : null}
-        {article.status === 'approved' ? (
-          <form action={publishArticleAction.bind(null, site.id, article.id)}>
-            {voiceStaleWarning ? (
-              <ConfirmPendingButton
-                confirmLabel="Publish the old-voice draft"
-                pendingLabel="Publishing…"
-                warning={voiceStaleWarning}
-                variant="primary"
-              >
-                {publishLabel(site.cms_type)}
-              </ConfirmPendingButton>
-            ) : (
-              <PendingButton variant="primary" pendingLabel="Publishing…">
-                {publishLabel(site.cms_type)}
-              </PendingButton>
-            )}
-          </form>
-        ) : null}
-        {article.status === 'publishing' && article.publish_ref?.startsWith('http') ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <form action={mergeArticlePrAction.bind(null, site.id, article.id)}>
-              {/* Waits for the build and refuses on failure — see mergePublishPr. */}
-              <PendingButton variant="primary" pendingLabel="Checking build, then merging…">
-                Merge PR → go live
-              </PendingButton>
-            </form>
-            <form action={verifyPublishAction.bind(null, site.id, article.id)}>
-              <PendingButton pendingLabel="Checking…">Check status</PendingButton>
-            </form>
-          </div>
-        ) : null}
-        {article.body_mdx && (article.status === 'review' || article.status === 'approved') ? (
-          <form action={regenerateArticleAction.bind(null, site.id, article.id)}>
-            <ConfirmPendingButton
-              confirmLabel="Overwrite the draft"
-              pendingLabel="Re-drafting…"
-              warning={`This replaces the current copy, meta description and schema for "${article.title}" with a fresh draft from the brief. The old version is not kept.${
-                article.status === 'approved' ? ' The article goes back to review, so it will need approving again.' : ''
-              }`}
-            >
-              Regenerate
-            </ConfirmPendingButton>
-          </form>
-        ) : null}
-        {article.status === 'drafting' && article.error ? (
-          <form action={retryDraftAction.bind(null, site.id, article.id)}>
-            <button
-              type="submit"
-              className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
-            >
-              Retry draft
-            </button>
-          </form>
-        ) : null}
-      </div>
+          </>
+        }
+        actions={
+          <>
+            {article.status === 'review' ? (
+              <form action={approveArticleAction.bind(null, site.id, article.id)}>
+                <button
+                  type="submit"
+                  className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                >
+                  Approve article
+                </button>
+              </form>
+            ) : null}
+            {article.status === 'approved' ? (
+              <form action={publishArticleAction.bind(null, site.id, article.id)}>
+                {voiceStaleWarning ? (
+                  <ConfirmPendingButton
+                    confirmLabel="Publish the old-voice draft"
+                    pendingLabel="Publishing…"
+                    warning={voiceStaleWarning}
+                    variant="primary"
+                  >
+                    {publishLabel(site.cms_type)}
+                  </ConfirmPendingButton>
+                ) : (
+                  <PendingButton variant="primary" pendingLabel="Publishing…">
+                    {publishLabel(site.cms_type)}
+                  </PendingButton>
+                )}
+              </form>
+            ) : null}
+            {article.status === 'publishing' && article.publish_ref?.startsWith('http') ? (
+              <>
+                <form action={mergeArticlePrAction.bind(null, site.id, article.id)}>
+                  {/* Waits for the build and refuses on failure — see mergePublishPr. */}
+                  <PendingButton variant="primary" pendingLabel="Checking build, then merging…">
+                    Merge PR → go live
+                  </PendingButton>
+                </form>
+                <form action={verifyPublishAction.bind(null, site.id, article.id)}>
+                  <PendingButton pendingLabel="Checking…">Check status</PendingButton>
+                </form>
+              </>
+            ) : null}
+            {article.body_mdx && (article.status === 'review' || article.status === 'approved') ? (
+              <form action={regenerateArticleAction.bind(null, site.id, article.id)}>
+                <ConfirmPendingButton
+                  confirmLabel="Overwrite the draft"
+                  pendingLabel="Re-drafting…"
+                  warning={`This replaces the current copy, meta description and schema for "${article.title}" with a fresh draft from the brief. The old version is not kept.${
+                    article.status === 'approved' ? ' The article goes back to review, so it will need approving again.' : ''
+                  }`}
+                >
+                  Regenerate
+                </ConfirmPendingButton>
+              </form>
+            ) : null}
+            {article.status === 'drafting' && article.error ? (
+              <form action={retryDraftAction.bind(null, site.id, article.id)}>
+                <button
+                  type="submit"
+                  className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                >
+                  Retry draft
+                </button>
+              </form>
+            ) : null}
+          </>
+        }
+      />
 
       {voiceStaleWarning && article.status !== 'published' ? (
         <div className="rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] px-4 py-3 text-sm text-[var(--amber-strong)] dark:border-[var(--amber)]/40 dark:bg-[var(--amber-dim)] dark:text-[var(--amber-strong)]">

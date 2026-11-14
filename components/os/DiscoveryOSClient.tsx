@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import PageHeader from '@/components/ui/PageHeader'
 
 export type DiscoveryEnquiryRow = {
   id: string
@@ -62,13 +63,11 @@ export default function DiscoveryOSClient({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">Clients</p>
-        <h1 className="os-page-title mt-2">Discovery form</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Send this link to clients to capture their app requirements.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Clients"
+        title="Discovery form"
+        description="Send this link to clients to capture their app requirements."
+      />
 
       <section className="os-card p-6">
         <div className="space-y-4">

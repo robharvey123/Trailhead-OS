@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCallQueue, getUnscreenedCallCount } from '@/lib/db/outreach'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import CtpsScreenButton from '@/components/os/CtpsScreenButton'
 import { logCallOutcome } from './actions'
 
@@ -18,14 +18,12 @@ export default async function CallQueuePage() {
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-6xl space-y-6 p-6">
-        <div>
-          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
-          <h1 className="mt-3 text-2xl font-semibold text-white">Call queue</h1>
-          <p className="text-sm text-[var(--text-2)]">
-            Delivered prospects, earliest first. Only numbers CTPS-screened clear in the last 28 days, and not unsubscribed, bounced or do-not-call, appear.
-          </p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          back={{ href: '/outreach', label: 'Outreach' }}
+          title="Call queue"
+          description="Delivered prospects, earliest first. Only numbers CTPS-screened clear in the last 28 days, and not unsubscribed, bounced or do-not-call, appear."
+        />
 
         {unscreened > 0 ? (
           <div className="space-y-3 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 text-sm text-[color:var(--amber-strong)]">

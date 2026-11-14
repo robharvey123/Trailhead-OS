@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import InvoiceAccountFilter from '@/components/os/InvoiceAccountFilter'
+import PageHeader from '@/components/ui/PageHeader'
 import StatusBadge from '@/components/os/StatusBadge'
 import WorkstreamBadge from '@/components/os/WorkstreamBadge'
 import { getAccounts } from '@/lib/db/accounts'
@@ -99,23 +100,25 @@ export default async function InvoicingPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Finance</p>
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="os-page-title">Invoicing</h1>
+      <PageHeader
+        eyebrow="Finance"
+        title="Invoicing"
+        description={
+          <span className="flex flex-wrap items-center gap-2 pt-1">
             <span className="rounded-pill border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-1 text-sm font-medium text-[color:var(--amber-strong)]">
               Outstanding {formatMoney(outstandingAmount, 'GBP')}
             </span>
-          </div>
-        </div>
-        <Link
-          href="/invoicing/new"
-          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-        >
-          New invoice
-        </Link>
-      </div>
+          </span>
+        }
+        actions={
+          <Link
+            href="/invoicing/new"
+            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          >
+            New invoice
+          </Link>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         {INVOICE_TABS.map((tab) => {

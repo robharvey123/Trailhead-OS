@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 import { listSalesProducts } from '@/lib/sales/data'
 import { getSalesDashboard, STAGE_LABELS, type WeekStats } from '@/lib/sales/queue'
 
@@ -33,13 +34,11 @@ export default async function SalesDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">Week starting Monday {weekLabel}, against the week before.</p>
-        </div>
-        <Link href="/sales/queue" className="btn btn-primary btn-sm">Open today&apos;s queue</Link>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description={<>Week starting Monday {weekLabel}, against the week before.</>}
+        actions={<Link href="/sales/queue" className="btn btn-primary btn-sm">Open today&apos;s queue</Link>}
+      />
 
       <section aria-labelledby="week-title" className="panel overflow-x-auto p-4">
         <h2 id="week-title" className="text-sm font-semibold">Activity</h2>

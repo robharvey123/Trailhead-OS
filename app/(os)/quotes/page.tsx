@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import PageHeader from '@/components/ui/PageHeader'
 import StatusBadge from '@/components/os/StatusBadge'
 import WorkstreamBadge from '@/components/os/WorkstreamBadge'
 import { getQuotes } from '@/lib/db/quotes'
@@ -49,18 +50,18 @@ export default async function QuotesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Commercial</p>
-          <h1 className="mt-2 os-page-title">Quotes</h1>
-        </div>
-        <Link
-          href="/quotes/new"
-          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-        >
-          New quote
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Commercial"
+        title="Quotes"
+        actions={
+          <Link
+            href="/quotes/new"
+            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          >
+            New quote
+          </Link>
+        }
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="os-card p-5">

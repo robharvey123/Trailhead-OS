@@ -3,6 +3,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/server'
 import { listMeetings } from '@/lib/db/meetings'
 import SyncGranolaButton from '@/components/os/SyncGranolaButton'
+import PageHeader from '@/components/ui/PageHeader'
 
 export const metadata = {
   title: 'Meetings | Trailhead OS',
@@ -19,16 +20,12 @@ export default async function MeetingsPage() {
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-4xl space-y-6 p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-[color:var(--text)]">Meetings</h1>
-            <p className="text-sm text-[var(--text-2)]">
-              Granola meeting notes, auto-linked to contacts and accounts by attendee email.
-            </p>
-          </div>
-          <SyncGranolaButton />
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          title="Meetings"
+          description="Granola meeting notes, auto-linked to contacts and accounts by attendee email."
+          actions={<SyncGranolaButton />}
+        />
 
         {meetings.length === 0 ? (
           <div className="rounded-card border border-dashed border-[var(--border)] px-6 py-16 text-center text-sm text-[var(--text-2)]">

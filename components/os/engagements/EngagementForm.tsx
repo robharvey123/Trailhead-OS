@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
 import { ENGAGEMENT_TYPE_LABELS, type EngagementType, type EngagementWithRelations } from '@/lib/types'
+import PageHeader from '@/components/ui/PageHeader'
 
 type Named = { id: string; name: string }
 
@@ -110,9 +111,7 @@ export default function EngagementForm({
     }
   }
 
-  return (
-    <div className="panel mx-auto w-full max-w-[760px] p-4 sm:p-6">
-      <h1 className="topbar-title" style={{ marginBottom: 16 }}>{isEdit ? 'Edit engagement' : 'New engagement'}</h1>
+  const fields = (
       <div className="grid gap-[14px]">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
           <label className="block">
@@ -192,6 +191,23 @@ export default function EngagementForm({
           </button>
         </div>
       </div>
+  )
+
+  // Editing happens in a modal on the engagement page, so that title is a
+  // modal heading. Creating is its own page and gets the page header.
+  if (isEdit) {
+    return (
+      <div className="panel mx-auto w-full max-w-[760px] p-4 sm:p-6">
+        <h2 className="topbar-title mb-4">Edit engagement</h2>
+        {fields}
+      </div>
+    )
+  }
+
+  return (
+    <div className="os-narrow">
+      <PageHeader title="New engagement" />
+      <div className="panel p-4 sm:p-6">{fields}</div>
     </div>
   )
 }

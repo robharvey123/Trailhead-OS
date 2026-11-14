@@ -43,27 +43,20 @@ export default async function DashboardPage() {
   } catch {}
 
   return (
-    <div className="space-y-6">
+    // DailyBriefClient owns the page header (its description is live state) and
+    // renders these blocks directly under it.
+    <DailyBriefClient today={todayLabel} initialData={dailyBrief}>
       {coworkChangesToday > 0 ? (
-        <div className="mx-auto max-w-[1100px]">
-          <Link
-            href="/settings"
-            className="flex items-center justify-between gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
-          >
-            <span>Claude made {coworkChangesToday} change{coworkChangesToday === 1 ? '' : 's'} today</span>
-            <span className="text-xs text-[color:var(--text-3)]">Review →</span>
-          </Link>
-        </div>
+        <Link
+          href="/settings"
+          className="flex items-center justify-between gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+        >
+          <span>Claude made {coworkChangesToday} change{coworkChangesToday === 1 ? '' : 's'} today</span>
+          <span className="text-xs text-[color:var(--text-3)]">Review →</span>
+        </Link>
       ) : null}
-      {portfolio ? (
-        <div className="mx-auto max-w-[1100px]">
-          <PortfolioOverview data={portfolio} />
-        </div>
-      ) : null}
-      <div className="mx-auto max-w-[1100px]">
-        <ActiveProjectTasks />
-      </div>
-      <DailyBriefClient today={todayLabel} initialData={dailyBrief} />
-    </div>
+      {portfolio ? <PortfolioOverview data={portfolio} /> : null}
+      <ActiveProjectTasks />
+    </DailyBriefClient>
   )
 }

@@ -1,8 +1,8 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getSalesContactRecord } from '@/lib/sales/data'
 import EligibilityBadge from '@/components/sales/EligibilityBadge'
+import PageHeader from '@/components/ui/PageHeader'
 import ContactActions from './ContactActions'
 import PipelinePanel from './PipelinePanel'
 import FollowUpEmail from './FollowUpEmail'
@@ -24,16 +24,12 @@ export default async function SalesContactPage({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link href="/sales/contacts" className="text-sm text-[color:var(--text-2)] hover:underline">← Contacts</Link>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{c.company ?? c.name}</h1>
-          <EligibilityBadge eligibility={c.eligibility} />
-        </div>
-        <p className="mt-1 text-sm text-[color:var(--text-2)]">
-          {[c.name, c.role, c.sub_trade, c.city].filter(Boolean).join(' · ')}
-        </p>
-      </div>
+      <PageHeader
+        back={{ href: '/sales/contacts', label: 'Contacts' }}
+        title={c.company ?? c.name}
+        description={[c.name, c.role, c.sub_trade, c.city].filter(Boolean).join(' · ')}
+        actions={<EligibilityBadge eligibility={c.eligibility} />}
+      />
 
       <div className="grid gap-4 md:grid-cols-[1fr_1fr]">
         <section className="panel p-4">

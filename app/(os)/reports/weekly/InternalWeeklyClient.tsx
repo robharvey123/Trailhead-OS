@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import PageHeader from '@/components/ui/PageHeader'
 import type { InternalWeeklyReport } from '@/lib/reports/data'
 
 function fmtRange(startIso: string, endIso: string): string {
@@ -42,39 +43,37 @@ export default function InternalWeeklyClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Reports</p>
-          <h1 className="os-page-title mt-2">Weekly report</h1>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">
-            {fmtRange(data.weekStart, data.weekEnd)} · time by engagement
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href={atOldest ? '#' : `/reports/weekly?week=${data.offsetWeeks - 1}`}
-            aria-disabled={atOldest}
-            className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${atOldest ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
-          >
-            ‹ Earlier
-          </Link>
-          {!isCurrent ? (
+      <PageHeader
+        eyebrow="Reports"
+        title="Weekly report"
+        description={`${fmtRange(data.weekStart, data.weekEnd)} · time by engagement`}
+        actions={
+          <>
             <Link
-              href="/reports/weekly"
-              className="rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+              href={atOldest ? '#' : `/reports/weekly?week=${data.offsetWeeks - 1}`}
+              aria-disabled={atOldest}
+              className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${atOldest ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
             >
-              This week
+              ‹ Earlier
             </Link>
-          ) : null}
-          <Link
-            href={isCurrent ? '#' : `/reports/weekly?week=${data.offsetWeeks + 1}`}
-            aria-disabled={isCurrent}
-            className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${isCurrent ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
-          >
-            Later ›
-          </Link>
-        </div>
-      </div>
+            {!isCurrent ? (
+              <Link
+                href="/reports/weekly"
+                className="rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+              >
+                This week
+              </Link>
+            ) : null}
+            <Link
+              href={isCurrent ? '#' : `/reports/weekly?week=${data.offsetWeeks + 1}`}
+              aria-disabled={isCurrent}
+              className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${isCurrent ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
+            >
+              Later ›
+            </Link>
+          </>
+        }
+      />
 
       <div className="os-card grid gap-4 p-5 sm:grid-cols-3">
         <Stat label="Total hours" value={hrs(data.totalHours)} />

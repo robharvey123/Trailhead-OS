@@ -871,7 +871,7 @@ body {
 .thmock .status-badge.no-dot::before { display: none; }
 
 /* ---- inbox 3-pane ---- */
-.thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 120px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-card); }
+.thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 168px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-card); }
 .thmock .folders { border-right: 1px solid var(--border); background: var(--surface); padding: 12px 8px; overflow-y: auto; }
 .thmock .folder-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); padding: 6px 10px 4px; }
 .thmock .folder { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-control); font-size: 12px; cursor: pointer; color: var(--text-2); background: none; border: none; width: 100%; text-align: left; }

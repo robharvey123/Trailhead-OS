@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import CreateWorkspaceForm from '@/app/(app)/workspaces/CreateWorkspaceForm'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default async function AnalyticsPage() {
   const supabase = await createClient()
@@ -13,12 +14,7 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">
-          Analytics
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">Workspaces</h1>
-      </header>
+      <PageHeader eyebrow="Analytics" title="Workspaces" />
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="rounded-card border border-[#2A2A3A] bg-[#1A1A28] p-6">

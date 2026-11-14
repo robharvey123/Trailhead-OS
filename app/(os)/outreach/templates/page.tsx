@@ -1,8 +1,8 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { listTemplates } from '@/lib/db/outreach'
 import { renderTemplate } from '@/lib/outreach/render'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import SafeEmailHtml from '@/components/os/SafeEmailHtml'
 
 export const metadata = { title: 'Templates | Trailhead OS' }
@@ -27,14 +27,16 @@ export default async function TemplatesPage() {
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-4xl space-y-6 p-6">
-        <div>
-          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
-          <h1 className="mt-3 text-2xl font-semibold text-white">Templates</h1>
-          <p className="text-sm text-[var(--text-2)]">
-            Merge tags: {'{{email_greeting}}, {{company}}, {{name}}, {{city}}, {{channel}}, {{sub_trade}}, {{size_signal}}'}.
-          </p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          back={{ href: '/outreach', label: 'Outreach' }}
+          title="Templates"
+          description={
+            <>
+              Merge tags: {'{{email_greeting}}, {{company}}, {{name}}, {{city}}, {{channel}}, {{sub_trade}}, {{size_signal}}'}.
+            </>
+          }
+        />
 
         {templates.length === 0 ? (
           <div className="empty">No templates yet. The Engineer OS seed creates four.</div>

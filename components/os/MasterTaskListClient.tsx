@@ -26,6 +26,7 @@ import PriorityBadge from './PriorityBadge'
 import TaskEmailModal from './TaskEmailModal'
 import TaskSlideOver from './TaskSlideOver'
 import WorkstreamBadge from './WorkstreamBadge'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface MasterTaskListClientProps {
   initialTasks: TaskWithWorkstream[]
@@ -325,18 +326,13 @@ export default function MasterTaskListClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow text-[color:var(--accent-strong)] pb-2 border-b border-[color:var(--border)] mb-4">
-            Master list
-          </p>
-          <h1 className="os-page-title mt-2">Tasks</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            One table for every active task across the OS.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
+      <PageHeader
+        eyebrow="Master list"
+        title="Tasks"
+        description="One table for every active task across the OS."
+        actions={
+          <>
+            <div className="flex flex-wrap items-center gap-3">
           <div className="inline-flex rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-1">
             {(['table', 'kanban'] as const).map((mode) => (
               <button
@@ -362,7 +358,9 @@ export default function MasterTaskListClient({
             New task
           </button>
         </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="os-card grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-6">
         <div className="block md:col-span-2 xl:col-span-2">

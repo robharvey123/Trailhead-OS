@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api-fetch'
 import { createClient } from '@/lib/supabase/client'
 import type { EmailLog, EmailThread } from '@/lib/types'
 import Modal from '@/components/ui/Modal'
+import PageHeader from '@/components/ui/PageHeader'
 
 type LiveStatus = 'connecting' | 'live' | 'offline'
 import ComposeModal, { type ComposePayload } from './ComposeModal'
@@ -759,33 +760,31 @@ export default function InboxClient({
   }, [cursorIndex])
 
   return (
+    <>
+    <PageHeader
+      title="Inbox"
+      count={`${counts.unread} unread`}
+      actions={
+        !connected ? (
+          <Link className="btn btn-primary btn-sm" href="/api/auth/google">Connect Gmail</Link>
+        ) : (
+          <>
+            <span
+              title={liveStatus === 'live' ? 'Live — inbox updates automatically' : liveStatus === 'connecting' ? 'Connecting to live updates…' : 'Live updates offline — will refresh on focus'}
+              className="mr-1 inline-flex items-center gap-[5px] text-[11px] text-[var(--text-3)]"
+            >
+              <span className={`h-[7px] w-[7px] rounded-pill ${liveStatus === 'live' ? 'bg-[var(--green)]' : liveStatus === 'connecting' ? 'bg-[var(--amber)]' : 'bg-[var(--text-3)]'}`} />
+              {liveStatus === 'live' ? 'Live' : liveStatus === 'connecting' ? 'Connecting…' : 'Offline'}
+            </span>
+            <button className="btn btn-primary btn-sm" onClick={() => setComposeConfig({})}>✎ Compose</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => syncNow(7)} disabled={busy}>{busy ? 'Syncing…' : '↻ Sync now'}</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => syncNow(90)} disabled={busy}>Backfill 90d</button>
+            <button className="btn btn-ghost btn-sm" title="Keyboard shortcuts" onClick={() => setShowHelp(true)}>⌨ ?</button>
+          </>
+        )
+      }
+    />
     <div className="panel overflow-hidden">
-      <div className="topbar">
-        <span className="topbar-title">Inbox</span>
-        <span className="topbar-count">{counts.unread} unread</span>
-        {connected ? (
-          <span
-            title={liveStatus === 'live' ? 'Live — inbox updates automatically' : liveStatus === 'connecting' ? 'Connecting to live updates…' : 'Live updates offline — will refresh on focus'}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-3)', marginLeft: 8 }}
-          >
-            <span style={{ width: 7, height: 7, borderRadius: 'var(--radius-pill)', background: liveStatus === 'live' ? 'var(--green, #16a34a)' : liveStatus === 'connecting' ? 'var(--amber, #d97706)' : 'var(--text-3)' }} />
-            {liveStatus === 'live' ? 'Live' : liveStatus === 'connecting' ? 'Connecting…' : 'Offline'}
-          </span>
-        ) : null}
-        <div className="topbar-actions">
-          {!connected ? (
-            <Link className="btn btn-primary btn-sm" href="/api/auth/google">Connect Gmail</Link>
-          ) : (
-            <>
-              <button className="btn btn-primary btn-sm" onClick={() => setComposeConfig({})}>✎ Compose</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => syncNow(7)} disabled={busy}>{busy ? 'Syncing…' : '↻ Sync now'}</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => syncNow(90)} disabled={busy}>Backfill 90d</button>
-              <button className="btn btn-ghost btn-sm" title="Keyboard shortcuts" onClick={() => setShowHelp(true)}>⌨ ?</button>
-            </>
-          )}
-        </div>
-      </div>
-
       {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '6px 16px' }}>{error}</p> : null}
 
       {composeConfig ? (
@@ -1132,6 +1131,7 @@ export default function InboxClient({
         </div>
       </div>
     </div>
+    </>
   )
 }
 

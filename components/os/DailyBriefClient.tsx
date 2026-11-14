@@ -3,9 +3,10 @@
 import { toast } from 'sonner'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import { getPriorityClasses } from '@/lib/os'
+import PageHeader from '@/components/ui/PageHeader'
 import StatusBadge from './StatusBadge'
 import type {
   DailyBriefCalendarEvent,
@@ -181,9 +182,11 @@ function TimelineEvent({ event }: { event: DailyBriefCalendarEvent }) {
 interface DailyBriefClientProps {
   today: string
   initialData: DailyBriefData
+  /** Server-rendered dashboard blocks, shown between the page header and the brief. */
+  children?: ReactNode
 }
 
-export default function DailyBriefClient({ today, initialData }: DailyBriefClientProps) {
+export default function DailyBriefClient({ today, initialData, children }: DailyBriefClientProps) {
   const [data, setData] = useState(initialData)
   const [pendingTaskIds, setPendingTaskIds] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -298,24 +301,28 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
   }
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-6">
-      <header className="overflow-hidden os-card p-6">
-        <div className="space-y-3">
-          <p className="os-eyebrow text-[color:var(--accent-strong)]">Daily brief</p>
-          <h1 className="os-page-title">{formatLongDate(todayDate)}</h1>
-          <div className="flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-2">
-            <p className="text-sm text-[color:var(--text-2)]">{summary}</p>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Daily brief"
+        title={formatLongDate(todayDate)}
+        description={
+          <>
+            {summary}
             <span
-              className={`tag-chip ${
+              className={`tag-chip ml-3 align-middle ${
                 pressure.tone === 'over' ? 'red' : pressure.tone === 'due' ? 'amber' : 'emerald'
               }`}
             >
               {pressure.label}
             </span>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      {children}
+
+      <div className="overflow-hidden os-card p-6">
+        <div className="grid gap-3 sm:grid-cols-3">
           {statItems.map((item) => (
             <div key={item.label} className={`rounded-card border px-4 py-4 ${item.tone}`}>
               <p className="text-[11px] uppercase tracking-[0.2em] text-inherit/70">{item.label}</p>
@@ -323,7 +330,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
             </div>
           ))}
         </div>
-      </header>
+      </div>
 
       <section className="os-card p-5">
         <div className="flex items-end justify-between gap-4">

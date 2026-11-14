@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
+import PageHeader from '@/components/ui/PageHeader'
 import PricingTierSelector from './PricingTierSelector'
 import EntityCombobox from './EntityCombobox'
 import { apiFetch } from '@/lib/api-fetch'
@@ -400,496 +401,492 @@ export default function QuoteForm({
   }
 
   return (
-    <div className="os-card space-y-6 p-6">
-      <div>
-        <p className="os-eyebrow">Commercial</p>
-        <h1 className="os-page-title mt-2">
-          {initialQuote ? 'Edit quote' : 'New quote'}
-        </h1>
-      </div>
+    <>
+      <PageHeader eyebrow="Commercial" title={initialQuote ? 'Edit quote' : 'New quote'} />
+      <div className="os-card space-y-6 p-6">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]">
+          <label className="space-y-2 xl:col-span-6">
+            <span className="text-sm text-[color:var(--text-2)]">Title</span>
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              className="os-input w-full"
+            />
+          </label>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_repeat(5,minmax(0,1fr))]">
-        <label className="space-y-2 xl:col-span-6">
-          <span className="text-sm text-[color:var(--text-2)]">Title</span>
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            className="os-input w-full"
-          />
-        </label>
-
-        <EntityCombobox
-          label="Account"
-          entity="account"
-          value={accountId}
-          selectedLabel={accounts.find((a) => a.id === accountId)?.name}
-          onChange={(opt) => {
-            setAccountId(opt.id)
-            if (opt.id && contacts.every((contact) => contact.id !== contactId || contact.account_id !== opt.id)) {
-              setContactId('')
-            }
-          }}
-          clearable
-        />
-
-        <EntityCombobox
-          label="Contact"
-          entity="contact"
-          value={contactId}
-          selectedLabel={filteredContacts.find((c) => c.id === contactId)?.name}
-          filters={accountId ? { account_id: accountId } : undefined}
-          onChange={(opt) => setContactId(opt.id)}
-          clearable
-        />
-
-        <EntityCombobox
-          label="Project"
-          entity="project"
-          value={projectId}
-          selectedLabel={projects.find((p) => p.id === projectId)?.name}
-          onChange={(opt) => {
-            setProjectId(opt.id)
-            const project = projectsById.get(opt.id)
-            if (project?.account_id && !accountId) {
-              setAccountId(project.account_id)
-            }
-            if (project?.workstream_id && !workstreamId) {
-              setWorkstreamId(project.workstream_id)
-            }
-          }}
-          clearable
-        />
-
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
-          <select
-            value={workstreamId}
-            onChange={(event) => setWorkstreamId(event.target.value)}
-            className="os-select w-full"
-          >
-            <option value="">No workstream</option>
-            {workstreams.map((workstream) => (
-              <option key={workstream.id} value={workstream.id}>
-                {workstream.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Pricing type</span>
-          <select
-            value={pricingType}
-            onChange={(event) => setPricingType(event.target.value as PricingType)}
-            className="os-select w-full"
-          >
-            <option value="fixed">Fixed</option>
-            <option value="time_and_materials">Time &amp; materials</option>
-            <option value="milestone">Milestone</option>
-          </select>
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Valid until</span>
-          <input
-            type="date"
-            value={validUntil}
-            onChange={(event) => setValidUntil(event.target.value)}
-            className="os-input w-full"
-          />
-        </label>
-
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
-          <input
-            type="date"
-            value={issueDate}
-            onChange={(event) => setIssueDate(event.target.value)}
-            className="os-input w-full"
-          />
-        </label>
-      </div>
-
-      <label className="space-y-2">
-        <span className="text-sm text-[color:var(--text-2)]">Summary</span>
-        <textarea
-          value={summary}
-          onChange={(event) => setSummary(event.target.value)}
-          rows={4}
-          placeholder="Brief overview of what this quote covers..."
-          className="os-textarea w-full"
-        />
-      </label>
-
-      <section className="os-card-muted p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="os-section-title">Scope of work</h2>
-            <p className="text-sm text-[color:var(--text-2)]">Build out delivery phases and reorder by dragging a card.</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setScope((current) => [...current, createEmptyPhase()])}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
-          >
-            Add phase
-          </button>
-        </div>
-
-        <div className="mt-4 space-y-4">
-          {scope.map((phase, index) => (
-            <div
-              key={`${phase.phase}-${index}`}
-              draggable
-              onDragStart={() => setDraggingPhaseIndex(index)}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={() => {
-                if (draggingPhaseIndex === null || draggingPhaseIndex === index) {
-                  return
-                }
-                movePhase(draggingPhaseIndex, index)
-                setDraggingPhaseIndex(null)
-              }}
-              className="os-card p-4"
-            >
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <span className="os-eyebrow">Drag handle · Phase {index + 1}</span>
-                <button
-                  type="button"
-                  onClick={() => setScope((current) => current.filter((_, phaseIndex) => phaseIndex !== index))}
-                  className="rounded-card border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
-                >
-                  Remove
-                </button>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
-                <label className="space-y-2">
-                  <span className="text-sm text-[color:var(--text-2)]">Phase name</span>
-                  <input
-                    value={phase.phase}
-                    onChange={(event) => updatePhase(index, { phase: event.target.value })}
-                    className="os-input w-full"
-                  />
-                </label>
-                <label className="space-y-2">
-                  <span className="text-sm text-[color:var(--text-2)]">Estimated duration</span>
-                  <input
-                    value={phase.duration}
-                    onChange={(event) => updatePhase(index, { duration: event.target.value })}
-                    className="os-input w-full"
-                  />
-                </label>
-              </div>
-
-              <label className="mt-4 block space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Description</span>
-                <textarea
-                  value={phase.description}
-                  onChange={(event) => updatePhase(index, { description: event.target.value })}
-                  rows={3}
-                  className="os-textarea w-full"
-                />
-              </label>
-
-              <div className="mt-4 space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Deliverables</span>
-                <div className="flex flex-wrap gap-2">
-                  {phase.deliverables.map((deliverable, deliverableIndex) => (
-                    <button
-                      key={`${deliverable}-${deliverableIndex}`}
-                      type="button"
-                      onClick={() =>
-                        updatePhase(index, {
-                          deliverables: phase.deliverables.filter((_, entryIndex) => entryIndex !== deliverableIndex),
-                        })
-                      }
-                      className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
-                    >
-                      {deliverable} ×
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    value={deliverableDrafts[index] ?? ''}
-                    onChange={(event) =>
-                      setDeliverableDrafts((current) => ({
-                        ...current,
-                        [index]: event.target.value,
-                      }))
-                    }
-                    onKeyDown={(event) => {
-                      if (event.key !== 'Enter') {
-                        return
-                      }
-                      event.preventDefault()
-                      const value = (deliverableDrafts[index] ?? '').trim()
-                      if (!value) {
-                        return
-                      }
-                      updatePhase(index, { deliverables: [...phase.deliverables, value] })
-                      setDeliverableDrafts((current) => ({ ...current, [index]: '' }))
-                    }}
-                    placeholder="Type and press Enter"
-                    className="os-input flex-1"
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="os-card-muted p-5">
-        <div>
-          <h2 className="os-section-title">Pricing tier</h2>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">
-            Choose the rate structure for this quote before building line items.
-          </p>
-        </div>
-
-        <div className="mt-4">
-          <PricingTierSelector
-            value={pricingTierId}
-            autoApplyInitialSelection={!initialQuote}
-            onChange={(tier) => {
-              setPricingTierId(tier?.id ?? null)
-              setPricingTier(tier)
-            }}
-            onRatesApplied={(tier) => {
-              setPricingTierId(tier.id)
-              setPricingTier(tier)
-
-              if (lineItems.length === 0) {
-                applyStarterItemsForTier(tier)
-                return
+          <EntityCombobox
+            label="Account"
+            entity="account"
+            value={accountId}
+            selectedLabel={accounts.find((a) => a.id === accountId)?.name}
+            onChange={(opt) => {
+              setAccountId(opt.id)
+              if (opt.id && contacts.every((contact) => contact.id !== contactId || contact.account_id !== opt.id)) {
+                setContactId('')
               }
-
-              setLineItemsMode('manual')
-              setShowTierNotice(true)
             }}
+            clearable
           />
-        </div>
-      </section>
 
-      <section className="os-card-muted p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="os-section-title">Line items</h2>
-            <p className="text-sm text-[color:var(--text-2)]">Same builder as invoices, with quote pricing type per line.</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setLineItemsMode('manual')
-              setLineItems((current) => [
-                ...current,
-                createEmptyLineItem(
-                  pricingType === 'milestone'
-                    ? 'milestone'
-                    : pricingType === 'time_and_materials'
-                      ? 'hourly'
-                      : 'fixed'
-                ),
-              ])
+          <EntityCombobox
+            label="Contact"
+            entity="contact"
+            value={contactId}
+            selectedLabel={filteredContacts.find((c) => c.id === contactId)?.name}
+            filters={accountId ? { account_id: accountId } : undefined}
+            onChange={(opt) => setContactId(opt.id)}
+            clearable
+          />
+
+          <EntityCombobox
+            label="Project"
+            entity="project"
+            value={projectId}
+            selectedLabel={projects.find((p) => p.id === projectId)?.name}
+            onChange={(opt) => {
+              setProjectId(opt.id)
+              const project = projectsById.get(opt.id)
+              if (project?.account_id && !accountId) {
+                setAccountId(project.account_id)
+              }
+              if (project?.workstream_id && !workstreamId) {
+                setWorkstreamId(project.workstream_id)
+              }
             }}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
-          >
-            Add line item
-          </button>
+            clearable
+          />
+
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
+            <select
+              value={workstreamId}
+              onChange={(event) => setWorkstreamId(event.target.value)}
+              className="os-select w-full"
+            >
+              <option value="">No workstream</option>
+              {workstreams.map((workstream) => (
+                <option key={workstream.id} value={workstream.id}>
+                  {workstream.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Pricing type</span>
+            <select
+              value={pricingType}
+              onChange={(event) => setPricingType(event.target.value as PricingType)}
+              className="os-select w-full"
+            >
+              <option value="fixed">Fixed</option>
+              <option value="time_and_materials">Time &amp; materials</option>
+              <option value="milestone">Milestone</option>
+            </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Valid until</span>
+            <input
+              type="date"
+              value={validUntil}
+              onChange={(event) => setValidUntil(event.target.value)}
+              className="os-input w-full"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
+            <input
+              type="date"
+              value={issueDate}
+              onChange={(event) => setIssueDate(event.target.value)}
+              className="os-input w-full"
+            />
+          </label>
         </div>
 
-        {showTierNotice ? (
-          <div className="mt-4 flex items-start justify-between gap-4 rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
-            <p>Tier updated - adjust line item rates manually if needed.</p>
+        <label className="space-y-2">
+          <span className="text-sm text-[color:var(--text-2)]">Summary</span>
+          <textarea
+            value={summary}
+            onChange={(event) => setSummary(event.target.value)}
+            rows={4}
+            placeholder="Brief overview of what this quote covers..."
+            className="os-textarea w-full"
+          />
+        </label>
+
+        <section className="os-card-muted p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="os-section-title">Scope of work</h2>
+              <p className="text-sm text-[color:var(--text-2)]">Build out delivery phases and reorder by dragging a card.</p>
+            </div>
             <button
               type="button"
-              onClick={() => setShowTierNotice(false)}
-              className="rounded-pill border border-[color:var(--accent)] px-2 py-1 text-xs font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
+              onClick={() => setScope((current) => [...current, createEmptyPhase()])}
+              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
             >
-              Dismiss
+              Add phase
             </button>
           </div>
-        ) : null}
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
-              <tr>
-                <th className="pb-3">Description</th>
-                <th className="pb-3">Type</th>
-                <th className="pb-3 text-right">Qty</th>
-                <th className="pb-3 text-right">Unit £</th>
-                <th className="pb-3 text-right">Total</th>
-                <th className="pb-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {lineItems.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-6 text-center text-sm text-[color:var(--text-3)]">
-                    Select a pricing tier to pre-fill starter line items, or add your own manually.
-                  </td>
-                </tr>
-              ) : null}
-              {lineItems.map((item) => (
-                <tr key={item.id} className="border-t border-[color:var(--border)]">
-                  <td className="py-3">
+          <div className="mt-4 space-y-4">
+            {scope.map((phase, index) => (
+              <div
+                key={`${phase.phase}-${index}`}
+                draggable
+                onDragStart={() => setDraggingPhaseIndex(index)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => {
+                  if (draggingPhaseIndex === null || draggingPhaseIndex === index) {
+                    return
+                  }
+                  movePhase(draggingPhaseIndex, index)
+                  setDraggingPhaseIndex(null)
+                }}
+                className="os-card p-4"
+              >
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <span className="os-eyebrow">Drag handle · Phase {index + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => setScope((current) => current.filter((_, phaseIndex) => phaseIndex !== index))}
+                    className="rounded-card border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+                  <label className="space-y-2">
+                    <span className="text-sm text-[color:var(--text-2)]">Phase name</span>
                     <input
-                      value={item.description}
-                      onChange={(event) => updateLineItem(item.id, { description: event.target.value })}
+                      value={phase.phase}
+                      onChange={(event) => updatePhase(index, { phase: event.target.value })}
                       className="os-input w-full"
                     />
-                  </td>
-                  <td className="py-3">
-                    <select
-                      value={item.type}
-                      onChange={(event) => updateLineItem(item.id, { type: event.target.value as QuoteLineItem['type'] })}
-                      className="os-select w-full"
-                    >
-                      <option value="fixed">Fixed</option>
-                      <option value="hourly">Hourly</option>
-                      <option value="milestone">Milestone</option>
-                    </select>
-                  </td>
-                  <td className="py-3">
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm text-[color:var(--text-2)]">Estimated duration</span>
                     <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={item.qty}
-                      onChange={(event) => updateLineItem(item.id, { qty: Number(event.target.value) })}
-                      className="os-input w-full text-right"
+                      value={phase.duration}
+                      onChange={(event) => updatePhase(index, { duration: event.target.value })}
+                      className="os-input w-full"
                     />
-                  </td>
-                  <td className="py-3">
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={item.unit_price}
-                      onChange={(event) => updateLineItem(item.id, { unit_price: Number(event.target.value) })}
-                      className="os-input w-full text-right"
-                    />
-                  </td>
-                  <td className="py-3 text-right text-[color:var(--text)]">{formatMoney(item.qty * item.unit_price)}</td>
-                  <td className="py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => removeLineItem(item.id)}
-                      className="rounded-card border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </label>
+                </div>
 
-        <div className="sticky bottom-4 mt-5 rounded-card border border-[color:var(--border)] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
-          <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_180px]">
-            <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={vatRate}
-                onChange={(event) => setVatRate(event.target.value)}
-                className="os-input w-full"
-              />
-            </label>
-            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Subtotal</p>
-              <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</p>
-            </div>
-            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">VAT ({Number(vatRate) || 0}%)</p>
-              <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</p>
-            </div>
-            <div className="rounded-card border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--emerald-strong)]">Total</p>
-              <p className="mt-2 text-lg font-semibold text-[color:var(--emerald-strong)]">{formatMoney(totals.total)}</p>
-            </div>
+                <label className="mt-4 block space-y-2">
+                  <span className="text-sm text-[color:var(--text-2)]">Description</span>
+                  <textarea
+                    value={phase.description}
+                    onChange={(event) => updatePhase(index, { description: event.target.value })}
+                    rows={3}
+                    className="os-textarea w-full"
+                  />
+                </label>
+
+                <div className="mt-4 space-y-2">
+                  <span className="text-sm text-[color:var(--text-2)]">Deliverables</span>
+                  <div className="flex flex-wrap gap-2">
+                    {phase.deliverables.map((deliverable, deliverableIndex) => (
+                      <button
+                        key={`${deliverable}-${deliverableIndex}`}
+                        type="button"
+                        onClick={() =>
+                          updatePhase(index, {
+                            deliverables: phase.deliverables.filter((_, entryIndex) => entryIndex !== deliverableIndex),
+                          })
+                        }
+                        className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
+                      >
+                        {deliverable} ×
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={deliverableDrafts[index] ?? ''}
+                      onChange={(event) =>
+                        setDeliverableDrafts((current) => ({
+                          ...current,
+                          [index]: event.target.value,
+                        }))
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Enter') {
+                          return
+                        }
+                        event.preventDefault()
+                        const value = (deliverableDrafts[index] ?? '').trim()
+                        if (!value) {
+                          return
+                        }
+                        updatePhase(index, { deliverables: [...phase.deliverables, value] })
+                        setDeliverableDrafts((current) => ({ ...current, [index]: '' }))
+                      }}
+                      placeholder="Type and press Enter"
+                      className="os-input flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <label className="space-y-2">
-        <span className="text-sm text-[color:var(--text-2)]">Payment terms</span>
-        <textarea
-          value={paymentTerms}
-          onChange={(event) => setPaymentTerms(event.target.value)}
-          rows={4}
-          className="os-textarea w-full"
-        />
-      </label>
+        <section className="os-card-muted p-5">
+          <div>
+            <h2 className="os-section-title">Pricing tier</h2>
+            <p className="mt-1 text-sm text-[color:var(--text-2)]">
+              Choose the rate structure for this quote before building line items.
+            </p>
+          </div>
 
-      <label className="space-y-2">
-        <span className="text-sm text-[color:var(--text-2)]">Notes</span>
-        <textarea
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          rows={4}
-          className="os-textarea w-full"
-        />
-      </label>
+          <div className="mt-4">
+            <PricingTierSelector
+              value={pricingTierId}
+              autoApplyInitialSelection={!initialQuote}
+              onChange={(tier) => {
+                setPricingTierId(tier?.id ?? null)
+                setPricingTier(tier)
+              }}
+              onRatesApplied={(tier) => {
+                setPricingTierId(tier.id)
+                setPricingTier(tier)
 
-      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
+                if (lineItems.length === 0) {
+                  applyStarterItemsForTier(tier)
+                  return
+                }
 
-      <div className="flex flex-wrap gap-3">
-        {initialQuote ? (
-          <>
-            {quoteRecord?.enquiry_id ? (
+                setLineItemsMode('manual')
+                setShowTierNotice(true)
+              }}
+            />
+          </div>
+        </section>
+
+        <section className="os-card-muted p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="os-section-title">Line items</h2>
+              <p className="text-sm text-[color:var(--text-2)]">Same builder as invoices, with quote pricing type per line.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setLineItemsMode('manual')
+                setLineItems((current) => [
+                  ...current,
+                  createEmptyLineItem(
+                    pricingType === 'milestone'
+                      ? 'milestone'
+                      : pricingType === 'time_and_materials'
+                        ? 'hourly'
+                        : 'fixed'
+                  ),
+                ])
+              }}
+              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+            >
+              Add line item
+            </button>
+          </div>
+
+          {showTierNotice ? (
+            <div className="mt-4 flex items-start justify-between gap-4 rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+              <p>Tier updated - adjust line item rates manually if needed.</p>
               <button
                 type="button"
-                onClick={refreshFromEnquiry}
-                disabled={savingAs !== null || refreshingFromEnquiry}
-                className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-5 py-3 text-sm font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)] disabled:opacity-50"
+                onClick={() => setShowTierNotice(false)}
+                className="rounded-pill border border-[color:var(--accent)] px-2 py-1 text-xs font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
               >
-                {refreshingFromEnquiry ? 'Refreshing from enquiry...' : 'Refresh from enquiry'}
+                Dismiss
               </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => submitQuote('edit')}
-              disabled={savingAs !== null || refreshingFromEnquiry}
-              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
-            >
-              {savingAs === 'edit' ? 'Saving...' : 'Save'}
-            </button>
-            <Link
-              href={`/quotes/${initialQuote.id}`}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-            >
-              Cancel
-            </Link>
-          </>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={() => submitQuote('draft')}
-              disabled={savingAs !== null}
-              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
-            >
-              {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
-            </button>
-            <button
-              type="button"
-              onClick={() => submitQuote('sent')}
-              disabled={savingAs !== null}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
-            >
-              {savingAs === 'sent' ? 'Saving...' : 'Save & send'}
-            </button>
-          </>
-        )}
+            </div>
+          ) : null}
+
+          <div className="mt-4 overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="text-left text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                <tr>
+                  <th className="pb-3">Description</th>
+                  <th className="pb-3">Type</th>
+                  <th className="pb-3 text-right">Qty</th>
+                  <th className="pb-3 text-right">Unit £</th>
+                  <th className="pb-3 text-right">Total</th>
+                  <th className="pb-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {lineItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-sm text-[color:var(--text-3)]">
+                      Select a pricing tier to pre-fill starter line items, or add your own manually.
+                    </td>
+                  </tr>
+                ) : null}
+                {lineItems.map((item) => (
+                  <tr key={item.id} className="border-t border-[color:var(--border)]">
+                    <td className="py-3">
+                      <input
+                        value={item.description}
+                        onChange={(event) => updateLineItem(item.id, { description: event.target.value })}
+                        className="os-input w-full"
+                      />
+                    </td>
+                    <td className="py-3">
+                      <select
+                        value={item.type}
+                        onChange={(event) => updateLineItem(item.id, { type: event.target.value as QuoteLineItem['type'] })}
+                        className="os-select w-full"
+                      >
+                        <option value="fixed">Fixed</option>
+                        <option value="hourly">Hourly</option>
+                        <option value="milestone">Milestone</option>
+                      </select>
+                    </td>
+                    <td className="py-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.qty}
+                        onChange={(event) => updateLineItem(item.id, { qty: Number(event.target.value) })}
+                        className="os-input w-full text-right"
+                      />
+                    </td>
+                    <td className="py-3">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.unit_price}
+                        onChange={(event) => updateLineItem(item.id, { unit_price: Number(event.target.value) })}
+                        className="os-input w-full text-right"
+                      />
+                    </td>
+                    <td className="py-3 text-right text-[color:var(--text)]">{formatMoney(item.qty * item.unit_price)}</td>
+                    <td className="py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => removeLineItem(item.id)}
+                        className="rounded-card border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="sticky bottom-4 mt-5 rounded-card border border-[color:var(--border)] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+            <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_180px]">
+              <label className="space-y-2">
+                <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={vatRate}
+                  onChange={(event) => setVatRate(event.target.value)}
+                  className="os-input w-full"
+                />
+              </label>
+              <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Subtotal</p>
+                <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</p>
+              </div>
+              <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">VAT ({Number(vatRate) || 0}%)</p>
+                <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</p>
+              </div>
+              <div className="rounded-card border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--emerald-strong)]">Total</p>
+                <p className="mt-2 text-lg font-semibold text-[color:var(--emerald-strong)]">{formatMoney(totals.total)}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <label className="space-y-2">
+          <span className="text-sm text-[color:var(--text-2)]">Payment terms</span>
+          <textarea
+            value={paymentTerms}
+            onChange={(event) => setPaymentTerms(event.target.value)}
+            rows={4}
+            className="os-textarea w-full"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm text-[color:var(--text-2)]">Notes</span>
+          <textarea
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            rows={4}
+            className="os-textarea w-full"
+          />
+        </label>
+
+        {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
+
+        <div className="flex flex-wrap gap-3">
+          {initialQuote ? (
+            <>
+              {quoteRecord?.enquiry_id ? (
+                <button
+                  type="button"
+                  onClick={refreshFromEnquiry}
+                  disabled={savingAs !== null || refreshingFromEnquiry}
+                  className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-5 py-3 text-sm font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)] disabled:opacity-50"
+                >
+                  {refreshingFromEnquiry ? 'Refreshing from enquiry...' : 'Refresh from enquiry'}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => submitQuote('edit')}
+                disabled={savingAs !== null || refreshingFromEnquiry}
+                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              >
+                {savingAs === 'edit' ? 'Saving...' : 'Save'}
+              </button>
+              <Link
+                href={`/quotes/${initialQuote.id}`}
+                className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              >
+                Cancel
+              </Link>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => submitQuote('draft')}
+                disabled={savingAs !== null}
+                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              >
+                {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
+              </button>
+              <button
+                type="button"
+                onClick={() => submitQuote('sent')}
+                disabled={savingAs !== null}
+                className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+              >
+                {savingAs === 'sent' ? 'Saving...' : 'Save & send'}
+              </button>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

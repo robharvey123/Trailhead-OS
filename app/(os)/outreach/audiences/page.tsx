@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { listAudiences } from '@/lib/db/outreach'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 
 export const metadata = { title: 'Audiences | Trailhead OS' }
 
@@ -11,12 +11,12 @@ export default async function AudiencesPage() {
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-4xl space-y-6 p-6">
-        <div>
-          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
-          <h1 className="mt-3 text-2xl font-semibold text-white">Audiences</h1>
-          <p className="text-sm text-[var(--text-2)]">Static snapshots of contacts. Membership doesn’t change once a campaign is running.</p>
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          back={{ href: '/outreach', label: 'Outreach' }}
+          title="Audiences"
+          description="Static snapshots of contacts. Membership doesn’t change once a campaign is running."
+        />
 
         {audiences.length === 0 ? (
           <div className="empty">No audiences yet. The Engineer OS seed creates one.</div>

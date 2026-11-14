@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import AccountCombobox from './AccountCombobox'
+import PageHeader from '@/components/ui/PageHeader'
 import UnbilledExpensesWidget from './UnbilledExpensesWidget'
 import UnbilledTimeWidget from './UnbilledTimeWidget'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
@@ -463,517 +464,513 @@ export default function InvoiceForm({
   }
 
   return (
-    <div className="os-card space-y-6 p-6">
-      <div>
-        <p className="os-eyebrow">Finance</p>
-        <h1 className="os-page-title mt-2">
-          {initialInvoice ? 'Edit invoice' : 'New invoice'}
-        </h1>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <AccountCombobox
-            label="Account"
-            value={accountId}
-            selectedName={selectedAccount?.name ?? ''}
-            onChange={(account) => setAccountId(account.id)}
-          />
-        </div>
-        <div className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[color:var(--text-2)]">Client selector</span>
-          <input
-            value={contactSearch}
-            onChange={(event) => setContactSearch(event.target.value)}
-            placeholder="Search contacts"
-            className="os-input w-full"
-          />
-          <select
-            value={contactId}
-            onChange={(event) => setContactId(event.target.value)}
-            className="os-select w-full"
-          >
-            <option value="">No client selected</option>
-            {filteredContacts.map((contact) => (
-              <option key={contact.id} value={contact.id}>
-                {getContactLabel(contact)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
-          <select
-            value={workstreamId}
-            onChange={(event) => setWorkstreamId(event.target.value)}
-            className="os-select w-full"
-          >
-            <option value="">No workstream</option>
-            {workstreams.map((workstream) => (
-              <option key={workstream.id} value={workstream.id}>
-                {workstream.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={vatRate}
-            onChange={(event) => setVatRate(event.target.value)}
-            className="os-input w-full"
-          />
-        </label>
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Currency</span>
-          <select
-            value={currency}
-            onChange={(event) => setCurrency(event.target.value)}
-            className="os-select w-full"
-          >
-            {SUPPORTED_CURRENCIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </label>
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
-          <input
-            type="date"
-            value={issueDate}
-            onChange={(event) => setIssueDate(event.target.value)}
-            className="os-input w-full"
-          />
-        </label>
-
-        {isForeign ? (
-          <div className="md:col-span-2 rounded-card border border-[color:var(--border)] bg-[color:var(--surface-2)] p-4">
-            <p className="text-sm font-medium text-[color:var(--text)]">Exchange rate</p>
-            <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-[color:var(--text-2)]">
-                Enter all amounts below in <strong>GBP</strong>. The client is billed in {currency} at this rate
-                {fxSource ? ` — fetched automatically (${fxSource}${fxDate ? `, ${fxDate}` : ''})` : ', fetched automatically when you pick the currency'}.
-              </p>
-              <button
-                type="button"
-                onClick={() => void fetchRate()}
-                disabled={fetchingRate}
-                className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
-              >
-                {fetchingRate ? 'Fetching…' : 'Refresh rate (Wise)'}
-              </button>
-            </div>
-            {fxFetchError ? (
-              <p className="mt-2 text-xs text-[color:var(--red-strong)]">{fxFetchError}</p>
-            ) : null}
-            <div className="mt-3 grid gap-3 md:grid-cols-3">
-              <label className="space-y-1">
-                <span className="text-xs text-[color:var(--text-2)]">1 GBP = … {currency}</span>
-                <input
-                  type="number" min="0" step="0.0001" inputMode="decimal"
-                  value={fxQuote}
-                  onChange={(event) => setFxQuote(event.target.value)}
-                  placeholder="e.g. 1.3481"
-                  className="os-input w-full"
-                />
-                {rateLooksWrong ? (
-                  <span className="text-xs text-[color:var(--red-strong)]">
-                    That looks like an amount, not a rate. 1 GBP is about 1.3 {currency}.
-                  </span>
-                ) : null}
-              </label>
-              <label className="space-y-1">
-                <span className="text-xs text-[color:var(--text-2)]">Rate source</span>
-                <input
-                  type="text"
-                  value={fxSource}
-                  onChange={(event) => setFxSource(event.target.value)}
-                  placeholder="e.g. Wise mid-market"
-                  className="os-input w-full"
-                />
-              </label>
-              <label className="space-y-1">
-                <span className="text-xs text-[color:var(--text-2)]">Rate date</span>
-                <input
-                  type="date"
-                  value={fxDate ?? ''}
-                  onChange={(event) => setFxDate(event.target.value)}
-                  className="os-input w-full"
-                />
-              </label>
-            </div>
+    <div className="os-narrow">
+      <PageHeader eyebrow="Finance" title={initialInvoice ? 'Edit invoice' : 'New invoice'} />
+      <div className="os-card space-y-6 p-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <AccountCombobox
+              label="Account"
+              value={accountId}
+              selectedName={selectedAccount?.name ?? ''}
+              onChange={(account) => setAccountId(account.id)}
+            />
           </div>
-        ) : null}
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Due date</span>
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(event) => {
-              dueDateTouched.current = true
-              setDueDate(event.target.value)
-            }}
-            className="os-input w-full"
-          />
-          {!dueDateTouched.current && dueDate ? (
-            <span className="text-xs text-[color:var(--text-3)]">
-              Issue date + {accountTermsDays} days{selectedAccount?.payment_terms_days ? ` (${selectedAccount.name} terms)` : ' (default terms)'}. Edit to override.
-            </span>
-          ) : null}
-        </label>
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">
-            PO number{poRequired ? <span className="text-[color:var(--red-strong)]"> *</span> : null}
-          </span>
-          <input
-            value={poNumber}
-            onChange={(event) => setPoNumber(event.target.value)}
-            placeholder={poRequired ? `Required by ${selectedAccount?.name ?? 'this account'}` : 'Optional'}
-            className="os-input w-full"
-          />
-        </label>
-
-        <div className="md:col-span-2">
-          <label className="flex cursor-pointer items-center gap-3">
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={isRecurring}
-                onChange={(event) => setIsRecurring(event.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className={`h-6 w-11 rounded-pill transition-colors ${isRecurring ? 'bg-[var(--accent)]' : 'bg-[var(--surface-3)]'}`}
-              />
-              <div
-                className={`absolute top-0.5 h-5 w-5 rounded-pill bg-white shadow-[var(--shadow-sm)] transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
-              />
-            </div>
-            <span className="text-sm text-[color:var(--text-2)]">Recurring invoice</span>
-          </label>
-
-          {isRecurring && (
-            <div className="mt-3">
-              <span className="mb-2 block text-sm text-[color:var(--text-2)]">Billing cycle</span>
-              <div className="flex gap-2">
-                {(['month', 'year'] as const).map((interval) => (
-                  <button
-                    key={interval}
-                    type="button"
-                    onClick={() => setRecurringInterval(interval)}
-                    className={`rounded-card border px-4 py-2 text-sm transition-colors ${
-                      recurringInterval === interval
-                        ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
-                        : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
-                    }`}
-                  >
-                    {interval === 'month' ? 'Monthly' : 'Yearly'}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-[color:var(--text-2)]">
-                A new draft invoice will be automatically created each {recurringInterval === 'month' ? 'month' : 'year'} from the issue date.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="os-card-muted rounded-card p-4">
-        <div>
-          <h2 className="os-section-title">Bill to</h2>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">
-            {selectedAccount
-              ? `Pulled from ${selectedAccount.name}. Edit here to override on this invoice only.`
-              : 'Address fields can be pulled from the selected account or contact, then edited per invoice.'}
-          </p>
-        </div>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Recipient name</span>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-sm text-[color:var(--text-2)]">Client selector</span>
             <input
-              value={billToName}
-              onChange={(event) => setBillToName(event.target.value)}
-              placeholder="Company or recipient"
+              value={contactSearch}
+              onChange={(event) => setContactSearch(event.target.value)}
+              placeholder="Search contacts"
+              className="os-input w-full"
+            />
+            <select
+              value={contactId}
+              onChange={(event) => setContactId(event.target.value)}
+              className="os-select w-full"
+            >
+              <option value="">No client selected</option>
+              {filteredContacts.map((contact) => (
+                <option key={contact.id} value={contact.id}>
+                  {getContactLabel(contact)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
+            <select
+              value={workstreamId}
+              onChange={(event) => setWorkstreamId(event.target.value)}
+              className="os-select w-full"
+            >
+              <option value="">No workstream</option>
+              {workstreams.map((workstream) => (
+                <option key={workstream.id} value={workstream.id}>
+                  {workstream.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={vatRate}
+              onChange={(event) => setVatRate(event.target.value)}
               className="os-input w-full"
             />
           </label>
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Address</span>
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Currency</span>
+            <select
+              value={currency}
+              onChange={(event) => setCurrency(event.target.value)}
+              className="os-select w-full"
+            >
+              {SUPPORTED_CURRENCIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Issue date</span>
+            <input
+              type="date"
+              value={issueDate}
+              onChange={(event) => setIssueDate(event.target.value)}
+              className="os-input w-full"
+            />
+          </label>
+
+          {isForeign ? (
+            <div className="md:col-span-2 rounded-card border border-[color:var(--border)] bg-[color:var(--surface-2)] p-4">
+              <p className="text-sm font-medium text-[color:var(--text)]">Exchange rate</p>
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-[color:var(--text-2)]">
+                  Enter all amounts below in <strong>GBP</strong>. The client is billed in {currency} at this rate
+                  {fxSource ? ` — fetched automatically (${fxSource}${fxDate ? `, ${fxDate}` : ''})` : ', fetched automatically when you pick the currency'}.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void fetchRate()}
+                  disabled={fetchingRate}
+                  className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
+                >
+                  {fetchingRate ? 'Fetching…' : 'Refresh rate (Wise)'}
+                </button>
+              </div>
+              {fxFetchError ? (
+                <p className="mt-2 text-xs text-[color:var(--red-strong)]">{fxFetchError}</p>
+              ) : null}
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                <label className="space-y-1">
+                  <span className="text-xs text-[color:var(--text-2)]">1 GBP = … {currency}</span>
+                  <input
+                    type="number" min="0" step="0.0001" inputMode="decimal"
+                    value={fxQuote}
+                    onChange={(event) => setFxQuote(event.target.value)}
+                    placeholder="e.g. 1.3481"
+                    className="os-input w-full"
+                  />
+                  {rateLooksWrong ? (
+                    <span className="text-xs text-[color:var(--red-strong)]">
+                      That looks like an amount, not a rate. 1 GBP is about 1.3 {currency}.
+                    </span>
+                  ) : null}
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs text-[color:var(--text-2)]">Rate source</span>
+                  <input
+                    type="text"
+                    value={fxSource}
+                    onChange={(event) => setFxSource(event.target.value)}
+                    placeholder="e.g. Wise mid-market"
+                    className="os-input w-full"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs text-[color:var(--text-2)]">Rate date</span>
+                  <input
+                    type="date"
+                    value={fxDate ?? ''}
+                    onChange={(event) => setFxDate(event.target.value)}
+                    className="os-input w-full"
+                  />
+                </label>
+              </div>
+            </div>
+          ) : null}
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Due date</span>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(event) => {
+                dueDateTouched.current = true
+                setDueDate(event.target.value)
+              }}
+              className="os-input w-full"
+            />
+            {!dueDateTouched.current && dueDate ? (
+              <span className="text-xs text-[color:var(--text-3)]">
+                Issue date + {accountTermsDays} days{selectedAccount?.payment_terms_days ? ` (${selectedAccount.name} terms)` : ' (default terms)'}. Edit to override.
+              </span>
+            ) : null}
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">
+              PO number{poRequired ? <span className="text-[color:var(--red-strong)]"> *</span> : null}
+            </span>
+            <input
+              value={poNumber}
+              onChange={(event) => setPoNumber(event.target.value)}
+              placeholder={poRequired ? `Required by ${selectedAccount?.name ?? 'this account'}` : 'Optional'}
+              className="os-input w-full"
+            />
+          </label>
+
+          <div className="md:col-span-2">
+            <label className="flex cursor-pointer items-center gap-3">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={isRecurring}
+                  onChange={(event) => setIsRecurring(event.target.checked)}
+                  className="sr-only"
+                />
+                <div
+                  className={`h-6 w-11 rounded-pill transition-colors ${isRecurring ? 'bg-[var(--accent)]' : 'bg-[var(--surface-3)]'}`}
+                />
+                <div
+                  className={`absolute top-0.5 h-5 w-5 rounded-pill bg-white shadow-[var(--shadow-sm)] transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
+                />
+              </div>
+              <span className="text-sm text-[color:var(--text-2)]">Recurring invoice</span>
+            </label>
+
+            {isRecurring && (
+              <div className="mt-3">
+                <span className="mb-2 block text-sm text-[color:var(--text-2)]">Billing cycle</span>
+                <div className="flex gap-2">
+                  {(['month', 'year'] as const).map((interval) => (
+                    <button
+                      key={interval}
+                      type="button"
+                      onClick={() => setRecurringInterval(interval)}
+                      className={`rounded-card border px-4 py-2 text-sm transition-colors ${
+                        recurringInterval === interval
+                          ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
+                          : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
+                      }`}
+                    >
+                      {interval === 'month' ? 'Monthly' : 'Yearly'}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-[color:var(--text-2)]">
+                  A new draft invoice will be automatically created each {recurringInterval === 'month' ? 'month' : 'year'} from the issue date.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="os-card-muted rounded-card p-4">
+          <div>
+            <h2 className="os-section-title">Bill to</h2>
+            <p className="mt-1 text-sm text-[color:var(--text-2)]">
+              {selectedAccount
+                ? `Pulled from ${selectedAccount.name}. Edit here to override on this invoice only.`
+                : 'Address fields can be pulled from the selected account or contact, then edited per invoice.'}
+            </p>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 md:col-span-2">
+              <span className="text-sm text-[color:var(--text-2)]">Recipient name</span>
+              <input
+                value={billToName}
+                onChange={(event) => setBillToName(event.target.value)}
+                placeholder="Company or recipient"
+                className="os-input w-full"
+              />
+            </label>
+            <label className="space-y-2 md:col-span-2">
+              <span className="text-sm text-[color:var(--text-2)]">Address</span>
+              <textarea
+                value={billToAddress}
+                onChange={(event) => setBillToAddress(event.target.value)}
+                rows={4}
+                placeholder="Street address"
+                className="os-textarea w-full"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[color:var(--text-2)]">City</span>
+              <input
+                value={billToCity}
+                onChange={(event) => setBillToCity(event.target.value)}
+                className="os-input w-full"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[color:var(--text-2)]">Postcode</span>
+              <input
+                value={billToPostcode}
+                onChange={(event) => setBillToPostcode(event.target.value)}
+                className="os-input w-full"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[color:var(--text-2)]">Country</span>
+              <input
+                value={billToCountry}
+                onChange={(event) => setBillToCountry(event.target.value)}
+                className="os-input w-full"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[color:var(--text-2)]">Recipient email</span>
+              <input
+                type="email"
+                value={billToEmail}
+                onChange={(event) => setBillToEmail(event.target.value)}
+                className="os-input w-full"
+              />
+            </label>
+            <label className="space-y-2 md:col-span-2">
+              <span className="text-sm text-[color:var(--text-2)]">Recipient phone</span>
+              <input
+                value={billToPhone}
+                onChange={(event) => setBillToPhone(event.target.value)}
+                className="os-input w-full"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[color:var(--text-2)]">VAT number</span>
+              <input
+                value={billToVatNumber}
+                onChange={(event) => setBillToVatNumber(event.target.value)}
+                placeholder="Client VAT number"
+                className="os-input w-full"
+              />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm text-[color:var(--text-2)]">Company number</span>
+              <input
+                value={billToCompanyNumber}
+                onChange={(event) => setBillToCompanyNumber(event.target.value)}
+                placeholder="Client company number"
+                className="os-input w-full"
+              />
+            </label>
+          </div>
+
+          {nonUkVatHint ? (
+            <div className="mt-4 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
+              <p>Non-UK client. Consider 0% VAT with a reverse charge note.</p>
+              {vatNote ? (
+                <label className="mt-2 block space-y-1">
+                  <span className="text-xs">VAT note (printed on the PDF)</span>
+                  <input value={vatNote} onChange={(event) => setVatNote(event.target.value)} className="os-input w-full" />
+                </label>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVatNote(RC_NOTE)
+                    setVatRate('0')
+                  }}
+                  className="mt-2 rounded-card border border-[color:var(--amber-strong)] px-3 py-1.5 text-xs font-medium transition hover:bg-[var(--amber-dim)]"
+                >
+                  Set 0% VAT + reverse charge note
+                </button>
+              )}
+            </div>
+          ) : vatNote ? (
+            <label className="mt-4 block space-y-1">
+              <span className="text-xs text-[color:var(--text-2)]">VAT note (printed on the PDF)</span>
+              <input value={vatNote} onChange={(event) => setVatNote(event.target.value)} className="os-input w-full" />
+            </label>
+          ) : null}
+        </div>
+
+        {/* Unbilled time and expenses for this account / engagement */}
+        {(accountId || initialEngagementId) && (
+          <UnbilledTimeWidget
+            accountId={accountId}
+            engagementId={initialEngagementId || undefined}
+            onSelect={handleTimeSelected}
+          />
+        )}
+
+        {accountId && (
+          <UnbilledExpensesWidget
+            accountId={accountId}
+            onSelect={handleExpensesSelected}
+          />
+        )}
+
+        <div className="os-card-muted rounded-card p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="os-section-title">Line items</h2>
+              <p className="text-sm text-[color:var(--text-2)]">Calculated live in GBP.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setLineItems((current) => [...current, createEmptyLineItem()])
+              }}
+              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            >
+              Add line item
+            </button>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {lineItems.length === 0 ? (
+              <div className="rounded-card border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6 text-center text-sm text-[color:var(--text-3)]">
+                Add a line item, or pull unbilled time and expenses from the account above.
+              </div>
+            ) : null}
+            {lineItems.map((item) => (
+              <div
+                key={item.id}
+                className="grid gap-3 rounded-card border border-[color:var(--border)] bg-white p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
+              >
+                <input
+                  value={item.description}
+                  onChange={(event) =>
+                    updateLineItem(item.id, { description: event.target.value })
+                  }
+                  placeholder="Description"
+                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={item.qty}
+                  onChange={(event) =>
+                    updateLineItem(item.id, { qty: Number(event.target.value) })
+                  }
+                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={item.unit_price}
+                  onChange={(event) =>
+                    updateLineItem(item.id, {
+                      unit_price: Number(event.target.value),
+                    })
+                  }
+                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                />
+                <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+                  {formatMoney(item.qty * item.unit_price, 'GBP')}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeLineItem(item.id)}
+                  className="rounded-card border border-[color:var(--red)] px-4 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)]"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <label className="space-y-2">
+            <span className="text-sm text-[color:var(--text-2)]">Notes</span>
             <textarea
-              value={billToAddress}
-              onChange={(event) => setBillToAddress(event.target.value)}
-              rows={4}
-              placeholder="Street address"
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              rows={8}
               className="os-textarea w-full"
             />
           </label>
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">City</span>
-            <input
-              value={billToCity}
-              onChange={(event) => setBillToCity(event.target.value)}
-              className="os-input w-full"
-            />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Postcode</span>
-            <input
-              value={billToPostcode}
-              onChange={(event) => setBillToPostcode(event.target.value)}
-              className="os-input w-full"
-            />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Country</span>
-            <input
-              value={billToCountry}
-              onChange={(event) => setBillToCountry(event.target.value)}
-              className="os-input w-full"
-            />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Recipient email</span>
-            <input
-              type="email"
-              value={billToEmail}
-              onChange={(event) => setBillToEmail(event.target.value)}
-              className="os-input w-full"
-            />
-          </label>
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Recipient phone</span>
-            <input
-              value={billToPhone}
-              onChange={(event) => setBillToPhone(event.target.value)}
-              className="os-input w-full"
-            />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">VAT number</span>
-            <input
-              value={billToVatNumber}
-              onChange={(event) => setBillToVatNumber(event.target.value)}
-              placeholder="Client VAT number"
-              className="os-input w-full"
-            />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Company number</span>
-            <input
-              value={billToCompanyNumber}
-              onChange={(event) => setBillToCompanyNumber(event.target.value)}
-              placeholder="Client company number"
-              className="os-input w-full"
-            />
-          </label>
+
+          <div className="os-card-muted rounded-card p-5">
+            <h2 className="os-section-title">Invoice summary</h2>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-[color:var(--text-2)]">Subtotal</dt>
+                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal, 'GBP')}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-[color:var(--text-2)]">VAT ({Number(vatRate) || 0}%)</dt>
+                <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount, 'GBP')}</dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
+                <dt className="text-base font-semibold text-[color:var(--text)]">Total (GBP)</dt>
+                <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, 'GBP')}</dd>
+              </div>
+              {isForeign ? (
+                <div className="flex items-center justify-between gap-4 rounded-card bg-[color:var(--accent-dim)] px-3 py-2">
+                  <dt className="text-sm font-medium text-[color:var(--text)]">
+                    Client billed{fxQuote ? ` · 1 GBP = ${fxQuote} ${currency}` : ''}
+                  </dt>
+                  <dd className="text-base font-semibold text-[color:var(--text)]">
+                    {hasValidQuote ? formatMoney(foreignTotals.total, currency) : `— ${currency}`}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+          </div>
         </div>
 
-        {nonUkVatHint ? (
-          <div className="mt-4 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
-            <p>Non-UK client. Consider 0% VAT with a reverse charge note.</p>
-            {vatNote ? (
-              <label className="mt-2 block space-y-1">
-                <span className="text-xs">VAT note (printed on the PDF)</span>
-                <input value={vatNote} onChange={(event) => setVatNote(event.target.value)} className="os-input w-full" />
-              </label>
-            ) : (
+        {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
+
+        <div className="flex flex-wrap gap-3">
+          {initialInvoice ? (
+            <>
               <button
                 type="button"
-                onClick={() => {
-                  setVatNote(RC_NOTE)
-                  setVatRate('0')
-                }}
-                className="mt-2 rounded-card border border-[color:var(--amber-strong)] px-3 py-1.5 text-xs font-medium transition hover:bg-[var(--amber-dim)]"
+                onClick={() => submitInvoice('edit')}
+                disabled={savingAs !== null}
+                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
               >
-                Set 0% VAT + reverse charge note
+                {savingAs === 'edit' ? 'Saving...' : 'Save'}
               </button>
-            )}
-          </div>
-        ) : vatNote ? (
-          <label className="mt-4 block space-y-1">
-            <span className="text-xs text-[color:var(--text-2)]">VAT note (printed on the PDF)</span>
-            <input value={vatNote} onChange={(event) => setVatNote(event.target.value)} className="os-input w-full" />
-          </label>
-        ) : null}
-      </div>
-
-      {/* Unbilled time and expenses for this account / engagement */}
-      {(accountId || initialEngagementId) && (
-        <UnbilledTimeWidget
-          accountId={accountId}
-          engagementId={initialEngagementId || undefined}
-          onSelect={handleTimeSelected}
-        />
-      )}
-
-      {accountId && (
-        <UnbilledExpensesWidget
-          accountId={accountId}
-          onSelect={handleExpensesSelected}
-        />
-      )}
-
-      <div className="os-card-muted rounded-card p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="os-section-title">Line items</h2>
-            <p className="text-sm text-[color:var(--text-2)]">Calculated live in GBP.</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setLineItems((current) => [...current, createEmptyLineItem()])
-            }}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-          >
-            Add line item
-          </button>
-        </div>
-
-        <div className="mt-4 space-y-3">
-          {lineItems.length === 0 ? (
-            <div className="rounded-card border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6 text-center text-sm text-[color:var(--text-3)]">
-              Add a line item, or pull unbilled time and expenses from the account above.
-            </div>
-          ) : null}
-          {lineItems.map((item) => (
-            <div
-              key={item.id}
-              className="grid gap-3 rounded-card border border-[color:var(--border)] bg-white p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
-            >
-              <input
-                value={item.description}
-                onChange={(event) =>
-                  updateLineItem(item.id, { description: event.target.value })
-                }
-                placeholder="Description"
-                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
-              />
-              <input
-                type="number"
-                min="1"
-                step="1"
-                value={item.qty}
-                onChange={(event) =>
-                  updateLineItem(item.id, { qty: Number(event.target.value) })
-                }
-                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
-              />
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={item.unit_price}
-                onChange={(event) =>
-                  updateLineItem(item.id, {
-                    unit_price: Number(event.target.value),
-                  })
-                }
-                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
-              />
-              <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
-                {formatMoney(item.qty * item.unit_price, 'GBP')}
-              </div>
               <button
                 type="button"
-                onClick={() => removeLineItem(item.id)}
-                className="rounded-card border border-[color:var(--red)] px-4 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)]"
+                onClick={() => router.push(`/invoicing/${initialInvoice.id}`)}
+                className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
               >
-                Remove
+                Cancel
               </button>
-            </div>
-          ))}
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => submitInvoice('draft')}
+                disabled={savingAs !== null}
+                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              >
+                {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
+              </button>
+              <button
+                type="button"
+                onClick={() => submitInvoice('sent')}
+                disabled={savingAs !== null}
+                className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+              >
+                {savingAs === 'sent' ? 'Saving...' : 'Mark as sent'}
+              </button>
+            </>
+          )}
         </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Notes</span>
-          <textarea
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            rows={8}
-            className="os-textarea w-full"
-          />
-        </label>
-
-        <div className="os-card-muted rounded-card p-5">
-          <h2 className="os-section-title">Invoice summary</h2>
-          <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-[color:var(--text-2)]">Subtotal</dt>
-              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal, 'GBP')}</dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-[color:var(--text-2)]">VAT ({Number(vatRate) || 0}%)</dt>
-              <dd className="font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount, 'GBP')}</dd>
-            </div>
-            <div className="flex items-center justify-between gap-4 border-t border-[color:var(--border)] pt-3">
-              <dt className="text-base font-semibold text-[color:var(--text)]">Total (GBP)</dt>
-              <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, 'GBP')}</dd>
-            </div>
-            {isForeign ? (
-              <div className="flex items-center justify-between gap-4 rounded-card bg-[color:var(--accent-dim)] px-3 py-2">
-                <dt className="text-sm font-medium text-[color:var(--text)]">
-                  Client billed{fxQuote ? ` · 1 GBP = ${fxQuote} ${currency}` : ''}
-                </dt>
-                <dd className="text-base font-semibold text-[color:var(--text)]">
-                  {hasValidQuote ? formatMoney(foreignTotals.total, currency) : `— ${currency}`}
-                </dd>
-              </div>
-            ) : null}
-          </dl>
-        </div>
-      </div>
-
-      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
-
-      <div className="flex flex-wrap gap-3">
-        {initialInvoice ? (
-          <>
-            <button
-              type="button"
-              onClick={() => submitInvoice('edit')}
-              disabled={savingAs !== null}
-              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
-            >
-              {savingAs === 'edit' ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push(`/invoicing/${initialInvoice.id}`)}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-            >
-              Cancel
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={() => submitInvoice('draft')}
-              disabled={savingAs !== null}
-              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
-            >
-              {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
-            </button>
-            <button
-              type="button"
-              onClick={() => submitInvoice('sent')}
-              disabled={savingAs !== null}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
-            >
-              {savingAs === 'sent' ? 'Saving...' : 'Mark as sent'}
-            </button>
-          </>
-        )}
       </div>
     </div>
   )

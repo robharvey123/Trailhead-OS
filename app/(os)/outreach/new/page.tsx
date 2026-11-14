@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { listAudiences } from '@/lib/db/outreach'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import { createCampaign } from '../[id]/actions'
 
 export const metadata = { title: 'New campaign | Trailhead OS' }
@@ -19,12 +19,12 @@ export default async function NewCampaignPage({ searchParams }: { searchParams?:
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-xl space-y-6 p-6">
-        <div>
-          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
-          <h1 className="mt-3 text-2xl font-semibold text-white">New campaign</h1>
-          <p className="text-sm text-[var(--text-2)]">Creates a draft — add steps and start it from the campaign page.</p>
-        </div>
+      <div className="os-narrow space-y-6">
+        <PageHeader
+          back={{ href: '/outreach', label: 'Outreach' }}
+          title="New campaign"
+          description="Creates a draft — add steps and start it from the campaign page."
+        />
 
         {error ? (
           <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] p-4 text-sm text-[color:var(--red-strong)]">⚠ {error}</div>

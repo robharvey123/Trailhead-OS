@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import MergeDialog, { type MergeRequest } from './MergeDialog'
 
 type Suggestion = { account: { id: string; name: string }; score: number; reason: 'exact' | 'normalised' | 'domain' | 'fuzzy' }
@@ -102,13 +103,15 @@ export default function LinkBacklogClient() {
 
   return (
     <div className="thmock space-y-4">
-      <div>
-        <Link href="/crm/contacts" className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Contacts</Link>
-        <h1 className="os-page-title mt-2">Linking backlog</h1>
-        <p className="mt-1 text-sm text-[color:var(--text-2)]">
-          Suggestions only — nothing is applied automatically. {data.placeholders_count > 0 ? `${data.placeholders_count} placeholder contacts (name = company) are handled by the cleanup script, not here.` : ''}
-        </p>
-      </div>
+      <PageHeader
+        back={{ href: '/crm/contacts', label: 'Contacts' }}
+        title="Linking backlog"
+        description={
+          <>
+            Suggestions only — nothing is applied automatically. {data.placeholders_count > 0 ? `${data.placeholders_count} placeholder contacts (name = company) are handled by the cleanup script, not here.` : ''}
+          </>
+        }
+      />
 
       {error ? <div className="os-card p-3 text-sm text-[color:var(--red-strong)]">{error}</div> : null}
 

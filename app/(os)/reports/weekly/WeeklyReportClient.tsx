@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import type { WeeklyReportData } from '@/lib/db/weekly-report'
 import { getWorkstreamColour } from '@/lib/workstreams'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function WeeklyReportClient({ initialData }: { initialData: WeeklyReportData }) {
   const [data, setData] = useState(initialData)
@@ -57,16 +58,14 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
   const { taskSummary, workstreams, projectSummary, narrative } = data
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="os-eyebrow text-[color:var(--accent-strong)]">
-            WEEKLY REPORT
-          </p>
-          <h1 className="os-page-title mt-1">{data.weekLabel}</h1>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader
+        eyebrow="Weekly report"
+        title={data.weekLabel}
+        actions={
+          <>
+            <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => void refresh()}
@@ -92,7 +91,9 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             {pdfLoading ? 'Generating...' : 'Download PDF'}
           </button>
         </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Task stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">

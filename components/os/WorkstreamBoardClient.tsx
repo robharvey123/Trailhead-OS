@@ -13,6 +13,7 @@ import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TaskCard from './TaskCard'
 import TaskSlideOver from './TaskSlideOver'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface WorkstreamBoardClientProps {
   workstream: Workstream
@@ -277,19 +278,13 @@ export default function WorkstreamBoardClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className={`h-3 w-3 rounded-pill ${colourClasses.dot}`} />
-            <p className="os-eyebrow">Workstream</p>
-          </div>
-          <h1 className="os-page-title mt-2">{workstream.label}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            {tasks.length} task{tasks.length === 1 ? '' : 's'} across {columns.length} columns
-          </p>
-        </div>
-
-        <div className="inline-flex rounded-card border border-[color:var(--border)] bg-white p-1">
+      <PageHeader
+        eyebrow="Workstream"
+        title={workstream.label}
+        description={`${tasks.length} task${tasks.length === 1 ? '' : 's'} across ${columns.length} columns`}
+        actions={
+          <>
+            <div className="inline-flex rounded-card border border-[color:var(--border)] bg-white p-1">
           {(['board', 'list'] as const).map((mode) => (
             <button
               key={mode}
@@ -305,7 +300,9 @@ export default function WorkstreamBoardClient({
             </button>
           ))}
         </div>
-      </div>
+          </>
+        }
+      />
 
       <ProjectsSection
         title="Projects"

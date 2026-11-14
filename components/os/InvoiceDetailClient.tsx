@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { getInvoiceBillToDisplay } from '@/lib/invoice-bill-to'
 import { calculateTotals, roundMoney, type Account, type Contact, type Invoice, type InvoicePayment, type InvoiceStatus, type Workstream } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
+import PageHeader from '@/components/ui/PageHeader'
 import ConfirmDialog from './ConfirmDialog'
 import InvoicePayments from './InvoicePayments'
 import RecordEmailDialog from './RecordEmailDialog'
@@ -210,43 +211,19 @@ export default function InvoiceDetailClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="os-narrow space-y-6">
       {/* Predictable back target — works from email links / bookmarks, unlike router.back(). */}
-      <Link href="/invoicing" className="inline-flex items-center gap-1 text-sm text-[color:var(--text-3)] transition hover:text-[color:var(--text)]">
-        ← Back to invoices
-      </Link>
-
-      {isPaid ? (
-        <div className="rounded-card border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-5 py-4 text-sm text-[color:var(--emerald-strong)]">
-          Paid in full on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
-        </div>
-      ) : isPartPaid ? (
-        <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
-          Part paid, {formatMoney(balance, invoice.currency)} outstanding
-        </div>
-      ) : null}
-
-      {warning === 'edit-blocked' ? (
-        <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
-          Only draft invoices can be edited. You were redirected back to the detail view.
-        </div>
-      ) : null}
-
-      <div className="os-card p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="os-eyebrow">Invoice</p>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h1 className="os-page-title">
-                {invoice.invoice_number}
-              </h1>
-            </div>
-            <div className="mt-4">
-              <StatusBadge status={invoice.status} kind="invoice" />
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
+      <PageHeader
+        back={{ href: '/invoicing', label: 'Invoices' }}
+        eyebrow="Invoice"
+        title={invoice.invoice_number}
+        description={
+          <span className="flex flex-wrap items-center gap-2 pt-1">
+            <StatusBadge status={invoice.status} kind="invoice" />
+          </span>
+        }
+        actions={
+          <>
             <a
               href={`/api/invoices/${invoice.id}/pdf`}
               className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
@@ -306,10 +283,28 @@ export default function InvoiceDetailClient({
                 Edit
               </Link>
             ) : null}
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+      {isPaid ? (
+        <div className="rounded-card border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-5 py-4 text-sm text-[color:var(--emerald-strong)]">
+          Paid in full on {invoice.paid_at ? new Date(invoice.paid_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+        </div>
+      ) : isPartPaid ? (
+        <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
+          Part paid, {formatMoney(balance, invoice.currency)} outstanding
+        </div>
+      ) : null}
+
+      {warning === 'edit-blocked' ? (
+        <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
+          Only draft invoices can be edited. You were redirected back to the detail view.
+        </div>
+      ) : null}
+
+      <div className="os-card p-6">
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Issue date</p>
             <p className="mt-2 text-sm text-[color:var(--text-2)]">{invoice.issue_date}</p>

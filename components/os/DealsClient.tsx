@@ -12,6 +12,7 @@ import {
   type DealWithRelations,
 } from '@/lib/types'
 import Modal from '@/components/ui/Modal'
+import PageHeader from '@/components/ui/PageHeader'
 import DealKanban from './DealKanban'
 import DealForm from './DealForm'
 import StageBadge from './StageBadge'
@@ -251,50 +252,52 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
   )
 
   return (
-    <div className="space-y-5 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="os-page-title">Deals</h1>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">
+    <div className="space-y-5">
+      <PageHeader
+        title="Deals"
+        description={
+          <>
             Open pipeline {formatCurrency(openTotal, 'GBP')} · weighted{' '}
             {formatCurrency(weightedTotal, 'GBP')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-1">
-            {toggleBtn('kanban', 'Kanban')}
-            {toggleBtn('table', 'Table')}
-          </div>
-          {projects.length > 0 ? (
-            <select
-              value={projectFilter}
-              onChange={(e) => setProjectFilter(e.target.value)}
-              className="rounded-card border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+          </>
+        }
+        actions={
+          <>
+            <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-1">
+              {toggleBtn('kanban', 'Kanban')}
+              {toggleBtn('table', 'Table')}
+            </div>
+            {projects.length > 0 ? (
+              <select
+                value={projectFilter}
+                onChange={(e) => setProjectFilter(e.target.value)}
+                className="rounded-card border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+              >
+                <option value="">All projects</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setShowForecast(true)}
+              className="rounded-card border border-[color:var(--border)] bg-white px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
             >
-              <option value="">All projects</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => setShowForecast(true)}
-            className="rounded-card border border-[color:var(--border)] bg-white px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
-          >
-            Forecast
-          </button>
-          <button
-            type="button"
-            onClick={openNew}
-            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
-          >
-            + New deal
-          </button>
-        </div>
-      </div>
+              Forecast
+            </button>
+            <button
+              type="button"
+              onClick={openNew}
+              className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+            >
+              + New deal
+            </button>
+          </>
+        }
+      />
 
       {/* Live regions stay mounted (and out of flow) so a later change is
           actually announced rather than appearing already-populated. */}

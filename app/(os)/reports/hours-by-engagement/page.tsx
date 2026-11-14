@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { hoursByEngagement } from '@/lib/db/reports'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import HoursByEngagementClient from '@/components/reports/HoursByEngagementClient'
 
 export const dynamic = 'force-dynamic'
@@ -30,16 +31,17 @@ export default async function HoursByEngagementPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="panel overflow-hidden">
-        <div className="topbar">
-          <span className="topbar-title">Hours by engagement</span>
-          <form method="get" className="topbar-actions" style={{ gap: 6 }}>
+      <PageHeader
+        title="Hours by engagement"
+        actions={
+          <form method="get" className="flex items-center gap-1.5">
             <input type="date" name="from" defaultValue={from} className="filter-select" />
             <input type="date" name="to" defaultValue={to} className="filter-select" />
             <button type="submit" className="btn btn-primary btn-sm">Apply</button>
           </form>
-        </div>
-
+        }
+      />
+      <div className="panel overflow-hidden">
         <HoursByEngagementClient rows={rows} />
       </div>
     </div>

@@ -4,7 +4,11 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateTask } from '@/app/(os)/my-work/actions'
 
-/** Click-to-edit title; saves on blur / Enter, reverts on Escape. */
+/**
+ * Click-to-edit title; saves on blur / Enter, reverts on Escape.
+ * Renders a span or an input that inherits its type from the parent, so it can
+ * sit inside the PageHeader title.
+ */
 export default function TaskTitleEditor({ taskId, title }: { taskId: string; title: string }) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
@@ -24,7 +28,7 @@ export default function TaskTitleEditor({ taskId, title }: { taskId: string; tit
 
   if (!editing) {
     return (
-      <span className="topbar-title" style={{ cursor: 'text' }} title="Click to rename" onClick={() => { setValue(title); setEditing(true) }}>
+      <span className="cursor-text" title="Click to rename" onClick={() => { setValue(title); setEditing(true) }}>
         {title}
       </span>
     )
@@ -32,8 +36,7 @@ export default function TaskTitleEditor({ taskId, title }: { taskId: string; tit
   return (
     <input
       autoFocus
-      className="topbar-title"
-      style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: '2px 6px', background: 'var(--surface-2)' }}
+      className="max-w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5"
       value={value}
       disabled={pending}
       onChange={(e) => setValue(e.target.value)}

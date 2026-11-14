@@ -14,6 +14,7 @@ import {
   markLinkOutreachAction,
   markLinkWonAction,
 } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 const STATUS_STYLE: Record<string, string> = {
   identified: 'border-[color:var(--border)] text-[color:var(--text-2)]',
@@ -43,18 +44,20 @@ export default async function GrowthLinksPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">
+      <PageHeader
+        eyebrow={
           <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
             {site.name}
           </Link>
-        </p>
-        <h1 className="mt-2 os-page-title">Link building</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Prospects are real CRM accounts (record type “link prospect”) — email history and notes
-          live on the account. {won > 0 ? `${won} link${won === 1 ? '' : 's'} won so far.` : ''}
-        </p>
-      </div>
+        }
+        title="Link building"
+        description={
+          <>
+            Prospects are real CRM accounts (record type “link prospect”) — email history and notes
+            live on the account. {won > 0 ? `${won} link${won === 1 ? '' : 's'} won so far.` : ''}
+          </>
+        }
+      />
 
       {resolved?.error ? (
         <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">

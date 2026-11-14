@@ -9,6 +9,7 @@ import EnquiryDetailActions from './EnquiryDetailActions'
 import RecordEmailDialog from './RecordEmailDialog'
 import EntityCombobox from './EntityCombobox'
 import StatusBadge from './StatusBadge'
+import PageHeader from '@/components/ui/PageHeader'
 import type { Account, Enquiry, EnquiryStatus, ProjectDetail, ProjectListItem } from '@/lib/types'
 
 type EnquiryFieldKey =
@@ -378,79 +379,77 @@ export default function EnquiryDetailClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Enquiries</p>
-          <h1 className="os-page-title mt-2">{enquiry.biz_name}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Discovery submission from {enquiry.contact_name}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <StatusBadge status={enquiry.status} kind="enquiry" />
-            {linkedAccount ? (
-              <Link
-                href={`/crm/accounts/${linkedAccount.id}`}
-                className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-              >
-                {linkedAccount.name}
-              </Link>
-            ) : null}
-            {linkedProjectSummary ? (
-              <Link
-                href={`/projects/records/${linkedProjectSummary.id}`}
-                className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-              >
-                {linkedProjectSummary.name}
-              </Link>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-3">
-          <RecordEmailDialog
-            kind="enquiry"
-            recordId={enquiry.id}
-            buttonLabel="Email discovery"
-            dialogTitle="Email discovery summary"
-            defaultRecipient={enquiry.contact_email}
-            defaultSubject={`Discovery summary - ${enquiry.biz_name}`}
-            defaultMessage={`Hi,\n\nPlease find the discovery summary for ${enquiry.biz_name} below.\n\nBest,\nRob`}
-            buttonClassName="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-          />
-          {editing ? (
-            <>
-              <button
-                type="button"
-                onClick={saveChanges}
-                disabled={saving}
-                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
-              >
-                {saving ? 'Saving...' : 'Save'}
-              </button>
+      <PageHeader
+        eyebrow="Enquiries"
+        title={enquiry.biz_name}
+        description={<>Discovery submission from {enquiry.contact_name}</>}
+        actions={
+          <>
+            <RecordEmailDialog
+              kind="enquiry"
+              recordId={enquiry.id}
+              buttonLabel="Email discovery"
+              dialogTitle="Email discovery summary"
+              defaultRecipient={enquiry.contact_email}
+              defaultSubject={`Discovery summary - ${enquiry.biz_name}`}
+              defaultMessage={`Hi,\n\nPlease find the discovery summary for ${enquiry.biz_name} below.\n\nBest,\nRob`}
+              buttonClassName="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            />
+            {editing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={saveChanges}
+                  disabled={saving}
+                  className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetForm()
+                    setEditing(false)
+                  }}
+                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
               <button
                 type="button"
                 onClick={() => {
                   resetForm()
-                  setEditing(false)
+                  setEditing(true)
                 }}
                 className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
               >
-                Cancel
+                Edit submission
               </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                resetForm()
-                setEditing(true)
-              }}
-              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
-            >
-              Edit submission
-            </button>
-          )}
-        </div>
+            )}
+          </>
+        }
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <StatusBadge status={enquiry.status} kind="enquiry" />
+        {linkedAccount ? (
+          <Link
+            href={`/crm/accounts/${linkedAccount.id}`}
+            className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+          >
+            {linkedAccount.name}
+          </Link>
+        ) : null}
+        {linkedProjectSummary ? (
+          <Link
+            href={`/projects/records/${linkedProjectSummary.id}`}
+            className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+          >
+            {linkedProjectSummary.name}
+          </Link>
+        ) : null}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_380px]">

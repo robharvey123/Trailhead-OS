@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { getVerifiedSendingDomains } from '@/lib/sales/sender'
+import PageHeader from '@/components/ui/PageHeader'
 import { SenderIdentityForm, SendingDomainsForm } from './SettingsForms'
 
 export const metadata = { title: 'Settings | Sales | Trailhead OS' }
@@ -16,10 +17,10 @@ export default async function SalesSettingsPage() {
   ])
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="mt-1 text-sm text-[color:var(--text-2)]">The address your one-to-one follow-up emails come from. Campaign emails are unchanged.</p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="The address your one-to-one follow-up emails come from. Campaign emails are unchanged."
+      />
       <section className="panel p-4" aria-labelledby="sender-title">
         <h2 id="sender-title" className="mb-3 text-sm font-semibold">Your sender identity</h2>
         <SenderIdentityForm initial={{ fromName: identity?.from_name ?? '', fromEmail: identity?.from_email ?? '', replyTo: identity?.reply_to ?? '' }} />

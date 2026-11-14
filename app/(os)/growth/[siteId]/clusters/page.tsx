@@ -12,6 +12,7 @@ import {
   generateOverlapClustersAction,
   queueOverlapSnapshotsAction,
 } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 const STATUS_STYLE: Record<string, string> = {
   proposed: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
@@ -36,36 +37,34 @@ export default async function GrowthClustersPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
-              {site.name}
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">Topic clusters</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Approving a cluster marks it worth writing for. Generate a brief when you are ready.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <form action={generateClustersAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Generating clusters…">Cluster by model (fallback)</PendingButton>
-          </form>
-          {readiness && readiness.missing.length > 0 ? (
-            <form action={queueOverlapSnapshotsAction.bind(null, site.id)}>
-              <PendingButton pendingLabel="Queueing SERP tasks…">
-                Queue {readiness.missing.length - readiness.pending} SERP snapshots
+      <PageHeader
+        eyebrow={
+          <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
+            {site.name}
+          </Link>
+        }
+        title="Topic clusters"
+        description="Approving a cluster marks it worth writing for. Generate a brief when you are ready."
+        actions={
+          <>
+            <form action={generateClustersAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Generating clusters…">Cluster by model (fallback)</PendingButton>
+            </form>
+            {readiness && readiness.missing.length > 0 ? (
+              <form action={queueOverlapSnapshotsAction.bind(null, site.id)}>
+                <PendingButton pendingLabel="Queueing SERP tasks…">
+                  Queue {readiness.missing.length - readiness.pending} SERP snapshots
+                </PendingButton>
+              </form>
+            ) : null}
+            <form action={generateOverlapClustersAction.bind(null, site.id)}>
+              <PendingButton variant="primary" className="px-4 py-3 font-semibold" pendingLabel="Measuring SERP overlap…">
+                Cluster by SERP overlap
               </PendingButton>
             </form>
-          ) : null}
-          <form action={generateOverlapClustersAction.bind(null, site.id)}>
-            <PendingButton variant="primary" className="px-4 py-3 font-semibold" pendingLabel="Measuring SERP overlap…">
-              Cluster by SERP overlap
-            </PendingButton>
-          </form>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {readiness ? (
         <div className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)]">

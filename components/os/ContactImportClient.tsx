@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Papa from 'papaparse'
+import PageHeader from '@/components/ui/PageHeader'
 
 type AccountSuggestion = { account: { id: string; name: string }; score: number; reason: 'exact' | 'normalised' | 'domain' | 'fuzzy' }
 type CompanyMatch = { norm: string; company: string; suggestions: AccountSuggestion[] }
@@ -300,22 +301,19 @@ export default function ContactImportClient({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Clients</p>
-          <h1 className="os-page-title mt-2">Import contacts</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Upload a CSV file to import contacts in bulk.
-          </p>
-        </div>
-        <Link
-          href="/crm/contacts"
-          className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
-        >
-          Back to contacts
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Clients"
+        title="Import contacts"
+        description="Upload a CSV file to import contacts in bulk."
+        actions={
+          <Link
+            href="/crm/contacts"
+            className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+          >
+            Back to contacts
+          </Link>
+        }
+      />
 
       {error && (
         <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">

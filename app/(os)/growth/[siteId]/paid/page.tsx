@@ -19,6 +19,7 @@ import {
   wastedSearchTerms,
 } from '@/lib/growth/paid-loops'
 import { linkAdsAccountAction, syncAdsNowAction } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 /** E6: /paid — Search (Google), Social (Meta), Blended. */
 
@@ -74,24 +75,22 @@ export default async function GrowthPaidPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
-              {site.name}
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">Paid media</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Organic and paid answer the same question with different data. The search terms report is the only first-party, commercially weighted keyword source there is.
-          </p>
-        </div>
-        {data.accounts.length > 0 ? (
-          <form action={syncAdsNowAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Syncing ad platforms…">Sync now</PendingButton>
-          </form>
-        ) : null}
-      </div>
+      <PageHeader
+        eyebrow={
+          <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
+            {site.name}
+          </Link>
+        }
+        title="Paid media"
+        description="Organic and paid answer the same question with different data. The search terms report is the only first-party, commercially weighted keyword source there is."
+        actions={
+          data.accounts.length > 0 ? (
+            <form action={syncAdsNowAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Syncing ad platforms…">Sync now</PendingButton>
+            </form>
+          ) : null
+        }
+      />
 
       {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (

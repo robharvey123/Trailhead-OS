@@ -8,6 +8,7 @@ import { changeItemKeys, decodePageUrl, getWorksheet } from '@/lib/growth/refres
 import { pageStats } from '@/lib/growth/pages'
 import { CTR_MODEL_LABEL } from '@/lib/growth/ctr'
 import { generateWorksheetAction, openRefreshPrAction, setWorksheetStatusAction } from '../../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 /**
  * D2: the refresh worksheet — one per URL, where a refresh actually gets done.
@@ -62,9 +63,9 @@ export default async function RefreshWorksheetPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0">
-          <p className="os-eyebrow">
+      <PageHeader
+        eyebrow={
+          <>
             <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
               {site.name}
             </Link>
@@ -72,44 +73,48 @@ export default async function RefreshWorksheetPage({
             <Link href={`/growth/${site.id}/keywords`} className="hover:text-[color:var(--accent-strong)]">
               Keywords
             </Link>
-          </p>
-          <h1 className="mt-2 os-page-title break-all">Refresh: {path}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+          </>
+        }
+        title={<span className="break-all">Refresh: {path}</span>}
+        description={
+          <>
             <a href={url} target="_blank" rel="noreferrer" className="underline decoration-[color:var(--border)] underline-offset-2 hover:text-[color:var(--accent-strong)]">
               {url}
             </a>
             {worksheet ? ` · worksheet generated ${new Date(worksheet.generated_at).toLocaleString('en-GB')} · ${worksheet.status}` : ' · no worksheet yet'}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <form action={generateWorksheetAction.bind(null, site.id, encodedUrl)}>
-            <PendingButton variant="primary" pendingLabel="Reading the page and the SERP…">
-              {worksheet ? 'Regenerate worksheet' : 'Generate worksheet'}
-            </PendingButton>
-          </form>
-          {worksheet && worksheet.status === 'open' ? (
-            <>
-              {site.cms_type === 'github' || site.cms_type === 'wordpress' ? (
-                <form action={openRefreshPrAction.bind(null, site.id, encodedUrl)}>
-                  <PendingButton pendingLabel={site.cms_type === 'github' ? 'Opening pull request…' : 'Creating WP draft…'}>
-                    {site.cms_type === 'github' ? 'Apply ticked items as PR' : 'Apply ticked items as WP draft'}
-                  </PendingButton>
-                </form>
-              ) : null}
-              <form action={setWorksheetStatusAction.bind(null, site.id, encodedUrl, 'applied')}>
-                <PendingButton pendingLabel="Saving…">Mark applied</PendingButton>
-              </form>
-              <form action={setWorksheetStatusAction.bind(null, site.id, encodedUrl, 'dismissed')}>
-                <PendingButton pendingLabel="Saving…">Dismiss</PendingButton>
-              </form>
-            </>
-          ) : worksheet ? (
-            <form action={setWorksheetStatusAction.bind(null, site.id, encodedUrl, 'open')}>
-              <PendingButton pendingLabel="Saving…">Reopen</PendingButton>
+          </>
+        }
+        actions={
+          <>
+            <form action={generateWorksheetAction.bind(null, site.id, encodedUrl)}>
+              <PendingButton variant="primary" pendingLabel="Reading the page and the SERP…">
+                {worksheet ? 'Regenerate worksheet' : 'Generate worksheet'}
+              </PendingButton>
             </form>
-          ) : null}
-        </div>
-      </div>
+            {worksheet && worksheet.status === 'open' ? (
+              <>
+                {site.cms_type === 'github' || site.cms_type === 'wordpress' ? (
+                  <form action={openRefreshPrAction.bind(null, site.id, encodedUrl)}>
+                    <PendingButton pendingLabel={site.cms_type === 'github' ? 'Opening pull request…' : 'Creating WP draft…'}>
+                      {site.cms_type === 'github' ? 'Apply ticked items as PR' : 'Apply ticked items as WP draft'}
+                    </PendingButton>
+                  </form>
+                ) : null}
+                <form action={setWorksheetStatusAction.bind(null, site.id, encodedUrl, 'applied')}>
+                  <PendingButton pendingLabel="Saving…">Mark applied</PendingButton>
+                </form>
+                <form action={setWorksheetStatusAction.bind(null, site.id, encodedUrl, 'dismissed')}>
+                  <PendingButton pendingLabel="Saving…">Dismiss</PendingButton>
+                </form>
+              </>
+            ) : worksheet ? (
+              <form action={setWorksheetStatusAction.bind(null, site.id, encodedUrl, 'open')}>
+                <PendingButton pendingLabel="Saving…">Reopen</PendingButton>
+              </form>
+            ) : null}
+          </>
+        }
+      />
 
       {resolved?.error ? (
         <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div>

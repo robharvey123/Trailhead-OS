@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getMeeting } from '@/lib/db/meetings'
 import MeetingSummary from '@/components/os/MeetingSummary'
 import MeetingLinksEditor, { type LinkItem } from '@/components/os/MeetingLinksEditor'
+import PageHeader from '@/components/ui/PageHeader'
 
 function fmtDate(iso: string | null) {
   if (!iso) return 'No date'
@@ -48,14 +49,12 @@ export default async function MeetingDetailPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-3xl space-y-6 p-6">
-        <div>
-          <Link href="/crm/meetings" className="text-sm text-[var(--text-2)] transition hover:text-[color:var(--text)]">
-            ← Meetings
-          </Link>
-          <h1 className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</h1>
-          <p className="mt-1 text-sm text-[var(--text-2)]">{fmtDate(meeting.meeting_date)}</p>
-        </div>
+      <div className="os-narrow space-y-6">
+        <PageHeader
+          back={{ href: '/crm/meetings', label: 'Meetings' }}
+          title={meeting.title || 'Untitled meeting'}
+          description={fmtDate(meeting.meeting_date)}
+        />
 
         {meeting.attendees.length > 0 ? (
           <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">

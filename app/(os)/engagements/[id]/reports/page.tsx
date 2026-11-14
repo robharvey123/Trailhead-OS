@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import GenerateReportControls from '@/components/os/engagements/GenerateReportControls'
+import PageHeader from '@/components/ui/PageHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,13 +34,11 @@ export default async function EngagementReportsPage({ params }: { params: Promis
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Link href={`/engagements/${id}`} className="text-sm text-[color:var(--text-3)] hover:text-[color:var(--text)]">‹ {engagement.name}</Link>
-          <h1 className="os-page-title mt-1">Reports</h1>
-        </div>
-        {isAdmin ? <GenerateReportControls engagementId={id} /> : null}
-      </div>
+      <PageHeader
+        back={{ href: `/engagements/${id}`, label: engagement.name }}
+        title="Reports"
+        actions={isAdmin ? <GenerateReportControls engagementId={id} /> : undefined}
+      />
 
       {!isAdmin ? (
         <p className="text-sm text-[color:var(--text-3)]">Reports are available to admins.</p>

@@ -8,6 +8,7 @@ import { pagesPerQuery, sitePages } from '@/lib/growth/pages'
 import { encodePageUrl } from '@/lib/growth/refresh'
 import { recrawlAction, runEnrichNowAction } from '../../actions'
 import type { SeoCluster } from '@/lib/types'
+import PageHeader from '@/components/ui/PageHeader'
 
 /**
  * C4: the keyword coverage matrix, with the pages index and open technical
@@ -57,15 +58,15 @@ export default async function GrowthKeywordsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
-              {site.name}
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">Keywords &amp; pages</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+      <PageHeader
+        eyebrow={
+          <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
+            {site.name}
+          </Link>
+        }
+        title="Keywords &amp; pages"
+        description={
+          <>
             {keywords.length.toLocaleString('en-GB')} keywords · {enriched.toLocaleString('en-GB')} with Labs difficulty and intent ·{' '}
             <Link href={`/growth/${site.id}/keywords?target=none`} className="underline decoration-[color:var(--border)] underline-offset-2">
               {noTarget} with impressions but no page
@@ -75,17 +76,19 @@ export default async function GrowthKeywordsPage({
               {multi} held by two+ pages
             </Link>{' '}
             (cannibalisation)
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <form action={runEnrichNowAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Calling DataForSEO Labs…">Enrich now (KD + intent)</PendingButton>
-          </form>
-          <form action={recrawlAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Starting crawl…">{site.crawl_task_id ? 'Crawl running…' : 'Recrawl site'}</PendingButton>
-          </form>
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          <>
+            <form action={runEnrichNowAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Calling DataForSEO Labs…">Enrich now (KD + intent)</PendingButton>
+            </form>
+            <form action={recrawlAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Starting crawl…">{site.crawl_task_id ? 'Crawl running…' : 'Recrawl site'}</PendingButton>
+            </form>
+          </>
+        }
+      />
 
       {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (

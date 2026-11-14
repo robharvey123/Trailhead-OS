@@ -10,6 +10,7 @@ import { estimatedMonthlyUpside } from '@/lib/growth/ctr'
 import { worksheetPath } from '@/lib/growth/refresh'
 import type { SeoGscDaily, SeoGrowthScore } from '@/lib/types'
 import { expandSeedsAction, researchKeywordsAction, syncGscNowAction } from '../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 /** D5: an action names its object, shows the measurement + window, states the gain and links to a real destination. */
 interface RankedAction {
@@ -413,22 +414,82 @@ export default async function GrowthSitePage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href="/growth" className="hover:text-[color:var(--accent-strong)]">
-              Growth
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">{site.name}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+      <PageHeader
+        eyebrow={
+          <Link href="/growth" className="hover:text-[color:var(--accent-strong)]">
+            Growth
+          </Link>
+        }
+        title={site.name}
+        description={
+          <>
             {site.domain}
             {site.last_gsc_sync_at
               ? ` · synced ${new Date(site.last_gsc_sync_at).toLocaleString('en-GB')}`
               : ' · never synced'}
-          </p>
-          <p className="mt-2 flex flex-wrap gap-3 text-sm">
+          </>
+        }
+        actions={
+          <>
+            {site.gsc_property ? (
+              <form action={syncAction}>
+                <PendingButton pendingLabel="Syncing Search Console…">Sync GSC now</PendingButton>
+              </form>
+            ) : null}
+            <div className="group relative" tabIndex={0}>
+              <div className="os-card flex items-center gap-3 px-5 py-3">
+                <span className="text-2xl font-semibold tabular-nums text-[color:var(--text)]">
+                  {latestScore ? latestScore.score : '—'}
+                </span>
+                <span className="text-xs leading-tight text-[color:var(--text-3)]">
+                  Growth
+                  <br />
+                  Score
+                </span>
+              </div>
+              <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-card border border-[color:var(--border)] bg-white p-4 shadow-[var(--shadow-lg)] group-focus-within:visible group-hover:visible">
+                {latestScore ? (
+                  <>
+                    <p className="text-xs text-[color:var(--text-2)]">{latestScore.breakdown.summary}</p>
+                    <ul className="mt-3 space-y-2">
+                      {latestScore.breakdown.components.map((c) => (
+                        <li key={c.key} className="text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-[color:var(--text)]">{c.label}</span>
+                            <span className="tabular-nums text-[color:var(--text-3)]">
+                              {c.value === null ? 'no data' : `${Math.round(c.value * 100)}%`} · w{' '}
+                              {c.weight}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-[color:var(--text-3)]">{c.detail}</p>
+                          {c.raise ? (
+                            <p className="mt-0.5 text-[color:var(--text-2)]">
+                              ↑ {c.raise}
+                              {c.href ? (
+                                <>
+                                  {' '}
+                                  <Link href={c.href} className="text-[color:var(--accent-strong)] underline decoration-[color:var(--border)] underline-offset-2">
+                                    go
+                                  </Link>
+                                </>
+                              ) : null}
+                            </p>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="text-xs text-[color:var(--text-3)]">
+                    Computed nightly — the first score lands after the next growth-score run.
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        }
+        tabs={
+          <div className="flex flex-wrap gap-3 pb-3 text-sm">
             {[
               { href: `/growth/${site.id}/keywords`, label: 'Keywords & pages' },
               { href: `/growth/${site.id}/gap`, label: 'Competitor gap' },
@@ -449,66 +510,9 @@ export default async function GrowthSitePage({
                 {tab.label}
               </Link>
             ))}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {site.gsc_property ? (
-            <form action={syncAction}>
-              <PendingButton pendingLabel="Syncing Search Console…">Sync GSC now</PendingButton>
-            </form>
-          ) : null}
-          <div className="group relative" tabIndex={0}>
-            <div className="os-card flex items-center gap-3 px-5 py-3">
-              <span className="text-2xl font-semibold tabular-nums text-[color:var(--text)]">
-                {latestScore ? latestScore.score : '—'}
-              </span>
-              <span className="text-xs leading-tight text-[color:var(--text-3)]">
-                Growth
-                <br />
-                Score
-              </span>
-            </div>
-            <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-card border border-[color:var(--border)] bg-white p-4 shadow-[var(--shadow-lg)] group-focus-within:visible group-hover:visible">
-              {latestScore ? (
-                <>
-                  <p className="text-xs text-[color:var(--text-2)]">{latestScore.breakdown.summary}</p>
-                  <ul className="mt-3 space-y-2">
-                    {latestScore.breakdown.components.map((c) => (
-                      <li key={c.key} className="text-xs">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium text-[color:var(--text)]">{c.label}</span>
-                          <span className="tabular-nums text-[color:var(--text-3)]">
-                            {c.value === null ? 'no data' : `${Math.round(c.value * 100)}%`} · w{' '}
-                            {c.weight}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 text-[color:var(--text-3)]">{c.detail}</p>
-                        {c.raise ? (
-                          <p className="mt-0.5 text-[color:var(--text-2)]">
-                            ↑ {c.raise}
-                            {c.href ? (
-                              <>
-                                {' '}
-                                <Link href={c.href} className="text-[color:var(--accent-strong)] underline decoration-[color:var(--border)] underline-offset-2">
-                                  go
-                                </Link>
-                              </>
-                            ) : null}
-                          </p>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : (
-                <p className="text-xs text-[color:var(--text-3)]">
-                  Computed nightly — the first score lands after the next growth-score run.
-                </p>
-              )}
-            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {resolved?.error ? (
         <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">

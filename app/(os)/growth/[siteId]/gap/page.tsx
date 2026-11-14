@@ -6,6 +6,7 @@ import { PendingButton } from '@/components/growth/PendingButton'
 import GapTable from '@/components/os/growth/GapTable'
 import { gapKeywords, suggestCompetitors } from '@/lib/growth/competitors'
 import { addCompetitorAction, pullCompetitorAction, toggleCompetitorAction } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 /** B2: "what do they rank for that we do not". */
 export default async function GrowthGapPage({
@@ -31,17 +32,19 @@ export default async function GrowthGapPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">
+      <PageHeader
+        eyebrow={
           <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
             {site.name}
           </Link>
-        </p>
-        <h1 className="mt-2 os-page-title">Competitor gap</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Keywords where a tracked competitor ranks in the top 20 and {site.name} does not (or ranks below 20). A keyword three competitors own is a stronger signal than one.
-        </p>
-      </div>
+        }
+        title="Competitor gap"
+        description={
+          <>
+            Keywords where a tracked competitor ranks in the top 20 and {site.name} does not (or ranks below 20). A keyword three competitors own is a stronger signal than one.
+          </>
+        }
+      />
 
       {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (

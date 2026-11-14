@@ -12,6 +12,7 @@ import {
 } from '@/lib/blog'
 import { buildMarketingSiteUrl } from '@/lib/site'
 import type { BlogPost } from '@/lib/types'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface BlogPostEditorProps {
   mode: 'create' | 'edit'
@@ -115,36 +116,31 @@ export default function BlogPostEditor({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="os-eyebrow">
-            Content
-          </p>
-          <h1 className="os-page-title mt-2 tracking-[-0.04em]">
-            {mode === 'create' ? 'New blog post' : 'Edit blog post'}
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {publishedUrl ? (
-            <Link
-              href={publishedUrl}
-              target={isLocalhost ? undefined : '_blank'}
-              rel={isLocalhost ? undefined : 'noreferrer'}
+      <PageHeader
+        eyebrow="Content"
+        title={mode === 'create' ? 'New blog post' : 'Edit blog post'}
+        actions={
+          <>
+            {publishedUrl ? (
+              <Link
+                href={publishedUrl}
+                target={isLocalhost ? undefined : '_blank'}
+                rel={isLocalhost ? undefined : 'noreferrer'}
+                className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+              >
+                View on site →
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setPreview((current) => !current)}
               className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
             >
-              View on site →
-            </Link>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => setPreview((current) => !current)}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
-          >
-            {preview ? 'Hide preview' : 'Show preview'}
-          </button>
-        </div>
-      </div>
+              {preview ? 'Hide preview' : 'Show preview'}
+            </button>
+          </>
+        }
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">

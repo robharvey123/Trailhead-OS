@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSeoBriefs, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 
 const STATUS_STYLE: Record<string, string> = {
   proposed: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
@@ -26,17 +27,15 @@ export default async function GrowthBriefsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">
+      <PageHeader
+        eyebrow={
           <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
             {site.name}
           </Link>
-        </p>
-        <h1 className="mt-2 os-page-title">Article briefs</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Approving a brief queues the draft; the drafting job picks it up within five minutes.
-        </p>
-      </div>
+        }
+        title="Article briefs"
+        description="Approving a brief queues the draft; the drafting job picks it up within five minutes."
+      />
 
       {resolved?.error ? (
         <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">

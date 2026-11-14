@@ -18,6 +18,7 @@ import type {
 } from '@fullcalendar/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import { getWorkstreamAccentHex } from '@/lib/os'
 import { formatDateTime, formatTaskSchedule } from '@/lib/os'
 import type {
@@ -777,104 +778,102 @@ export default function CalendarClient({
   return (
     <>
       <div className="space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="os-eyebrow">
-              Planning
-            </p>
-            <h1 className="os-page-title mt-2">
-              Calendar
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
+        <PageHeader
+          eyebrow="Planning"
+          title="Calendar"
+          description={
+            <>
               Tasks with due dates and standalone events, together in one
               calendar.
-            </p>
-            {googleConnected && lastSyncedAt ? (
-              <p className="mt-3 text-xs text-[color:var(--text-3)]">
-                Last synced {new Date(lastSyncedAt).toLocaleString('en-GB')}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <div className="relative">
+              {googleConnected && lastSyncedAt ? (
+                <span className="mt-1 block text-xs text-[color:var(--text-3)]">
+                  Last synced {new Date(lastSyncedAt).toLocaleString('en-GB')}
+                </span>
+              ) : null}
+            </>
+          }
+          actions={
+            <>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setCalMenuOpen((open) => !open)}
+                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
+                >
+                  Calendars{hiddenCalendars.size ? ` (${calendarOptions.length - hiddenCalendars.size}/${calendarOptions.length})` : ''}
+                </button>
+                {calMenuOpen ? (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Close calendars menu"
+                      className="fixed inset-0 z-40 cursor-default"
+                      onClick={() => setCalMenuOpen(false)}
+                    />
+                    <div className="absolute left-0 z-50 mt-2 w-60 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-2 shadow-[var(--shadow-lg)]">
+                      {calendarOptions.map((option) => {
+                        const visible = !hiddenCalendars.has(option.key)
+                        return (
+                          <label
+                            key={option.key}
+                            className="flex cursor-pointer items-center gap-3 rounded-card px-3 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)]"
+                          >
+                            <input type="checkbox" checked={visible} onChange={() => toggleCalendar(option.key)} />
+                            <span className="h-2.5 w-2.5 flex-none rounded-pill" style={{ backgroundColor: option.colour }} />
+                            <span className="truncate">{option.label}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+              <select
+                value={projectFilter}
+                onChange={(event) => setProjectFilter(event.target.value)}
+                className="os-select px-4 py-2.5 text-sm font-medium"
+              >
+                <option value="">All projects</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
-                onClick={() => setCalMenuOpen((open) => !open)}
+                onClick={() => void handleGoogleSync()}
+                disabled={syncState === 'syncing'}
+                className="rounded-card border border-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-[color:var(--accent-strong)] transition hover:bg-[var(--surface-2)] disabled:opacity-50"
+              >
+                {syncState === 'syncing'
+                  ? 'Syncing...'
+                  : syncState === 'synced'
+                    ? 'Synced'
+                    : 'Sync all'}
+              </button>
+              <Link
+                href="/calendar/integrations"
                 className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
               >
-                Calendars{hiddenCalendars.size ? ` (${calendarOptions.length - hiddenCalendars.size}/${calendarOptions.length})` : ''}
+                Integrations
+              </Link>
+              <button
+                type="button"
+                onClick={() =>
+                  openCreateForm({
+                    start: new Date(),
+                    end: addHours(new Date(), 1),
+                    allDay: false,
+                  })
+                }
+                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
+              >
+                New event
               </button>
-              {calMenuOpen ? (
-                <>
-                  <button
-                    type="button"
-                    aria-label="Close calendars menu"
-                    className="fixed inset-0 z-40 cursor-default"
-                    onClick={() => setCalMenuOpen(false)}
-                  />
-                  <div className="absolute left-0 z-50 mt-2 w-60 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-2 shadow-[var(--shadow-lg)]">
-                    {calendarOptions.map((option) => {
-                      const visible = !hiddenCalendars.has(option.key)
-                      return (
-                        <label
-                          key={option.key}
-                          className="flex cursor-pointer items-center gap-3 rounded-card px-3 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)]"
-                        >
-                          <input type="checkbox" checked={visible} onChange={() => toggleCalendar(option.key)} />
-                          <span className="h-2.5 w-2.5 flex-none rounded-pill" style={{ backgroundColor: option.colour }} />
-                          <span className="truncate">{option.label}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                </>
-              ) : null}
-            </div>
-            <select
-              value={projectFilter}
-              onChange={(event) => setProjectFilter(event.target.value)}
-              className="os-select px-4 py-2.5 text-sm font-medium"
-            >
-              <option value="">All projects</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => void handleGoogleSync()}
-              disabled={syncState === 'syncing'}
-              className="rounded-card border border-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-[color:var(--accent-strong)] transition hover:bg-[var(--surface-2)] disabled:opacity-50"
-            >
-              {syncState === 'syncing'
-                ? 'Syncing...'
-                : syncState === 'synced'
-                  ? 'Synced'
-                  : 'Sync all'}
-            </button>
-            <Link
-              href="/calendar/integrations"
-              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
-            >
-              Integrations
-            </Link>
-            <button
-              type="button"
-              onClick={() =>
-                openCreateForm({
-                  start: new Date(),
-                  end: addHours(new Date(), 1),
-                  allDay: false,
-                })
-              }
-              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
-            >
-              New event
-            </button>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {error ? (
           <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">

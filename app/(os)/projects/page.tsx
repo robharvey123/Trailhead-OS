@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import ProjectCard from '@/components/os/ProjectCard'
+import PageHeader from '@/components/ui/PageHeader'
 import { getProjects } from '@/lib/db/projects'
 import { createClient } from '@/lib/supabase/server'
 import type { ProjectStatus } from '@/lib/types'
@@ -39,20 +40,19 @@ export default async function ProjectsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Delivery</p>
-          <h1 className="os-page-title mt-2">
-            Projects <span className="text-[color:var(--text-3)]">({projects.length})</span>
-          </h1>
-        </div>
-        <Link
-          href="/projects/new"
-          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-        >
-          New project
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Delivery"
+        title="Projects"
+        count={projects.length}
+        actions={
+          <Link
+            href="/projects/new"
+            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          >
+            New project
+          </Link>
+        }
+      />
 
       <form className="os-card grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_auto]">
         <input

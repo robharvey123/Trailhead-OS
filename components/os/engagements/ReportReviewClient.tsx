@@ -9,6 +9,7 @@ import {
   setRecipientsAction,
   sendReportAction,
 } from '@/app/(os)/engagements/[id]/reports/actions'
+import PageHeader from '@/components/ui/PageHeader'
 
 const KIND_LABEL: Record<string, string> = { weekly_client: 'Weekly report', monthly_client: 'Monthly report', weekly_internal: 'Internal report' }
 
@@ -109,25 +110,31 @@ export default function ReportReviewClient(props: {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-[color:var(--text-3)]">{props.engagementName}</p>
-          <h1 className="os-page-title mt-1">{KIND_LABEL[props.kind] ?? 'Report'}</h1>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">{props.periodStart} → {props.periodEnd}</p>
-          {props.status === 'sent' ? (
-            <p className="mt-1 text-xs text-[var(--emerald-strong)]">Sent {props.sentAt ? new Date(props.sentAt).toLocaleString('en-GB') : ''}{props.sentByName ? ` by ${props.sentByName}` : ''}</p>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-2">
-          {props.xlsxUrl ? <a href={props.xlsxUrl} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]">Download timesheet</a> : null}
-          {!readOnly ? (
+      <PageHeader
+        eyebrow={props.engagementName}
+        title={KIND_LABEL[props.kind] ?? 'Report'}
+        description={
+          <>
+            {props.periodStart} → {props.periodEnd}
+            {props.status === 'sent' ? (
+              <span className="mt-1 block text-xs text-[var(--emerald-strong)]">Sent {props.sentAt ? new Date(props.sentAt).toLocaleString('en-GB') : ''}{props.sentByName ? ` by ${props.sentByName}` : ''}</span>
+            ) : null}
+          </>
+        }
+        actions={
+          props.xlsxUrl || !readOnly ? (
             <>
-              <button type="button" disabled={pending} onClick={regenAll} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)] disabled:opacity-60">Regenerate prose</button>
-              <button type="button" disabled={pending} onClick={save} className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60">{savedFlash ? 'Saved ✓' : 'Save draft'}</button>
+              {props.xlsxUrl ? <a href={props.xlsxUrl} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]">Download timesheet</a> : null}
+              {!readOnly ? (
+                <>
+                  <button type="button" disabled={pending} onClick={regenAll} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)] disabled:opacity-60">Regenerate prose</button>
+                  <button type="button" disabled={pending} onClick={save} className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60">{savedFlash ? 'Saved ✓' : 'Save draft'}</button>
+                </>
+              ) : null}
             </>
-          ) : null}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
       {props.narrativeError ? (
         <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">

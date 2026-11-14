@@ -77,10 +77,6 @@ export default function ConversationList({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-        <span className="panel-section-title" style={{ margin: 0 }}>Messages</span>
-      </div>
-
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <GroupHeader label="Channels" action="+ New channel" onAction={() => setChannelModal(true)} />
         {channels.length === 0 ? (

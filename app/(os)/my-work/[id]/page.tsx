@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { getEngagementTask, listTaskComments, listTaskActivity } from '@/lib/db/engagement-tasks'
 import { getRunningTimer, getTaskTimeSummary, listTaskTimeEntries } from '@/lib/db/timesheet'
@@ -70,7 +71,7 @@ export default async function TaskDetailPage({
   const backHref =
     safeFrom ??
     (roleIsAdmin(profile.role) && task.engagement_id ? `/engagements/${task.engagement_id}/tasks` : '/my-work')
-  const backLabel = !safeFrom || looksLikeBoard(safeFrom) ? '← Back to board' : '← Back'
+  const backLabel = !safeFrom || looksLikeBoard(safeFrom) ? 'Back to board' : 'Back'
 
   const [comments, activity, people, runningTimer, timeSummary, timeEntries] = await Promise.all([
     listTaskComments(id, supabase).catch(() => []),
@@ -98,13 +99,12 @@ export default async function TaskDetailPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
+      <PageHeader
+        back={{ href: backHref, label: backLabel }}
+        title={canEdit ? <TaskTitleEditor taskId={task.id} title={task.title} /> : task.title}
+        description={<TaskStatusBadge status={task.status} />}
+      />
       <div className="panel overflow-hidden">
-        <div className="topbar">
-          <Link href={backHref} className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>{backLabel}</Link>
-          {canEdit ? <TaskTitleEditor taskId={task.id} title={task.title} /> : <span className="topbar-title">{task.title}</span>}
-          <TaskStatusBadge status={task.status} />
-        </div>
-
         <div className="grid grid-cols-1 gap-[18px] p-4 sm:p-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div style={{ display: 'grid', gap: 16 }}>
             {canEdit ? (

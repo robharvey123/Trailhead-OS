@@ -9,9 +9,5 @@ export default async function CrmLinkPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  return (
-    <div className="mx-auto max-w-5xl p-6">
-      <LinkBacklogClient />
-    </div>
-  )
+  return <LinkBacklogClient />
 }

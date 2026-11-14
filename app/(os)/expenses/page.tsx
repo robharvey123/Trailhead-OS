@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import PageHeader from '@/components/ui/PageHeader'
 import WorkstreamBadge from '@/components/os/WorkstreamBadge'
 import { getExpenses, type ExpenseFilters } from '@/lib/db/expenses'
 import { getAccounts } from '@/lib/db/accounts'
@@ -96,11 +97,11 @@ export default async function ExpensesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Finance</p>
-          <div className="mt-2 flex flex-wrap items-center gap-3">
-            <h1 className="os-page-title">Expenses</h1>
+      <PageHeader
+        eyebrow="Finance"
+        title="Expenses"
+        description={
+          <span className="flex flex-wrap items-center gap-2 pt-1">
             <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-sm font-medium text-[color:var(--text-2)]">
               Total {formatMoney(totalAmount)}
             </span>
@@ -114,15 +115,17 @@ export default async function ExpensesPage({
                 Unbilled {formatMoney(totalUnbilled)}
               </span>
             )}
-          </div>
-        </div>
-        <Link
-          href="/expenses/new"
-          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-        >
-          Add expense
-        </Link>
-      </div>
+          </span>
+        }
+        actions={
+          <Link
+            href="/expenses/new"
+            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          >
+            Add expense
+          </Link>
+        }
+      />
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2">

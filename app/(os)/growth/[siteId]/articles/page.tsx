@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSeoArticles, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 
 const STATUS_STYLE: Record<string, string> = {
   drafting: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
@@ -29,14 +30,14 @@ export default async function GrowthArticlesPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">
+      <PageHeader
+        eyebrow={
           <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
             {site.name}
           </Link>
-        </p>
-        <h1 className="mt-2 os-page-title">Articles</h1>
-      </div>
+        }
+        title="Articles"
+      />
 
       {resolved?.notice ? (
         <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">

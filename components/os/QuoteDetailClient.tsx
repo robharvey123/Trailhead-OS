@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import EmailThread from './EmailThread'
 import RecordEmailDialog from './RecordEmailDialog'
 import StatusBadge from './StatusBadge'
@@ -271,6 +272,34 @@ export default function QuoteDetailClient({
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Quote"
+        title={quoteState.quote_number}
+        description={
+          <>
+            {quoteState.title}
+            <span className="flex flex-wrap items-center gap-2 pt-2">
+              <StatusBadge status={quoteState.status} kind="quote" />
+              {quoteState.pricing_tier ? (
+                <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+                  {quoteState.pricing_tier.name} tier
+                </span>
+              ) : null}
+              <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
+                v{quoteState.version}
+              </span>
+              {quoteState.workstream ? (
+                <WorkstreamBadge
+                  label={quoteState.workstream.label}
+                  slug={quoteState.workstream.label}
+                  colour={quoteState.workstream.colour}
+                />
+              ) : null}
+            </span>
+          </>
+        }
+      />
+
       {warning === 'edit-blocked' ? (
         <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
           Accepted and converted quotes are locked. You were redirected back to the detail view.
@@ -280,35 +309,7 @@ export default function QuoteDetailClient({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
         <div className="space-y-6">
           <div className="os-card p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <p className="os-eyebrow">Quote</p>
-                  <StatusBadge status={quoteState.status} kind="quote" />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <h1 className="os-page-title">{quoteState.quote_number}</h1>
-                  {quoteState.pricing_tier ? (
-                    <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
-                      {quoteState.pricing_tier.name} tier
-                    </span>
-                  ) : null}
-                  <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
-                    v{quoteState.version}
-                  </span>
-                </div>
-                <p className="mt-2 text-lg text-[color:var(--text-2)]">{quoteState.title}</p>
-              </div>
-              {quoteState.workstream ? (
-                <WorkstreamBadge
-                  label={quoteState.workstream.label}
-                  slug={quoteState.workstream.label}
-                  colour={quoteState.workstream.colour}
-                />
-              ) : null}
-            </div>
-
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="os-eyebrow">Account</p>
                 <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.account?.name ?? '—'}</p>

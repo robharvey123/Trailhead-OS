@@ -12,6 +12,7 @@ import MeetingNotesTimeline from './MeetingNotesTimeline'
 import MeetingsTimeline from './MeetingsTimeline'
 import WhatsAppTimeline from './WhatsAppTimeline'
 import WorkstreamBadge from './WorkstreamBadge'
+import PageHeader from '@/components/ui/PageHeader'
 import type { MeetingNoteWithRelations } from '@/lib/db/meeting-notes'
 import type { MeetingWithRelations } from '@/lib/db/meetings'
 import { formatTaskSchedule } from '@/lib/os'
@@ -210,66 +211,63 @@ export default function ContactDetailClient({
 
   return (
     <div className="space-y-6">
-      <div className="os-card rounded-card p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="os-eyebrow">Contact</p>
-            <h1 className="os-page-title mt-2">{contact.name}</h1>
-            <p className="mt-2 text-sm text-[color:var(--text-2)]">{contact.company ?? 'No company set'}</p>
-            <StatusBadge status={contact.status} kind="contact" className="mt-4" />
-          </div>
-
-          <div className="flex gap-3">
-            {editing ? (
-              <>
-                <button
-                  type="button"
-                  onClick={saveChanges}
-                  disabled={saving}
-                  className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
-                >
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(false)
-                    setLinkingAccount(false)
-                    setForm({
-                      name: contact.name,
-                      company: contact.company ?? '',
-                      email: contact.email ?? '',
-                      phone: contact.phone ?? '',
-                      role: contact.role ?? '',
-                      channel: contact.channel ?? '',
-                      website: contact.website ?? '',
-                      address_line1: contact.address_line1 ?? '',
-                      address_line2: contact.address_line2 ?? '',
-                      city: contact.city ?? '',
-                      postcode: contact.postcode ?? '',
-                      country: contact.country ?? 'UK',
-                      workstream_id: contact.workstream_id ?? '',
-                      account_id: contact.account_id ?? '',
-                      status: contact.status,
-                    })
-                    setError(null)
-                  }}
-                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
+      <PageHeader
+        eyebrow="Contact"
+        title={contact.name}
+        description={contact.company ?? 'No company set'}
+        actions={
+          editing ? (
+            <>
               <button
                 type="button"
-                onClick={() => setEditing(true)}
+                onClick={saveChanges}
+                disabled={saving}
+                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(false)
+                  setLinkingAccount(false)
+                  setForm({
+                    name: contact.name,
+                    company: contact.company ?? '',
+                    email: contact.email ?? '',
+                    phone: contact.phone ?? '',
+                    role: contact.role ?? '',
+                    channel: contact.channel ?? '',
+                    website: contact.website ?? '',
+                    address_line1: contact.address_line1 ?? '',
+                    address_line2: contact.address_line2 ?? '',
+                    city: contact.city ?? '',
+                    postcode: contact.postcode ?? '',
+                    country: contact.country ?? 'UK',
+                    workstream_id: contact.workstream_id ?? '',
+                    account_id: contact.account_id ?? '',
+                    status: contact.status,
+                  })
+                  setError(null)
+                }}
                 className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
               >
-                Edit
+                Cancel
               </button>
-            )}
-          </div>
-        </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+            >
+              Edit
+            </button>
+          )
+        }
+      />
+      <div className="os-card rounded-card p-6">
+        <StatusBadge status={contact.status} kind="contact" />
 
         {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 

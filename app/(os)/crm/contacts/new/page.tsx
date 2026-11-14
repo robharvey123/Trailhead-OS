@@ -16,10 +16,12 @@ export default async function NewContactPage({
   ])
 
   return (
-    <NewContactForm
-      workstreams={workstreams}
-      accounts={accounts}
-      initialAccountId={resolvedSearchParams?.account_id ?? ''}
-    />
+    <div className="os-narrow">
+      <NewContactForm
+        workstreams={workstreams}
+        accounts={accounts}
+        initialAccountId={resolvedSearchParams?.account_id ?? ''}
+      />
+    </div>
   )
 }
