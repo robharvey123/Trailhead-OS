@@ -527,8 +527,15 @@ body {
   font-family: var(--sans);
   font-variant-numeric: tabular-nums;
   line-height: 1.5;
-  background: var(--bg);
-  min-height: 100%;
+}
+/* The scope's own ground and height sit in the components layer, so a utility
+   on the same element wins. Unlayered, they turned every `thmock ... bg-[...]`
+   overlay (modals, the command palette, confirm dialogs) opaque white. */
+@layer components {
+  .thmock {
+    background: var(--bg);
+    min-height: 100%;
+  }
 }
 
 /* Navy surfaces (sidebar, login ground, mobile drawer). One scope remaps the
