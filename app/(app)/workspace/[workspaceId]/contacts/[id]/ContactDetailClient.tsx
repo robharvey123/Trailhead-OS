@@ -31,11 +31,11 @@ export default function ContactDetailClient({
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-card border border-slate-800 bg-slate-900/60 p-4">
           <p className="text-xs uppercase tracking-wider text-slate-400">Deals</p>
           <p className="mt-1 text-xl font-semibold">{deals.length}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-card border border-slate-800 bg-slate-900/60 p-4">
           <p className="text-xs uppercase tracking-wider text-slate-400">Pipeline Value</p>
           <p className="mt-1 text-xl font-semibold">
             {deals.length > 0
@@ -43,11 +43,11 @@ export default function ContactDetailClient({
               : '—'}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-card border border-slate-800 bg-slate-900/60 p-4">
           <p className="text-xs uppercase tracking-wider text-slate-400">Activities</p>
           <p className="mt-1 text-xl font-semibold">{activities.length}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+        <div className="rounded-card border border-slate-800 bg-slate-900/60 p-4">
           <p className="text-xs uppercase tracking-wider text-slate-400">Account</p>
           <p className="mt-1 text-xl font-semibold truncate">{accountName || '—'}</p>
         </div>
@@ -64,7 +64,7 @@ export default function ContactDetailClient({
 
       {tab === 'overview' && (
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
+          <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6 space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Contact Info</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><span className="text-slate-500">Email</span><p>{contact.email || '—'}</p></div>
@@ -76,11 +76,11 @@ export default function ContactDetailClient({
             {contact.notes && <div><span className="text-xs text-slate-500">Notes</span><p className="mt-1 text-sm text-slate-300">{contact.notes}</p></div>}
             {contact.brands?.length > 0 && (
               <div className="flex gap-1 flex-wrap">
-                {contact.brands.map((b) => <span key={b} className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>)}
+                {contact.brands.map((b) => <span key={b} className="rounded-pill bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>)}
               </div>
             )}
           </div>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-3">
+          <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6 space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Recent Activity</h3>
             {activities.length === 0 ? <p className="text-sm text-slate-500">No activities yet</p> : (
               activities.slice(0, 5).map((a) => (
@@ -100,7 +100,7 @@ export default function ContactDetailClient({
           {deals.length === 0 ? (
             <p className="py-8 text-center text-slate-400">No deals linked to this contact</p>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-800">
+            <div className="overflow-x-auto rounded-card border border-slate-800">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -115,7 +115,7 @@ export default function ContactDetailClient({
                   {deals.map((d) => (
                     <tr key={d.id} className="hover:bg-white/[0.02]">
                       <td className="px-4 py-3"><Link href={`/workspace/${workspaceId}/deals/${d.id}`} className="text-blue-400 hover:underline">{d.title}</Link></td>
-                      <td className="px-4 py-3"><span className="rounded bg-blue-500/20 px-2 py-0.5 text-xs font-semibold text-blue-300">{DEAL_STAGE_LABELS[d.stage]}</span></td>
+                      <td className="px-4 py-3"><span className="rounded-control bg-blue-500/20 px-2 py-0.5 text-xs font-semibold text-blue-300">{DEAL_STAGE_LABELS[d.stage]}</span></td>
                       <td className="px-4 py-3 font-medium">{d.value ? `${currencySymbol(d.currency)}${d.value.toLocaleString()}` : '—'}</td>
                       <td className="px-4 py-3">{d.probability}%</td>
                       <td className="px-4 py-3 text-slate-400">{d.expected_close_date || '—'}</td>
@@ -133,10 +133,10 @@ export default function ContactDetailClient({
           {activities.length === 0 ? (
             <p className="py-8 text-center text-slate-400">No activities for this contact</p>
           ) : activities.map((a) => (
-            <div key={a.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+            <div key={a.id} className="rounded-card border border-slate-800 bg-slate-900/60 p-4">
               <div className="flex items-center gap-2">
                 <span>{ACTIVITY_ICONS[a.type] || '📋'}</span>
-                <span className="text-xs rounded bg-slate-800 px-1.5 py-0.5 text-slate-300">{CRM_ACTIVITY_TYPE_LABELS[a.type]}</span>
+                <span className="text-xs rounded-control bg-slate-800 px-1.5 py-0.5 text-slate-300">{CRM_ACTIVITY_TYPE_LABELS[a.type]}</span>
                 <span className="font-medium">{a.subject}</span>
                 <span className="ml-auto text-xs text-slate-500">{a.activity_date}</span>
               </div>

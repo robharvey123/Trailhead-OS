@@ -81,24 +81,24 @@ export default function GlobalSearch() {
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => results && setOpen(true)}
         placeholder="Search..."
-        className="w-48 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none sm:w-64"
+        className="w-48 rounded-control border border-[var(--border)] bg-[var(--bg)] px-3 py-1.5 text-xs text-[var(--text)] placeholder:text-[var(--text-3)] focus:border-[var(--border-light)] focus:outline-none sm:w-64"
       />
       {open && results && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded-xl border border-slate-700 bg-slate-900 shadow-xl">
+        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded-card border border-[var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]">
           {!hasResults ? (
-            <p className="px-4 py-3 text-xs text-slate-500">No results found</p>
+            <p className="px-4 py-3 text-xs text-[var(--text-3)]">No results found</p>
           ) : (
             Object.entries(results).filter(([, arr]) => arr.length > 0).map(([module, items]) => (
               <div key={module}>
-                <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">{MODULE_LABELS[module] || module}</p>
+                <p className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-3)]">{MODULE_LABELS[module] || module}</p>
                 {items.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => navigate(item.module, item.id)}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-slate-800"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-[var(--surface-2)]"
                   >
                     <span className="truncate font-medium">{item.label}</span>
-                    {item.sub && <span className="ml-auto truncate text-xs text-slate-500">{item.sub}</span>}
+                    {item.sub && <span className="ml-auto truncate text-xs text-[var(--text-3)]">{item.sub}</span>}
                   </button>
                 ))}
               </div>

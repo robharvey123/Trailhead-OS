@@ -5,9 +5,11 @@ import { createClient } from '@/lib/supabase/server'
 import type { SeoPrompt } from '@/lib/types'
 import { PendingButton } from '@/components/growth/PendingButton'
 import { addPromptAction, seedPromptsAction, togglePromptAction } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
 
-const INPUT_CLASS =
-  'rounded-2xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+export const metadata = { title: 'AI visibility prompts' }
+
+const INPUT_CLASS = 'os-input px-3 py-2 text-sm'
 
 export default async function GrowthPromptsPage({
   params,
@@ -31,34 +33,36 @@ export default async function GrowthPromptsPage({
   const active = prompts.filter((p) => p.active).length
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
-              {site.name}
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">AI visibility prompts</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow={
+          <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
+            {site.name}
+          </Link>
+        }
+        title="AI visibility prompts"
+        description={
+          <>
             {active} active — each runs weekly against every configured provider (Anthropic
             always; OpenAI/Perplexity once their keys are set).
-          </p>
-        </div>
-        <form action={seedPromptsAction.bind(null, site.id)}>
-          <PendingButton variant="primary" pendingLabel="Writing prompts… (~30s)">
-            Generate from ICP
-          </PendingButton>
-        </form>
-      </div>
+          </>
+        }
+        actions={
+          <form action={seedPromptsAction.bind(null, site.id)}>
+            <PendingButton variant="primary" pendingLabel="Writing prompts… (~30s)">
+              Generate from ICP
+            </PendingButton>
+          </form>
+        }
+      />
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
@@ -76,14 +80,14 @@ export default async function GrowthPromptsPage({
         <input name="category" placeholder="category (optional)" className={`w-40 ${INPUT_CLASS}`} />
         <button
           type="submit"
-          className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+          className="btn btn-ghost"
         >
           Add
         </button>
       </form>
 
       {prompts.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No prompts yet — generate a starter set from the site&apos;s ICP.
         </div>
       ) : (
@@ -101,7 +105,7 @@ export default async function GrowthPromptsPage({
               <form action={togglePromptAction.bind(null, site.id, prompt.id, !prompt.active)}>
                 <button
                   type="submit"
-                  className="shrink-0 rounded-full border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                  className="btn btn-ghost btn-sm shrink-0"
                 >
                   {prompt.active ? 'Deactivate' : 'Activate'}
                 </button>

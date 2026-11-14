@@ -153,7 +153,7 @@ export default function AccountsClient({
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true) }}
-          className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 transition hover:bg-white"
+          className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 transition hover:bg-white"
         >
           + New Account
         </button>
@@ -165,7 +165,7 @@ export default function AccountsClient({
           aria-label="Filter by account type"
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
+          className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
         >
           <option value="all">All types</option>
           {CRM_ACCOUNT_TYPES.map((t) => (
@@ -177,7 +177,7 @@ export default function AccountsClient({
             aria-label="Filter by brand"
             value={filterBrand}
             onChange={(e) => setFilterBrand(e.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
+            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
           >
             <option value="all">All brands</option>
             {brandNames.map((b) => (
@@ -191,48 +191,48 @@ export default function AccountsClient({
           placeholder="Search accounts..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500"
+          className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500"
         />
       </div>
 
       {/* Form Modal */}
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Account' : 'New Account'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">Name *</span>
-              <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">Type</span>
-              <select value={type} onChange={(e) => setType(e.target.value as CrmAccountType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={type} onChange={(e) => setType(e.target.value as CrmAccountType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 {CRM_ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{CRM_ACCOUNT_TYPE_LABELS[t]}</option>)}
               </select>
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">Industry</span>
-              <input value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">Email</span>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">Phone</span>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">Website</span>
-              <input value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={website} onChange={(e) => setWebsite(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">City</span>
-              <input value={city} onChange={(e) => setCity(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={city} onChange={(e) => setCity(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             <label className="block">
               <span className="mb-1 block text-xs text-slate-400">Country</span>
-              <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={country} onChange={(e) => setCountry(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             {brandNames.length > 0 && (
               // A group of checkboxes has no single control to label, so the
@@ -256,13 +256,13 @@ export default function AccountsClient({
             )}
             <label className="sm:col-span-2 block">
               <span className="mb-1 block text-xs text-slate-400">Notes</span>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </label>
             <div className="flex gap-2 sm:col-span-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">
                 {editingId ? 'Update' : 'Create'}
               </button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">
                 Cancel
               </button>
             </div>
@@ -271,7 +271,7 @@ export default function AccountsClient({
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -299,7 +299,7 @@ export default function AccountsClient({
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full border border-slate-700 px-2 py-0.5 text-xs">
+                    <span className="rounded-pill border border-slate-700 px-2 py-0.5 text-xs">
                       {CRM_ACCOUNT_TYPE_LABELS[a.type]}
                     </span>
                   </td>
@@ -308,7 +308,7 @@ export default function AccountsClient({
                       {a.brands?.length ? (
                         <div className="flex flex-wrap gap-1">
                           {a.brands.map((b) => (
-                            <span key={b} className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>
+                            <span key={b} className="rounded-pill bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>
                           ))}
                         </div>
                       ) : (

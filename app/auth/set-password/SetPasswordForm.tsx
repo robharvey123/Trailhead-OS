@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { setNewPassword } from './actions'
+import { authInputClass, authLabelClass } from '@/components/os/AuthShell'
+import Button from '@/components/ui/Button'
 
 export default function SetPasswordForm() {
   const router = useRouter()
@@ -10,7 +12,7 @@ export default function SetPasswordForm() {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
-  const input = 'w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-slate-500 focus:outline-none'
+  const input = authInputClass
 
   return (
     <form
@@ -29,18 +31,18 @@ export default function SetPasswordForm() {
       }}
     >
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="new-password">New password</label>
+        <label className={authLabelClass} htmlFor="new-password">New password</label>
         <input id="new-password" type="password" required minLength={10} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={input} />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="confirm-password">Confirm it</label>
+        <label className={authLabelClass} htmlFor="confirm-password">Confirm it</label>
         <input id="confirm-password" type="password" required minLength={10} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={input} />
       </div>
-      <p className="text-xs text-slate-400">At least 10 characters.</p>
-      {error ? <p role="alert" className="text-sm text-rose-300">{error}</p> : null}
-      <button type="submit" disabled={pending} className="w-full rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70">
+      <p className="text-xs text-[var(--text-3)]">At least 10 characters.</p>
+      {error ? <p role="alert" className="text-sm text-[var(--red-strong)]">{error}</p> : null}
+      <Button type="submit" variant="primary" disabled={pending} className="w-full">
         {pending ? 'Saving…' : 'Save new password'}
-      </button>
+      </Button>
     </form>
   )
 }

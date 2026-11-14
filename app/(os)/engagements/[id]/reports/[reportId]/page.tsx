@@ -5,6 +5,8 @@ import { signedReportUrl } from '@/lib/reports/generate'
 import { EMPTY_NARRATIVE, type Narrative } from '@/lib/reports/narrative'
 import ReportReviewClient from '@/components/os/engagements/ReportReviewClient'
 
+export const metadata = { title: 'Report' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string; reportId: string }> }) {

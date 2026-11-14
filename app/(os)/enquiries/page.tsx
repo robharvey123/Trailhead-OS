@@ -3,7 +3,10 @@ import { getEnquiries } from '@/lib/db/enquiries'
 import { getQuotes } from '@/lib/db/quotes'
 import { createClient } from '@/lib/supabase/server'
 import StatusBadge from '@/components/os/StatusBadge'
+import PageHeader from '@/components/ui/PageHeader'
 import type { EnquiryStatus } from '@/lib/types'
+
+export const metadata = { title: 'Enquiries' }
 
 const ENQUIRY_TABS = [
   { value: 'all', label: 'All' },
@@ -50,15 +53,11 @@ export default async function EnquiriesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Clients</p>
-          <h1 className="mt-2 os-page-title">Enquiries</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Discovery form submissions waiting for review or conversion.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Clients"
+        title="Enquiries"
+        description="Discovery form submissions waiting for review or conversion."
+      />
 
       <div className="flex flex-wrap gap-2">
         {ENQUIRY_TABS.map((tab) => {
@@ -68,7 +67,7 @@ export default async function EnquiriesPage({
             <Link
               key={tab.value}
               href={href}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
+              className={`rounded-pill border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                   : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)] hover:text-[color:var(--text)]'
@@ -82,7 +81,7 @@ export default async function EnquiriesPage({
 
       <div className="os-card p-6">
         {enquiries.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+          <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No enquiries in this view yet.
           </div>
         ) : (
@@ -91,7 +90,7 @@ export default async function EnquiriesPage({
               <Link
                 key={enquiry.id}
                 href={`/enquiries/${enquiry.id}`}
-                className="block rounded-3xl border border-[color:var(--border)] bg-white p-5 transition hover:border-[color:var(--border-light)]"
+                className="block rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-5 transition hover:border-[color:var(--border-light)]"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -103,7 +102,7 @@ export default async function EnquiriesPage({
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge status={enquiry.status} kind="enquiry" />
                     {latestQuoteByEnquiryId.get(enquiry.id) ? (
-                      <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+                      <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                         Quote {latestQuoteByEnquiryId.get(enquiry.id)?.status}
                       </span>
                     ) : null}

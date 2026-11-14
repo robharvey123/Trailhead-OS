@@ -45,21 +45,15 @@ export default function PushPromptBanner({ userId }: { userId: string }) {
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed', bottom: 16, right: 16, zIndex: 60, maxWidth: 340,
-        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
-        boxShadow: '0 12px 32px rgba(0,0,0,0.22)', padding: 16,
-      }}
-    >
-      <p style={{ fontSize: 13, color: 'var(--text)', margin: 0, fontWeight: 600 }}>Turn on notifications?</p>
-      <p style={{ fontSize: 12, color: 'var(--text-2)', margin: '4px 0 12px' }}>
+    <div className="fixed bottom-4 right-4 z-[60] max-w-[340px] rounded-card border border-[var(--border)] bg-[var(--bg)] p-4 shadow-[var(--shadow-lg)]">
+      <p className="m-0 text-[13px] font-semibold text-[var(--text)]">Turn on notifications?</p>
+      <p className="mb-3 mt-1 text-xs text-[var(--text-2)]">
         Get notified about messages and tasks assigned to you, even when this tab isn’t open.
       </p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="flex items-center gap-2">
         <button className="btn btn-primary btn-sm" onClick={enable} disabled={busy}>{busy ? 'Enabling…' : 'Enable'}</button>
         <button className="btn btn-ghost btn-sm" onClick={dismiss} disabled={busy}>Not now</button>
-        <Link href="/settings/notifications" onClick={dismiss} style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-3)' }}>
+        <Link href="/settings/notifications" onClick={dismiss} className="ml-auto text-[11px] text-[var(--text-3)]">
           Settings
         </Link>
       </div>

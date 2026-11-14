@@ -10,8 +10,11 @@ import { createClient } from '@/lib/supabase/server'
 import EngagementTasksClient from '@/app/(os)/engagements/[id]/tasks/EngagementTasksClient'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import ProjectStatusPanel from '@/components/projects/ProjectStatusPanel'
 import MilestoneList from '@/components/projects/MilestoneList'
+
+export const metadata = { title: 'Project' }
 
 function fmtDate(v: string) {
   return new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -94,17 +97,15 @@ export default async function ProjectDetailPage({
   const summary = project.description || project.brief
   return (
     <>
-      <div className={`thmock ${mockupFontVars}`} style={{ marginBottom: 16 }}>
-        <div className="panel" style={{ padding: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
-            <div>
-              <div className="field-label">Project</div>
-              <h1 className="topbar-title" style={{ fontSize: 22, margin: '4px 0 0' }}>{project.title || project.name}</h1>
-              {summary ? <p style={{ fontSize: 13, color: 'var(--text-2)', margin: '6px 0 0', maxWidth: 640 }}>{summary}</p> : null}
-            </div>
-            <Link href={`/projects/records/${id}/edit`} className="btn btn-ghost btn-sm">Edit project</Link>
-          </div>
-          <div style={{ display: 'flex', gap: 28, marginTop: 14, flexWrap: 'wrap' }}>
+      <div className={`thmock ${mockupFontVars} mb-4`}>
+        <PageHeader
+          eyebrow="Project"
+          title={project.title || project.name}
+          description={summary}
+          actions={<Link href={`/projects/records/${id}/edit`} className="btn btn-ghost btn-sm">Edit project</Link>}
+        />
+        <div className="panel p-5">
+          <div className="flex flex-wrap gap-7">
             <div>
               <div className="field-label">Owner</div>
               <div className="td-name">{project.owner || 'Unassigned'}</div>
@@ -117,7 +118,7 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      <div className={`thmock ${mockupFontVars}`} style={{ marginBottom: 16 }}>
+      <div className={`thmock ${mockupFontVars} mb-4`}>
         <ProjectStatusPanel
           projectId={id}
           status={project.status}
@@ -130,9 +131,9 @@ export default async function ProjectDetailPage({
         />
       </div>
 
-      <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
-        <div className="panel" style={{ overflow: 'hidden' }}>
-          <div className="panel-section-title" style={{ padding: '16px 20px 0' }}>Time</div>
+      <div className={`thmock ${mockupFontVars} mt-4`}>
+        <div className="panel overflow-hidden">
+          <div className="panel-section-title px-5 pt-4">Time</div>
           <TimeLedger
             rows={projectTime}
             scope={{ project_id: id, engagement_id: project.engagement_id ?? undefined }}
@@ -146,8 +147,8 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
-        <div className="panel" style={{ padding: 20 }}>
+      <div className={`thmock ${mockupFontVars} mt-4`}>
+        <div className="panel p-5">
           <div className="panel-section-title">Tasks</div>
           {project.engagement_id ? (
             <EngagementTasksClient
@@ -159,39 +160,39 @@ export default async function ProjectDetailPage({
               backHref={`/projects/records/${id}`}
             />
           ) : (
-            <p style={{ fontSize: 13, color: 'var(--text-3)' }}>Link this project to an engagement to manage its tasks.</p>
+            <p className="text-[13px] text-[var(--text-3)]">Link this project to an engagement to manage its tasks.</p>
           )}
         </div>
       </div>
 
       {isAdmin ? (
-        <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
+        <div className={`thmock ${mockupFontVars} mt-4`}>
           <MilestoneList milestones={project.milestones ?? []} dependentCounts={milestoneDependentCounts} />
         </div>
       ) : null}
 
       {isAdmin ? (
-        <div className={`thmock ${mockupFontVars}`} style={{ marginTop: 16 }}>
-          <div className="panel" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div className="panel-section-title" style={{ margin: 0 }}>Roadmap imports</div>
+        <div className={`thmock ${mockupFontVars} mt-4`}>
+          <div className="panel p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="panel-section-title m-0!">Roadmap imports</div>
               <Link className="btn btn-primary btn-sm" href={`/projects/records/${id}/import-roadmap`}>Import roadmap</Link>
             </div>
             {imports.length === 0 ? (
-              <p style={{ fontSize: 12, color: 'var(--text-3)' }}>No imports yet. Upload a .docx or .md roadmap to extract tasks.</p>
+              <p className="text-xs text-[var(--text-3)]">No imports yet. Upload a .docx or .md roadmap to extract tasks.</p>
             ) : (
               <div className="overflow-x-auto">
               <table className="data-table">
                 <thead><tr><th>File</th><th>Status</th><th>Tasks</th><th>Imported</th></tr></thead>
                 <tbody>
                   {imports.map((imp) => (
-                    <tr key={imp.id} style={{ cursor: 'pointer' }}>
+                    <tr key={imp.id} className="cursor-pointer">
                       <td className="td-name">
                         <Link href={`/projects/records/${id}/import-roadmap?import_id=${imp.id}`}>{imp.source_filename}</Link>
                       </td>
                       <td><span className="channel-tag">{imp.status}</span></td>
-                      <td className="td-mono">{imp.task_count_committed ?? '—'}</td>
-                      <td className="td-mono">{fmtDate(imp.created_at)}</td>
+                      <td className="td-num">{imp.task_count_committed ?? '—'}</td>
+                      <td className="td-num">{fmtDate(imp.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>

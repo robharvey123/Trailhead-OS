@@ -5,6 +5,8 @@ import { getBlogPostById } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { isLocalDevelopmentHost } from '@/lib/site'
 
+export const metadata = { title: 'Edit blog post' }
+
 export default async function EditBlogPostPage({
   params,
 }: {

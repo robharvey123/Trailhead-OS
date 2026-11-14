@@ -56,7 +56,7 @@ export function ListView({ tasks, onSelectTask, onStatusChange }: ListViewProps)
   const arrow = (key: SortKey) => (sortKey === key ? (sortAsc ? ' ↑' : ' ↓') : '')
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-800">
+    <div className="overflow-x-auto rounded-card border border-slate-800">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-800 bg-slate-950 text-left text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
@@ -122,7 +122,7 @@ export function ListView({ tasks, onSelectTask, onStatusChange }: ListViewProps)
               </td>
               <td className="px-4 py-2.5">
                 <span
-                  className={`rounded px-2 py-0.5 text-xs font-medium ${
+                  className={`rounded-control px-2 py-0.5 text-xs font-medium ${
                     task.priority === 'high'
                       ? 'bg-rose-900/40 text-rose-300'
                       : task.priority === 'low'
@@ -140,7 +140,7 @@ export function ListView({ tasks, onSelectTask, onStatusChange }: ListViewProps)
                   value={task.status}
                   aria-label={`Status for ${task.title}`}
                   onChange={(e) => onStatusChange(task.id, e.target.value as TaskRow['status'])}
-                  className="rounded border border-slate-700 bg-slate-950 px-2 py-0.5 text-xs text-slate-200"
+                  className="rounded-control border border-slate-700 bg-slate-950 px-2 py-0.5 text-xs text-slate-200"
                 >
                   {STATUS_OPTIONS.map((s) => (
                     <option key={s} value={s}>

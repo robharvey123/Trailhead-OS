@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import PageHeader from '@/components/ui/PageHeader'
 
 export type DiscoveryEnquiryRow = {
   id: string
@@ -62,13 +63,11 @@ export default function DiscoveryOSClient({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">Clients</p>
-        <h1 className="os-page-title mt-2">Discovery form</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Send this link to clients to capture their app requirements.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Clients"
+        title="Discovery form"
+        description="Send this link to clients to capture their app requirements."
+      />
 
       <section className="os-card p-6">
         <div className="space-y-4">
@@ -85,21 +84,21 @@ export default function DiscoveryOSClient({
                 <button
                   type="button"
                   onClick={() => void handleCopyLink()}
-                  className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+                  className="btn btn-primary"
                 >
                   {copied ? 'Copied!' : 'Copy link'}
                 </button>
                 <button
                   type="button"
                   onClick={handleOpenForm}
-                  className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
+                  className="btn btn-ghost"
                 >
                   Open form
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPreview((current) => !current)}
-                  className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
+                  className="btn btn-ghost"
                 >
                   {showPreview ? 'Hide preview' : 'Preview'}
                 </button>
@@ -111,8 +110,7 @@ export default function DiscoveryOSClient({
             <iframe
               src="/discovery?view=form"
               title="Discovery form preview"
-              className="mt-4 w-full rounded-lg border border-[color:var(--border)]"
-              style={{ height: '600px' }}
+              className="mt-4 h-[600px] w-full rounded-control border border-[color:var(--border)]"
             />
           ) : null}
         </div>
@@ -124,24 +122,24 @@ export default function DiscoveryOSClient({
         </div>
 
         {enquiries.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+          <div className="mt-6 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No enquiries yet. Share the form link above to get started.
           </div>
         ) : (
-          <div className="mt-6 overflow-hidden rounded-3xl border border-[color:var(--border)]">
+          <div className="mt-6 overflow-hidden rounded-card border border-[color:var(--border)]">
             <table className="min-w-full divide-y divide-[color:var(--border)] text-left">
-              <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+              <thead className="os-label bg-[var(--surface-2)]">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Business</th>
-                  <th className="px-4 py-3 font-medium">Contact</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
-                  <th className="px-4 py-3 font-medium">Phone</th>
-                  <th className="px-4 py-3 font-medium">Submitted</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">View</th>
+                  <th className="px-4 py-3">Business</th>
+                  <th className="px-4 py-3">Contact</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Phone</th>
+                  <th className="px-4 py-3">Submitted</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">View</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[color:var(--border)] bg-white text-sm text-[color:var(--text-2)]">
+              <tbody className="divide-y divide-[color:var(--border)] bg-[var(--bg)] text-sm text-[color:var(--text-2)]">
                 {enquiries.map((enquiry) => (
                   <tr key={enquiry.id}>
                     <td className="px-4 py-4 font-medium text-[color:var(--text)]">{enquiry.biz_name}</td>
@@ -157,7 +155,7 @@ export default function DiscoveryOSClient({
                     </td>
                     <td className="px-4 py-4">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium capitalize ${getStatusClasses(enquiry.status)}`}
+                        className={`inline-flex rounded-pill px-3 py-1 text-xs font-medium capitalize ${getStatusClasses(enquiry.status)}`}
                       >
                         {enquiry.status}
                       </span>
@@ -165,7 +163,7 @@ export default function DiscoveryOSClient({
                     <td className="px-4 py-4">
                       <Link
                         href={`/enquiries/${enquiry.id}`}
-                        className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+                        className="btn btn-ghost btn-sm"
                       >
                         View
                       </Link>

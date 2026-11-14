@@ -18,7 +18,7 @@ export default function ProjectsSection({
   actionLabel?: string
 }) {
   return (
-    <section className="os-card rounded-[2rem] p-6">
+    <section className="os-card rounded-card p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="os-section-title">{title}</h2>
@@ -27,7 +27,7 @@ export default function ProjectsSection({
         {actionHref && actionLabel ? (
           <Link
             href={actionHref}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            className="btn btn-ghost btn-sm shrink-0"
           >
             {actionLabel}
           </Link>
@@ -35,7 +35,7 @@ export default function ProjectsSection({
       </div>
 
       {projects.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+        <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
           {emptyMessage}
         </div>
       ) : (

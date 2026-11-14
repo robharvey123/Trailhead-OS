@@ -60,13 +60,13 @@ export default function PaymentsClient({
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search reference, invoice…" className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-white/30" />
-        <select value={filterAccountType} onChange={(e) => setFilterAccountType(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search reference, invoice…" className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-white/30" />
+        <select value={filterAccountType} onChange={(e) => setFilterAccountType(e.target.value)} className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
           <option value="all">All Accounts</option>
           <option value="bank">Bank</option>
           <option value="cash">Cash</option>
         </select>
-        <select value={filterMethod} onChange={(e) => setFilterMethod(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+        <select value={filterMethod} onChange={(e) => setFilterMethod(e.target.value)} className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
           <option value="all">All Methods</option>
           <option value="bank_transfer">Bank Transfer</option>
           <option value="credit_card">Credit Card</option>
@@ -79,13 +79,13 @@ export default function PaymentsClient({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 py-16">
+        <div className="flex flex-col items-center justify-center rounded-card border border-dashed border-slate-700 py-16">
           <div className="mb-3 text-4xl text-slate-600">💳</div>
           <p className="text-slate-400">No payments recorded yet</p>
           <p className="mt-1 text-xs text-slate-500">Payments are recorded from invoice detail pages</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wider text-slate-400">

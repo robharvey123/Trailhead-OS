@@ -3,9 +3,10 @@
 import { toast } from 'sonner'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import { getPriorityClasses } from '@/lib/os'
+import PageHeader from '@/components/ui/PageHeader'
 import StatusBadge from './StatusBadge'
 import type {
   DailyBriefCalendarEvent,
@@ -88,13 +89,13 @@ function getAccentClasses(priority: DailyBriefTask['priority']) {
   if (priority === 'high') {
     return {
       border: 'border-l-[color:var(--amber)]',
-      text: 'text-[color:var(--amber-strong)]',
+      text: 'text-[var(--amber-strong)]!',
     }
   }
 
   return {
     border: 'border-l-[color:var(--red)]',
-    text: 'text-[color:var(--red-strong)]',
+    text: 'text-[var(--red-strong)]!',
   }
 }
 
@@ -102,7 +103,7 @@ function getAccentClasses(priority: DailyBriefTask['priority']) {
 function PriorityPill({ priority }: { priority: DailyBriefTask['priority'] }) {
   return (
     <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getPriorityClasses(
+      className={`inline-flex rounded-pill border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getPriorityClasses(
         priority === 'critical' ? 'urgent' : priority
       )}`}
     >
@@ -122,7 +123,7 @@ function ActionRequiredRow({ task, todayKey }: { task: DailyBriefTask; todayKey:
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${accent.text}`}>
+          <p className={`os-label ${accent.text}`}>
             {overdue ? 'Overdue' : 'Needs attention'}
           </p>
           <p className="font-medium text-[color:var(--text)]">{task.title}</p>
@@ -162,7 +163,7 @@ function QuoteAttentionCard({ quote }: { quote: DailyBriefQuote }) {
 
 function TimelineTask({ task }: { task: DailyBriefTask }) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text-2)]">
+    <div className="flex items-center gap-2 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text-2)]">
       <span className="truncate text-[color:var(--text-2)]">{task.title}</span>
     </div>
   )
@@ -170,8 +171,8 @@ function TimelineTask({ task }: { task: DailyBriefTask }) {
 
 function TimelineEvent({ event }: { event: DailyBriefCalendarEvent }) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text-2)]">
-      <span className="inline-flex h-2 w-2 rounded-full bg-[color:var(--accent)]" />
+    <div className="flex items-center gap-2 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text-2)]">
+      <span className="inline-flex h-2 w-2 rounded-pill bg-[color:var(--accent)]" />
       <span className="truncate">{event.title}</span>
       <span className="text-[color:var(--text-3)]">{event.all_day ? 'All day' : formatEventTime(event.start_at)}</span>
     </div>
@@ -181,9 +182,11 @@ function TimelineEvent({ event }: { event: DailyBriefCalendarEvent }) {
 interface DailyBriefClientProps {
   today: string
   initialData: DailyBriefData
+  /** Server-rendered dashboard blocks, shown between the page header and the brief. */
+  children?: ReactNode
 }
 
-export default function DailyBriefClient({ today, initialData }: DailyBriefClientProps) {
+export default function DailyBriefClient({ today, initialData, children }: DailyBriefClientProps) {
   const [data, setData] = useState(initialData)
   const [pendingTaskIds, setPendingTaskIds] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -298,32 +301,40 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
   }
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-6">
-      <header className="overflow-hidden os-card p-6">
-        <div className="space-y-3">
-          <p className="os-eyebrow text-[color:var(--accent-strong)]">Daily brief</p>
-          <h1 className="os-page-title">{formatLongDate(todayDate)}</h1>
-          <div className="flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-2">
-            <p className="text-sm text-[color:var(--text-2)]">{summary}</p>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Daily brief"
+        title={formatLongDate(todayDate)}
+        description={
+          <>
+            {summary}
+            {/* The one orange on this screen: the overdue count, as a filled
+                badge with navy type (6.37:1). Orange type on white is not allowed. */}
             <span
-              className={`tag-chip ${
-                pressure.tone === 'over' ? 'red' : pressure.tone === 'due' ? 'amber' : 'emerald'
-              }`}
+              className={
+                pressure.tone === 'over'
+                  ? 'ml-3 inline-flex items-center rounded-pill bg-[var(--orange)] px-2 py-0.5 align-middle text-[11px] font-semibold text-[var(--navy)]'
+                  : `tag-chip ml-3 align-middle ${pressure.tone === 'due' ? 'amber' : 'emerald'}`
+              }
             >
               {pressure.label}
             </span>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+      {children}
+
+      <div className="overflow-hidden os-card p-6">
+        <div className="grid gap-3 sm:grid-cols-3">
           {statItems.map((item) => (
-            <div key={item.label} className={`rounded-3xl border px-4 py-4 ${item.tone}`}>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-inherit/70">{item.label}</p>
-              <p className="mt-2 text-2xl font-semibold text-inherit">{item.value}</p>
+            <div key={item.label} className={`rounded-card border px-4 py-4 ${item.tone}`}>
+              <p className="os-label text-inherit!">{item.label}</p>
+              <p className="stat-value mt-2 text-inherit!">{item.value}</p>
             </div>
           ))}
         </div>
-      </header>
+      </div>
 
       <section className="os-card p-5">
         <div className="flex items-end justify-between gap-4">
@@ -331,7 +342,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
             <p className="os-eyebrow text-[color:var(--accent-strong)]">Priority queue</p>
             <h2 className="os-section-title">Action required</h2>
           </div>
-          <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
+          <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
             {data.actionRequired.length}
           </span>
         </div>
@@ -339,7 +350,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
 
         <div className="mt-5 space-y-3">
           {data.actionRequired.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6">
+            <div className="rounded-card border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6">
               <p className="text-sm font-medium text-[color:var(--text-2)]">Nothing urgent today.</p>
               <p className="mt-1 text-sm text-[color:var(--text-3)]">The immediate queue is clear.</p>
             </div>
@@ -356,7 +367,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
               <p className="os-eyebrow text-[color:var(--accent-strong)]">Commercial</p>
               <h2 className="os-section-title">Quotes needing attention</h2>
             </div>
-            <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
+            <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
               {data.quotesAttention.length}
             </span>
           </div>
@@ -376,7 +387,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
             <p className="os-eyebrow text-[color:var(--accent-strong)]">Execution</p>
             <h2 className="os-section-title">Today&apos;s remaining tasks</h2>
           </div>
-          <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
+          <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
             {data.todayTasks.length}
           </span>
         </div>
@@ -384,7 +395,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
 
         <div className="mt-5 space-y-3">
           {data.todayTasks.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6">
+            <div className="rounded-card border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6">
               <p className="text-sm font-medium text-[color:var(--text-2)]">No remaining tasks due today.</p>
               <p className="mt-1 text-sm text-[color:var(--text-3)]">Only the urgent queue is left, or today is already clear.</p>
             </div>
@@ -399,7 +410,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
                   onClick={() => void handleComplete(task.id)}
                   disabled={pendingTaskIds.includes(task.id)}
                   aria-label={`Mark ${task.title} complete`}
-                  className={`mt-0.5 h-5 w-5 rounded-full border transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-50 ${
+                  className={`mt-0.5 h-5 w-5 rounded-pill border transition hover:border-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-50 ${
                     pendingTaskIds.includes(task.id)
                       ? 'border-[color:var(--emerald)] bg-[var(--emerald-dim)] ring-4 ring-[color:var(--emerald-dim)]'
                       : 'border-[color:var(--border-light)]'
@@ -431,7 +442,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
             <p className="os-eyebrow text-[color:var(--accent-strong)]">Calendar</p>
             <h2 className="os-section-title">This week</h2>
           </div>
-          <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
+          <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
             {data.weekAhead.length} days
           </span>
         </div>
@@ -444,7 +455,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
             return (
               <div
                 key={day.date}
-                className={`grid gap-3 rounded-3xl border px-4 py-4 md:grid-cols-[104px_minmax(0,1fr)] md:gap-6 ${
+                className={`grid gap-3 rounded-card border px-4 py-4 md:grid-cols-[104px_minmax(0,1fr)] md:gap-6 ${
                   isToday
                     ? 'border-[color:var(--accent-dim)] bg-[var(--accent-dim)]'
                     : 'border-[color:var(--border)] bg-[var(--surface-2)]'
@@ -452,7 +463,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
               >
                 <div className="space-y-1">
                   <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
+                    className={`inline-flex rounded-pill px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
                       isToday
                         ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)] ring-1 ring-[color:var(--accent)]'
                         : 'bg-[var(--surface-3)] text-[color:var(--text-2)]'
@@ -465,7 +476,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
 
                 <div className="space-y-2">
                   {day.tasks.length === 0 && day.events.length === 0 ? (
-                    <p className="rounded-2xl border border-dashed border-[color:var(--border)] px-3 py-3 text-sm text-[color:var(--text-2)]">
+                    <p className="rounded-card border border-dashed border-[color:var(--border)] px-3 py-3 text-sm text-[color:var(--text-2)]">
                       Nothing scheduled
                     </p>
                   ) : (
@@ -493,7 +504,7 @@ export default function DailyBriefClient({ today, initialData }: DailyBriefClien
         {error}
       </p>
       {error ? (
-        <div className="rounded-3xl border border-[color:var(--red-dim)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
+        <div className="rounded-card border border-[color:var(--red-dim)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
           {error}
         </div>
       ) : null}

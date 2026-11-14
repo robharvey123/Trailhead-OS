@@ -33,18 +33,18 @@ export default function PipelineGuide({ steps }: { steps: PipelineStep[] }) {
             <li key={step.title}>
               <Link
                 href={step.href}
-                className={`flex items-start gap-3 rounded-2xl border px-4 py-2.5 transition hover:border-[color:var(--accent)] ${
+                className={`flex items-start gap-3 rounded-card border px-4 py-2.5 transition hover:border-[color:var(--accent)] ${
                   isCurrent
                     ? 'border-[color:var(--accent)] bg-[var(--accent-dim)]'
                     : 'border-transparent'
                 }`}
               >
                 <span
-                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-pill text-xs font-semibold ${
                     step.done
-                      ? 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]'
                       : isCurrent
-                        ? 'bg-[var(--accent)] text-white'
+                        ? 'bg-[var(--accent)] text-[var(--on-accent)]'
                         : 'border border-[color:var(--border)] text-[color:var(--text-3)]'
                   }`}
                 >
@@ -58,7 +58,7 @@ export default function PipelineGuide({ steps }: { steps: PipelineStep[] }) {
                   >
                     {step.title}
                     {isCurrent ? (
-                      <span className="ml-2 rounded-full bg-[var(--accent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                      <span className="ml-2 rounded-pill bg-[var(--accent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.09em] text-[var(--on-accent)]">
                         you are here
                       </span>
                     ) : null}

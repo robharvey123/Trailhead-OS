@@ -105,7 +105,7 @@ export function TemplateDrawer({ workspaceId, templates, onClose, onRefresh }: T
   }
 
   const CATEGORIES = Object.entries(WORKSPACE_CATEGORY_LABELS)
-  const inputClasses = 'w-full rounded border border-slate-700 bg-slate-950 px-2 py-1 text-sm text-slate-200 placeholder:text-slate-500'
+  const inputClasses = 'w-full rounded-control border border-slate-700 bg-slate-950 px-2 py-1 text-sm text-slate-200 placeholder:text-slate-500'
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/50" onClick={onClose}>
@@ -119,7 +119,7 @@ export function TemplateDrawer({ workspaceId, templates, onClose, onRefresh }: T
         </div>
 
         {error && (
-          <div className="mx-5 mt-3 rounded-lg border border-rose-800 bg-rose-950/50 p-2 text-xs text-rose-300">{error}</div>
+          <div className="mx-5 mt-3 rounded-control border border-rose-800 bg-rose-950/50 p-2 text-xs text-rose-300">{error}</div>
         )}
 
         <div className="space-y-3 p-5">
@@ -129,7 +129,7 @@ export function TemplateDrawer({ workspaceId, templates, onClose, onRefresh }: T
 
           {templates.map((tmpl) =>
             editingId === tmpl.id ? (
-              <div key={tmpl.id} className="space-y-2 rounded-xl border border-slate-700 bg-slate-900/70 p-3">
+              <div key={tmpl.id} className="space-y-2 rounded-card border border-slate-700 bg-slate-900/70 p-3">
                 <input
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
@@ -152,19 +152,19 @@ export function TemplateDrawer({ workspaceId, templates, onClose, onRefresh }: T
                   ))}
                 </select>
                 <div className="flex gap-2">
-                  <button onClick={saveEdit} disabled={saving} className="rounded bg-white/90 px-3 py-1 text-xs font-semibold text-slate-950">
+                  <button onClick={saveEdit} disabled={saving} className="rounded-control bg-white/90 px-3 py-1 text-xs font-semibold text-slate-950">
                     {saving ? 'Saving…' : 'Save'}
                   </button>
                   <button onClick={() => setEditingId(null)} className="text-xs text-slate-500">Cancel</button>
                 </div>
               </div>
             ) : (
-              <div key={tmpl.id} className="flex items-start justify-between rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+              <div key={tmpl.id} className="flex items-start justify-between rounded-card border border-slate-800 bg-slate-900/70 p-3">
                 <div>
                   <p className="text-sm font-medium text-slate-200">{tmpl.title}</p>
                   {tmpl.description && <p className="text-xs text-slate-400">{tmpl.description}</p>}
                   {tmpl.category && (
-                    <span className="mt-1 inline-block rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-slate-400">
+                    <span className="mt-1 inline-block rounded-control bg-white/10 px-1.5 py-0.5 text-[10px] text-slate-400">
                       {WORKSPACE_CATEGORY_LABELS[tmpl.category as keyof typeof WORKSPACE_CATEGORY_LABELS] || tmpl.category}
                     </span>
                   )}
@@ -182,7 +182,7 @@ export function TemplateDrawer({ workspaceId, templates, onClose, onRefresh }: T
           )}
 
           {showNew ? (
-            <div className="space-y-2 rounded-xl border border-emerald-800/50 bg-emerald-950/20 p-3">
+            <div className="space-y-2 rounded-card border border-emerald-800/50 bg-emerald-950/20 p-3">
               <input
                 placeholder="Template title"
                 value={newTitle}
@@ -208,7 +208,7 @@ export function TemplateDrawer({ workspaceId, templates, onClose, onRefresh }: T
                 ))}
               </select>
               <div className="flex gap-2">
-                <button onClick={createTemplate} disabled={saving} className="rounded bg-emerald-600 px-3 py-1 text-xs text-white">
+                <button onClick={createTemplate} disabled={saving} className="rounded-control bg-emerald-600 px-3 py-1 text-xs text-white">
                   {saving ? 'Creating…' : 'Create'}
                 </button>
                 <button onClick={() => setShowNew(false)} className="text-xs text-slate-500">Cancel</button>
@@ -217,7 +217,7 @@ export function TemplateDrawer({ workspaceId, templates, onClose, onRefresh }: T
           ) : (
             <button
               onClick={() => setShowNew(true)}
-              className="w-full rounded-xl border border-dashed border-slate-700 py-2 text-sm text-slate-500 transition hover:border-slate-500 hover:text-slate-300"
+              className="w-full rounded-card border border-dashed border-slate-700 py-2 text-sm text-slate-500 transition hover:border-slate-500 hover:text-slate-300"
             >
               + New Template
             </button>

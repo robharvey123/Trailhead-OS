@@ -49,7 +49,7 @@ export default function QueueClient({ initialRows }: { initialRows: QueueRow[] }
               {inBucket.map((r) => {
                 const active = r.id === activeId
                 return (
-                  <li key={r.id} className={`panel p-4 ${active ? 'ring-2 ring-[var(--accent)]' : ''}`}>
+                  <li key={r.id} className={`panel p-4 ${active ? 'ring-2! ring-[var(--accent)]' : ''}`}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <button type="button" onClick={() => setActiveId(r.id)} className="min-w-0 text-left">
                         <span className="block font-semibold">{r.company ?? r.name}</span>

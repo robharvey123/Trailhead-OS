@@ -3,6 +3,8 @@ import { getAccounts } from '@/lib/db/accounts'
 import { listEngagements } from '@/lib/db/engagements'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'New project' }
+
 export default async function NewProjectPage({
   searchParams,
 }: {

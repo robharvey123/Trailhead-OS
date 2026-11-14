@@ -17,6 +17,7 @@ import { renderInvoicePdf } from '@/lib/pdf/InvoicePDF'
 import { renderQuotePdf } from '@/lib/pdf/QuotePDF'
 import { calculateTotals, roundMoney, type Enquiry, type Invoice, type InvoicePayment, type QuoteListItem, type RemittanceAccount } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
+import { BRAND } from '@/lib/brand'
 
 const EmailRecordSchema = z.object({
   kind: z.enum(['enquiry', 'quote', 'invoice']),
@@ -75,8 +76,8 @@ function buildEnquirySummaryHtml(enquiry: Enquiry) {
         .map(
           ([label, value]) => `
             <tr>
-              <td style="padding:10px 12px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600;vertical-align:top">${escapeHtml(label)}</td>
-              <td style="padding:10px 12px;border:1px solid #e2e8f0;vertical-align:top;white-space:pre-wrap">${escapeHtml(value)}</td>
+              <td style="padding:10px 12px;border:1px solid ${BRAND.border};background:${BRAND.coolLight};font-weight:600;vertical-align:top">${escapeHtml(label)}</td>
+              <td style="padding:10px 12px;border:1px solid ${BRAND.border};vertical-align:top;white-space:pre-wrap">${escapeHtml(value)}</td>
             </tr>
           `
         )
@@ -105,10 +106,10 @@ function buildRemittanceHtml(invoice: Invoice, accounts: RemittanceAccount[]) {
     })
     .join('')
   const charges = accounts.some((a) => a.rail === 'swift')
-    ? `<p style="margin:8px 0 0;font-size:12px;color:#475569">${escapeHtml(OUR_CHARGES_LINE)}</p>`
+    ? `<p style="margin:8px 0 0;font-size:12px;color:${BRAND.slate}">${escapeHtml(OUR_CHARGES_LINE)}</p>`
     : ''
   return `
-    <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e2e8f0">
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid ${BRAND.border}">
       <p style="margin:0;font-weight:600">How to pay (${escapeHtml(invoice.currency ?? 'GBP')})</p>
       ${blocks}
       <p style="margin:8px 0 0"><strong>Payment reference: ${escapeHtml(invoice.invoice_number)}</strong></p>

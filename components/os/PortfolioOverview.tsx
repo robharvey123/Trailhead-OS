@@ -2,9 +2,9 @@ import Link from 'next/link'
 import { formatCurrency } from '@/lib/format'
 import type { EngagementHealth, PortfolioOverview as PortfolioData, ProjectHealth } from '@/lib/db/portfolio'
 
-const card = 'rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-4 transition hover:border-[color:var(--accent)]'
+const card = 'rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-4 transition hover:border-[color:var(--accent)]'
 // `.tag-chip` is the design system's own status vocabulary, with AA-passing
-// -strong/-dim token pairs. The raw `bg-emerald-100 text-slate-600` palette
+// -strong/-dim token pairs. The raw `bg-[var(--emerald-dim)] text-[var(--text-2)]` palette
 // classes this used to carry were a second, unaudited status language.
 const pill = 'tag-chip'
 
@@ -34,17 +34,17 @@ function HoursBar({ used, cap }: { used: number; cap: number | null }) {
   }
   const pct = Math.min(100, Math.round((used / cap) * 100))
   const over = used > cap
-  const bar = over ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-500' : 'bg-[var(--accent)]'
+  const bar = over ? 'bg-[var(--red)]' : pct >= 80 ? 'bg-[var(--amber)]' : 'bg-[var(--accent)]'
   return (
     <div className="mt-2">
       <div className="flex items-baseline justify-between text-xs">
         <span className="font-semibold text-[color:var(--text)]">{used.toFixed(1)}h <span className="font-normal text-[color:var(--text-3)]">/ {cap}h</span></span>
-        <span className={over ? 'font-semibold text-rose-600' : 'text-[color:var(--text-3)]'}>
+        <span className={over ? 'font-semibold text-[var(--red-strong)]' : 'text-[color:var(--text-3)]'}>
           {over ? `+${(used - cap).toFixed(1)}h over` : `${pct}%`}
         </span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-3)]">
-        <div className={`h-full rounded-full ${bar}`} style={{ width: `${Math.max(2, pct)}%` }} />
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-pill bg-[var(--surface-3)]">
+        <div className={`h-full rounded-pill ${bar}`} style={{ width: `${Math.max(2, pct)}%` }} />
       </div>
     </div>
   )
@@ -58,7 +58,7 @@ function EngagementCard({ e }: { e: EngagementHealth }) {
           <p className="truncate text-sm font-semibold text-[color:var(--text)]">{e.client ?? e.name}</p>
           <p className="truncate text-xs text-[color:var(--text-3)]">{e.client ? e.name : e.code ?? ' '}</p>
         </div>
-        <span className={`${pill} ${ENG_STATUS[e.status] ?? 'bg-slate-100 text-slate-600'}`}>{e.status}</span>
+        <span className={`${pill} ${ENG_STATUS[e.status] ?? 'grey'}`}>{e.status}</span>
       </div>
       <HoursBar used={e.hoursUsed} cap={e.includedHours} />
       {e.retainer ? (
@@ -70,7 +70,7 @@ function EngagementCard({ e }: { e: EngagementHealth }) {
 
 function ProjectCard({ p }: { p: ProjectHealth }) {
   const pct = p.taskTotal ? Math.round((p.taskDone / p.taskTotal) * 100) : 0
-  const status = PROJ_STATUS[p.status] ?? { label: p.status, cls: 'bg-slate-100 text-slate-600' }
+  const status = PROJ_STATUS[p.status] ?? { label: p.status, cls: 'grey' }
   return (
     <Link href={`/projects/records/${p.id}`} className={card}>
       <div className="flex items-start justify-between gap-2">
@@ -85,8 +85,8 @@ function ProjectCard({ p }: { p: ProjectHealth }) {
           <span className="font-semibold text-[color:var(--text)]">{p.taskDone}<span className="font-normal text-[color:var(--text-3)]">/{p.taskTotal} tasks</span></span>
           <span className="text-[color:var(--text-3)]">{pct}%</span>
         </div>
-        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--surface-3)]">
-          <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${Math.max(2, pct)}%` }} />
+        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-pill bg-[var(--surface-3)]">
+          <div className="h-full rounded-pill bg-[var(--accent)]" style={{ width: `${Math.max(2, pct)}%` }} />
         </div>
       </div>
       {p.nextMilestone ? (
@@ -99,8 +99,8 @@ function ProjectCard({ p }: { p: ProjectHealth }) {
 function Stat({ value, label, tone }: { value: number | string; label: string; tone?: 'warn' }) {
   return (
     <div className="flex flex-col">
-      <span className={`text-2xl font-bold ${tone === 'warn' ? 'text-rose-600' : 'text-[color:var(--text)]'}`}>{value}</span>
-      <span className="text-[11px] uppercase tracking-[0.12em] text-[color:var(--text-3)]">{label}</span>
+      <span className={`text-2xl font-semibold tracking-[-0.02em] ${tone === 'warn' ? 'text-[var(--red-strong)]' : 'text-[color:var(--text)]'}`}>{value}</span>
+      <span className="os-label">{label}</span>
     </div>
   )
 }
@@ -111,7 +111,7 @@ export default function PortfolioOverview({ data }: { data: PortfolioData }) {
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-5 py-4">
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-5 py-4">
         <Stat value={counts.engagementsActive} label="Active engagements" />
         <Stat value={counts.projectsActive} label="Active projects" />
         <Stat value={`${counts.hoursThisMonth}h`} label="Logged this billing month" />
@@ -122,7 +122,7 @@ export default function PortfolioOverview({ data }: { data: PortfolioData }) {
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-[color:var(--text)]">Engagements</h2>
-            <Link href="/engagements" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent)]">All →</Link>
+            <Link href="/engagements" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent-strong)]">All →</Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {engagements.map((e) => <EngagementCard key={e.id} e={e} />)}
@@ -134,7 +134,7 @@ export default function PortfolioOverview({ data }: { data: PortfolioData }) {
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-[color:var(--text)]">Projects</h2>
-            <Link href="/projects" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent)]">All →</Link>
+            <Link href="/projects" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent-strong)]">All →</Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p) => <ProjectCard key={p.id} p={p} />)}

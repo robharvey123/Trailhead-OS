@@ -32,7 +32,7 @@ export default function CompanySkuCharts({
   data: CompanySkuChartDatum[]
 }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+    <div className="rounded-card border border-slate-800 bg-slate-950/60 p-4">
       <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
         SKU sold by company
       </h4>

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import { ACCOUNT_INDUSTRY_OPTIONS, ACCOUNT_SIZE_OPTIONS } from '@/lib/crm/account-options'
 import type { Account, AccountStatus, AccountWithRelations, Workstream } from '@/lib/types'
 
@@ -110,270 +111,266 @@ export default function AccountForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
+    <>
       {!onSaved ? (
-        <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">
-            {initialAccount ? 'Edit account' : 'New account'}
-          </h1>
-        </div>
+        <PageHeader eyebrow="Clients" title={initialAccount ? 'Edit account' : 'New account'} />
       ) : null}
+      <div className="os-card space-y-6 p-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="block md:col-span-2">
+            <span className="field-label block">Name</span>
+            <input
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+              required
+            />
+          </label>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Name</span>
-          <input
-            value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-            required
-          />
-        </label>
+          <label className="block">
+            <span className="field-label block">Website</span>
+            <input
+              value={form.website}
+              onChange={(event) => setForm({ ...form, website: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Website</span>
-          <input
-            value={form.website}
-            onChange={(event) => setForm({ ...form, website: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block">
+            <span className="field-label block">Industry</span>
+            <select
+              value={form.industry}
+              onChange={(event) => setForm({ ...form, industry: event.target.value })}
+              className="os-select w-full px-4 py-3 text-sm"
+            >
+              <option value="">Select industry</option>
+              {ACCOUNT_INDUSTRY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Industry</span>
-          <select
-            value={form.industry}
-            onChange={(event) => setForm({ ...form, industry: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          >
-            <option value="">Select industry</option>
-            {ACCOUNT_INDUSTRY_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="block">
+            <span className="field-label block">Company size</span>
+            <select
+              value={form.size}
+              onChange={(event) => setForm({ ...form, size: event.target.value })}
+              className="os-select w-full px-4 py-3 text-sm"
+            >
+              <option value="">Select size</option>
+              {ACCOUNT_SIZE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Company size</span>
-          <select
-            value={form.size}
-            onChange={(event) => setForm({ ...form, size: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          >
-            <option value="">Select size</option>
-            {ACCOUNT_SIZE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="block">
+            <span className="field-label block">Workstream</span>
+            <select
+              value={form.workstream_id}
+              onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
+              className="os-select w-full px-4 py-3 text-sm"
+            >
+              <option value="">None</option>
+              {workstreams.map((workstream) => (
+                <option key={workstream.id} value={workstream.id}>
+                  {workstream.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Workstream</span>
-          <select
-            value={form.workstream_id}
-            onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          >
-            <option value="">None</option>
-            {workstreams.map((workstream) => (
-              <option key={workstream.id} value={workstream.id}>
-                {workstream.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="block md:col-span-2">
+            <span className="field-label block">Status</span>
+            <select
+              value={form.status}
+              onChange={(event) => setForm({ ...form, status: event.target.value as AccountStatus })}
+              className="os-select w-full px-4 py-3 text-sm"
+            >
+              {ACCOUNT_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {STATUS_LABELS[status]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="field-label block">Channel</span>
+            <input
+              value={form.channel}
+              onChange={(event) => setForm({ ...form, channel: event.target.value })}
+              placeholder="e.g. Major UK Retailers"
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Status</span>
-          <select
-            value={form.status}
-            onChange={(event) => setForm({ ...form, status: event.target.value as AccountStatus })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          >
-            {ACCOUNT_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {STATUS_LABELS[status]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Channel</span>
-          <input
-            value={form.channel}
-            onChange={(event) => setForm({ ...form, channel: event.target.value })}
-            placeholder="e.g. Major UK Retailers"
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block">
+            <span className="field-label block">Source</span>
+            <input
+              value={form.source}
+              onChange={(event) => setForm({ ...form, source: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Source</span>
-          <input
-            value={form.source}
-            onChange={(event) => setForm({ ...form, source: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block">
+            <span className="field-label block">Email contact</span>
+            <input
+              type="email"
+              value={form.email_contact}
+              onChange={(event) => setForm({ ...form, email_contact: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Email contact</span>
-          <input
-            type="email"
-            value={form.email_contact}
-            onChange={(event) => setForm({ ...form, email_contact: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block">
+            <span className="field-label block">HQ / Address</span>
+            <input
+              value={form.hq_address}
+              onChange={(event) => setForm({ ...form, hq_address: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
+          <label className="block md:col-span-2">
+            <span className="field-label block">Address line 1</span>
+            <input
+              value={form.address_line1}
+              onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">HQ / Address</span>
-          <input
-            value={form.hq_address}
-            onChange={(event) => setForm({ ...form, hq_address: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Address line 1</span>
-          <input
-            value={form.address_line1}
-            onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block md:col-span-2">
+            <span className="field-label block">Address line 2</span>
+            <input
+              value={form.address_line2}
+              onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Address line 2</span>
-          <input
-            value={form.address_line2}
-            onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block">
+            <span className="field-label block">City</span>
+            <input
+              value={form.city}
+              onChange={(event) => setForm({ ...form, city: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">City</span>
-          <input
-            value={form.city}
-            onChange={(event) => setForm({ ...form, city: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block">
+            <span className="field-label block">Postcode</span>
+            <input
+              value={form.postcode}
+              onChange={(event) => setForm({ ...form, postcode: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Postcode</span>
-          <input
-            value={form.postcode}
-            onChange={(event) => setForm({ ...form, postcode: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+          <label className="block md:col-span-2">
+            <span className="field-label block">Country</span>
+            <input
+              value={form.country}
+              onChange={(event) => setForm({ ...form, country: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Country</span>
-          <input
-            value={form.country}
-            onChange={(event) => setForm({ ...form, country: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
-
-        <div className="md:col-span-2 rounded-[1.5rem] border border-[var(--border)] p-4">
-          <p className="text-sm font-medium text-[var(--text,inherit)]">Billing</p>
-          <p className="mt-1 text-xs text-[var(--muted)]">Flows onto invoices raised against this account.</p>
-          <div className="mt-3 grid gap-4 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">VAT number</span>
-              <input
-                value={form.vat_number}
-                onChange={(event) => setForm({ ...form, vat_number: event.target.value })}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Company number</span>
-              <input
-                value={form.company_number}
-                onChange={(event) => setForm({ ...form, company_number: event.target.value })}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Billing email</span>
-              <input
-                type="email"
-                value={form.billing_email}
-                onChange={(event) => setForm({ ...form, billing_email: event.target.value })}
-                placeholder="accounts@…"
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-              />
-            </label>
-            <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Payment terms (days)</span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={form.payment_terms_days}
-                onChange={(event) => setForm({ ...form, payment_terms_days: event.target.value })}
-                placeholder="e.g. 30"
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-              />
-            </label>
-            <label className="flex items-center gap-2 md:col-span-2">
-              <input
-                type="checkbox"
-                checked={form.po_required}
-                onChange={(event) => setForm({ ...form, po_required: event.target.checked })}
-              />
-              <span className="text-sm text-[var(--muted)]">PO number required on every invoice</span>
-            </label>
+          <div className="md:col-span-2 rounded-card border border-[var(--border)] p-4">
+            <p className="text-sm font-semibold text-[var(--text)]">Billing</p>
+            <p className="mt-1 text-xs text-[var(--text-2)]">Flows onto invoices raised against this account.</p>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">
+              <label className="block">
+                <span className="field-label block">VAT number</span>
+                <input
+                  value={form.vat_number}
+                  onChange={(event) => setForm({ ...form, vat_number: event.target.value })}
+                  className="os-input w-full px-4 py-3 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="field-label block">Company number</span>
+                <input
+                  value={form.company_number}
+                  onChange={(event) => setForm({ ...form, company_number: event.target.value })}
+                  className="os-input w-full px-4 py-3 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="field-label block">Billing email</span>
+                <input
+                  type="email"
+                  value={form.billing_email}
+                  onChange={(event) => setForm({ ...form, billing_email: event.target.value })}
+                  placeholder="accounts@…"
+                  className="os-input w-full px-4 py-3 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="field-label block">Payment terms (days)</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.payment_terms_days}
+                  onChange={(event) => setForm({ ...form, payment_terms_days: event.target.value })}
+                  placeholder="e.g. 30"
+                  className="os-input w-full px-4 py-3 text-sm"
+                />
+              </label>
+              <label className="flex items-center gap-2 md:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={form.po_required}
+                  onChange={(event) => setForm({ ...form, po_required: event.target.checked })}
+                />
+                <span className="text-sm text-[var(--text-2)]">PO number required on every invoice</span>
+              </label>
+            </div>
           </div>
+
+          <label className="block md:col-span-2">
+            <span className="field-label block">Notes</span>
+            <textarea
+              value={form.notes}
+              onChange={(event) => setForm({ ...form, notes: event.target.value })}
+              rows={6}
+              className="os-textarea w-full px-4 py-3 text-sm"
+            />
+          </label>
         </div>
 
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Notes</span>
-          <textarea
-            value={form.notes}
-            onChange={(event) => setForm({ ...form, notes: event.target.value })}
-            rows={6}
-            className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
-          />
-        </label>
+        {error ? <p className="text-sm text-[var(--red-strong)]">{error}</p> : null}
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !form.name.trim()}
+            className="btn btn-primary"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (onCancel) {
+                onCancel()
+                return
+              }
+
+              router.push(cancelHref)
+            }}
+            className="btn btn-ghost"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
-
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving || !form.name.trim()}
-          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--lime)]/90 disabled:opacity-60"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (onCancel) {
-              onCancel()
-              return
-            }
-
-            router.push(cancelHref)
-          }}
-          className="rounded-2xl border border-[var(--border)] px-5 py-3 text-sm font-medium text-[var(--muted)] transition hover:border-[var(--lime)]/40"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
+    </>
   )
 }

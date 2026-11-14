@@ -21,7 +21,7 @@ export default function LabelPicker({
   const [query, setQuery] = useState('')
 
   const input =
-    'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+    'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   function add(raw: string) {
     const l = raw.trim()
@@ -55,22 +55,14 @@ export default function LabelPicker({
         type="button"
         onClick={opts.onClick}
         title={opts.title}
+        className="inline-flex max-w-[200px] cursor-pointer items-center gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap rounded-pill border px-[9px] py-[3px] text-[11px] font-semibold"
+        // The hue is derived from the label text, so it stays inline. A selected
+        // chip keeps the label's ink on a deeper tint with an ink border: white
+        // type on the solid hue fails contrast for the lighter hues.
         style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: 11,
-          fontWeight: 600,
-          padding: '3px 9px',
-          borderRadius: 999,
-          cursor: 'pointer',
-          background: opts.active ? c.solidBg : c.bg,
-          color: opts.active ? '#fff' : c.fg,
-          border: `1px solid ${opts.active ? c.solidBg : c.border}`,
-          maxWidth: 200,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
+          background: opts.active ? `hsl(${c.hue} 70% 50% / 0.3)` : c.bg,
+          color: c.fg,
+          borderColor: opts.active ? c.fg : c.border,
         }}
       >
         {opts.active ? `${l} ✕` : l}
@@ -79,9 +71,9 @@ export default function LabelPicker({
   }
 
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <div className="grid gap-2">
       {selected.length > 0 ? (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap gap-1.5">
           {selected.map((l) => chip(l, { active: true, onClick: () => remove(l), title: `Remove ${l}` }))}
         </div>
       ) : null}
@@ -101,29 +93,20 @@ export default function LabelPicker({
       />
 
       {suggestions.length > 0 || canCreate ? (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap gap-1.5">
           {suggestions.map((l) => chip(l, { active: false, onClick: () => add(l), title: `Add ${l}` }))}
           {canCreate ? (
             <button
               type="button"
               onClick={() => add(query)}
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                padding: '3px 9px',
-                borderRadius: 999,
-                cursor: 'pointer',
-                background: 'transparent',
-                color: 'var(--text-3)',
-                border: '1px dashed var(--border)',
-              }}
+              className="cursor-pointer rounded-pill border border-dashed border-[var(--border)] bg-transparent px-[9px] py-[3px] text-[11px] font-semibold text-[var(--text-3)]"
             >
               + Create “{query.trim()}”
             </button>
           ) : null}
         </div>
       ) : (
-        <p style={{ color: 'var(--text-3)', fontSize: 11, margin: 0 }}>
+        <p className="m-0 text-[11px] text-[var(--text-3)]">
           {available.length === 0 ? 'No labels in this project yet — type to add one.' : 'No matching labels.'}
         </p>
       )}

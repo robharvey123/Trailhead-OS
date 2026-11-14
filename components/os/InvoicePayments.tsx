@@ -127,24 +127,24 @@ export default function InvoicePayments({
           <button
             type="button"
             onClick={() => openModal()}
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-ghost btn-sm"
           >
             Record payment
           </button>
         ) : null}
       </div>
 
-      <dl className="mt-4 grid grid-cols-3 gap-3 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4 text-sm">
+      <dl className="mt-4 grid grid-cols-3 gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4 text-sm">
         <div>
-          <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Total</dt>
+          <dt className="os-label">Total</dt>
           <dd className="mt-1 font-medium text-[color:var(--text)]">{formatMoney(total, currency)}</dd>
         </div>
         <div>
-          <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Paid</dt>
+          <dt className="os-label">Paid</dt>
           <dd className="mt-1 font-medium text-[color:var(--text)]">{formatMoney(amountPaid, currency)}</dd>
         </div>
         <div>
-          <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Balance outstanding</dt>
+          <dt className="os-label">Balance outstanding</dt>
           <dd className={`mt-1 font-bold ${balance > 0 ? 'text-[color:var(--amber-strong)]' : 'text-[color:var(--emerald-strong)]'}`}>
             {formatMoney(balance, currency)}
           </dd>
@@ -156,7 +156,7 @@ export default function InvoicePayments({
       ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+            <thead className="os-label text-left [&_th]:font-semibold">
               <tr>
                 <th className="pb-2">Date</th>
                 <th className="pb-2 text-right">Amount</th>
@@ -173,11 +173,11 @@ export default function InvoicePayments({
                   <td className="py-2.5 text-[color:var(--text-2)]">{p.method ? METHOD_LABELS[p.method] : '—'}</td>
                   <td className="py-2.5 text-[color:var(--text-2)]">{p.reference ?? '—'}</td>
                   <td className="py-2.5 text-right">
-                    <div className="flex justify-end gap-3 text-xs">
-                      <button type="button" className="text-[color:var(--accent-strong)] hover:underline" onClick={() => openModal(p)}>
+                    <div className="flex justify-end gap-2">
+                      <button type="button" className="btn btn-text btn-sm" onClick={() => openModal(p)}>
                         Edit
                       </button>
-                      <button type="button" className="text-[color:var(--red-strong)] hover:underline" onClick={() => void remove(p)}>
+                      <button type="button" className="btn btn-danger btn-sm" onClick={() => void remove(p)}>
                         Delete
                       </button>
                     </div>
@@ -192,20 +192,20 @@ export default function InvoicePayments({
       {error && !recordOpen ? <p className="mt-3 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       {recordOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] px-4">
-          <div className="w-full max-w-md rounded-[2rem] border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45 px-4">
+          <div className="w-full max-w-md rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
             <h2 className="os-section-title">{editing ? 'Edit payment' : 'Record payment'}</h2>
             <div className="mt-5 grid gap-4">
               <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Payment date</span>
+                <span className="field-label block">Payment date</span>
                 <input type="date" value={paidOn} onChange={(e) => setPaidOn(e.target.value)} className={inputClass} />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Amount ({currency})</span>
+                <span className="field-label block">Amount ({currency})</span>
                 <input type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className={inputClass} />
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Method</span>
+                <span className="field-label block">Method</span>
                 <select value={method} onChange={(e) => setMethod(e.target.value as InvoicePaymentMethod)} className="os-select w-full">
                   {(Object.keys(METHOD_LABELS) as InvoicePaymentMethod[]).map((m) => (
                     <option key={m} value={m}>
@@ -215,7 +215,7 @@ export default function InvoicePayments({
                 </select>
               </label>
               <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Reference</span>
+                <span className="field-label block">Reference</span>
                 <input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Bank reference, remittance…" className={inputClass} />
               </label>
             </div>
@@ -224,7 +224,7 @@ export default function InvoicePayments({
               <button
                 type="button"
                 onClick={() => onRecordOpenChange(false)}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -232,7 +232,7 @@ export default function InvoicePayments({
                 type="button"
                 onClick={() => void save()}
                 disabled={busy}
-                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="btn btn-primary"
               >
                 {busy ? 'Saving…' : editing ? 'Save changes' : 'Record payment'}
               </button>

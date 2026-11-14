@@ -18,6 +18,7 @@ import type {
 } from '@fullcalendar/core'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import { getWorkstreamAccentHex } from '@/lib/os'
 import { formatDateTime, formatTaskSchedule } from '@/lib/os'
 import type {
@@ -32,6 +33,8 @@ import ConfirmDialog from './ConfirmDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import LogToCrmForm from './LogToCrmForm'
 
+// The event colour picker. These values are data: the chosen hex is stored on
+// the event row and applied by FullCalendar, so they stay literal hex.
 const EVENT_COLOURS = [
   { label: 'Blue', value: '#3B82F6' },
   { label: 'Green', value: '#10B981' },
@@ -352,8 +355,9 @@ function toEventInput(
       : event.start_at,
     end: event.all_day ? formatLocalDate(new Date(event.end_at)) : event.end_at,
     allDay: event.all_day,
-    backgroundColor: event.colour || '#3B82F6',
-    borderColor: event.colour || '#3B82F6',
+    // No stored colour: blue ink, which carries FullCalendar's white event type.
+    backgroundColor: event.colour || 'var(--accent-strong)',
+    borderColor: event.colour || 'var(--accent-strong)',
     editable: !event.read_only,
     extendedProps: {
       type: 'event',
@@ -454,7 +458,7 @@ export default function CalendarClient({
 
   const calendarOptions = [
     { key: 'tasks', label: 'Tasks', colour: 'var(--accent)' },
-    { key: 'events', label: 'My events', colour: '#3B82F6' },
+    { key: 'events', label: 'My events', colour: 'var(--accent-strong)' },
     ...feeds.map((feed) => ({ key: `feed:${feed.id}`, label: feed.name, colour: feed.colour || 'var(--text-3)' })),
   ]
   const calendarKeyForEvent = (event: CalendarEvent) =>
@@ -777,114 +781,112 @@ export default function CalendarClient({
   return (
     <>
       <div className="space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="os-eyebrow">
-              Planning
-            </p>
-            <h1 className="os-page-title mt-2">
-              Calendar
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
+        <PageHeader
+          eyebrow="Planning"
+          title="Calendar"
+          description={
+            <>
               Tasks with due dates and standalone events, together in one
               calendar.
-            </p>
-            {googleConnected && lastSyncedAt ? (
-              <p className="mt-3 text-xs text-[color:var(--text-3)]">
-                Last synced {new Date(lastSyncedAt).toLocaleString('en-GB')}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <div className="relative">
+              {googleConnected && lastSyncedAt ? (
+                <span className="mt-1 block text-xs text-[color:var(--text-3)]">
+                  Last synced {new Date(lastSyncedAt).toLocaleString('en-GB')}
+                </span>
+              ) : null}
+            </>
+          }
+          actions={
+            <>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setCalMenuOpen((open) => !open)}
+                  className="btn btn-ghost"
+                >
+                  Calendars{hiddenCalendars.size ? ` (${calendarOptions.length - hiddenCalendars.size}/${calendarOptions.length})` : ''}
+                </button>
+                {calMenuOpen ? (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Close calendars menu"
+                      className="fixed inset-0 z-40 cursor-default"
+                      onClick={() => setCalMenuOpen(false)}
+                    />
+                    <div className="absolute left-0 z-50 mt-2 w-60 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-2 shadow-[var(--shadow-lg)]">
+                      {calendarOptions.map((option) => {
+                        const visible = !hiddenCalendars.has(option.key)
+                        return (
+                          <label
+                            key={option.key}
+                            className="flex cursor-pointer items-center gap-3 rounded-control px-3 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)]"
+                          >
+                            <input type="checkbox" checked={visible} onChange={() => toggleCalendar(option.key)} />
+                            <span className="h-2.5 w-2.5 flex-none rounded-pill" style={{ backgroundColor: option.colour }} />
+                            <span className="truncate">{option.label}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+              <select
+                value={projectFilter}
+                onChange={(event) => setProjectFilter(event.target.value)}
+                className="os-select px-4 py-2.5 text-sm font-medium"
+              >
+                <option value="">All projects</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
-                onClick={() => setCalMenuOpen((open) => !open)}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
+                onClick={() => void handleGoogleSync()}
+                disabled={syncState === 'syncing'}
+                className="btn btn-ghost"
               >
-                Calendars{hiddenCalendars.size ? ` (${calendarOptions.length - hiddenCalendars.size}/${calendarOptions.length})` : ''}
+                {syncState === 'syncing'
+                  ? 'Syncing...'
+                  : syncState === 'synced'
+                    ? 'Synced'
+                    : 'Sync all'}
               </button>
-              {calMenuOpen ? (
-                <>
-                  <button
-                    type="button"
-                    aria-label="Close calendars menu"
-                    className="fixed inset-0 z-40 cursor-default"
-                    onClick={() => setCalMenuOpen(false)}
-                  />
-                  <div className="absolute left-0 z-50 mt-2 w-60 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-2 shadow-2xl">
-                    {calendarOptions.map((option) => {
-                      const visible = !hiddenCalendars.has(option.key)
-                      return (
-                        <label
-                          key={option.key}
-                          className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)]"
-                        >
-                          <input type="checkbox" checked={visible} onChange={() => toggleCalendar(option.key)} />
-                          <span className="h-2.5 w-2.5 flex-none rounded-full" style={{ backgroundColor: option.colour }} />
-                          <span className="truncate">{option.label}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
-                </>
-              ) : null}
-            </div>
-            <select
-              value={projectFilter}
-              onChange={(event) => setProjectFilter(event.target.value)}
-              className="os-select px-4 py-2.5 text-sm font-medium"
-            >
-              <option value="">All projects</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => void handleGoogleSync()}
-              disabled={syncState === 'syncing'}
-              className="rounded-2xl border border-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-[color:var(--accent-strong)] transition hover:bg-[var(--surface-2)] disabled:opacity-50"
-            >
-              {syncState === 'syncing'
-                ? 'Syncing...'
-                : syncState === 'synced'
-                  ? 'Synced'
-                  : 'Sync all'}
-            </button>
-            <Link
-              href="/calendar/integrations"
-              className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
-            >
-              Integrations
-            </Link>
-            <button
-              type="button"
-              onClick={() =>
-                openCreateForm({
-                  start: new Date(),
-                  end: addHours(new Date(), 1),
-                  allDay: false,
-                })
-              }
-              className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
-            >
-              New event
-            </button>
-          </div>
-        </div>
+              <Link
+                href="/calendar/integrations"
+                className="btn btn-ghost"
+              >
+                Integrations
+              </Link>
+              <button
+                type="button"
+                onClick={() =>
+                  openCreateForm({
+                    start: new Date(),
+                    end: addHours(new Date(), 1),
+                    allDay: false,
+                  })
+                }
+                className="btn btn-primary"
+              >
+                New event
+              </button>
+            </>
+          }
+        />
 
         {error ? (
-          <div className="rounded-3xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
+          <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
             {error}
           </div>
         ) : null}
 
         <section className="os-card p-4 md:p-6">
           {loading ? (
-            <div className="rounded-[1.75rem] border border-dashed border-[color:var(--border)] px-4 py-16 text-center text-sm text-[color:var(--text-2)]">
+            <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-16 text-center text-sm text-[color:var(--text-2)]">
               Loading calendar...
             </div>
           ) : null}
@@ -927,14 +929,14 @@ export default function CalendarClient({
       </div>
 
       {selectedItem ? (
-        <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.45)]">
+        <div className="fixed inset-0 z-50 flex justify-end bg-[var(--navy)]/45">
           <button
             type="button"
             aria-label="Close detail panel"
             className="flex-1"
             onClick={() => setSelectedItem(null)}
           />
-          <div className="relative h-full w-full max-w-xl overflow-y-auto border-l border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+          <div className="relative h-full w-full max-w-xl overflow-y-auto border-l border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="os-eyebrow">
@@ -947,7 +949,7 @@ export default function CalendarClient({
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
-                className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
+                className="btn btn-ghost btn-sm"
               >
                 Close
               </button>
@@ -987,7 +989,7 @@ export default function CalendarClient({
                 {selectedTask.workstream_slug ? (
                   <Link
                     href={`/projects/${selectedTask.workstream_slug}`}
-                    className="inline-flex items-center rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                    className="btn btn-ghost"
                   >
                     View on board →
                   </Link>
@@ -1010,21 +1012,21 @@ export default function CalendarClient({
                     ) : null
                   })()}
                   {selectedEvent.colour ? (
-                    <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] px-2.5 py-1 text-xs font-medium text-[color:var(--text-2)]">
+                    <span className="inline-flex items-center gap-2 rounded-pill border border-[color:var(--border)] px-2.5 py-1 text-xs font-medium text-[color:var(--text-2)]">
                       <span
-                        className="h-2.5 w-2.5 rounded-full"
+                        className="h-2.5 w-2.5 rounded-pill"
                         style={{ backgroundColor: selectedEvent.colour }}
                       />
                       {selectedEvent.colour}
                     </span>
                   ) : null}
                   {selectedEvent.source && selectedEvent.source !== 'manual' && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--border)] px-2.5 py-1 text-xs font-medium text-[color:var(--text-2)]">
+                    <span className="inline-flex items-center gap-1.5 rounded-pill border border-[color:var(--border)] px-2.5 py-1 text-xs font-medium text-[color:var(--text-2)]">
                       {selectedEvent.source === 'google' ? '↓ Google' : '↓ Feed'}
                     </span>
                   )}
                   {selectedEvent.read_only && (
-                    <span className="inline-flex items-center rounded-full border border-[color:var(--amber)] bg-[var(--amber-dim)] px-2.5 py-1 text-xs font-medium text-[color:var(--amber-strong)]">
+                    <span className="inline-flex items-center rounded-pill border border-[color:var(--amber)] bg-[var(--amber-dim)] px-2.5 py-1 text-xs font-medium text-[color:var(--amber-strong)]">
                       Read-only
                     </span>
                   )}
@@ -1080,7 +1082,7 @@ export default function CalendarClient({
                       href={selectedEvent.meet_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+                      className="btn btn-primary"
                     >
                       🎥 Join Meet
                     </a>
@@ -1090,7 +1092,7 @@ export default function CalendarClient({
                       href={selectedEvent.html_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                      className="btn btn-ghost"
                     >
                       Open in Google Calendar
                     </a>
@@ -1100,14 +1102,14 @@ export default function CalendarClient({
                       <button
                         type="button"
                         onClick={() => openEditForm(selectedEvent)}
-                        className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                        className="btn btn-ghost"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteEvent(selectedEvent)}
-                        className="rounded-2xl border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)]"
+                        className="btn btn-danger"
                       >
                         Delete
                       </button>
@@ -1132,14 +1134,14 @@ export default function CalendarClient({
       ) : null}
 
       {formOpen ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--navy)]/45 p-4">
           <button
             type="button"
             className="absolute inset-0"
             aria-label="Close event form"
             onClick={closeForm}
           />
-          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="os-eyebrow">
@@ -1154,7 +1156,7 @@ export default function CalendarClient({
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
+                className="btn btn-ghost btn-sm"
               >
                 Close
               </button>
@@ -1162,13 +1164,13 @@ export default function CalendarClient({
 
             <div className="mt-8 space-y-5">
               {formError ? (
-                <div className="rounded-3xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
+                <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
                   {formError}
                 </div>
               ) : null}
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Title
                 </span>
                 <input
@@ -1184,7 +1186,7 @@ export default function CalendarClient({
                 />
               </label>
 
-              <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <label className="flex items-center gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
                 <input
                   type="checkbox"
                   checked={form.all_day}
@@ -1194,14 +1196,13 @@ export default function CalendarClient({
                       all_day: event.target.checked,
                     }))
                   }
-                  className="h-4 w-4 rounded border-[color:var(--border)] bg-white"
                 />
                 <span className="text-sm text-[color:var(--text-2)]">All day</span>
               </label>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     Start date
                   </span>
                   <input
@@ -1218,7 +1219,7 @@ export default function CalendarClient({
                 </label>
                 {!form.all_day ? (
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                    <span className="field-label block">
                       Start time
                     </span>
                     <input
@@ -1235,7 +1236,7 @@ export default function CalendarClient({
                   </label>
                 ) : null}
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     End date
                   </span>
                   <input
@@ -1252,7 +1253,7 @@ export default function CalendarClient({
                 </label>
                 {!form.all_day ? (
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                    <span className="field-label block">
                       End time
                     </span>
                     <input
@@ -1272,7 +1273,7 @@ export default function CalendarClient({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     Location
                   </span>
                   <input
@@ -1288,7 +1289,7 @@ export default function CalendarClient({
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     Workstream
                   </span>
                   <select
@@ -1312,7 +1313,7 @@ export default function CalendarClient({
               </div>
 
               {!editingEventId ? (
-                <div className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                <div className="space-y-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                   <label className="flex items-center gap-3 text-sm font-medium text-[color:var(--text)]">
                     <input
                       type="checkbox"
@@ -1324,7 +1325,7 @@ export default function CalendarClient({
                     <span>🎥 Add Google Meet link</span>
                   </label>
                   <div>
-                    <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Attendees</span>
+                    <span className="field-label block">Attendees</span>
                     <input
                       value={form.attendees}
                       onChange={(event) =>
@@ -1338,7 +1339,7 @@ export default function CalendarClient({
                         {parseAttendees(form.attendees).map((email) => (
                           <span
                             key={email}
-                            className="rounded-full border border-[color:var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs text-[color:var(--text-2)]"
+                            className="rounded-pill border border-[color:var(--border)] bg-[var(--surface)] px-2.5 py-1 text-xs text-[color:var(--text-2)]"
                           >
                             {email}
                           </span>
@@ -1353,7 +1354,7 @@ export default function CalendarClient({
               ) : null}
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Project
                 </span>
                 <select
@@ -1376,7 +1377,7 @@ export default function CalendarClient({
               </label>
 
               <div className="space-y-2">
-                <span className="block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Contact
                 </span>
                 <input
@@ -1412,7 +1413,7 @@ export default function CalendarClient({
               </div>
 
               <div className="space-y-2">
-                <span className="block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Colour
                 </span>
                 <div className="flex flex-wrap gap-3">
@@ -1426,7 +1427,7 @@ export default function CalendarClient({
                           colour: colour.value,
                         }))
                       }
-                      className={`rounded-2xl border px-3 py-2 text-sm transition ${
+                      className={`rounded-pill border px-3 py-2 text-sm transition ${
                         form.colour === colour.value
                           ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                           : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
@@ -1434,7 +1435,7 @@ export default function CalendarClient({
                     >
                       <span className="flex items-center gap-2">
                         <span
-                          className="h-3 w-3 rounded-full"
+                          className="h-3 w-3 rounded-pill"
                           style={{ backgroundColor: colour.value }}
                         />
                         {colour.label}
@@ -1445,7 +1446,7 @@ export default function CalendarClient({
               </div>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Description
                 </span>
                 <textarea
@@ -1466,7 +1467,7 @@ export default function CalendarClient({
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -1474,7 +1475,7 @@ export default function CalendarClient({
                 type="button"
                 disabled={formSaving}
                 onClick={handleSaveEvent}
-                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {formSaving ? 'Saving...' : 'Save'}
               </button>
@@ -1484,13 +1485,13 @@ export default function CalendarClient({
       ) : null}
 
       {meetToast ? (
-        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 shadow-2xl">
+        <div className="fixed bottom-6 right-6 z-[60] flex items-center gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow-lg)]">
           <span className="text-sm text-[color:var(--text)]">🎥 Event created with a Meet link</span>
           <a
             href={meetToast}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-xl bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary btn-sm"
           >
             Open Meet
           </a>

@@ -5,7 +5,7 @@ import { DndContext, KeyboardSensor, PointerSensor, closestCorners, useDroppable
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from '@tanstack/react-table'
-import { formatTaskSchedule, getWorkstreamColourClasses } from '@/lib/os'
+import { formatTaskSchedule } from '@/lib/os'
 import type { BoardColumn, ProjectListItem, TaskWithWorkstream, Workstream } from '@/lib/types'
 import { apiFetch } from '@/lib/api-fetch'
 import PriorityBadge from './PriorityBadge'
@@ -13,6 +13,7 @@ import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TaskCard from './TaskCard'
 import TaskSlideOver from './TaskSlideOver'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface WorkstreamBoardClientProps {
   workstream: Workstream
@@ -85,10 +86,10 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-lg border p-4 transition ${
+      className={`rounded-card border p-4 transition ${
         isOver
           ? 'border-[color:var(--accent)] bg-[var(--accent-dim)]'
-          : 'border-[color:var(--border)] bg-white'
+          : 'border-[color:var(--border)] bg-[var(--bg)]'
       }`}
     >
       {children}
@@ -114,7 +115,6 @@ export default function WorkstreamBoardClient({
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
-  const colourClasses = getWorkstreamColourClasses(workstream.colour)
 
   const tasksByColumn = columns.reduce<Record<string, TaskWithWorkstream[]>>((groups, column) => {
     groups[column.id] = tasks
@@ -233,20 +233,7 @@ export default function WorkstreamBoardClient({
       }),
       columnHelper.accessor('priority', {
         header: 'Priority',
-        cell: (info) => {
-          const p = info.getValue()
-          const cls =
-            p === 'critical'
-              ? 'text-[color:var(--red-strong)] font-bold text-[11px] uppercase tracking-[1px]'
-              : p === 'urgent'
-                ? 'text-[color:var(--red-strong)] font-semibold text-[11px] uppercase tracking-[1px]'
-                : p === 'high'
-                  ? 'text-[color:var(--red-strong)] text-[11px] uppercase tracking-[1px]'
-                  : p === 'medium'
-                    ? 'text-[color:var(--amber-strong)] text-[11px] uppercase tracking-[1px]'
-                    : 'text-[color:var(--text-3)] text-[11px] uppercase tracking-[1px]'
-          return <span className={cls}>{p}</span>
-        },
+        cell: (info) => <PriorityBadge priority={info.getValue()} />,
       }),
       columnHelper.accessor('due_date', {
         header: 'Due',
@@ -260,7 +247,7 @@ export default function WorkstreamBoardClient({
             {info.getValue().map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
+                className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
               >
                 #{tag}
               </span>
@@ -277,35 +264,31 @@ export default function WorkstreamBoardClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <span className={`h-3 w-3 rounded-full ${colourClasses.dot}`} />
-            <p className="os-eyebrow">Workstream</p>
-          </div>
-          <h1 className="os-page-title mt-2">{workstream.label}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            {tasks.length} task{tasks.length === 1 ? '' : 's'} across {columns.length} columns
-          </p>
-        </div>
-
-        <div className="inline-flex rounded-2xl border border-[color:var(--border)] bg-white p-1">
+      <PageHeader
+        eyebrow="Workstream"
+        title={workstream.label}
+        description={`${tasks.length} task${tasks.length === 1 ? '' : 's'} across ${columns.length} columns`}
+        actions={
+          <>
+            <div className="inline-flex rounded-control border border-[color:var(--border)] bg-[var(--bg)] p-1">
           {(['board', 'list'] as const).map((mode) => (
             <button
               key={mode}
               type="button"
               onClick={() => setViewMode(mode)}
-              className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
+              className={`rounded-control border px-4 py-1.5 text-sm capitalize transition ${
                 viewMode === mode
-                  ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)] border border-[color:var(--accent)]'
-                  : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'
+                  ? 'border-[color:var(--accent)]/40 bg-[var(--accent-dim)] font-semibold text-[color:var(--accent-strong)]'
+                  : 'border-transparent text-[color:var(--text-2)] hover:text-[color:var(--text)]'
               }`}
             >
               {mode}
             </button>
           ))}
         </div>
-      </div>
+          </>
+        }
+      />
 
       <ProjectsSection
         title="Projects"
@@ -326,7 +309,7 @@ export default function WorkstreamBoardClient({
                   <DroppableColumn column={column}>
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
-                        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--text)]">
+                        <h2 className="text-sm font-semibold uppercase tracking-[0.09em] text-[color:var(--text)]">
                           {column.label}
                         </h2>
                         <p className="mt-1 text-xs text-[color:var(--text-2)]">{columnTasks.length} cards</p>
@@ -347,7 +330,7 @@ export default function WorkstreamBoardClient({
                     </SortableContext>
 
                     {columnTasks.length === 0 ? (
-                      <div className="mt-3 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-6 text-center text-sm text-[color:var(--text-2)]">
+                      <div className="mt-3 rounded-card border border-dashed border-[color:var(--border)] px-4 py-6 text-center text-sm text-[color:var(--text-2)]">
                         Drop a card here
                       </div>
                     ) : null}
@@ -367,7 +350,7 @@ export default function WorkstreamBoardClient({
                         <button
                           type="button"
                           onClick={() => setAddingColumnId(column.id)}
-                          className="relative z-10 w-full rounded-2xl border border-dashed border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+                          className="relative z-10 w-full rounded-card border border-dashed border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                         >
                           Add card
                         </button>
@@ -382,7 +365,7 @@ export default function WorkstreamBoardClient({
       ) : (
         <div className="overflow-x-auto os-card p-0">
           <table className="min-w-full divide-y divide-[color:var(--border)] text-sm">
-            <thead className="bg-[var(--surface)] text-[10px] font-bold uppercase tracking-[1px] text-[color:var(--text-2)]">
+            <thead className="os-label bg-[var(--surface)]">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (

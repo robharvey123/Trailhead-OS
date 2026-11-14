@@ -1,6 +1,8 @@
 import ContactImportClient from '@/components/os/ContactImportClient'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Import contacts' }
+
 export default async function ContactImportPage() {
   const supabase = await createClient()
 

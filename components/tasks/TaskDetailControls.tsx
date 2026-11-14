@@ -47,32 +47,31 @@ export default function TaskDetailControls({
   }
 
   const sel = 'filter-select'
-  const labelCls: React.CSSProperties = { fontSize: 12, color: 'var(--text-3)' }
+  const labelCls = 'os-label'
   return (
-    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-      <label style={labelCls}>Status</label>
+    <div className="flex flex-wrap items-center gap-2.5">
+      <label className={labelCls}>Status</label>
       <select className={sel} value={status} disabled={pending} onChange={(e) => run(() => moveTask(taskId, e.target.value as EngagementTaskStatus, position))}>
         {ENGAGEMENT_TASK_STATUSES.map((s) => (<option key={s} value={s}>{ENGAGEMENT_TASK_STATUS_LABELS[s]}</option>))}
       </select>
 
-      <label style={labelCls}>Assignee</label>
+      <label className={labelCls}>Assignee</label>
       <select className={sel} value={assigneePersonId ?? ''} disabled={pending} onChange={(e) => run(() => assignTask(taskId, e.target.value || null))}>
         <option value="">— unassigned</option>
         {people.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
       </select>
 
-      <label style={labelCls}>Priority</label>
+      <label className={labelCls}>Priority</label>
       <select className={sel} value={priority} disabled={pending} onChange={(e) => run(() => updateTask(taskId, { priority: e.target.value as EngagementTaskPriority }))}>
         {ENGAGEMENT_TASK_PRIORITIES.map((p) => (<option key={p} value={p}>{ENGAGEMENT_TASK_PRIORITY_LABELS[p]}</option>))}
       </select>
 
-      <label style={labelCls}>Due</label>
+      <label className={labelCls}>Due</label>
       <input type="date" className={sel} value={dueDate ?? ''} disabled={pending} onChange={(e) => run(() => updateTask(taskId, { dueDate: e.target.value || null }))} />
 
-      <label style={labelCls}>Labels</label>
+      <label className={labelCls}>Labels</label>
       <input
-        className={sel}
-        style={{ minWidth: 160 }}
+        className={`${sel} min-w-[160px]`}
         value={labelText}
         disabled={pending}
         placeholder="comma-separated"
@@ -83,7 +82,7 @@ export default function TaskDetailControls({
         }}
       />
 
-      {error ? <span style={{ color: 'var(--red)', fontSize: 12 }}>{error}</span> : null}
+      {error ? <span className="text-xs text-[var(--red)]">{error}</span> : null}
     </div>
   )
 }

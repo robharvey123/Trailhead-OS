@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation'
 import { getSeoBriefById, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import { approveBriefAction, rejectBriefAction } from '../../../actions'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Article brief' }
 
 interface BriefOutline {
   angle?: string
@@ -30,56 +33,58 @@ export default async function GrowthBriefDetailPage({
   const internalLinks = (brief.internal_links ?? []) as Array<{ anchor: string; url: string }>
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link
-              href={`/growth/${site.id}/briefs`}
-              className="hover:text-[color:var(--accent-strong)]"
-            >
-              {site.name} · Briefs
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">{brief.title}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+    <div className="os-narrow space-y-6">
+      <PageHeader
+        eyebrow={
+          <Link
+            href={`/growth/${site.id}/briefs`}
+            className="hover:text-[color:var(--accent-strong)]"
+          >
+            {site.name} · Briefs
+          </Link>
+        }
+        title={brief.title}
+        description={
+          <>
             {brief.target_keyword} · {brief.intent ?? 'no intent'} · target{' '}
             {brief.word_target ?? '—'} words · /{brief.slug}
-          </p>
-        </div>
-        {brief.status === 'proposed' ? (
-          <div className="flex gap-2">
-            <form action={approveBriefAction.bind(null, site.id, brief.id)}>
-              <button
-                type="submit"
-                className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-              >
-                Approve &amp; queue draft
-              </button>
-            </form>
-            <form action={rejectBriefAction.bind(null, site.id, brief.id)}>
-              <button
-                type="submit"
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-red-300 hover:text-red-600"
-              >
-                Reject
-              </button>
-            </form>
-          </div>
-        ) : (
-          <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
-            {brief.status}
-          </span>
-        )}
-      </div>
+          </>
+        }
+        actions={
+          brief.status === 'proposed' ? (
+            <>
+              <form action={approveBriefAction.bind(null, site.id, brief.id)}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                >
+                  Approve &amp; queue draft
+                </button>
+              </form>
+              <form action={rejectBriefAction.bind(null, site.id, brief.id)}>
+                <button
+                  type="submit"
+                  className="btn btn-ghost"
+                >
+                  Reject
+                </button>
+              </form>
+            </>
+          ) : (
+            <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
+              {brief.status}
+            </span>
+          )
+        }
+      />
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
@@ -105,7 +110,7 @@ export default async function GrowthBriefDetailPage({
         </ol>
         {(outline.faq ?? []).length > 0 ? (
           <>
-            <h3 className="mt-5 text-xs uppercase tracking-wide text-[color:var(--text-3)]">
+            <h3 className="os-label mt-5">
               FAQ (from People Also Ask)
             </h3>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[color:var(--text-2)]">
@@ -127,7 +132,7 @@ export default async function GrowthBriefDetailPage({
               brief.secondary_keywords.map((k) => (
                 <span
                   key={k}
-                  className="rounded-full border border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)]"
+                  className="rounded-pill border border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)]"
                 >
                   {k}
                 </span>

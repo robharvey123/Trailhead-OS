@@ -132,16 +132,16 @@ export default function ExpensesClient({
             Total: {fmtCur(totals.total)} &middot; Pending: {fmtCur(totals.pending)} &middot; Approved: {fmtCur(totals.approved)}
           </p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Expense</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Expense</button>
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
           <option value="all">All Statuses</option>
           {EXPENSE_CLAIM_STATUSES.map((s) => <option key={s} value={s}>{EXPENSE_CLAIM_STATUS_LABELS[s]}</option>)}
         </select>
-        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
           <option value="all">All Categories</option>
           {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{EXPENSE_CATEGORY_LABELS[c]}</option>)}
         </select>
@@ -149,32 +149,32 @@ export default function ExpensesClient({
 
       {/* Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-card border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Expense' : 'New Expense Claim'}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="block text-xs text-slate-400 mb-1">Title *</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
+              <input value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
             </div>
             <div>
               <label className="block text-xs text-slate-400 mb-1">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{EXPENSE_CATEGORY_LABELS[c]}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs text-slate-400 mb-1">Amount *</label>
-              <input type="number" step="0.01" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
+              <input type="number" step="0.01" min="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
             </div>
             <div>
               <label className="block text-xs text-slate-400 mb-1">Currency</label>
-              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 {supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs text-slate-400 mb-1">Date *</label>
-              <input type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} required className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
+              <input type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} required className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
             </div>
             <div>
               <label className="block text-xs text-slate-400 mb-1">Receipt URL</label>
@@ -183,26 +183,26 @@ export default function ExpensesClient({
           </div>
           <div>
             <label className="block text-xs text-slate-400 mb-1">Notes</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" />
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white disabled:opacity-50">
+            <button type="submit" disabled={saving} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white disabled:opacity-50">
               {saving ? 'Saving…' : editingId ? 'Update' : 'Create'}
             </button>
-            <button type="button" onClick={() => { resetForm(); setShowForm(false) }} className="rounded-lg border border-slate-700 px-4 py-1.5 text-xs uppercase tracking-wide text-slate-400 hover:text-white">Cancel</button>
+            <button type="button" onClick={() => { resetForm(); setShowForm(false) }} className="rounded-control border border-slate-700 px-4 py-1.5 text-xs uppercase tracking-wide text-slate-400 hover:text-white">Cancel</button>
           </div>
         </form>
       )}
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 py-16">
+        <div className="flex flex-col items-center justify-center rounded-card border border-dashed border-slate-700 py-16">
           <div className="mb-3 text-4xl text-slate-600">🧾</div>
           <p className="text-slate-400">No expense claims yet</p>
           <button onClick={() => { resetForm(); setShowForm(true) }} className="mt-3 text-xs text-blue-400 hover:underline">Create your first expense claim</button>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wider text-slate-400">

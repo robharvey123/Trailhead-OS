@@ -5,6 +5,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getMeeting } from '@/lib/db/meetings'
 import MeetingSummary from '@/components/os/MeetingSummary'
 import MeetingLinksEditor, { type LinkItem } from '@/components/os/MeetingLinksEditor'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Meeting' }
 
 function fmtDate(iso: string | null) {
   if (!iso) return 'No date'
@@ -48,18 +51,16 @@ export default async function MeetingDetailPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-3xl space-y-6 p-6">
-        <div>
-          <Link href="/crm/meetings" className="text-sm text-[var(--muted)] transition hover:text-[color:var(--text)]">
-            ← Meetings
-          </Link>
-          <h1 className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">{fmtDate(meeting.meeting_date)}</p>
-        </div>
+      <div className="os-narrow space-y-6">
+        <PageHeader
+          back={{ href: '/crm/meetings', label: 'Meetings' }}
+          title={meeting.title || 'Untitled meeting'}
+          description={fmtDate(meeting.meeting_date)}
+        />
 
         {meeting.attendees.length > 0 ? (
-          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Attendees</h2>
+          <div className="os-card p-6">
+            <h2 className="os-label">Attendees</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {meeting.attendees.map((attendee, i) => {
                 const matched = contactByEmail.get(attendee.email.trim().toLowerCase())
@@ -68,14 +69,14 @@ export default async function MeetingDetailPage({
                   <Link
                     key={`${attendee.email}-${i}`}
                     href={`/crm/contacts/${matched.id}`}
-                    className="rounded-full border border-[var(--lime)]/40 px-3 py-1 text-xs text-[var(--lime)] transition hover:border-[var(--lime)]"
+                    className="rounded-pill border border-[var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[var(--accent-strong)] transition hover:bg-[var(--bg)]"
                   >
                     {label}
                   </Link>
                 ) : (
                   <span
                     key={`${attendee.email}-${i}`}
-                    className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)]"
+                    className="rounded-pill border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs text-[var(--text-2)]"
                   >
                     {label}
                   </span>
@@ -93,8 +94,8 @@ export default async function MeetingDetailPage({
           allContacts={allContacts}
         />
 
-        <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Summary</h2>
+        <div className="os-card p-6">
+          <h2 className="os-label">Summary</h2>
           <div className="mt-3">
             <MeetingSummary markdown={meeting.summary_md} />
           </div>

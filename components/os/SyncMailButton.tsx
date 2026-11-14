@@ -39,13 +39,13 @@ export default function SyncMailButton() {
   }
 
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+    <span className="inline-flex items-center gap-2">
       {reconnect ? (
-        <Link href="/settings" className="td-sub" style={{ color: 'var(--amber-strong, #b45309)' }}>
+        <Link href="/settings" className="td-sub text-[var(--amber-strong)]!">
           Reconnect Gmail in Settings
         </Link>
       ) : error ? (
-        <span className="td-sub" style={{ color: 'var(--red-strong, #dc2626)' }}>{error}</span>
+        <span className="td-sub text-[var(--red-strong)]!">{error}</span>
       ) : null}
       <button type="button" className="btn btn-ghost btn-sm" onClick={sync} disabled={busy}>
         {busy ? 'Syncing…' : '↻ Sync now'}

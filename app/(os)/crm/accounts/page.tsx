@@ -7,7 +7,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import AccountsClient from '@/components/os/crm/AccountsClient'
 
 export const metadata = {
-  title: 'CRM | Trailhead OS',
+  title: 'CRM',
 }
 
 export default async function AccountsPage() {

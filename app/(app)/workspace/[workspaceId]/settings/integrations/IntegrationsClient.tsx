@@ -128,7 +128,7 @@ export default function IntegrationsClient({
           const isError = integration?.status === 'error'
 
           return (
-            <div key={provider} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 space-y-3">
+            <div key={provider} className="rounded-card border border-slate-800 bg-slate-900/70 p-5 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{cfg.icon}</span>
@@ -141,7 +141,7 @@ export default function IntegrationsClient({
 
               {/* Status badge */}
               <div className="flex items-center gap-2">
-                <span className={`inline-block h-2 w-2 rounded-full ${
+                <span className={`inline-block h-2 w-2 rounded-pill ${
                   isConnected ? 'bg-emerald-400' : isError ? 'bg-rose-400' : 'bg-slate-600'
                 }`} />
                 <span className={`text-xs ${
@@ -164,12 +164,12 @@ export default function IntegrationsClient({
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
                     placeholder="Paste API key..."
-                    className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm"
+                    className="flex-1 rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm"
                   />
                   <button
                     onClick={() => handleApiKeySubmit(provider)}
                     disabled={connecting === provider}
-                    className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-white disabled:opacity-50"
+                    className="rounded-control bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-white disabled:opacity-50"
                   >
                     {connecting === provider ? 'Saving...' : 'Save'}
                   </button>
@@ -189,13 +189,13 @@ export default function IntegrationsClient({
                     <>
                       <button
                         onClick={() => handleSync(provider)}
-                        className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:border-slate-500"
+                        className="rounded-control border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:border-slate-500"
                       >
                         Sync Now
                       </button>
                       <button
                         onClick={() => handleDisconnect(provider)}
-                        className="rounded-lg border border-rose-800/50 px-3 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:border-rose-700"
+                        className="rounded-control border border-rose-800/50 px-3 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:border-rose-700"
                       >
                         Disconnect
                       </button>
@@ -204,7 +204,7 @@ export default function IntegrationsClient({
                     <button
                       onClick={() => handleConnect(provider)}
                       disabled={connecting === provider}
-                      className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-white disabled:opacity-50"
+                      className="rounded-control bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-950 hover:bg-white disabled:opacity-50"
                     >
                       {connecting === provider ? 'Connecting...' : 'Connect'}
                     </button>
@@ -219,7 +219,7 @@ export default function IntegrationsClient({
               {/* Capabilities */}
               <div className="flex flex-wrap gap-1">
                 {cfg.capabilities.map((c) => (
-                  <span key={c} className="rounded-full border border-slate-800 px-2 py-0.5 text-[10px] text-slate-500">
+                  <span key={c} className="rounded-pill border border-slate-800 px-2 py-0.5 text-[10px] text-slate-500">
                     {c.replace(/_/g, ' ')}
                   </span>
                 ))}

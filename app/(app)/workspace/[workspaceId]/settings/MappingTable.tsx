@@ -43,7 +43,7 @@ export default function MappingTable({
           <input type="hidden" name="mappingId" value={row.original.id} />
           <button
             type="submit"
-            className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-rose-400 hover:text-rose-200"
+            className="btn btn-danger btn-sm"
           >
             Delete
           </button>

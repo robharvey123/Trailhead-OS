@@ -40,7 +40,7 @@ function CurrencyField({
 }) {
   return (
     <label className="space-y-2">
-      <span className="text-sm text-[color:var(--text-2)]">{label}</span>
+      <span className="field-label">{label}</span>
       <div className="relative">
         <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[color:var(--text-3)]">
           £
@@ -51,7 +51,7 @@ function CurrencyField({
           step="0.01"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-8 py-3 text-sm text-[color:var(--text)]"
+          className="os-input w-full px-8 py-3 text-sm"
         />
       </div>
     </label>
@@ -156,7 +156,7 @@ export default function PricingTierSettings({
   }
 
   return (
-    <section className="os-card rounded-[2rem] p-6">
+    <section className="os-card rounded-card p-6">
       <div>
         <p className="os-eyebrow">Pricing tiers</p>
         <h2 className="os-section-title mt-2">Pricing tiers</h2>
@@ -170,17 +170,17 @@ export default function PricingTierSettings({
         {orderedDrafts.map((tier) => (
           <div
             key={tier.id}
-            className="os-card rounded-[1.75rem] p-5"
+            className="os-card rounded-card p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-lg font-semibold text-[color:var(--text)]">{tier.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                <p className="os-label mt-1">
                   Read-only tier name
                 </p>
               </div>
               {tier.is_default ? (
-                <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+                <span className="rounded-pill border border-[color:var(--accent)]/30 bg-[var(--accent-dim)] px-3 py-1 text-xs font-semibold text-[color:var(--accent-strong)]">
                   Default
                 </span>
               ) : null}
@@ -188,11 +188,11 @@ export default function PricingTierSettings({
 
             <div className="mt-5 space-y-4">
               <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Description</span>
+                <span className="field-label">Description</span>
                 <input
                   value={tier.description}
                   onChange={(event) => updateDraft(tier.id, { description: event.target.value })}
-                  className="w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                  className="os-input w-full px-4 py-3 text-sm"
                 />
               </label>
 
@@ -220,7 +220,7 @@ export default function PricingTierSettings({
               </div>
 
               <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Fixed fee margin</span>
+                <span className="field-label">Fixed fee margin</span>
                 <div className="relative">
                   <input
                     type="number"
@@ -230,7 +230,7 @@ export default function PricingTierSettings({
                     onChange={(event) =>
                       updateDraft(tier.id, { fixed_fee_margin: event.target.value })
                     }
-                    className="w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 pr-8 text-sm text-[color:var(--text)]"
+                    className="os-input w-full px-4 py-3 pr-8 text-sm"
                   />
                   <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[color:var(--text-3)]">
                     %
@@ -238,13 +238,13 @@ export default function PricingTierSettings({
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+              <label className="flex items-center gap-3 rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
                 <input
                   type="radio"
                   name="default_pricing_tier"
                   checked={tier.is_default}
                   onChange={() => markDefaultTier(tier.id)}
-                  className="h-4 w-4 border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)]"
+                  className="h-4 w-4 accent-[var(--accent)]"
                 />
                 Default tier
               </label>
@@ -259,7 +259,7 @@ export default function PricingTierSettings({
                 type="button"
                 onClick={() => saveTier(tier.id)}
                 disabled={savingId !== null}
-                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {savingId === tier.id ? 'Saving...' : 'Save'}
               </button>

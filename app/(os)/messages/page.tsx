@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { mockupFontVars } from '@/lib/fonts'
 import type { ConversationRow } from '@/components/messaging/ConversationList'
 import MessagesScreen from '@/components/messaging/MessagesScreen'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Messages' }
 
 export const dynamic = 'force-dynamic'
 
@@ -78,7 +81,9 @@ export default async function MessagesPage() {
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="panel overflow-hidden" style={{ height: 'calc(100vh - 140px)', maxWidth: 560 }}>
+      <PageHeader title="Messages" />
+      {/* Height = viewport minus the shell chrome and the page header, so the list scrolls inside the panel. */}
+      <div className="panel h-[calc(100vh-224px)] max-w-[560px] overflow-hidden md:h-[calc(100vh-168px)]">
         <MessagesScreen conversations={conversations} users={users} />
       </div>
     </div>

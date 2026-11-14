@@ -1,12 +1,14 @@
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 import { getCurrentProfile } from '@/lib/auth/roles'
 import { listEngagementTasks } from '@/lib/db/engagement-tasks'
 import { getTasksTimeTotals } from '@/lib/db/timesheet'
 import { listPeople } from '@/lib/db/people'
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementTasksClient from './EngagementTasksClient'
+
+export const metadata = { title: 'Engagement tasks' }
 
 export const dynamic = 'force-dynamic'
 
@@ -28,12 +30,9 @@ export default async function EngagementTasksPage({ params }: { params: Promise<
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
+      <PageHeader back={{ href: `/engagements/${id}`, label: engagement.name }} title="Tasks" />
       <div className="panel overflow-hidden">
-        <div className="topbar">
-          <Link href={`/engagements/${id}`} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ {engagement.name}</Link>
-          <span className="topbar-title">Tasks</span>
-        </div>
-        <div style={{ padding: 24 }}>
+        <div className="p-6">
           <EngagementTasksClient
             engagementId={id}
             initialTasks={tasks}

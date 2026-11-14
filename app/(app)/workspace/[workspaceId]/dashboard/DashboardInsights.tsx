@@ -40,8 +40,35 @@ type DashboardInsightsProps = {
   currencySymbol: string
 }
 
+/* Chart colours are working tokens passed as strings, so the same chart reads
+   on white and on navy. Utilities only in this file (no .thmock component
+   classes): it also renders on the public report page. */
+const SERIES = [
+  'var(--accent)',
+  'var(--amber)',
+  'var(--emerald)',
+  'var(--accent-strong)',
+] as const
+const GRID = 'var(--border)'
+const AXIS = 'var(--border-light)'
+const TICK = { fill: 'var(--text-3)', fontSize: 12 }
+const TOOLTIP_STYLE = {
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-control)',
+  color: 'var(--text)',
+}
+const TOOLTIP_ITEM_STYLE = { color: 'var(--text)' }
+const BAR_CURSOR = { fill: 'var(--surface-2)' }
+const LINE_CURSOR = { stroke: 'var(--border-light)' }
+
 const chartCardClass =
-  'rounded-2xl border border-slate-800 bg-slate-900/70 p-6'
+  'rounded-card border border-[var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-sm)]'
+
+// Legend labels in body ink: a series colour is a fill, not a type colour.
+const legendLabel = (value: string) => (
+  <span className="text-[var(--text-2)]">{value}</span>
+)
 
 const formatNumberValue = (value?: ValueType) =>
   value == null ? '' : formatNumber(Number(value))
@@ -65,30 +92,30 @@ export default function DashboardInsights({
     <section className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
         <div className={chartCardClass}>
-          <h3 className="text-sm font-semibold text-slate-200">
+          <h3 className="text-sm font-semibold text-[var(--text)]">
             Average selling price (ASP)
           </h3>
           <div className="mt-4 h-64 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={200}>
               <LineChart data={aspData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
                 <XAxis
                   dataKey="month"
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                   tickFormatter={(value) => formatMonthLabel(String(value))}
                 />
                 <YAxis
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                   tickFormatter={(value) => formatCurrency(Number(value), currencySymbol)}
                 />
                 <Tooltip
-                  contentStyle={{
-                    background: '#0f172a',
-                    border: '1px solid #1f2937',
-                    color: '#e2e8f0',
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
+                  itemStyle={TOOLTIP_ITEM_STYLE}
+                  cursor={LINE_CURSOR}
                   formatter={(value) =>
                     formatCurrencyValue(value, currencySymbol)
                   }
@@ -98,7 +125,7 @@ export default function DashboardInsights({
                   type="monotone"
                   dataKey="value"
                   name="ASP"
-                  stroke="#38bdf8"
+                  stroke={SERIES[3]}
                   strokeWidth={2}
                   dot={false}
                 />
@@ -108,28 +135,28 @@ export default function DashboardInsights({
         </div>
 
         <div className={chartCardClass}>
-          <h3 className="text-sm font-semibold text-slate-200">Promo rate</h3>
+          <h3 className="text-sm font-semibold text-[var(--text)]">Promo rate</h3>
           <div className="mt-4 h-64 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={200}>
               <LineChart data={promoRateData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
                 <XAxis
                   dataKey="month"
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                   tickFormatter={(value) => formatMonthLabel(String(value))}
                 />
                 <YAxis
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                   tickFormatter={(value) => `${value}%`}
                 />
                 <Tooltip
-                  contentStyle={{
-                    background: '#0f172a',
-                    border: '1px solid #1f2937',
-                    color: '#e2e8f0',
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
+                  itemStyle={TOOLTIP_ITEM_STYLE}
+                  cursor={LINE_CURSOR}
                   formatter={(value) => formatPercentValue(value)}
                   labelFormatter={(value) => formatMonthLabel(String(value))}
                 />
@@ -137,7 +164,7 @@ export default function DashboardInsights({
                   type="monotone"
                   dataKey="value"
                   name="Promo rate"
-                  stroke="#f59e0b"
+                  stroke={SERIES[1]}
                   strokeWidth={2}
                   dot={false}
                 />
@@ -149,50 +176,46 @@ export default function DashboardInsights({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className={chartCardClass}>
-          <h3 className="text-sm font-semibold text-slate-200">
+          <h3 className="text-sm font-semibold text-[var(--text)]">
             Sell-out by platform
           </h3>
           <div className="mt-4 h-64 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={200}>
               <BarChart data={platformData} barGap={6} barSize={20}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                <XAxis dataKey="label" stroke={AXIS} tick={TICK} fontSize={12} />
+                <YAxis stroke={AXIS} tick={TICK} fontSize={12} />
                 <Tooltip
-                  contentStyle={{
-                    background: '#0f172a',
-                    border: '1px solid #1f2937',
-                    color: '#e2e8f0',
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
+                  itemStyle={TOOLTIP_ITEM_STYLE}
+                  cursor={BAR_CURSOR}
                   formatter={(value) => formatNumberValue(value)}
                 />
-                <Legend />
-                <Bar dataKey="value" name="Sell Out" fill="#22c55e" radius={[6, 6, 0, 0]} />
+                <Legend formatter={legendLabel} />
+                <Bar dataKey="value" name="Sell Out" fill={SERIES[2]} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className={chartCardClass}>
-          <h3 className="text-sm font-semibold text-slate-200">
+          <h3 className="text-sm font-semibold text-[var(--text)]">
             Sell-out by region
           </h3>
           <div className="mt-4 h-64 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={200}>
               <BarChart data={regionData} barGap={6} barSize={20}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
+                <XAxis dataKey="label" stroke={AXIS} tick={TICK} fontSize={12} />
+                <YAxis stroke={AXIS} tick={TICK} fontSize={12} />
                 <Tooltip
-                  contentStyle={{
-                    background: '#0f172a',
-                    border: '1px solid #1f2937',
-                    color: '#e2e8f0',
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
+                  itemStyle={TOOLTIP_ITEM_STYLE}
+                  cursor={BAR_CURSOR}
                   formatter={(value) => formatNumberValue(value)}
                 />
-                <Legend />
-                <Bar dataKey="value" name="Sell Out" fill="#f97316" radius={[6, 6, 0, 0]} />
+                <Legend formatter={legendLabel} />
+                <Bar dataKey="value" name="Sell Out" fill={SERIES[3]} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -201,16 +224,17 @@ export default function DashboardInsights({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className={chartCardClass}>
-          <h3 className="text-sm font-semibold text-slate-200">
+          <h3 className="text-sm font-semibold text-[var(--text)]">
             Top customers by revenue
           </h3>
           <div className="mt-4 h-72 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={220}>
               <BarChart data={topCustomerRevenue} layout="vertical" barSize={16}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
                 <XAxis
                   type="number"
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                   tickFormatter={(value) => formatCurrency(Number(value), currencySymbol)}
                 />
@@ -218,37 +242,37 @@ export default function DashboardInsights({
                   type="category"
                   dataKey="label"
                   width={120}
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                 />
                 <Tooltip
-                  contentStyle={{
-                    background: '#0f172a',
-                    border: '1px solid #1f2937',
-                    color: '#e2e8f0',
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
+                  itemStyle={TOOLTIP_ITEM_STYLE}
+                  cursor={BAR_CURSOR}
                   formatter={(value) =>
                     formatCurrencyValue(value, currencySymbol)
                   }
                 />
-                <Legend />
-                <Bar dataKey="value" name="Revenue" fill="#38bdf8" radius={[0, 6, 6, 0]} />
+                <Legend formatter={legendLabel} />
+                <Bar dataKey="value" name="Revenue" fill={SERIES[0]} radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className={chartCardClass}>
-          <h3 className="text-sm font-semibold text-slate-200">
+          <h3 className="text-sm font-semibold text-[var(--text)]">
             Top companies by sell-out
           </h3>
           <div className="mt-4 h-72 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={220}>
               <BarChart data={topCompanySellOut} layout="vertical" barSize={16}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
                 <XAxis
                   type="number"
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                   tickFormatter={(value) => formatNumber(Number(value))}
                 />
@@ -256,19 +280,18 @@ export default function DashboardInsights({
                   type="category"
                   dataKey="label"
                   width={120}
-                  stroke="#94a3b8"
+                  stroke={AXIS}
+                  tick={TICK}
                   fontSize={12}
                 />
                 <Tooltip
-                  contentStyle={{
-                    background: '#0f172a',
-                    border: '1px solid #1f2937',
-                    color: '#e2e8f0',
-                  }}
+                  contentStyle={TOOLTIP_STYLE}
+                  itemStyle={TOOLTIP_ITEM_STYLE}
+                  cursor={BAR_CURSOR}
                   formatter={(value) => formatNumberValue(value)}
                 />
-                <Legend />
-                <Bar dataKey="value" name="Sell Out" fill="#f59e0b" radius={[0, 6, 6, 0]} />
+                <Legend formatter={legendLabel} />
+                <Bar dataKey="value" name="Sell Out" fill={SERIES[1]} radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

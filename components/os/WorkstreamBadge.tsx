@@ -17,9 +17,9 @@ export default function WorkstreamBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium ${classes.badge} ${className}`.trim()}
+      className={`inline-flex items-center gap-2 rounded-pill border px-2.5 py-1 text-xs font-medium ${classes.badge} ${className}`.trim()}
     >
-      <span className={`h-2 w-2 rounded-full ${classes.dot}`} />
+      <span className={`h-2 w-2 rounded-pill ${classes.dot}`} />
       {label ?? 'Unassigned'}
     </span>
   )

@@ -125,8 +125,8 @@ export default function Board({
       {/* Both regions stay mounted and out of flow so a later change is announced. */}
       <p role="status" aria-live="polite" className="sr-only">{status}</p>
       <p role="alert" aria-live="assertive" className="sr-only">{error}</p>
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 8 }}>{error}</p> : null}
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', overflowX: 'auto' }}>
+      {error ? <p className="mb-2 text-xs text-[var(--red)]">{error}</p> : null}
+      <div className="flex items-start gap-3 overflow-x-auto">
         {ENGAGEMENT_TASK_BOARD_COLUMNS.map((status) => (
           <KanbanColumn
             key={status}

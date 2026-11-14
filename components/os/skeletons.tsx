@@ -17,7 +17,7 @@
 
 /** One pulsing placeholder. Callers pass the Tailwind size they need. */
 export function SkeletonBar({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded-full bg-[var(--surface-2)] ${className}`} />
+  return <div className={`animate-pulse rounded-pill bg-[var(--surface-2)] ${className}`} />
 }
 
 /**
@@ -43,11 +43,11 @@ export function PanelTableSkeleton({
     <div className="thmock" aria-hidden>
       <div className="panel overflow-hidden">
         <div className="topbar">
-          <SkeletonBar className="h-5 w-40 rounded-lg" />
+          <SkeletonBar className="h-5 w-40 rounded-control" />
           <SkeletonBar className="ml-2 h-4 w-20" />
           <div className="topbar-actions">
             {Array.from({ length: actions }).map((_, index) => (
-              <SkeletonBar key={index} className="h-8 w-24 rounded-lg" />
+              <SkeletonBar key={index} className="h-8 w-24 rounded-control" />
             ))}
           </div>
         </div>
@@ -57,7 +57,7 @@ export function PanelTableSkeleton({
             {Array.from({ length: statItems }).map((_, index) => (
               <div key={index} className="stat-item space-y-2">
                 <SkeletonBar className="h-3 w-20" />
-                <SkeletonBar className="h-5 w-12 rounded-lg" />
+                <SkeletonBar className="h-5 w-12 rounded-control" />
               </div>
             ))}
           </div>
@@ -65,10 +65,10 @@ export function PanelTableSkeleton({
 
         {filterbar ? (
           <div className="filterbar">
-            <SkeletonBar className="h-8 w-56 rounded-lg" />
-            <SkeletonBar className="h-8 w-32 rounded-lg" />
-            <SkeletonBar className="h-8 w-32 rounded-lg" />
-            <SkeletonBar className="h-8 w-32 rounded-lg" />
+            <SkeletonBar className="h-8 w-56 rounded-control" />
+            <SkeletonBar className="h-8 w-32 rounded-control" />
+            <SkeletonBar className="h-8 w-32 rounded-control" />
+            <SkeletonBar className="h-8 w-32 rounded-control" />
           </div>
         ) : null}
 
@@ -114,19 +114,19 @@ export function PageHeaderSkeleton({ action = true }: { action?: boolean }) {
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="space-y-3">
         <SkeletonBar className="h-3 w-24" />
-        <SkeletonBar className="h-8 w-56 rounded-xl" />
+        <SkeletonBar className="h-8 w-56 rounded-card" />
       </div>
-      {action ? <SkeletonBar className="h-10 w-32 rounded-2xl" /> : null}
+      {action ? <SkeletonBar className="h-10 w-32" /> : null}
     </div>
   )
 }
 
-/** The row of rounded-full filter tabs that sits under most `os-card` page headers. */
+/** The row of rounded-pill filter tabs that sits under most `os-card` page headers. */
 export function TabsSkeleton({ count }: { count: number }) {
   return (
     <div className="flex flex-wrap gap-2">
       {Array.from({ length: count }).map((_, index) => (
-        <SkeletonBar key={index} className="h-9 w-24 rounded-full" />
+        <SkeletonBar key={index} className="h-9 w-24 rounded-pill" />
       ))}
     </div>
   )
@@ -155,7 +155,7 @@ export function CardTablePageSkeleton({
           {Array.from({ length: statCards }).map((_, index) => (
             <div key={index} className="os-card space-y-3 p-5">
               <SkeletonBar className="h-3 w-28" />
-              <SkeletonBar className="h-8 w-24 rounded-xl" />
+              <SkeletonBar className="h-8 w-24 rounded-card" />
             </div>
           ))}
         </div>
@@ -190,10 +190,10 @@ export function CalendarSkeleton() {
   return (
     <div className="space-y-6" aria-hidden>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <SkeletonBar className="h-8 w-40 rounded-2xl" />
+        <SkeletonBar className="h-8 w-40 rounded-card" />
         <div className="flex gap-2">
-          <SkeletonBar className="h-9 w-24 rounded-xl" />
-          <SkeletonBar className="h-9 w-36 rounded-xl" />
+          <SkeletonBar className="h-9 w-24" />
+          <SkeletonBar className="h-9 w-36" />
         </div>
       </div>
       <div className="os-card p-4">
@@ -204,7 +204,7 @@ export function CalendarSkeleton() {
         </div>
         <div className="mt-3 grid grid-cols-7 gap-2">
           {Array.from({ length: 35 }).map((_, index) => (
-            <SkeletonBar key={index} className="h-24 rounded-xl" />
+            <SkeletonBar key={index} className="h-24 rounded-card" />
           ))}
         </div>
       </div>

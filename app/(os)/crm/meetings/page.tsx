@@ -3,9 +3,10 @@ import { mockupFontVars } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/server'
 import { listMeetings } from '@/lib/db/meetings'
 import SyncGranolaButton from '@/components/os/SyncGranolaButton'
+import PageHeader from '@/components/ui/PageHeader'
 
 export const metadata = {
-  title: 'Meetings | Trailhead OS',
+  title: 'Meetings',
 }
 
 function fmtDate(iso: string | null) {
@@ -19,19 +20,15 @@ export default async function MeetingsPage() {
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="mx-auto max-w-4xl space-y-6 p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-[color:var(--text)]">Meetings</h1>
-            <p className="text-sm text-[var(--muted)]">
-              Granola meeting notes, auto-linked to contacts and accounts by attendee email.
-            </p>
-          </div>
-          <SyncGranolaButton />
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          title="Meetings"
+          description="Granola meeting notes, auto-linked to contacts and accounts by attendee email."
+          actions={<SyncGranolaButton />}
+        />
 
         {meetings.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-[var(--border)] px-6 py-16 text-center text-sm text-[var(--muted)]">
+          <div className="rounded-card border border-dashed border-[var(--border)] px-6 py-16 text-center text-sm text-[var(--text-2)]">
             No meetings synced yet. Hit “Sync now”, or wait for the hourly sync.
           </div>
         ) : (
@@ -40,19 +37,19 @@ export default async function MeetingsPage() {
               <Link
                 key={meeting.id}
                 href={`/crm/meetings/${meeting.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:border-[var(--lime)]/40"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[var(--border)] bg-[var(--bg)] p-4 shadow-[var(--shadow-sm)] transition hover:border-[var(--border-light)]"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</p>
-                  <p className="text-xs text-[var(--muted)]">{fmtDate(meeting.meeting_date)}</p>
+                  <p className="truncate text-sm font-semibold text-[var(--text)]">{meeting.title || 'Untitled meeting'}</p>
+                  <p className="text-xs text-[var(--text-3)]">{fmtDate(meeting.meeting_date)}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {meeting.account ? (
-                    <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--muted)]">
+                    <span className="tag-chip">
                       {meeting.account.name}
                     </span>
                   ) : null}
-                  <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--muted)]">
+                  <span className="tag-chip">
                     {meeting.attendees.length} attendee{meeting.attendees.length !== 1 ? 's' : ''}
                   </span>
                 </div>

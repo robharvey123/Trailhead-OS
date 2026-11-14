@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ASSIGNABLE_ROLES, USER_ROLE_LABELS, type Invite, type UserRole } from '@/lib/types'
+import PageHeader from '@/components/ui/PageHeader'
 import { createInvite, revokeInvite } from './actions'
 
 type Named = { id: string; name: string }
@@ -74,97 +75,98 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
     } catch { /* clipboard may be blocked; link is shown for manual copy */ }
   }
 
-  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const label = 'field-label block'
 
   return (
-    <div className="panel overflow-hidden">
-      <div className="topbar">
-        <span className="topbar-title">Invites</span>
-        <span className="topbar-count">{invites.filter((i) => !i.claimed_at && new Date(i.expires_at) >= new Date()).length} pending</span>
-      </div>
-
-      <div className="grid gap-5 p-4 sm:p-6">
-        <div className="card">
-          <div className="panel-section-title">Send an invite</div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
-            <div><label className={label}>Email *</label><input className={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="person@company.com" /></div>
-            <div>
-              <label className={label}>Role</label>
-              <select className={input} value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
-                {ASSIGNABLE_ROLES.map((r) => (<option key={r} value={r}>{USER_ROLE_LABELS[r]}</option>))}
+    <>
+      <PageHeader
+        title="Invites"
+        count={<>{invites.filter((i) => !i.claimed_at && new Date(i.expires_at) >= new Date()).length} pending</>}
+      />
+      <div className="panel overflow-hidden">
+        <div className="grid gap-5 p-4 sm:p-6">
+          <div className="card">
+            <div className="panel-section-title">Send an invite</div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
+              <div><label className={label}>Email *</label><input className={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="person@company.com" /></div>
+              <div>
+                <label className={label}>Role</label>
+                <select className={input} value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
+                  {ASSIGNABLE_ROLES.map((r) => (<option key={r} value={r}>{USER_ROLE_LABELS[r]}</option>))}
+                </select>
+              </div>
+            </div>
+            {isSales ? (
+              <div className="mt-3">
+                <label className={label}>Display name</label>
+                <input className={input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Francesca Harvey" />
+                <p className="mt-1.5 text-xs text-[var(--text-3)]">
+                  Sales Lead: sees /sales only (queue, pipeline, dashboard) and only contacts tagged for sales campaigns. They get an emailed sign-in link and choose a password on first sign-in. Inviting the same email again sends a fresh link.
+                </p>
+              </div>
+            ) : null}
+            <div className={isSales ? 'mt-3 hidden' : 'mt-3'}>
+              <label className={label}>Link to person</label>
+              <select className={input} value={personPick} onChange={(e) => setPersonPick(e.target.value)}>
+                <option value="">— none</option>
+                {people.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
+                <option value="__new__">➕ Create new person…</option>
               </select>
             </div>
-          </div>
-          {isSales ? (
-            <div style={{ marginTop: 12 }}>
-              <label className={label}>Display name</label>
-              <input className={input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Francesca Harvey" />
-              <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 6 }}>
-                Sales Lead: sees /sales only (queue, pipeline, dashboard) and only contacts tagged for sales campaigns. They get an emailed sign-in link and choose a password on first sign-in. Inviting the same email again sends a fresh link.
-              </p>
+            {!isSales && personPick === '__new__' ? (
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
+                <div><label className={label}>Full name *</label><input className={input} value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
+                <div><label className={label}>Default rate £/h</label><input className={input} type="number" value={newRate} onChange={(e) => setNewRate(e.target.value)} placeholder="optional" /></div>
+              </div>
+            ) : null}
+            {error ? <p className="mt-2.5 text-xs text-[var(--red)]">{error}</p> : null}
+            <div className="mt-3 text-right">
+              <button className="btn btn-primary btn-sm" onClick={submit} disabled={busy}>{busy ? 'Sending…' : 'Send invite'}</button>
             </div>
-          ) : null}
-          <div style={{ marginTop: 12, display: isSales ? 'none' : undefined }}>
-            <label className={label}>Link to person</label>
-            <select className={input} value={personPick} onChange={(e) => setPersonPick(e.target.value)}>
-              <option value="">— none</option>
-              {people.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
-              <option value="__new__">➕ Create new person…</option>
-            </select>
-          </div>
-          {!isSales && personPick === '__new__' ? (
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
-              <div><label className={label}>Full name *</label><input className={input} value={newName} onChange={(e) => setNewName(e.target.value)} /></div>
-              <div><label className={label}>Default rate £/h</label><input className={input} type="number" value={newRate} onChange={(e) => setNewRate(e.target.value)} placeholder="optional" /></div>
-            </div>
-          ) : null}
-          {error ? <p style={{ color: 'var(--red)', fontSize: 12, marginTop: 10 }}>{error}</p> : null}
-          <div style={{ marginTop: 12, textAlign: 'right' }}>
-            <button className="btn btn-primary btn-sm" onClick={submit} disabled={busy}>{busy ? 'Sending…' : 'Send invite'}</button>
+
+            {createdLink ? (
+              <div className="mt-3.5 rounded-control border border-[var(--border)] bg-[var(--surface-2)] p-3">
+                <p className="mb-1.5 text-xs text-[var(--text-2)]">
+                  {createdLink.kind === 'sales_link'
+                    ? (createdLink.emailed ? 'Sales Lead login ready and sign-in link emailed. ' : 'Sales Lead login ready, but the email did not send. Share this one-time sign-in link privately: ')
+                    : `Invite created${createdLink.emailed ? ' and emailed' : ' (email not sent, so share this link)'}. Claim link:`}
+                </p>
+                {/* An emailed Sales Lead link signs in as that person, so it isn't shown. */}
+                {createdLink.kind === 'sales_link' && createdLink.emailed ? null : (
+                  <div className="flex gap-2">
+                    <input className={input} readOnly value={createdLink.link} onFocus={(e) => e.currentTarget.select()} />
+                    <button className="btn btn-ghost btn-sm" onClick={copyLink}>{copied ? 'Copied' : 'Copy'}</button>
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
 
-          {createdLink ? (
-            <div style={{ marginTop: 14, padding: 12, borderRadius: 6, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 6 }}>
-                {createdLink.kind === 'sales_link'
-                  ? (createdLink.emailed ? 'Sales Lead login ready and sign-in link emailed. ' : 'Sales Lead login ready, but the email did not send. Share this one-time sign-in link privately: ')
-                  : `Invite created${createdLink.emailed ? ' and emailed' : ' (email not sent, so share this link)'}. Claim link:`}
-              </p>
-              {/* An emailed Sales Lead link signs in as that person, so it isn't shown. */}
-              {createdLink.kind === 'sales_link' && createdLink.emailed ? null : (
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input className={input} readOnly value={createdLink.link} onFocus={(e) => e.currentTarget.select()} />
-                  <button className="btn btn-ghost btn-sm" onClick={copyLink}>{copied ? 'Copied' : 'Copy'}</button>
-                </div>
-              )}
+          {invites.length === 0 ? <div className="empty">No invites yet.</div> : (
+            <div className="overflow-x-auto">
+            <table className="data-table">
+              <thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Expires</th><th></th></tr></thead>
+              <tbody>
+                {invites.map((inv) => {
+                  const s = statusOf(inv)
+                  const pending = !inv.claimed_at && new Date(inv.expires_at) >= new Date()
+                  return (
+                    <tr key={inv.id}>
+                      <td className="td-name">{inv.email}</td>
+                      <td>{USER_ROLE_LABELS[inv.role]}</td>
+                      <td><span className={`status-badge ${s.cls}`}>{s.label}</span></td>
+                      <td className="td-num">{fmtDate(inv.expires_at)}</td>
+                      <td>{pending ? <button className="btn btn-danger btn-sm" onClick={() => revoke(inv.id)}>Revoke</button> : null}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
             </div>
-          ) : null}
+          )}
         </div>
-
-        {invites.length === 0 ? <div className="empty">No invites yet.</div> : (
-          <div className="overflow-x-auto">
-          <table className="data-table">
-            <thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Expires</th><th></th></tr></thead>
-            <tbody>
-              {invites.map((inv) => {
-                const s = statusOf(inv)
-                const pending = !inv.claimed_at && new Date(inv.expires_at) >= new Date()
-                return (
-                  <tr key={inv.id}>
-                    <td className="td-name">{inv.email}</td>
-                    <td>{USER_ROLE_LABELS[inv.role]}</td>
-                    <td><span className={`status-badge ${s.cls}`}>{s.label}</span></td>
-                    <td className="td-mono">{fmtDate(inv.expires_at)}</td>
-                    <td>{pending ? <button className="btn btn-ghost btn-sm" onClick={() => revoke(inv.id)} style={{ color: 'var(--red)' }}>Revoke</button> : null}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-          </div>
-        )}
       </div>
-    </div>
+    </>
   )
 }

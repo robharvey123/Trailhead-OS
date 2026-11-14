@@ -85,7 +85,7 @@ export default function UnbilledTimeWidget({
   if (loading) {
     return (
       <div className="os-card p-4">
-        <div className="h-4 w-40 animate-pulse rounded bg-[var(--surface-2)]" />
+        <div className="h-4 w-40 animate-pulse rounded-control bg-[var(--surface-2)]" />
       </div>
     )
   }
@@ -95,7 +95,7 @@ export default function UnbilledTimeWidget({
   }
 
   return (
-    <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 space-y-3">
+    <div className="rounded-card border border-[color:var(--amber)]/40 bg-[var(--amber-dim)] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-[color:var(--amber-strong)]">
           {groups.length} unbilled time group{groups.length !== 1 ? 's' : ''} totalling {formatMoney(totalAmount)}
@@ -105,7 +105,7 @@ export default function UnbilledTimeWidget({
             type="checkbox"
             checked={selectedKeys.size === groups.length && groups.length > 0}
             onChange={toggleAll}
-            className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+            className="h-4 w-4"
           />
           Select all
         </label>
@@ -117,13 +117,13 @@ export default function UnbilledTimeWidget({
           return (
             <label
               key={key}
-              className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[var(--surface-2)]"
+              className="flex items-center gap-3 rounded-control px-2 py-1.5 transition hover:bg-[var(--bg)]"
             >
               <input
                 type="checkbox"
                 checked={selectedKeys.has(key)}
                 onChange={() => toggleGroup(key)}
-                className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+                className="h-4 w-4"
               />
               <span className="flex-1 text-sm text-[color:var(--text-2)]">
                 {group.engagement_code ? <span className="font-medium">{group.engagement_code} › </span> : null}
@@ -139,14 +139,14 @@ export default function UnbilledTimeWidget({
       </div>
 
       {selectedKeys.size > 0 && (
-        <div className="flex items-center justify-between pt-2 border-t border-[color:var(--border)]">
+        <div className="flex items-center justify-between pt-2 border-t border-[color:var(--amber)]/30">
           <p className="text-sm text-[color:var(--text-2)]">
             Selected: <span className="font-medium text-[color:var(--text)]">{formatMoney(selectedTotal)}</span>
           </p>
           <button
             type="button"
             onClick={handleAddToInvoice}
-            className="rounded-xl bg-[var(--amber-dim)] px-4 py-2 text-sm font-medium text-[color:var(--amber-strong)] transition hover:bg-[var(--amber)]"
+            className="btn btn-ghost btn-sm"
           >
             Add to invoice
           </button>

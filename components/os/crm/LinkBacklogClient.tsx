@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import MergeDialog, { type MergeRequest } from './MergeDialog'
 
 type Suggestion = { account: { id: string; name: string }; score: number; reason: 'exact' | 'normalised' | 'domain' | 'fuzzy' }
@@ -102,21 +103,23 @@ export default function LinkBacklogClient() {
 
   return (
     <div className="thmock space-y-4">
-      <div>
-        <Link href="/crm/contacts" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Contacts</Link>
-        <h1 className="os-page-title mt-2">Linking backlog</h1>
-        <p className="mt-1 text-sm text-[color:var(--text-2)]">
-          Suggestions only — nothing is applied automatically. {data.placeholders_count > 0 ? `${data.placeholders_count} placeholder contacts (name = company) are handled by the cleanup script, not here.` : ''}
-        </p>
-      </div>
+      <PageHeader
+        back={{ href: '/crm/contacts', label: 'Contacts' }}
+        title="Linking backlog"
+        description={
+          <>
+            Suggestions only — nothing is applied automatically. {data.placeholders_count > 0 ? `${data.placeholders_count} placeholder contacts (name = company) are handled by the cleanup script, not here.` : ''}
+          </>
+        }
+      />
 
       {error ? <div className="os-card p-3 text-sm text-[color:var(--red-strong)]">{error}</div> : null}
 
-      <div className="flex flex-wrap gap-2">
-        <button className={`btn btn-ghost btn-sm ${tab === 'contacts' ? 'active' : ''}`} onClick={() => setTab('contacts')}>Unlinked contacts ({data.unlinked_contacts.length})</button>
-        <button className={`btn btn-ghost btn-sm ${tab === 'accounts' ? 'active' : ''}`} onClick={() => setTab('accounts')}>Duplicate accounts ({data.account_duplicates.length})</button>
-        <button className={`btn btn-ghost btn-sm ${tab === 'contact-dupes' ? 'active' : ''}`} onClick={() => setTab('contact-dupes')}>Duplicate contacts ({data.contact_duplicates.length})</button>
-        <button className={`btn btn-ghost btn-sm ${tab === 'threads' ? 'active' : ''}`} onClick={() => setTab('threads')}>Unmatched threads ({data.unmatched_threads.length})</button>
+      <div className="tabbar flex-wrap px-0!">
+        <button className={`tab ${tab === 'contacts' ? 'active' : ''}`} onClick={() => setTab('contacts')}>Unlinked contacts ({data.unlinked_contacts.length})</button>
+        <button className={`tab ${tab === 'accounts' ? 'active' : ''}`} onClick={() => setTab('accounts')}>Duplicate accounts ({data.account_duplicates.length})</button>
+        <button className={`tab ${tab === 'contact-dupes' ? 'active' : ''}`} onClick={() => setTab('contact-dupes')}>Duplicate contacts ({data.contact_duplicates.length})</button>
+        <button className={`tab ${tab === 'threads' ? 'active' : ''}`} onClick={() => setTab('threads')}>Unmatched threads ({data.unmatched_threads.length})</button>
       </div>
 
       {tab === 'contacts' ? (
@@ -136,13 +139,13 @@ export default function LinkBacklogClient() {
                   <div key={row.contact.id} className="card flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-[color:var(--text)]">{row.contact.name}</div>
-                      <div className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>{[row.contact.company, row.contact.email].filter(Boolean).join(' · ') || 'no company / email'}</div>
+                      <div className="td-num">{[row.contact.company, row.contact.email].filter(Boolean).join(' · ') || 'no company / email'}</div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       {top ? (
                         <span className="meta-chip" title={`match: ${REASON_LABEL[top.reason]}`}>{top.account.name} · {pct(top.score)}</span>
                       ) : (
-                        <span className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>no suggestion</span>
+                        <span className="td-num">no suggestion</span>
                       )}
                       {top ? <button className="btn btn-primary btn-sm" disabled={working} onClick={() => void accept(row, top)}>Accept</button> : null}
                       {row.suggestions.slice(1).map((s) => (
@@ -165,14 +168,14 @@ export default function LinkBacklogClient() {
           {data.account_duplicates.length === 0 ? <div className="empty">No duplicate accounts detected.</div> : (
             <div className="overflow-x-auto">
             <table className="data-table">
-              <thead><tr><th>Account A</th><th>Account B</th><th style={{ textAlign: 'right' }}>Similarity</th><th></th></tr></thead>
+              <thead><tr><th>Account A</th><th>Account B</th><th className="text-right!">Similarity</th><th></th></tr></thead>
               <tbody>
                 {data.account_duplicates.map((d) => (
                   <tr key={`${d.a.id}:${d.b.id}`}>
                     <td className="td-name"><Link href={`/crm/accounts/${d.a.id}`}>{d.a.name}</Link></td>
                     <td className="td-name"><Link href={`/crm/accounts/${d.b.id}`}>{d.b.name}</Link></td>
-                    <td className="td-mono" style={{ textAlign: 'right' }}>{pct(d.score)}</td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="td-num text-right">{pct(d.score)}</td>
+                    <td className="text-right">
                       <button className="btn btn-ghost btn-sm" onClick={() => setMerge({ type: 'account', a: d.a, b: d.b })}>Merge…</button>
                     </td>
                   </tr>
@@ -197,7 +200,7 @@ export default function LinkBacklogClient() {
                     <td className="td-name"><Link href={`/crm/contacts/${d.a.id}`}>{d.a.name}</Link>{d.a.company ? <div className="td-sub">{d.a.company}</div> : null}</td>
                     <td className="td-name"><Link href={`/crm/contacts/${d.b.id}`}>{d.b.name}</Link>{d.b.company ? <div className="td-sub">{d.b.company}</div> : null}</td>
                     <td><span className="channel-tag">{d.reason}</span></td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="text-right">
                       <button className="btn btn-ghost btn-sm" onClick={() => setMerge({ type: 'contact', a: d.a, b: d.b })}>Merge…</button>
                     </td>
                   </tr>
@@ -219,9 +222,9 @@ export default function LinkBacklogClient() {
               <tbody>
                 {data.unmatched_threads.map((t) => (
                   <tr key={t.gmail_thread_id}>
-                    <td className="td-mono text-xs">{t.from_address ?? '—'}</td>
+                    <td className="td-num">{t.from_address ?? '—'}</td>
                     <td>{t.subject ?? '—'}</td>
-                    <td>{t.suggestion ? <span className="meta-chip">{t.suggestion.name}</span> : <span className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>—</span>}</td>
+                    <td>{t.suggestion ? <span className="meta-chip">{t.suggestion.name}</span> : <span className="td-num">—</span>}</td>
                   </tr>
                 ))}
               </tbody>

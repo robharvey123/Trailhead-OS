@@ -178,7 +178,7 @@ function formatMonth(value: string) {
 function ExpiredReportPage() {
   return (
     <div className="mx-auto flex min-h-[70vh] w-full max-w-4xl items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
-      <div className="w-full rounded-[2rem] border border-[#d8cfbf] bg-white/80 p-10 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="w-full rounded-card border border-[#d8cfbf] bg-white/80 p-10 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur">
         <p className="text-xs uppercase tracking-[0.3em] text-[#9a7b54]">
           Shared report
         </p>
@@ -398,7 +398,7 @@ export default async function PublicReportPage({
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
-      <div className="overflow-hidden rounded-[2.5rem] border border-[#d8cfbf] bg-white/75 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="overflow-hidden rounded-card border border-[#d8cfbf] bg-white/75 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur">
         <div className="border-b border-[#e7dccd] bg-[linear-gradient(135deg,rgba(255,255,255,0.88),rgba(244,235,222,0.82))] px-6 py-8 sm:px-8">
           <p className="text-xs uppercase tracking-[0.32em] text-[#9a7b54]">
             Shared analytics report
@@ -414,7 +414,7 @@ export default async function PublicReportPage({
                 {reportToken.label ? ` ${reportToken.label}.` : ''}
               </p>
             </div>
-            <div className="rounded-full border border-[#d7c4aa] bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#8b6b44]">
+            <div className="rounded-pill border border-[#d7c4aa] bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#8b6b44]">
               Expires {new Date(reportToken.expires_at).toLocaleDateString('en-GB')}
             </div>
           </div>
@@ -422,7 +422,7 @@ export default async function PublicReportPage({
 
         <div className="space-y-8 bg-[#f8f3eb] px-6 py-8 sm:px-8">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-[1.75rem] border border-[#e5d8c6] bg-white/85 p-5">
+            <div className="rounded-card border border-[#e5d8c6] bg-white/85 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-[#8b6b44]">
                 Revenue
               </p>
@@ -430,7 +430,7 @@ export default async function PublicReportPage({
                 {formatCurrency(revenueTotal, currencyCode)}
               </p>
             </div>
-            <div className="rounded-[1.75rem] border border-[#e5d8c6] bg-white/85 p-5">
+            <div className="rounded-card border border-[#e5d8c6] bg-white/85 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-[#8b6b44]">
                 Total shipped
               </p>
@@ -438,7 +438,7 @@ export default async function PublicReportPage({
                 {formatNumber(totals.totalShipped)}
               </p>
             </div>
-            <div className="rounded-[1.75rem] border border-[#e5d8c6] bg-white/85 p-5">
+            <div className="rounded-card border border-[#e5d8c6] bg-white/85 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-[#8b6b44]">
                 Promo rate
               </p>
@@ -446,7 +446,7 @@ export default async function PublicReportPage({
                 {formatPercent(promoRate)}
               </p>
             </div>
-            <div className="rounded-[1.75rem] border border-[#e5d8c6] bg-white/85 p-5">
+            <div className="rounded-card border border-[#e5d8c6] bg-white/85 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-[#8b6b44]">
                 Sell-through
               </p>
@@ -456,19 +456,23 @@ export default async function PublicReportPage({
             </div>
           </div>
 
-          <DashboardCharts data={chartData} />
+          {/* The dashboard charts read the OS design tokens. This page sits outside
+              the OS shell, so `.th-light` supplies them here. */}
+          <div className="th-light space-y-8">
+            <DashboardCharts data={chartData} />
 
-          <DashboardInsights
-            aspData={aspData}
-            promoRateData={promoRateData}
-            platformData={platformData}
-            regionData={regionData}
-            topCustomerRevenue={topCustomerRevenue}
-            topCompanySellOut={topCompanySellOut}
-            currencySymbol={currencyCode}
-          />
+            <DashboardInsights
+              aspData={aspData}
+              promoRateData={promoRateData}
+              platformData={platformData}
+              regionData={regionData}
+              topCustomerRevenue={topCustomerRevenue}
+              topCompanySellOut={topCompanySellOut}
+              currencySymbol={currencyCode}
+            />
+          </div>
 
-          <section className="rounded-[2rem] border border-[#e5d8c6] bg-white/85 p-6">
+          <section className="rounded-card border border-[#e5d8c6] bg-white/85 p-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">

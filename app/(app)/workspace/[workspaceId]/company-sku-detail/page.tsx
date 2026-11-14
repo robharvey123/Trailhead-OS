@@ -266,7 +266,7 @@ export default async function CompanySkuDetailPage({
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
             Grand total sell in
           </p>
@@ -274,7 +274,7 @@ export default async function CompanySkuDetailPage({
             {formatNumber(grandTotals.sellIn)}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
             Grand total sell out
           </p>
@@ -300,7 +300,7 @@ export default async function CompanySkuDetailPage({
             return (
               <details
                 key={group.company}
-                className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4"
+                className="rounded-card border border-slate-800 bg-slate-900/70 p-4"
                 open={groups.length <= 3}
               >
                 <summary className="cursor-pointer list-none text-sm font-semibold text-slate-200">
@@ -335,7 +335,7 @@ export default async function CompanySkuDetailPage({
             )
           })
         ) : (
-          <div className="rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-sm text-slate-300">
+          <div className="rounded-card border border-dashed border-slate-800 bg-slate-900/40 p-6 text-sm text-slate-300">
             No SKU data yet. Import sell-in and sell-out rows to populate company
             drilldowns.
           </div>

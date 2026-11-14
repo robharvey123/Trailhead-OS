@@ -6,6 +6,8 @@ import { listPeople } from '@/lib/db/people'
 import { mockupFontVars } from '@/lib/fonts'
 import InvitesClient from './InvitesClient'
 
+export const metadata = { title: 'Invites' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function AdminInvitesPage() {

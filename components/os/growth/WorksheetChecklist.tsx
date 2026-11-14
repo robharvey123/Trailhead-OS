@@ -25,13 +25,13 @@ export default function WorksheetChecklist({
     <div className="mt-4 space-y-5">
       {groups.map((group) => (
         <div key={group}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text-3)]">{group}</p>
+          <p className="os-label">{group}</p>
           <ul className="mt-2 space-y-1.5">
             {items
               .filter((i) => i.group === group)
               .map((item) => (
                 <li key={item.key}>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]">
+                  <label className="flex cursor-pointer items-start gap-3 rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]">
                     <input
                       type="checkbox"
                       checked={Boolean(optimistic[item.key])}

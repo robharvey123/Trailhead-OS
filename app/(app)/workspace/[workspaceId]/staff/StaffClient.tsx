@@ -79,35 +79,35 @@ export default function StaffClient({ workspaceId, initialStaff }: { workspaceId
           <h1 className="mt-1 text-2xl font-semibold">Staff</h1>
           <p className="mt-1 text-sm text-slate-400">{filtered.length} team members</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ Add Member</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ Add Member</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500 w-64" />
-        <select value={filterDept} onChange={(e) => setFilterDept(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <input placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500 w-64" />
+        <select value={filterDept} onChange={(e) => setFilterDept(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All departments</option>
           {DEPARTMENTS.map((d) => <option key={d} value={d}>{DEPARTMENT_LABELS[d]}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Member' : 'Add Team Member'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Phone</label><input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Department</label><select value={department} onChange={(e) => setDepartment(e.target.value as Department)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{DEPARTMENTS.map((d) => <option key={d} value={d}>{DEPARTMENT_LABELS[d]}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Role Title</label><input value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={employmentType} onChange={(e) => setEmploymentType(e.target.value as EmploymentType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{EMPLOYMENT_TYPES.map((t) => <option key={t} value={t}>{EMPLOYMENT_TYPE_LABELS[t]}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Hourly Rate</label><input type="number" step="0.01" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Capacity (hrs/wk)</label><input type="number" value={capacityHours} onChange={(e) => setCapacityHours(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Start Date</label><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Phone</label><input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Department</label><select value={department} onChange={(e) => setDepartment(e.target.value as Department)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{DEPARTMENTS.map((d) => <option key={d} value={d}>{DEPARTMENT_LABELS[d]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Role Title</label><input value={roleTitle} onChange={(e) => setRoleTitle(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={employmentType} onChange={(e) => setEmploymentType(e.target.value as EmploymentType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{EMPLOYMENT_TYPES.map((t) => <option key={t} value={t}>{EMPLOYMENT_TYPE_LABELS[t]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Hourly Rate</label><input type="number" step="0.01" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Capacity (hrs/wk)</label><input type="number" value={capacityHours} onChange={(e) => setCapacityHours(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Start Date</label><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Add'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Add'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
@@ -115,7 +115,7 @@ export default function StaffClient({ workspaceId, initialStaff }: { workspaceId
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.length === 0 ? <p className="col-span-full text-center text-slate-500 py-8">No team members found</p> : filtered.map((s) => (
-          <div key={s.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-2">
+          <div key={s.id} className="rounded-card border border-slate-800 bg-slate-900/80 p-5 space-y-2">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-medium">{s.display_name}</h3>
@@ -127,9 +127,9 @@ export default function StaffClient({ workspaceId, initialStaff }: { workspaceId
               </div>
             </div>
             <div className="flex flex-wrap gap-2 text-xs text-slate-400">
-              <span className="rounded-full bg-slate-800 px-2 py-0.5">{EMPLOYMENT_TYPE_LABELS[s.employment_type]}</span>
-              <span className="rounded-full bg-slate-800 px-2 py-0.5">{s.capacity_hours_per_week}h/wk</span>
-              {s.hourly_rate != null && <span className="rounded-full bg-slate-800 px-2 py-0.5">${s.hourly_rate}/hr</span>}
+              <span className="rounded-pill bg-slate-800 px-2 py-0.5">{EMPLOYMENT_TYPE_LABELS[s.employment_type]}</span>
+              <span className="rounded-pill bg-slate-800 px-2 py-0.5">{s.capacity_hours_per_week}h/wk</span>
+              {s.hourly_rate != null && <span className="rounded-pill bg-slate-800 px-2 py-0.5">${s.hourly_rate}/hr</span>}
             </div>
             {s.email && <p className="text-xs text-slate-500">{s.email}</p>}
           </div>

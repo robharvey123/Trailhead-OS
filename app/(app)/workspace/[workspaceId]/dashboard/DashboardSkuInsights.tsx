@@ -29,6 +29,21 @@ type MonthlyLeaderDatum = {
   topSellOutUnits: number
 }
 
+// Chart colours are working tokens passed as strings.
+const SERIES = ['var(--accent)', 'var(--amber)'] as const
+const TICK = { fill: 'var(--text-3)', fontSize: 12 }
+const TOOLTIP_STYLE = {
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-control)',
+  color: 'var(--text)',
+}
+
+// Legend labels in body ink: a series colour is a fill, not a type colour.
+const legendLabel = (value: string) => (
+  <span className="text-[var(--text-2)]">{value}</span>
+)
+
 function formatCurrency(value: number, symbol: string) {
   return `${symbol}${value.toLocaleString(undefined, {
     minimumFractionDigits: 0,
@@ -55,21 +70,21 @@ export default function DashboardSkuInsights({
     <section className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100">Best-selling SKUs</h2>
-          <p className="mt-2 text-sm text-slate-300">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Best-selling SKUs</h2>
+          <p className="mt-2 text-sm text-[var(--text-2)]">
             All-time winners plus the monthly leaders across shipped units and sell-out.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-sm">
+        <div className="flex flex-wrap gap-2">
           <Link
             href={`/workspace/${workspaceId}/sku-summary`}
-            className="rounded-full border border-slate-700 px-4 py-2 text-slate-200 transition hover:border-slate-500"
+            className="btn btn-ghost btn-sm"
           >
             Open SKU summary
           </Link>
           <Link
             href={`/workspace/${workspaceId}/company-sku-detail`}
-            className="rounded-full border border-slate-700 px-4 py-2 text-slate-200 transition hover:border-slate-500"
+            className="btn btn-ghost btn-sm"
           >
             Open company SKU view
           </Link>
@@ -77,40 +92,42 @@ export default function DashboardSkuInsights({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Top shipped SKU</p>
-          <p className="mt-3 text-lg font-semibold text-white">{bestShipped?.sku ?? '—'}</p>
-          <p className="mt-1 text-sm text-slate-300">
+        <div className="os-card p-5">
+          <p className="os-label">Top shipped SKU</p>
+          <p className="mt-3 text-lg font-semibold text-[var(--text)]">{bestShipped?.sku ?? '—'}</p>
+          <p className="mt-1 text-sm text-[var(--text-2)]">
             {bestShipped ? `${formatNumber(bestShipped.totalShipped)} shipped` : 'No SKU data yet'}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Top sell-out SKU</p>
-          <p className="mt-3 text-lg font-semibold text-white">{bestSellOut?.sku ?? '—'}</p>
-          <p className="mt-1 text-sm text-slate-300">
+        <div className="os-card p-5">
+          <p className="os-label">Top sell-out SKU</p>
+          <p className="mt-3 text-lg font-semibold text-[var(--text)]">{bestSellOut?.sku ?? '—'}</p>
+          <p className="mt-1 text-sm text-[var(--text-2)]">
             {bestSellOut ? `${formatNumber(bestSellOut.sellOut)} sold out` : 'No SKU data yet'}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Best sell-through</p>
-          <p className="mt-3 text-lg font-semibold text-white">{bestSellThrough?.sku ?? '—'}</p>
-          <p className="mt-1 text-sm text-slate-300">
+        <div className="os-card p-5">
+          <p className="os-label">Best sell-through</p>
+          <p className="mt-3 text-lg font-semibold text-[var(--text)]">{bestSellThrough?.sku ?? '—'}</p>
+          <p className="mt-1 text-sm text-[var(--text-2)]">
             {bestSellThrough ? formatPercent(bestSellThrough.sellThrough) : 'No SKU data yet'}
           </p>
         </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-          <h3 className="text-sm font-semibold text-slate-200">Top 10 SKUs all time</h3>
+        <div className="os-card p-6">
+          <h3 className="text-sm font-semibold text-[var(--text)]">Top 10 SKUs all time</h3>
           <div className="mt-4 h-80 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={220}>
               <BarChart data={topSkus} barGap={6} barSize={18}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                <XAxis dataKey="sku" stroke="#94a3b8" fontSize={12} interval={0} angle={-18} textAnchor="end" height={70} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="sku" stroke="var(--border-light)" tick={TICK} fontSize={12} interval={0} angle={-18} textAnchor="end" height={70} />
+                <YAxis stroke="var(--border-light)" tick={TICK} fontSize={12} />
                 <Tooltip
-                  contentStyle={{ background: '#0f172a', border: '1px solid #1f2937', color: '#e2e8f0' }}
+                  contentStyle={TOOLTIP_STYLE}
+                  itemStyle={{ color: 'var(--text)' }}
+                  cursor={{ fill: 'var(--surface-2)' }}
                   formatter={(value, name) => {
                     if (name === 'Revenue') {
                       return formatCurrency(Number(value), currencySymbol)
@@ -121,30 +138,30 @@ export default function DashboardSkuInsights({
                     return formatNumber(Number(value))
                   }}
                 />
-                <Legend />
-                <Bar dataKey="totalShipped" name="Total shipped" fill="#38bdf8" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="sellOut" name="Sell out" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                <Legend formatter={legendLabel} />
+                <Bar dataKey="totalShipped" name="Total shipped" fill={SERIES[0]} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="sellOut" name="Sell out" fill={SERIES[1]} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-          <h3 className="text-sm font-semibold text-slate-200">Top SKU leaderboard</h3>
+        <div className="os-card p-6">
+          <h3 className="text-sm font-semibold text-[var(--text)]">Top SKU leaderboard</h3>
           <div className="mt-4 space-y-3">
             {topSkus.map((sku) => (
               <div
                 key={sku.sku}
-                className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3"
+                className="rounded-control border border-[var(--border)] bg-[var(--surface)] px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium text-slate-100">{sku.sku}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="font-medium text-[var(--text)]">{sku.sku}</p>
+                    <p className="mt-1 text-xs text-[var(--text-3)]">
                       Revenue {formatCurrency(sku.revenue, currencySymbol)}
                     </p>
                   </div>
-                  <div className="text-right text-xs text-slate-400">
+                  <div className="text-right text-xs text-[var(--text-3)]">
                     <p>{formatNumber(sku.totalShipped)} shipped</p>
                     <p>{formatNumber(sku.sellOut)} sold out</p>
                     <p>{formatPercent(sku.sellThrough)} sell-through</p>
@@ -156,39 +173,39 @@ export default function DashboardSkuInsights({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-        <h3 className="text-sm font-semibold text-slate-200">Monthly SKU leaders</h3>
-        <p className="mt-2 text-sm text-slate-300">
+      <div className="os-card p-6">
+        <h3 className="text-sm font-semibold text-[var(--text)]">Monthly SKU leaders</h3>
+        <p className="mt-2 text-sm text-[var(--text-2)]">
           Best performer each month for shipped units and sell-out.
         </p>
 
         {monthlyLeaders.length ? (
           <div className="mt-5 overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+              <thead className="text-left">
                 <tr>
-                  <th className="pb-3">Month</th>
-                  <th className="pb-3">Top shipped SKU</th>
-                  <th className="pb-3 text-right">Units</th>
-                  <th className="pb-3">Top sell-out SKU</th>
-                  <th className="pb-3 text-right">Units</th>
+                  <th className="os-label pb-3">Month</th>
+                  <th className="os-label pb-3">Top shipped SKU</th>
+                  <th className="os-label pb-3 text-right">Units</th>
+                  <th className="os-label pb-3">Top sell-out SKU</th>
+                  <th className="os-label pb-3 text-right">Units</th>
                 </tr>
               </thead>
               <tbody>
                 {monthlyLeaders.map((row) => (
-                  <tr key={row.month} className="border-t border-slate-800">
-                    <td className="py-3 text-slate-200">{formatMonthLabel(row.month)}</td>
-                    <td className="py-3 text-slate-100">{row.topShippedSku || '—'}</td>
-                    <td className="py-3 text-right text-slate-300">{formatNumber(row.topShippedUnits)}</td>
-                    <td className="py-3 text-slate-100">{row.topSellOutSku || '—'}</td>
-                    <td className="py-3 text-right text-slate-300">{formatNumber(row.topSellOutUnits)}</td>
+                  <tr key={row.month} className="border-t border-[var(--border)]">
+                    <td className="py-3 text-[var(--text)]">{formatMonthLabel(row.month)}</td>
+                    <td className="py-3 text-[var(--text)]">{row.topShippedSku || '—'}</td>
+                    <td className="py-3 text-right text-[var(--text-2)]">{formatNumber(row.topShippedUnits)}</td>
+                    <td className="py-3 text-[var(--text)]">{row.topSellOutSku || '—'}</td>
+                    <td className="py-3 text-right text-[var(--text-2)]">{formatNumber(row.topSellOutUnits)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="mt-4 text-sm text-slate-500">No SKU leaderboard data available yet.</p>
+          <p className="mt-4 text-sm text-[var(--text-3)]">No SKU leaderboard data available yet.</p>
         )}
       </div>
     </section>

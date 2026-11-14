@@ -23,22 +23,21 @@ export default function RoadmapUploadClient({ projectId }: { projectId: string }
   }
 
   return (
-    <div style={{ maxWidth: 560 }}>
-      <p style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 14 }}>
+    <div className="max-w-[560px]">
+      <p className="mb-3.5 text-[13px] text-[var(--text-2)]">
         Upload a roadmap document (.docx or .md, max 15MB). We’ll extract a structured task list for you to review before anything is created.
       </p>
-      <div className="card" style={{ display: 'grid', gap: 12 }}>
+      <div className="card grid gap-3">
         <input
           ref={inputRef}
           type="file"
           accept=".docx,.md,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown"
           onChange={(e) => setFileName(e.target.files?.[0]?.name ?? '')}
-          className="filter-select"
-          style={{ width: '100%' }}
+          className="filter-select w-full"
         />
-        {fileName ? <p style={{ fontSize: 12, color: 'var(--text-3)' }}>{fileName}</p> : null}
-        {error ? <p style={{ color: 'var(--red)', fontSize: 12 }}>{error}</p> : null}
-        <div style={{ textAlign: 'right' }}>
+        {fileName ? <p className="text-xs text-[var(--text-3)]">{fileName}</p> : null}
+        {error ? <p className="text-xs text-[var(--red)]">{error}</p> : null}
+        <div className="text-right">
           <button className="btn btn-primary btn-sm" onClick={submit} disabled={busy}>
             {busy ? 'Extracting… (this can take ~20s)' : 'Extract tasks'}
           </button>

@@ -1,8 +1,11 @@
 import Link from 'next/link'
+import PageHeader from '@/components/ui/PageHeader'
 import StatusBadge from '@/components/os/StatusBadge'
 import WorkstreamBadge from '@/components/os/WorkstreamBadge'
 import { getQuotes } from '@/lib/db/quotes'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata = { title: 'Quotes' }
 
 const QUOTE_TABS = [
   { value: 'all', label: 'All' },
@@ -49,27 +52,27 @@ export default async function QuotesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Commercial</p>
-          <h1 className="mt-2 os-page-title">Quotes</h1>
-        </div>
-        <Link
-          href="/quotes/new"
-          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-        >
-          New quote
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Commercial"
+        title="Quotes"
+        actions={
+          <Link
+            href="/quotes/new"
+            className="btn btn-primary"
+          >
+            New quote
+          </Link>
+        }
+      />
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="os-card p-5">
           <p className="os-eyebrow">Sent quote value</p>
-          <p className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{formatMoney(sentValue)}</p>
+          <p className="stat-value mt-3">{formatMoney(sentValue)}</p>
         </div>
         <div className="os-card p-5">
           <p className="os-eyebrow">Accepted this month</p>
-          <p className="mt-3 text-2xl font-semibold text-[color:var(--text)]">{acceptedThisMonth}</p>
+          <p className="stat-value mt-3">{acceptedThisMonth}</p>
         </div>
       </div>
 
@@ -81,7 +84,7 @@ export default async function QuotesPage({
             <Link
               key={tab.value}
               href={href}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
+              className={`rounded-pill border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                   : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)] hover:text-[color:var(--text)]'
@@ -95,21 +98,21 @@ export default async function QuotesPage({
 
       <div className="os-card overflow-x-auto p-6">
         {quotes.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+          <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No quotes in this view yet.
           </div>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+            <thead className="text-left">
               <tr>
-                <th className="pb-3">Quote no.</th>
-                <th className="pb-3">Title</th>
-                <th className="pb-3">Account</th>
-                <th className="pb-3">Contact</th>
-                <th className="pb-3">Workstream</th>
-                <th className="pb-3 text-right">Total</th>
-                <th className="pb-3">Status</th>
-                <th className="pb-3">Actions</th>
+                <th className="os-label pb-3">Quote no.</th>
+                <th className="os-label pb-3">Title</th>
+                <th className="os-label pb-3">Account</th>
+                <th className="os-label pb-3">Contact</th>
+                <th className="os-label pb-3">Workstream</th>
+                <th className="os-label pb-3 text-right">Total</th>
+                <th className="os-label pb-3">Status</th>
+                <th className="os-label pb-3">Actions</th>
               </tr>
             </thead>
             <tbody>

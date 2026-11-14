@@ -4,6 +4,9 @@ import { formatBlogDate } from '@/lib/blog'
 import { getAllBlogPosts } from '@/lib/db/blog-posts'
 import { createClient } from '@/lib/supabase/server'
 import { buildMarketingSiteUrl, isLocalDevelopmentHost } from '@/lib/site'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Blog' }
 
 export default async function OsBlogPage() {
   const host = (await headers()).get('host') || ''
@@ -13,33 +16,29 @@ export default async function OsBlogPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="os-eyebrow">
-            Content
-          </p>
-          <h1 className="os-page-title mt-2">
-            Blog
-          </h1>
-        </div>
-        <Link
-          href="/blog/new"
-          className="inline-flex items-center justify-center rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
-        >
-          New post
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow="Content"
+        title="Blog"
+        actions={
+          <Link
+            href="/blog/new"
+            className="btn btn-primary"
+          >
+            New post
+          </Link>
+        }
+      />
 
-      <div className="overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-white">
+      <div className="os-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[color:var(--border)] text-left">
-            <thead className="bg-[var(--surface)] text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+            <thead className="bg-[var(--surface)]">
               <tr>
-                <th className="px-6 py-4 font-medium">Title</th>
-                <th className="px-6 py-4 font-medium">Tags</th>
-                <th className="px-6 py-4 font-medium">Published date</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Actions</th>
+                <th className="os-label px-6 py-3">Title</th>
+                <th className="os-label px-6 py-3">Tags</th>
+                <th className="os-label px-6 py-3">Published date</th>
+                <th className="os-label px-6 py-3">Status</th>
+                <th className="os-label px-6 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[color:var(--border)] text-sm text-[color:var(--text-2)]">
@@ -60,7 +59,7 @@ export default async function OsBlogPage() {
                       {post.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--text-2)]"
+                          className="tag-chip"
                         >
                           {tag}
                         </span>
@@ -72,11 +71,7 @@ export default async function OsBlogPage() {
                   </td>
                   <td className="px-6 py-5">
                     <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        post.published
-                          ? 'bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
-                          : 'bg-[var(--surface-2)] text-[color:var(--text-2)]'
-                      }`}
+                      className={`status-badge ${post.published ? 'status-emerald' : 'status-grey'}`}
                     >
                       {post.published ? 'Published' : 'Draft'}
                     </span>

@@ -80,7 +80,7 @@ export default function DocumentPreviewDrawer({
       <div
         onClick={onClose}
         aria-hidden
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-40 bg-[var(--navy)]/45 transition-opacity duration-200 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       />
 
       {/* Panel */}
@@ -88,7 +88,7 @@ export default function DocumentPreviewDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={`Preview: ${name}`}
-        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-[var(--surface)] shadow-2xl transition-transform duration-200 ease-out sm:w-[560px] lg:w-[720px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-[var(--surface)] shadow-[var(--shadow-lg)] transition-transform duration-200 ease-out sm:w-[560px] lg:w-[720px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {shown ? (
           <>
@@ -104,7 +104,7 @@ export default function DocumentPreviewDrawer({
                 {shown.file_path ? (
                   <a
                     href={downloadUrl}
-                    className="rounded-lg border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+                    className="btn btn-ghost btn-sm"
                   >
                     Download
                   </a>
@@ -113,7 +113,7 @@ export default function DocumentPreviewDrawer({
                   type="button"
                   onClick={onClose}
                   aria-label="Close preview"
-                  className="rounded-lg border border-[color:var(--border)] px-2.5 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+                  className="rounded-control border border-[color:var(--border)] px-2.5 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
                 >
                   ✕
                 </button>
@@ -152,7 +152,7 @@ export default function DocumentPreviewDrawer({
                       href={previewUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
+                      className="btn btn-primary"
                     >
                       Open PDF
                     </a>
@@ -164,7 +164,7 @@ export default function DocumentPreviewDrawer({
                     name={name}
                     sub="Inline preview unavailable for this file."
                     action={
-                      <a href={downloadUrl} className="mt-4 inline-block rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white">
+                      <a href={downloadUrl} className="btn btn-primary mt-4">
                         Download file
                       </a>
                     }
@@ -175,7 +175,7 @@ export default function DocumentPreviewDrawer({
                   <div className="mx-auto max-w-[760px] px-4 py-6">
                     <style>{DOCX_STYLE}</style>
                     <div
-                      className="docx-preview rounded-lg bg-white p-8 text-[13.5px] leading-relaxed text-[#1a1a1a] shadow-sm"
+                      className="docx-preview rounded-card bg-[var(--bg)] p-8 text-[13.5px] leading-relaxed text-[var(--text)] shadow-[var(--shadow-sm)]"
                       dangerouslySetInnerHTML={{ __html: docx.html }}
                     />
                   </div>
@@ -187,7 +187,7 @@ export default function DocumentPreviewDrawer({
                   action={
                     <a
                       href={downloadUrl}
-                      className="mt-4 inline-block rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
+                      className="btn btn-primary mt-4"
                     >
                       Download file
                     </a>
@@ -212,15 +212,15 @@ const DOCX_STYLE = `
 .docx-preview p { margin: 0 0 0.7em; }
 .docx-preview ul, .docx-preview ol { margin: 0 0 0.7em; padding-left: 1.4em; }
 .docx-preview li { margin: 0.2em 0; }
-.docx-preview a { color: #0369a1; text-decoration: underline; }
+.docx-preview a { color: var(--accent-strong); text-decoration: underline; }
 .docx-preview table { border-collapse: collapse; width: 100%; margin: 0.6em 0; font-size: 0.95em; }
-.docx-preview th, .docx-preview td { border: 1px solid #d4d4d4; padding: 5px 8px; text-align: left; vertical-align: top; }
+.docx-preview th, .docx-preview td { border: 1px solid var(--border-light); padding: 5px 8px; text-align: left; vertical-align: top; }
 .docx-preview img { max-width: 100%; height: auto; }
 .docx-preview strong { font-weight: 700; }
 `
 
 function Skeleton() {
-  return <div className="h-40 w-40 animate-pulse rounded-xl bg-[var(--surface-3)]" />
+  return <div className="h-40 w-40 animate-pulse rounded-card bg-[var(--surface-3)]" />
 }
 
 function FallbackCard({ name, sub, action }: { name: string; sub: string; action?: ReactNode }) {

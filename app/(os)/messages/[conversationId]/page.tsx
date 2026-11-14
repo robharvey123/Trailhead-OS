@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 import { mockupFontVars } from '@/lib/fonts'
 import MessageClient from './MessageClient'
 import ChannelManageButton from '@/components/messaging/ChannelManageButton'
@@ -8,6 +8,8 @@ import { listPeople } from '@/lib/db/people'
 import { listEngagements } from '@/lib/db/engagements'
 import { normalizeMessage } from '../normalize'
 import type { ChatMessage } from '../actions'
+
+export const metadata = { title: 'Conversation' }
 
 export const dynamic = 'force-dynamic'
 
@@ -106,15 +108,20 @@ export default async function ConversationPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="panel overflow-hidden" style={{ height: 'calc(100vh - 140px)', maxWidth: 720, display: 'flex', flexDirection: 'column' }}>
-        <div className="topbar" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link href="/messages" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Messages</Link>
-          <span className="topbar-title" style={{ flex: 1 }}>{conv.kind === 'channel' ? `# ${title}` : title}</span>
-          {conv.kind === 'channel' ? (
+      {/* The header is capped to the panel's width so the action sits above the panel's right edge. */}
+      <PageHeader
+        className="max-w-[720px]"
+        back={{ href: '/messages', label: 'Messages' }}
+        title={conv.kind === 'channel' ? `# ${title}` : title}
+        actions={
+          conv.kind === 'channel' ? (
             <ChannelManageButton conversationId={conversationId} members={members} users={usersDirectory} isAdmin={amAdmin} meId={user.id} engagements={engagements} defaultEngagementId={(conv.default_engagement_id as string | null) ?? null} />
-          ) : null}
-        </div>
-        <div style={{ flex: 1, minHeight: 0 }}>
+          ) : undefined
+        }
+      />
+      {/* Height = viewport minus the shell chrome and the page header, so the thread scrolls inside the panel. */}
+      <div className="panel flex h-[calc(100vh-248px)] max-w-[720px] flex-col overflow-hidden md:h-[calc(100vh-200px)]">
+        <div className="min-h-0 flex-1">
           <MessageClient
             conversationId={conversationId}
             meId={user.id}

@@ -6,8 +6,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTaskPriority, type EngagementTaskWithRelations } from '@/lib/types'
 import { labelColor } from '@/lib/tags'
 
-const PRIORITY_COLOR: Record<EngagementTaskPriority, string> = {
-  urgent: 'var(--red)', high: 'var(--amber)', normal: 'var(--text-3)', low: 'var(--text-3)',
+const PRIORITY_DOT: Record<EngagementTaskPriority, string> = {
+  urgent: 'bg-[var(--red)]', high: 'bg-[var(--amber)]', normal: 'bg-[var(--text-3)]', low: 'bg-[var(--text-3)]',
 }
 
 function initials(name?: string | null) {
@@ -65,27 +65,27 @@ function TaskCard({
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 10, marginBottom: 8, cursor: 'grab' }}
+      className="mb-2 cursor-grab rounded-control border border-[var(--border)] bg-[var(--bg)] p-2.5"
+      style={style}
       {...attributes}
       {...listeners}
       onClick={() => onOpen(task.id)}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+      <div className="flex justify-between gap-2">
         {/* The card itself is the drag handle (dnd-kit's attributes make it a
             keyboard drag target), so opening the ticket needs its own control. */}
         <button
           type="button"
-          className="td-name"
-          style={{ fontSize: 13, textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          className="td-name cursor-pointer border-0 bg-transparent p-0 text-left text-[13px]"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onOpen(task.id) }}
         >
           {task.title}
         </button>
-        <span title={ENGAGEMENT_TASK_PRIORITY_LABELS[task.priority]} style={{ width: 8, height: 8, borderRadius: '50%', background: PRIORITY_COLOR[task.priority], flexShrink: 0, marginTop: 4 }} />
+        <span title={ENGAGEMENT_TASK_PRIORITY_LABELS[task.priority]} className={`mt-1 h-2 w-2 shrink-0 rounded-pill ${PRIORITY_DOT[task.priority]}`} />
       </div>
       {task.labels.length > 0 ? (
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
+        <div className="mt-1.5 flex flex-wrap gap-1">
           {task.labels.map((l) => {
             const c = labelColor(l)
             const active = activeLabels?.includes(l) ?? false
@@ -97,20 +97,15 @@ function TaskCard({
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); onToggleLabel?.(l) }}
                 title={active ? `Remove filter: ${l}` : `Filter by “${l}”`}
+                className={`max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap rounded-pill border px-2 py-0.5 text-[10px] font-semibold leading-[1.4] ${onToggleLabel ? 'cursor-pointer' : 'cursor-default'}`}
+                // The hue is derived from the label text, so it stays inline. An
+                // active filter chip keeps the label's ink on a deeper tint with
+                // an ink border: white type on the solid hue fails contrast for
+                // the lighter hues.
                 style={{
-                  fontSize: 10,
-                  fontWeight: 600,
-                  lineHeight: 1.4,
-                  padding: '2px 8px',
-                  borderRadius: 999,
-                  cursor: onToggleLabel ? 'pointer' : 'default',
-                  maxWidth: 180,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  background: active ? c.solidBg : c.bg,
-                  color: active ? '#fff' : c.fg,
-                  border: `1px solid ${active ? c.solidBg : c.border}`,
+                  background: active ? `hsl(${c.hue} 70% 50% / 0.3)` : c.bg,
+                  color: c.fg,
+                  borderColor: active ? c.fg : c.border,
                 }}
               >
                 {l}
@@ -119,16 +114,16 @@ function TaskCard({
           })}
         </div>
       ) : null}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, color: due ? 'var(--text-2)' : 'var(--text-3)' }}>{due ?? '—'}</span>
+      <div className="mt-2 flex items-center justify-between">
+        <span className="inline-flex items-center gap-2">
+          <span className={`text-[11px] ${due ? 'text-[var(--text-2)]' : 'text-[var(--text-3)]'}`}>{due ?? '—'}</span>
           {loggedMinutes > 0 ? (
-            <span title={`${fmtLogged(loggedMinutes)} logged`} style={{ fontSize: 10, color: 'var(--text-3)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+            <span title={`${fmtLogged(loggedMinutes)} logged`} className="inline-flex items-center gap-[3px] text-[10px] text-[var(--text-3)]">
               ⏱ {fmtLogged(loggedMinutes)}
             </span>
           ) : null}
         </span>
-        <span title={task.assignee?.full_name ?? 'Unassigned'} style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--surface-3)', color: 'var(--text-2)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span title={task.assignee?.full_name ?? 'Unassigned'} className="flex h-[22px] w-[22px] items-center justify-center rounded-pill bg-[var(--surface-3)] text-[10px] text-[var(--text-2)]">
           {initials(task.assignee?.full_name)}
         </span>
       </div>

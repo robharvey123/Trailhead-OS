@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import PageHeader from '@/components/ui/PageHeader'
 import type { Contact, ContactStatus } from '@/lib/types'
 
 type Named = { id: string; name: string }
@@ -58,91 +59,93 @@ export default function ContactsClient({ contacts, accounts, channels }: Contact
   }, [contacts])
 
   return (
-    <div className="panel overflow-hidden">
-      <div className="topbar">
-        <Link href="/crm/accounts" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Accounts</Link>
-        <span className="topbar-title">Contacts</span>
-        <span className="topbar-count">{contacts.length} contacts</span>
-        <div className="topbar-actions">
-          <Link className="btn btn-ghost btn-sm" href="/crm/link">⚲ Linking backlog</Link>
-          <Link className="btn btn-ghost btn-sm" href="/crm/contacts/import">↑ Import</Link>
-          <Link className="btn btn-primary btn-sm" href="/crm/contacts/new">+ Add contact</Link>
+    <>
+      <PageHeader
+        back={{ href: '/crm/accounts', label: 'Accounts' }}
+        title="Contacts"
+        count={<>{contacts.length} contacts</>}
+        actions={
+          <>
+            <Link className="btn btn-ghost btn-sm" href="/crm/link">⚲ Linking backlog</Link>
+            <Link className="btn btn-ghost btn-sm" href="/crm/contacts/import">↑ Import</Link>
+            <Link className="btn btn-primary btn-sm" href="/crm/contacts/new">+ Add contact</Link>
+          </>
+        }
+      />
+      <div className="panel overflow-hidden">
+        <div className="stats-bar">
+          {STATUS_TABS.map((t) => (
+            <button
+              key={t.value}
+              className={`stat-item cursor-pointer text-left ${status === t.value ? 'bg-[var(--surface-2)]' : ''}`}
+              onClick={() => setStatus(status === t.value ? '' : t.value)}
+            >
+              <div className="stat-label">{t.label}</div>
+              <div className="stat-value">{statusCounts[t.value] ?? 0}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className="filterbar">
+          <div className="search-wrap">
+            <span className="search-icon">⌕</span>
+            <input className="search-input" placeholder="Search contacts..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <select className="filter-select" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+            <option value="">All accounts</option>
+            {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
+          </select>
+          <select className="filter-select" value={channel} onChange={(e) => setChannel(e.target.value)}>
+            <option value="">All channels</option>
+            {channels.map((c) => (<option key={c} value={c}>{c}</option>))}
+          </select>
+          <select className="filter-select" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">All statuses</option>
+            {STATUS_TABS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
+          </select>
+          {(search || status || accountId || channel) ? (
+            <button className="btn btn-ghost btn-sm" onClick={() => { setSearch(''); setStatus(''); setAccountId(''); setChannel('') }}>Clear</button>
+          ) : null}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Contact</th><th>Account</th><th>Role</th><th>Email</th><th>Channel</th><th>Status</th><th>Tags</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={7} className="empty">No contacts match this view.</td></tr>
+              ) : (
+                filtered.map((c) => (
+                  <tr key={c.id} className="cursor-pointer" onClick={() => router.push(`/crm/contacts/${c.id}`)}>
+                    <td>
+                      <div className="td-name">{c.name}</div>
+                      {c.company ? <div className="td-sub">{c.company}</div> : null}
+                    </td>
+                    <td className="td-num">{c.account_id ? accountName.get(c.account_id) ?? '—' : <span className="meta-chip bg-[var(--amber-dim)]! text-[var(--amber-strong)]!">unlinked</span>}</td>
+                    <td className="td-num">{c.role ?? '—'}</td>
+                    <td>
+                      {c.email ? (
+                        <a className="website-link" href={`mailto:${c.email}`} onClick={(e) => e.stopPropagation()}>{c.email}</a>
+                      ) : <span className="td-num">—</span>}
+                    </td>
+                    <td>{c.channel ? <span className="channel-tag">{c.channel}</span> : <span className="td-num">—</span>}</td>
+                    <td><span className={`status-badge ${STATUS_CLASS[c.status] ?? 'status-on_hold'}`}>{STATUS_LABEL[c.status] ?? c.status}</span></td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        {(c.tags ?? []).map((t) => (<span key={t} className="channel-tag">{t}</span>))}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <div className="stats-bar">
-        {STATUS_TABS.map((t) => (
-          <button
-            key={t.value}
-            className="stat-item"
-            style={{ background: status === t.value ? 'var(--surface-2)' : undefined, cursor: 'pointer', textAlign: 'left', border: 'none', borderRight: '1px solid var(--border)' }}
-            onClick={() => setStatus(status === t.value ? '' : t.value)}
-          >
-            <div className="stat-label">{t.label}</div>
-            <div className="stat-value">{statusCounts[t.value] ?? 0}</div>
-          </button>
-        ))}
-      </div>
-
-      <div className="filterbar">
-        <div className="search-wrap">
-          <span className="search-icon">⌕</span>
-          <input className="search-input" placeholder="Search contacts..." value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <select className="filter-select" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-          <option value="">All accounts</option>
-          {accounts.map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
-        </select>
-        <select className="filter-select" value={channel} onChange={(e) => setChannel(e.target.value)}>
-          <option value="">All channels</option>
-          {channels.map((c) => (<option key={c} value={c}>{c}</option>))}
-        </select>
-        <select className="filter-select" value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="">All statuses</option>
-          {STATUS_TABS.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}
-        </select>
-        {(search || status || accountId || channel) ? (
-          <button className="btn btn-ghost btn-sm" onClick={() => { setSearch(''); setStatus(''); setAccountId(''); setChannel('') }}>Clear</button>
-        ) : null}
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Contact</th><th>Account</th><th>Role</th><th>Email</th><th>Channel</th><th>Status</th><th>Tags</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="empty">No contacts match this view.</td></tr>
-            ) : (
-              filtered.map((c) => (
-                <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/crm/contacts/${c.id}`)}>
-                  <td>
-                    <div className="td-name">{c.name}</div>
-                    {c.company ? <div className="td-sub">{c.company}</div> : null}
-                  </td>
-                  <td className="td-mono">{c.account_id ? accountName.get(c.account_id) ?? '—' : <span className="meta-chip" style={{ color: 'var(--amber-strong)', background: 'var(--amber-dim)' }}>unlinked</span>}</td>
-                  <td style={{ color: 'var(--text-2)', fontSize: 12 }}>{c.role ?? '—'}</td>
-                  <td>
-                    {c.email ? (
-                      <a className="website-link" href={`mailto:${c.email}`} onClick={(e) => e.stopPropagation()}>{c.email}</a>
-                    ) : <span className="td-mono">—</span>}
-                  </td>
-                  <td>{c.channel ? <span className="channel-tag">{c.channel}</span> : <span className="td-mono">—</span>}</td>
-                  <td><span className={`status-badge ${STATUS_CLASS[c.status] ?? 'status-on_hold'}`}>{STATUS_LABEL[c.status] ?? c.status}</span></td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {(c.tags ?? []).map((t) => (<span key={t} className="channel-tag">{t}</span>))}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </>
   )
 }

@@ -36,6 +36,13 @@ const getColumnLabel = <T,>(column: ColumnDef<T>) => {
   return column.id ?? ''
 }
 
+/* Header and footer strip. Two layers: the tint over the opaque ground, so the
+   strip stays solid when it sticks, on white and on navy (where the surface
+   tokens are translucent). */
+const STRIP =
+  'bg-[var(--bg)] bg-[linear-gradient(var(--surface),var(--surface))]'
+const STICKY_STRIP = `${STRIP} shadow-[2px_0_0_0_var(--border)]`
+
 export default function DataTable<T>({
   data,
   columns,
@@ -120,15 +127,15 @@ export default function DataTable<T>({
               onChange={(event) => setGlobalFilter(event.target.value)}
               placeholder={filterPlaceholder}
               aria-label={filterPlaceholder}
-              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 md:max-w-xs"
+              className="os-input w-full px-3 py-2 text-sm md:max-w-xs"
             />
             {monthOptions?.length ? (
-              <label className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+              <label className="os-label flex items-center gap-2">
                 {monthFilterLabel}
                 <select
                   value={monthFilter}
                   onChange={(event) => setMonthFilter(event.target.value)}
-                  className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+                  className="os-select px-3 py-2 text-sm font-normal tracking-normal"
                 >
                   <option value="">All</option>
                   {monthOptions.map((option) => (
@@ -143,16 +150,16 @@ export default function DataTable<T>({
           <button
             type="button"
             onClick={handleExport}
-            className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
+            className="btn btn-ghost btn-sm"
           >
             Export CSV
           </button>
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
-        <table className="min-w-full divide-y divide-slate-800 text-sm">
-          <thead className="sticky top-0 bg-slate-950 text-xs uppercase tracking-[0.2em] text-slate-400">
+      <div className="overflow-x-auto rounded-card border border-[var(--border)]">
+        <table className="min-w-full divide-y divide-[var(--border)] text-sm">
+          <thead className={`sticky top-0 ${STRIP}`}>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -168,9 +175,9 @@ export default function DataTable<T>({
                             : 'none'
                         : undefined
                     }
-                    className={`px-4 py-3 text-left font-medium${
+                    className={`px-4 py-3 text-left${
                       header.column.id === stickyColumnId
-                        ? ' sticky left-0 z-20 bg-slate-950 shadow-[2px_0_0_0_rgba(15,23,42,0.8)]'
+                        ? ' sticky left-0 z-20 ' + STICKY_STRIP
                         : ''
                     }`}
                   >
@@ -179,7 +186,7 @@ export default function DataTable<T>({
                         type="button"
                         onClick={header.column.getToggleSortingHandler()}
                         disabled={!header.column.getCanSort()}
-                        className="inline-flex items-center gap-2"
+                        className="os-label inline-flex items-center gap-2"
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -201,7 +208,7 @@ export default function DataTable<T>({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-slate-800 text-slate-200">
+          <tbody className="divide-y divide-[var(--border)] text-[var(--text)]">
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <tr key={row.id}>
@@ -210,7 +217,7 @@ export default function DataTable<T>({
                       key={cell.id}
                       className={`px-4 py-3${
                         cell.column.id === stickyColumnId
-                          ? ' sticky left-0 z-10 bg-slate-950 shadow-[2px_0_0_0_rgba(15,23,42,0.8)]'
+                          ? ' sticky left-0 z-10 bg-[var(--bg)] shadow-[2px_0_0_0_var(--border)]'
                           : ''
                       }`}
                     >
@@ -223,7 +230,7 @@ export default function DataTable<T>({
               <tr>
                 <td
                   colSpan={table.getVisibleLeafColumns().length}
-                  className="px-4 py-8 text-center text-sm text-slate-400"
+                  className="px-4 py-8 text-center text-sm text-[var(--text-3)]"
                 >
                   No data available for the current filters.
                 </td>
@@ -231,14 +238,14 @@ export default function DataTable<T>({
             )}
           </tbody>
           {totals ? (
-            <tfoot className="border-t border-slate-800 bg-slate-950/80 text-slate-100">
+            <tfoot className={`border-t border-[var(--border)] text-[var(--text)] ${STRIP}`}>
               <tr>
                 {table.getVisibleLeafColumns().map((column) => (
                   <td
                     key={column.id}
                     className={`px-4 py-3 font-semibold${
                       column.id === stickyColumnId
-                        ? ' sticky left-0 z-10 bg-slate-950 shadow-[2px_0_0_0_rgba(15,23,42,0.8)]'
+                        ? ' sticky left-0 z-10 ' + STICKY_STRIP
                         : ''
                     }`}
                   >

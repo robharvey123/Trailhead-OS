@@ -84,35 +84,35 @@ export default function ActivityTimeline({
         <h3 className="text-sm font-medium uppercase tracking-[0.15em] text-slate-400">Activity</h3>
         <button
           onClick={() => { resetForm(); setShowForm(!showForm) }}
-          className="rounded-lg bg-white/10 px-3 py-1 text-xs text-slate-300 hover:bg-white/20 hover:text-white"
+          className="rounded-control bg-white/10 px-3 py-1 text-xs text-slate-300 hover:bg-white/20 hover:text-white"
         >
           {showForm ? 'Cancel' : '+ Log Activity'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="mb-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-3">
+        <form onSubmit={handleSubmit} className="mb-4 rounded-card border border-slate-800 bg-slate-900/60 p-4 space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-[11px] text-slate-500">Type</label>
-              <select value={actType} onChange={(e) => setActType(e.target.value as CrmActivityType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm">
+              <select value={actType} onChange={(e) => setActType(e.target.value as CrmActivityType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm">
                 {CRM_ACTIVITY_TYPES.map((t) => <option key={t} value={t}>{CRM_ACTIVITY_TYPE_LABELS[t]}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-[11px] text-slate-500">Date</label>
-              <input type="date" value={actDate} onChange={(e) => setActDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm" />
+              <input type="date" value={actDate} onChange={(e) => setActDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm" />
             </div>
           </div>
           <div>
             <label className="mb-1 block text-[11px] text-slate-500">Subject *</label>
-            <input required value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm" />
+            <input required value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm" />
           </div>
           <div>
             <label className="mb-1 block text-[11px] text-slate-500">Details</label>
-            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm" />
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm" />
           </div>
-          <button type="submit" disabled={saving} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold text-slate-950 hover:bg-white disabled:opacity-50">
+          <button type="submit" disabled={saving} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold text-slate-950 hover:bg-white disabled:opacity-50">
             {saving ? 'Saving...' : 'Log Activity'}
           </button>
         </form>
@@ -123,12 +123,12 @@ export default function ActivityTimeline({
       ) : (
         <div className="space-y-2">
           {activities.map((a) => (
-            <div key={a.id} className={`rounded-lg border border-slate-800 border-l-4 ${TYPE_COLORS[a.type]} bg-slate-900/40 px-4 py-3`}>
+            <div key={a.id} className={`rounded-control border border-slate-800 border-l-4 ${TYPE_COLORS[a.type]} bg-slate-900/40 px-4 py-3`}>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{TYPE_ICONS[a.type]}</span>
                   <span className="text-sm font-medium">{a.subject}</span>
-                  <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">{CRM_ACTIVITY_TYPE_LABELS[a.type]}</span>
+                  <span className="rounded-pill bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">{CRM_ACTIVITY_TYPE_LABELS[a.type]}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] text-slate-500">{a.activity_date}</span>

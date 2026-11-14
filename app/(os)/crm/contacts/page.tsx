@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import ContactsClient from '@/components/os/crm/ContactsClient'
 
 export const metadata = {
-  title: 'Contacts | Trailhead OS',
+  title: 'Contacts',
 }
 
 export default async function ContactsPage() {

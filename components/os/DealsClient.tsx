@@ -12,6 +12,7 @@ import {
   type DealWithRelations,
 } from '@/lib/types'
 import Modal from '@/components/ui/Modal'
+import PageHeader from '@/components/ui/PageHeader'
 import DealKanban from './DealKanban'
 import DealForm from './DealForm'
 import StageBadge from './StageBadge'
@@ -242,7 +243,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
     <button
       type="button"
       onClick={() => setView(target)}
-      className={`rounded-lg px-3 py-1.5 text-sm transition ${
+      className={`rounded-control px-3 py-1.5 text-sm transition ${
         view === target ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'text-[color:var(--text-2)] hover:bg-[var(--surface-2)]'
       }`}
     >
@@ -251,50 +252,52 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
   )
 
   return (
-    <div className="space-y-5 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="os-page-title">Deals</h1>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">
+    <div className="space-y-5">
+      <PageHeader
+        title="Deals"
+        description={
+          <>
             Open pipeline {formatCurrency(openTotal, 'GBP')} · weighted{' '}
             {formatCurrency(weightedTotal, 'GBP')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] p-1">
-            {toggleBtn('kanban', 'Kanban')}
-            {toggleBtn('table', 'Table')}
-          </div>
-          {projects.length > 0 ? (
-            <select
-              value={projectFilter}
-              onChange={(e) => setProjectFilter(e.target.value)}
-              className="rounded-xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+          </>
+        }
+        actions={
+          <>
+            <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-1">
+              {toggleBtn('kanban', 'Kanban')}
+              {toggleBtn('table', 'Table')}
+            </div>
+            {projects.length > 0 ? (
+              <select
+                value={projectFilter}
+                onChange={(e) => setProjectFilter(e.target.value)}
+                className="os-select px-3 py-2 text-sm"
+              >
+                <option value="">All projects</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setShowForecast(true)}
+              className="btn btn-ghost"
             >
-              <option value="">All projects</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => setShowForecast(true)}
-            className="rounded-xl border border-[color:var(--border)] bg-white px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
-          >
-            Forecast
-          </button>
-          <button
-            type="button"
-            onClick={openNew}
-            className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
-          >
-            + New deal
-          </button>
-        </div>
-      </div>
+              Forecast
+            </button>
+            <button
+              type="button"
+              onClick={openNew}
+              className="btn btn-primary"
+            >
+              + New deal
+            </button>
+          </>
+        }
+      />
 
       {/* Live regions stay mounted (and out of flow) so a later change is
           actually announced rather than appearing already-populated. */}
@@ -311,7 +314,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
       ) : (
         <div className="os-card overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-2)]">
+            <thead className="os-label border-b border-[color:var(--border)]">
               <tr>
                 <th scope="col" className="px-4 py-3">Name</th>
                 <th scope="col" className="px-4 py-3">Account</th>
@@ -355,7 +358,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
                           {d.projects.map((p) => (
                             <span
                               key={p.id}
-                              className="inline-flex rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-xs font-medium text-[color:var(--accent-strong)]"
+                              className="inline-flex rounded-pill bg-[var(--accent-dim)] px-2 py-0.5 text-xs font-medium text-[color:var(--accent-strong)]"
                             >
                               {p.name}
                             </span>
@@ -403,7 +406,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
         title="Weighted forecast — next 6 months"
         closeLabel="Close forecast"
         overlayClassName="p-4"
-        panelClassName="w-full max-w-lg rounded-2xl border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        panelClassName="w-full max-w-lg rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]"
       >
         <div className="flex items-center justify-between">
           <h2 className="os-section-title">Weighted forecast — next 6 months</h2>
@@ -419,7 +422,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
           value × probability, bucketed by expected close. Excludes Won/Lost.
         </p>
         <table className="mt-4 w-full text-left text-sm">
-          <thead className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-2)]">
+          <thead className="os-label border-b border-[color:var(--border)]">
             <tr>
               <th scope="col" className="py-2">Month</th>
               <th scope="col" className="py-2 text-right">Deals</th>

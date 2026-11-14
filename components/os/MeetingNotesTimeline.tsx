@@ -7,10 +7,10 @@ import MeetingNoteRematch from './MeetingNoteRematch'
 // native <details>. Low-confidence / ambiguous matches surface a Re-match control.
 
 const CONFIDENCE_STYLE: Record<MatchConfidence, { label: string; cls: string }> = {
-  high: { label: 'Matched', cls: 'border-[var(--lime)]/40 text-[var(--lime)]' },
-  medium: { label: 'Review match', cls: 'border-amber-400/40 text-amber-300' },
-  low: { label: 'Low confidence', cls: 'border-rose-400/40 text-rose-300' },
-  none: { label: 'Unmatched', cls: 'border-rose-400/40 text-rose-300' },
+  high: { label: 'Matched', cls: 'border-[var(--accent)]/40 text-[var(--accent-strong)]' },
+  medium: { label: 'Review match', cls: 'border-[var(--amber)]/40 text-[var(--amber-strong)]' },
+  low: { label: 'Low confidence', cls: 'border-[var(--red)]/40 text-[var(--red-strong)]' },
+  none: { label: 'Unmatched', cls: 'border-[var(--red)]/40 text-[var(--red-strong)]' },
 }
 
 function fmtDate(iso: string) {
@@ -19,14 +19,14 @@ function fmtDate(iso: string) {
 
 export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWithRelations[] }) {
   return (
-    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
+    <div className="os-card p-6">
       <div>
-        <h2 className="text-lg font-semibold text-[color:var(--text)]">Meeting notes</h2>
-        <p className="text-sm text-[var(--muted)]">Google Meet transcripts and AI summaries from calls.</p>
+        <h2 className="os-section-title">Meeting notes</h2>
+        <p className="text-sm text-[var(--text-2)]">Google Meet transcripts and AI summaries from calls.</p>
       </div>
 
       {notes.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[var(--border)] px-4 py-8 text-sm text-[var(--muted)]">
+        <div className="mt-4 rounded-card border border-dashed border-[var(--border)] px-4 py-8 text-sm text-[var(--text-2)]">
           No meeting notes yet. They appear automatically after a Meet with notes enabled.
         </div>
       ) : (
@@ -35,12 +35,12 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
             const badge = CONFIDENCE_STYLE[note.match_confidence]
             const s = note.summary
             return (
-              <div key={note.id} className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)] p-4">
+              <div key={note.id} className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--muted)]">Meet</span>
-                    <p className="text-xs text-[var(--muted)]">{fmtDate(note.occurred_at)}</p>
-                    <span className={`rounded-full border px-2 py-0.5 text-[11px] ${badge.cls}`}>{badge.label}</span>
+                    <span className="rounded-pill border border-[var(--border)] px-2 py-1 text-[11px] text-[var(--text-2)]">Meet</span>
+                    <p className="text-xs text-[var(--text-2)]">{fmtDate(note.occurred_at)}</p>
+                    <span className={`rounded-pill border px-2 py-0.5 text-[11px] ${badge.cls}`}>{badge.label}</span>
                   </div>
                   {note.needs_review ? <MeetingNoteRematch noteId={note.id} /> : null}
                 </div>
@@ -48,35 +48,35 @@ export default function MeetingNotesTimeline({ notes }: { notes: MeetingNoteWith
                 {s ? (
                   <div className="mt-3 space-y-3">
                     {s.summary ? (
-                      <p className="whitespace-pre-wrap text-sm text-[var(--muted)]">{s.summary}</p>
+                      <p className="whitespace-pre-wrap text-sm text-[var(--text-2)]">{s.summary}</p>
                     ) : null}
                     {s.decisions.length > 0 ? (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text)]">Decisions</p>
-                        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--muted)]">
+                        <p className="os-label">Decisions</p>
+                        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--text-2)]">
                           {s.decisions.map((d, i) => <li key={i}>{d}</li>)}
                         </ul>
                       </div>
                     ) : null}
                     {s.nextSteps.length > 0 ? (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text)]">Next steps</p>
-                        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--muted)]">
+                        <p className="os-label">Next steps</p>
+                        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[var(--text-2)]">
                           {s.nextSteps.map((n, i) => <li key={i}>{n}</li>)}
                         </ul>
                       </div>
                     ) : null}
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-[var(--muted)]">No AI summary was available for this meeting.</p>
+                  <p className="mt-3 text-sm text-[var(--text-2)]">No AI summary was available for this meeting.</p>
                 )}
 
                 {note.transcript ? (
                   <details className="mt-3">
-                    <summary className="cursor-pointer text-sm text-[var(--muted)] transition hover:text-[color:var(--text)]">
+                    <summary className="cursor-pointer text-sm text-[var(--text-2)] transition hover:text-[var(--text)]">
                       Transcript
                     </summary>
-                    <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-3 text-xs text-[var(--muted)]">
+                    <pre className="mt-2 max-h-96 overflow-auto whitespace-pre-wrap rounded-card border border-[var(--border)] bg-[var(--bg)] p-3 font-sans text-xs text-[var(--text-2)]">
                       {note.transcript}
                     </pre>
                   </details>

@@ -7,6 +7,8 @@ import { getQuoteById } from '@/lib/db/quotes'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Edit quote' }
+
 export default async function EditQuotePage({
   params,
 }: {

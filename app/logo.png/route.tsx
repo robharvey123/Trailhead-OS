@@ -45,7 +45,7 @@ export function GET() {
               style={{
                 width: 48,
                 height: bar.height,
-                borderRadius: 10,
+                borderRadius: 'var(--radius-control)',
                 background: bar.colour,
               }}
             />

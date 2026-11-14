@@ -11,6 +11,7 @@ import {
   trackFromPathname,
   type TrackNavItem,
 } from '@/lib/marketing/tracks'
+import TrailheadLogo from '@/components/brand/TrailheadLogo'
 
 interface MarketingShellProps {
   children: ReactNode
@@ -26,34 +27,6 @@ interface MarketingShellProps {
  * business's own sections where it has any.
  */
 
-/** The reverse lockup: three pale bars, the tallest in brand blue, the
- * wordmark in Georgia. Colours and spacing follow Brand Guidelines v1.0. */
-function TrailheadLogo() {
-  return (
-    <span className="flex items-center gap-3">
-      <svg
-        aria-hidden="true"
-        width="34"
-        height="28"
-        viewBox="0 0 46 38"
-        className="shrink-0"
-      >
-        <rect x="0" y="28" width="10" height="10" rx="2" fill="#F1F5F9" />
-        <rect x="12" y="18" width="10" height="20" rx="2" fill="#F1F5F9" />
-        <rect x="24" y="8" width="10" height="30" rx="2" fill="#F1F5F9" />
-        <rect x="36" y="0" width="10" height="38" rx="2" fill="#0EA5E9" />
-      </svg>
-      <span className="flex flex-col leading-none">
-        <span className="font-[Georgia,serif] text-[1.125rem] font-bold tracking-[-0.5px] text-[#F1F5F9]">
-          Trailhead
-        </span>
-        <span className="mt-[5px] font-[Georgia,serif] text-[0.625rem] tracking-[1.5px] text-[#94A3B8]">
-          HOLDINGS LTD
-        </span>
-      </span>
-    </span>
-  )
-}
 export default function MarketingShell({
   children,
   isLocalhost,

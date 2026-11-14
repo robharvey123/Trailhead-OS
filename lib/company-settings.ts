@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { BRAND } from '@/lib/brand'
 
 export type CompanySettings = {
   company_name: string
@@ -150,12 +151,12 @@ export function renderCompanyEmailFooterHtml(settings: CompanySettings) {
 
   if (settings.company_email) {
     lines.push(
-      `<p style="margin:4px 0 0"><a href="mailto:${escapeHtml(settings.company_email)}" style="color:#0f172a;text-decoration:none">${escapeHtml(settings.company_email)}</a></p>`
+      `<p style="margin:4px 0 0"><a href="mailto:${escapeHtml(settings.company_email)}" style="color:${BRAND.navy};text-decoration:none">${escapeHtml(settings.company_email)}</a></p>`
     )
   }
 
   return `
-    <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;color:#475569;font-size:12px;line-height:1.6">
+    <div style="margin-top:32px;padding-top:16px;border-top:1px solid ${BRAND.border};color:${BRAND.slate};font-size:12px;line-height:1.6">
       ${lines.join('')}
     </div>
   `

@@ -3,6 +3,8 @@ import QuoteDetailClient from '@/components/os/QuoteDetailClient'
 import { getQuoteById, getQuoteVersions } from '@/lib/db/quotes'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Quote' }
+
 export default async function QuoteDetailPage({
   params,
   searchParams,

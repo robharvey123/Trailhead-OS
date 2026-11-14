@@ -8,6 +8,9 @@ import { pagesPerQuery, sitePages } from '@/lib/growth/pages'
 import { encodePageUrl } from '@/lib/growth/refresh'
 import { recrawlAction, runEnrichNowAction } from '../../actions'
 import type { SeoCluster } from '@/lib/types'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Keywords and pages' }
 
 /**
  * C4: the keyword coverage matrix, with the pages index and open technical
@@ -15,9 +18,9 @@ import type { SeoCluster } from '@/lib/types'
  */
 
 const SEVERITY_STYLE: Record<string, string> = {
-  critical: 'border-red-300 bg-red-50 text-red-700',
-  high: 'border-orange-300 bg-orange-50 text-orange-700',
-  medium: 'border-amber-300 bg-amber-50 text-amber-700',
+  critical: 'border-[var(--red)]/40 bg-[var(--red-dim)] text-[var(--red-strong)]',
+  high: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
+  medium: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
   low: 'border-[color:var(--border)] text-[color:var(--text-3)]',
 }
 
@@ -57,15 +60,15 @@ export default async function GrowthKeywordsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
-              {site.name}
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">Keywords &amp; pages</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+      <PageHeader
+        eyebrow={
+          <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
+            {site.name}
+          </Link>
+        }
+        title="Keywords &amp; pages"
+        description={
+          <>
             {keywords.length.toLocaleString('en-GB')} keywords · {enriched.toLocaleString('en-GB')} with Labs difficulty and intent ·{' '}
             <Link href={`/growth/${site.id}/keywords?target=none`} className="underline decoration-[color:var(--border)] underline-offset-2">
               {noTarget} with impressions but no page
@@ -75,28 +78,30 @@ export default async function GrowthKeywordsPage({
               {multi} held by two+ pages
             </Link>{' '}
             (cannibalisation)
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <form action={runEnrichNowAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Calling DataForSEO Labs…">Enrich now (KD + intent)</PendingButton>
-          </form>
-          <form action={recrawlAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Starting crawl…">{site.crawl_task_id ? 'Crawl running…' : 'Recrawl site'}</PendingButton>
-          </form>
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          <>
+            <form action={runEnrichNowAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Calling DataForSEO Labs…">Enrich now (KD + intent)</PendingButton>
+            </form>
+            <form action={recrawlAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Starting crawl…">{site.crawl_task_id ? 'Crawl running…' : 'Recrawl site'}</PendingButton>
+            </form>
+          </>
+        }
+      />
 
-      {resolved?.error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{resolved.error}</div> : null}
+      {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
       ) : null}
 
       <div className="flex flex-wrap gap-3 text-sm">
-        <Link href={`/growth/${site.id}/keywords`} className={`rounded-full border px-3 py-1 ${!showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
+        <Link href={`/growth/${site.id}/keywords`} className={`rounded-pill border px-3 py-1 ${!showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
           Keywords
         </Link>
-        <Link href={`/growth/${site.id}/keywords?issues=1`} className={`rounded-full border px-3 py-1 ${showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
+        <Link href={`/growth/${site.id}/keywords?issues=1`} className={`rounded-pill border px-3 py-1 ${showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
           Technical issues ({issues.length})
         </Link>
       </div>
@@ -114,18 +119,18 @@ export default async function GrowthKeywordsPage({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                    <th className="py-2 pr-3 font-medium">Severity</th>
-                    <th className="py-2 pr-3 font-medium">Issue</th>
-                    <th className="py-2 pr-3 font-medium">URL</th>
-                    <th className="py-2 font-medium">Detail</th>
+                  <tr className="border-b border-[color:var(--border)]">
+                    <th className="os-label py-2 pr-3">Severity</th>
+                    <th className="os-label py-2 pr-3">Issue</th>
+                    <th className="os-label py-2 pr-3">URL</th>
+                    <th className="os-label py-2">Detail</th>
                   </tr>
                 </thead>
                 <tbody>
                   {issues.map((i) => (
                     <tr key={i.id} className="border-b border-[color:var(--border)] last:border-0">
                       <td className="py-2 pr-3">
-                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${SEVERITY_STYLE[i.severity]}`}>{i.severity}</span>
+                        <span className={`rounded-pill border px-2 py-0.5 text-[10px] font-medium ${SEVERITY_STYLE[i.severity]}`}>{i.severity}</span>
                       </td>
                       <td className="py-2 pr-3 text-[color:var(--text)]">{i.issue_type.replace(/_/g, ' ')}</td>
                       <td className="py-2 pr-3 text-xs">
@@ -167,14 +172,14 @@ export default async function GrowthKeywordsPage({
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                      <th className="py-2 pr-3 font-medium">Page</th>
-                      <th className="py-2 pr-3 text-right font-medium">Clicks</th>
-                      <th className="py-2 pr-3 text-right font-medium">vs prior</th>
-                      <th className="py-2 pr-3 text-right font-medium">Impr.</th>
-                      <th className="py-2 pr-3 text-right font-medium">Pos.</th>
-                      <th className="py-2 pr-3 text-right font-medium">Queries</th>
-                      <th className="py-2 font-medium">Worksheet</th>
+                    <tr className="border-b border-[color:var(--border)]">
+                      <th className="os-label py-2 pr-3">Page</th>
+                      <th className="os-label py-2 pr-3 text-right">Clicks</th>
+                      <th className="os-label py-2 pr-3 text-right">vs prior</th>
+                      <th className="os-label py-2 pr-3 text-right">Impr.</th>
+                      <th className="os-label py-2 pr-3 text-right">Pos.</th>
+                      <th className="os-label py-2 pr-3 text-right">Queries</th>
+                      <th className="os-label py-2">Worksheet</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -189,7 +194,7 @@ export default async function GrowthKeywordsPage({
                             </Link>
                           </td>
                           <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{p.clicks.toLocaleString('en-GB')}</td>
-                          <td className={`py-2 pr-3 text-right tabular-nums ${delta < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                          <td className={`py-2 pr-3 text-right tabular-nums ${delta < 0 ? 'text-[var(--red-strong)]' : 'text-[var(--emerald-strong)]'}`}>
                             {delta > 0 ? '+' : ''}
                             {delta}
                           </td>

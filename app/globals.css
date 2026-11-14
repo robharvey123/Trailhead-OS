@@ -8,18 +8,6 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --bg:       #0C0C14;
-  --card:     #1A1A28;
-  --card-alt: #13131E;
-  --border:   #2A2A3A;
-  --lime:     #B8FF00;
-  --muted:    #9CA3AF;
-  --orange:   #FF6B35;
-  --blue-d:   #4B9FFF;
-  --pink-d:   #FF4081;
-  --purple-d: #A78BFA;
-  --green-d:  #34D399;
-  --yellow-d: #FBBF24;
 }
 
 @theme inline {
@@ -27,13 +15,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
-  --color-os-bg:       #0C0C14;
-  --color-os-card:     #1A1A28;
-  --color-os-card-alt: #13131E;
-  --color-os-border:   #2A2A3A;
-  --color-os-lime:     #B8FF00;
-  --color-os-muted:    #9CA3AF;
-  --color-os-orange:   #FF6B35;
+}
+
+/* The OS uses three radii and nothing else (Brand Guidelines v1.0, see
+   DESIGN.md "OS surface"). Declared as theme variables so Tailwind generates
+   rounded-control, rounded-card and rounded-pill, and `static` so the custom
+   properties are always emitted for the hand-written rules further down. */
+@theme static {
+  --radius-control: 8px; /* inputs, selects, small buttons, table chips */
+  --radius-card: 14px; /* cards, panels, modals, sidebar nav rows */
+  --radius-pill: 999px; /* buttons, status badges, filter chips */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -203,7 +194,7 @@ body {
 .os-shimmer-bar {
   background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3, var(--border)) 37%, var(--surface-2) 63%);
   background-size: 400% 100%;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   animation: os-shimmer 1.4s ease infinite;
 }
 
@@ -217,7 +208,7 @@ body {
 .tiptap-body .ProseMirror:focus { outline: none; }
 /* The editor is a focusable region with no border of its own, so it needs the
    ring back — inset, because the surrounding compose panel clips an outer one. */
-.tiptap-body .ProseMirror:focus-visible { outline: 2px solid var(--accent-strong, #0369A1); outline-offset: -2px; }
+.tiptap-body .ProseMirror:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .tiptap-body .ProseMirror p.is-editor-empty:first-child::before { content: attr(data-placeholder); color: var(--text-3); float: left; height: 0; pointer-events: none; }
 
 @keyframes os-shake {
@@ -252,12 +243,12 @@ body {
 }
 
 .fc {
-  --fc-border-color: var(--border, rgba(51, 65, 85, 0.7));
+  --fc-border-color: var(--border);
   --fc-page-bg-color: transparent;
-  --fc-neutral-bg-color: var(--surface-2, rgba(15, 23, 42, 0.65));
-  --fc-list-event-hover-bg-color: var(--surface-2, rgba(30, 41, 59, 0.75));
-  --fc-today-bg-color: color-mix(in srgb, var(--accent, #38bdf8) 9%, transparent);
-  color: var(--text, #e2e8f0);
+  --fc-neutral-bg-color: var(--surface-2);
+  --fc-list-event-hover-bg-color: var(--surface-2);
+  --fc-today-bg-color: color-mix(in srgb, var(--accent) 9%, transparent);
+  color: var(--text);
   /* Inherit the app's body font (Inter) rather than FullCalendar defaults. */
   font-family: var(--sans);
 }
@@ -265,49 +256,50 @@ body {
 
 /* Month/year header — serif, matching the app's section titles. */
 .fc .fc-toolbar-title {
-  color: var(--text, #f8fafc);
+  color: var(--text);
   font-family: var(--serif);
   font-size: 1.4rem;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
-/* Time-axis + slot labels — muted mono, like the app's field labels. */
+/* Time-axis and slot labels: times are figures, so Inter with tabular figures. */
 .fc .fc-timegrid-axis-cushion,
 .fc .fc-timegrid-slot-label-cushion {
-  color: var(--text-3, #94a3b8);
-  font-family: var(--mono);
-  font-size: 0.66rem;
+  color: var(--text-3);
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
   font-weight: 500;
 }
 
 .fc .fc-daygrid-day-number {
-  color: var(--text-2, #cbd5e1);
+  color: var(--text-2);
   padding: 0.55rem;
   font-size: 0.82rem;
   font-weight: 500;
 }
 
-/* Day-of-week headers — small uppercase mono, like the app's labels. */
+/* Day-of-week headers: the label style. */
 .fc .fc-col-header-cell-cushion {
   padding: 0.75rem 0.25rem;
-  color: var(--text-3, #94a3b8);
-  font-family: var(--mono);
-  font-size: 0.66rem;
+  color: var(--text-3);
+  font-family: var(--sans);
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
 /* Today: accent the date number, not just the column header. */
 .fc .fc-day-today .fc-daygrid-day-number {
-  color: var(--accent, #38bdf8);
+  color: var(--accent);
   font-weight: 800;
 }
 
 /* Empty days a touch lighter so busy vs quiet weeks read at a glance. */
 .fc .fc-daygrid-day {
-  background: color-mix(in srgb, var(--surface, transparent) 35%, transparent);
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
 }
 .fc .fc-day-today {
   background: var(--fc-today-bg-color);
@@ -317,52 +309,52 @@ body {
   font-family: var(--sans);
   font-size: 0.78rem;
   font-weight: 600;
-  border-radius: var(--radius-sm, 8px);
-  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.9rem;
   box-shadow: none;
   text-transform: capitalize;
 }
 .fc .fc-button-primary {
-  border-color: var(--border, rgba(71, 85, 105, 0.9));
-  background: #ffffff;
-  color: var(--text-2, #cbd5e1);
+  border-color: var(--border);
+  background: var(--bg);
+  color: var(--text-2);
 }
 
 .fc .fc-button-primary:hover,
 .fc .fc-button-primary:focus {
-  border-color: var(--border-light, var(--accent));
-  background: var(--surface-2, rgba(30, 41, 59, 0.95));
-  color: var(--text, #f8fafc);
+  border-color: var(--border-light);
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  border-color: var(--accent, rgba(56, 189, 248, 0.85));
-  background: var(--accent-dim, rgba(14, 116, 144, 0.9));
-  color: var(--accent-strong, var(--accent));
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent-strong);
 }
 
-/* "Today" is the only context-resetting control — make it read as primary.
-   Uses --accent-strong, same as .btn-primary: white on --accent was 2.77:1, failing AA. */
+/* "Today" is the only context-resetting control, so it reads as primary:
+   brand blue with navy type, the same as .btn-primary. */
 .fc .fc-today-button:not(:disabled) {
-  background: var(--accent-strong, #0369a1);
-  border-color: var(--accent-strong, #0369a1);
-  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--on-accent);
   opacity: 1;
 }
 .fc .fc-today-button:not(:disabled):hover {
-  background: var(--accent-hover, #075985);
-  border-color: var(--accent-hover, #075985);
+  background: var(--blue-bright);
+  border-color: var(--blue-bright);
 }
 
 .fc .fc-scrollgrid,
 .fc .fc-theme-standard td,
 .fc .fc-theme-standard th {
-  border-color: var(--border, rgba(51, 65, 85, 0.7));
+  border-color: var(--border);
 }
 /* Soft rounded grid, matching the app's cards. */
 .fc .fc-scrollgrid {
-  border-radius: var(--radius, 14px);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
@@ -394,8 +386,8 @@ body {
 .typing-dot {
   width: 5px;
   height: 5px;
-  border-radius: 50%;
-  background: var(--text-3, #94a3b8);
+  border-radius: var(--radius-pill);
+  background: var(--text-3);
   display: inline-block;
   animation: typing-bounce 1.2s infinite ease-in-out;
 }
@@ -408,12 +400,12 @@ body {
 
 /* Current-time indicator (week/day views) — clear accent line + arrow. */
 .fc .fc-timegrid-now-indicator-line {
-  border-color: var(--red, #ef4444);
+  border-color: var(--red);
   border-top-width: 2px;
 }
 .fc .fc-timegrid-now-indicator-arrow {
-  border-color: var(--red, #ef4444);
-  color: var(--red, #ef4444);
+  border-color: var(--red);
+  color: var(--red);
 }
 
 /* Event text — the app's body font (Inter), matching everything else. */
@@ -434,20 +426,20 @@ body {
 /* Schedule (list) view — themed to the app. */
 .fc .fc-list {
   border-color: var(--border);
-  border-radius: var(--radius, 14px);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 .fc .fc-list-day-cushion {
   background: var(--surface-2);
-  font-family: var(--mono);
-  font-size: 0.68rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--text-3);
 }
 .fc .fc-list-event:hover td {
-  background: color-mix(in srgb, var(--accent) 6%, var(--surface, transparent));
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
 }
 .fc .fc-list-event-title { color: var(--text); }
 .fc .fc-list-event-time { color: var(--text-3); }
@@ -459,36 +451,49 @@ body {
 }
 
 /* ==========================================================================
-   Mockup design system — scoped to /crm, /timesheet, /inbox via .thmock
-   Indigo accent, Inter (sans) + JetBrains Mono (loaded via @import at top).
+   Trailhead OS design system, scoped under .thmock (the class name predates
+   the brand work and is kept because several hundred files reference it).
+   Navy and brand blue from Brand Guidelines v1.0; Georgia for titles, Inter
+   for everything else, JetBrains Mono for codes only. See DESIGN.md.
    All selectors are nested under .thmock so they never leak app-wide.
    ========================================================================== */
-.thmock {
-  /* Trailhead Consulting — light theme */
+.thmock,
+.th-light {
+  /* Brand palette: Trailhead Brand Guidelines v1.0. These are the only place
+     the brand hex values are written in the OS. */
+  --navy: #0F172A;        /* sidebar and login ground, headings, primary type */
+  --navy-deep: #0B1120;   /* far edge and hover ground on navy */
+  --blue: #0EA5E9;        /* the one accent: button fill, active marker, progress */
+  --blue-bright: #38BDF8; /* blue as type or icon on navy, button hover */
+  --blue-ink: #0369A1;    /* blue as type on white, 5.93:1 */
+  --slate: #64748B;       /* captions on white only, 4.76:1 */
+  --orange: #F97316;      /* once per screen: the dashboard attention count */
+
+  /* Working tokens. Components read these; .th-dark remaps them for navy. */
   --bg: #ffffff;
-  --surface: #F8FAFC;
+  --surface: #F8FAFC;                /* cool light: page ground behind white cards */
   --surface-2: #F1F5F9;
   --surface-3: #E2E8F0;
   --border: #E2E8F0;
   --border-light: #CBD5E1;
-  --text: #0F172A;
-  --text-2: #334155;                 /* darkened from #475569 (was 7.58:1 on white) to hold a
-                                         perceptible step above the darkened --text-3 below;
-                                         now 10.35:1 on white, 9.90:1 on --surface */
-  --text-3: #5B6B82;                 /* was #94A3B8 (2.56:1 on white — fails AA 4.5:1). Darkened
+  --text: var(--navy);
+  --text-2: #334155;                 /* body copy, 10.35:1 on white */
+  --text-3: #5B6B82;                 /* was #94A3B8 (2.56:1 on white, fails AA 4.5:1). Darkened
                                          past the ~#64748B midpoint because --text-3 also sits on
                                          --surface-2 (#F1F5F9) in several selectors (topbar-count,
                                          seg-toggle, search placeholder, meta-chip, range-chip),
                                          where #64748B only reaches 4.34:1. #5B6B82 reaches
                                          5.43:1 on white, 5.19:1 on --surface, 4.95:1 on
                                          --surface-2 */
-  --accent: #0EA5E9;
+  --accent: var(--blue);
   --accent-dim: #E0F2FE;
   --accent-glow: rgba(14,165,233,0.15);
-  --accent-strong: #0369A1;          /* readable accent text on light bg */
-  --accent-hover: #075985;           /* darkened from #0284C7 (white text on it only reached
-                                         4.10:1 in .btn-primary:hover / .fc-today-button:hover,
-                                         failing AA); now 7.56:1 */
+  --accent-strong: var(--blue-ink);  /* readable accent text on light bg */
+  --accent-hover: #075985;           /* blue ink, one step darker: link and text hover */
+  --on-accent: var(--navy);          /* type on a brand-blue fill, 6.44:1 */
+  --focus: var(--blue-ink);          /* focus ring on light grounds, 5.93:1 on white */
+
+  /* Status colours. Data, not brand. */
   --green: #16A34A;
   --green-dim: #DCFCE7;
   --green-strong: #15803D;
@@ -503,34 +508,67 @@ body {
   --emerald-strong: #047857;
   --grey: #64748B;
   --grey-dim: #F1F5F9;
-  --grey-strong: #475569;            /* new: matches the -strong pattern above. #64748B on
+  --grey-strong: #475569;            /* matches the -strong pattern above. #64748B on
                                          --grey-dim was 4.34:1 (fails AA); #475569 reaches
-                                         6.92:1. Also equals the hardcoded value .status-on_hold
-                                         already used, so that rule now references this token
-                                         instead of a duplicate hex */
-  --radius: 8px;
-  --radius-sm: 5px;
+                                         6.92:1 */
+
   --serif: Georgia, 'Times New Roman', serif;
   --sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Two shadows only: cards at rest, and overlays. */
   --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
-  --shadow-md: 0 4px 12px rgba(15,23,42,0.06);
   --shadow-lg: 0 20px 60px rgba(15,23,42,0.12);
 
-  /* Aliases of the :root (lime) token names, remapped to this theme.
-     Shared components reference these via var(--...) so they inherit the
-     light palette inside .thmock while staying unchanged at :root.
-     (--bg and --border are already redefined above.) */
-  --card: var(--surface);
-  --card-alt: var(--surface-2);
-  --muted: var(--text-2);
-  --lime: var(--accent);
-
-  font-family: var(--sans);
-  line-height: 1.5;
   color: var(--text);
-  background: var(--bg);
-  min-height: 100%;
+}
+
+.thmock {
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+/* The scope's own ground and height sit in the components layer, so a utility
+   on the same element wins. Unlayered, they turned every `thmock ... bg-[...]`
+   overlay (modals, the command palette, confirm dialogs) opaque white. */
+@layer components {
+  .thmock {
+    background: var(--bg);
+    min-height: 100%;
+  }
+}
+
+/* Navy surfaces (sidebar, login ground, mobile drawer). One scope remaps the
+   working tokens, mirroring .th-dark in app/(marketing)/bay.css, so the same
+   component reads correctly on either ground. Do not hard-code light or dark
+   colours inside it. A white card placed on navy opts back in with .th-light. */
+.thmock .th-dark,
+.thmock.th-dark {
+  --bg: var(--navy);
+  --surface: rgba(255,255,255,0.04);
+  --surface-2: rgba(255,255,255,0.06);  /* hover ground on navy */
+  --surface-3: rgba(255,255,255,0.12);  /* neutral count badge on navy */
+  --border: rgba(255,255,255,0.08);
+  --border-light: rgba(255,255,255,0.16);
+  --text: #ffffff;
+  --text-2: #CBD5E1;                 /* resting nav type, 12.02:1 on navy */
+  --text-3: #94A3B8;                 /* icons and group headers, 6.96:1 on navy */
+  --accent-dim: rgba(14,165,233,0.14);  /* active row ground */
+  --accent-strong: var(--blue-bright);  /* blue as type on navy, 8.33:1 */
+  --accent-hover: #7DD3FC;
+  --focus: var(--blue-bright);       /* blue ink is only 3.01:1 on navy */
+  /* Status pairs on navy: a translucent ground and a pale ink. */
+  --green-dim: rgba(22,163,74,0.18);
+  --green-strong: #86EFAC;
+  --amber-dim: rgba(217,119,6,0.20);
+  --amber-strong: #FCD34D;
+  --red-dim: rgba(220,38,38,0.20);
+  --red-strong: #FCA5A5;
+  --emerald-dim: rgba(5,150,105,0.20);
+  --emerald-strong: #6EE7B7;
+  --grey-dim: rgba(255,255,255,0.08);
+  --grey-strong: #CBD5E1;
+  color: var(--text);
 }
 .thmock .mono { font-family: var(--mono); }
 
@@ -540,20 +578,20 @@ body {
 .thmock .os-card {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
   color: var(--text);
 }
 .thmock .os-card-muted {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   color: var(--text);
 }
 .thmock .os-card-inset {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--text);
 }
 
@@ -562,18 +600,35 @@ body {
 
 /* Page chrome */
 .thmock .os-page { background: var(--surface); color: var(--text); }
-.thmock .os-page-title { font-family: var(--serif); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+/* One page title size: 26px, 22px below md. Rendered by components/ui/PageHeader. */
+.thmock .os-page-title { font-family: var(--serif); font-size: 22px; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+@media (min-width: 768px) { .thmock .os-page-title { font-size: 26px; } }
 .thmock .os-section-title { font-family: var(--serif); font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
-.thmock .os-eyebrow { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--text-3); letter-spacing: 0.12em; text-transform: uppercase; }
+.thmock .os-eyebrow { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); }
+
+/* The label style: Inter 600, uppercase, 0.75rem, lightly tracked. Column
+   headers, eyebrows, field labels and stat captions all use it. Labels are
+   never mono; JetBrains Mono is for codes only. */
+.thmock .os-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); }
 
 /* Inputs */
 .thmock .os-input, .thmock .os-select, .thmock .os-textarea {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--text);
   font-family: var(--sans);
   outline: none;
+}
+/* Default padding and size, in the components layer so a padding or text
+   utility at a call site still overrides it. Without this a bare `os-input`
+   has no padding at all: Tailwind's preflight zeroes it. */
+@layer components {
+  .thmock .os-input, .thmock .os-select, .thmock .os-textarea {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
 }
 .thmock .os-input::placeholder, .thmock .os-textarea::placeholder { color: var(--text-3); }
 .thmock .os-input:focus, .thmock .os-select:focus, .thmock .os-textarea:focus { border-color: var(--accent); }
@@ -586,7 +641,7 @@ body {
 .thmock .os-input:focus-visible,
 .thmock .os-select:focus-visible,
 .thmock .os-textarea:focus-visible {
-  outline: 2px solid var(--accent-strong);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -595,34 +650,22 @@ body {
 .thmock .os-text { color: var(--text); }
 .thmock .os-text-2 { color: var(--text-2); }
 .thmock .os-text-3 { color: var(--text-3); }
+/* Codes only: engagement codes, invoice and quote numbers, ids, keyboard hints. */
 .thmock .os-mono { font-family: var(--mono); }
 
 /* meta labels */
-.thmock .meta-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-3);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.thmock .field-label {
-  font-size: 11px;
-  color: var(--text-3);
-  font-family: var(--mono);
-  margin-bottom: 3px;
-  letter-spacing: 0.05em;
-}
+.thmock .meta-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); }
+.thmock .field-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); margin-bottom: 3px; }
 .thmock .field-value { font-size: 14px; color: var(--text); font-weight: 500; }
 .thmock .field-value.mono { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
 
 /* status badges */
 .thmock .status-badge {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 9px; border-radius: 20px;
+  padding: 3px 9px; border-radius: var(--radius-pill);
   font-size: 12px; font-weight: 700; letter-spacing: 0.03em;
 }
-.thmock .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.thmock .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: var(--radius-pill); background: currentColor; }
 .thmock .status-prospect { color: var(--accent-strong); background: var(--accent-dim); }
 .thmock .status-contacted { color: var(--amber-strong); background: var(--amber-dim); }
 .thmock .status-active { color: var(--green-strong); background: var(--green-dim); }
@@ -634,18 +677,16 @@ body {
 
 /* channel tags */
 .thmock .channel-tag {
-  display: inline-block; padding: 2px 7px; border-radius: 3px;
+  display: inline-block; padding: 2px 7px; border-radius: var(--radius-control);
   font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
   background: var(--surface-3); color: var(--text-2);
-  font-family: var(--mono);
 }
 
 /* generic tag chip (CRM tags) */
 .thmock .tag-chip {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 999px;
+  padding: 2px 8px; border-radius: var(--radius-pill);
   font-size: 11px; font-weight: 600;
-  font-family: var(--mono);
   background: var(--surface-3); color: var(--text-2);
 }
 .thmock .tag-chip.accent { background: var(--accent-dim); color: var(--accent-strong); }
@@ -659,83 +700,95 @@ body {
 .thmock .tag-chip button { background: none; border: none; color: inherit; cursor: pointer; opacity: 0.6; padding: 0; }
 .thmock .tag-chip button:hover { opacity: 1; }
 
-/* buttons */
+/* buttons
+   One source for every button in the OS. components/ui/Button.tsx renders these
+   classes, and the class names are also written directly in older call sites.
+   There is one filled style: the brand-blue pill with navy type (6.44:1). */
 .thmock .btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: var(--radius-sm);
-  font-family: var(--sans);
-  font-size: 12px; font-weight: 600; cursor: pointer; border: none;
-  transition: all 0.15s; letter-spacing: 0.02em;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 18px; border-radius: var(--radius-pill);
+  font-family: var(--sans); font-size: 14px; font-weight: 600; line-height: 1.25;
+  white-space: nowrap; text-decoration: none;
+  cursor: pointer; border: 1px solid transparent;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
-/* Background uses --accent-strong, not --accent: white-on-#0EA5E9 was 2.77:1 (fails AA
-   4.5:1). --accent itself is left alone because it's shared far beyond button backgrounds
-   (borders, focus rings, chart accents), so darkening it globally risked side effects that
-   weren't verified safe everywhere — scoping the fix to the button is the surgical option. */
-.thmock .btn-primary { background: var(--accent-strong); color: white; box-shadow: var(--shadow-sm); }
-.thmock .btn-primary:hover { background: var(--accent-hover); }
-.thmock .btn-ghost { background: #ffffff; color: var(--text-2); border: 1px solid var(--border); }
-.thmock .btn-ghost:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-light); }
-.thmock .btn-sm { padding: 5px 10px; font-size: 11px; }
-.thmock .btn:disabled { opacity: 0.55; cursor: default; }
+.thmock .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* primary: brand blue, navy type. White on #0EA5E9 is 2.77:1 and is never used. */
+.thmock .btn-primary { background: var(--blue); color: var(--on-accent); }
+.thmock .btn-primary:hover { background: var(--blue-bright); }
+/* secondary: white pill, 1px border, navy type. `.btn-ghost` is the older name
+   for the same thing and is kept so existing call sites did not need renaming. */
+.thmock .btn-secondary,
+.thmock .btn-ghost { background: var(--bg); color: var(--text); border-color: var(--border-light); }
+.thmock .btn-secondary:hover,
+.thmock .btn-ghost:hover { background: var(--surface-2); border-color: var(--text-3); }
+/* ghost: text only */
+.thmock .btn-text { background: transparent; color: var(--text-2); padding-left: 10px; padding-right: 10px; }
+.thmock .btn-text:hover { background: var(--surface-2); color: var(--text); }
+/* danger: red type and border on white. Solid red only inside a confirm dialog. */
+.thmock .btn-danger { background: var(--bg); color: var(--red-strong); border-color: var(--red); }
+.thmock .btn-danger:hover { background: var(--red-dim); }
+.thmock .btn-danger-solid { background: var(--red); color: #ffffff; }
+.thmock .btn-danger-solid:hover { background: var(--red-strong); }
+.thmock .btn-sm { padding: 5px 12px; font-size: 12px; }
+.thmock .btn:disabled, .thmock .btn[aria-disabled='true'] { opacity: 0.55; cursor: default; }
 
 /* topbar within page */
 .thmock .topbar {
   height: 56px; min-height: 56px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 24px; gap: 16px; background: var(--surface);
+  display: flex; align-items: center; padding: 0 24px; gap: 16px;
 }
 .thmock .topbar-title { font-family: var(--serif); font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
 /* CRM detail panel account name — larger serif display */
 .thmock .panel .topbar-title { font-size: 22px; letter-spacing: -0.02em; }
 .thmock .topbar-count {
-  font-family: var(--mono); font-size: 12px; color: var(--text-3);
-  background: var(--surface-2); padding: 3px 8px; border-radius: 4px;
+  font-size: 12px; font-weight: 600; color: var(--text-3);
+  background: var(--surface-2); padding: 3px 8px; border-radius: var(--radius-control);
 }
 .thmock .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 
 /* stats bar */
-.thmock .stats-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
+.thmock .stats-bar { display: flex; border-bottom: 1px solid var(--border); }
 .thmock .stat-item { flex: 1; padding: 14px 20px; border-right: 1px solid var(--border); }
 .thmock .stat-item:last-child { border-right: none; }
-.thmock .stat-value { font-family: var(--serif); font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
-.thmock .stat-label {
-  font-family: var(--mono); font-size: 10px; color: var(--text-3);
-  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
-}
-.thmock .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--mono); }
+/* Figures are never Georgia: Inter 600 with tabular figures. */
+.thmock .stat-value { font-family: var(--sans); font-variant-numeric: tabular-nums; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+.thmock .stat-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+.thmock .stat-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
 
 /* filter bar + search + selects */
 .thmock .filterbar {
   padding: 12px 24px; border-bottom: 1px solid var(--border);
-  display: flex; gap: 10px; align-items: center; background: var(--surface); flex-wrap: wrap;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
 }
 .thmock .search-wrap { position: relative; flex: 1; max-width: 320px; }
 .thmock .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-3); }
 .thmock .search-input {
-  width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control);
   padding: 7px 10px 7px 32px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none;
 }
 .thmock .search-input::placeholder { color: var(--text-3); }
 .thmock .search-input:focus { border-color: var(--accent); }
-.thmock .search-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thmock .search-input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .thmock .filter-select {
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control);
   padding: 7px 10px; font-family: var(--sans); font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
 }
 .thmock .filter-select:focus { border-color: var(--accent); }
-.thmock .filter-select:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thmock .filter-select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .thmock .filter-date {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-3);
 }
 
 /* range chips + billable toggle */
-.thmock .range-chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
+.thmock .range-chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 3px; }
 .thmock .range-chip {
-  padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer;
+  padding: 4px 10px; border-radius: var(--radius-control); font-size: 11px; font-weight: 600; cursor: pointer;
   border: none; background: none; color: var(--text-3); font-family: var(--sans);
 }
 .thmock .range-chip.active { background: var(--surface-3); color: var(--text); }
-.thmock .seg-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.thmock .seg-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-control); overflow: hidden; }
 .thmock .seg-toggle button {
   padding: 6px 10px; font-size: 11px; font-family: var(--sans);
   background: var(--surface-2); color: var(--text-3); border: none; cursor: pointer;
@@ -746,8 +799,8 @@ body {
 .thmock .data-table { width: 100%; border-collapse: collapse; }
 .thmock .data-table thead th {
   padding: 10px 16px; text-align: left;
-  font-family: var(--mono); font-size: 11px; font-weight: 500;
-  color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase;
+  font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--text-3);
   background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap;
 }
 .thmock .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
@@ -762,80 +815,97 @@ body {
 .thmock .data-table tbody tr.row-link .td-name a::after { content: ''; position: absolute; inset: 0; }
 .thmock .data-table td { padding: 11px 16px; font-size: 14px; color: var(--text); vertical-align: middle; }
 .thmock .td-name { font-weight: 600; }
-.thmock .td-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; font-family: var(--mono); }
+.thmock .td-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+/* Secondary cells: dates, amounts, counts, durations. Inter with tabular figures. */
+.thmock .td-num { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+/* Code cells only: engagement codes, invoice and quote numbers, ids. */
 .thmock .td-mono { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
-.thmock .website-link { font-family: var(--mono); font-size: 11px; color: var(--text-3); text-decoration: none; }
+.thmock .website-link { font-size: 12px; color: var(--text-3); text-decoration: none; }
 .thmock .website-link:hover { color: var(--accent-strong); } /* 5.17:1 on --surface; base --accent was 2.65:1 */
 
 /* pills (timesheet) */
-.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; font-family: var(--mono); }
+.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; }
 .thmock .pill.billable { color: var(--emerald-strong); background: var(--emerald-dim); }
 .thmock .pill.nonbill { color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); }
 .thmock .pill.timer { color: var(--red-strong); background: var(--red-dim); }
 .thmock .row-running td { background: rgba(220,38,38,0.04); }
-.thmock tfoot td { padding: 14px 16px; font-family: var(--mono); font-size: 12px; background: var(--surface); border-top: 2px solid var(--border-light); }
-.thmock tfoot td.total-label { color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
+.thmock tfoot td { padding: 14px 16px; font-size: 12px; font-variant-numeric: tabular-nums; background: var(--surface); border-top: 2px solid var(--border-light); }
+.thmock tfoot td.total-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); }
 .thmock tfoot td.total-val { font-weight: 700; color: var(--text); }
 .thmock tfoot td.total-amount { font-weight: 800; color: var(--emerald-strong); font-size: 14px; }
 
 /* live timer pill */
 .thmock .timer {
-  display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: 999px;
-  background: linear-gradient(135deg, #FEF2F2, #FEE2E2); border: 1px solid var(--red);
+  display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: var(--radius-pill);
+  background: var(--red-dim); border: 1px solid var(--red);
   box-shadow: var(--shadow-sm);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
-.thmock .timer-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 var(--red); animation: thmock-pulse 1.6s infinite; }
+.thmock .timer-dot { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--red); box-shadow: 0 0 0 0 var(--red); animation: thmock-pulse 1.6s infinite; }
 @keyframes thmock-pulse {
   0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.5) }
   70% { box-shadow: 0 0 0 10px rgba(220,38,38,0) }
   100% { box-shadow: 0 0 0 0 rgba(220,38,38,0) }
 }
 .thmock .timer-meta { font-size: 11px; color: var(--text); line-height: 1.2; }
-.thmock .timer-meta b { font-family: var(--sans); font-weight: 700; }
+.thmock .timer-meta b { font-weight: 700; }
 .thmock .timer-meta span { color: var(--text-3); font-size: 10px; }
 .thmock .timer-clock { font-size: 13px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; min-width: 62px; text-align: right; }
-.thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.thmock .timer-stop { background: var(--red); color: #ffffff; border: none; border-radius: var(--radius-pill); width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 
 /* panels / cards */
-.thmock .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-.thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.thmock .panel { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-sm); }
+/* The strips inside a panel are square; keep them inside its rounded corners. */
+.thmock .panel > :first-child { border-top-left-radius: calc(var(--radius-card) - 1px); border-top-right-radius: calc(var(--radius-card) - 1px); }
+.thmock .panel > :last-child { border-bottom-left-radius: calc(var(--radius-card) - 1px); border-bottom-right-radius: calc(var(--radius-card) - 1px); }
+.thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 12px 14px; }
 .thmock .panel-section-title {
-  font-family: var(--mono); font-size: 9px; font-weight: 500; color: var(--text-3);
-  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
+  font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3);
+  margin-bottom: 10px;
   display: flex; align-items: center; justify-content: space-between;
 }
 
 /* tabs (account detail) */
-.thmock .tabbar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 24px; background: var(--surface); }
+.thmock .tabbar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); padding: 0 24px; }
 .thmock .tab {
   padding: 12px 14px; font-size: 12px; font-weight: 600; color: var(--text-3); cursor: pointer;
   background: none; border: none; border-bottom: 2px solid transparent; font-family: var(--sans);
 }
 .thmock .tab:hover { color: var(--text-2); }
-.thmock .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent); } /* text was --accent, 2.65:1 — fails AA */
+.thmock .tab.active { color: var(--accent-strong); border-bottom-color: var(--accent-strong); } /* brand blue is 2.77:1 on white, so the rule is blue ink */
+.thmock .tab:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 
 /* bulk action bar */
 .thmock .bulkbar {
   display: flex; align-items: center; gap: 10px; padding: 10px 24px;
   background: var(--accent-dim); border-bottom: 1px solid var(--accent);
 }
-.thmock .bulkbar .bulk-count { font-family: var(--mono); font-size: 12px; color: var(--accent-strong); font-weight: 700; }
+.thmock .bulkbar .bulk-count { font-size: 12px; color: var(--accent-strong); font-weight: 700; }
 
 /* checkbox */
 .thmock input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
 
 /* empty state */
 .thmock .empty { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
+.thmock .empty-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+
+/* Badge tones (components/ui/Badge.tsx). The existing status token pairs. */
+.thmock .status-accent { color: var(--accent-strong); background: var(--accent-dim); }
+.thmock .status-green { color: var(--green-strong); background: var(--green-dim); }
+.thmock .status-amber { color: var(--amber-strong); background: var(--amber-dim); }
+.thmock .status-red { color: var(--red-strong); background: var(--red-dim); }
+.thmock .status-emerald { color: var(--emerald-strong); background: var(--emerald-dim); }
+.thmock .status-grey { color: var(--grey-strong); background: var(--grey-dim); }
+.thmock .status-badge.no-dot::before { display: none; }
 
 /* ---- inbox 3-pane ---- */
-.thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 120px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
+.thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 168px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-card); }
 .thmock .folders { border-right: 1px solid var(--border); background: var(--surface); padding: 12px 8px; overflow-y: auto; }
-.thmock .folder-label { font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; padding: 6px 10px 4px; text-transform: uppercase; }
-.thmock .folder { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; color: var(--text-2); background: none; border: none; width: 100%; text-align: left; }
+.thmock .folder-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); padding: 6px 10px 4px; }
+.thmock .folder { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-control); font-size: 12px; cursor: pointer; color: var(--text-2); background: none; border: none; width: 100%; text-align: left; }
 .thmock .folder:hover { background: var(--surface-2); color: var(--text); }
 .thmock .folder.active { background: var(--accent-dim); color: var(--accent-strong); font-weight: 700; } /* was --accent, 2.42:1 — fails AA */
-.thmock .folder-count { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+.thmock .folder-count { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--text-3); }
 .thmock .folder.active .folder-count { color: var(--accent-strong); }
 
 .thmock .threads { border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
@@ -850,17 +920,17 @@ body {
 .thmock .thread.unread:not(.active) { border-left: 3px solid var(--accent); padding-left: 11px; }
 .thmock .thread.unread .thread-subj { font-weight: 700; }
 .thmock .thread.unread .thread-from::before {
-  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: var(--radius-pill);
   background: var(--accent); margin-right: 7px; vertical-align: middle; flex-shrink: 0;
 }
 .thmock .thread.unread:hover { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .thmock .thread-row { display: flex; align-items: baseline; gap: 6px; }
 .thmock .thread-from { font-size: 12px; font-weight: 600; color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.thmock .thread-time { font-family: var(--mono); font-size: 11px; color: var(--text-3); flex-shrink: 0; }
+.thmock .thread-time { font-size: 12px; color: var(--text-3); flex-shrink: 0; }
 .thmock .thread-subj { font-size: 14px; color: var(--text-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-snippet { font-size: 11px; color: var(--text-3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-tags { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
-.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 3px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; background: var(--surface-3); color: var(--text-2); }
+.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: var(--radius-control); font-size: 11px; font-weight: 600; background: var(--surface-3); color: var(--text-2); }
 .thmock .acct-pill.matched { background: var(--accent-dim); color: var(--accent-strong); }
 .thmock .acct-pill.unmatched { background: var(--amber-dim); color: var(--amber-strong); }
 .thmock .acct-pill.outbound { background: var(--emerald-dim); color: var(--emerald-strong); }
@@ -869,31 +939,28 @@ body {
 .thmock .reader-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); }
 .thmock .reader-subject { font-family: var(--serif); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .thmock .reader-meta-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
-.thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-strong); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
-.thmock .acct-chip:hover { background: var(--accent-strong); color: white; } /* was --accent, 2.77:1 — fails AA */
-.thmock .meta-chip { padding: 3px 8px; border-radius: 4px; font-family: var(--mono); font-size: 11px; background: var(--surface-2); color: var(--text-3); }
+.thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-strong); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
+.thmock .acct-chip:hover { background: var(--accent-strong); color: var(--bg); } /* was --accent, 2.77:1 — fails AA */
+.thmock .meta-chip { padding: 3px 8px; border-radius: var(--radius-control); font-size: 12px; background: var(--surface-2); color: var(--text-3); }
 .thmock .reader-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 .thmock .reader-body { flex: 1; overflow-y: auto; padding: 0 24px; }
 .thmock .message { padding: 18px 0; border-bottom: 1px solid var(--border); }
 .thmock .message-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-.thmock .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
-.thmock .avatar.inbound { background: linear-gradient(135deg, #0EA5E9, #38BDF8); }
-.thmock .avatar.outbound { background: linear-gradient(135deg, #059669, #34D399); }
 .thmock .msg-from { font-size: 14px; font-weight: 700; color: var(--text); }
-.thmock .msg-to { font-size: 11px; color: var(--text-3); font-family: var(--mono); margin-top: 2px; }
-.thmock .msg-time { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+.thmock .msg-to { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.thmock .msg-time { font-size: 12px; color: var(--text-3); }
 .thmock .msg-body { font-size: 14px; line-height: 1.7; color: var(--text-2); white-space: pre-wrap; padding-left: 48px; }
 .thmock .reader-reply { border-top: 1px solid var(--border); background: var(--surface); padding: 14px 24px; }
-.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
+.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 10px 12px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
 .thmock .reply-input:focus { border-color: var(--accent); }
-.thmock .reply-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
+.thmock .reply-input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .thmock .reply-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
 
 /* scrollbars (3.12) */
 .thmock ::-webkit-scrollbar { width: 6px; height: 6px; }
 .thmock ::-webkit-scrollbar-track { background: transparent; }
-.thmock ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
-.thmock ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+.thmock ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: var(--radius-control); }
+.thmock ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
 /* ==========================================================================
    TOUCH TARGETS (WCAG 2.5.8 AA — 24x24 minimum, 44x44 on coarse pointers)

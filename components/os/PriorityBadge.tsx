@@ -11,7 +11,7 @@ export default function PriorityBadge({
 }: PriorityBadgeProps) {
   return (
     <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getPriorityClasses(priority)} ${className}`.trim()}
+      className={`inline-flex rounded-pill border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] ${getPriorityClasses(priority)} ${className}`.trim()}
     >
       {priority}
     </span>

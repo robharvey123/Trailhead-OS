@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { getEngagementTask, listTaskComments, listTaskActivity } from '@/lib/db/engagement-tasks'
 import { getRunningTimer, getTaskTimeSummary, listTaskTimeEntries } from '@/lib/db/timesheet'
@@ -19,6 +20,8 @@ import {
   ENGAGEMENT_TASK_STATUS_LABELS,
   type EngagementTaskActivity,
 } from '@/lib/types'
+
+export const metadata = { title: 'Task' }
 
 function fmtDate(v: string | null) {
   return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
@@ -70,7 +73,7 @@ export default async function TaskDetailPage({
   const backHref =
     safeFrom ??
     (roleIsAdmin(profile.role) && task.engagement_id ? `/engagements/${task.engagement_id}/tasks` : '/my-work')
-  const backLabel = !safeFrom || looksLikeBoard(safeFrom) ? '← Back to board' : '← Back'
+  const backLabel = !safeFrom || looksLikeBoard(safeFrom) ? 'Back to board' : 'Back'
 
   const [comments, activity, people, runningTimer, timeSummary, timeEntries] = await Promise.all([
     listTaskComments(id, supabase).catch(() => []),
@@ -98,15 +101,14 @@ export default async function TaskDetailPage({
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
+      <PageHeader
+        back={{ href: backHref, label: backLabel }}
+        title={canEdit ? <TaskTitleEditor taskId={task.id} title={task.title} /> : task.title}
+        description={<TaskStatusBadge status={task.status} />}
+      />
       <div className="panel overflow-hidden">
-        <div className="topbar">
-          <Link href={backHref} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>{backLabel}</Link>
-          {canEdit ? <TaskTitleEditor taskId={task.id} title={task.title} /> : <span className="topbar-title">{task.title}</span>}
-          <TaskStatusBadge status={task.status} />
-        </div>
-
         <div className="grid grid-cols-1 gap-[18px] p-4 sm:p-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-          <div style={{ display: 'grid', gap: 16 }}>
+          <div className="grid gap-4">
             {canEdit ? (
               <TaskDetailControls
                 taskId={task.id}
@@ -125,7 +127,7 @@ export default async function TaskDetailPage({
               {canEdit ? (
                 <TaskDescriptionEditor taskId={task.id} description={task.description} />
               ) : (
-                <p style={{ fontSize: 13, whiteSpace: 'pre-wrap', margin: 0, color: task.description ? 'var(--text)' : 'var(--text-3)' }}>{task.description || 'No description.'}</p>
+                <p className={`m-0 whitespace-pre-wrap text-[13px] ${task.description ? 'text-[var(--text)]' : 'text-[var(--text-3)]'}`}>{task.description || 'No description.'}</p>
               )}
             </div>
 
@@ -146,19 +148,19 @@ export default async function TaskDetailPage({
             </div>
           </div>
 
-          <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
+          <div className="grid content-start gap-4">
             <div className="card">
               <div className="panel-section-title">Details</div>
-              <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', fontSize: 13, margin: 0 }}>
+              <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[13px]">
                 <dt className="field-label">Engagement</dt><dd>{task.engagement ? <Link href={`/engagements/${task.engagement.id}/tasks`}>{task.engagement.name}</Link> : '—'}</dd>
                 <dt className="field-label">Reporter</dt><dd>{task.reporter?.full_name ?? '—'}</dd>
-                <dt className="field-label">Completed</dt><dd className="td-mono">{fmtDate(task.completed_at)}</dd>
+                <dt className="field-label">Completed</dt><dd className="td-num">{fmtDate(task.completed_at)}</dd>
                 {/* Priority/Assignee/Due/Labels are editable above for editors; show read-only here only for viewers. */}
                 {!canEdit ? (
                   <>
                     <dt className="field-label">Priority</dt><dd>{ENGAGEMENT_TASK_PRIORITY_LABELS[task.priority]}</dd>
                     <dt className="field-label">Assignee</dt><dd>{task.assignee?.full_name ?? '—'}</dd>
-                    <dt className="field-label">Due</dt><dd className="td-mono">{fmtDate(task.due_date)}</dd>
+                    <dt className="field-label">Due</dt><dd className="td-num">{fmtDate(task.due_date)}</dd>
                     {task.labels.length ? <><dt className="field-label">Labels</dt><dd>{task.labels.join(', ')}</dd></> : null}
                   </>
                 ) : null}
@@ -178,12 +180,12 @@ export default async function TaskDetailPage({
 
             <div className="card">
               <div className="panel-section-title">Activity</div>
-              {activity.length === 0 ? <p style={{ fontSize: 12, color: 'var(--text-3)' }}>No activity.</p> : (
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
+              {activity.length === 0 ? <p className="text-xs text-[var(--text-3)]">No activity.</p> : (
+                <ul className="m-0 grid list-none gap-2 p-0">
                   {activity.map((a) => (
-                    <li key={a.id} style={{ fontSize: 12, color: 'var(--text-2)' }}>
+                    <li key={a.id} className="text-xs text-[var(--text-2)]">
                       <span>{activityText(a)}</span>
-                      <span className="td-mono" style={{ color: 'var(--text-3)', marginLeft: 6 }}>{fmtAt(a.created_at)}</span>
+                      <span className="td-num ml-1.5">{fmtAt(a.created_at)}</span>
                     </li>
                   ))}
                 </ul>

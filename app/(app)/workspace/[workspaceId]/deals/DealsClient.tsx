@@ -174,22 +174,22 @@ export default function DealsClient({
             <span className="ml-1 text-xs text-slate-500">(converted to {baseCurrency})</span>
           </p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">
           + New Deal
         </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex rounded-lg border border-slate-700 text-sm">
+        <div className="flex rounded-control border border-slate-700 text-sm">
           {(['pipeline', 'table'] as const).map((mode) => (
             <button key={mode} onClick={() => setViewMode(mode)}
-              className={`px-3 py-1.5 capitalize transition ${viewMode === mode ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200'} ${mode === 'pipeline' ? 'rounded-l-lg' : 'rounded-r-lg'}`}>
+              className={`px-3 py-1.5 capitalize transition ${viewMode === mode ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200'} ${mode === 'pipeline' ? 'rounded-l-control' : 'rounded-r-control'}`}>
               {mode}
             </button>
           ))}
         </div>
         {viewMode === 'table' && (
-          <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+          <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
             <option value="all">All stages</option>
             {DEAL_STAGES.map((s) => <option key={s} value={s}>{DEAL_STAGE_LABELS[s]}</option>)}
           </select>
@@ -197,58 +197,58 @@ export default function DealsClient({
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Deal' : 'New Deal'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs text-slate-400">Title *</label>
-              <input required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Account</label>
-              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 <option value="">No account</option>
                 {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Contact</label>
-              <select value={contactId} onChange={(e) => setContactId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={contactId} onChange={(e) => setContactId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 <option value="">No contact</option>
                 {filteredContacts.map((c) => <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Value</label>
-              <input type="number" step="0.01" value={value} onChange={(e) => setValue(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="number" step="0.01" value={value} onChange={(e) => setValue(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Currency</label>
-              <select value={dealCurrency} onChange={(e) => setDealCurrency(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={dealCurrency} onChange={(e) => setDealCurrency(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 {supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Stage</label>
-              <select value={stage} onChange={(e) => setStage(e.target.value as DealStage)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={stage} onChange={(e) => setStage(e.target.value as DealStage)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 {DEAL_STAGES.map((s) => <option key={s} value={s}>{DEAL_STAGE_LABELS[s]}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Probability (%)</label>
-              <input type="number" min="0" max="100" value={probability} onChange={(e) => setProbability(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="number" min="0" max="100" value={probability} onChange={(e) => setProbability(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Expected Close</label>
-              <input type="date" value={expectedClose} onChange={(e) => setExpectedClose(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="date" value={expectedClose} onChange={(e) => setExpectedClose(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs text-slate-400">Notes</label>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div className="flex gap-2 sm:col-span-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
@@ -267,7 +267,7 @@ export default function DealsClient({
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className={`w-64 shrink-0 rounded-2xl border bg-slate-900/50 transition-colors ${
+                      className={`w-64 shrink-0 rounded-card border bg-slate-900/50 transition-colors ${
                         snapshot.isDraggingOver ? 'border-blue-500/50 bg-blue-950/20' : 'border-slate-800'
                       }`}
                     >
@@ -283,7 +283,7 @@ export default function DealsClient({
                                 ref={dragProvided.innerRef}
                                 {...dragProvided.draggableProps}
                                 {...dragProvided.dragHandleProps}
-                                className={`rounded-xl border bg-slate-900/80 p-3 transition-shadow ${
+                                className={`rounded-card border bg-slate-900/80 p-3 transition-shadow ${
                                   dragSnapshot.isDragging ? 'border-blue-500/50 shadow-lg shadow-blue-500/10' : 'border-slate-800'
                                 }`}
                               >
@@ -313,7 +313,7 @@ export default function DealsClient({
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -336,7 +336,7 @@ export default function DealsClient({
                   <td className="px-4 py-3 text-slate-400">{d.account_id ? accountMap.get(d.account_id) || '—' : '—'}</td>
                   <td className="px-4 py-3 text-slate-400">{d.contact_id ? contactMap.get(d.contact_id) || '—' : '—'}</td>
                   <td className="px-4 py-3 text-emerald-400">{fmtCurrency(d.value, d.currency)} <span className="text-[10px] text-slate-500">{d.currency}</span></td>
-                  <td className="px-4 py-3"><span className="rounded-full border border-slate-700 px-2 py-0.5 text-xs">{DEAL_STAGE_LABELS[d.stage]}</span></td>
+                  <td className="px-4 py-3"><span className="rounded-pill border border-slate-700 px-2 py-0.5 text-xs">{DEAL_STAGE_LABELS[d.stage]}</span></td>
                   <td className="px-4 py-3 text-slate-400">{d.probability}%</td>
                   <td className="px-4 py-3 text-slate-400">{d.expected_close_date || '—'}</td>
                   <td className="px-4 py-3">

@@ -64,7 +64,7 @@ export default function HoldingDashboard({ workspaceId }: { workspaceId: string 
         </header>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-28 animate-pulse rounded-2xl border border-slate-800 bg-slate-900/70" />
+            <div key={i} className="h-28 animate-pulse rounded-card border border-slate-800 bg-slate-900/70" />
           ))}
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function HoldingDashboard({ workspaceId }: { workspaceId: string 
       {/* KPI Cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {kpis.map((k) => (
-          <div key={k.label} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+          <div key={k.label} className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{k.label}</p>
             <p className={`mt-3 text-2xl font-semibold ${k.color}`}>{k.value}</p>
           </div>
@@ -112,7 +112,7 @@ export default function HoldingDashboard({ workspaceId }: { workspaceId: string 
       {/* Charts Row */}
       <section className="grid gap-6 lg:grid-cols-2">
         {/* Monthly Money In/Out */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h2 className="text-lg font-semibold">Monthly Cash Flow</h2>
           <p className="mt-1 text-sm text-slate-400">Money in vs out by month</p>
           <div className="mt-4 h-72">
@@ -139,7 +139,7 @@ export default function HoldingDashboard({ workspaceId }: { workspaceId: string 
         </div>
 
         {/* Revenue by Stream */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h2 className="text-lg font-semibold">Revenue by Stream</h2>
           <p className="mt-1 text-sm text-slate-400">Breakdown of income by source</p>
           <div className="mt-4 h-72">
@@ -173,11 +173,11 @@ export default function HoldingDashboard({ workspaceId }: { workspaceId: string 
               <Link
                 key={st.stream_id}
                 href={`/workspace/${workspaceId}/holding/streams`}
-                className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 transition hover:border-slate-700"
+                className="rounded-card border border-slate-800 bg-slate-900/70 p-5 transition hover:border-slate-700"
               >
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium">{st.stream_name}</h3>
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${STREAM_TYPE_BG_COLORS[st.stream_type as IncomeStreamType] ?? 'bg-slate-400/10 text-slate-400'}`}>
+                  <span className={`rounded-pill px-2 py-0.5 text-xs ${STREAM_TYPE_BG_COLORS[st.stream_type as IncomeStreamType] ?? 'bg-slate-400/10 text-slate-400'}`}>
                     {STREAM_TYPE_LABELS[st.stream_type as IncomeStreamType] ?? st.stream_type}
                   </span>
                 </div>
@@ -202,7 +202,7 @@ export default function HoldingDashboard({ workspaceId }: { workspaceId: string 
           <Link
             key={link.href}
             href={link.href}
-            className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5 transition hover:border-slate-700 hover:bg-slate-900"
+            className="rounded-card border border-slate-800 bg-slate-900/70 p-5 transition hover:border-slate-700 hover:bg-slate-900"
           >
             <h3 className="font-medium text-white">{link.label}</h3>
             <p className="mt-1 text-xs text-slate-400">{link.desc}</p>

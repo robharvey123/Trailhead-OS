@@ -64,20 +64,20 @@ export default function CoworkActivityPanel({ activity }: { activity: CoworkActi
       </div>
 
       {activity.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="mt-6 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No Cowork activity yet.
         </div>
       ) : (
         <div className="mt-6 space-y-6">
           {groups.map((group) => (
             <div key={group.label}>
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">{group.label}</p>
+              <p className="os-label">{group.label}</p>
               <ul className="mt-3 space-y-2">
                 {group.rows.map((row) => {
                   const href = entityHref(row)
                   const time = new Date(row.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
                   return (
-                    <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+                    <li key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
                       <div className="min-w-0">
                         <p className="text-sm text-[color:var(--text)]">
                           {href ? <Link href={href} className="hover:underline">{row.summary}</Link> : row.summary}
@@ -90,7 +90,7 @@ export default function CoworkActivityPanel({ activity }: { activity: CoworkActi
                       {isReversible(row) ? (
                         <form action={revertCoworkActivityAction}>
                           <input type="hidden" name="id" value={row.id} />
-                          <button className="rounded-xl border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]">
+                          <button className="btn btn-ghost btn-sm">
                             Revert
                           </button>
                         </form>

@@ -111,59 +111,59 @@ export default function ContactsClient({
           <h1 className="mt-1 text-2xl font-semibold">Contacts</h1>
           <p className="mt-1 text-sm text-slate-400">{contacts.length} contact{contacts.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">
           + New Contact
         </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select value={filterAccount} onChange={(e) => setFilterAccount(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterAccount} onChange={(e) => setFilterAccount(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="">All accounts</option>
           {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
         {brandNames.length > 0 && (
-          <select value={filterBrand} onChange={(e) => setFilterBrand(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+          <select value={filterBrand} onChange={(e) => setFilterBrand(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
             <option value="all">All brands</option>
             {brandNames.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
         )}
-        <input type="text" placeholder="Search contacts..." value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500" />
+        <input type="text" placeholder="Search contacts..." value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500" />
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Contact' : 'New Contact'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs text-slate-400">First Name *</label>
-              <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Last Name *</label>
-              <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Phone</label>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Job Title</label>
-              <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Account</label>
-              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 <option value="">No account</option>
                 {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs text-slate-400">Notes</label>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             {brandNames.length > 0 && (
               <div className="sm:col-span-2">
@@ -171,7 +171,7 @@ export default function ContactsClient({
                 <div className="flex flex-wrap gap-2">
                   {brandNames.map((b) => (
                     <label key={b} className="flex items-center gap-1.5 text-sm text-slate-300">
-                      <input type="checkbox" checked={brands.includes(b)} onChange={() => toggleBrand(b)} className="rounded border-slate-600 bg-slate-950" />
+                      <input type="checkbox" checked={brands.includes(b)} onChange={() => toggleBrand(b)} className="rounded-control border-slate-600 bg-slate-950" />
                       {b}
                     </label>
                   ))}
@@ -179,14 +179,14 @@ export default function ContactsClient({
               </div>
             )}
             <div className="flex gap-2 sm:col-span-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -213,7 +213,7 @@ export default function ContactsClient({
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
                       {(c.brands || []).map((b) => (
-                        <span key={b} className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>
+                        <span key={b} className="rounded-pill bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{b}</span>
                       ))}
                     </div>
                   </td>

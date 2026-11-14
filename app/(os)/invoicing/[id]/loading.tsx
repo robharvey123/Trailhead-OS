@@ -13,15 +13,15 @@ export default function InvoiceDetailLoading() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
             <SkeletonBar className="h-3 w-24" />
-            <SkeletonBar className="h-8 w-56 rounded-xl" />
+            <SkeletonBar className="h-8 w-56 rounded-card" />
             <div className="flex gap-2">
-              <SkeletonBar className="h-6 w-20 rounded-full" />
-              <SkeletonBar className="h-6 w-24 rounded-full" />
+              <SkeletonBar className="h-6 w-20 rounded-pill" />
+              <SkeletonBar className="h-6 w-24 rounded-pill" />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {Array.from({ length: 4 }).map((_, index) => (
-              <SkeletonBar key={index} className="h-9 w-28 rounded-2xl" />
+              <SkeletonBar key={index} className="h-9 w-28 rounded-card" />
             ))}
           </div>
         </div>

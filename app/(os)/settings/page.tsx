@@ -2,6 +2,7 @@ import Link from 'next/link'
 import SettingsIntegrations from '@/components/os/SettingsIntegrations'
 import CalendarSubscriptionSection from '@/components/os/CalendarSubscriptionSection'
 import CompanySettingsForm from '@/components/os/CompanySettingsForm'
+import PageHeader from '@/components/ui/PageHeader'
 import PaymentDetailsForm from '@/components/os/PaymentDetailsForm'
 import RemittanceAccountsSection from '@/components/os/RemittanceAccountsSection'
 import { listRemittanceAccounts } from '@/lib/db/remittance-accounts'
@@ -16,6 +17,8 @@ import FreeAgentSettings from '@/components/os/FreeAgentSettings'
 import ProfileSettingsForm from '@/components/os/ProfileSettingsForm'
 import CoworkActivityPanel, { type CoworkActivityRow } from '@/components/os/CoworkActivityPanel'
 import type { PricingTier, Workstream } from '@/lib/types'
+
+export const metadata = { title: 'Settings' }
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -124,13 +127,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="os-narrow space-y-6">
-      <div>
-        <p className="os-eyebrow">System</p>
-        <h1 className="mt-2 os-page-title">Settings</h1>
-        <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
-          A control panel for the core OS surfaces, live workspace settings, and the current signed-in account.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="System"
+        title="Settings"
+        description="A control panel for the core OS surfaces, live workspace settings, and the current signed-in account."
+      />
 
       {profile ? (
         <section className="os-card p-6">
@@ -141,7 +142,7 @@ export default async function SettingsPage() {
               <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">{user?.email ?? 'Unknown user'}</p>
             </div>
             {roleIsAdmin(profile.role) ? (
-              <Link href="/admin/invites" className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]">
+              <Link href="/admin/invites" className="btn btn-ghost">
                 Manage invites
               </Link>
             ) : null}
@@ -184,20 +185,20 @@ export default async function SettingsPage() {
           <p className="os-eyebrow">Account</p>
           <h2 className="mt-2 os-section-title">Signed-in access</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <div className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Email</p>
+            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="os-label">Email</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{user?.email ?? 'Unknown user'}</p>
             </div>
-            <div className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Workspace count</p>
+            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="os-label">Workspace count</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{workspaces.length}</p>
             </div>
-            <div className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">New enquiries</p>
+            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="os-label">New enquiries</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{newEnquiryCount}</p>
             </div>
-            <div className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">Draft invoices</p>
+            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <p className="os-label">Draft invoices</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{draftInvoiceCount}</p>
             </div>
           </div>
@@ -207,19 +208,19 @@ export default async function SettingsPage() {
           <p className="os-eyebrow">Shortcuts</p>
           <h2 className="mt-2 os-section-title">Core OS areas</h2>
           <div className="mt-5 grid gap-3">
-            <Link href="/analytics" className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
+            <Link href="/analytics" className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
               Analytics workspace list
             </Link>
-            <Link href="/crm/contacts" className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
+            <Link href="/crm/contacts" className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
               CRM contacts ({contactsCount})
             </Link>
-            <Link href="/enquiries" className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
+            <Link href="/enquiries" className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
               Enquiries inbox
             </Link>
-            <Link href="/invoicing" className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
+            <Link href="/invoicing" className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
               Invoicing
             </Link>
-            <Link href="/settings/notifications" className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
+            <Link href="/settings/notifications" className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
               Push notifications
             </Link>
           </div>
@@ -245,14 +246,14 @@ export default async function SettingsPage() {
           </div>
           <Link
             href="/analytics"
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+            className="btn btn-ghost"
           >
             Open workspace list
           </Link>
         </div>
 
         {workspaces.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+          <div className="mt-6 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No analytics workspaces yet.
           </div>
         ) : (
@@ -261,10 +262,10 @@ export default async function SettingsPage() {
               <Link
                 key={workspace.id}
                 href={`/analytics/${workspace.id}/settings`}
-                className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 transition hover:border-[color:var(--border-light)]"
+                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 transition hover:border-[color:var(--border-light)]"
               >
                 <p className="text-sm font-medium text-[color:var(--text)]">{workspace.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+                <p className="os-label mt-1">
                   Workspace settings
                 </p>
               </Link>

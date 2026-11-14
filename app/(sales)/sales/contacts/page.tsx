@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { listSalesContacts } from '@/lib/sales/data'
 import EligibilityBadge from '@/components/sales/EligibilityBadge'
+import PageHeader from '@/components/ui/PageHeader'
 
-export const metadata = { title: 'Contacts | Sales | Trailhead OS' }
+export const metadata = { title: 'Contacts | Sales' }
 
 export default async function SalesContactsPage() {
   const supabase = await createClient()
@@ -11,10 +12,7 @@ export default async function SalesContactsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
-        <p className="mt-1 text-sm text-[color:var(--text-2)]">{contacts.length} on your list.</p>
-      </div>
+      <PageHeader title="Contacts" description={<>{contacts.length} on your list.</>} />
       {contacts.length === 0 ? (
         <div className="panel empty">No contacts on your list yet.</div>
       ) : (

@@ -1,8 +1,8 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 
-export const metadata = { title: 'Product | Sales | Trailhead OS' }
+export const metadata = { title: 'Product | Sales' }
 
 /** Read-only product context, via the sales_products/_phases/_milestones views (safe columns only). */
 export default async function SalesProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,12 +19,12 @@ export default async function SalesProductPage({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link href="/sales/dashboard" className="text-sm text-[color:var(--text-2)] hover:underline">← Dashboard</Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">{product.name}</h1>
-        <p className="mt-1 text-sm capitalize text-[color:var(--text-2)]">{product.status}</p>
-        {product.description ? <p className="mt-3 max-w-3xl whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{product.description}</p> : null}
-      </div>
+      <PageHeader
+        back={{ href: '/sales/dashboard', label: 'Dashboard' }}
+        title={product.name}
+        description={product.status ? <span className="capitalize">{product.status}</span> : undefined}
+      />
+      {product.description ? <p className="max-w-3xl whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{product.description}</p> : null}
       <div className="grid gap-4 md:grid-cols-2">
         <section className="panel p-4">
           <h2 className="text-sm font-semibold">Phases</h2>

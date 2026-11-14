@@ -144,21 +144,21 @@ export default function MessageComposer({
   }
 
   return (
-    <div style={{ borderTop: '1px solid var(--border)' }}>
+    <div className="border-t border-[var(--border)]">
       {files.length ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 12px 0' }}>
+        <div className="flex flex-wrap gap-1.5 px-3 pt-2">
           {files.map((f, i) => (
-            <span key={`${f.name}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '4px 8px', color: 'var(--text-2)' }}>
-              📎 {f.name} <span style={{ color: 'var(--text-3)' }}>{fmtBytes(f.size)}</span>
-              <button type="button" onClick={() => setFiles((cur) => cur.filter((_, j) => j !== i))} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-3)' }}>✕</button>
+            <span key={`${f.name}-${i}`} className="inline-flex items-center gap-1.5 rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--text-2)]">
+              📎 {f.name} <span className="text-[var(--text-3)]">{fmtBytes(f.size)}</span>
+              <button type="button" onClick={() => setFiles((cur) => cur.filter((_, j) => j !== i))} className="cursor-pointer border-none bg-transparent text-[var(--text-3)]">✕</button>
             </span>
           ))}
         </div>
       ) : null}
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '6px 12px 0', margin: 0 }}>{error}</p> : null}
+      {error ? <p className="m-0 px-3 pt-1.5 text-xs text-[var(--red-strong)]">{error}</p> : null}
 
       <div
-        style={{ position: 'relative', display: 'flex', gap: 8, padding: 12, alignItems: 'flex-end', outline: dragOver ? '2px dashed var(--accent)' : 'none', outlineOffset: -4 }}
+        className={`relative flex items-end gap-2 p-3 ${dragOver ? 'outline-2 -outline-offset-4 outline-dashed outline-[var(--accent-strong)]' : ''}`}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files) }}
@@ -166,11 +166,11 @@ export default function MessageComposer({
         {pickerOpen ? (
           <MentionPicker items={candidates} activeIndex={activeIndex} onSelect={selectMention} onHover={setActiveIndex} />
         ) : null}
-        <button type="button" className="btn btn-ghost btn-sm" onClick={() => inputRef.current?.click()} disabled={disabled} aria-label="Attach files" style={{ flex: 'none' }}>📎</button>
+        <button type="button" className="btn btn-ghost btn-sm flex-none" onClick={() => inputRef.current?.click()} disabled={disabled} aria-label="Attach files">📎</button>
         <input ref={inputRef} type="file" multiple hidden onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = '' }} />
         <textarea
           ref={textareaRef}
-          className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] resize-none"
+          className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] resize-none max-h-[140px]"
           value={value}
           rows={1}
           placeholder="Write a message…   (@ to mention)"
@@ -179,9 +179,8 @@ export default function MessageComposer({
           onClick={(e) => refreshMention(e.currentTarget)}
           onBlur={() => closeMention()}
           onKeyDown={onTextKeyDown}
-          style={{ maxHeight: 140 }}
         />
-        <button className="btn btn-primary btn-sm" onClick={submit} disabled={disabled || (!value.trim() && files.length === 0)} style={{ flex: 'none' }}>Send</button>
+        <button className="btn btn-primary btn-sm flex-none" onClick={submit} disabled={disabled || (!value.trim() && files.length === 0)}>Send</button>
       </div>
     </div>
   )

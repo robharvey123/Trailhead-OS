@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+      className="btn btn-primary"
     >
       {pending ? 'Creating...' : 'Create workspace'}
     </button>
@@ -27,25 +27,25 @@ export default function CreateWorkspaceForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="workspace-name">
+        <label className="text-sm font-medium text-[var(--text)]" htmlFor="workspace-name">
           Workspace name
         </label>
         <input
           id="workspace-name"
           name="name"
           required
-          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+          className="os-input w-full px-3 py-2 text-sm"
           placeholder="Acme Brands"
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="workspace-type">
+        <label className="text-sm font-medium text-[var(--text)]" htmlFor="workspace-type">
           Type
         </label>
         <select
           id="workspace-type"
           name="type"
-          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-slate-500 focus:outline-none"
+          className="os-select w-full px-3 py-2 text-sm"
           defaultValue="brand"
         >
           <option value="brand">Brand</option>
@@ -54,10 +54,10 @@ export default function CreateWorkspaceForm() {
       </div>
       <SubmitButton />
       {state.error ? (
-        <p className="text-sm text-rose-200">{state.error}</p>
+        <p className="text-sm text-[var(--red-strong)]">{state.error}</p>
       ) : null}
       {state.success ? (
-        <p className="text-sm text-emerald-200">Workspace created.</p>
+        <p className="text-sm text-[var(--emerald-strong)]">Workspace created.</p>
       ) : null}
     </form>
   )

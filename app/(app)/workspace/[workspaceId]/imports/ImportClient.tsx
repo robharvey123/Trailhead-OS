@@ -14,6 +14,7 @@ import {
   CONTACTS_HEADERS,
   CONTACTS_TEMPLATE,
 } from '@/lib/import/templates'
+import PageHeader from '@/components/ui/PageHeader'
 
 type ImportMode = 'append' | 'replace' | 'update'
 
@@ -459,10 +460,10 @@ const ManualEntrySection = ({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+    <div className="os-card p-6">
       <div>
-        <h2 className="text-lg font-semibold">{config.title}</h2>
-        <p className="mt-1 text-sm text-slate-300">{config.description}</p>
+        <h2 className="text-lg font-semibold text-[var(--text)]">{config.title}</h2>
+        <p className="mt-1 text-sm text-[var(--text-2)]">{config.description}</p>
       </div>
 
       <div className="mt-6 space-y-4">
@@ -487,9 +488,9 @@ const ManualEntrySection = ({
             return (
               <label
                 key={field.key}
-                className="space-y-1 text-xs text-slate-400"
+                className="space-y-1 text-xs text-[var(--text-3)]"
               >
-                <span className="flex items-center justify-between gap-2 uppercase tracking-[0.2em]">
+                <span className="os-label flex items-center justify-between gap-2">
                   <span>
                     {field.label}
                     {field.optional ? '' : ' *'}
@@ -498,7 +499,7 @@ const ManualEntrySection = ({
                     <button
                       type="button"
                       onClick={() => addOption(field.key, inputValue)}
-                      className="text-[10px] font-semibold text-slate-400 hover:text-slate-200"
+                      className="text-[10px] font-semibold text-[var(--accent-strong)] hover:text-[var(--accent-hover)]"
                     >
                       Add to list
                     </button>
@@ -512,7 +513,7 @@ const ManualEntrySection = ({
                   }
                   placeholder={field.placeholder}
                   list={listId}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                  className="os-input w-full px-3 py-2 text-sm"
                 />
                 {listId ? (
                   <datalist id={listId}>
@@ -530,17 +531,17 @@ const ManualEntrySection = ({
           <button
             type="button"
             onClick={handleAddRow}
-            className="rounded-lg border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
+            className="btn btn-ghost btn-sm"
           >
             Add row
           </button>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-[var(--text-3)]">
             Rows queued: {queue.length}
           </span>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-4">
+          <p className="os-label">
             Paste rows (CSV/TSV with headers)
           </p>
           <textarea
@@ -548,20 +549,20 @@ const ManualEntrySection = ({
             onChange={(event) => setPasteText(event.target.value)}
             placeholder={config.expectedHeaders.join(',')}
             rows={4}
-            className="mt-2 w-full resize-none rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+            className="os-textarea mt-2 w-full resize-none px-3 py-2 text-sm"
           />
           <button
             type="button"
             onClick={handlePasteRows}
-            className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
+            className="btn btn-ghost btn-sm mt-3"
           >
             Add pasted rows
           </button>
         </div>
 
         {queue.length ? (
-          <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+          <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-xs text-[var(--text-2)]">
+            <p className="os-label">
               Pending rows
             </p>
             <div className="mt-2 max-h-40 space-y-2 overflow-auto text-sm">
@@ -574,7 +575,7 @@ const ManualEntrySection = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveRow(index)}
-                    className="text-xs text-rose-200 transition hover:text-rose-100"
+                    className="btn btn-danger btn-sm"
                   >
                     Remove
                   </button>
@@ -585,7 +586,7 @@ const ManualEntrySection = ({
         ) : null}
 
         {errors.length ? (
-          <div className="rounded-xl border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
+          <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
             {errors.map((error) => (
               <p key={error}>{error}</p>
             ))}
@@ -596,18 +597,18 @@ const ManualEntrySection = ({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting || !queue.length}
-          className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+          className="btn btn-primary"
         >
           {isSubmitting ? 'Submitting...' : `Submit ${config.title} rows`}
         </button>
       </div>
 
       {result ? (
-        <div className="mt-6 space-y-3 rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
+        <div className="mt-6 space-y-3 rounded-card border border-[var(--emerald)]/50 bg-[var(--emerald-dim)] px-4 py-3 text-sm text-[var(--emerald-strong)]">
           <div>Inserted rows: {result.inserted}</div>
           <div>Rejected rows: {result.rejected.length}</div>
           {result.rejected.length ? (
-            <div className="max-h-40 space-y-1 overflow-auto text-xs text-emerald-100">
+            <div className="max-h-40 space-y-1 overflow-auto text-xs text-[var(--emerald-strong)]">
               {result.rejected.map((item) => (
                 <p key={`${item.row}-${item.reason}`}>
                   Row {item.row}: {item.reason}
@@ -732,16 +733,16 @@ const ImportSection = ({
   })
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+    <div className="os-card p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold">{config.title}</h2>
-          <p className="mt-1 text-sm text-slate-300">{config.description}</p>
+          <h2 className="text-lg font-semibold text-[var(--text)]">{config.title}</h2>
+          <p className="mt-1 text-sm text-[var(--text-2)]">{config.description}</p>
         </div>
         <button
           type="button"
           onClick={() => downloadTemplate(`${config.title}.csv`, config.template)}
-          className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
+          className="btn btn-ghost btn-sm"
         >
           Download template
         </button>
@@ -749,11 +750,11 @@ const ImportSection = ({
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
-          <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
-            <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+          <label className="flex cursor-pointer flex-col gap-2 rounded-card border border-dashed border-[var(--border-light)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-2)] transition hover:bg-[var(--surface-2)]">
+            <span className="os-label">
               Upload {config.title} file
             </span>
-            <span className="text-sm text-slate-200">
+            <span className="text-sm text-[var(--text)]">
               {fileName ?? 'Select CSV or Excel'}
             </span>
             <input
@@ -764,15 +765,15 @@ const ImportSection = ({
             />
           </label>
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            <p className="os-label">
               Import mode
             </p>
-            <div className="flex flex-col gap-2 text-sm">
+            <div className="flex flex-col gap-2 text-sm text-[var(--text)]">
               <label className="flex items-center gap-2">
                 <input
                   type="radio"
                   value="append"
-                  className="accent-white"
+                  className="accent-[var(--accent)]"
                   {...register('mode')}
                 />
                 Append to existing data
@@ -781,7 +782,7 @@ const ImportSection = ({
                 <input
                   type="radio"
                   value="update"
-                  className="accent-white"
+                  className="accent-[var(--accent)]"
                   {...register('mode')}
                 />
                 Update matching customers/companies
@@ -790,13 +791,13 @@ const ImportSection = ({
                 <input
                   type="radio"
                   value="replace"
-                  className="accent-white"
+                  className="accent-[var(--accent)]"
                   {...register('mode')}
                 />
                 Replace for brand + date range
               </label>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[var(--text-3)]">
               Append adds new rows only (duplicates are skipped). It will not
               update or correct existing rows. Update replaces only the
               customers/companies in your file within the detected date range.
@@ -805,14 +806,14 @@ const ImportSection = ({
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-400">
+        <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-xs text-[var(--text-3)]">
           {brandSummary && <div>{brandSummary}</div>}
           {dateSummary && <div>{dateSummary}</div>}
           <div>Rows detected: {rows.length}</div>
         </div>
 
         {parseErrors.length ? (
-          <div className="rounded-xl border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
+          <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
             {parseErrors.map((error) => (
               <p key={error}>{error}</p>
             ))}
@@ -822,18 +823,18 @@ const ImportSection = ({
         <button
           type="submit"
           disabled={isSubmitting || !rows.length}
-          className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+          className="btn btn-primary"
         >
           {isSubmitting ? 'Importing...' : `Import ${config.title}`}
         </button>
       </form>
 
       {result ? (
-        <div className="mt-6 space-y-3 rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
+        <div className="mt-6 space-y-3 rounded-card border border-[var(--emerald)]/50 bg-[var(--emerald-dim)] px-4 py-3 text-sm text-[var(--emerald-strong)]">
           <div>Inserted rows: {result.inserted}</div>
           <div>Rejected rows: {result.rejected.length}</div>
           {result.rejected.length ? (
-            <div className="max-h-40 space-y-1 overflow-auto text-xs text-emerald-100">
+            <div className="max-h-40 space-y-1 overflow-auto text-xs text-[var(--emerald-strong)]">
               {result.rejected.map((item) => (
                 <p key={`${item.row}-${item.reason}`}>
                   Row {item.row}: {item.reason}
@@ -845,7 +846,7 @@ const ImportSection = ({
       ) : null}
 
       {mode !== 'append' ? (
-        <p className="mt-4 text-xs text-slate-400">
+        <p className="mt-4 text-xs text-[var(--text-3)]">
           {mode === 'update'
             ? 'Update deletes existing rows for matching customers/companies within the detected brand/date range before inserting.'
             : 'Replace deletes existing rows for the detected brand(s) within the detected date range.'}
@@ -1036,22 +1037,19 @@ export default function ImportClient({
 
   return (
     <div className="space-y-8">
-      <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Imports
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">Import data</h1>
-        <p className="mt-2 text-sm text-slate-300">
-          Upload CSV or Excel files to keep workspace data up to date. Row
-          numbers in errors refer to data rows (excluding headers).
-        </p>
-        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
-          <strong className="text-slate-200">Modes:</strong> Append adds new
+      <div>
+        <PageHeader
+          eyebrow="Imports"
+          title="Import data"
+          description="Upload CSV or Excel files to keep workspace data up to date. Row numbers in errors refer to data rows (excluding headers)."
+        />
+        <div className="rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-xs text-[var(--text-2)]">
+          <strong className="text-[var(--text)]">Modes:</strong> Append adds new
           rows only (duplicates skipped). Update replaces only the
           customers/companies in your file within the detected brand/date range.
           Replace deletes and reloads the full brand/date range.
         </div>
-      </header>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {configs.map((config) => (
@@ -1065,11 +1063,9 @@ export default function ImportClient({
 
       <section className="space-y-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Manual entry
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold">Add rows by hand</h2>
-          <p className="mt-2 text-sm text-slate-300">
+          <p className="os-label">Manual entry</p>
+          <h2 className="os-section-title mt-2">Add rows by hand</h2>
+          <p className="mt-2 text-sm text-[var(--text-2)]">
             Enter a few rows quickly or paste CSV/TSV text without uploading a
             file. Manual entry always appends.
           </p>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resend } from '@/lib/email/resend'
 import { createClient as createSupabaseClient } from '@/lib/supabase/server'
+import { BRAND, EMAIL_FONT } from '@/lib/brand'
 
 // Reject anything larger than this before parsing.
 const MAX_BODY_BYTES = 50_000
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
         to: [notificationEmail],
         subject: `Website enquiry: ${interest}, ${name}`,
         html: `
-          <div style="font-family: Inter, Arial, sans-serif; color: #0F172A; line-height: 1.7;">
+          <div style="font-family: ${EMAIL_FONT}; color: ${BRAND.navy}; line-height: 1.7;">
             <h1 style="font-size: 20px; margin-bottom: 16px;">New website enquiry</h1>
             <p><strong>Name:</strong> ${escapeHtml(name)}</p>
             <p><strong>Email:</strong> ${escapeHtml(email)}</p>
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
                 : ''
             }
             <p><strong>Message:</strong></p>
-            <div style="padding: 16px; border-radius: 16px; background: #F8FAFC; border: 1px solid #E2E8F0;">
+            <div style="padding: 16px; border-radius: 16px; background: ${BRAND.coolLight}; border: 1px solid ${BRAND.border};">
               ${escapeHtml(message).replace(/\n/g, '<br />')}
             </div>
           </div>

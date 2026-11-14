@@ -23,7 +23,7 @@ export default function GapTable({ siteId, rows }: { siteId: string; rows: GapKe
     [rows, kdMax, minCompetitors, hideKnown]
   )
   const inputClass =
-    'rounded-2xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] focus:border-[color:var(--accent)] focus:outline-none'
+    'os-input px-3 py-2 text-sm'
   const toggle = (k: string) =>
     setSelected((s) => {
       const n = new Set(s)
@@ -46,7 +46,7 @@ export default function GapTable({ siteId, rows }: { siteId: string; rows: GapKe
           Hide keywords already in the list
         </label>
         <span className="grow" />
-        <button type="button" onClick={() => setSelected(new Set(filtered.map((r) => r.keyword)))} className="text-xs text-[color:var(--text-3)] underline">
+        <button type="button" onClick={() => setSelected(new Set(filtered.map((r) => r.keyword)))} className="btn btn-text btn-sm">
           Select all shown
         </button>
         <PendingButton variant="primary" pendingLabel="Adding…">
@@ -59,14 +59,14 @@ export default function GapTable({ siteId, rows }: { siteId: string; rows: GapKe
       <div className="mt-3 overflow-x-auto">
         <table className="w-full min-w-[800px] text-left text-sm">
           <thead>
-            <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
+            <tr className="os-label border-b border-[color:var(--border)]">
               <th className="py-2 pr-2" />
-              <th className="py-2 pr-3 font-medium">Keyword</th>
-              <th className="py-2 pr-3 text-right font-medium">Volume</th>
-              <th className="py-2 pr-3 text-right font-medium">KD</th>
-              <th className="py-2 pr-3 text-right font-medium">CPC</th>
-              <th className="py-2 pr-3 text-right font-medium">Us</th>
-              <th className="py-2 font-medium">Competitors ranking (position)</th>
+              <th className="py-2 pr-3 font-semibold">Keyword</th>
+              <th className="py-2 pr-3 text-right font-semibold">Volume</th>
+              <th className="py-2 pr-3 text-right font-semibold">KD</th>
+              <th className="py-2 pr-3 text-right font-semibold">CPC</th>
+              <th className="py-2 pr-3 text-right font-semibold">Us</th>
+              <th className="py-2 font-semibold">Competitors ranking (position)</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +83,7 @@ export default function GapTable({ siteId, rows }: { siteId: string; rows: GapKe
                   </td>
                   <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{r.search_volume?.toLocaleString('en-GB') ?? '—'}</td>
                   <td className="py-2 pr-3 text-right tabular-nums">
-                    {r.keyword_difficulty === null ? '—' : <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${band.className}`}>{r.keyword_difficulty}</span>}
+                    {r.keyword_difficulty === null ? '—' : <span className={`rounded-pill border px-2 py-0.5 text-[11px] font-medium ${band.className}`}>{r.keyword_difficulty}</span>}
                   </td>
                   <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{r.cpc ?? '—'}</td>
                   <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-3)]">{r.our_position ?? 'n/r'}</td>

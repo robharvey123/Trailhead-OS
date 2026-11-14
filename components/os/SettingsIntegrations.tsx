@@ -49,10 +49,10 @@ function StatusBadge({
 }) {
   return (
     <span
-      className={`rounded-full border px-3 py-1 text-xs font-medium ${
+      className={`rounded-pill border px-3 py-1 text-xs font-semibold ${
         connected
-          ? 'border-[color:var(--emerald)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
-          : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]'
+          ? 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
+          : 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]'
       }`}
     >
       {label}
@@ -163,7 +163,7 @@ export default function SettingsIntegrations({
   }
 
   return (
-    <section className="os-card rounded-[2rem] p-6">
+    <section className="os-card rounded-card p-6">
       <div>
         <p className="os-eyebrow">Integrations</p>
         <h2 className="os-section-title mt-2">External services</h2>
@@ -173,7 +173,7 @@ export default function SettingsIntegrations({
       </div>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-2">
-        <article className="os-card rounded-[1.75rem] p-5">
+        <article className="os-card rounded-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <GoogleIcon />
@@ -199,7 +199,7 @@ export default function SettingsIntegrations({
                     type="button"
                     onClick={() => void syncCalendar()}
                     disabled={loadingAction !== null}
-                    className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                    className="btn btn-primary"
                   >
                     {loadingAction === 'calendar' ? 'Syncing...' : 'Sync calendar now'}
                   </button>
@@ -207,7 +207,7 @@ export default function SettingsIntegrations({
                     type="button"
                     onClick={() => void disconnectGoogle()}
                     disabled={loadingAction !== null}
-                    className="rounded-2xl border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-50"
+                    className="btn btn-danger"
                   >
                     {loadingAction === 'disconnect' ? 'Disconnecting...' : 'Disconnect'}
                   </button>
@@ -216,7 +216,7 @@ export default function SettingsIntegrations({
             ) : (
               <Link
                 href="/api/auth/google"
-                className="inline-flex rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                className="btn btn-primary"
               >
                 Connect Google Calendar
               </Link>
@@ -224,7 +224,7 @@ export default function SettingsIntegrations({
           </div>
         </article>
 
-        <article className="os-card rounded-[1.75rem] p-5">
+        <article className="os-card rounded-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <StripeIcon />

@@ -3,6 +3,9 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import GenerateReportControls from '@/components/os/engagements/GenerateReportControls'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Engagement reports' }
 
 export const dynamic = 'force-dynamic'
 
@@ -33,25 +36,23 @@ export default async function EngagementReportsPage({ params }: { params: Promis
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Link href={`/engagements/${id}`} className="text-sm text-[color:var(--text-3)] hover:text-[color:var(--text)]">‹ {engagement.name}</Link>
-          <h1 className="os-page-title mt-1">Reports</h1>
-        </div>
-        {isAdmin ? <GenerateReportControls engagementId={id} /> : null}
-      </div>
+      <PageHeader
+        back={{ href: `/engagements/${id}`, label: engagement.name }}
+        title="Reports"
+        actions={isAdmin ? <GenerateReportControls engagementId={id} /> : undefined}
+      />
 
       {!isAdmin ? (
         <p className="text-sm text-[color:var(--text-3)]">Reports are available to admins.</p>
       ) : !reports || reports.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No reports yet. Generate a weekly or monthly report above.
         </div>
       ) : (
         <div className="os-card overflow-hidden p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[color:var(--border)] text-left text-[11px] uppercase tracking-[0.14em] text-[color:var(--text-3)]">
+              <tr className="os-label border-b border-[color:var(--border)] text-left">
                 <th className="px-4 py-3">Period</th>
                 <th className="px-4 py-3">Kind</th>
                 <th className="px-4 py-3">Status</th>

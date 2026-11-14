@@ -6,6 +6,9 @@ import { PendingButton } from '@/components/growth/PendingButton'
 import GapTable from '@/components/os/growth/GapTable'
 import { gapKeywords, suggestCompetitors } from '@/lib/growth/competitors'
 import { addCompetitorAction, pullCompetitorAction, toggleCompetitorAction } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Competitor gap' }
 
 /** B2: "what do they rank for that we do not". */
 export default async function GrowthGapPage({
@@ -26,26 +29,27 @@ export default async function GrowthGapPage({
     gapKeywords(siteId).catch(() => []),
     suggestCompetitors(site, resolved?.labs === '1').catch(() => []),
   ])
-  const inputClass =
-    'rounded-2xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  const inputClass = 'os-input px-3 py-2 text-sm'
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">
+      <PageHeader
+        eyebrow={
           <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
             {site.name}
           </Link>
-        </p>
-        <h1 className="mt-2 os-page-title">Competitor gap</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Keywords where a tracked competitor ranks in the top 20 and {site.name} does not (or ranks below 20). A keyword three competitors own is a stronger signal than one.
-        </p>
-      </div>
+        }
+        title="Competitor gap"
+        description={
+          <>
+            Keywords where a tracked competitor ranks in the top 20 and {site.name} does not (or ranks below 20). A keyword three competitors own is a stronger signal than one.
+          </>
+        }
+      />
 
-      {resolved?.error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{resolved.error}</div> : null}
+      {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-3">
@@ -65,10 +69,10 @@ export default async function GrowthGapPage({
                   </div>
                   <div className="flex gap-2">
                     <form action={pullCompetitorAction.bind(null, site.id, c.domain)}>
-                      <PendingButton pendingLabel="Pulling…">Re-pull</PendingButton>
+                      <PendingButton className="btn-sm" pendingLabel="Pulling…">Re-pull</PendingButton>
                     </form>
                     <form action={toggleCompetitorAction.bind(null, site.id, c.id, !c.tracked)}>
-                      <PendingButton pendingLabel="Saving…">{c.tracked ? 'Untrack' : 'Track'}</PendingButton>
+                      <PendingButton className="btn-sm" pendingLabel="Saving…">{c.tracked ? 'Untrack' : 'Track'}</PendingButton>
                     </form>
                   </div>
                 </li>
@@ -102,7 +106,7 @@ export default async function GrowthGapPage({
                   <form action={addCompetitorAction.bind(null, site.id)}>
                     <input type="hidden" name="domain" value={s.domain} />
                     <input type="hidden" name="added_by" value={s.source} />
-                    <PendingButton pendingLabel="Pulling…">Add</PendingButton>
+                    <PendingButton className="btn-sm" pendingLabel="Pulling…">Add</PendingButton>
                   </form>
                 </li>
               ))}

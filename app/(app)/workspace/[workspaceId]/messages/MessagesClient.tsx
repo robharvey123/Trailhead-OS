@@ -93,7 +93,7 @@ export default function MessagesClient({ workspaceId, initialChannels }: { works
         <h1 className="mt-1 text-2xl font-semibold">Messages</h1>
       </div>
 
-      <div className="flex rounded-2xl border border-slate-800 overflow-hidden" style={{ height: 'calc(100vh - 220px)' }}>
+      <div className="flex rounded-card border border-slate-800 overflow-hidden" style={{ height: 'calc(100vh - 220px)' }}>
         {/* Channel sidebar */}
         <div className="w-56 shrink-0 border-r border-slate-800 bg-slate-950/60 flex flex-col">
           <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
@@ -136,8 +136,8 @@ export default function MessagesClient({ workspaceId, initialChannels }: { works
                 <div ref={messagesEndRef} />
               </div>
               <form onSubmit={handleSend} className="border-t border-slate-800 px-4 py-3 flex gap-2">
-                <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={`Message #${activeChannel.name}…`} className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500" />
-                <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">Send</button>
+                <input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={`Message #${activeChannel.name}…`} className="flex-1 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500" />
+                <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">Send</button>
               </form>
             </>
           ) : (
@@ -148,15 +148,15 @@ export default function MessagesClient({ workspaceId, initialChannels }: { works
 
       {showNewChannel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowNewChannel(false)}>
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 w-96" onClick={(e) => e.stopPropagation()}>
+          <div className="rounded-card border border-slate-800 bg-slate-900 p-6 w-96" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold">New Channel</h2>
             <form onSubmit={handleCreateChannel} className="mt-4 space-y-4">
-              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={channelName} onChange={(e) => setChannelName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={channelType} onChange={(e) => setChannelType(e.target.value as ChannelType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CHANNEL_TYPES.map((t) => <option key={t} value={t}>{CHANNEL_TYPE_LABELS[t]}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Description</label><input value={channelDesc} onChange={(e) => setChannelDesc(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={channelName} onChange={(e) => setChannelName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={channelType} onChange={(e) => setChannelType(e.target.value as ChannelType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CHANNEL_TYPES.map((t) => <option key={t} value={t}>{CHANNEL_TYPE_LABELS[t]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Description</label><input value={channelDesc} onChange={(e) => setChannelDesc(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
               <div className="flex gap-2">
-                <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">Create</button>
-                <button type="button" onClick={() => setShowNewChannel(false)} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+                <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">Create</button>
+                <button type="button" onClick={() => setShowNewChannel(false)} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
               </div>
             </form>
           </div>

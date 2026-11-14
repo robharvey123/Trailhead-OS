@@ -113,7 +113,7 @@ export default function ExpensesClient({ workspaceId, baseCurrency }: { workspac
     return (
       <div className="space-y-6">
         <header><p className="text-xs uppercase tracking-[0.2em] text-slate-400">Trailhead Holdings</p><h1 className="mt-2 text-2xl font-semibold">Expenses</h1></header>
-        <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-xl border border-slate-800 bg-slate-900/70" />)}</div>
+        <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-card border border-slate-800 bg-slate-900/70" />)}</div>
       </div>
     )
   }
@@ -126,15 +126,15 @@ export default function ExpensesClient({ workspaceId, baseCurrency }: { workspac
           <h1 className="mt-1 text-2xl font-semibold">Expenses</h1>
           <p className="mt-1 text-sm text-slate-400">Total: {fmtCurrency(totals.total)}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Expense</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Expense</button>
       </div>
 
       {/* Category Summary */}
       <section className="grid gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {EXPENSE_CATEGORIES.filter((c) => totals.byCategory[c] > 0).map((cat) => (
-          <div key={cat} className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+          <div key={cat} className="rounded-card border border-slate-800 bg-slate-900/70 p-3">
             <div className="flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${EXPENSE_CATEGORY_COLORS[cat]}`} />
+              <div className={`h-2 w-2 rounded-pill ${EXPENSE_CATEGORY_COLORS[cat]}`} />
               <p className="text-xs text-slate-400">{EXPENSE_CATEGORY_LABELS[cat]}</p>
             </div>
             <p className="mt-1 text-sm font-semibold">{fmtCurrency(totals.byCategory[cat])}</p>
@@ -143,11 +143,11 @@ export default function ExpensesClient({ workspaceId, baseCurrency }: { workspac
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select value={filterCat} onChange={(e) => setFilterCat(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterCat} onChange={(e) => setFilterCat(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All categories</option>
           {EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{EXPENSE_CATEGORY_LABELS[c]}</option>)}
         </select>
-        <select value={filterStream} onChange={(e) => setFilterStream(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterStream} onChange={(e) => setFilterStream(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All streams</option>
           <option value="">Company-wide</option>
           {streams.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -155,24 +155,24 @@ export default function ExpensesClient({ workspaceId, baseCurrency }: { workspac
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Expense' : 'New Expense'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-slate-400">Description *</label><input required value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Category</label><select value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{EXPENSE_CATEGORY_LABELS[c]}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Stream (optional)</label><select value={streamId} onChange={(e) => setStreamId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">Company-wide</option>{streams.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Amount *</label><input type="number" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Date</label><input type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Vendor</label><input value={vendor} onChange={(e) => setVendor(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Description *</label><input required value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Category</label><select value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{EXPENSE_CATEGORIES.map((c) => <option key={c} value={c}>{EXPENSE_CATEGORY_LABELS[c]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Stream (optional)</label><select value={streamId} onChange={(e) => setStreamId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">Company-wide</option>{streams.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Amount *</label><input type="number" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Date</label><input type="date" value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Vendor</label><input value={vendor} onChange={(e) => setVendor(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <input type="checkbox" id="recurring" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} className="rounded border-slate-700" />
+                <input type="checkbox" id="recurring" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} className="rounded-control border-slate-700" />
                 <label htmlFor="recurring" className="text-sm text-slate-300">Recurring</label>
               </div>
               {isRecurring && (
-                <select value={recurrencePeriod} onChange={(e) => setRecurrencePeriod(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+                <select value={recurrencePeriod} onChange={(e) => setRecurrencePeriod(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
                   <option value="">Select period</option>
                   <option value="weekly">Weekly</option>
                   <option value="monthly">Monthly</option>
@@ -181,16 +181,16 @@ export default function ExpensesClient({ workspaceId, baseCurrency }: { workspac
                 </select>
               )}
             </div>
-            <div><label className="mb-1 block text-xs text-slate-400">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="flex gap-2">
-              <button type="submit" disabled={saving} className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-50">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" disabled={saving} className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-50">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
             <th className="px-4 py-3">Date</th><th className="px-4 py-3">Description</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Stream</th><th className="px-4 py-3">Vendor</th><th className="px-4 py-3">Amount</th><th className="px-4 py-3"></th>
@@ -205,7 +205,7 @@ export default function ExpensesClient({ workspaceId, baseCurrency }: { workspac
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${EXPENSE_CATEGORY_COLORS[exp.category]}`} />
+                    <div className={`h-2 w-2 rounded-pill ${EXPENSE_CATEGORY_COLORS[exp.category]}`} />
                     <span className="text-slate-400">{EXPENSE_CATEGORY_LABELS[exp.category]}</span>
                   </div>
                 </td>

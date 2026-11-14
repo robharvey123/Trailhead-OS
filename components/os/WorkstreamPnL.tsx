@@ -46,10 +46,10 @@ export default function WorkstreamPnL() {
   if (loading) {
     return (
       <div className="os-card p-6">
-        <div className="h-5 w-48 animate-pulse rounded bg-[var(--surface-2)]" />
+        <div className="h-5 w-48 animate-pulse rounded-control bg-[var(--surface-2)]" />
         <div className="mt-4 space-y-3">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="h-10 animate-pulse rounded-xl bg-[var(--surface-2)]" />
+            <div key={n} className="h-10 animate-pulse rounded-card bg-[var(--surface-2)]" />
           ))}
         </div>
       </div>
@@ -67,7 +67,7 @@ export default function WorkstreamPnL() {
 
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+          <thead className="os-label text-left">
             <tr>
               <th className="pb-3">Workstream</th>
               <th className="pb-3 text-right">Revenue</th>
@@ -82,7 +82,7 @@ export default function WorkstreamPnL() {
                 <tr key={row.workstream_id || 'unassigned'} className="border-t border-[color:var(--border)]">
                   <td className="py-3">
                     <span className="flex items-center gap-2">
-                      <span className={`h-2 w-2 rounded-full ${classes.dot}`} />
+                      <span className={`h-2 w-2 rounded-pill ${classes.dot}`} />
                       <span className="text-[color:var(--text)]">{row.label}</span>
                     </span>
                   </td>

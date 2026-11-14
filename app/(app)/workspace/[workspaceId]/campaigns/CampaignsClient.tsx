@@ -99,39 +99,39 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
           <h1 className="mt-1 text-2xl font-semibold">Campaigns</h1>
           <p className="mt-1 text-sm text-slate-400">{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Campaign</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Campaign</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select aria-label="Filter by status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select aria-label="Filter by status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All statuses</option>
           {CAMPAIGN_STATUSES.map((s) => <option key={s} value={s}>{CAMPAIGN_STATUS_LABELS[s]}</option>)}
         </select>
-        <input type="search" aria-label="Search campaigns" placeholder="Search campaigns..." value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500" />
+        <input type="search" aria-label="Search campaigns" placeholder="Search campaigns..." value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500" />
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Campaign' : 'New Campaign'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Name *</span><input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Type</span><select value={type} onChange={(e) => setType(e.target.value as CampaignType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CAMPAIGN_TYPES.map((t) => <option key={t} value={t}>{CAMPAIGN_TYPE_LABELS[t]}</option>)}</select></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Status</span><select value={status} onChange={(e) => setStatus(e.target.value as CampaignStatus)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CAMPAIGN_STATUSES.map((s) => <option key={s} value={s}>{CAMPAIGN_STATUS_LABELS[s]}</option>)}</select></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Channel</span><select value={channel} onChange={(e) => setChannel(e.target.value as CampaignChannel)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{CAMPAIGN_CHANNELS.map((c) => <option key={c} value={c}>{CAMPAIGN_CHANNEL_LABELS[c]}</option>)}</select></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Budget</span><input type="number" step="0.01" value={budgetAllocated} onChange={(e) => setBudgetAllocated(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Start Date</span><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">End Date</span><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Target Audience</span><input value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="sm:col-span-2 block"><span className="mb-1 block text-xs text-slate-400">Description</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="sm:col-span-2 block"><span className="mb-1 block text-xs text-slate-400">Goals</span><textarea value={goals} onChange={(e) => setGoals(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Name *</span><input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Type</span><select value={type} onChange={(e) => setType(e.target.value as CampaignType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CAMPAIGN_TYPES.map((t) => <option key={t} value={t}>{CAMPAIGN_TYPE_LABELS[t]}</option>)}</select></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Status</span><select value={status} onChange={(e) => setStatus(e.target.value as CampaignStatus)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CAMPAIGN_STATUSES.map((s) => <option key={s} value={s}>{CAMPAIGN_STATUS_LABELS[s]}</option>)}</select></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Channel</span><select value={channel} onChange={(e) => setChannel(e.target.value as CampaignChannel)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{CAMPAIGN_CHANNELS.map((c) => <option key={c} value={c}>{CAMPAIGN_CHANNEL_LABELS[c]}</option>)}</select></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Budget</span><input type="number" step="0.01" value={budgetAllocated} onChange={(e) => setBudgetAllocated(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Start Date</span><input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">End Date</span><input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Target Audience</span><input value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="sm:col-span-2 block"><span className="mb-1 block text-xs text-slate-400">Description</span><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="sm:col-span-2 block"><span className="mb-1 block text-xs text-slate-400">Goals</span><textarea value={goals} onChange={(e) => setGoals(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
             <div className="sm:col-span-2"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Performance Results</p></div>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Impressions</span><input type="number" value={impressions} onChange={(e) => setImpressions(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Clicks</span><input type="number" value={clicks} onChange={(e) => setClicks(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Conversions</span><input type="number" value={conversions} onChange={(e) => setConversions(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Revenue Attributed</span><input type="number" step="0.01" value={revenueAttributed} onChange={(e) => setRevenueAttributed(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Impressions</span><input type="number" value={impressions} onChange={(e) => setImpressions(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Clicks</span><input type="number" value={clicks} onChange={(e) => setClicks(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Conversions</span><input type="number" value={conversions} onChange={(e) => setConversions(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Revenue Attributed</span><input type="number" step="0.01" value={revenueAttributed} onChange={(e) => setRevenueAttributed(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
             <div className="flex gap-2 sm:col-span-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
@@ -139,10 +139,10 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((c) => (
-          <div key={c.id} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+          <div key={c.id} className="rounded-card border border-slate-800 bg-slate-900/50 p-5">
             <div className="flex items-start justify-between">
               <h3 className="text-sm font-semibold">{c.name}</h3>
-              <span className="rounded-full border border-slate-700 px-2 py-0.5 text-[10px] uppercase">{CAMPAIGN_STATUS_LABELS[c.status]}</span>
+              <span className="rounded-pill border border-slate-700 px-2 py-0.5 text-[10px] uppercase">{CAMPAIGN_STATUS_LABELS[c.status]}</span>
             </div>
             {c.description && <p className="mt-2 text-xs text-slate-400 line-clamp-2">{c.description}</p>}
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
@@ -154,7 +154,7 @@ export default function CampaignsClient({ workspaceId, initialCampaigns, baseCur
               <p className="mt-2 text-xs text-slate-500">{c.start_date || '?'} → {c.end_date || '?'}</p>
             )}
             {c.results && (c.results.impressions || c.results.clicks || c.results.conversions || c.results.revenue_attributed) && (
-              <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg bg-slate-800/50 p-2 text-xs">
+              <div className="mt-3 grid grid-cols-2 gap-2 rounded-control bg-slate-800/50 p-2 text-xs">
                 {c.results.impressions != null && <div><span className="text-slate-500">Impressions</span><p className="font-medium">{c.results.impressions.toLocaleString()}</p></div>}
                 {c.results.clicks != null && <div><span className="text-slate-500">Clicks</span><p className="font-medium">{c.results.clicks.toLocaleString()}{c.results.impressions ? ` (${((c.results.clicks / c.results.impressions) * 100).toFixed(1)}% CTR)` : ''}</p></div>}
                 {c.results.conversions != null && <div><span className="text-slate-500">Conversions</span><p className="font-medium">{c.results.conversions.toLocaleString()}</p></div>}

@@ -67,11 +67,11 @@ export default function ProjectStatusPanel({
   }
 
   return (
-    <div className="panel" style={{ padding: 20, display: 'grid', gap: 14 }}>
+    <div className="panel grid gap-3.5 p-5">
       {ended ? (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-          <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
-            Ended {fmtDate(endedAt)}, marked <strong style={{ color: 'var(--text)' }}>{status === 'completed' ? 'Completed' : 'Cancelled'}</strong>
+        <div className="flex items-center justify-between gap-3 rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5">
+          <span className="text-[13px] text-[var(--text-2)]">
+            Ended {fmtDate(endedAt)}, marked <strong className="text-[var(--text)]">{status === 'completed' ? 'Completed' : 'Cancelled'}</strong>
             {endedReason ? ` — ${endedReason}` : ''}
           </span>
           {isAdmin ? (
@@ -81,14 +81,14 @@ export default function ProjectStatusPanel({
           ) : null}
         </div>
       ) : isAdmin ? (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
             <span className="field-label">Status</span>
             <select className="filter-select" value={status} onChange={(e) => saveStatus(e.target.value)} disabled={busy}>
               {ACTIVE_PHASE.map((s) => (<option key={s.value} value={s.value}>{s.label}</option>))}
             </select>
           </div>
-          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)', borderColor: 'var(--red)' }} onClick={() => setEndOpen(true)}>
+          <button className="btn btn-danger btn-sm" onClick={() => setEndOpen(true)}>
             End project
           </button>
         </div>
@@ -97,22 +97,22 @@ export default function ProjectStatusPanel({
       <div>
         <div className="field-label">Engagement</div>
         {changing ? (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
+          <div className="mt-1.5 flex items-center gap-2">
             <EngagementPicker engagements={engagements} value={pick} onChange={setPick} disabled={busy} />
             <button className="btn btn-primary btn-sm" onClick={saveEngagement} disabled={busy || !pick}>Save</button>
             <button className="btn btn-ghost btn-sm" onClick={() => { setChanging(false); setPick(linkedEngagement?.id ?? '') }} disabled={busy}>Cancel</button>
           </div>
         ) : (
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 6 }}>
+          <div className="mt-1.5 flex items-center gap-2.5">
             <span className="td-name">
-              {linkedEngagement ? <Link href={`/engagements/${linkedEngagement.id}`}>{linkedEngagement.name}</Link> : <span style={{ color: 'var(--text-3)' }}>Not linked</span>}
+              {linkedEngagement ? <Link href={`/engagements/${linkedEngagement.id}`}>{linkedEngagement.name}</Link> : <span className="text-[var(--text-3)]">Not linked</span>}
             </span>
             {isAdmin ? <button className="btn btn-ghost btn-sm" onClick={() => setChanging(true)}>Change</button> : null}
           </div>
         )}
       </div>
 
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12 }}>{error}</p> : null}
+      {error ? <p className="text-xs text-[var(--red)]">{error}</p> : null}
 
       {endOpen ? <EndProjectDialog projectId={projectId} openTaskCount={openTaskCount} onClose={() => setEndOpen(false)} /> : null}
     </div>

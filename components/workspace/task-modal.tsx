@@ -115,12 +115,12 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
     setChecklist(checklist.filter((c) => c.id !== id))
   }
 
-  const inputClasses = 'w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500'
+  const inputClasses = 'w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div
-        className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 shadow-xl"
+        className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-card border border-slate-800 bg-slate-900 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -140,7 +140,7 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
                 <button
                   key={tmpl.id}
                   onClick={() => applyTemplate(tmpl)}
-                  className="rounded-lg border border-slate-700 px-2.5 py-1 text-xs text-slate-300 transition hover:border-slate-500 hover:text-white"
+                  className="rounded-control border border-slate-700 px-2.5 py-1 text-xs text-slate-300 transition hover:border-slate-500 hover:text-white"
                 >
                   {tmpl.title}
                 </button>
@@ -271,7 +271,7 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
                     type="color"
                     value={taskColor || '#6366f1'}
                     onChange={(e) => setTaskColor(e.target.value)}
-                    className="h-9 w-full cursor-pointer rounded-lg border border-slate-700 bg-slate-950"
+                    className="h-9 w-full cursor-pointer rounded-control border border-slate-700 bg-slate-950"
                   />
                 </div>
               </div>
@@ -286,7 +286,7 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
                     type="checkbox"
                     checked={item.done}
                     onChange={() => toggleCheckItem(item.id)}
-                    className="rounded border-slate-600"
+                    className="rounded-control border-slate-600"
                   />
                   <span className={`flex-1 text-sm ${item.done ? 'text-slate-600 line-through' : 'text-slate-200'}`}>
                     {item.title}
@@ -306,11 +306,11 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
                   value={newCheckItem}
                   onChange={(e) => setNewCheckItem(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addCheckItem()}
-                  className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500"
+                  className="flex-1 rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500"
                 />
                 <button
                   onClick={addCheckItem}
-                  className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-white"
+                  className="rounded-control bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-white"
                 >
                   Add
                 </button>
@@ -325,7 +325,7 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
                   <p className="mb-1 font-medium text-slate-300">Assigned to</p>
                   <div className="flex flex-wrap gap-1">
                     {task.assignments.map((a) => (
-                      <span key={a.id} className="rounded bg-white/10 px-2 py-0.5 text-xs text-slate-300">
+                      <span key={a.id} className="rounded-control bg-white/10 px-2 py-0.5 text-xs text-slate-300">
                         {a.profile_name}
                       </span>
                     ))}
@@ -364,7 +364,7 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
 
         {/* Error */}
         {errorMsg && (
-          <div className="mx-5 mb-3 rounded-lg border border-rose-800 bg-rose-950/50 px-3 py-2 text-xs text-rose-300">
+          <div className="mx-5 mb-3 rounded-control border border-rose-800 bg-rose-950/50 px-3 py-2 text-xs text-rose-300">
             {errorMsg}
           </div>
         )}
@@ -379,7 +379,7 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
                   <button
                     onClick={handleDelete}
                     disabled={saving}
-                    className="rounded bg-rose-600 px-2 py-1 text-xs text-white hover:bg-rose-700"
+                    className="rounded-control bg-rose-600 px-2 py-1 text-xs text-white hover:bg-rose-700"
                   >
                     Confirm
                   </button>
@@ -401,13 +401,13 @@ export function TaskModal({ task, templates, onClose, onCreate, onUpdate, onDele
             )}
           </div>
           <div className="flex gap-2">
-            <button onClick={onClose} className="rounded-lg border border-slate-700 px-4 py-1.5 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white">
+            <button onClick={onClose} className="rounded-control border border-slate-700 px-4 py-1.5 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white">
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="rounded-lg bg-white/90 px-4 py-1.5 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:opacity-50"
+              className="rounded-control bg-white/90 px-4 py-1.5 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:opacity-50"
             >
               {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Task'}
             </button>

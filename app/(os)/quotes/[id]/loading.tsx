@@ -10,16 +10,16 @@ export default function QuoteDetailLoading() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-3">
                 <SkeletonBar className="h-3 w-24" />
-                <SkeletonBar className="h-8 w-64 rounded-xl" />
+                <SkeletonBar className="h-8 w-64 rounded-card" />
               </div>
-              <SkeletonBar className="h-6 w-24 rounded-full" />
+              <SkeletonBar className="h-6 w-24 rounded-pill" />
             </div>
           </div>
 
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="os-card space-y-3 p-6">
               <SkeletonBar className="h-3 w-20" />
-              <SkeletonBar className="h-5 w-48 rounded-lg" />
+              <SkeletonBar className="h-5 w-48 rounded-control" />
               <div className="space-y-2 pt-2">
                 <SkeletonBar className="h-3 w-full" />
                 <SkeletonBar className="h-3 w-5/6" />
@@ -33,8 +33,8 @@ export default function QuoteDetailLoading() {
           {Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="os-card space-y-3 p-6">
               <SkeletonBar className="h-4 w-28" />
-              <SkeletonBar className="h-10 w-full rounded-2xl" />
-              <SkeletonBar className="h-10 w-full rounded-2xl" />
+              <SkeletonBar className="h-10 w-full rounded-card" />
+              <SkeletonBar className="h-10 w-full rounded-card" />
             </div>
           ))}
         </div>

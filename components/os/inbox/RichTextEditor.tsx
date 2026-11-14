@@ -31,7 +31,7 @@ export default function RichTextEditor({
   })
 
   if (!editor) {
-    return <div className="rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)]" style={{ minHeight: 220 }} />
+    return <div className="rounded-control border border-[var(--border)] bg-[var(--surface-2)] min-h-[220px]" />
   }
 
   const cls = (active: boolean) => `btn btn-ghost btn-sm ${active ? 'active' : ''}`
@@ -45,7 +45,7 @@ export default function RichTextEditor({
   }
 
   return (
-    <div className="rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)]">
+    <div className="rounded-control border border-[var(--border)] bg-[var(--surface-2)]">
       <div className="flex flex-wrap gap-1 border-b border-[var(--border)] p-1">
         <button type="button" className={cls(editor.isActive('bold'))} onClick={() => editor.chain().focus().toggleBold().run()} title="Bold"><b>B</b></button>
         <button type="button" className={cls(editor.isActive('italic'))} onClick={() => editor.chain().focus().toggleItalic().run()} title="Italic"><i>I</i></button>

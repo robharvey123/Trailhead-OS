@@ -56,47 +56,47 @@ export default function ManageMembersModal({
     setAdding(false); setSelected(new Set()); setQuery('')
   }
 
-  const input = 'w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }} onClick={() => !busy && onClose()}>
-      <div className="panel" style={{ width: 'min(440px, 92vw)', padding: 20, display: 'grid', gap: 12 }} onClick={(e) => e.stopPropagation()}>
-        <div className="panel-section-title" style={{ margin: 0 }}>Members</div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45" onClick={() => !busy && onClose()}>
+      <div className="panel grid w-[min(440px,92vw)] gap-3 p-5" onClick={(e) => e.stopPropagation()}>
+        <div className="panel-section-title m-0!">Members</div>
 
         {adding ? (
-          <div style={{ display: 'grid', gap: 6 }}>
+          <div className="grid gap-1.5">
             <input className={input} placeholder="Search people…" value={query} onChange={(e) => setQuery(e.target.value)} autoFocus />
-            <div style={{ display: 'grid', gap: 2, maxHeight: 200, overflowY: 'auto' }}>
+            <div className="grid max-h-[200px] gap-0.5 overflow-y-auto">
               {addable.map((u) => (
-                <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-[8px] px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)]">
+                <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-control px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)]">
                   <input type="checkbox" checked={selected.has(u.id)} onChange={() => setSelected((p) => { const n = new Set(p); if (n.has(u.id)) n.delete(u.id); else n.add(u.id); return n })} />
                   <span>{u.name}</span>
                 </label>
               ))}
-              {addable.length === 0 ? <p style={{ fontSize: 13, color: 'var(--text-3)', padding: '6px 4px' }}>Nobody left to add.</p> : null}
+              {addable.length === 0 ? <p className="px-1 py-1.5 text-[13px] text-[var(--text-3)]">Nobody left to add.</p> : null}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <div className="flex justify-end gap-2">
               <button className="btn btn-ghost btn-sm" onClick={() => { setAdding(false); setSelected(new Set()) }} disabled={busy}>Cancel</button>
               <button className="btn btn-primary btn-sm" disabled={busy || selected.size === 0} onClick={() => run(() => addParticipants(conversationId, [...selected]))}>Add {selected.size || ''}</button>
             </div>
           </div>
         ) : (
           <>
-            <div style={{ display: 'grid', gap: 2, maxHeight: 280, overflowY: 'auto' }}>
+            <div className="grid max-h-[280px] gap-0.5 overflow-y-auto">
               {members.map((m) => (
-                <div key={m.userId} className="flex items-center gap-3 rounded-[8px] px-3 py-2 text-sm">
-                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">{m.name.slice(0, 2).toUpperCase()}</span>
-                  <span style={{ flex: 1, color: 'var(--text)' }}>{m.name}{m.userId === meId ? ' (you)' : ''}</span>
+                <div key={m.userId} className="flex items-center gap-3 rounded-control px-3 py-2 text-sm">
+                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-pill bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">{m.name.slice(0, 2).toUpperCase()}</span>
+                  <span className="flex-1 text-[var(--text)]">{m.name}{m.userId === meId ? ' (you)' : ''}</span>
                   {m.role === 'admin' ? <span className="channel-tag">admin</span> : null}
                   {isAdmin && m.userId !== meId ? (
-                    <button className="text-xs text-[var(--red-strong)] hover:opacity-80" disabled={busy} onClick={() => run(() => removeParticipant(conversationId, m.userId))}>Remove</button>
+                    <button className="btn btn-danger btn-sm" disabled={busy} onClick={() => run(() => removeParticipant(conversationId, m.userId))}>Remove</button>
                   ) : null}
                 </div>
               ))}
             </div>
             {isAdmin ? (
-              <div style={{ display: 'grid', gap: 4, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
-                <label style={{ fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-3)' }}>
+              <div className="grid gap-1 border-t border-[var(--border)] pt-2.5">
+                <label className="field-label">
                   Default engagement
                 </label>
                 <select
@@ -108,15 +108,15 @@ export default function ManageMembersModal({
                   <option value="">— none</option>
                   {engagements.map((en) => (<option key={en.id} value={en.id}>{en.name}</option>))}
                 </select>
-                <p style={{ fontSize: 11, color: 'var(--text-3)', margin: 0 }}>
+                <p className="m-0 text-[11px] text-[var(--text-3)]">
                   Pre-selected when converting a message here into a task.
                 </p>
               </div>
             ) : null}
-            {error ? <p style={{ color: 'var(--red)', fontSize: 12, margin: 0 }}>{error}</p> : null}
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-              <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)' }} disabled={busy} onClick={() => run(() => leaveConversation(conversationId), true)}>Leave channel</button>
-              <div style={{ display: 'flex', gap: 8 }}>
+            {error ? <p className="m-0 text-xs text-[var(--red-strong)]">{error}</p> : null}
+            <div className="flex justify-between gap-2">
+              <button className="btn btn-danger btn-sm" disabled={busy} onClick={() => run(() => leaveConversation(conversationId), true)}>Leave channel</button>
+              <div className="flex gap-2">
                 {isAdmin ? <button className="btn btn-ghost btn-sm" onClick={() => setAdding(true)} disabled={busy}>Add members</button> : null}
                 <button className="btn btn-primary btn-sm" onClick={onClose} disabled={busy}>Done</button>
               </div>

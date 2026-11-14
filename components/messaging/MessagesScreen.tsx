@@ -36,9 +36,9 @@ export default function MessagesScreen({
   }, [query])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div className="flex h-full flex-col">
       <SearchBar value={raw} onChange={setRaw} />
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {query ? (
           <SearchResults groups={groups} query={query} loading={searching} />
         ) : (

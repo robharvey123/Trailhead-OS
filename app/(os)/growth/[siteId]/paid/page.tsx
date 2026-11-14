@@ -19,6 +19,9 @@ import {
   wastedSearchTerms,
 } from '@/lib/growth/paid-loops'
 import { linkAdsAccountAction, syncAdsNowAction } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Paid media' }
 
 /** E6: /paid — Search (Google), Social (Meta), Blended. */
 
@@ -63,8 +66,7 @@ export default async function GrowthPaidPage({
     trailingTrend(siteId, 6).catch(() => []),
   ])
   const wastedGroups = groupWastedTerms(wasted)
-  const inputClass =
-    'rounded-2xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  const inputClass = 'os-input px-3 py-2 text-sm'
 
   const tabs = [
     { key: 'search', label: `Search · Google${googleAccounts.length ? '' : ' (not linked)'}` },
@@ -74,32 +76,30 @@ export default async function GrowthPaidPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
-              {site.name}
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">Paid media</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Organic and paid answer the same question with different data. The search terms report is the only first-party, commercially weighted keyword source there is.
-          </p>
-        </div>
-        {data.accounts.length > 0 ? (
-          <form action={syncAdsNowAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Syncing ad platforms…">Sync now</PendingButton>
-          </form>
-        ) : null}
-      </div>
+      <PageHeader
+        eyebrow={
+          <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
+            {site.name}
+          </Link>
+        }
+        title="Paid media"
+        description="Organic and paid answer the same question with different data. The search terms report is the only first-party, commercially weighted keyword source there is."
+        actions={
+          data.accounts.length > 0 ? (
+            <form action={syncAdsNowAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Syncing ad platforms…">Sync now</PendingButton>
+            </form>
+          ) : null
+        }
+      />
 
-      {resolved?.error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{resolved.error}</div> : null}
+      {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
       ) : null}
 
       {tracking.length > 0 ? (
-        <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           <strong>Conversion tracking check.</strong>{' '}
           {tracking.map((t) => `${t.campaign} (${t.platform}) spent ${money(t.spend14d, currency)} in 14 days with zero conversions`).join(' · ')}. Almost always a broken tag, not bad performance.
         </div>
@@ -110,13 +110,13 @@ export default async function GrowthPaidPage({
         <div className="grid gap-4 sm:grid-cols-2">
           {pace.map((p) => (
             <div key={p.platform} className="os-card p-5">
-              <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">{p.platform === 'google' ? 'Google Ads' : 'Meta'} · month to date</p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(p.spendMtd, currency)}</p>
+              <p className="os-label">{p.platform === 'google' ? 'Google Ads' : 'Meta'} · month to date</p>
+              <p className="stat-value mt-2">{money(p.spendMtd, currency)}</p>
               <p className="mt-1 text-xs text-[color:var(--text-3)]">
                 projects to {money(p.projectedMonthEnd, currency)}
                 {p.target ? ` vs ${money(p.target, currency)} target` : ' — set a monthly media budget in settings for pacing alerts'}
                 {p.variancePct !== null ? (
-                  <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] font-medium ${Math.abs(p.variancePct) >= 15 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                  <span className={`ml-2 rounded-pill px-2 py-0.5 text-[11px] font-medium ${Math.abs(p.variancePct) >= 15 ? 'bg-[var(--amber-dim)] text-[var(--amber-strong)]' : 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]'}`}>
                     {p.variancePct > 0 ? '+' : ''}
                     {p.variancePct}%
                   </span>
@@ -132,7 +132,7 @@ export default async function GrowthPaidPage({
           <Link
             key={t.key}
             href={`/growth/${site.id}/paid?tab=${t.key}`}
-            className={`rounded-full border px-3 py-1 ${tab === t.key ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}
+            className={`rounded-pill border px-3 py-1 ${tab === t.key ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}
           >
             {t.label}
           </Link>
@@ -150,7 +150,7 @@ export default async function GrowthPaidPage({
               <li key={a.id}>
                 {a.platform === 'google' ? 'Google Ads' : 'Meta'} · {a.name ?? a.external_id} ({a.external_id})
                 {a.last_synced_at ? ` · synced ${new Date(a.last_synced_at).toLocaleString('en-GB')}` : ' · never synced'}
-                {a.last_error ? <span className="ml-2 text-red-600">{a.last_error.slice(0, 160)}</span> : null}
+                {a.last_error ? <span className="ml-2 text-[var(--red-strong)]">{a.last_error.slice(0, 160)}</span> : null}
               </li>
             ))}
           </ul>
@@ -227,12 +227,12 @@ export default async function GrowthPaidPage({
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full min-w-[520px] text-left text-sm">
                     <thead>
-                      <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                        <th className="py-2 pr-3 font-medium">Keyword</th>
-                        <th className="py-2 pr-3 text-right font-medium">Organic</th>
-                        <th className="py-2 pr-3 text-right font-medium">CPA</th>
-                        <th className="py-2 pr-3 text-right font-medium">Optional/mo</th>
-                        <th className="py-2 text-right font-medium">Payback</th>
+                      <tr className="border-b border-[color:var(--border)]">
+                        <th className="os-label py-2 pr-3">Keyword</th>
+                        <th className="os-label py-2 pr-3 text-right">Organic</th>
+                        <th className="os-label py-2 pr-3 text-right">CPA</th>
+                        <th className="os-label py-2 pr-3 text-right">Optional/mo</th>
+                        <th className="os-label py-2 text-right">Payback</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -288,8 +288,8 @@ export default async function GrowthPaidPage({
                   ))}
                 </ul>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Negatives, ready to paste</p>
-                  <textarea readOnly rows={10} value={wasted.map((t) => t.search_term).join('\n')} className={`mt-1 w-full ${inputClass} font-mono text-xs`} />
+                  <p className="os-label">Negatives, ready to paste</p>
+                  <textarea readOnly rows={10} value={wasted.map((t) => t.search_term).join('\n')} className={`mt-1 w-full ${inputClass} text-xs`} />
                 </div>
               </div>
             )}
@@ -301,15 +301,15 @@ export default async function GrowthPaidPage({
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                      <th className="py-2 pr-3 font-medium">Keyword</th>
-                      <th className="py-2 pr-3 font-medium">Match</th>
-                      <th className="py-2 pr-3 text-right font-medium">Cost</th>
-                      <th className="py-2 pr-3 text-right font-medium">Clicks</th>
-                      <th className="py-2 pr-3 text-right font-medium">Conv</th>
-                      <th className="py-2 pr-3 text-right font-medium">QS</th>
-                      <th className="py-2 pr-3 font-medium">Landing page exp.</th>
-                      <th className="py-2 text-right font-medium">Impr. share</th>
+                    <tr className="border-b border-[color:var(--border)]">
+                      <th className="os-label py-2 pr-3">Keyword</th>
+                      <th className="os-label py-2 pr-3">Match</th>
+                      <th className="os-label py-2 pr-3 text-right">Cost</th>
+                      <th className="os-label py-2 pr-3 text-right">Clicks</th>
+                      <th className="os-label py-2 pr-3 text-right">Conv</th>
+                      <th className="os-label py-2 pr-3 text-right">QS</th>
+                      <th className="os-label py-2 pr-3">Landing page exp.</th>
+                      <th className="os-label py-2 text-right">Impr. share</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -321,7 +321,7 @@ export default async function GrowthPaidPage({
                         <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{k.clicks}</td>
                         <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{k.conversions}</td>
                         <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{k.quality_score ?? '—'}</td>
-                        <td className={`py-2 pr-3 text-xs ${k.qs_landing_page === 'BELOW_AVERAGE' ? 'text-red-600' : 'text-[color:var(--text-3)]'}`}>{k.qs_landing_page?.toLowerCase().replace('_', ' ') ?? '—'}</td>
+                        <td className={`py-2 pr-3 text-xs ${k.qs_landing_page === 'BELOW_AVERAGE' ? 'text-[var(--red-strong)]' : 'text-[color:var(--text-3)]'}`}>{k.qs_landing_page?.toLowerCase().replace('_', ' ') ?? '—'}</td>
                         <td className="py-2 text-right tabular-nums text-[color:var(--text-2)]">{k.impression_share !== null ? `${Math.round(Number(k.impression_share) * 100)}%` : '—'}</td>
                       </tr>
                     ))}
@@ -360,14 +360,14 @@ export default async function GrowthPaidPage({
               <div className="mt-3 overflow-x-auto">
                 <table className="w-full min-w-[800px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                      <th className="py-2 pr-3 font-medium">Creative</th>
-                      <th className="py-2 pr-3 font-medium">Headline / text</th>
-                      <th className="py-2 pr-3 text-right font-medium">Spend</th>
-                      <th className="py-2 pr-3 text-right font-medium">Reach</th>
-                      <th className="py-2 pr-3 text-right font-medium">Freq.</th>
-                      <th className="py-2 pr-3 text-right font-medium">CTR</th>
-                      <th className="py-2 text-right font-medium">Conv</th>
+                    <tr className="border-b border-[color:var(--border)]">
+                      <th className="os-label py-2 pr-3">Creative</th>
+                      <th className="os-label py-2 pr-3">Headline / text</th>
+                      <th className="os-label py-2 pr-3 text-right">Spend</th>
+                      <th className="os-label py-2 pr-3 text-right">Reach</th>
+                      <th className="os-label py-2 pr-3 text-right">Freq.</th>
+                      <th className="os-label py-2 pr-3 text-right">CTR</th>
+                      <th className="os-label py-2 text-right">Conv</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -405,13 +405,13 @@ export default async function GrowthPaidPage({
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full min-w-[600px] text-left text-sm">
                     <thead>
-                      <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                        <th className="py-2 pr-3 font-medium">Channel</th>
-                        <th className="py-2 pr-3 text-right font-medium">Clicks</th>
-                        <th className="py-2 pr-3 text-right font-medium">Impressions</th>
-                        <th className="py-2 pr-3 text-right font-medium">Spend</th>
-                        <th className="py-2 pr-3 text-right font-medium">Conversions</th>
-                        <th className="py-2 text-right font-medium">CPA</th>
+                      <tr className="border-b border-[color:var(--border)]">
+                        <th className="os-label py-2 pr-3">Channel</th>
+                        <th className="os-label py-2 pr-3 text-right">Clicks</th>
+                        <th className="os-label py-2 pr-3 text-right">Impressions</th>
+                        <th className="os-label py-2 pr-3 text-right">Spend</th>
+                        <th className="os-label py-2 pr-3 text-right">Conversions</th>
+                        <th className="os-label py-2 text-right">CPA</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -429,14 +429,14 @@ export default async function GrowthPaidPage({
                   </table>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-[color:var(--border)] p-4">
-                    <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Equivalent media value of organic</p>
-                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(blended.equivalentMediaValue, currency)}</p>
+                  <div className="rounded-card border border-[color:var(--border)] p-4">
+                    <p className="os-label">Equivalent media value of organic</p>
+                    <p className="stat-value mt-1">{money(blended.equivalentMediaValue, currency)}</p>
                     <p className="mt-1 text-xs text-[color:var(--text-3)]">What this month&apos;s organic clicks would have cost at your Ads CPCs (DataForSEO CPC where never bought). A model, not revenue.</p>
                   </div>
-                  <div className="rounded-2xl border border-[color:var(--border)] p-4">
-                    <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Blended CAC (paid channels)</p>
-                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(blended.blendedCac, currency)}</p>
+                  <div className="rounded-card border border-[color:var(--border)] p-4">
+                    <p className="os-label">Blended CAC (paid channels)</p>
+                    <p className="stat-value mt-1">{money(blended.blendedCac, currency)}</p>
                     <p className="mt-1 text-xs text-[color:var(--text-3)]">Google and Meta attribute differently and can double count; treat as directional.</p>
                   </div>
                 </div>
@@ -448,11 +448,11 @@ export default async function GrowthPaidPage({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[480px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
-                    <th className="py-2 pr-3 font-medium">Month</th>
-                    <th className="py-2 pr-3 text-right font-medium">Paid spend</th>
-                    <th className="py-2 pr-3 text-right font-medium">Organic clicks</th>
-                    <th className="py-2 text-right font-medium">Blended CAC</th>
+                  <tr className="border-b border-[color:var(--border)]">
+                    <th className="os-label py-2 pr-3">Month</th>
+                    <th className="os-label py-2 pr-3 text-right">Paid spend</th>
+                    <th className="os-label py-2 pr-3 text-right">Organic clicks</th>
+                    <th className="os-label py-2 text-right">Blended CAC</th>
                   </tr>
                 </thead>
                 <tbody>

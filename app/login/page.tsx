@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import LoginForm from './LoginForm'
 import { safeNextPath } from '@/lib/auth/safe-next'
+
+export const metadata: Metadata = {
+  title: { absolute: 'Sign in | Trailhead OS' },
+  robots: { index: false, follow: false },
+}
 
 const LINK_ERRORS: Record<string, string> = {
   link_invalid: 'That sign-in link is incomplete. Ask for a new one, or sign in with your password.',

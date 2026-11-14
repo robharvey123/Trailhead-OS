@@ -47,18 +47,18 @@ function formatNumber(n: number | null | undefined): string {
 
 export function kdBand(kd: number | null): { label: string; className: string } {
   if (kd === null) return { label: '—', className: 'text-[color:var(--text-3)]' }
-  if (kd < 15) return { label: 'very easy', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
-  if (kd < 30) return { label: 'easy', className: 'bg-lime-50 text-lime-700 border-lime-200' }
-  if (kd < 50) return { label: 'medium', className: 'bg-amber-50 text-amber-700 border-amber-200' }
-  if (kd < 70) return { label: 'hard', className: 'bg-orange-50 text-orange-700 border-orange-200' }
-  return { label: 'very hard', className: 'bg-red-50 text-red-700 border-red-200' }
+  if (kd < 15) return { label: 'very easy', className: 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)] border-[var(--emerald)]/40' }
+  if (kd < 30) return { label: 'easy', className: 'bg-[var(--green-dim)] text-[var(--green-strong)] border-[var(--green)]/40' }
+  if (kd < 50) return { label: 'medium', className: 'bg-[var(--amber-dim)] text-[var(--amber-strong)] border-[var(--amber)]/40' }
+  if (kd < 70) return { label: 'hard', className: 'bg-[var(--amber-dim)] text-[var(--amber-strong)] border-[var(--amber)]/40' }
+  return { label: 'very hard', className: 'bg-[var(--red-dim)] text-[var(--red-strong)] border-[var(--red)]/40' }
 }
 
 const INTENT_STYLE: Record<string, string> = {
-  informational: 'bg-sky-50 text-sky-700 border-sky-200',
-  commercial: 'bg-violet-50 text-violet-700 border-violet-200',
-  transactional: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  navigational: 'bg-slate-50 text-slate-600 border-slate-200',
+  informational: 'bg-[var(--accent-dim)] text-[var(--accent-strong)] border-[var(--accent)]/40',
+  commercial: 'bg-[var(--grey-dim)] text-[var(--grey-strong)] border-[var(--grey)]/40',
+  transactional: 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)] border-[var(--emerald)]/40',
+  navigational: 'bg-[var(--surface)] text-[var(--text-2)] border-[var(--border)]',
 }
 
 function pathOf(url: string): string {
@@ -152,7 +152,7 @@ export default function KeywordTable({
 
   const shown = filtered.slice(0, DISPLAY_CAP)
   const inputClass =
-    'rounded-2xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] focus:border-[color:var(--accent)] focus:outline-none'
+    'os-input px-3 py-2 text-sm'
 
   return (
     <div>
@@ -161,7 +161,7 @@ export default function KeywordTable({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter keywords…"
-          className={`${inputClass} grow text-[color:var(--text)] placeholder:text-[color:var(--text-3)]`}
+          className={`${inputClass} grow`}
         />
         <select value={clusterFilter} onChange={(e) => setClusterFilter(e.target.value)} className={inputClass}>
           <option value="">All clusters</option>
@@ -212,13 +212,13 @@ export default function KeywordTable({
       <div className="mt-3 overflow-x-auto">
         <table className="w-full min-w-[900px] text-left text-sm">
           <thead>
-            <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
+            <tr className="os-label border-b border-[color:var(--border)]">
               {COLUMNS.map((col) => (
-                <th key={col.key} className={`py-2 pr-4 font-medium ${col.numeric ? 'text-right' : ''}`}>
+                <th key={col.key} className={`py-2 pr-4 font-semibold ${col.numeric ? 'text-right' : ''}`}>
                   <button
                     type="button"
                     onClick={() => toggleSort(col.key)}
-                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-[color:var(--text)]"
+                    className="inline-flex items-center gap-1 uppercase hover:text-[color:var(--text)]"
                   >
                     {col.label}
                     {sortKey === col.key ? <span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span> : null}
@@ -226,15 +226,15 @@ export default function KeywordTable({
                 </th>
               ))}
               {hasPaid ? (
-                <th className="py-2 pr-4 text-right font-medium">
-                  <button type="button" onClick={() => toggleSort('commercial_value')} className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-[color:var(--text)]" title="Ads conversion value attributed to this query — your data, not a model">
+                <th className="py-2 pr-4 text-right font-semibold">
+                  <button type="button" onClick={() => toggleSort('commercial_value')} className="inline-flex items-center gap-1 uppercase hover:text-[color:var(--text)]" title="Ads conversion value attributed to this query — your data, not a model">
                     Value {sortKey === 'commercial_value' ? <span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span> : null}
                   </button>
                 </th>
               ) : null}
-              {serpStates ? <th className="py-2 pr-4 font-medium">SERP</th> : null}
-              <th className="py-2 pr-4 font-medium">Target URL</th>
-              <th className="py-2 font-medium">Cluster</th>
+              {serpStates ? <th className="py-2 pr-4 font-semibold">SERP</th> : null}
+              <th className="py-2 pr-4 font-semibold">Target URL</th>
+              <th className="py-2 font-semibold">Cluster</th>
             </tr>
           </thead>
           <tbody>
@@ -245,13 +245,13 @@ export default function KeywordTable({
               return (
                 <tr
                   key={k.id}
-                  className={`border-b border-[color:var(--border)] last:border-0 ${isQuickWin(k) ? 'bg-amber-50/60' : ''}`}
+                  className={`border-b border-[color:var(--border)] last:border-0 ${isQuickWin(k) ? 'bg-[var(--amber-dim)]' : ''}`}
                 >
                   <td className="py-2.5 pr-4 text-[color:var(--text)]">
                     <span>{k.keyword}</span>
                     {k.intent ? (
                       <span
-                        className={`ml-2 rounded-full border px-2 py-0.5 text-[10px] font-medium ${INTENT_STYLE[k.intent] ?? 'border-[color:var(--border)] text-[color:var(--text-3)]'}`}
+                        className={`ml-2 rounded-pill border px-2 py-0.5 text-[10px] font-medium ${INTENT_STYLE[k.intent] ?? 'border-[color:var(--border)] text-[color:var(--text-3)]'}`}
                         title={k.intent_source === 'dataforseo' ? `Measured intent${k.intent_confidence ? ` (${Math.round(k.intent_confidence * 100)}%)` : ''}` : 'Model-guessed intent'}
                       >
                         {k.intent}
@@ -259,12 +259,12 @@ export default function KeywordTable({
                       </span>
                     ) : null}
                     {isQuickWin(k) ? (
-                      <span className="ml-2 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                      <span className="ml-2 rounded-pill border border-[var(--amber)]/40 bg-[var(--amber-dim)] px-2 py-0.5 text-[10px] font-medium text-[var(--amber-strong)]">
                         quick win
                       </span>
                     ) : null}
                     {k.source === 'google_ads' ? (
-                      <span className="ml-2 rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700" title="Converting Google Ads search term with no organic page">
+                      <span className="ml-2 rounded-pill border border-[var(--grey)]/40 bg-[var(--grey-dim)] px-2 py-0.5 text-[10px] font-medium text-[var(--grey-strong)]" title="Converting Google Ads search term with no organic page">
                         from ads
                       </span>
                     ) : null}
@@ -276,7 +276,7 @@ export default function KeywordTable({
                         —
                       </span>
                     ) : (
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${band.className}`} title={band.label}>
+                      <span className={`inline-flex items-center gap-1 rounded-pill border px-2 py-0.5 text-[11px] font-medium ${band.className}`} title={band.label}>
                         {k.keyword_difficulty}
                       </span>
                     )}
@@ -306,7 +306,7 @@ export default function KeywordTable({
                           </span>
                           {state.ai_overview ? (
                             <span
-                              className={`rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${state.ai_overview_cites_us ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-300 bg-slate-100 text-slate-800'}`}
+                              className={`rounded-pill border px-1.5 py-0.5 text-[10px] font-medium ${state.ai_overview_cites_us ? 'border-[var(--emerald)]/40 bg-[var(--emerald-dim)] text-[var(--emerald-strong)]' : 'border-[var(--border-light)] bg-[var(--surface-2)] text-[var(--text)]'}`}
                               title={state.ai_overview_cites_us ? 'AI Overview present and cites this site' : 'AI Overview present, does not cite this site'}
                             >
                               AIO{state.ai_overview_cites_us ? ' ✓' : ''}
@@ -337,7 +337,7 @@ export default function KeywordTable({
                       <span className="text-[color:var(--text-3)]">—</span>
                     )}
                     {pages >= 2 ? (
-                      <span className="ml-1 rounded-full border border-red-200 bg-red-50 px-1.5 py-0.5 text-[10px] text-red-700" title={`${pages} pages hold impressions for this query`}>
+                      <span className="ml-1 rounded-pill border border-[var(--red)]/40 bg-[var(--red-dim)] px-1.5 py-0.5 text-[10px] text-[var(--red-strong)]" title={`${pages} pages hold impressions for this query`}>
                         {pages} pages
                       </span>
                     ) : null}

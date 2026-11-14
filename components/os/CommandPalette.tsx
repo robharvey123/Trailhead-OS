@@ -131,14 +131,14 @@ export default function CommandPalette({
         type="button"
         aria-label="Close search"
         onClick={() => onOpenChange(false)}
-        className="absolute inset-0 h-full w-full cursor-default bg-[#0F172A]/40"
+        className="absolute inset-0 h-full w-full cursor-default bg-[var(--navy)]/45"
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Search Trailhead OS"
         onKeyDown={onKeyDown}
-        className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[color:var(--border)] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+        className="relative w-full max-w-xl overflow-hidden rounded-card border border-[color:var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]"
       >
         <div className="flex items-center gap-3 border-b border-[color:var(--border)] px-4">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[color:var(--text-3)]">
@@ -160,7 +160,7 @@ export default function CommandPalette({
             placeholder="Search tasks, deals, accounts, invoices…"
             className="w-full bg-transparent py-4 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)]"
           />
-          <kbd className="os-mono shrink-0 rounded border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] text-[color:var(--text-3)]">
+          <kbd className="os-mono shrink-0 rounded-control border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] text-[color:var(--text-3)]">
             esc
           </kbd>
         </div>

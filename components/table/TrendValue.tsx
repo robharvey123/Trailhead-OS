@@ -35,7 +35,7 @@ export default function TrendValue({ value, previous, formatted }: TrendValuePro
   }
 
   const isUp = delta > 0
-  const colorClass = isUp ? 'text-emerald-400' : 'text-rose-400'
+  const colorClass = isUp ? 'text-[var(--emerald-strong)]' : 'text-[var(--red-strong)]'
 
   return (
     <span className="inline-flex items-center gap-1">

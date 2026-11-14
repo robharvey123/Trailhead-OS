@@ -12,10 +12,13 @@ import {
   generateOverlapClustersAction,
   queueOverlapSnapshotsAction,
 } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Topic clusters' }
 
 const STATUS_STYLE: Record<string, string> = {
-  proposed: 'border-amber-300 bg-amber-50 text-amber-700',
-  approved: 'border-emerald-300 bg-emerald-50 text-emerald-700',
+  proposed: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
+  approved: 'border-[var(--emerald)]/40 bg-[var(--emerald-dim)] text-[var(--emerald-strong)]',
   archived: 'border-[color:var(--border)] text-[color:var(--text-3)]',
 }
 
@@ -36,39 +39,37 @@ export default async function GrowthClustersPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
-              {site.name}
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">Topic clusters</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
-            Approving a cluster marks it worth writing for. Generate a brief when you are ready.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <form action={generateClustersAction.bind(null, site.id)}>
-            <PendingButton pendingLabel="Generating clusters…">Cluster by model (fallback)</PendingButton>
-          </form>
-          {readiness && readiness.missing.length > 0 ? (
-            <form action={queueOverlapSnapshotsAction.bind(null, site.id)}>
-              <PendingButton pendingLabel="Queueing SERP tasks…">
-                Queue {readiness.missing.length - readiness.pending} SERP snapshots
+      <PageHeader
+        eyebrow={
+          <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
+            {site.name}
+          </Link>
+        }
+        title="Topic clusters"
+        description="Approving a cluster marks it worth writing for. Generate a brief when you are ready."
+        actions={
+          <>
+            <form action={generateClustersAction.bind(null, site.id)}>
+              <PendingButton pendingLabel="Generating clusters…">Cluster by model (fallback)</PendingButton>
+            </form>
+            {readiness && readiness.missing.length > 0 ? (
+              <form action={queueOverlapSnapshotsAction.bind(null, site.id)}>
+                <PendingButton pendingLabel="Queueing SERP tasks…">
+                  Queue {readiness.missing.length - readiness.pending} SERP snapshots
+                </PendingButton>
+              </form>
+            ) : null}
+            <form action={generateOverlapClustersAction.bind(null, site.id)}>
+              <PendingButton variant="primary" pendingLabel="Measuring SERP overlap…">
+                Cluster by SERP overlap
               </PendingButton>
             </form>
-          ) : null}
-          <form action={generateOverlapClustersAction.bind(null, site.id)}>
-            <PendingButton variant="primary" className="px-4 py-3 font-semibold" pendingLabel="Measuring SERP overlap…">
-              Cluster by SERP overlap
-            </PendingButton>
-          </form>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {readiness ? (
-        <div className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+        <div className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)]">
           SERP-overlap clustering (measured, not guessed) needs a snapshot per keyword: {readiness.withSnapshot} of {readiness.total} have one
           {readiness.pending > 0 ? `, ${readiness.pending} queued and landing within ~15 minutes` : ''}.
           {readiness.missing.length - readiness.pending > 0
@@ -79,18 +80,18 @@ export default async function GrowthClustersPage({
       ) : null}
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
 
       {clusters.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No clusters yet. Generate them once the keyword list looks healthy — generic clusters
           mean the site&apos;s ICP and brand voice need sharpening, not the prompt.
         </div>
@@ -117,7 +118,7 @@ export default async function GrowthClustersPage({
                   ) : null}
                 </div>
                 <span
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${STATUS_STYLE[cluster.status] ?? ''}`}
+                  className={`rounded-pill border px-3 py-1 text-xs font-medium ${STATUS_STYLE[cluster.status] ?? ''}`}
                 >
                   {cluster.status}
                 </span>
@@ -126,18 +127,18 @@ export default async function GrowthClustersPage({
                 {cluster.status === 'proposed' ? (
                   <>
                     <form action={approveClusterAction.bind(null, site.id, cluster.id)}>
-                      <PendingButton variant="primary" pendingLabel="Approving…">
+                      <PendingButton className="btn-sm" variant="primary" pendingLabel="Approving…">
                         Approve
                       </PendingButton>
                     </form>
                     <form action={archiveClusterAction.bind(null, site.id, cluster.id)}>
-                      <PendingButton pendingLabel="Archiving…">Archive</PendingButton>
+                      <PendingButton className="btn-sm" pendingLabel="Archiving…">Archive</PendingButton>
                     </form>
                   </>
                 ) : null}
                 {cluster.status !== 'archived' ? (
                   <form action={generateBriefAction.bind(null, site.id, cluster.id)}>
-                    <PendingButton pendingLabel="Writing brief…">Generate brief</PendingButton>
+                    <PendingButton className="btn-sm" pendingLabel="Writing brief…">Generate brief</PendingButton>
                   </form>
                 ) : null}
               </div>

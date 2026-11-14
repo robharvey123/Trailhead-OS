@@ -73,7 +73,7 @@ export default function AccountDetailClient({
       <div>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold">{account.name}</h1>
-          <span className="rounded-full border border-slate-700 px-2.5 py-0.5 text-xs text-slate-300">
+          <span className="rounded-pill border border-slate-700 px-2.5 py-0.5 text-xs text-slate-300">
             {CRM_ACCOUNT_TYPE_LABELS[account.type]}
           </span>
         </div>
@@ -96,7 +96,7 @@ export default function AccountDetailClient({
           { label: 'Pipeline', value: fmtCurrency(pipelineValue) },
           { label: 'Won', value: fmtCurrency(wonValue) },
         ].map((kpi) => (
-          <div key={kpi.label} className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+          <div key={kpi.label} className="rounded-card border border-slate-800 bg-slate-900/50 px-4 py-3">
             <p className="text-[11px] uppercase tracking-wider text-slate-500">{kpi.label}</p>
             <p className="mt-1 text-lg font-semibold">{kpi.value}</p>
           </div>
@@ -117,7 +117,7 @@ export default function AccountDetailClient({
           >
             {t.label}
             {t.count != null && (
-              <span className="ml-1.5 rounded-full bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400">
+              <span className="ml-1.5 rounded-pill bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400">
                 {t.count}
               </span>
             )}
@@ -139,7 +139,7 @@ export default function AccountDetailClient({
               <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">Tags</h3>
               <div className="flex flex-wrap gap-1.5">
                 {account.tags.map((tag) => (
-                  <span key={tag} className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs text-slate-300">
+                  <span key={tag} className="rounded-pill bg-slate-800 px-2.5 py-0.5 text-xs text-slate-300">
                     {tag}
                   </span>
                 ))}
@@ -158,7 +158,7 @@ export default function AccountDetailClient({
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {contacts.slice(0, 3).map((c) => (
-                  <div key={c.id} className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
+                  <div key={c.id} className="rounded-card border border-slate-800 bg-slate-900/40 p-3">
                     <p className="text-sm font-medium">{c.first_name} {c.last_name}</p>
                     {c.job_title && <p className="text-xs text-slate-500">{c.job_title}</p>}
                     {c.email && <p className="mt-1 text-xs text-slate-400">{c.email}</p>}
@@ -179,10 +179,10 @@ export default function AccountDetailClient({
               </div>
               <div className="space-y-2">
                 {deals.slice(0, 3).map((d) => (
-                  <div key={d.id} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+                  <div key={d.id} className="flex items-center justify-between rounded-card border border-slate-800 bg-slate-900/40 px-4 py-3">
                     <div>
                       <p className="text-sm font-medium">{d.title}</p>
-                      <span className="rounded-full border border-slate-700 px-2 py-0.5 text-[10px] text-slate-400">
+                      <span className="rounded-pill border border-slate-700 px-2 py-0.5 text-[10px] text-slate-400">
                         {DEAL_STAGE_LABELS[d.stage]}
                       </span>
                     </div>
@@ -196,7 +196,7 @@ export default function AccountDetailClient({
       )}
 
       {tab === 'contacts' && (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -227,7 +227,7 @@ export default function AccountDetailClient({
       )}
 
       {tab === 'deals' && (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -247,7 +247,7 @@ export default function AccountDetailClient({
                     <td className="px-4 py-3 font-medium">{d.title}</td>
                     <td className="px-4 py-3 text-emerald-400">{fmtCurrency(d.value)}</td>
                     <td className="px-4 py-3">
-                      <span className="rounded-full border border-slate-700 px-2 py-0.5 text-xs">
+                      <span className="rounded-pill border border-slate-700 px-2 py-0.5 text-xs">
                         {DEAL_STAGE_LABELS[d.stage]}
                       </span>
                     </td>
@@ -280,19 +280,19 @@ export default function AccountDetailClient({
             const overdue = outgoing.filter((i) => i.status === 'overdue' || (i.due_date && i.due_date < new Date().toISOString().slice(0, 10) && i.status !== 'paid')).length
             return (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                <div className="rounded-card border border-slate-800 bg-slate-900/50 px-4 py-3">
                   <p className="text-[11px] uppercase tracking-wider text-slate-500">Total Revenue</p>
                   <p className="mt-1 text-lg font-semibold">{fmtCurrency(totalRevenue)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                <div className="rounded-card border border-slate-800 bg-slate-900/50 px-4 py-3">
                   <p className="text-[11px] uppercase tracking-wider text-slate-500">Paid</p>
                   <p className="mt-1 text-lg font-semibold text-emerald-400">{fmtCurrency(totalPaid)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                <div className="rounded-card border border-slate-800 bg-slate-900/50 px-4 py-3">
                   <p className="text-[11px] uppercase tracking-wider text-slate-500">Outstanding</p>
                   <p className="mt-1 text-lg font-semibold text-amber-400">{fmtCurrency(outstanding)}</p>
                 </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                <div className="rounded-card border border-slate-800 bg-slate-900/50 px-4 py-3">
                   <p className="text-[11px] uppercase tracking-wider text-slate-500">Overdue</p>
                   <p className="mt-1 text-lg font-semibold text-rose-400">{overdue}</p>
                 </div>
@@ -301,7 +301,7 @@ export default function AccountDetailClient({
           })()}
 
           {/* Invoice table */}
-          <div className="overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="overflow-x-auto rounded-card border border-slate-800">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">

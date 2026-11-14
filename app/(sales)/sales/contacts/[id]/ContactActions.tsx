@@ -25,7 +25,7 @@ export default function ContactActions({ contactId, unsubscribed }: { contactId:
 
   return (
     <div className="space-y-3">
-      <label className="block text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]" htmlFor="sales-note">
+      <label className="field-label block" htmlFor="sales-note">
         Add a note
       </label>
       <textarea
@@ -33,7 +33,7 @@ export default function ContactActions({ contactId, unsubscribed }: { contactId:
         rows={3}
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        className="w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+        className="os-input w-full px-3 py-2 text-sm"
         placeholder="What did they say?"
       />
       <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export default function ContactActions({ contactId, unsubscribed }: { contactId:
           </button>
         )}
         <span role="status" className="text-xs">
-          {error ? <span className="text-[color:var(--red)]">{error}</span> : saved ? <span className="text-[color:var(--text-2)]">{saved}</span> : null}
+          {error ? <span className="text-[color:var(--red-strong)]">{error}</span> : saved ? <span className="text-[color:var(--text-2)]">{saved}</span> : null}
         </span>
       </div>
     </div>

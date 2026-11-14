@@ -24,7 +24,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-left shadow-sm transition hover:border-slate-600 hover:shadow-md"
+      className="w-full rounded-card border border-slate-800 bg-slate-950/80 p-3 text-left shadow-sm transition hover:border-slate-600 hover:shadow-md"
     >
       {/* Title row */}
       <div className="flex items-start justify-between gap-2">
@@ -33,7 +33,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         </span>
         {task.task_color && (
           <span
-            className="mt-0.5 h-3 w-3 flex-shrink-0 rounded-full"
+            className="mt-0.5 h-3 w-3 flex-shrink-0 rounded-pill"
             style={{ backgroundColor: task.task_color }}
           />
         )}
@@ -42,15 +42,15 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       {/* Meta row */}
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
         {task.category && (
-          <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+          <span className="rounded-control bg-white/10 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
             {WORKSPACE_CATEGORY_LABELS[task.category as keyof typeof WORKSPACE_CATEGORY_LABELS] || task.category}
           </span>
         )}
-        <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${PRIORITY_COLORS[task.priority] || ''}`}>
+        <span className={`rounded-control px-1.5 py-0.5 text-[10px] font-medium ${PRIORITY_COLORS[task.priority] || ''}`}>
           {task.priority}
         </span>
         {isBlocked && (
-          <span className="rounded bg-rose-900/40 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">
+          <span className="rounded-control bg-rose-900/40 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">
             Blocked
           </span>
         )}

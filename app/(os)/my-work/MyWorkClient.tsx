@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import Board from '@/components/kanban/Board'
 import TaskForm from '@/components/tasks/TaskForm'
 import TaskStatusBadge from '@/components/tasks/TaskStatusBadge'
+import PageHeader from '@/components/ui/PageHeader'
 import {
   ENGAGEMENT_TASK_PRIORITY_LABELS,
   ENGAGEMENT_TASK_PRIORITY_RANK,
@@ -156,19 +157,21 @@ export default function MyWorkClient({
   }, [base, statusFilter, sort])
 
   return (
-    <div className="panel overflow-hidden">
-      <div className="topbar">
-        <span className="topbar-title">My work</span>
-        <span className="topbar-count">{view === 'board' ? base.length : rows.length}</span>
-        <div className="topbar-actions">
-          <div className="tabbar" style={{ border: 'none', padding: 0 }}>
+    <>
+    <PageHeader
+      title="Tasks"
+      count={view === 'board' ? base.length : rows.length}
+      actions={
+        <>
+          <div className="tabbar border-0! p-0!">
             <button className={`tab ${view === 'list' ? 'active' : ''}`} onClick={() => setStoredView('list')}>List</button>
             <button className={`tab ${view === 'board' ? 'active' : ''}`} onClick={() => setStoredView('board')}>Board</button>
           </div>
           <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>+ New task</button>
-        </div>
-      </div>
-
+        </>
+      }
+    />
+    <div className="panel overflow-hidden">
       <div className="tabbar">
         {TABS.map((t) => (
           <button key={t.key} className={`tab ${tab === t.key ? 'active' : ''}`} onClick={() => setTab(t.key)}>{t.label}</button>
@@ -204,7 +207,7 @@ export default function MyWorkClient({
         ) : null}
       </div>
 
-      <div style={{ padding: 24, paddingTop: 12 }}>
+      <div className="px-6 pb-6 pt-3">
         {view === 'board' ? (
           // Re-key so the board re-seeds its local state when the tab or a shared
           // filter changes. The key stays stable across the post-move router.refresh(),
@@ -232,7 +235,7 @@ export default function MyWorkClient({
                   <td>{t.engagement?.name ?? '—'}</td>
                   <td><TaskStatusBadge status={t.status} /></td>
                   <td>{ENGAGEMENT_TASK_PRIORITY_LABELS[t.priority]}</td>
-                  <td className="td-mono">{fmtDate(t.due_date)}</td>
+                  <td className="td-num">{fmtDate(t.due_date)}</td>
                 </tr>
               ))}
             </tbody>
@@ -251,5 +254,6 @@ export default function MyWorkClient({
         />
       ) : null}
     </div>
+    </>
   )
 }

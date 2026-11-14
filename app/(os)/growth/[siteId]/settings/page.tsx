@@ -5,9 +5,12 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import { updateGrowthBudgetsAction, updateSeoSiteAction } from '../../actions'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Site settings' }
 
 const INPUT_CLASS =
-  'w-full rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  'os-input w-full px-4 py-2.5 text-sm'
 
 export default async function GrowthSiteSettingsPage({
   params,
@@ -29,38 +32,40 @@ export default async function GrowthSiteSettingsPage({
   const updateAction = updateSeoSiteAction.bind(null, site.id)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <p className="os-eyebrow">
+    <div className="os-narrow space-y-6">
+      <PageHeader
+        eyebrow={
           <Link href={`/growth/${site.id}`} className="hover:text-[color:var(--accent-strong)]">
             {site.name}
           </Link>
-        </p>
-        <h1 className="mt-2 os-page-title">Site settings</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          {site.domain} — the ICP and brand voice feed every cluster, brief and draft. If clusters
-          come back generic, sharpen these before touching prompts.
-        </p>
-      </div>
+        }
+        title="Site settings"
+        description={
+          <>
+            {site.domain} — the ICP and brand voice feed every cluster, brief and draft. If clusters
+            come back generic, sharpen these before touching prompts.
+          </>
+        }
+      />
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
 
       <form action={updateAction} className="os-card space-y-4 p-6">
         <label className="block text-sm">
-          <span className="text-[color:var(--text-2)]">Name</span>
+          <span className="field-label">Name</span>
           <input name="name" required defaultValue={site.name} className={`mt-1.5 ${INPUT_CLASS}`} />
         </label>
         <label className="block text-sm">
-          <span className="text-[color:var(--text-2)]">Search Console property</span>
+          <span className="field-label">Search Console property</span>
           <input
             name="gsc_property"
             defaultValue={site.gsc_property ?? ''}
@@ -69,7 +74,7 @@ export default async function GrowthSiteSettingsPage({
           />
         </label>
         <label className="block text-sm">
-          <span className="text-[color:var(--text-2)]">Workstream</span>
+          <span className="field-label">Workstream</span>
           <select
             name="workstream_id"
             defaultValue={site.workstream_id ?? ''}
@@ -84,7 +89,7 @@ export default async function GrowthSiteSettingsPage({
           </select>
         </label>
         <label className="block text-sm">
-          <span className="text-[color:var(--text-2)]">
+          <span className="field-label">
             Ideal customer profile — who should find this site?
           </span>
           <textarea
@@ -95,7 +100,7 @@ export default async function GrowthSiteSettingsPage({
           />
         </label>
         <label className="block text-sm">
-          <span className="text-[color:var(--text-2)]">Brand voice</span>
+          <span className="field-label">Brand voice</span>
           <textarea
             name="brand_voice"
             rows={3}
@@ -103,10 +108,10 @@ export default async function GrowthSiteSettingsPage({
             className={`mt-1.5 ${INPUT_CLASS}`}
           />
         </label>
-        <fieldset className="rounded-2xl border border-[color:var(--border)] p-4">
+        <fieldset className="rounded-card border border-[color:var(--border)] p-4">
           <legend className="px-1 text-sm font-semibold text-[color:var(--text)]">Publishing</legend>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">CMS</span>
+            <span className="field-label">CMS</span>
             <select name="cms_type" defaultValue={site.cms_type} className={`mt-1.5 ${INPUT_CLASS}`}>
               <option value="none">None (publishing disabled)</option>
               <option value="internal">Trailhead marketing blog — draft in /blog</option>
@@ -116,7 +121,7 @@ export default async function GrowthSiteSettingsPage({
           </label>
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             <label className="block text-sm">
-              <span className="text-[color:var(--text-2)]">GitHub repo (owner/name)</span>
+              <span className="field-label">GitHub repo (owner/name)</span>
               <input
                 name="cms_repo"
                 defaultValue={String((site.cms_config as { repo?: string }).repo ?? '')}
@@ -125,7 +130,7 @@ export default async function GrowthSiteSettingsPage({
               />
             </label>
             <label className="block text-sm">
-              <span className="text-[color:var(--text-2)]">Base branch</span>
+              <span className="field-label">Base branch</span>
               <input
                 name="cms_base_branch"
                 defaultValue={String((site.cms_config as { base_branch?: string }).base_branch ?? 'main')}
@@ -133,7 +138,7 @@ export default async function GrowthSiteSettingsPage({
               />
             </label>
             <label className="block text-sm">
-              <span className="text-[color:var(--text-2)]">Content directory</span>
+              <span className="field-label">Content directory</span>
               <input
                 name="cms_content_dir"
                 defaultValue={String((site.cms_config as { content_dir?: string }).content_dir ?? 'content/blog')}
@@ -145,12 +150,11 @@ export default async function GrowthSiteSettingsPage({
                 type="checkbox"
                 name="cms_auto_merge"
                 defaultChecked={Boolean((site.cms_config as { auto_merge?: boolean }).auto_merge)}
-                className="h-4 w-4 accent-[var(--accent)]"
               />
               Auto-merge the publish PR
             </label>
             <label className="block text-sm">
-              <span className="text-[color:var(--text-2)]">Frontmatter author</span>
+              <span className="field-label">Frontmatter author</span>
               <input
                 name="cms_author"
                 defaultValue={String((site.cms_config as { author?: string }).author ?? '')}
@@ -161,7 +165,7 @@ export default async function GrowthSiteSettingsPage({
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-3">
             <label className="block text-sm">
-              <span className="text-[color:var(--text-2)]">WordPress base URL</span>
+              <span className="field-label">WordPress base URL</span>
               <input
                 name="cms_base_url"
                 defaultValue={String((site.cms_config as { base_url?: string }).base_url ?? '')}
@@ -170,7 +174,7 @@ export default async function GrowthSiteSettingsPage({
               />
             </label>
             <label className="block text-sm">
-              <span className="text-[color:var(--text-2)]">WP username</span>
+              <span className="field-label">WP username</span>
               <input
                 name="cms_username"
                 defaultValue={String((site.cms_config as { username?: string }).username ?? '')}
@@ -178,7 +182,7 @@ export default async function GrowthSiteSettingsPage({
               />
             </label>
             <label className="block text-sm">
-              <span className="text-[color:var(--text-2)]">WP application password</span>
+              <span className="field-label">WP application password</span>
               <input
                 name="cms_app_password"
                 type="password"
@@ -199,12 +203,11 @@ export default async function GrowthSiteSettingsPage({
               type="checkbox"
               name="is_client"
               defaultChecked={site.is_client}
-              className="h-4 w-4 accent-[var(--accent)]"
             />
             Client site
           </label>
           <label className="block grow text-sm">
-            <span className="text-[color:var(--text-2)]">CRM account (required for client sites)</span>
+            <span className="field-label">CRM account (required for client sites)</span>
             <select
               name="client_account_id"
               defaultValue={site.client_account_id ?? ''}
@@ -221,7 +224,7 @@ export default async function GrowthSiteSettingsPage({
         </div>
         <button
           type="submit"
-          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="btn btn-primary"
         >
           Save settings
         </button>
@@ -237,25 +240,25 @@ export default async function GrowthSiteSettingsPage({
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Monthly DataForSEO budget (USD)</span>
+            <span className="field-label">Monthly DataForSEO budget (USD)</span>
             <input name="monthly_api_budget" type="number" step="0.01" min="0" defaultValue={site.monthly_api_budget ?? ''} placeholder="e.g. 20" className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Monthly media budget (ads spend target)</span>
+            <span className="field-label">Monthly media budget (ads spend target)</span>
             <input name="monthly_ads_budget" type="number" step="1" min="0" defaultValue={site.monthly_ads_budget ?? ''} placeholder="for pacing alerts" className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">SERP-overlap threshold (shared top-10 URLs)</span>
+            <span className="field-label">SERP-overlap threshold (shared top-10 URLs)</span>
             <input name="serp_overlap_threshold" type="number" min="1" max="10" defaultValue={site.serp_overlap_threshold ?? 3} className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Max pages per crawl</span>
+            <span className="field-label">Max pages per crawl</span>
             <input name="max_crawl_pages" type="number" min="10" max="5000" defaultValue={site.max_crawl_pages ?? 200} className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
         </div>
         <button
           type="submit"
-          className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+          className="btn btn-ghost"
         >
           Save budgets
         </button>

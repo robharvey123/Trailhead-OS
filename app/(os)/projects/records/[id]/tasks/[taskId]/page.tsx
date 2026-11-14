@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 
+export const metadata = { title: 'Task' }
+
 // The old ProjectWorkspaceClient / ProjectTaskPanel logged to the legacy
 // task_time_logs table, outside every report. Task detail now lives at
 // /my-work/[id], where the timer and time entries hit time_entries properly.

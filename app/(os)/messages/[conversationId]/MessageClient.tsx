@@ -308,21 +308,21 @@ export default function MessageClient({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'grid', gap: 8, alignContent: 'start' }}>
+    <div className="flex h-full flex-col">
+      <div className="grid flex-1 content-start gap-2 overflow-y-auto p-4">
         {hasMore ? (
-          <div style={{ textAlign: 'center' }}>
+          <div className="text-center">
             <button className="btn btn-ghost btn-sm" onClick={loadMore} disabled={loadingMore}>{loadingMore ? 'Loading…' : 'Load older messages'}</button>
           </div>
         ) : null}
         {messages.length === 0 ? (
-          <p style={{ fontSize: 13, color: 'var(--text-3)', textAlign: 'center', marginTop: 24 }}>No messages yet — say hello.</p>
+          <p className="mt-6 text-center text-[13px] text-[var(--text-3)]">No messages yet — say hello.</p>
         ) : (
           messages.map((m) => {
             const mine = m.sender_id === meId
             const editable = mine && !m.deleted_at && !m.pending && now - new Date(m.created_at).getTime() < EDIT_WINDOW_MS
             return (
-              <div key={m.id} data-mid={m.id} style={{ borderRadius: 12, transition: 'background 0.4s', background: m.id === flashId ? 'var(--accent-dim)' : 'transparent', padding: m.id === flashId ? 4 : 0 }}>
+              <div key={m.id} data-mid={m.id} className={`rounded-card transition-[background] duration-[400ms] ${m.id === flashId ? 'bg-[var(--accent-dim)] p-1' : 'bg-transparent p-0'}`}>
                 <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} attachments={m.attachments} mentions={m.mentions} createdTask={createdTasks[m.id] ?? null} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} onConvert={() => setConvertMsg(m)} />
                 {m.id === lastSentId && !m.deleted_at ? <ReadIndicator label={receiptLabel} /> : null}
               </div>
@@ -332,7 +332,7 @@ export default function MessageClient({
         {typingName ? <TypingIndicator name={typingName} /> : null}
         <div ref={bottomRef} />
       </div>
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '0 16px' }}>{error}</p> : null}
+      {error ? <p className="px-4 text-xs text-[var(--red-strong)]">{error}</p> : null}
       <MessageComposer onSend={handleSend} onTyping={notifyTyping} people={people} />
 
       <ConfirmDialog

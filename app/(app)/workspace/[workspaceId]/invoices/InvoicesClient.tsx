@@ -149,15 +149,15 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
           <h1 className="mt-1 text-2xl font-semibold">Invoices</h1>
           <p className="mt-1 text-sm text-slate-400">Outstanding: {fmtCurrency(totals.outstanding)} &middot; Paid: {fmtCurrency(totals.paid)}</p>
         </div>
-        <button onClick={async () => { resetForm(); setShowForm(true); try { const { next_number } = await apiFetch<{ next_number: string }>(`/api/finance/invoices/next-number?workspace_id=${workspaceId}`); setInvoiceNumber(next_number) } catch { /* user can enter manually */ } }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Invoice</button>
+        <button onClick={async () => { resetForm(); setShowForm(true); try { const { next_number } = await apiFetch<{ next_number: string }>(`/api/finance/invoices/next-number?workspace_id=${workspaceId}`); setInvoiceNumber(next_number) } catch { /* user can enter manually */ } }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Invoice</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select aria-label="Filter by status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select aria-label="Filter by status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All statuses</option>
           {INVOICE_STATUSES.map((s) => <option key={s} value={s}>{INVOICE_STATUS_LABELS[s]}</option>)}
         </select>
-        <select aria-label="Filter by direction" value={filterDirection} onChange={(e) => setFilterDirection(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select aria-label="Filter by direction" value={filterDirection} onChange={(e) => setFilterDirection(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All directions</option>
           <option value="incoming">Incoming</option>
           <option value="outgoing">Outgoing</option>
@@ -165,32 +165,32 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Invoice' : 'New Invoice'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <label className="block"><span className="mb-1 block text-xs text-slate-400">Invoice # *</span><input required value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-              <label className="block"><span className="mb-1 block text-xs text-slate-400">Account</span><select value={accountId} onChange={(e) => handleAccountChange(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
-              <label className="block"><span className="mb-1 block text-xs text-slate-400">Direction</span><select value={direction} onChange={(e) => setDirection(e.target.value as InvoiceDirection)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option></select></label>
-              <label className="block"><span className="mb-1 block text-xs text-slate-400">Issue Date</span><input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-              <label className="block"><span className="mb-1 block text-xs text-slate-400">Due Date</span><input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-              <label className="block"><span className="mb-1 block text-xs text-slate-400">Tax Rate (%)</span><input type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-              <label className="block"><span className="mb-1 block text-xs text-slate-400">Currency</span><select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Invoice # *</span><input required value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Account</span><select value={accountId} onChange={(e) => handleAccountChange(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Direction</span><select value={direction} onChange={(e) => setDirection(e.target.value as InvoiceDirection)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="outgoing">Outgoing</option><option value="incoming">Incoming</option></select></label>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Issue Date</span><input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Due Date</span><input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Tax Rate (%)</span><input type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+              <label className="block"><span className="mb-1 block text-xs text-slate-400">Currency</span><select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
             </div>
 
             {/* Bill To */}
             <div>
               <p className="text-xs uppercase tracking-[0.15em] text-slate-400 mb-2">{direction === 'outgoing' ? 'Bill To' : 'Received From'}</p>
               <div className="grid gap-3 sm:grid-cols-3">
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">Name</span><input value={billToName} onChange={(e) => setBillToName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">Email</span><input value={billToEmail} onChange={(e) => setBillToEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">Phone</span><input value={billToPhone} onChange={(e) => setBillToPhone(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="sm:col-span-3 block"><span className="mb-1 block text-xs text-slate-400">Address</span><input value={billToAddress} onChange={(e) => setBillToAddress(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">City / State</span><input value={billToCity} onChange={(e) => setBillToCity(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">Postcode</span><input value={billToPostcode} onChange={(e) => setBillToPostcode(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">Country</span><input value={billToCountry} onChange={(e) => setBillToCountry(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">VAT Number</span><input value={billToVat} onChange={(e) => setBillToVat(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
-                <label className="block"><span className="mb-1 block text-xs text-slate-400">Company Number</span><input value={billToCompanyNumber} onChange={(e) => setBillToCompanyNumber(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">Name</span><input value={billToName} onChange={(e) => setBillToName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">Email</span><input value={billToEmail} onChange={(e) => setBillToEmail(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">Phone</span><input value={billToPhone} onChange={(e) => setBillToPhone(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="sm:col-span-3 block"><span className="mb-1 block text-xs text-slate-400">Address</span><input value={billToAddress} onChange={(e) => setBillToAddress(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">City / State</span><input value={billToCity} onChange={(e) => setBillToCity(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">Postcode</span><input value={billToPostcode} onChange={(e) => setBillToPostcode(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">Country</span><input value={billToCountry} onChange={(e) => setBillToCountry(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">VAT Number</span><input value={billToVat} onChange={(e) => setBillToVat(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+                <label className="block"><span className="mb-1 block text-xs text-slate-400">Company Number</span><input value={billToCompanyNumber} onChange={(e) => setBillToCompanyNumber(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
               </div>
             </div>
 
@@ -201,25 +201,25 @@ export default function InvoicesClient({ workspaceId, initialInvoices, accounts,
               </div>
               {lineItems.map((item) => (
                 <div key={item.id} className="mb-2 grid grid-cols-12 gap-2 items-center">
-                  <input placeholder="Description" aria-label="Line item description" value={item.description} onChange={(e) => updateLineItem(item.id, 'description', e.target.value)} className="col-span-5 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-                  <input type="number" placeholder="Qty" aria-label="Line item quantity" value={item.quantity} onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-                  <input type="number" step="0.01" placeholder="Price" aria-label="Line item unit price" value={item.unit_price} onChange={(e) => updateLineItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input placeholder="Description" aria-label="Line item description" value={item.description} onChange={(e) => updateLineItem(item.id, 'description', e.target.value)} className="col-span-5 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input type="number" placeholder="Qty" aria-label="Line item quantity" value={item.quantity} onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input type="number" step="0.01" placeholder="Price" aria-label="Line item unit price" value={item.unit_price} onChange={(e) => updateLineItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                   <span className="col-span-2 text-right text-sm text-slate-300">{fmtCurrency(item.quantity * item.unit_price)}</span>
                   <button type="button" aria-label="Remove line item" onClick={() => removeLineItem(item.id)} className="col-span-1 text-xs text-rose-400 hover:text-rose-300">×</button>
                 </div>
               ))}
             </div>
 
-            <label className="block"><span className="mb-1 block text-xs text-slate-400">Notes</span><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
+            <label className="block"><span className="mb-1 block text-xs text-slate-400">Notes</span><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></label>
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
             <th className="px-4 py-3">Invoice #</th><th className="px-4 py-3">Account</th><th className="px-4 py-3">Dir.</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Due</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Paid</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"></th>

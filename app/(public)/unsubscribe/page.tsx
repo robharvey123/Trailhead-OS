@@ -20,7 +20,7 @@ export default async function UnsubscribeConfirmPage({
           <input type="hidden" name="token" value={token} />
           <button
             type="submit"
-            className="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+            className="rounded-pill bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
           >
             Confirm unsubscribe
           </button>

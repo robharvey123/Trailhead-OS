@@ -155,13 +155,13 @@ export default function WorkspacePage({ workspaceId }: WorkspacePageProps) {
         <div className="flex gap-2">
           <button
             onClick={() => setShowTemplates(true)}
-            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
+            className="rounded-control border border-slate-700 px-3 py-1.5 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
           >
             Templates
           </button>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 transition hover:bg-white"
+            className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 transition hover:bg-white"
           >
             + New Task
           </button>
@@ -170,7 +170,7 @@ export default function WorkspacePage({ workspaceId }: WorkspacePageProps) {
 
       {/* Filters bar */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex rounded-lg border border-slate-700 text-sm">
+        <div className="flex rounded-control border border-slate-700 text-sm">
           {(['kanban', 'list'] as const).map((mode) => (
             <button
               key={mode}
@@ -179,7 +179,7 @@ export default function WorkspacePage({ workspaceId }: WorkspacePageProps) {
                 viewMode === mode
                   ? 'bg-white/10 text-white'
                   : 'text-slate-400 hover:text-slate-200'
-              } ${mode === 'kanban' ? 'rounded-l-lg' : 'rounded-r-lg'}`}
+              } ${mode === 'kanban' ? 'rounded-l-control' : 'rounded-r-control'}`}
             >
               {mode}
             </button>
@@ -189,7 +189,7 @@ export default function WorkspacePage({ workspaceId }: WorkspacePageProps) {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value as CategoryFilter)}
-          className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
+          className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200"
         >
           <option value="all">All categories</option>
           {Object.entries(WORKSPACE_CATEGORY_LABELS).map(([key, label]) => (
@@ -204,13 +204,13 @@ export default function WorkspacePage({ workspaceId }: WorkspacePageProps) {
           placeholder="Search tasks..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500"
+          className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500"
         />
       </div>
 
       {/* Error / Loading */}
       {error && (
-        <div className="rounded-lg border border-rose-800 bg-rose-950/50 p-3 text-sm text-rose-300">
+        <div className="rounded-control border border-rose-800 bg-rose-950/50 p-3 text-sm text-rose-300">
           {error}
           <button onClick={loadTasks} className="ml-2 underline">
             Retry

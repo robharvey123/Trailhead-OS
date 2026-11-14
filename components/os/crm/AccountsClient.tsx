@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import type { AccountStatus, SavedView, Tag } from '@/lib/types'
 import type { AccountListItem } from '@/lib/db/accounts'
 
@@ -237,214 +238,213 @@ export default function AccountsClient({
   const allChecked = filtered.length > 0 && selected.size === filtered.length
 
   return (
-    <div className="panel overflow-hidden">
-      {/* topbar */}
-      <div className="topbar">
-        <span className="topbar-title">CRM</span>
-        <span className="topbar-count">{accounts.length} accounts</span>
-        <div className="topbar-actions">
-          <div style={{ position: 'relative' }}>
-            <button className="btn btn-ghost btn-sm" onClick={() => setViewsOpen((o) => !o)}>
-              ◷ Saved views
-            </button>
-            {viewsOpen ? (
-              <div
-                className="panel"
-                style={{ position: 'absolute', right: 0, top: 'calc(100% + 6px)', width: 280, zIndex: 50, padding: 8 }}
-              >
-                {views.length === 0 ? (
-                  <p className="field-label" style={{ padding: 8 }}>No saved views yet.</p>
-                ) : (
-                  views.map((v) => (
-                    <div
-                      key={v.id}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px' }}
-                    >
-                      <button
-                        className="td-name"
-                        style={{ flex: 1, textAlign: 'left', background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', fontSize: 12 }}
-                        onClick={() => applyView(v)}
-                      >
-                        {v.is_pinned ? '📌 ' : ''}
-                        {v.name}
-                      </button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => togglePin(v)}>
-                        {v.is_pinned ? 'Unpin' : 'Pin'}
-                      </button>
-                      <button className="btn btn-ghost btn-sm" onClick={() => removeView(v)}>
-                        ✕
-                      </button>
-                    </div>
-                  ))
-                )}
-                <button className="btn btn-primary btn-sm" style={{ width: '100%', marginTop: 6 }} onClick={saveCurrentView}>
-                  + Save current view
-                </button>
-              </div>
-            ) : null}
-          </div>
-          <Link className="btn btn-primary btn-sm" href="/crm/accounts/new">
-            + Add account
-          </Link>
-        </div>
-      </div>
-
-      {/* stats */}
-      <div className="stats-bar">
-        {STATUS_ORDER.map((s) => (
-          <button
-            key={s}
-            className="stat-item"
-            style={{ background: filters.status === s ? 'var(--surface-2)' : undefined, cursor: 'pointer', textAlign: 'left', border: 'none', borderRight: '1px solid var(--border)' }}
-            onClick={() => setFilter('status', filters.status === s ? '' : s)}
-          >
-            <div className="stat-label">{STATUS_LABEL[s]}</div>
-            <div className="stat-value">{statusCounts[s] ?? 0}</div>
-          </button>
-        ))}
-      </div>
-
-      {/* filter bar */}
-      <div className="filterbar">
-        <div className="search-wrap">
-          <span className="search-icon">⌕</span>
-          <input
-            className="search-input"
-            placeholder="Search accounts..."
-            value={filters.search}
-            onChange={(e) => setFilter('search', e.target.value)}
-          />
-        </div>
-        <select className="filter-select" value={filters.channel} onChange={(e) => setFilter('channel', e.target.value)}>
-          <option value="">All channels</option>
-          {channels.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <select className="filter-select" value={filters.status} onChange={(e) => setFilter('status', e.target.value)}>
-          <option value="">All statuses</option>
-          {STATUS_ORDER.map((s) => (
-            <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-          ))}
-        </select>
-        <select className="filter-select" value={filters.tag} onChange={(e) => setFilter('tag', e.target.value)}>
-          <option value="">All tags</option>
-          {allTags.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
-        <select className="filter-select" value={filters.terms} onChange={(e) => setFilter('terms', e.target.value)}>
-          <option value="">All terms</option>
-          <option value="custom">Own terms</option>
-          <option value="default">Inheriting default</option>
-        </select>
-        {(filters.search || filters.channel || filters.status || filters.tag || filters.terms || filters.sort) ? (
-          <button className="btn btn-ghost btn-sm" onClick={() => setFilters(EMPTY_FILTERS)}>Clear</button>
-        ) : null}
-      </div>
-
-      {/* bulk action bar */}
-      {selected.size > 0 ? (
-        <div className="bulkbar">
-          <span className="bulk-count">{selected.size} selected</span>
-          <select
-            className="filter-select"
-            defaultValue=""
-            onChange={(e) => { if (e.target.value) { bulk('tag', { tag_id: e.target.value }); e.target.value = '' } }}
-          >
-            <option value="">Tag…</option>
-            {allTags.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
-          </select>
-          <select
-            className="filter-select"
-            defaultValue=""
-            onChange={(e) => { if (e.target.value) { bulk('status', { status: e.target.value }); e.target.value = '' } }}
-          >
-            <option value="">Change status…</option>
-            {STATUS_ORDER.map((s) => (<option key={s} value={s}>{STATUS_LABEL[s]}</option>))}
-          </select>
-          <button className="btn btn-ghost btn-sm" onClick={setBulkTerms} disabled={busy}>Set payment terms</button>
-          <button className="btn btn-ghost btn-sm" onClick={exportCsv} disabled={busy}>Export CSV</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => bulk('delete')} disabled={busy} style={{ color: 'var(--red)' }}>Delete</button>
-          <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={() => setSelected(new Set())}>Clear selection</button>
-        </div>
-      ) : null}
-
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '8px 24px' }}>{error}</p> : null}
-
-      {/* table */}
-      <div className="overflow-x-auto">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th style={{ width: 36 }}>
-                <input type="checkbox" checked={allChecked} onChange={toggleAll} aria-label="Select all" />
-              </th>
-              <th>Account</th>
-              <th>Channel</th>
-              <th>Status</th>
-              <th>
-                <button
-                  type="button"
-                  onClick={cycleTermsSort}
-                  title="Payment terms — click to sort"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit', color: 'inherit', padding: 0 }}
+    <>
+      <PageHeader
+        title="CRM"
+        count={<>{accounts.length} accounts</>}
+        actions={
+          <>
+            <div className="relative">
+              <button className="btn btn-ghost btn-sm" onClick={() => setViewsOpen((o) => !o)}>
+                ◷ Saved views
+              </button>
+              {viewsOpen ? (
+                <div
+                  className="panel absolute right-0 top-[calc(100%+6px)] z-50 w-[280px] p-2 shadow-[var(--shadow-lg)]!"
                 >
-                  Terms{filters.sort === 'terms_asc' ? ' ▲' : filters.sort === 'terms_desc' ? ' ▼' : ''}
-                </button>
-              </th>
-              <th>Tags</th>
-              <th>Website</th>
-              <th>Key contact</th>
-              <th style={{ textAlign: 'right' }}>Contacts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={9} className="empty">No accounts match this view.</td></tr>
-            ) : (
-              filtered.map((a) => (
-                <tr key={a.id} className={selected.has(a.id) ? 'selected' : ''}>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggle(a.id)} aria-label={`Select ${a.name}`} />
-                  </td>
-                  <td onClick={() => router.push(`/crm/accounts/${a.id}`)} style={{ cursor: 'pointer' }}>
-                    <div className="td-name">{a.name}</div>
-                    {a.city || a.postcode ? (
-                      <div className="td-sub">{[a.city, a.postcode].filter(Boolean).join(' ')}</div>
-                    ) : null}
-                  </td>
-                  <td>{a.channel ? <span className="channel-tag">{a.channel}</span> : <span className="td-mono">—</span>}</td>
-                  <td><span className={`status-badge status-${a.status}`}>{STATUS_LABEL[a.status] ?? a.status}</span></td>
-                  <td className="td-mono">
-                    {a.payment_terms_days != null ? (
-                      `${a.payment_terms_days}d`
-                    ) : (
-                      <span style={{ color: 'var(--muted, #94a3b8)' }}>{defaultTermsDays}d default</span>
-                    )}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                      {(tagMap[a.id] ?? []).map((t) => (
-                        <span key={t.id} className={`tag-chip ${t.color}`}>{t.name}</span>
-                      ))}
-                    </div>
-                  </td>
-                  <td>
-                    {a.website ? (
-                      <a className="website-link" href={a.website.startsWith('http') ? a.website : `https://${a.website}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
-                        {a.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-                      </a>
-                    ) : <span className="td-mono">—</span>}
-                  </td>
-                  <td className="td-mono">{a.contacts && a.contacts.length > 0 ? a.contacts[0].name : '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{a.contacts_count ?? 0}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                  {views.length === 0 ? (
+                    <p className="field-label p-2">No saved views yet.</p>
+                  ) : (
+                    views.map((v) => (
+                      <div
+                        key={v.id}
+                        className="flex items-center gap-1.5 px-2 py-1.5"
+                      >
+                        <button
+                          className="td-name flex-1 cursor-pointer text-left text-xs text-[var(--text)]"
+                          onClick={() => applyView(v)}
+                        >
+                          {v.is_pinned ? '📌 ' : ''}
+                          {v.name}
+                        </button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => togglePin(v)}>
+                          {v.is_pinned ? 'Unpin' : 'Pin'}
+                        </button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => removeView(v)}>
+                          ✕
+                        </button>
+                      </div>
+                    ))
+                  )}
+                  <button className="btn btn-ghost btn-sm mt-1.5 w-full" onClick={saveCurrentView}>
+                    + Save current view
+                  </button>
+                </div>
+              ) : null}
+            </div>
+            <Link className="btn btn-primary btn-sm" href="/crm/accounts/new">
+              + Add account
+            </Link>
+          </>
+        }
+      />
+      <div className="panel overflow-hidden">
+        {/* stats */}
+        <div className="stats-bar">
+          {STATUS_ORDER.map((s) => (
+            <button
+              key={s}
+              className={`stat-item cursor-pointer text-left ${filters.status === s ? 'bg-[var(--surface-2)]' : ''}`}
+              onClick={() => setFilter('status', filters.status === s ? '' : s)}
+            >
+              <div className="stat-label">{STATUS_LABEL[s]}</div>
+              <div className="stat-value">{statusCounts[s] ?? 0}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* filter bar */}
+        <div className="filterbar">
+          <div className="search-wrap">
+            <span className="search-icon">⌕</span>
+            <input
+              className="search-input"
+              placeholder="Search accounts..."
+              value={filters.search}
+              onChange={(e) => setFilter('search', e.target.value)}
+            />
+          </div>
+          <select className="filter-select" value={filters.channel} onChange={(e) => setFilter('channel', e.target.value)}>
+            <option value="">All channels</option>
+            {channels.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select className="filter-select" value={filters.status} onChange={(e) => setFilter('status', e.target.value)}>
+            <option value="">All statuses</option>
+            {STATUS_ORDER.map((s) => (
+              <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+            ))}
+          </select>
+          <select className="filter-select" value={filters.tag} onChange={(e) => setFilter('tag', e.target.value)}>
+            <option value="">All tags</option>
+            {allTags.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+          <select className="filter-select" value={filters.terms} onChange={(e) => setFilter('terms', e.target.value)}>
+            <option value="">All terms</option>
+            <option value="custom">Own terms</option>
+            <option value="default">Inheriting default</option>
+          </select>
+          {(filters.search || filters.channel || filters.status || filters.tag || filters.terms || filters.sort) ? (
+            <button className="btn btn-ghost btn-sm" onClick={() => setFilters(EMPTY_FILTERS)}>Clear</button>
+          ) : null}
+        </div>
+
+        {/* bulk action bar */}
+        {selected.size > 0 ? (
+          <div className="bulkbar">
+            <span className="bulk-count">{selected.size} selected</span>
+            <select
+              className="filter-select"
+              defaultValue=""
+              onChange={(e) => { if (e.target.value) { bulk('tag', { tag_id: e.target.value }); e.target.value = '' } }}
+            >
+              <option value="">Tag…</option>
+              {allTags.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+            </select>
+            <select
+              className="filter-select"
+              defaultValue=""
+              onChange={(e) => { if (e.target.value) { bulk('status', { status: e.target.value }); e.target.value = '' } }}
+            >
+              <option value="">Change status…</option>
+              {STATUS_ORDER.map((s) => (<option key={s} value={s}>{STATUS_LABEL[s]}</option>))}
+            </select>
+            <button className="btn btn-ghost btn-sm" onClick={setBulkTerms} disabled={busy}>Set payment terms</button>
+            <button className="btn btn-ghost btn-sm" onClick={exportCsv} disabled={busy}>Export CSV</button>
+            <button className="btn btn-danger btn-sm" onClick={() => bulk('delete')} disabled={busy}>Delete</button>
+            <button className="btn btn-ghost btn-sm ml-auto" onClick={() => setSelected(new Set())}>Clear selection</button>
+          </div>
+        ) : null}
+
+        {error ? <p className="px-6 py-2 text-xs text-[var(--red-strong)]">{error}</p> : null}
+
+        {/* table */}
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th className="w-9">
+                  <input type="checkbox" checked={allChecked} onChange={toggleAll} aria-label="Select all" />
+                </th>
+                <th>Account</th>
+                <th>Channel</th>
+                <th>Status</th>
+                <th>
+                  <button
+                    type="button"
+                    onClick={cycleTermsSort}
+                    title="Payment terms — click to sort"
+                    className="cursor-pointer uppercase"
+                  >
+                    Terms{filters.sort === 'terms_asc' ? ' ▲' : filters.sort === 'terms_desc' ? ' ▼' : ''}
+                  </button>
+                </th>
+                <th>Tags</th>
+                <th>Website</th>
+                <th>Key contact</th>
+                <th className="text-right!">Contacts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={9} className="empty">No accounts match this view.</td></tr>
+              ) : (
+                filtered.map((a) => (
+                  <tr key={a.id} className={selected.has(a.id) ? 'selected' : ''}>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggle(a.id)} aria-label={`Select ${a.name}`} />
+                    </td>
+                    <td onClick={() => router.push(`/crm/accounts/${a.id}`)} className="cursor-pointer">
+                      <div className="td-name">{a.name}</div>
+                      {a.city || a.postcode ? (
+                        <div className="td-sub">{[a.city, a.postcode].filter(Boolean).join(' ')}</div>
+                      ) : null}
+                    </td>
+                    <td>{a.channel ? <span className="channel-tag">{a.channel}</span> : <span className="td-num">—</span>}</td>
+                    <td><span className={`status-badge status-${a.status}`}>{STATUS_LABEL[a.status] ?? a.status}</span></td>
+                    <td className="td-num">
+                      {a.payment_terms_days != null ? (
+                        `${a.payment_terms_days}d`
+                      ) : (
+                        <span>{defaultTermsDays}d default</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="flex flex-wrap gap-1">
+                        {(tagMap[a.id] ?? []).map((t) => (
+                          <span key={t.id} className={`tag-chip ${t.color}`}>{t.name}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      {a.website ? (
+                        <a className="website-link" href={a.website.startsWith('http') ? a.website : `https://${a.website}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+                          {a.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                        </a>
+                      ) : <span className="td-num">—</span>}
+                    </td>
+                    <td className="td-num">{a.contacts && a.contacts.length > 0 ? a.contacts[0].name : '—'}</td>
+                    <td className="td-num text-right">{a.contacts_count ?? 0}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

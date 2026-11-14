@@ -173,7 +173,7 @@ export default function Modal({
     <div
       className={`thmock fixed inset-0 z-50 flex ${
         placement === 'right' ? 'justify-end' : 'items-center justify-center'
-      } bg-[rgba(15,23,42,0.45)] ${overlayClassName}`}
+      } bg-[var(--navy)]/45 ${overlayClassName}`}
     >
       <button
         type="button"

@@ -21,7 +21,7 @@ export default function DealCard({ deal, onClick }: DealCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="os-card w-full rounded-2xl p-4 text-left transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
+      className="os-card w-full rounded-card p-4 text-left transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
     >
       <p className="text-sm font-semibold text-[color:var(--text)]">{deal.name}</p>
       {deal.account?.name ? (
@@ -34,7 +34,7 @@ export default function DealCard({ deal, onClick }: DealCardProps) {
             ? formatCurrency(deal.value_amount, deal.value_currency || 'GBP')
             : '—'}
         </span>
-        <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">
+        <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">
           {deal.probability}%
         </span>
       </div>

@@ -4,6 +4,8 @@ import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import AuthShell, { authInputClass, authLabelClass, authLinkClass } from '@/components/os/AuthShell'
+import Button from '@/components/ui/Button'
 
 export default function LoginForm({ nextPath, initialMessage = null }: { nextPath: string; initialMessage?: string | null }) {
   const router = useRouter()
@@ -35,61 +37,50 @@ export default function LoginForm({ nextPath, initialMessage = null }: { nextPat
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
-        <h1 className="text-2xl font-semibold">Sign in to Brand Opps</h1>
-        <p className="mt-2 text-sm text-slate-300">
-          Use your email and password to access your workspace.
-        </p>
+    <AuthShell title="Sign in to Trailhead OS" description="Use your email and password.">
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <div className="space-y-2">
+          <label className={authLabelClass} htmlFor="email">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            className={authInputClass}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+        </div>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="email">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </div>
+        <div className="space-y-2">
+          <label className={authLabelClass} htmlFor="password">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            required
+            autoComplete="current-password"
+            className={authInputClass}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </div>
+        <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
+        </Button>
+      </form>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+      <p className="mt-4 text-center text-sm">
+        <a href="/auth/forgot" className={authLinkClass}>Forgot password?</a>
+      </p>
 
-        <p className="mt-4 text-center text-sm">
-          <a href="/auth/forgot" className="text-slate-300 hover:text-white">Forgot password?</a>
-        </p>
-
-        {message ? (
-          <p className="mt-4 text-sm text-slate-200">{message}</p>
-        ) : null}
-      </div>
-    </div>
+      {message ? (
+        <p role="alert" className="mt-4 text-sm text-[var(--red-strong)]">{message}</p>
+      ) : null}
+    </AuthShell>
   )
 }

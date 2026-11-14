@@ -10,6 +10,9 @@ import { estimatedMonthlyUpside } from '@/lib/growth/ctr'
 import { worksheetPath } from '@/lib/growth/refresh'
 import type { SeoGscDaily, SeoGrowthScore } from '@/lib/types'
 import { expandSeedsAction, researchKeywordsAction, syncGscNowAction } from '../actions'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Growth site' }
 
 /** D5: an action names its object, shows the measurement + window, states the gain and links to a real destination. */
 interface RankedAction {
@@ -55,8 +58,8 @@ function DeltaChip({ delta, goodWhenDown }: { delta: number | null; goodWhenDown
   const improving = goodWhenDown ? delta < 0 : delta > 0
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${
-        improving ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+      className={`rounded-pill px-2 py-0.5 text-[11px] font-medium tabular-nums ${
+        improving ? 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]' : 'bg-[var(--red-dim)] text-[var(--red-strong)]'
       }`}
     >
       {delta > 0 ? '+' : ''}
@@ -413,22 +416,82 @@ export default async function GrowthSitePage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">
-            <Link href="/growth" className="hover:text-[color:var(--accent-strong)]">
-              Growth
-            </Link>
-          </p>
-          <h1 className="mt-2 os-page-title">{site.name}</h1>
-          <p className="mt-2 text-sm text-[color:var(--text-2)]">
+      <PageHeader
+        eyebrow={
+          <Link href="/growth" className="hover:text-[color:var(--accent-strong)]">
+            Growth
+          </Link>
+        }
+        title={site.name}
+        description={
+          <>
             {site.domain}
             {site.last_gsc_sync_at
               ? ` · synced ${new Date(site.last_gsc_sync_at).toLocaleString('en-GB')}`
               : ' · never synced'}
-          </p>
-          <p className="mt-2 flex flex-wrap gap-3 text-sm">
+          </>
+        }
+        actions={
+          <>
+            {site.gsc_property ? (
+              <form action={syncAction}>
+                <PendingButton pendingLabel="Syncing Search Console…">Sync GSC now</PendingButton>
+              </form>
+            ) : null}
+            <div className="group relative" tabIndex={0}>
+              <div className="os-card flex items-center gap-3 px-5 py-3">
+                <span className="stat-value">
+                  {latestScore ? latestScore.score : '—'}
+                </span>
+                <span className="text-xs leading-tight text-[color:var(--text-3)]">
+                  Growth
+                  <br />
+                  Score
+                </span>
+              </div>
+              <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-4 shadow-[var(--shadow-lg)] group-focus-within:visible group-hover:visible">
+                {latestScore ? (
+                  <>
+                    <p className="text-xs text-[color:var(--text-2)]">{latestScore.breakdown.summary}</p>
+                    <ul className="mt-3 space-y-2">
+                      {latestScore.breakdown.components.map((c) => (
+                        <li key={c.key} className="text-xs">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-[color:var(--text)]">{c.label}</span>
+                            <span className="tabular-nums text-[color:var(--text-3)]">
+                              {c.value === null ? 'no data' : `${Math.round(c.value * 100)}%`} · w{' '}
+                              {c.weight}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-[color:var(--text-3)]">{c.detail}</p>
+                          {c.raise ? (
+                            <p className="mt-0.5 text-[color:var(--text-2)]">
+                              ↑ {c.raise}
+                              {c.href ? (
+                                <>
+                                  {' '}
+                                  <Link href={c.href} className="text-[color:var(--accent-strong)] underline decoration-[color:var(--border)] underline-offset-2">
+                                    go
+                                  </Link>
+                                </>
+                              ) : null}
+                            </p>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="text-xs text-[color:var(--text-3)]">
+                    Computed nightly — the first score lands after the next growth-score run.
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        }
+        tabs={
+          <div className="flex flex-wrap gap-3 pb-3 text-sm">
             {[
               { href: `/growth/${site.id}/keywords`, label: 'Keywords & pages' },
               { href: `/growth/${site.id}/gap`, label: 'Competitor gap' },
@@ -449,74 +512,17 @@ export default async function GrowthSitePage({
                 {tab.label}
               </Link>
             ))}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {site.gsc_property ? (
-            <form action={syncAction}>
-              <PendingButton pendingLabel="Syncing Search Console…">Sync GSC now</PendingButton>
-            </form>
-          ) : null}
-          <div className="group relative" tabIndex={0}>
-            <div className="os-card flex items-center gap-3 px-5 py-3">
-              <span className="text-2xl font-semibold tabular-nums text-[color:var(--text)]">
-                {latestScore ? latestScore.score : '—'}
-              </span>
-              <span className="text-xs leading-tight text-[color:var(--text-3)]">
-                Growth
-                <br />
-                Score
-              </span>
-            </div>
-            <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-2xl border border-[color:var(--border)] bg-white p-4 shadow-lg group-focus-within:visible group-hover:visible">
-              {latestScore ? (
-                <>
-                  <p className="text-xs text-[color:var(--text-2)]">{latestScore.breakdown.summary}</p>
-                  <ul className="mt-3 space-y-2">
-                    {latestScore.breakdown.components.map((c) => (
-                      <li key={c.key} className="text-xs">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-medium text-[color:var(--text)]">{c.label}</span>
-                          <span className="tabular-nums text-[color:var(--text-3)]">
-                            {c.value === null ? 'no data' : `${Math.round(c.value * 100)}%`} · w{' '}
-                            {c.weight}
-                          </span>
-                        </div>
-                        <p className="mt-0.5 text-[color:var(--text-3)]">{c.detail}</p>
-                        {c.raise ? (
-                          <p className="mt-0.5 text-[color:var(--text-2)]">
-                            ↑ {c.raise}
-                            {c.href ? (
-                              <>
-                                {' '}
-                                <Link href={c.href} className="text-[color:var(--accent-strong)] underline decoration-[color:var(--border)] underline-offset-2">
-                                  go
-                                </Link>
-                              </>
-                            ) : null}
-                          </p>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : (
-                <p className="text-xs text-[color:var(--text-3)]">
-                  Computed nightly — the first score lands after the next growth-score run.
-                </p>
-              )}
-            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
@@ -527,9 +533,9 @@ export default async function GrowthSitePage({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {stats.map((stat) => (
           <div key={stat.label} className="os-card p-5">
-            <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">{stat.label}</p>
+            <p className="os-label">{stat.label}</p>
             <div className="mt-2 flex items-center gap-2">
-              <span className="text-2xl font-semibold tabular-nums text-[color:var(--text)]">
+              <span className="stat-value">
                 {stat.value}
               </span>
               <DeltaChip delta={stat.delta} goodWhenDown={stat.deltaGoodWhenDown} />
@@ -561,20 +567,20 @@ export default async function GrowthSitePage({
               <li key={action.label}>
                 <Link
                   href={action.href}
-                  className="flex items-start gap-3 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm transition hover:border-[color:var(--accent)]"
+                  className="flex items-start gap-3 rounded-card border border-[color:var(--border)] px-4 py-3 text-sm transition hover:border-[color:var(--accent)]"
                 >
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent-dim)] text-xs font-semibold text-[color:var(--accent-strong)]">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-[var(--accent-dim)] text-xs font-semibold text-[color:var(--accent-strong)]">
                     {i + 1}
                   </span>
                   <span className="min-w-0 grow">
                     <span className="block font-medium text-[color:var(--text)]">
                       {action.label}
                       <span
-                        className={`ml-2 rounded-full border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
+                        className={`ml-2 rounded-pill border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
                           action.kind === 'paid'
-                            ? 'border-violet-200 bg-violet-50 text-violet-700'
+                            ? 'border-[var(--grey)]/40 bg-[var(--grey-dim)] text-[var(--grey-strong)]'
                             : action.kind === 'organic'
-                              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                              ? 'border-[var(--emerald)]/40 bg-[var(--emerald-dim)] text-[var(--emerald-strong)]'
                               : 'border-[color:var(--border)] text-[color:var(--text-3)]'
                         }`}
                       >
@@ -607,7 +613,7 @@ export default async function GrowthSitePage({
             </Link>
           </div>
           {data.keywords.length === 0 ? (
-            <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+            <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
               No keywords yet. Sync GSC or queue keyword research below.
             </div>
           ) : (
@@ -639,7 +645,7 @@ export default async function GrowthSitePage({
               </ul>
               {topCompetitors.length > 0 ? (
                 <>
-                  <h3 className="mt-5 text-xs uppercase tracking-wide text-[color:var(--text-3)]">
+                  <h3 className="os-label mt-5">
                     Named instead of us
                   </h3>
                   <ul className="mt-2 space-y-1.5">
@@ -663,7 +669,7 @@ export default async function GrowthSitePage({
         <div className="mt-4 flex items-stretch gap-2 overflow-x-auto">
           {pipeline.map((stage, i) => (
             <div key={stage.label} className="flex min-w-28 grow items-center gap-2">
-              <div className="grow rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center">
+              <div className="grow rounded-card border border-[color:var(--border)] px-4 py-3 text-center">
                 <p className="text-lg font-semibold tabular-nums text-[color:var(--text)]">
                   {stage.count}
                 </p>
@@ -692,7 +698,7 @@ export default async function GrowthSitePage({
             rows={2}
             required
             placeholder="job management software, field service app, digital job sheets"
-            className="min-w-64 grow rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+            className="os-textarea min-w-64 grow px-4 py-2.5 text-sm"
           />
           <PendingButton variant="primary" pendingLabel="Queueing with DataForSEO…">
             Queue research (Google Ads ideas)
@@ -704,7 +710,7 @@ export default async function GrowthSitePage({
             rows={1}
             required
             placeholder="Up to 5 seeds for Labs suggestions + related keywords (instant, tagged by source)"
-            className="min-w-64 grow rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+            className="os-textarea min-w-64 grow px-4 py-2.5 text-sm"
           />
           <PendingButton pendingLabel="Asking DataForSEO Labs…">Expand with Labs</PendingButton>
         </form>

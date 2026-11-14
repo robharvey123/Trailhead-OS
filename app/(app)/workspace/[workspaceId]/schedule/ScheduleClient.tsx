@@ -79,30 +79,30 @@ export default function ScheduleClient({ workspaceId, initialSchedules, staffLis
           <h1 className="mt-1 text-2xl font-semibold">Schedule</h1>
           <p className="mt-1 text-sm text-slate-400">Week of {weekStart}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ Add Entry</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ Add Entry</button>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Entry' : 'New Schedule Entry'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-slate-400">Staff *</label><select required value={staffId} onChange={(e) => setStaffId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">Select…</option>{staffList.map((s) => <option key={s.id} value={s.id}>{s.display_name}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Date *</label><input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={type} onChange={(e) => setType(e.target.value as ScheduleType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{SCHEDULE_TYPES.map((t) => <option key={t} value={t}>{SCHEDULE_TYPE_LABELS[t]}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Start</label><input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">End</label><input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Title</label><input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Staff *</label><select required value={staffId} onChange={(e) => setStaffId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">Select…</option>{staffList.map((s) => <option key={s.id} value={s.id}>{s.display_name}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Date *</label><input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={type} onChange={(e) => setType(e.target.value as ScheduleType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{SCHEDULE_TYPES.map((t) => <option key={t} value={t}>{SCHEDULE_TYPE_LABELS[t]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Start</label><input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">End</label><input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Title</label><input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Add'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Add'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <div className="grid grid-cols-7 min-w-[700px]">
           {weekDates.map((d, i) => {
             const daySchedules = schedules.filter((s) => s.date === d)
@@ -114,7 +114,7 @@ export default function ScheduleClient({ workspaceId, initialSchedules, staffLis
                 </div>
                 <div className="min-h-[200px] space-y-1 p-2">
                   {daySchedules.map((s) => (
-                    <button key={s.id} onClick={() => openEdit(s)} className={`w-full rounded-lg px-2 py-1.5 text-left text-xs transition hover:opacity-80 ${SCHEDULE_TYPE_COLORS[s.type]}`}>
+                    <button key={s.id} onClick={() => openEdit(s)} className={`w-full rounded-control px-2 py-1.5 text-left text-xs transition hover:opacity-80 ${SCHEDULE_TYPE_COLORS[s.type]}`}>
                       <p className="font-medium">{s.staff_name}</p>
                       <p className="opacity-70">{s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}</p>
                       {s.title && <p className="opacity-70 truncate">{s.title}</p>}

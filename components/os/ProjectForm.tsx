@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
+import PageHeader from '@/components/ui/PageHeader'
 import type { Account, Project, ProjectStatus } from '@/lib/types'
 import ConfirmDialog from './ConfirmDialog'
 import EntityCombobox from './EntityCombobox'
@@ -151,185 +152,181 @@ export default function ProjectForm({
   }
 
   return (
-    <div className="os-card space-y-6 p-6">
-      <div>
-        <p className="os-eyebrow text-[color:var(--accent-strong)]">Delivery</p>
-        <h1 className="os-page-title mt-2">
-          {initialProject ? 'Edit project' : 'New project'}
-        </h1>
-      </div>
+    <div className="os-narrow">
+      <PageHeader eyebrow="Delivery" title={initialProject ? 'Edit project' : 'New project'} />
+      <div className="os-card space-y-6 p-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-2 md:col-span-2">
+            <span className="field-label">Name</span>
+            <input
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[color:var(--text-2)]">Name</span>
-          <input
-            value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="os-input w-full"
+          <EntityCombobox
+            label="Account"
+            entity="account"
+            value={form.account_id}
+            selectedLabel={accountOptions.find((o) => o.value === form.account_id)?.label}
+            onChange={(opt) => setForm({ ...form, account_id: opt.id })}
+            clearable
           />
-        </label>
 
-        <EntityCombobox
-          label="Account"
-          entity="account"
-          value={form.account_id}
-          selectedLabel={accountOptions.find((o) => o.value === form.account_id)?.label}
-          onChange={(opt) => setForm({ ...form, account_id: opt.id })}
-          clearable
-        />
+          <label className="space-y-2">
+            <span className="field-label">Engagement{!initialProject ? ' *' : ''}</span>
+            <EngagementPicker
+              engagements={engagements}
+              value={form.engagement_id}
+              onChange={(value) => setForm({ ...form, engagement_id: value })}
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Engagement{!initialProject ? ' *' : ''}</span>
-          <EngagementPicker
-            engagements={engagements}
-            value={form.engagement_id}
-            onChange={(value) => setForm({ ...form, engagement_id: value })}
-          />
-        </label>
+          <label className="space-y-2">
+            <span className="field-label">Status</span>
+            <select
+              value={form.status}
+              onChange={(event) => setForm({ ...form, status: event.target.value as ProjectStatus })}
+              className="os-select w-full px-4 py-3 text-sm"
+            >
+              {PROJECT_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Status</span>
-          <select
-            value={form.status}
-            onChange={(event) => setForm({ ...form, status: event.target.value as ProjectStatus })}
-            className="os-select w-full"
-          >
-            {PROJECT_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="space-y-2">
+            <span className="field-label">Start date</span>
+            <input
+              type="date"
+              value={form.start_date}
+              onChange={(event) => setForm({ ...form, start_date: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Start date</span>
-          <input
-            type="date"
-            value={form.start_date}
-            onChange={(event) => setForm({ ...form, start_date: event.target.value })}
-            className="os-input w-full"
-          />
-        </label>
+          <label className="space-y-2">
+            <span className="field-label">End date</span>
+            <input
+              type="date"
+              value={form.end_date}
+              onChange={(event) => setForm({ ...form, end_date: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">End date</span>
-          <input
-            type="date"
-            value={form.end_date}
-            onChange={(event) => setForm({ ...form, end_date: event.target.value })}
-            className="os-input w-full"
-          />
-        </label>
+          <label className="space-y-2">
+            <span className="field-label">Estimated end</span>
+            <input
+              type="date"
+              value={form.estimated_end_date}
+              onChange={(event) => setForm({ ...form, estimated_end_date: event.target.value })}
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Estimated end</span>
-          <input
-            type="date"
-            value={form.estimated_end_date}
-            onChange={(event) => setForm({ ...form, estimated_end_date: event.target.value })}
-            className="os-input w-full"
-          />
-        </label>
+          <label className="space-y-2">
+            <span className="field-label">Hourly rate (£)</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.hourly_rate}
+              onChange={(event) => setForm({ ...form, hourly_rate: event.target.value })}
+              placeholder="e.g. 85.00"
+              className="os-input w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2">
-          <span className="text-sm text-[color:var(--text-2)]">Hourly rate (£)</span>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={form.hourly_rate}
-            onChange={(event) => setForm({ ...form, hourly_rate: event.target.value })}
-            placeholder="e.g. 85.00"
-            className="os-input w-full"
-          />
-        </label>
+          <label className="space-y-2 md:col-span-2">
+            <span className="field-label">Description</span>
+            <textarea
+              value={form.description}
+              onChange={(event) => setForm({ ...form, description: event.target.value })}
+              rows={4}
+              className="os-textarea w-full px-4 py-3 text-sm"
+            />
+          </label>
 
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[color:var(--text-2)]">Description</span>
-          <textarea
-            value={form.description}
-            onChange={(event) => setForm({ ...form, description: event.target.value })}
-            rows={4}
-            className="os-textarea w-full"
-          />
-        </label>
+          <label className="space-y-2 md:col-span-2">
+            <span className="field-label">Brief</span>
+            <textarea
+              value={form.brief}
+              onChange={(event) => setForm({ ...form, brief: event.target.value })}
+              rows={6}
+              className="os-textarea w-full px-4 py-3 text-sm"
+            />
+          </label>
+        </div>
 
-        <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[color:var(--text-2)]">Brief</span>
-          <textarea
-            value={form.brief}
-            onChange={(event) => setForm({ ...form, brief: event.target.value })}
-            rows={6}
-            className="os-textarea w-full"
-          />
-        </label>
-      </div>
+        {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
-      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving || archiving || deleting || !form.name.trim()}
-          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push(cancelHref)}
-          className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]"
-        >
-          Cancel
-        </button>
-        {initialProject ? (
+        <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => setArchiveConfirmOpen(true)}
-            disabled={saving || archiving || deleting}
-            className="rounded-2xl border border-[color:var(--amber)] px-5 py-3 text-sm font-medium text-[color:var(--amber-strong)] transition hover:border-[color:var(--amber-strong)] disabled:opacity-50"
+            onClick={handleSave}
+            disabled={saving || archiving || deleting || !form.name.trim()}
+            className="btn btn-primary"
           >
-            {archiving ? 'Archiving...' : 'Archive project'}
+            {saving ? 'Saving...' : 'Save'}
           </button>
-        ) : null}
-        {initialProject ? (
           <button
             type="button"
-            onClick={() => setDeleteConfirmOpen(true)}
-            disabled={saving || archiving || deleting}
-            className="rounded-2xl border border-[color:var(--red)] px-5 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
+            onClick={() => router.push(cancelHref)}
+            className="btn btn-ghost"
           >
-            {deleting ? 'Deleting...' : 'Delete permanently'}
+            Cancel
           </button>
+          {initialProject ? (
+            <button
+              type="button"
+              onClick={() => setArchiveConfirmOpen(true)}
+              disabled={saving || archiving || deleting}
+              className="btn btn-ghost"
+            >
+              {archiving ? 'Archiving...' : 'Archive project'}
+            </button>
+          ) : null}
+          {initialProject ? (
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmOpen(true)}
+              disabled={saving || archiving || deleting}
+              className="btn btn-danger"
+            >
+              {deleting ? 'Deleting...' : 'Delete permanently'}
+            </button>
+          ) : null}
+        </div>
+
+        {initialProject ? (
+          <>
+            <ConfirmDialog
+              open={archiveConfirmOpen}
+              onOpenChange={setArchiveConfirmOpen}
+              title="Archive project?"
+              description="This project will be moved to cancelled status but kept in the database."
+              confirmLabel="Archive"
+              onConfirm={() => void handleArchive()}
+              loading={archiving}
+              variant="warning"
+            />
+            <ConfirmDialog
+              open={deleteConfirmOpen}
+              onOpenChange={setDeleteConfirmOpen}
+              title="Delete project permanently?"
+              description="Linked phases, milestones, and project contacts will be removed. Tasks will remain but will be detached from the project."
+              confirmLabel="Delete permanently"
+              onConfirm={() => void handleDelete()}
+              loading={deleting}
+              variant="destructive"
+            />
+          </>
         ) : null}
       </div>
-
-      {initialProject ? (
-        <>
-          <ConfirmDialog
-            open={archiveConfirmOpen}
-            onOpenChange={setArchiveConfirmOpen}
-            title="Archive project?"
-            description="This project will be moved to cancelled status but kept in the database."
-            confirmLabel="Archive"
-            onConfirm={() => void handleArchive()}
-            loading={archiving}
-            variant="warning"
-          />
-          <ConfirmDialog
-            open={deleteConfirmOpen}
-            onOpenChange={setDeleteConfirmOpen}
-            title="Delete project permanently?"
-            description="Linked phases, milestones, and project contacts will be removed. Tasks will remain but will be detached from the project."
-            confirmLabel="Delete permanently"
-            onConfirm={() => void handleDelete()}
-            loading={deleting}
-            variant="destructive"
-          />
-        </>
-      ) : null}
     </div>
   )
 }

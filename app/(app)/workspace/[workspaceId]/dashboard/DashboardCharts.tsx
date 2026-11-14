@@ -26,8 +26,30 @@ type DashboardChartDatum = {
   cumulativeStock: number
 }
 
+/* Chart colours are working tokens passed as strings, so the same chart reads
+   on white and on navy. Utilities only in this file (no .thmock component
+   classes): it also renders on the public report page. */
+const SERIES = ['var(--accent)', 'var(--amber)', 'var(--emerald)'] as const
+const GRID = 'var(--border)'
+const AXIS = 'var(--border-light)'
+const TICK = { fill: 'var(--text-3)', fontSize: 12 }
+const TOOLTIP_STYLE = {
+  background: 'var(--bg)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-control)',
+  color: 'var(--text)',
+}
+const TOOLTIP_ITEM_STYLE = { color: 'var(--text)' }
+const CARD =
+  'rounded-card border border-[var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-sm)]'
+
 const tooltipFormatter: Formatter<ValueType, NameType> = (value) =>
   value == null ? '' : formatNumber(Number(value))
+
+// Legend labels in body ink: a series colour is a fill, not a type colour.
+const legendLabel = (value: string) => (
+  <span className="text-[var(--text-2)]">{value}</span>
+)
 
 export default function DashboardCharts({
   data,
@@ -36,41 +58,40 @@ export default function DashboardCharts({
 }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-        <h3 className="text-sm font-semibold text-slate-200">
+      <div className={CARD}>
+        <h3 className="text-sm font-semibold text-[var(--text)]">
           Monthly shipped vs sell out
         </h3>
         <div className="mt-4 h-64 min-w-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <BarChart data={data} barGap={8} barSize={20}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
               <XAxis
                 dataKey="month"
-                stroke="#94a3b8"
+                stroke={AXIS}
+                tick={TICK}
                 fontSize={12}
                 tickFormatter={(value) => formatMonthLabel(String(value))}
               />
-              <YAxis stroke="#94a3b8" fontSize={12} />
+              <YAxis stroke={AXIS} tick={TICK} fontSize={12} />
               <Tooltip
-                contentStyle={{
-                  background: '#0f172a',
-                  border: '1px solid #1f2937',
-                  color: '#e2e8f0',
-                }}
+                contentStyle={TOOLTIP_STYLE}
+                itemStyle={TOOLTIP_ITEM_STYLE}
+                cursor={{ fill: 'var(--surface-2)' }}
                 formatter={tooltipFormatter}
                 labelFormatter={(value) => formatMonthLabel(String(value))}
               />
-              <Legend />
+              <Legend formatter={legendLabel} />
               <Bar
                 dataKey="totalShipped"
                 name="Total shipped"
-                fill="#38bdf8"
+                fill={SERIES[0]}
                 radius={[6, 6, 0, 0]}
               />
               <Bar
                 dataKey="sellOut"
                 name="Sell out"
-                fill="#f59e0b"
+                fill={SERIES[1]}
                 radius={[6, 6, 0, 0]}
               />
             </BarChart>
@@ -78,27 +99,26 @@ export default function DashboardCharts({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-        <h3 className="text-sm font-semibold text-slate-200">
+      <div className={CARD}>
+        <h3 className="text-sm font-semibold text-[var(--text)]">
           Cumulative channel stock build
         </h3>
         <div className="mt-4 h-64 min-w-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>
             <AreaChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
               <XAxis
                 dataKey="month"
-                stroke="#94a3b8"
+                stroke={AXIS}
+                tick={TICK}
                 fontSize={12}
                 tickFormatter={(value) => formatMonthLabel(String(value))}
               />
-              <YAxis stroke="#94a3b8" fontSize={12} />
+              <YAxis stroke={AXIS} tick={TICK} fontSize={12} />
               <Tooltip
-                contentStyle={{
-                  background: '#0f172a',
-                  border: '1px solid #1f2937',
-                  color: '#e2e8f0',
-                }}
+                contentStyle={TOOLTIP_STYLE}
+                itemStyle={TOOLTIP_ITEM_STYLE}
+                cursor={{ stroke: 'var(--border-light)' }}
                 formatter={tooltipFormatter}
                 labelFormatter={(value) => formatMonthLabel(String(value))}
               />
@@ -106,8 +126,8 @@ export default function DashboardCharts({
                 type="monotone"
                 dataKey="cumulativeStock"
                 name="Cumulative stock"
-                stroke="#22c55e"
-                fill="#22c55e"
+                stroke={SERIES[2]}
+                fill={SERIES[2]}
                 fillOpacity={0.2}
               />
             </AreaChart>

@@ -1,31 +1,22 @@
 import { Svg, Rect, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { BRAND as BASE, BRAND_ARGB, COMPANY } from '@/lib/brand'
 
 /**
  * Shared Trailhead brand for produced documents (invoice, quote, engagement
- * report). Colour tokens match the logo (public/logo.svg): navy bars with a blue
- * accent bar. One place so the PDFs and the XLSX header stay consistent.
+ * report). The brand colours and company details come from lib/brand.ts, the
+ * one source shared by web, PDF and email. This module adds the values that
+ * are specific to print (body ink, muted text, hairlines) and the PDF logo.
  */
 export const BRAND = {
-  navy: '#0F172A', // logo bars / masthead / headings
-  blue: '#0EA5E9', // accent bar + rules
-  ink: '#1A1A1A', // body text
-  muted: '#6B7280', // secondary text
-  line: '#E5E7EB', // hairlines
-  paper: '#FFFFFF',
+  navy: BASE.navy, // logo bars / masthead / headings
+  blue: BASE.blue, // accent bar + rules
+  ink: '#1A1A1A', // body text (print)
+  muted: '#6B7280', // secondary text (print)
+  line: '#E5E7EB', // hairlines (print)
+  paper: BASE.paper,
 } as const
 
-/** ARGB variants for ExcelJS (FF + hex, no #). */
-export const BRAND_ARGB = {
-  navy: 'FF0F172A',
-  blue: 'FF0EA5E9',
-} as const
-
-export const COMPANY = {
-  name: 'Trailhead Holdings Ltd',
-  number: '16910286',
-  registered: 'Registered in England & Wales',
-  email: 'rob@trailheadholdings.uk',
-} as const
+export { BRAND_ARGB, COMPANY }
 
 /** The ascending-bars logo mark, redrawn as PDF primitives (SVG assets don't
  * embed cleanly in @react-pdf). */

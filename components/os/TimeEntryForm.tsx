@@ -130,9 +130,9 @@ export default function TimeEntryForm({
     return () => clearTimeout(handle)
   }, [engagementId, projectId, taskId, accountId, personId])
 
-  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
-  const chip = 'inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1 text-sm text-[var(--text)]'
+  const input = 'os-input w-full px-3 py-2 text-sm'
+  const label = 'field-label block'
+  const chip = 'inline-flex items-center rounded-pill border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1 text-sm text-[var(--text)]'
 
   // Cascading defaults mirror the resolver: task → engagement + project;
   // project → engagement (+ account); engagement → account + billable, and a
@@ -243,8 +243,8 @@ export default function TimeEntryForm({
     : ''
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.45)]" onClick={onClose}>
-      <div className="flex h-full w-full max-w-md flex-col border-l border-[var(--border)] bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-[var(--navy)]/45" onClick={onClose}>
+      <div className="flex h-full w-full max-w-md flex-col border-l border-[var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
           <h2 className="text-base font-semibold text-[var(--text)]">
             {assign ? 'Assign running timer' : editing ? 'Edit entry' : 'Add time entry'}
@@ -254,7 +254,7 @@ export default function TimeEntryForm({
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
           {billed ? (
-            <p className="rounded-[5px] border border-[var(--amber)] bg-[var(--amber-dim)] px-3 py-2 text-xs text-[var(--amber-strong)]">
+            <p className="rounded-control border border-[var(--amber)] bg-[var(--amber-dim)] px-3 py-2 text-xs text-[var(--amber-strong)]">
               This entry is billed{entry?.invoice_id ? ' on an invoice' : ''} — only the description can change.
             </p>
           ) : null}
@@ -334,7 +334,7 @@ export default function TimeEntryForm({
                   Exports as: <span className="font-medium text-[var(--text)]">{clientPreview}</span>
                 </p>
               ) : (
-                <p className="mt-1 text-[11px] font-medium text-[var(--amber)]">
+                <p className="mt-1 text-[11px] font-medium text-[var(--amber-strong)]">
                   Would export as &quot;{UNATTRIBUTED_LABEL}&quot;
                 </p>
               )}
@@ -359,21 +359,21 @@ export default function TimeEntryForm({
             </>
           ) : null}
 
-          {error ? <p className="text-sm text-[var(--red)]">{error}</p> : null}
+          {error ? <p className="text-sm text-[var(--red-strong)]">{error}</p> : null}
 
           {confirmDelete ? (
-            <div className="rounded-[5px] border border-[var(--red)] bg-[var(--red-dim)] p-3">
+            <div className="rounded-control border border-[var(--red)] bg-[var(--red-dim)] p-3">
               <p className="text-sm text-[var(--text)]">Delete this entry? {deleteLabel}</p>
               <div className="mt-2 flex gap-2">
                 <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDelete(false)}>Cancel</button>
-                <button className="btn btn-sm" style={{ background: 'var(--red)', color: 'white' }} onClick={doDelete} disabled={busy}>Delete entry</button>
+                <button className="btn btn-danger-solid btn-sm" onClick={doDelete} disabled={busy}>Delete entry</button>
               </div>
             </div>
           ) : null}
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border)] px-6 py-4">
-          {editing && !billed ? <button className="text-sm text-[var(--red)] hover:opacity-80" onClick={() => setConfirmDelete(true)}>Delete</button> : <span />}
+          {editing && !billed ? <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(true)}>Delete</button> : <span />}
           <div className="flex gap-2">
             <button className="btn btn-ghost btn-sm" onClick={onClose}>Cancel</button>
             <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy ? 'Saving…' : assign ? 'Re-file timer' : 'Save entry'}</button>

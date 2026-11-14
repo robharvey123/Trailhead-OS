@@ -1,11 +1,13 @@
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import { RoadmapExtractionSchema, type RoadmapExtraction } from '@/lib/roadmap/schema'
 import { mockupFontVars } from '@/lib/fonts'
+import PageHeader from '@/components/ui/PageHeader'
 import RoadmapUploadClient from './RoadmapUploadClient'
 import RoadmapReviewClient from './RoadmapReviewClient'
+
+export const metadata = { title: 'Import roadmap' }
 
 export const dynamic = 'force-dynamic'
 
@@ -30,25 +32,26 @@ export default async function ImportRoadmapPage({
     const extraction: RoadmapExtraction = parsed.success ? parsed.data : { milestones: [] }
     return (
       <div className={`thmock ${mockupFontVars}`}>
-        <RoadmapReviewClient
-          projectId={id}
-          importId={importId}
-          initial={extraction}
-          committed={imp.status === 'committed'}
-        />
+        <div className="os-narrow">
+          <RoadmapReviewClient
+            projectId={id}
+            importId={importId}
+            initial={extraction}
+            committed={imp.status === 'committed'}
+          />
+        </div>
       </div>
     )
   }
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
-      <div className="panel overflow-hidden">
-        <div className="topbar">
-          <Link href={`/projects/records/${id}`} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Project</Link>
-          <span className="topbar-title">Import roadmap</span>
-        </div>
-        <div style={{ padding: 24 }}>
-          <RoadmapUploadClient projectId={id} />
+      <div className="os-narrow">
+        <PageHeader title="Import roadmap" back={{ href: `/projects/records/${id}`, label: 'Project' }} />
+        <div className="panel overflow-hidden">
+          <div className="p-6">
+            <RoadmapUploadClient projectId={id} />
+          </div>
         </div>
       </div>
     </div>

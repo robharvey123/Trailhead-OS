@@ -3,8 +3,8 @@
 import { useState, useTransition } from 'react'
 import { saveSenderIdentity, saveSendingDomains } from './actions'
 
-const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]'
-const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]'
+const input = 'os-input w-full px-3 py-2 text-sm'
+const label = 'field-label block'
 
 function useAction() {
   const [pending, start] = useTransition()
@@ -35,7 +35,7 @@ export function SenderIdentityForm({ initial }: { initial: { fromName: string; f
       <div><label className={label} htmlFor="sid-reply">Reply-to</label><input id="sid-reply" type="email" className={input} value={v.replyTo} onChange={(e) => setV({ ...v, replyTo: e.target.value })} placeholder="same as from" /></div>
       <div className="flex items-center gap-3 sm:col-span-3">
         <button type="submit" className="btn btn-primary btn-sm" disabled={pending}>{pending ? 'Checking…' : 'Save'}</button>
-        <span role="status" className="text-xs">{msg ? <span className={msg.ok ? 'text-[color:var(--text-2)]' : 'text-[color:var(--red)]'}>{msg.text}</span> : null}</span>
+        <span role="status" className="text-xs">{msg ? <span className={msg.ok ? 'text-[color:var(--text-2)]' : 'text-[color:var(--red-strong)]'}>{msg.text}</span> : null}</span>
       </div>
     </form>
   )
@@ -59,7 +59,7 @@ export function SendingDomainsForm({ initial }: { initial: string[] }) {
       </div>
       <div className="flex items-center gap-3">
         <button type="submit" className="btn btn-ghost btn-sm" disabled={pending}>{pending ? 'Saving…' : 'Save domains'}</button>
-        <span role="status" className="text-xs">{msg ? <span className={msg.ok ? 'text-[color:var(--text-2)]' : 'text-[color:var(--red)]'}>{msg.text}</span> : null}</span>
+        <span role="status" className="text-xs">{msg ? <span className={msg.ok ? 'text-[color:var(--text-2)]' : 'text-[color:var(--red-strong)]'}>{msg.text}</span> : null}</span>
       </div>
     </form>
   )

@@ -21,8 +21,8 @@ function toLocalInput(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-const field = 'w-full rounded-lg border border-[color:var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[color:var(--accent)]'
-const labelCls = 'text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--text-3)]'
+const field = 'os-input w-full px-3 py-2 text-sm'
+const labelCls = 'field-label block'
 
 /**
  * Log a calendar event to the CRM as an editable touchpoint linked to an account,
@@ -90,7 +90,7 @@ export default function LogToCrmForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+        className="btn btn-ghost"
       >
         ＋ Log to CRM
       </button>
@@ -101,7 +101,7 @@ export default function LogToCrmForm({
     const acc = accounts.find((a) => a.id === accountId)
     const con = contacts.find((c) => c.id === contactId)
     return (
-      <div className="w-full rounded-2xl border border-[color:var(--green)] bg-[var(--green-dim)] px-4 py-3 text-sm text-[color:var(--green-strong)]">
+      <div className="w-full rounded-card border border-[color:var(--green)] bg-[var(--green-dim)] px-4 py-3 text-sm text-[color:var(--green-strong)]">
         Logged to CRM ✓{' '}
         {acc ? <a href={`/crm/accounts/${acc.id}`} className="underline">{acc.name}</a> : null}
         {acc && con ? ' · ' : null}
@@ -112,12 +112,12 @@ export default function LogToCrmForm({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+    <div className="w-full space-y-3 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-4">
       <div className="flex items-center justify-between">
-        <span className={labelCls}>Log to CRM</span>
-        <button type="button" onClick={() => setOpen(false)} className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--text)]">Cancel</button>
+        <span className="os-label">Log to CRM</span>
+        <button type="button" onClick={() => setOpen(false)} className="btn btn-text btn-sm">Cancel</button>
       </div>
-      {error ? <p className="text-xs text-[color:var(--red)]">{error}</p> : null}
+      {error ? <p className="text-xs text-[color:var(--red-strong)]">{error}</p> : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <SinglePicker label="Account" placeholder="Search accounts…" options={accounts} value={accountId} onChange={setAccountId} />
@@ -157,7 +157,7 @@ export default function LogToCrmForm({
         type="button"
         disabled={saving || !hasTarget}
         onClick={submit}
-        className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+        className="btn btn-primary"
       >
         {saving ? 'Logging…' : 'Log touchpoint'}
       </button>
@@ -189,9 +189,9 @@ function SinglePicker({
     <div className="block">
       <span className={labelCls}>{label}</span>
       {selected ? (
-        <div className="mt-1 flex items-center justify-between rounded-lg border border-[color:var(--border)] bg-[var(--surface)] px-3 py-2">
+        <div className="mt-1 flex items-center justify-between rounded-control border border-[color:var(--border)] bg-[var(--bg)] px-3 py-2">
           <span className="truncate text-sm text-[color:var(--text)]">{selected.name}</span>
-          <button type="button" onClick={() => { onChange(null); setQuery('') }} className="text-[color:var(--text-3)] hover:text-[color:var(--red)]" aria-label={`Clear ${label}`}>✕</button>
+          <button type="button" onClick={() => { onChange(null); setQuery('') }} className="text-[color:var(--text-3)] hover:text-[color:var(--red-strong)]" aria-label={`Clear ${label}`}>✕</button>
         </div>
       ) : (
         <div className="relative mt-1">
@@ -204,7 +204,7 @@ function SinglePicker({
             className={field}
           />
           {open && matches.length > 0 ? (
-            <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-[color:var(--border)] bg-[var(--surface)] shadow-lg">
+            <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-control border border-[color:var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]">
               {matches.map((m) => (
                 <button
                   key={m.id}

@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 
+export const metadata = { title: 'Engagement reports' }
+
 // Retired: the old markdown weekly-update surface predated the Stage A–C
 // client-safety work (spine, client_visible filter, C3 gate, branding) and could
 // leak internal kanban tasks. One client-facing weekly surface now — the Reports

@@ -4,9 +4,12 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import { createSeoSiteAction } from './actions'
+import PageHeader from '@/components/ui/PageHeader'
+
+export const metadata = { title: 'Growth engine' }
 
 const INPUT_CLASS =
-  'w-full rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  'os-input w-full px-4 py-2.5 text-sm'
 
 export default async function GrowthPage({
   searchParams,
@@ -23,16 +26,14 @@ export default async function GrowthPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="os-eyebrow">Growth</p>
-        <h1 className="mt-2 os-page-title">Growth engine</h1>
-        <p className="mt-2 text-sm text-[color:var(--text-2)]">
-          Keyword research, content pipeline and search visibility per site.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Growth"
+        title="Growth engine"
+        description="Keyword research, content pipeline and search visibility per site."
+      />
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
@@ -42,7 +43,7 @@ export default async function GrowthPage({
           <Link
             key={site.id}
             href={`/growth/${site.id}`}
-            className="os-card block p-6 transition hover:border-[color:var(--accent)]"
+            className="block rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-sm)] transition hover:border-[color:var(--border-light)]"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -50,11 +51,11 @@ export default async function GrowthPage({
                 <p className="mt-1 text-sm text-[color:var(--text-2)]">{site.domain}</p>
               </div>
               {site.is_client ? (
-                <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+                <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                   Client{site.account_name ? ` · ${site.account_name}` : ''}
                 </span>
               ) : (
-                <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
+                <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
                   Internal
                 </span>
               )}
@@ -72,7 +73,7 @@ export default async function GrowthPage({
           </Link>
         ))}
         {sites.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)] md:col-span-2">
+          <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)] md:col-span-2">
             No sites yet — add engineeros.uk below to start the engine.
           </div>
         ) : null}
@@ -84,15 +85,15 @@ export default async function GrowthPage({
         </summary>
         <form action={createSeoSiteAction} className="mt-5 grid gap-4 md:grid-cols-2">
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Name</span>
+            <span className="field-label">Name</span>
             <input name="name" required placeholder="Engineer OS" className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Domain</span>
+            <span className="field-label">Domain</span>
             <input name="domain" required placeholder="engineeros.uk" className={`mt-1.5 ${INPUT_CLASS}`} />
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Search Console property</span>
+            <span className="field-label">Search Console property</span>
             <input
               name="gsc_property"
               placeholder="sc-domain:engineeros.uk"
@@ -103,7 +104,7 @@ export default async function GrowthPage({
             </span>
           </label>
           <label className="block text-sm">
-            <span className="text-[color:var(--text-2)]">Workstream</span>
+            <span className="field-label">Workstream</span>
             <select name="workstream_id" defaultValue="" className={`mt-1.5 ${INPUT_CLASS}`}>
               <option value="">None</option>
               {workstreams.map((w) => (
@@ -114,7 +115,7 @@ export default async function GrowthPage({
             </select>
           </label>
           <label className="block text-sm md:col-span-2">
-            <span className="text-[color:var(--text-2)]">
+            <span className="field-label">
               Ideal customer profile — who should find this site?
             </span>
             <textarea
@@ -125,7 +126,7 @@ export default async function GrowthPage({
             />
           </label>
           <label className="block text-sm md:col-span-2">
-            <span className="text-[color:var(--text-2)]">Brand voice</span>
+            <span className="field-label">Brand voice</span>
             <textarea
               name="brand_voice"
               rows={2}
@@ -135,11 +136,11 @@ export default async function GrowthPage({
           </label>
           <div className="flex flex-wrap items-end gap-4 md:col-span-2">
             <label className="flex items-center gap-2 text-sm text-[color:var(--text-2)]">
-              <input type="checkbox" name="is_client" className="h-4 w-4 accent-[var(--accent)]" />
+              <input type="checkbox" name="is_client" />
               Client site
             </label>
             <label className="block grow text-sm">
-              <span className="text-[color:var(--text-2)]">CRM account (required for client sites)</span>
+              <span className="field-label">CRM account (required for client sites)</span>
               <select name="client_account_id" defaultValue="" className={`mt-1.5 ${INPUT_CLASS}`}>
                 <option value="">—</option>
                 {accounts.map((a) => (
@@ -153,7 +154,7 @@ export default async function GrowthPage({
           <div className="md:col-span-2">
             <button
               type="submit"
-              className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+              className="btn btn-primary"
             >
               Add site
             </button>

@@ -264,7 +264,7 @@ export default function EmailThread({
               setSendError(null)
             }}
             disabled={!contact_email}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
+            className="btn btn-ghost"
           >
             {composing ? 'Close compose' : 'Compose'}
           </button>
@@ -272,13 +272,13 @@ export default function EmailThread({
       </div>
 
       {!contact_email ? (
-        <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="mt-6 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No contact email is available for this record yet.
         </div>
       ) : null}
 
       {contact_email && emailFeaturePaused ? (
-        <div className="mt-6 rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-8 text-center">
+        <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-8 text-center">
           <p className="text-sm text-[color:var(--text-2)]">Email integration is temporarily paused.</p>
           <p className="mt-2 text-sm text-[color:var(--text-2)]">
             Gmail access has been removed for now while Google verification is being simplified.
@@ -287,7 +287,7 @@ export default function EmailThread({
       ) : null}
 
       {contact_email && googleDisconnected ? (
-        <div className="mt-6 rounded-3xl border border-[color:var(--border)] bg-[var(--accent-dim)] px-4 py-8 text-center">
+        <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--accent-dim)] px-4 py-8 text-center">
           <p className="text-sm text-[color:var(--accent-strong)]">Connect Google to see emails.</p>
         </div>
       ) : null}
@@ -297,18 +297,18 @@ export default function EmailThread({
           {[0, 1, 2].map(item => (
             <div
               key={item}
-              className="animate-pulse rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4"
+              className="animate-pulse rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4"
             >
-              <div className="h-4 w-1/3 rounded bg-[var(--surface-3)]" />
-              <div className="mt-3 h-3 w-2/3 rounded bg-[var(--surface-3)]" />
-              <div className="mt-2 h-3 w-1/2 rounded bg-[var(--surface-3)]" />
+              <div className="h-4 w-1/3 rounded-control bg-[var(--surface-3)]" />
+              <div className="mt-3 h-3 w-2/3 rounded-control bg-[var(--surface-3)]" />
+              <div className="mt-2 h-3 w-1/2 rounded-control bg-[var(--surface-3)]" />
             </div>
           ))}
         </div>
       ) : null}
 
       {contact_email && !emailFeaturePaused && !loading && !googleDisconnected && error ? (
-        <div className="mt-6 rounded-3xl border border-[color:var(--border)] bg-[var(--red-dim)] px-4 py-8 text-center text-sm text-[color:var(--red-strong)]">
+        <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--red-dim)] px-4 py-8 text-center text-sm text-[color:var(--red-strong)]">
           {error}
         </div>
       ) : null}
@@ -319,7 +319,7 @@ export default function EmailThread({
       !googleDisconnected &&
       !error &&
       threads.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="mt-6 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No emails yet with this contact.
         </div>
       ) : null}
@@ -333,7 +333,7 @@ export default function EmailThread({
             return (
               <div
                 key={thread.id}
-                className="overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)]"
+                className="overflow-hidden rounded-card border border-[color:var(--border)] bg-[var(--surface-2)]"
               >
                 <button
                   type="button"
@@ -347,7 +347,7 @@ export default function EmailThread({
                       <p className="text-sm font-medium text-[color:var(--text)]">
                         {latestMessage.subject || '(No subject)'}
                       </p>
-                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                      <p className="os-label mt-1">
                         {latestMessage.from_address || 'Unknown sender'} to{' '}
                         {(latestMessage.to_addresses ?? []).join(', ') || 'Unknown recipient'}
                       </p>
@@ -370,14 +370,14 @@ export default function EmailThread({
                       {thread.messages.map(message => (
                         <article
                           key={message.gmail_message_id ?? `${thread.id}-${getMessageDate(message)}`}
-                          className="rounded-[1.5rem] border border-[color:var(--border)] bg-white p-4"
+                          className="rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-4"
                         >
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
                               <p className="text-sm font-medium text-[color:var(--text)]">
                                 {message.subject || '(No subject)'}
                               </p>
-                              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                              <p className="os-label mt-1">
                                 {message.from_address || 'Unknown sender'}
                               </p>
                               <p className="mt-1 text-xs text-[color:var(--text-3)]">
@@ -409,10 +409,10 @@ export default function EmailThread({
       ) : null}
 
       {contact_email && !emailFeaturePaused && composing ? (
-        <div className="mt-6 rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-5">
+        <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-5">
           <div className="space-y-4">
             <label className="block space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">To</span>
+              <span className="field-label block">To</span>
               <input
                 value={contact_email}
                 readOnly
@@ -421,7 +421,7 @@ export default function EmailThread({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Subject</span>
+              <span className="field-label block">Subject</span>
               <input
                 value={subject}
                 onChange={event => setSubject(event.target.value)}
@@ -430,7 +430,7 @@ export default function EmailThread({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Body</span>
+              <span className="field-label block">Body</span>
               <textarea
                 value={body}
                 onChange={event => setBody(event.target.value)}
@@ -448,7 +448,7 @@ export default function EmailThread({
                   setComposing(false)
                   setSendError(null)
                 }}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -456,7 +456,7 @@ export default function EmailThread({
                 type="button"
                 onClick={handleSend}
                 disabled={sending}
-                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="btn btn-primary"
               >
                 {sending ? 'Sending...' : 'Send'}
               </button>

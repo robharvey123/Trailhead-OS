@@ -211,16 +211,19 @@ export default function TimeLedger({
   return (
     <div>
       {/* Header strip: this month against the allowance, previous month, all time, value, unbilled. */}
-      <div className="stats-bar" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="stats-bar border-t border-[var(--border)]">
         {hoursThisMonth ? (
           <div className="stat-item">
             <div className="stat-label">This billing month</div>
-            <div className="stat-value" style={{ color: included != null && hoursThisMonth.used > included ? 'var(--red)' : 'var(--text)' }}>
+            <div className={`stat-value ${included != null && hoursThisMonth.used > included ? 'text-[var(--red)]!' : ''}`}>
               {hoursThisMonth.used.toFixed(1)}{included != null ? ` / ${included}h` : 'h'}
             </div>
             {included != null ? (
-              <div style={{ height: 5, background: 'var(--surface-3)', borderRadius: 999, marginTop: 6 }}>
-                <div style={{ width: `${Math.min(100, hoursThisMonth.pct)}%`, height: '100%', borderRadius: 999, background: hoursThisMonth.pct > 100 ? 'var(--red)' : hoursThisMonth.pct >= 80 ? 'var(--amber)' : 'var(--green)' }} />
+              <div className="mt-1.5 h-[5px] rounded-pill bg-[var(--surface-3)]">
+                <div
+                  className={`h-full rounded-pill ${hoursThisMonth.pct > 100 ? 'bg-[var(--red)]' : hoursThisMonth.pct >= 80 ? 'bg-[var(--amber)]' : 'bg-[var(--accent)]'}`}
+                  style={{ width: `${Math.min(100, hoursThisMonth.pct)}%` }}
+                />
               </div>
             ) : null}
           </div>
@@ -233,35 +236,35 @@ export default function TimeLedger({
           </div>
         ) : null}
         <div className="stat-item"><div className="stat-label">All time</div><div className="stat-value">{allTime.total_hours.toFixed(1)}h</div><div className="stat-sub">{allTime.entry_count} entries</div></div>
-        <div className="stat-item"><div className="stat-label">Billable value</div><div className="stat-value" style={{ color: 'var(--emerald)' }}>{formatCurrency(allTime.amount, 'GBP')}</div></div>
+        <div className="stat-item"><div className="stat-label">Billable value</div><div className="stat-value text-[var(--emerald-strong)]!">{formatCurrency(allTime.amount, 'GBP')}</div></div>
         {unattributed.count > 0 ? (
-          <button className="stat-item" style={{ cursor: 'pointer', textAlign: 'left', border: 'none', borderRight: '1px solid var(--border)', background: unattributedOnly ? 'var(--amber-dim)' : undefined }} onClick={() => setUnattributedOnly((v) => !v)}>
+          <button className={`stat-item cursor-pointer text-left ${unattributedOnly ? 'bg-[var(--amber-dim)]' : ''}`} onClick={() => setUnattributedOnly((v) => !v)}>
             <div className="stat-label">Client exports</div>
-            <div className="stat-value" style={{ color: 'var(--amber)', fontSize: 15 }}>
+            <div className="stat-value text-[15px]! text-[var(--amber-strong)]!">
               {unattributed.count} {unattributed.count === 1 ? 'entry' : 'entries'} ({unattributed.hours.toFixed(1)}h)
             </div>
-            <div className="stat-sub" style={{ textDecoration: 'underline' }}>would export unattributed. Review</div>
+            <div className="stat-sub underline">would export unattributed. Review</div>
           </button>
         ) : null}
         <div className="stat-item">
           <div className="stat-label">Unbilled billable</div>
-          <div className="stat-value" style={{ color: allTime.unbilled_amount > 0 ? 'var(--amber)' : 'var(--text-3)', fontWeight: 700 }}>
+          <div className={`stat-value ${allTime.unbilled_amount > 0 ? 'text-[var(--amber-strong)]!' : 'text-[var(--text-3)]!'}`}>
             {formatCurrency(allTime.unbilled_amount, 'GBP')}
           </div>
           {raiseHref && allTime.unbilled_amount > 0 ? (
-            <div className="stat-sub"><Link href={raiseHref} style={{ textDecoration: 'underline' }}>Raise invoice</Link></div>
+            <div className="stat-sub"><Link href={raiseHref} className="underline">Raise invoice</Link></div>
           ) : null}
         </div>
       </div>
 
       {noEngagementNote ? (
-        <p style={{ padding: '8px 24px', margin: 0, background: 'var(--amber-dim)', borderBottom: '1px solid var(--amber)', color: 'var(--amber)', fontSize: 12 }}>
+        <p className="m-0 border-b border-[var(--amber)] bg-[var(--amber-dim)] px-6 py-2 text-xs text-[var(--amber-strong)]">
           {noEngagementNote}
         </p>
       ) : null}
 
       {/* Toolbar: log/timer locked to this scope, period chips, filters, export. */}
-      <div className="filterbar" style={{ flexWrap: 'wrap' }}>
+      <div className="filterbar">
         <StartTimerButton engagementId={scope.engagement_id} projectId={scope.project_id} accountId={engagement?.end_client_account_id ?? undefined} />
         <LogTimeButton engagementId={scope.engagement_id} projectId={scope.project_id} onSaved={() => router.refresh()} />
         <div className="range-chips">
@@ -312,61 +315,61 @@ export default function TimeLedger({
             {attachBusy ? 'Attaching…' : `Attach ${selected.size} to task…`}
           </button>
         ) : null}
-        <button className="btn btn-ghost btn-sm" onClick={exportCsv} style={{ marginLeft: 'auto' }}>Export CSV</button>
+        <button className="btn btn-ghost btn-sm ml-auto" onClick={exportCsv}>Export CSV</button>
       </div>
 
-      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 560px', minWidth: 0 }} className="overflow-x-auto">
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="min-w-0 flex-[1_1_560px] overflow-x-auto">
           {visibleRows.length === 0 ? (
             <div className="empty">No time logged{period !== 'all' ? ' in this billing month' : ' yet'}.</div>
           ) : (
             <table className="data-table">
               <thead>
                 <tr>
-                  {unattributedOnly ? <th style={{ width: 32 }}></th> : null}
-                  <th>Date</th><th>Person</th><th>Project</th><th>Task</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Rate</th><th style={{ textAlign: 'right' }}>Amount</th><th>Billable</th><th>Billed</th>
+                  {unattributedOnly ? <th className="w-8"></th> : null}
+                  <th>Date</th><th>Person</th><th>Project</th><th>Task</th><th>Description</th><th className="text-right!">Duration</th><th className="text-right!">Rate</th><th className="text-right!">Amount</th><th>Billable</th><th>Billed</th>
                 </tr>
               </thead>
               {buckets.map((b) => (
                 <tbody key={b.period.start}>
-                  <tr style={{ background: 'var(--surface-2)' }}>
-                    <td colSpan={unattributedOnly ? 6 : 5} style={{ fontWeight: 600, fontSize: 12 }}>
+                  <tr className="bg-[var(--surface-2)]">
+                    <td colSpan={unattributedOnly ? 6 : 5} className="text-xs! font-semibold">
                       {formatBillingPeriod(b.period, { year: true })}{b.period.isFirst && engagement?.start_date ? ' · month one (incl. pre-start work)' : ''}
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }} className="td-mono">
+                    <td className="td-num text-right font-semibold">
                       {b.summary.total_hours.toFixed(1)}{included != null ? ` / ${included}h` : 'h'}
                     </td>
                     <td></td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }} className="td-mono">{formatCurrency(b.summary.amount, 'GBP')}</td>
+                    <td className="td-num text-right font-semibold">{formatCurrency(b.summary.amount, 'GBP')}</td>
                     <td colSpan={2}></td>
                   </tr>
                   {b.rows.map((r) => (
-                    <tr key={r.id} style={{ cursor: 'pointer' }} onClick={() => void openEdit(r)}>
+                    <tr key={r.id} className="cursor-pointer" onClick={() => void openEdit(r)}>
                       {unattributedOnly ? (
                         <td onClick={(e) => e.stopPropagation()}>
                           <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleSelected(r.id)} aria-label="Select entry" />
                         </td>
                       ) : null}
-                      <td className="td-mono">{fmtDate(r.entry_date)}</td>
+                      <td className="td-num">{fmtDate(r.entry_date)}</td>
                       <td>{r.person?.full_name ?? '—'}</td>
                       <td>{r.project?.name ?? '—'}</td>
-                      <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.task?.title ?? '—'}</td>
-                      <td style={{ maxWidth: 260 }}>
-                        <span style={{ display: 'inline-block', maxWidth: rowAttributed(r) ? 260 : 170, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{r.description ?? '—'}</span>
+                      <td className="max-w-[160px] truncate">{r.task?.title ?? '—'}</td>
+                      <td className="max-w-[260px]">
+                        <span className={`inline-block truncate align-middle ${rowAttributed(r) ? 'max-w-[260px]' : 'max-w-[170px]'}`}>{r.description ?? '—'}</span>
                         {!rowAttributed(r) ? (
-                          <span className="pill" style={{ marginLeft: 6, background: 'var(--amber-dim)', color: 'var(--amber)' }} title="Would print as (unattributed time) on client reports. Add a client description or attach a task.">
+                          <span className="pill ml-1.5 bg-[var(--amber-dim)] text-[var(--amber-strong)]" title="Would print as (unattributed time) on client reports. Add a client description or attach a task.">
                             Unattributed
                           </span>
                         ) : null}
                         {rowErrors[r.id] ? (
-                          <span style={{ display: 'block', color: 'var(--red)', fontSize: 11 }}>{rowErrors[r.id]}</span>
+                          <span className="block text-[11px] text-[var(--red)]">{rowErrors[r.id]}</span>
                         ) : null}
                       </td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{fmtDur(r.duration_minutes)}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{r.billable ? `£${Number(r.rate_snapshot).toFixed(0)}` : '—'}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{r.billable ? formatCurrency((r.duration_minutes / 60) * Number(r.rate_snapshot), 'GBP') : '—'}</td>
+                      <td className="td-num text-right">{fmtDur(r.duration_minutes)}</td>
+                      <td className="td-num text-right">{r.billable ? `£${Number(r.rate_snapshot).toFixed(0)}` : '—'}</td>
+                      <td className="td-num text-right">{r.billable ? formatCurrency((r.duration_minutes / 60) * Number(r.rate_snapshot), 'GBP') : '—'}</td>
                       <td><span className={`pill ${r.billable ? 'billable' : 'nonbill'}`}>{r.billable ? 'Billable' : 'Non-bill'}</span></td>
-                      <td className="td-mono" style={{ fontSize: 11 }}>{r.billed ? r.invoice?.invoice_number ?? 'Billed' : '—'}</td>
+                      <td className="td-mono">{r.billed ? r.invoice?.invoice_number ?? 'Billed' : '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -377,7 +380,7 @@ export default function TimeLedger({
 
         {/* Side panel: where the selected period's time went. */}
         {visibleRows.length > 0 ? (
-          <div style={{ flex: '0 1 260px', display: 'grid', gap: 14, padding: '12px 16px 12px 0' }}>
+          <div className="grid flex-[0_1_260px] gap-3.5 py-3 pl-0 pr-4">
             {(
               [
                 ['By project', selectedSummary.by_project],
@@ -387,11 +390,11 @@ export default function TimeLedger({
             ).map(([title, groups]) =>
               groups.length > 0 && !(groups.length === 1 && groups[0].id === null) ? (
                 <div key={title}>
-                  <div className="field-label" style={{ marginBottom: 6 }}>{title}</div>
+                  <div className="field-label">{title}</div>
                   {groups.slice(0, 10).map((g) => (
-                    <div key={`${g.id}:${g.name}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, padding: '2px 0' }}>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</span>
-                      <span className="td-mono" style={{ whiteSpace: 'nowrap' }}>{g.hours.toFixed(1)}h · {formatCurrency(g.amount, 'GBP')}</span>
+                    <div key={`${g.id}:${g.name}`} className="flex justify-between gap-2 py-0.5 text-xs">
+                      <span className="truncate">{g.name}</span>
+                      <span className="td-num whitespace-nowrap">{g.hours.toFixed(1)}h · {formatCurrency(g.amount, 'GBP')}</span>
                     </div>
                   ))}
                 </div>
@@ -402,20 +405,19 @@ export default function TimeLedger({
       </div>
 
       {attachOpen && options ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] px-4" onClick={() => setAttachOpen(false)}>
-          <div className="panel" style={{ width: 420, maxHeight: '70vh', overflowY: 'auto', padding: 16 }} onClick={(e) => e.stopPropagation()}>
-            <div className="panel-section-title" style={{ marginBottom: 8 }}>Attach {selected.size} {selected.size === 1 ? 'entry' : 'entries'} to task</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45 px-4" onClick={() => setAttachOpen(false)}>
+          <div className="panel max-h-[70vh] w-[420px] overflow-y-auto p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="panel-section-title">Attach {selected.size} {selected.size === 1 ? 'entry' : 'entries'} to task</div>
             {(scope.engagement_id ? options.tasks.filter((t) => t.engagement_id === scope.engagement_id) : options.tasks).map((t) => (
               <button
                 key={t.id}
-                className="btn btn-ghost btn-sm"
-                style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 4 }}
+                className="btn btn-ghost btn-sm mb-1 w-full justify-start!"
                 onClick={() => void attachSelected(t.id)}
               >
                 {t.title}
               </button>
             ))}
-            <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => setAttachOpen(false)}>Cancel</button>
+            <button className="btn btn-ghost btn-sm mt-2" onClick={() => setAttachOpen(false)}>Cancel</button>
           </div>
         </div>
       ) : null}

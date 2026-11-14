@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import PageHeader from '@/components/ui/PageHeader'
 import { listSalesProducts } from '@/lib/sales/data'
 import { getSalesDashboard, STAGE_LABELS, type WeekStats } from '@/lib/sales/queue'
 
-export const metadata = { title: 'Sales dashboard | Trailhead OS' }
+export const metadata = { title: 'Sales dashboard' }
 
 const METRICS: Array<{ key: keyof WeekStats; label: string }> = [
   { key: 'dials', label: 'Dials' },
@@ -18,8 +19,8 @@ const METRICS: Array<{ key: keyof WeekStats; label: string }> = [
 function Tile({ label, value, hint }: { label: string; value: number; hint?: string }) {
   return (
     <div className="card">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+      <p className="os-label">{label}</p>
+      <p className="stat-value mt-1">{value}</p>
       {hint ? <p className="mt-1 text-xs text-[color:var(--text-3)]">{hint}</p> : null}
     </div>
   )
@@ -33,19 +34,17 @@ export default async function SalesDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">Week starting Monday {weekLabel}, against the week before.</p>
-        </div>
-        <Link href="/sales/queue" className="btn btn-primary btn-sm">Open today&apos;s queue</Link>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description={<>Week starting Monday {weekLabel}, against the week before.</>}
+        actions={<Link href="/sales/queue" className="btn btn-primary btn-sm">Open today&apos;s queue</Link>}
+      />
 
       <section aria-labelledby="week-title" className="panel overflow-x-auto p-4">
         <h2 id="week-title" className="text-sm font-semibold">Activity</h2>
         <table className="data-table mt-2">
           <thead>
-            <tr><th>Metric</th><th className="text-right">This week</th><th className="text-right">Last week</th></tr>
+            <tr><th>Metric</th><th className="text-right!">This week</th><th className="text-right!">Last week</th></tr>
           </thead>
           <tbody>
             {METRICS.map((m) => (
@@ -76,8 +75,8 @@ export default async function SalesDashboardPage() {
           {d.funnel.map((f) => (
             <li key={f.stage} className="grid grid-cols-[8rem_1fr_2.5rem] items-center gap-3 text-sm">
               <span className="text-[color:var(--text-2)]">{STAGE_LABELS[f.stage]}</span>
-              <span className="h-2.5 rounded-full bg-[var(--surface-3)]" aria-hidden="true">
-                <span className="block h-2.5 rounded-full bg-[var(--accent)]" style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
+              <span className="h-2.5 rounded-pill bg-[var(--surface-3)]" aria-hidden="true">
+                <span className="block h-2.5 rounded-pill bg-[var(--accent)]" style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
               </span>
               <span className="text-right tabular-nums">{f.count}</span>
             </li>
@@ -94,7 +93,7 @@ export default async function SalesDashboardPage() {
           <ul className="mt-3 grid gap-2 sm:grid-cols-3">
             {products.map((p) => (
               <li key={p.id}>
-                <Link href={`/sales/products/${p.id}`} className="card block hover:border-[var(--accent)]">
+                <Link href={`/sales/products/${p.id}`} className="card block hover:border-[var(--accent)]!">
                   <span className="block text-sm font-medium">{p.name}</span>
                   {p.status ? <span className="mt-1 block text-xs capitalize text-[color:var(--text-3)]">{p.status}</span> : null}
                 </Link>

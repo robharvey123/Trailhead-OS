@@ -152,7 +152,7 @@ export default function WorkspaceSidebar({
   }
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-slate-800 bg-slate-950/60 pb-6 pr-4">
+    <aside className="flex w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-[var(--border)] bg-[var(--surface-2)] pb-6 pr-4">
       {navSections.map((section) => {
         const isCollapsed = collapsed[section.label]
         const hasActive = section.items.some((i) => i.slug === activeSlug || activeSlug.startsWith(i.slug + '/'))
@@ -161,7 +161,7 @@ export default function WorkspaceSidebar({
           <div key={section.label}>
             <button
               onClick={() => toggleSection(section.label)}
-              className="flex w-full items-center justify-between py-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 transition hover:text-slate-300"
+              className="flex w-full items-center justify-between py-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--text-3)] transition hover:text-[var(--text-2)]"
             >
               <span>{section.label}</span>
               <svg
@@ -188,10 +188,10 @@ export default function WorkspaceSidebar({
                       key={item.slug}
                       href={withQuery}
                       aria-current={isActive ? 'page' : undefined}
-                      className={`rounded-lg px-3 py-1.5 text-sm transition ${
+                      className={`rounded-control px-3 py-1.5 text-sm transition ${
                         isActive
-                          ? 'bg-white/10 font-medium text-white'
-                          : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                          ? 'bg-[var(--accent-dim)] font-medium text-[var(--text)]'
+                          : 'text-[var(--text-3)] hover:bg-white/5 hover:text-[var(--text)]'
                       }`}
                     >
                       {item.label}
@@ -211,7 +211,7 @@ export default function WorkspaceSidebar({
                         key={item.slug}
                         href={href}
                         aria-current="page"
-                        className="rounded-lg bg-white/10 px-3 py-1.5 text-sm font-medium text-white"
+                        className="rounded-control bg-[var(--accent-dim)] px-3 py-1.5 text-sm font-medium text-[var(--text)]"
                       >
                         {item.label}
                       </Link>

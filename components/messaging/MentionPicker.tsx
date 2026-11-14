@@ -24,20 +24,7 @@ export default function MentionPicker({
     <div
       role="listbox"
       aria-label="Mention suggestions"
-      style={{
-        position: 'absolute',
-        bottom: 'calc(100% + 4px)',
-        left: 12,
-        right: 12,
-        maxHeight: 200,
-        overflowY: 'auto',
-        zIndex: 40,
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 10,
-        padding: 4,
-        boxShadow: '0 12px 32px rgba(0,0,0,0.22)',
-      }}
+      className="absolute bottom-[calc(100%+4px)] left-3 right-3 z-40 max-h-[200px] overflow-y-auto rounded-control border border-[var(--border)] bg-[var(--surface)] p-1 shadow-[var(--shadow-lg)]"
     >
       {items.map((person, index) => (
         <button
@@ -51,20 +38,9 @@ export default function MentionPicker({
             onSelect(person)
           }}
           onMouseEnter={() => onHover(index)}
-          style={{
-            display: 'block',
-            width: '100%',
-            textAlign: 'left',
-            border: 'none',
-            cursor: 'pointer',
-            borderRadius: 6,
-            padding: '6px 10px',
-            fontSize: 13,
-            color: 'var(--text)',
-            background: index === activeIndex ? 'var(--surface-2)' : 'transparent',
-          }}
+          className={`block w-full cursor-pointer rounded-control border-none px-2.5 py-1.5 text-left text-[13px] text-[var(--text)] ${index === activeIndex ? 'bg-[var(--surface-2)]' : 'bg-transparent'}`}
         >
-          <span style={{ fontWeight: 600 }}>@{person.full_name}</span>
+          <span className="font-semibold">@{person.full_name}</span>
         </button>
       ))}
     </div>

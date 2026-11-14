@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import EntityCombobox from './EntityCombobox'
 import WhatsAppImportModal from './WhatsAppImportModal'
 import { apiFetch } from '@/lib/api-fetch'
+import { WORKSTREAM_COLOURS } from '@/lib/workstreams'
 import type { WhatsAppConversationWithMessages, WhatsAppMessage, WhatsAppParticipantWithContact } from '@/lib/types'
 
 // Conversation-scoped WhatsApp timeline for contact, account and engagement
@@ -17,22 +18,16 @@ const COLLAPSED_LIMIT = 50
 // Bubbles longer than this render clamped with a per-bubble "Show more". Purely visual.
 const CLAMP_CHARS = 600
 
-// Stable per-participant colours (text / dim background).
-const PALETTE = [
-  ['#0f766e', 'rgba(15,118,110,0.10)'],
-  ['#b45309', 'rgba(180,83,9,0.10)'],
-  ['#6d28d9', 'rgba(109,40,217,0.10)'],
-  ['#be123c', 'rgba(190,18,60,0.10)'],
-  ['#1d4ed8', 'rgba(29,78,216,0.10)'],
-  ['#4d7c0f', 'rgba(77,124,15,0.10)'],
-  ['#9d174d', 'rgba(157,23,77,0.10)'],
-  ['#0e7490', 'rgba(14,116,144,0.10)'],
-]
+// Stable per-participant colours (type / tinted ground). They only tell senders
+// apart, so they reuse the ink and dim pairs of the one data-colour map in
+// lib/workstreams.ts. No hex is written here. Blue is left out: it marks "you".
+const PALETTE: [string, string][] = (
+  ['brand-sales', 'ecommerce', 'app-dev', 'consulting', 'mvp-cricket'] as const
+).map((key) => [WORKSTREAM_COLOURS[key].ink, WORKSTREAM_COLOURS[key].dim])
 function colourFor(id: string): [string, string] {
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  const [fg, bg] = PALETTE[h % PALETTE.length]
-  return [fg, bg]
+  return PALETTE[h % PALETTE.length]
 }
 
 function dayKey(iso: string) {
@@ -64,7 +59,7 @@ export default function WhatsAppTimeline({ conversations, contactId, accountId, 
   const [importOpen, setImportOpen] = useState(false)
 
   return (
-    <div className="os-card rounded-[2rem] p-6">
+    <div className="os-card rounded-card p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-[color:var(--text)]">{title}</h2>
@@ -76,7 +71,7 @@ export default function WhatsAppTimeline({ conversations, contactId, accountId, 
       </div>
 
       {conversations.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[var(--border)] px-4 py-8 text-sm text-[color:var(--text-2)]">
+        <div className="mt-4 rounded-card border border-dashed border-[var(--border)] px-4 py-8 text-sm text-[color:var(--text-2)]">
           No WhatsApp conversations yet. Export a chat from the phone (without media) and import it here, or let Cowork capture exchanges live.
         </div>
       ) : (
@@ -197,17 +192,17 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
   const hidden = messages.length - Math.min(messages.length, COLLAPSED_LIMIT)
 
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)]">
+    <div className="rounded-card border border-[var(--border)] bg-[var(--surface-2)]">
       <div className={`flex flex-wrap items-start justify-between gap-3 px-4 py-3 ${expanded ? 'border-b border-[var(--border)]' : ''}`}>
         <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-[color:var(--text-3)]">{expanded ? '▾' : '▸'}</span>
             <p className="truncate text-sm font-semibold text-[color:var(--text)]">{conversation.title}</p>
-            <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">
+            <span className="rounded-pill border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">
               {conversation.is_group ? `Group · ${participants.length}` : '1:1'}
             </span>
-            {conversation.is_personal ? <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">Personal number</span> : null}
-            <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">{conversation.message_count} messages</span>
+            {conversation.is_personal ? <span className="rounded-pill border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">Personal number</span> : null}
+            <span className="rounded-pill border border-[var(--border)] px-2 py-0.5 text-[11px] text-[color:var(--text-2)]">{conversation.message_count} messages</span>
             {!expanded && conversation.last_message_at ? <span className="text-[11px] text-[color:var(--text-3)]">last {fmtDate(conversation.last_message_at)}</span> : null}
           </div>
           <p className="mt-1 text-xs text-[color:var(--text-2)]">
@@ -217,7 +212,7 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
           </p>
         </button>
         {expanded ? (
-          <button type="button" className="btn btn-sm" onClick={() => setShowParticipants((v) => !v)}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowParticipants((v) => !v)}>
             {showParticipants ? 'Hide participants' : 'Participants'}
           </button>
         ) : null}
@@ -225,13 +220,13 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
 
       {expanded && showParticipants ? (
         <div className="border-b border-[var(--border)] px-4 py-3">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]">Who was in the room</p>
+          <p className="os-label mb-2">Who was in the room</p>
           <ul className="space-y-2">
             {participants.map((p) => {
               const [fg] = colourFor(p.id)
               return (
                 <li key={p.id} className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: fg }} />
+                  <span className="inline-block h-2.5 w-2.5 rounded-pill" style={{ background: fg }} />
                   <span className="font-medium text-[color:var(--text)]">{p.display_name}</span>
                   {p.is_self ? <span className="text-xs text-[color:var(--text-2)]">(you)</span> : null}
                   {p.contact ? (
@@ -272,14 +267,14 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
       {expanded ? (
       <div ref={scrollRef} className="h-[min(60vh,520px)] overflow-y-auto overscroll-contain px-4 py-3">
         {hidden > 0 && !showAll ? (
-          <button type="button" className="mb-3 w-full rounded-2xl border border-dashed border-[var(--border)] py-2 text-xs text-[color:var(--text-2)] hover:border-[var(--accent)]" onClick={loadEarlier}>
+          <button type="button" className="mb-3 w-full rounded-control border border-dashed border-[var(--border)] py-2 text-xs text-[color:var(--text-2)] hover:border-[var(--accent)]" onClick={loadEarlier}>
             Load {hidden} earlier message{hidden === 1 ? '' : 's'}
           </button>
         ) : null}
 
         {groups.map((g) => (
           <div key={g.day} className="mb-3">
-            <div className="sticky top-0 z-10 -mx-4 bg-[var(--card-alt)] px-4 py-1.5 text-center text-[11px] uppercase tracking-wide text-[color:var(--text-3)]">{g.day}</div>
+            <div className="os-label sticky top-0 z-10 -mx-4 bg-[var(--surface-2)] px-4 py-1.5 text-center">{g.day}</div>
             <div className="space-y-1.5">
               {g.items.map((m) => (
                 <Bubble
@@ -336,9 +331,9 @@ function Bubble({
   return (
     <div className={`flex ${self ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${self ? 'rounded-br-sm' : 'rounded-bl-sm'} ${m.is_draft ? 'border border-dashed opacity-75' : 'border'}`}
+        className={`max-w-[85%] rounded-card px-3 py-2 text-sm ${self ? 'rounded-br-control' : 'rounded-bl-control'} ${m.is_draft ? 'border border-dashed opacity-75' : 'border'}`}
         style={{
-          background: self ? 'var(--accent-dim, rgba(132,204,22,0.12))' : bg || 'var(--surface-2)',
+          background: self ? 'var(--accent-dim)' : bg || 'var(--surface-2)',
           borderColor: m.is_draft ? fg : 'var(--border)',
         }}
       >
@@ -379,7 +374,7 @@ function Bubble({
         <div className="mt-1 flex items-center justify-end gap-2 text-[10px] text-[color:var(--text-3)]">
           {m.is_draft ? (
             <>
-              <span className="rounded-full border border-dashed px-1.5 py-px" style={{ borderColor: fg, color: fg }}>
+              <span className="rounded-pill border border-dashed px-1.5 py-px" style={{ borderColor: fg, color: fg }}>
                 draft, not sent
               </span>
               <button type="button" title="Confirm this was sent" className="hover:text-[color:var(--accent-strong)]" onClick={onConfirm}>
@@ -391,7 +386,7 @@ function Bubble({
             </>
           ) : null}
           {m.source === 'cowork_capture' && !m.is_draft ? <span title="Captured live by Cowork; a later export supersedes it">live</span> : null}
-          {m.edited_at ? <span className="rounded-full border border-[var(--border)] px-1.5 py-px text-[color:var(--text-3)]">edited</span> : null}
+          {m.edited_at ? <span className="rounded-pill border border-[var(--border)] px-1.5 py-px text-[color:var(--text-3)]">edited</span> : null}
           <span>{fmtTime(m)}</span>
         </div>
       </div>

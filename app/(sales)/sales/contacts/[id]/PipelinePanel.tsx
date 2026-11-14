@@ -46,8 +46,8 @@ export default function PipelinePanel({
   }
 
   const needsReason = moveTo === 'lost' || moveTo === 'disqualified'
-  const input = 'rounded-[5px] border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm outline-none focus:border-[var(--accent)]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]'
+  const input = 'os-input px-3 py-1.5 text-sm'
+  const label = 'field-label block'
 
   return (
     <div className="space-y-5">
@@ -91,7 +91,7 @@ export default function PipelinePanel({
           </div>
         </div>
       </div>
-      {error ? <p role="alert" className="text-sm text-[color:var(--red)]">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
       <div className="border-t border-[var(--border)] pt-4">
         <p className={label}>Log an outcome</p>
         <OutcomeLogger contactId={contactId} onLogged={() => router.refresh()} />

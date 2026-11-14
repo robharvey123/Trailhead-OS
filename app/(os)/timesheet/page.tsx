@@ -8,7 +8,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import TimesheetClient, { type EngagementOption } from '@/components/os/TimesheetClient'
 
 export const metadata = {
-  title: 'Timesheet | Trailhead OS',
+  title: 'Timesheet',
 }
 
 export default async function TimesheetPage() {

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import PageHeader from '@/components/ui/PageHeader'
 import type { InternalWeeklyReport } from '@/lib/reports/data'
 
 function fmtRange(startIso: string, endIso: string): string {
@@ -42,39 +43,37 @@ export default function InternalWeeklyClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="os-eyebrow">Reports</p>
-          <h1 className="os-page-title mt-2">Weekly report</h1>
-          <p className="mt-1 text-sm text-[color:var(--text-2)]">
-            {fmtRange(data.weekStart, data.weekEnd)} · time by engagement
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href={atOldest ? '#' : `/reports/weekly?week=${data.offsetWeeks - 1}`}
-            aria-disabled={atOldest}
-            className={`rounded-full border border-[color:var(--border)] px-3 py-2 text-sm ${atOldest ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
-          >
-            ‹ Earlier
-          </Link>
-          {!isCurrent ? (
+      <PageHeader
+        eyebrow="Reports"
+        title="Weekly report"
+        description={`${fmtRange(data.weekStart, data.weekEnd)} · time by engagement`}
+        actions={
+          <>
             <Link
-              href="/reports/weekly"
-              className="rounded-full border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+              href={atOldest ? '#' : `/reports/weekly?week=${data.offsetWeeks - 1}`}
+              aria-disabled={atOldest}
+              className={`btn btn-ghost btn-sm ${atOldest ? 'pointer-events-none' : ''}`}
             >
-              This week
+              ‹ Earlier
             </Link>
-          ) : null}
-          <Link
-            href={isCurrent ? '#' : `/reports/weekly?week=${data.offsetWeeks + 1}`}
-            aria-disabled={isCurrent}
-            className={`rounded-full border border-[color:var(--border)] px-3 py-2 text-sm ${isCurrent ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
-          >
-            Later ›
-          </Link>
-        </div>
-      </div>
+            {!isCurrent ? (
+              <Link
+                href="/reports/weekly"
+                className="btn btn-ghost btn-sm"
+              >
+                This week
+              </Link>
+            ) : null}
+            <Link
+              href={isCurrent ? '#' : `/reports/weekly?week=${data.offsetWeeks + 1}`}
+              aria-disabled={isCurrent}
+              className={`btn btn-ghost btn-sm ${isCurrent ? 'pointer-events-none' : ''}`}
+            >
+              Later ›
+            </Link>
+          </>
+        }
+      />
 
       <div className="os-card grid gap-4 p-5 sm:grid-cols-3">
         <Stat label="Total hours" value={hrs(data.totalHours)} />
@@ -83,14 +82,14 @@ export default function InternalWeeklyClient({
       </div>
 
       {data.engagements.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No time logged against an engagement this week.
         </div>
       ) : (
         <div className="os-card overflow-hidden p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[color:var(--border)] text-left text-[11px] uppercase tracking-[0.14em] text-[color:var(--text-3)]">
+              <tr className="os-label border-b border-[color:var(--border)] text-left">
                 <th className="px-4 py-3">Engagement</th>
                 <th className="px-4 py-3 text-right">Hours</th>
                 <th className="px-4 py-3 text-right">Billable</th>
@@ -125,8 +124,8 @@ export default function InternalWeeklyClient({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--text-3)]">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-[color:var(--text)]">{value}</p>
+      <p className="os-label">{label}</p>
+      <p className="stat-value mt-1">{value}</p>
     </div>
   )
 }
@@ -148,7 +147,7 @@ function FragmentRow({
             <span className={`text-[color:var(--text-3)] transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
             <span className="font-medium text-[color:var(--text)]">{eng.engagement_name}</span>
             {!eng.is_billable ? (
-              <span className="rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[color:var(--text-3)]">internal</span>
+              <span className="rounded-pill border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[color:var(--text-3)]">internal</span>
             ) : null}
           </button>
         </td>

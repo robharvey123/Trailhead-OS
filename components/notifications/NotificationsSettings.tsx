@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import PageHeader from '@/components/ui/PageHeader'
 import { isSubscribed, pushSupported, subscribeToPush, unsubscribeFromPush } from '@/lib/push/client'
 import { updateNotificationSetting } from '@/app/(os)/settings/notifications/actions'
 import type { NotificationSettings } from '@/lib/types'
@@ -62,53 +63,55 @@ export default function NotificationsSettings({ initialSettings }: { initialSett
   }
 
   const pill =
-    perm === 'unsupported' ? { text: 'Not supported', bg: 'var(--surface-3)', fg: 'var(--text-3)' }
-    : perm === 'denied' ? { text: 'Blocked', bg: 'rgba(239,68,68,0.12)', fg: 'var(--red-strong)' }
-    : subscribed && perm === 'granted' ? { text: 'Enabled', bg: 'rgba(16,185,129,0.14)', fg: 'var(--green-strong, #047857)' }
-    : { text: 'Disabled', bg: 'var(--surface-3)', fg: 'var(--text-2)' }
+    perm === 'unsupported' ? { text: 'Not supported', tone: 'status-grey' }
+    : perm === 'denied' ? { text: 'Blocked', tone: 'status-red' }
+    : subscribed && perm === 'granted' ? { text: 'Enabled', tone: 'status-green' }
+    : { text: 'Disabled', tone: 'status-grey' }
 
   return (
-    <div className="panel" style={{ padding: 20, display: 'grid', gap: 16, maxWidth: 520 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <h1 className="topbar-title" style={{ flex: 1 }}>Push notifications</h1>
-        <span style={{ fontSize: 12, fontWeight: 600, borderRadius: 999, padding: '3px 10px', background: pill.bg, color: pill.fg }}>
-          {pill.text}
-        </span>
-      </div>
+    <div className="os-narrow">
+      <PageHeader title="Push notifications" />
+      <div className="panel grid max-w-[520px] gap-4 p-5">
+        <div className="flex items-center gap-2.5">
+          <span className={`status-badge no-dot ${pill.tone}`}>
+            {pill.text}
+          </span>
+        </div>
 
-      {perm === 'unsupported' ? (
-        <p style={{ fontSize: 13, color: 'var(--text-2)', margin: 0 }}>
-          This browser doesn’t support web push. Try Chrome, Edge, Firefox, or Safari 16.4+ (add to Home Screen on iOS).
-        </p>
-      ) : perm === 'denied' ? (
-        <p style={{ fontSize: 13, color: 'var(--text-2)', margin: 0 }}>
-          Notifications are blocked. Reset the permission for this site in your browser settings, then reload to enable.
-        </p>
-      ) : subscribed ? (
-        <button className="btn btn-ghost btn-sm" style={{ justifySelf: 'start' }} onClick={disable} disabled={busy}>
-          Disable on this device
-        </button>
-      ) : (
-        <button className="btn btn-primary btn-sm" style={{ justifySelf: 'start' }} onClick={enable} disabled={busy}>
-          {busy ? 'Enabling…' : 'Enable notifications'}
-        </button>
-      )}
+        {perm === 'unsupported' ? (
+          <p className="m-0 text-[13px] text-[var(--text-2)]">
+            This browser doesn’t support web push. Try Chrome, Edge, Firefox, or Safari 16.4+ (add to Home Screen on iOS).
+          </p>
+        ) : perm === 'denied' ? (
+          <p className="m-0 text-[13px] text-[var(--text-2)]">
+            Notifications are blocked. Reset the permission for this site in your browser settings, then reload to enable.
+          </p>
+        ) : subscribed ? (
+          <button className="btn btn-ghost btn-sm justify-self-start" onClick={disable} disabled={busy}>
+            Disable on this device
+          </button>
+        ) : (
+          <button className="btn btn-primary btn-sm justify-self-start" onClick={enable} disabled={busy}>
+            {busy ? 'Enabling…' : 'Enable notifications'}
+          </button>
+        )}
 
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, margin: 0 }}>{error}</p> : null}
+        {error ? <p className="m-0 text-xs text-[var(--red)]">{error}</p> : null}
 
-      <div style={{ display: 'grid', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 14 }}>
-        <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)', margin: 0 }}>
-          Notify me about
-        </p>
-        {CATEGORIES.map((c) => (
-          <label key={c.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, cursor: 'pointer', fontSize: 14, color: 'var(--text)' }}>
-            <span>{c.label}</span>
-            <input type="checkbox" checked={settings[c.key]} onChange={() => toggle(c.key)} />
-          </label>
-        ))}
-        <p style={{ fontSize: 11, color: 'var(--text-3)', margin: 0 }}>
-          Applies to every device you’ve enabled. Pushes only arrive while notifications are enabled above.
-        </p>
+        <div className="grid gap-2.5 border-t border-[var(--border)] pt-3.5">
+          <p className="os-label m-0">
+            Notify me about
+          </p>
+          {CATEGORIES.map((c) => (
+            <label key={c.key} className="flex cursor-pointer items-center justify-between gap-3 text-sm text-[var(--text)]">
+              <span>{c.label}</span>
+              <input type="checkbox" checked={settings[c.key]} onChange={() => toggle(c.key)} />
+            </label>
+          ))}
+          <p className="m-0 text-[11px] text-[var(--text-3)]">
+            Applies to every device you’ve enabled. Pushes only arrive while notifications are enabled above.
+          </p>
+        </div>
       </div>
     </div>
   )

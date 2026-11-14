@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api-fetch'
 import { createClient } from '@/lib/supabase/client'
 import type { EmailLog, EmailThread } from '@/lib/types'
 import Modal from '@/components/ui/Modal'
+import PageHeader from '@/components/ui/PageHeader'
 
 type LiveStatus = 'connecting' | 'live' | 'offline'
 import ComposeModal, { type ComposePayload } from './ComposeModal'
@@ -759,34 +760,32 @@ export default function InboxClient({
   }, [cursorIndex])
 
   return (
+    <>
+    <PageHeader
+      title="Inbox"
+      count={`${counts.unread} unread`}
+      actions={
+        !connected ? (
+          <Link className="btn btn-primary btn-sm" href="/api/auth/google">Connect Gmail</Link>
+        ) : (
+          <>
+            <span
+              title={liveStatus === 'live' ? 'Live — inbox updates automatically' : liveStatus === 'connecting' ? 'Connecting to live updates…' : 'Live updates offline — will refresh on focus'}
+              className="mr-1 inline-flex items-center gap-[5px] text-[11px] text-[var(--text-3)]"
+            >
+              <span className={`h-[7px] w-[7px] rounded-pill ${liveStatus === 'live' ? 'bg-[var(--green)]' : liveStatus === 'connecting' ? 'bg-[var(--amber)]' : 'bg-[var(--text-3)]'}`} />
+              {liveStatus === 'live' ? 'Live' : liveStatus === 'connecting' ? 'Connecting…' : 'Offline'}
+            </span>
+            <button className="btn btn-primary btn-sm" onClick={() => setComposeConfig({})}>✎ Compose</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => syncNow(7)} disabled={busy}>{busy ? 'Syncing…' : '↻ Sync now'}</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => syncNow(90)} disabled={busy}>Backfill 90d</button>
+            <button className="btn btn-ghost btn-sm" title="Keyboard shortcuts" onClick={() => setShowHelp(true)}>⌨ ?</button>
+          </>
+        )
+      }
+    />
     <div className="panel overflow-hidden">
-      <div className="topbar">
-        <span className="topbar-title">Inbox</span>
-        <span className="topbar-count">{counts.unread} unread</span>
-        {connected ? (
-          <span
-            title={liveStatus === 'live' ? 'Live — inbox updates automatically' : liveStatus === 'connecting' ? 'Connecting to live updates…' : 'Live updates offline — will refresh on focus'}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-3)', marginLeft: 8 }}
-          >
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: liveStatus === 'live' ? 'var(--green, #16a34a)' : liveStatus === 'connecting' ? 'var(--amber, #d97706)' : 'var(--text-3)' }} />
-            {liveStatus === 'live' ? 'Live' : liveStatus === 'connecting' ? 'Connecting…' : 'Offline'}
-          </span>
-        ) : null}
-        <div className="topbar-actions">
-          {!connected ? (
-            <Link className="btn btn-primary btn-sm" href="/api/auth/google">Connect Gmail</Link>
-          ) : (
-            <>
-              <button className="btn btn-primary btn-sm" onClick={() => setComposeConfig({})}>✎ Compose</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => syncNow(7)} disabled={busy}>{busy ? 'Syncing…' : '↻ Sync now'}</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => syncNow(90)} disabled={busy}>Backfill 90d</button>
-              <button className="btn btn-ghost btn-sm" title="Keyboard shortcuts" onClick={() => setShowHelp(true)}>⌨ ?</button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '6px 16px' }}>{error}</p> : null}
+      {error ? <p className="px-4 py-1.5 text-xs text-[var(--red-strong)]">{error}</p> : null}
 
       {composeConfig ? (
         <ComposeModal
@@ -810,9 +809,9 @@ export default function InboxClient({
         />
       ) : null}
 
+      {/* `th-dark` remaps the working tokens for the navy undo toast, so its type reads white. */}
       {undoPayload ? (
-        <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 80 }}
-          className="flex items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[var(--text)] px-4 py-2.5 text-sm text-white shadow-lg">
+        <div className="th-dark fixed bottom-5 left-1/2 z-[80] flex -translate-x-1/2 items-center gap-3 rounded-control border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-sm text-[var(--text)] shadow-[var(--shadow-lg)]">
           <span>Sending…</span>
           <button className="font-semibold underline" onClick={undoSend}>Undo</button>
         </div>
@@ -824,7 +823,7 @@ export default function InboxClient({
         title="Keyboard shortcuts"
         closeLabel="Close keyboard shortcuts"
         overlayClassName="p-4"
-        panelClassName="min-w-[340px] rounded-[8px] border border-[var(--border)] bg-white p-5"
+        panelClassName="min-w-[340px] rounded-card border border-[var(--border)] bg-[var(--bg)] p-5 shadow-[var(--shadow-lg)]"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-[var(--text)]">Keyboard shortcuts</h2>
@@ -866,7 +865,7 @@ export default function InboxClient({
               <input ref={searchRef} className="search-input" placeholder="Search inbox… (Enter for all mail)" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void searchAllMail() } }} />
             </div>
             {selected.size > 0 ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 8 }}>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 <span className="meta-chip">{selected.size} selected</span>
                 {BULK_ACTIONS.map((b) => (
                   <button key={b.action} className="btn btn-ghost btn-sm" disabled={busy} onClick={() => bulkAction(b.action)}>{b.label}</button>
@@ -874,7 +873,7 @@ export default function InboxClient({
                 <button className="btn btn-ghost btn-sm" onClick={() => setSelected(new Set())}>Clear</button>
               </div>
             ) : (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, fontSize: 11, color: 'var(--text-3)' }}>
+              <label className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--text-3)]">
                 <input
                   type="checkbox"
                   checked={visible.length > 0 && visible.every((t) => selected.has(t.gmail_thread_id))}
@@ -902,7 +901,7 @@ export default function InboxClient({
                 <div className="empty">Nothing scheduled.</div>
               ) : (
                 scheduled.map((s) => (
-                  <div key={s.id} className="thread" style={{ cursor: 'default' }}>
+                  <div key={s.id} className="thread cursor-default!">
                     <div className="thread-row">
                       <div className="thread-from">To: {s.payload?.to || '—'}</div>
                       <div className="thread-time">{new Date(s.send_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
@@ -921,7 +920,7 @@ export default function InboxClient({
                 <div className="empty">
                   {!connected ? 'Connect Gmail to load your inbox.' : folder === 'trash' ? 'Trash shows locally trashed mail (Gmail purges it after 30 days).' : 'No threads. Try “Sync now”.'}
                   {connected && search.trim() ? (
-                    <div style={{ marginTop: 12 }}>
+                    <div className="mt-3">
                       <button className="btn btn-ghost btn-sm" onClick={() => void searchAllMail()} disabled={searchingAll}>{searchingAll ? 'Searching…' : '🔍 Search all mail'}</button>
                     </div>
                   ) : null}
@@ -929,7 +928,7 @@ export default function InboxClient({
               )
             ) : (
               <>
-                <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
+                <div className="relative w-full" style={{ height: rowVirtualizer.getTotalSize() }}>
                   {rowVirtualizer.getVirtualItems().map((vi) => {
                     const t = visible[vi.index]
                     if (!t) return null
@@ -938,13 +937,9 @@ export default function InboxClient({
                         key={vi.key}
                         data-index={vi.index}
                         ref={rowVirtualizer.measureElement}
-                        className={`thread ${t.gmail_thread_id === activeId ? 'active' : ''} ${t.is_unread ? 'unread' : ''}`}
+                        className={`thread absolute left-0 top-0 w-full ${t.gmail_thread_id === activeId ? 'active' : ''} ${t.is_unread ? 'unread' : ''} ${vi.index === cursorIndex ? 'outline-2 -outline-offset-2 outline-[var(--accent-strong)]' : ''}`}
                         onClick={() => openThread(t)}
-                        style={{
-                          position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vi.start}px)`,
-                          outline: vi.index === cursorIndex ? '2px solid var(--accent)' : undefined,
-                          outlineOffset: -2,
-                        }}
+                        style={{ transform: `translateY(${vi.start}px)` }}
                       >
                         <div className="thread-row">
                           <input
@@ -952,7 +947,7 @@ export default function InboxClient({
                             checked={selected.has(t.gmail_thread_id)}
                             onChange={() => toggleSelect(t.gmail_thread_id)}
                             onClick={(e) => e.stopPropagation()}
-                            style={{ marginRight: 6 }}
+                            className="mr-1.5"
                             aria-label="Select thread"
                           />
                           <div className="thread-from">{t.is_starred ? '★ ' : ''}{t.from_name}</div>
@@ -986,12 +981,12 @@ export default function InboxClient({
 
                 {/* Full-mailbox Gmail search results (not in email_logs). */}
                 {search.trim() ? (
-                  <div className="thread" style={{ cursor: 'default', textAlign: 'center' }} onClick={() => void searchAllMail()}>
+                  <div className="thread cursor-default! text-center" onClick={() => void searchAllMail()}>
                     <button className="btn btn-ghost btn-sm" disabled={searchingAll}>{searchingAll ? 'Searching…' : '🔍 Search all mail'}</button>
                   </div>
                 ) : null}
                 {remoteResults.length > 0 ? (
-                  <div className="folder-label" style={{ padding: '8px 14px' }}>From Gmail</div>
+                  <div className="folder-label px-3.5! py-2!">From Gmail</div>
                 ) : null}
                 {remoteResults.map((t) => (
                   <div key={`remote-${t.gmail_thread_id}`} className={`thread ${t.gmail_thread_id === activeId ? 'active' : ''} ${t.is_unread ? 'unread' : ''}`} onClick={() => openThread(t)}>
@@ -1019,7 +1014,7 @@ export default function InboxClient({
         {/* reader */}
         <div className="reader">
           {!active ? (
-            <div className="empty" style={{ margin: 'auto' }}>Select a thread to read.</div>
+            <div className="empty m-auto">Select a thread to read.</div>
           ) : (
             <>
               <div className="reader-header">
@@ -1028,7 +1023,7 @@ export default function InboxClient({
                   {active.account_id ? (
                     <Link className="acct-chip" href={`/crm/accounts/${active.account_id}`}>◈ {active.account_name ?? 'Account'}</Link>
                   ) : (
-                    <div style={{ minWidth: 280 }}>
+                    <div className="min-w-[280px]">
                       <EntityCombobox
                         label=""
                         entity="account"
@@ -1040,17 +1035,16 @@ export default function InboxClient({
                   )}
                   {active.account_id ? (
                     active.contact_id ? (
-                      <span className="acct-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                        <Link href={`/crm/contacts/${active.contact_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>◇ {active.contact_name ?? 'Contact'}</Link>
+                      <span className="acct-chip">
+                        <Link href={`/crm/contacts/${active.contact_id}`} className="text-inherit no-underline">◇ {active.contact_name ?? 'Contact'}</Link>
                         <button
-                          className="td-mono"
+                          className="td-num cursor-pointer border-none bg-transparent p-0"
                           title="Clear contact"
-                          style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 0 }}
                           onClick={() => threadAction('link', { account_id: active.account_id, account_name: active.account_name, contact_id: null })}
                         >✕</button>
                       </span>
                     ) : (
-                      <div style={{ minWidth: 220 }}>
+                      <div className="min-w-[220px]">
                         <EntityCombobox
                           label=""
                           entity="contact"
@@ -1086,8 +1080,8 @@ export default function InboxClient({
                 {messages.map((m) => (
                   <div className="message" key={m.id}>
                     <div className="message-head">
-                      <div className={`avatar ${m.direction}`}>{initials(m.from_name || m.from_address)}</div>
-                      <div style={{ flex: 1 }}>
+                      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-pill text-[13px] font-bold ${m.direction === 'outbound' ? 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]' : 'bg-[var(--accent-dim)] text-[var(--accent-strong)]'}`}>{initials(m.from_name || m.from_address)}</div>
+                      <div className="flex-1">
                         <div className="msg-from">{m.from_name || m.from_address}</div>
                         <div className="msg-to">to {m.to_addresses?.join(', ') || '—'}</div>
                       </div>
@@ -1101,7 +1095,7 @@ export default function InboxClient({
                           : <span className="text-[color:var(--text-3)]">{m.snippet || '(no content)'}</span>}
                     </div>
                     {(m.attachments ?? []).length > 0 ? (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         {m.attachments!.map((a) => (
                           <a
                             key={a.attachment_id}
@@ -1122,7 +1116,7 @@ export default function InboxClient({
                 <textarea ref={replyRef} className="reply-input" placeholder={replyAllMode ? 'Reply all…' : 'Reply…'} value={reply} onChange={(e) => setReply(e.target.value)} />
                 <div className="reply-actions">
                   <span className="meta-chip">Sends from {selfEmail || 'your Workspace mailbox'}</span>
-                  <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={popOutReply} title="Rich-text compose" disabled={!active}>⤢ Pop out</button>
+                  <button className="btn btn-ghost btn-sm ml-auto" onClick={popOutReply} title="Rich-text compose" disabled={!active}>⤢ Pop out</button>
                   <button className="btn btn-ghost btn-sm" onClick={() => sendReply(true)} disabled={busy || !reply.trim()}>↗ Reply all</button>
                   <button className="btn btn-primary btn-sm" onClick={() => sendReply(false)} disabled={busy || !reply.trim()}>↗ Send reply</button>
                 </div>
@@ -1132,6 +1126,7 @@ export default function InboxClient({
         </div>
       </div>
     </div>
+    </>
   )
 }
 
@@ -1144,13 +1139,13 @@ function ThreadListSkeleton() {
   return (
     <div aria-hidden>
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="thread" style={{ pointerEvents: 'none' }}>
+        <div key={i} className="thread pointer-events-none">
           <div className="thread-row">
-            <div className="os-shimmer-bar" style={{ height: 12, flex: 1 }} />
-            <div className="os-shimmer-bar" style={{ height: 10, width: 34 }} />
+            <div className="os-shimmer-bar h-3 flex-1" />
+            <div className="os-shimmer-bar h-2.5 w-[34px]" />
           </div>
-          <div className="os-shimmer-bar" style={{ height: 13, width: '70%', marginTop: 6 }} />
-          <div className="os-shimmer-bar" style={{ height: 10, width: '90%', marginTop: 6 }} />
+          <div className="os-shimmer-bar mt-1.5 h-[13px] w-[70%]" />
+          <div className="os-shimmer-bar mt-1.5 h-2.5 w-[90%]" />
         </div>
       ))}
     </div>
@@ -1163,15 +1158,15 @@ function MessagesSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div className="message" key={i}>
           <div className="message-head">
-            <div className="os-shimmer-bar" style={{ width: 34, height: 34, borderRadius: '50%' }} />
-            <div style={{ flex: 1 }}>
-              <div className="os-shimmer-bar" style={{ height: 12, width: '40%' }} />
-              <div className="os-shimmer-bar" style={{ height: 10, width: '55%', marginTop: 6 }} />
+            <div className="os-shimmer-bar h-[34px] w-[34px] rounded-pill!" />
+            <div className="flex-1">
+              <div className="os-shimmer-bar h-3 w-2/5" />
+              <div className="os-shimmer-bar mt-1.5 h-2.5 w-[55%]" />
             </div>
           </div>
-          <div className="os-shimmer-bar" style={{ height: 10, width: '95%', marginTop: 10 }} />
-          <div className="os-shimmer-bar" style={{ height: 10, width: '88%', marginTop: 6 }} />
-          <div className="os-shimmer-bar" style={{ height: 10, width: '60%', marginTop: 6 }} />
+          <div className="os-shimmer-bar mt-2.5 h-2.5 w-[95%]" />
+          <div className="os-shimmer-bar mt-1.5 h-2.5 w-[88%]" />
+          <div className="os-shimmer-bar mt-1.5 h-2.5 w-3/5" />
         </div>
       ))}
     </div>
