@@ -48,8 +48,9 @@ export default function PageHeader({
           <span aria-hidden="true">‹</span> {back.label}
         </Link>
       ) : null}
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0 flex-1">
+      {/* Stacked on phones, so a long title never shares a row with the actions. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-x-6">
+        <div className="min-w-0 sm:flex-1">
           {eyebrow ? <p className="os-eyebrow mb-1">{eyebrow}</p> : null}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <h1 className="os-page-title min-w-0 break-words">{title}</h1>
