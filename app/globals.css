@@ -550,6 +550,17 @@ body {
   --accent-strong: var(--blue-bright);  /* blue as type on navy, 8.33:1 */
   --accent-hover: #7DD3FC;
   --focus: var(--blue-bright);       /* blue ink is only 3.01:1 on navy */
+  /* Status pairs on navy: a translucent ground and a pale ink. */
+  --green-dim: rgba(22,163,74,0.18);
+  --green-strong: #86EFAC;
+  --amber-dim: rgba(217,119,6,0.20);
+  --amber-strong: #FCD34D;
+  --red-dim: rgba(220,38,38,0.20);
+  --red-strong: #FCA5A5;
+  --emerald-dim: rgba(5,150,105,0.20);
+  --emerald-strong: #6EE7B7;
+  --grey-dim: rgba(255,255,255,0.08);
+  --grey-strong: #CBD5E1;
   color: var(--text);
 }
 .thmock .mono { font-family: var(--mono); }
