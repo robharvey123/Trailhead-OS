@@ -22,7 +22,7 @@ export default function ProjectDetail({
           <ProjectStatusBadge status={project.status} />
           <Link
             href={`/projects/records/${project.id}/edit`}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            className="btn btn-ghost"
           >
             Edit
           </Link>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import EntityCombobox from './EntityCombobox'
 import WhatsAppImportModal from './WhatsAppImportModal'
 import { apiFetch } from '@/lib/api-fetch'
+import { WORKSTREAM_COLOURS } from '@/lib/workstreams'
 import type { WhatsAppConversationWithMessages, WhatsAppMessage, WhatsAppParticipantWithContact } from '@/lib/types'
 
 // Conversation-scoped WhatsApp timeline for contact, account and engagement
@@ -17,22 +18,16 @@ const COLLAPSED_LIMIT = 50
 // Bubbles longer than this render clamped with a per-bubble "Show more". Purely visual.
 const CLAMP_CHARS = 600
 
-// Stable per-participant colours (text / dim background).
-const PALETTE = [
-  ['#0f766e', 'rgba(15,118,110,0.10)'],
-  ['#b45309', 'rgba(180,83,9,0.10)'],
-  ['#6d28d9', 'rgba(109,40,217,0.10)'],
-  ['#be123c', 'rgba(190,18,60,0.10)'],
-  ['#1d4ed8', 'rgba(29,78,216,0.10)'],
-  ['#4d7c0f', 'rgba(77,124,15,0.10)'],
-  ['#9d174d', 'rgba(157,23,77,0.10)'],
-  ['#0e7490', 'rgba(14,116,144,0.10)'],
-]
+// Stable per-participant colours (type / tinted ground). They only tell senders
+// apart, so they reuse the ink and dim pairs of the one data-colour map in
+// lib/workstreams.ts. No hex is written here. Blue is left out: it marks "you".
+const PALETTE: [string, string][] = (
+  ['brand-sales', 'ecommerce', 'app-dev', 'consulting', 'mvp-cricket'] as const
+).map((key) => [WORKSTREAM_COLOURS[key].ink, WORKSTREAM_COLOURS[key].dim])
 function colourFor(id: string): [string, string] {
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
-  const [fg, bg] = PALETTE[h % PALETTE.length]
-  return [fg, bg]
+  return PALETTE[h % PALETTE.length]
 }
 
 function dayKey(iso: string) {
@@ -217,7 +212,7 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
           </p>
         </button>
         {expanded ? (
-          <button type="button" className="btn btn-sm" onClick={() => setShowParticipants((v) => !v)}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowParticipants((v) => !v)}>
             {showParticipants ? 'Hide participants' : 'Participants'}
           </button>
         ) : null}
@@ -225,7 +220,7 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
 
       {expanded && showParticipants ? (
         <div className="border-b border-[var(--border)] px-4 py-3">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]">Who was in the room</p>
+          <p className="os-label mb-2">Who was in the room</p>
           <ul className="space-y-2">
             {participants.map((p) => {
               const [fg] = colourFor(p.id)
@@ -272,14 +267,14 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
       {expanded ? (
       <div ref={scrollRef} className="h-[min(60vh,520px)] overflow-y-auto overscroll-contain px-4 py-3">
         {hidden > 0 && !showAll ? (
-          <button type="button" className="mb-3 w-full rounded-card border border-dashed border-[var(--border)] py-2 text-xs text-[color:var(--text-2)] hover:border-[var(--accent)]" onClick={loadEarlier}>
+          <button type="button" className="mb-3 w-full rounded-control border border-dashed border-[var(--border)] py-2 text-xs text-[color:var(--text-2)] hover:border-[var(--accent)]" onClick={loadEarlier}>
             Load {hidden} earlier message{hidden === 1 ? '' : 's'}
           </button>
         ) : null}
 
         {groups.map((g) => (
           <div key={g.day} className="mb-3">
-            <div className="sticky top-0 z-10 -mx-4 bg-[var(--surface-2)] px-4 py-1.5 text-center text-[11px] uppercase tracking-wide text-[color:var(--text-3)]">{g.day}</div>
+            <div className="os-label sticky top-0 z-10 -mx-4 bg-[var(--surface-2)] px-4 py-1.5 text-center">{g.day}</div>
             <div className="space-y-1.5">
               {g.items.map((m) => (
                 <Bubble
@@ -338,7 +333,7 @@ function Bubble({
       <div
         className={`max-w-[85%] rounded-card px-3 py-2 text-sm ${self ? 'rounded-br-control' : 'rounded-bl-control'} ${m.is_draft ? 'border border-dashed opacity-75' : 'border'}`}
         style={{
-          background: self ? 'var(--accent-dim, rgba(132,204,22,0.12))' : bg || 'var(--surface-2)',
+          background: self ? 'var(--accent-dim)' : bg || 'var(--surface-2)',
           borderColor: m.is_draft ? fg : 'var(--border)',
         }}
       >

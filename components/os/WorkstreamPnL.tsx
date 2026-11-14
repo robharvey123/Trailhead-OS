@@ -67,7 +67,7 @@ export default function WorkstreamPnL() {
 
       <div className="mt-4 overflow-x-auto">
         <table className="min-w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+          <thead className="os-label text-left">
             <tr>
               <th className="pb-3">Workstream</th>
               <th className="pb-3 text-right">Revenue</th>

@@ -58,7 +58,7 @@ function EngagementCard({ e }: { e: EngagementHealth }) {
           <p className="truncate text-sm font-semibold text-[color:var(--text)]">{e.client ?? e.name}</p>
           <p className="truncate text-xs text-[color:var(--text-3)]">{e.client ? e.name : e.code ?? ' '}</p>
         </div>
-        <span className={`${pill} ${ENG_STATUS[e.status] ?? 'bg-[var(--surface-2)] text-[var(--text-2)]'}`}>{e.status}</span>
+        <span className={`${pill} ${ENG_STATUS[e.status] ?? 'grey'}`}>{e.status}</span>
       </div>
       <HoursBar used={e.hoursUsed} cap={e.includedHours} />
       {e.retainer ? (
@@ -70,7 +70,7 @@ function EngagementCard({ e }: { e: EngagementHealth }) {
 
 function ProjectCard({ p }: { p: ProjectHealth }) {
   const pct = p.taskTotal ? Math.round((p.taskDone / p.taskTotal) * 100) : 0
-  const status = PROJ_STATUS[p.status] ?? { label: p.status, cls: 'bg-[var(--surface-2)] text-[var(--text-2)]' }
+  const status = PROJ_STATUS[p.status] ?? { label: p.status, cls: 'grey' }
   return (
     <Link href={`/projects/records/${p.id}`} className={card}>
       <div className="flex items-start justify-between gap-2">
@@ -99,8 +99,8 @@ function ProjectCard({ p }: { p: ProjectHealth }) {
 function Stat({ value, label, tone }: { value: number | string; label: string; tone?: 'warn' }) {
   return (
     <div className="flex flex-col">
-      <span className={`text-2xl font-bold ${tone === 'warn' ? 'text-[var(--red-strong)]' : 'text-[color:var(--text)]'}`}>{value}</span>
-      <span className="text-[11px] uppercase tracking-[0.12em] text-[color:var(--text-3)]">{label}</span>
+      <span className={`text-2xl font-semibold tracking-[-0.02em] ${tone === 'warn' ? 'text-[var(--red-strong)]' : 'text-[color:var(--text)]'}`}>{value}</span>
+      <span className="os-label">{label}</span>
     </div>
   )
 }
@@ -122,7 +122,7 @@ export default function PortfolioOverview({ data }: { data: PortfolioData }) {
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-[color:var(--text)]">Engagements</h2>
-            <Link href="/engagements" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent)]">All →</Link>
+            <Link href="/engagements" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent-strong)]">All →</Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {engagements.map((e) => <EngagementCard key={e.id} e={e} />)}
@@ -134,7 +134,7 @@ export default function PortfolioOverview({ data }: { data: PortfolioData }) {
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-[color:var(--text)]">Projects</h2>
-            <Link href="/projects" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent)]">All →</Link>
+            <Link href="/projects" className="text-xs text-[color:var(--text-3)] hover:text-[color:var(--accent-strong)]">All →</Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p) => <ProjectCard key={p.id} p={p} />)}

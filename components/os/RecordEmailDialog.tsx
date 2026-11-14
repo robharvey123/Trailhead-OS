@@ -107,7 +107,7 @@ export default function RecordEmailDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={buttonClassName ?? `${fullWidth ? 'w-full ' : ''}rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]`}
+        className={buttonClassName ?? `btn btn-ghost${fullWidth ? ' w-full' : ''}`}
       >
         {buttonLabel}
       </button>
@@ -122,7 +122,7 @@ export default function RecordEmailDialog({
         title={dialogTitle}
         closeLabel="Close email dialog"
         overlayClassName="z-[70] px-4 py-8"
-        panelClassName="w-full max-w-2xl rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        panelClassName="w-full max-w-2xl rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -133,7 +133,7 @@ export default function RecordEmailDialog({
             type="button"
             onClick={() => setOpen(false)}
             disabled={sending}
-            className="rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+            className="btn btn-ghost btn-sm shrink-0"
           >
             Close
           </button>
@@ -141,13 +141,13 @@ export default function RecordEmailDialog({
 
         <div className="mt-6 space-y-4">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Recipients</span>
+            <span className="os-label mb-2 block">Recipients</span>
             <textarea
               rows={3}
               value={recipientsText}
               onChange={(event) => setRecipientsText(event.target.value)}
               placeholder="name@example.com"
-              className="os-textarea w-full"
+              className="os-textarea w-full px-4 py-3 text-sm"
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? errorId : undefined}
             />
@@ -155,23 +155,23 @@ export default function RecordEmailDialog({
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Subject</span>
+            <span className="os-label mb-2 block">Subject</span>
             <input
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              className="os-input w-full"
+              className="os-input w-full px-4 py-3 text-sm"
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? errorId : undefined}
             />
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Message</span>
+            <span className="os-label mb-2 block">Message</span>
             <textarea
               rows={6}
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              className="os-textarea w-full"
+              className="os-textarea w-full px-4 py-3 text-sm"
             />
           </label>
 
@@ -191,7 +191,7 @@ export default function RecordEmailDialog({
               type="button"
               onClick={() => setOpen(false)}
               disabled={sending}
-              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+              className="btn btn-ghost"
             >
               Cancel
             </button>
@@ -199,7 +199,7 @@ export default function RecordEmailDialog({
               type="button"
               onClick={() => void handleSend()}
               disabled={sending}
-              className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              className="btn btn-primary"
             >
               {sending ? 'Sending...' : 'Send email'}
             </button>

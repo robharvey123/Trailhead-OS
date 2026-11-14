@@ -101,8 +101,8 @@ export default function PricingTierSelector({
                   }}
                   className={`text-left rounded-card border p-5 transition ${
                     isSelected
-                      ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] shadow-[0_0_0_1px_rgba(14,165,233,0.25)]'
-                      : 'border-[color:var(--border)] bg-white hover:border-[color:var(--border-light)]'
+                      ? 'border-[color:var(--accent)] bg-[var(--accent-dim)]'
+                      : 'border-[color:var(--border)] bg-[var(--bg)] hover:border-[color:var(--border-light)]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -113,7 +113,7 @@ export default function PricingTierSelector({
                     <span
                       className={`flex h-8 w-8 items-center justify-center rounded-pill border ${
                         isSelected
-                          ? 'border-[color:var(--accent)] bg-[var(--accent)] text-white'
+                          ? 'border-[color:var(--accent)] bg-[var(--accent)] text-[color:var(--on-accent)]'
                           : 'border-[color:var(--border)] text-transparent'
                       }`}
                       aria-hidden="true"
@@ -125,22 +125,22 @@ export default function PricingTierSelector({
                   </div>
 
                   <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Hourly</p>
+                    <div className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="os-label">Hourly</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">{formatCurrency(tier.hourly_rate)}</p>
                     </div>
-                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Day</p>
+                    <div className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="os-label">Day</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">{formatCurrency(tier.day_rate)}</p>
                     </div>
-                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Retainer</p>
+                    <div className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="os-label">Retainer</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">
                         {formatCurrency(tier.monthly_retainer, '/mo')}
                       </p>
                     </div>
-                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
-                      <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Hosting</p>
+                    <div className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                      <p className="os-label">Hosting</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">
                         {formatCurrency(tier.hosting_maintenance, '/mo')}
                       </p>

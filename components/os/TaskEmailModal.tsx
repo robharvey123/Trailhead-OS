@@ -105,12 +105,15 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
   if (!open) return null
 
   return createPortal(
+    // `thmock` is required: this portals to document.body, outside the app's
+    // .thmock wrapper where the tokens and the btn classes live. `.thmock` sets
+    // its own background outside a cascade layer, so the overlay tint needs `!`.
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)]"
+      className="thmock fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45!"
       onClick={(e) => { if (e.target === e.currentTarget) onOpenChange(false) }}
     >
-      <div className="mx-4 w-full max-w-lg rounded-control border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
-        <p className="os-eyebrow mb-4 text-[color:var(--accent-strong)]">
+      <div className="mx-4 w-full max-w-lg rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
+        <p className="os-eyebrow mb-4">
           EMAIL TASKS
         </p>
 
@@ -118,7 +121,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
           {tasks.map((task) => (
             <span
               key={task.id}
-              className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-1 text-[11px] text-[color:var(--text)]"
+              className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text)]"
             >
               {task.title}
             </span>
@@ -134,7 +137,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="mt-2 rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-3)]"
+              className="btn btn-ghost mt-2"
             >
               Close
             </button>
@@ -142,10 +145,10 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
         ) : (
           <>
             <div className="mb-4">
-              <p className="os-eyebrow mb-1.5 text-[color:var(--text-2)]">TO</p>
+              <p className="os-label mb-1.5">TO</p>
               <div className="flex min-h-[42px] flex-wrap items-center gap-1.5 rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-1.5">
                 {recipients.map((r) => (
-                  <span key={r} className="flex items-center gap-1 rounded-control border border-[color:var(--border)] bg-white px-2 py-1 text-xs text-[color:var(--text)]">
+                  <span key={r} className="flex items-center gap-1 rounded-pill border border-[color:var(--border)] bg-[var(--bg)] px-2.5 py-1 text-xs text-[color:var(--text)]">
                     {r}
                     <button
                       type="button"
@@ -170,7 +173,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
             </div>
 
             <div className="mb-4">
-              <p className="os-eyebrow mb-1.5 text-[color:var(--text-2)]">
+              <p className="os-label mb-1.5">
                 COVERING NOTE (OPTIONAL)
               </p>
               <textarea
@@ -178,7 +181,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
                 placeholder="Add a message..."
-                className="os-textarea w-full"
+                className="os-textarea w-full px-3 py-2 text-sm"
               />
             </div>
 
@@ -190,7 +193,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-3)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -198,7 +201,7 @@ export default function TaskEmailModal({ open, onOpenChange, tasks }: TaskEmailM
                 type="button"
                 onClick={() => void handleSend()}
                 disabled={recipients.length === 0 || sendState === 'sending'}
-                className="rounded-control bg-[var(--accent)] px-4 py-2 font-bold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {sendState === 'sending' ? (
                   <span className="flex items-center gap-2">

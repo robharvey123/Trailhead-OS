@@ -44,7 +44,7 @@ export default function PipelineGuide({ steps }: { steps: PipelineStep[] }) {
                     step.done
                       ? 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]'
                       : isCurrent
-                        ? 'bg-[var(--accent)] text-white'
+                        ? 'bg-[var(--accent)] text-[var(--on-accent)]'
                         : 'border border-[color:var(--border)] text-[color:var(--text-3)]'
                   }`}
                 >
@@ -58,7 +58,7 @@ export default function PipelineGuide({ steps }: { steps: PipelineStep[] }) {
                   >
                     {step.title}
                     {isCurrent ? (
-                      <span className="ml-2 rounded-pill bg-[var(--accent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                      <span className="ml-2 rounded-pill bg-[var(--accent)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.09em] text-[var(--on-accent)]">
                         you are here
                       </span>
                     ) : null}

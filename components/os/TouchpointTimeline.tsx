@@ -138,8 +138,7 @@ export default function TouchpointTimeline({
               <select
                 value={type}
                 onChange={(event) => setType(event.target.value as TouchpointType)}
-                className="filter-select"
-                style={{ width: '100%' }}
+                className="filter-select w-full"
               >
                 {TOUCHPOINT_TYPES.map((entry) => (
                   <option key={entry} value={entry}>
@@ -154,8 +153,7 @@ export default function TouchpointTimeline({
                 type="datetime-local"
                 value={occurredAt}
                 onChange={(event) => setOccurredAt(event.target.value)}
-                className="filter-select"
-                style={{ width: '100%' }}
+                className="filter-select w-full"
               />
             </label>
           </div>
@@ -165,8 +163,7 @@ export default function TouchpointTimeline({
             <input
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              className="filter-select"
-              style={{ width: '100%' }}
+              className="filter-select w-full"
             />
           </label>
 
@@ -176,8 +173,7 @@ export default function TouchpointTimeline({
               value={body}
               onChange={(event) => setBody(event.target.value)}
               rows={3}
-              className="os-textarea"
-              style={{ width: '100%' }}
+              className="os-textarea w-full px-3 py-2 text-sm"
             />
           </label>
 

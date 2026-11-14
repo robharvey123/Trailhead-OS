@@ -152,7 +152,7 @@ export default function KeywordTable({
 
   const shown = filtered.slice(0, DISPLAY_CAP)
   const inputClass =
-    'rounded-control border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] focus:border-[color:var(--accent)] focus:outline-none'
+    'os-input px-3 py-2 text-sm'
 
   return (
     <div>
@@ -161,7 +161,7 @@ export default function KeywordTable({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter keywords…"
-          className={`${inputClass} grow text-[color:var(--text)] placeholder:text-[color:var(--text-3)]`}
+          className={`${inputClass} grow`}
         />
         <select value={clusterFilter} onChange={(e) => setClusterFilter(e.target.value)} className={inputClass}>
           <option value="">All clusters</option>
@@ -212,13 +212,13 @@ export default function KeywordTable({
       <div className="mt-3 overflow-x-auto">
         <table className="w-full min-w-[900px] text-left text-sm">
           <thead>
-            <tr className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-3)]">
+            <tr className="os-label border-b border-[color:var(--border)]">
               {COLUMNS.map((col) => (
-                <th key={col.key} className={`py-2 pr-4 font-medium ${col.numeric ? 'text-right' : ''}`}>
+                <th key={col.key} className={`py-2 pr-4 font-semibold ${col.numeric ? 'text-right' : ''}`}>
                   <button
                     type="button"
                     onClick={() => toggleSort(col.key)}
-                    className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-[color:var(--text)]"
+                    className="inline-flex items-center gap-1 uppercase hover:text-[color:var(--text)]"
                   >
                     {col.label}
                     {sortKey === col.key ? <span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span> : null}
@@ -226,15 +226,15 @@ export default function KeywordTable({
                 </th>
               ))}
               {hasPaid ? (
-                <th className="py-2 pr-4 text-right font-medium">
-                  <button type="button" onClick={() => toggleSort('commercial_value')} className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-[color:var(--text)]" title="Ads conversion value attributed to this query — your data, not a model">
+                <th className="py-2 pr-4 text-right font-semibold">
+                  <button type="button" onClick={() => toggleSort('commercial_value')} className="inline-flex items-center gap-1 uppercase hover:text-[color:var(--text)]" title="Ads conversion value attributed to this query — your data, not a model">
                     Value {sortKey === 'commercial_value' ? <span aria-hidden="true">{sortAsc ? '↑' : '↓'}</span> : null}
                   </button>
                 </th>
               ) : null}
-              {serpStates ? <th className="py-2 pr-4 font-medium">SERP</th> : null}
-              <th className="py-2 pr-4 font-medium">Target URL</th>
-              <th className="py-2 font-medium">Cluster</th>
+              {serpStates ? <th className="py-2 pr-4 font-semibold">SERP</th> : null}
+              <th className="py-2 pr-4 font-semibold">Target URL</th>
+              <th className="py-2 font-semibold">Cluster</th>
             </tr>
           </thead>
           <tbody>

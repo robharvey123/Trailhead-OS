@@ -16,14 +16,14 @@ const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
     active: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
     listed: 'border-[color:var(--green)]/30 bg-[var(--green-dim)] text-[color:var(--green-strong)]',
     declined: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
-    on_hold: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
-    inactive: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    on_hold: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]',
+    inactive: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]',
     archived: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
   },
   contact: {
     lead: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
     active: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
-    inactive: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    inactive: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]',
     archived: 'border-[color:var(--red)]/30 bg-[var(--red-dim)] text-[color:var(--red-strong)]',
   },
   enquiry: {
@@ -32,11 +32,11 @@ const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
     reviewed: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
     under_review: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
     quoted: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
-    closed: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    closed: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]',
     converted: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
   },
   invoice: {
-    draft: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    draft: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]',
     sent: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
     part_paid: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
     paid: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
@@ -48,10 +48,10 @@ const STATUS_CLASSES: Record<StatusKind, Record<string, string>> = {
     active: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
     on_hold: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
     completed: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
-    cancelled: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-3)]',
+    cancelled: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]',
   },
   quote: {
-    draft: 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]',
+    draft: 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]',
     review: 'border-[color:var(--amber)]/30 bg-[var(--amber-dim)] text-[color:var(--amber-strong)]',
     sent: 'border-[color:var(--accent)]/30 bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
     accepted: 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]',
@@ -82,11 +82,11 @@ export default function StatusBadge({
 }) {
   const classes =
     STATUS_CLASSES[kind][status] ??
-    'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]'
+    'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]'
 
   return (
     <span
-      className={`inline-flex rounded-pill border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${classes} ${className}`.trim()}
+      className={`inline-flex rounded-pill border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.09em] ${classes} ${className}`.trim()}
     >
       {formatStatusLabel(status)}
     </span>

@@ -273,11 +273,11 @@ export default function TaskSlideOver({
       title={task ? task.title : 'Create a task'}
       placement="right"
       closeLabel="Close task panel"
-      panelClassName="h-full w-full max-w-2xl overflow-y-auto border-l border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+      panelClassName="h-full w-full max-w-2xl overflow-y-auto border-l border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="os-eyebrow text-[color:var(--accent-strong)]">
+          <p className="os-eyebrow">
             {task ? 'Task detail' : 'New task'}
           </p>
           <h2 className="os-section-title mt-2">
@@ -287,7 +287,7 @@ export default function TaskSlideOver({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
+          className="btn btn-ghost btn-sm shrink-0"
         >
           Close
         </button>
@@ -309,21 +309,21 @@ export default function TaskSlideOver({
 
       <div className="mt-8 space-y-5">
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Title</span>
+          <span className="os-label mb-2 block">Title</span>
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            className="os-input w-full"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Workstream</span>
+            <span className="os-label mb-2 block">Workstream</span>
             <select
               value={workstreamId}
               onChange={(event) => setWorkstreamId(event.target.value)}
-              className="os-select w-full"
+              className="os-select w-full px-4 py-3 text-sm"
             >
               <option value="">No workstream</option>
               {workstreams.map((workstream) => (
@@ -335,11 +335,11 @@ export default function TaskSlideOver({
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Priority</span>
+            <span className="os-label mb-2 block">Priority</span>
             <select
               value={priority}
               onChange={(event) => setPriority(event.target.value as TaskPriority)}
-              className="os-select w-full"
+              className="os-select w-full px-4 py-3 text-sm"
             >
               {PRIORITIES.map((entry) => (
                 <option key={entry} value={entry}>
@@ -350,7 +350,7 @@ export default function TaskSlideOver({
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due date</span>
+            <span className="os-label mb-2 block">Due date</span>
             <input
               type="date"
               value={dueDate}
@@ -361,27 +361,27 @@ export default function TaskSlideOver({
                   setDueTime('')
                 }
               }}
-              className="os-input w-full"
+              className="os-input w-full px-4 py-3 text-sm"
             />
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Due time</span>
+            <span className="os-label mb-2 block">Due time</span>
             <input
               type="time"
               value={dueTime}
               onChange={(event) => setDueTime(event.target.value)}
               disabled={!dueDate}
-              className="os-input w-full disabled:cursor-not-allowed disabled:opacity-50"
+              className="os-input w-full px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
             />
           </label>
 
-          <label className="flex items-center gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+          <label className="flex items-center gap-3 rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
             <input
               type="checkbox"
               checked={isMasterTodo}
               onChange={(event) => setIsMasterTodo(event.target.checked)}
-              className="h-4 w-4 rounded-control border-[color:var(--border)] bg-white"
+              className="h-4 w-4"
             />
             <span className="text-sm text-[color:var(--text-2)]">Show on master to-do</span>
           </label>
@@ -415,22 +415,22 @@ export default function TaskSlideOver({
         />
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Tags</span>
+          <span className="os-label mb-2 block">Tags</span>
           <input
             value={tags}
             onChange={(event) => setTags(event.target.value)}
             placeholder="client, follow-up, launch"
-            className="os-input w-full"
+            className="os-input w-full px-4 py-3 text-sm"
           />
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Description</span>
+          <span className="os-label mb-2 block">Description</span>
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             rows={6}
-            className="os-textarea w-full rounded-control"
+            className="os-textarea w-full px-4 py-3 text-sm"
           />
         </label>
       </div>
@@ -448,11 +448,11 @@ export default function TaskSlideOver({
               onChange={(event) => setNoteDraft(event.target.value)}
               rows={3}
               placeholder="Add a note..."
-              className="os-textarea w-full rounded-control"
+              className="os-textarea w-full px-4 py-3 text-sm"
             />
             <button
               type="submit"
-              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:bg-[var(--surface-2)]"
+              className="btn btn-ghost"
             >
               Add note
             </button>
@@ -489,7 +489,7 @@ export default function TaskSlideOver({
               type="button"
               onClick={handleComplete}
               disabled={deleting}
-              className="rounded-card border border-[color:var(--red)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-60"
+              className="btn btn-danger"
             >
               {deleting ? 'Completing...' : 'Mark complete'}
             </button>
@@ -498,7 +498,7 @@ export default function TaskSlideOver({
             <button
               type="button"
               onClick={() => setEmailModalOpen(true)}
-              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+              className="btn btn-ghost"
             >
               Email task
             </button>
@@ -508,7 +508,7 @@ export default function TaskSlideOver({
           type="button"
           onClick={handleSave}
           disabled={saving || !title.trim()}
-          className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn btn-primary"
         >
           {saving ? 'Saving...' : task ? 'Save changes' : 'Create task'}
         </button>

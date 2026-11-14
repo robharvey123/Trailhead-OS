@@ -270,6 +270,11 @@ export default function QuoteDetailClient({
     [draftContent.pricing]
   )
 
+  // One primary in the action card at a time. The status step leads; once the
+  // quote is accepted and has its project, converting to an invoice leads.
+  const hasProject = Boolean(quoteState.project)
+  const convertIsPrimary = quoteState.status === 'accepted' && hasProject
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -281,7 +286,7 @@ export default function QuoteDetailClient({
             <span className="flex flex-wrap items-center gap-2 pt-2">
               <StatusBadge status={quoteState.status} kind="quote" />
               {quoteState.pricing_tier ? (
-                <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+                <span className="rounded-pill border border-[color:var(--accent)]/30 bg-[var(--accent-dim)] px-3 py-1 text-xs font-semibold text-[color:var(--accent-strong)]">
                   {quoteState.pricing_tier.name} tier
                 </span>
               ) : null}
@@ -376,30 +381,30 @@ export default function QuoteDetailClient({
 
             <div className="mt-6 grid gap-5">
               <label className="block">
-                <span className="text-sm font-medium text-[color:var(--text-2)]">Overview</span>
+                <span className="field-label">Overview</span>
                 <textarea
                   rows={4}
                   value={draftContent.overview}
                   disabled={isLocked}
                   onChange={(event) => setDraftContent((current) => ({ ...current, overview: event.target.value }))}
-                  className="os-textarea mt-2 w-full disabled:opacity-50"
+                  className="os-textarea mt-2 w-full px-4 py-3 text-sm disabled:opacity-50"
                 />
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-[color:var(--text-2)]">Approach</span>
+                <span className="field-label">Approach</span>
                 <textarea
                   rows={5}
                   value={draftContent.approach}
                   disabled={isLocked}
                   onChange={(event) => setDraftContent((current) => ({ ...current, approach: event.target.value }))}
-                  className="os-textarea mt-2 w-full disabled:opacity-50"
+                  className="os-textarea mt-2 w-full px-4 py-3 text-sm disabled:opacity-50"
                 />
               </label>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="block">
-                  <span className="text-sm font-medium text-[color:var(--text-2)]">Scope bullets</span>
+                  <span className="field-label">Scope bullets</span>
                   <textarea
                     rows={7}
                     value={listToText(draftContent.scope)}
@@ -407,12 +412,12 @@ export default function QuoteDetailClient({
                     onChange={(event) =>
                       setDraftContent((current) => ({ ...current, scope: parseList(event.target.value) }))
                     }
-                    className="os-textarea mt-2 w-full disabled:opacity-50"
+                    className="os-textarea mt-2 w-full px-4 py-3 text-sm disabled:opacity-50"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-[color:var(--text-2)]">Assumptions</span>
+                  <span className="field-label">Assumptions</span>
                   <textarea
                     rows={7}
                     value={listToText(draftContent.assumptions)}
@@ -420,13 +425,13 @@ export default function QuoteDetailClient({
                     onChange={(event) =>
                       setDraftContent((current) => ({ ...current, assumptions: parseList(event.target.value) }))
                     }
-                    className="os-textarea mt-2 w-full disabled:opacity-50"
+                    className="os-textarea mt-2 w-full px-4 py-3 text-sm disabled:opacity-50"
                   />
                 </label>
               </div>
 
               <label className="block">
-                <span className="text-sm font-medium text-[color:var(--text-2)]">Pricing summary</span>
+                <span className="field-label">Pricing summary</span>
                 <textarea
                   rows={6}
                   value={draftContent.pricing.map((item) => `${item.item} | ${item.description} | ${item.amount}`).join('\n')}
@@ -445,19 +450,19 @@ export default function QuoteDetailClient({
                         .filter((item) => item.item && item.description && item.amount),
                     }))
                   }
-                  className="os-textarea mt-2 w-full disabled:opacity-50"
+                  className="os-textarea mt-2 w-full px-4 py-3 text-sm disabled:opacity-50"
                 />
                 <p className="mt-2 text-xs text-[color:var(--text-3)]">One item per line in the format: item | description | amount</p>
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-[color:var(--text-2)]">Next steps</span>
+                <span className="field-label">Next steps</span>
                 <textarea
                   rows={3}
                   value={draftContent.next_steps}
                   disabled={isLocked}
                   onChange={(event) => setDraftContent((current) => ({ ...current, next_steps: event.target.value }))}
-                  className="os-textarea mt-2 w-full disabled:opacity-50"
+                  className="os-textarea mt-2 w-full px-4 py-3 text-sm disabled:opacity-50"
                 />
               </label>
             </div>
@@ -509,7 +514,7 @@ export default function QuoteDetailClient({
             <h2 className="os-section-title">Line items</h2>
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+                <thead className="os-label text-left">
                   <tr>
                     <th className="pb-3">Description</th>
                     <th className="pb-3">Type</th>
@@ -548,7 +553,7 @@ export default function QuoteDetailClient({
 
                 <dl className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-                    <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                    <dt className="os-label">
                       Before buffer
                     </dt>
                     <dd className="mt-2 text-base font-medium text-[color:var(--text)]">
@@ -556,13 +561,13 @@ export default function QuoteDetailClient({
                     </dd>
                   </div>
                   <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-                    <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Overhead</dt>
+                    <dt className="os-label">Overhead</dt>
                     <dd className="mt-2 text-base font-medium text-[color:var(--text)]">
                       {quoteState.complexity_breakdown.overhead_hours} hrs
                     </dd>
                   </div>
                   <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-                    <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+                    <dt className="os-label">
                       Final with {quoteState.complexity_breakdown.buffer_applied}
                     </dt>
                     <dd className="mt-2 text-base font-medium text-[color:var(--text)]">
@@ -605,7 +610,7 @@ export default function QuoteDetailClient({
                           <button
                             type="button"
                             onClick={() => setDraftContent(version.content)}
-                            className="rounded-card border border-[color:var(--border)] px-3 py-2 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                            className="btn btn-ghost btn-sm"
                           >
                             Restore into draft
                           </button>
@@ -667,7 +672,7 @@ export default function QuoteDetailClient({
                   </p>
                   <Link
                     href={`/projects/records/${quoteState.project.id}`}
-                    className="mt-3 block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                    className="btn btn-ghost mt-3 w-full"
                   >
                     Open linked project
                   </Link>
@@ -682,7 +687,7 @@ export default function QuoteDetailClient({
                       type="button"
                       onClick={() => void createProjectFromQuote(true)}
                       disabled={loadingAction !== null}
-                      className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                      className="btn btn-primary w-full"
                     >
                       {loadingAction === 'create-project-ai' ? 'Creating AI project...' : 'Create project with AI plan'}
                     </button>
@@ -690,7 +695,7 @@ export default function QuoteDetailClient({
                       type="button"
                       onClick={() => void createProjectFromQuote(false)}
                       disabled={loadingAction !== null}
-                      className="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+                      className="btn btn-ghost w-full"
                     >
                       {loadingAction === 'create-project' ? 'Creating project...' : 'Create project only'}
                     </button>
@@ -704,7 +709,7 @@ export default function QuoteDetailClient({
                   <button
                     type="button"
                     disabled
-                    className="mt-3 w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-3)] opacity-80"
+                    className="btn btn-ghost mt-3 w-full whitespace-normal!"
                   >
                     Accept quote to enable AI project planning
                   </button>
@@ -718,7 +723,7 @@ export default function QuoteDetailClient({
                   type="button"
                   onClick={() => void markReadyToSend()}
                   disabled={loadingAction !== null}
-                  className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                  className="btn btn-primary w-full"
                 >
                   Mark ready to send
                 </button>
@@ -733,7 +738,7 @@ export default function QuoteDetailClient({
                   defaultRecipient={quoteState.contact?.email ?? quoteState.enquiry?.contact_email ?? null}
                   defaultSubject={`Quote for ${quoteState.account?.name ?? quoteState.enquiry?.biz_name ?? quoteState.title}`}
                   defaultMessage={`Hi,\n\nPlease find the attached quote for ${quoteState.title}. Let me know if you would like to review any part of the scope.\n\nBest,\nRob`}
-                  buttonClassName="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                  buttonClassName={`btn w-full ${quoteState.status === 'review' ? 'btn-primary' : 'btn-ghost'}`}
                   fullWidth
                   onSent={handleQuoteSent}
                 />
@@ -745,7 +750,7 @@ export default function QuoteDetailClient({
                     type="button"
                     onClick={() => patchQuote({ status: 'accepted' })}
                     disabled={loadingAction !== null}
-                    className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                    className="btn btn-primary w-full"
                   >
                     Mark as accepted
                   </button>
@@ -753,7 +758,7 @@ export default function QuoteDetailClient({
                     type="button"
                     onClick={() => patchQuote({ status: 'declined' })}
                     disabled={loadingAction !== null}
-                    className="w-full rounded-card border border-[color:var(--red)] px-4 py-3 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
+                    className="btn btn-danger w-full"
                   >
                     Mark as declined
                   </button>
@@ -765,7 +770,7 @@ export default function QuoteDetailClient({
                   type="button"
                   onClick={convertToInvoice}
                   disabled={loadingAction !== null}
-                  className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                  className={`btn w-full ${convertIsPrimary ? 'btn-primary' : 'btn-ghost'}`}
                 >
                   Convert to invoice
                 </button>
@@ -774,7 +779,7 @@ export default function QuoteDetailClient({
               {quoteState.status === 'converted' && quoteState.invoice ? (
                 <Link
                   href={`/invoicing/${quoteState.invoice.id}`}
-                  className="block rounded-card bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                  className={`btn w-full ${hasProject ? 'btn-primary' : 'btn-ghost'}`}
                 >
                   View invoice →
                 </Link>
@@ -785,7 +790,7 @@ export default function QuoteDetailClient({
               {(quoteState.status === 'draft' || quoteState.status === 'review' || quoteState.status === 'sent') ? (
                 <Link
                   href={`/quotes/${quoteState.id}/edit`}
-                  className="block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                  className="btn btn-ghost w-full"
                 >
                   Edit quote
                 </Link>
@@ -793,7 +798,7 @@ export default function QuoteDetailClient({
 
               <a
                 href={`/api/quotes/${quoteState.id}/pdf`}
-                className="block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost w-full"
               >
                 Download PDF
               </a>
@@ -806,7 +811,7 @@ export default function QuoteDetailClient({
                 defaultRecipient={quoteState.contact?.email ?? quoteState.enquiry?.contact_email ?? null}
                 defaultSubject={`Quote ${quoteState.quote_number} - ${quoteState.title}`}
                 defaultMessage={`Hi,\n\nPlease find the attached quote for ${quoteState.title}.\n\nLet me know if you have any questions.`}
-                buttonClassName="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                buttonClassName="btn btn-ghost w-full"
                 fullWidth
               />
 
@@ -814,7 +819,7 @@ export default function QuoteDetailClient({
                 type="button"
                 onClick={duplicateQuote}
                 disabled={loadingAction !== null}
-                className="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+                className="btn btn-ghost w-full"
               >
                 Duplicate quote
               </button>

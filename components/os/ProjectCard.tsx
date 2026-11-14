@@ -58,20 +58,20 @@ export default function ProjectCard({
 
       <div className="mt-5 grid gap-3 text-sm text-[color:var(--text-2)] sm:grid-cols-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[3px] text-[color:var(--text-3)]">Tasks</p>
-          <p className="mt-1 font-bold text-[color:var(--text)]">{project.completed_task_count}/{project.task_count}</p>
+          <p className="os-label">Tasks</p>
+          <p className="mt-1 font-semibold text-[color:var(--text)]">{project.completed_task_count}/{project.task_count}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[3px] text-[color:var(--text-3)]">Contacts</p>
-          <p className="mt-1 font-bold text-[color:var(--text)]">{project.contact_count}</p>
+          <p className="os-label">Contacts</p>
+          <p className="mt-1 font-semibold text-[color:var(--text)]">{project.contact_count}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[3px] text-[color:var(--text-3)]">Start</p>
-          <p className="mt-1 font-bold text-[color:var(--text)]">{project.start_date ?? '—'}</p>
+          <p className="os-label">Start</p>
+          <p className="mt-1 font-semibold text-[color:var(--text)]">{project.start_date ?? '—'}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[3px] text-[color:var(--text-3)]">Next milestone</p>
-          <p className="mt-1 font-bold text-[color:var(--text)]">
+          <p className="os-label">Next milestone</p>
+          <p className="mt-1 font-semibold text-[color:var(--text)]">
             {project.next_milestone ? project.next_milestone.name : '—'}
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function ProjectCard({
             e.stopPropagation()
             setConfirmOpen(true)
           }}
-          className="absolute right-3 top-3 rounded-control border border-[color:var(--border)] bg-white p-1.5 text-[color:var(--text-2)] opacity-0 transition hover:border-[color:var(--red)] hover:text-[color:var(--red-strong)] group-hover:opacity-100"
+          className="absolute right-3 top-3 rounded-control border border-[color:var(--border)] bg-[var(--bg)] p-1.5 text-[color:var(--text-2)] opacity-0 transition hover:border-[color:var(--red)] hover:text-[color:var(--red-strong)] group-hover:opacity-100"
           title="Delete project"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>

@@ -49,10 +49,10 @@ function StatusBadge({
 }) {
   return (
     <span
-      className={`rounded-pill border px-3 py-1 text-xs font-medium ${
+      className={`rounded-pill border px-3 py-1 text-xs font-semibold ${
         connected
-          ? 'border-[color:var(--emerald)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
-          : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)]'
+          ? 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
+          : 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]'
       }`}
     >
       {label}
@@ -199,7 +199,7 @@ export default function SettingsIntegrations({
                     type="button"
                     onClick={() => void syncCalendar()}
                     disabled={loadingAction !== null}
-                    className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                    className="btn btn-primary"
                   >
                     {loadingAction === 'calendar' ? 'Syncing...' : 'Sync calendar now'}
                   </button>
@@ -207,7 +207,7 @@ export default function SettingsIntegrations({
                     type="button"
                     onClick={() => void disconnectGoogle()}
                     disabled={loadingAction !== null}
-                    className="rounded-card border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-50"
+                    className="btn btn-danger"
                   >
                     {loadingAction === 'disconnect' ? 'Disconnecting...' : 'Disconnect'}
                   </button>
@@ -216,7 +216,7 @@ export default function SettingsIntegrations({
             ) : (
               <Link
                 href="/api/auth/google"
-                className="inline-flex rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                className="btn btn-primary"
               >
                 Connect Google Calendar
               </Link>

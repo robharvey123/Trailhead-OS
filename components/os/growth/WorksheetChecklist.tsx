@@ -25,7 +25,7 @@ export default function WorksheetChecklist({
     <div className="mt-4 space-y-5">
       {groups.map((group) => (
         <div key={group}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--text-3)]">{group}</p>
+          <p className="os-label">{group}</p>
           <ul className="mt-2 space-y-1.5">
             {items
               .filter((i) => i.group === group)

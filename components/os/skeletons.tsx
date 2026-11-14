@@ -116,7 +116,7 @@ export function PageHeaderSkeleton({ action = true }: { action?: boolean }) {
         <SkeletonBar className="h-3 w-24" />
         <SkeletonBar className="h-8 w-56 rounded-card" />
       </div>
-      {action ? <SkeletonBar className="h-10 w-32 rounded-card" /> : null}
+      {action ? <SkeletonBar className="h-10 w-32" /> : null}
     </div>
   )
 }
@@ -192,8 +192,8 @@ export function CalendarSkeleton() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <SkeletonBar className="h-8 w-40 rounded-card" />
         <div className="flex gap-2">
-          <SkeletonBar className="h-9 w-24 rounded-card" />
-          <SkeletonBar className="h-9 w-36 rounded-card" />
+          <SkeletonBar className="h-9 w-24" />
+          <SkeletonBar className="h-9 w-36" />
         </div>
       </div>
       <div className="os-card p-4">

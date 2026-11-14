@@ -27,7 +27,7 @@ export default function ProjectsSection({
         {actionHref && actionLabel ? (
           <Link
             href={actionHref}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            className="btn btn-ghost btn-sm shrink-0"
           >
             {actionLabel}
           </Link>

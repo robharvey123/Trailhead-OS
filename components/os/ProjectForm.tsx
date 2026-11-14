@@ -157,11 +157,11 @@ export default function ProjectForm({
       <div className="os-card space-y-6 p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Name</span>
+            <span className="field-label">Name</span>
             <input
               value={form.name}
               onChange={(event) => setForm({ ...form, name: event.target.value })}
-              className="os-input w-full"
+              className="os-input w-full px-4 py-3 text-sm"
             />
           </label>
 
@@ -175,7 +175,7 @@ export default function ProjectForm({
           />
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Engagement{!initialProject ? ' *' : ''}</span>
+            <span className="field-label">Engagement{!initialProject ? ' *' : ''}</span>
             <EngagementPicker
               engagements={engagements}
               value={form.engagement_id}
@@ -184,11 +184,11 @@ export default function ProjectForm({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Status</span>
+            <span className="field-label">Status</span>
             <select
               value={form.status}
               onChange={(event) => setForm({ ...form, status: event.target.value as ProjectStatus })}
-              className="os-select w-full"
+              className="os-select w-full px-4 py-3 text-sm"
             >
               {PROJECT_STATUSES.map((status) => (
                 <option key={status} value={status}>
@@ -199,37 +199,37 @@ export default function ProjectForm({
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Start date</span>
+            <span className="field-label">Start date</span>
             <input
               type="date"
               value={form.start_date}
               onChange={(event) => setForm({ ...form, start_date: event.target.value })}
-              className="os-input w-full"
+              className="os-input w-full px-4 py-3 text-sm"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">End date</span>
+            <span className="field-label">End date</span>
             <input
               type="date"
               value={form.end_date}
               onChange={(event) => setForm({ ...form, end_date: event.target.value })}
-              className="os-input w-full"
+              className="os-input w-full px-4 py-3 text-sm"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Estimated end</span>
+            <span className="field-label">Estimated end</span>
             <input
               type="date"
               value={form.estimated_end_date}
               onChange={(event) => setForm({ ...form, estimated_end_date: event.target.value })}
-              className="os-input w-full"
+              className="os-input w-full px-4 py-3 text-sm"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Hourly rate (£)</span>
+            <span className="field-label">Hourly rate (£)</span>
             <input
               type="number"
               step="0.01"
@@ -237,27 +237,27 @@ export default function ProjectForm({
               value={form.hourly_rate}
               onChange={(event) => setForm({ ...form, hourly_rate: event.target.value })}
               placeholder="e.g. 85.00"
-              className="os-input w-full"
+              className="os-input w-full px-4 py-3 text-sm"
             />
           </label>
 
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Description</span>
+            <span className="field-label">Description</span>
             <textarea
               value={form.description}
               onChange={(event) => setForm({ ...form, description: event.target.value })}
               rows={4}
-              className="os-textarea w-full"
+              className="os-textarea w-full px-4 py-3 text-sm"
             />
           </label>
 
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Brief</span>
+            <span className="field-label">Brief</span>
             <textarea
               value={form.brief}
               onChange={(event) => setForm({ ...form, brief: event.target.value })}
               rows={6}
-              className="os-textarea w-full"
+              className="os-textarea w-full px-4 py-3 text-sm"
             />
           </label>
         </div>
@@ -269,14 +269,14 @@ export default function ProjectForm({
             type="button"
             onClick={handleSave}
             disabled={saving || archiving || deleting || !form.name.trim()}
-            className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
           <button
             type="button"
             onClick={() => router.push(cancelHref)}
-            className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]"
+            className="btn btn-ghost"
           >
             Cancel
           </button>
@@ -285,7 +285,7 @@ export default function ProjectForm({
               type="button"
               onClick={() => setArchiveConfirmOpen(true)}
               disabled={saving || archiving || deleting}
-              className="rounded-card border border-[color:var(--amber)] px-5 py-3 text-sm font-medium text-[color:var(--amber-strong)] transition hover:border-[color:var(--amber-strong)] disabled:opacity-50"
+              className="btn btn-ghost"
             >
               {archiving ? 'Archiving...' : 'Archive project'}
             </button>
@@ -295,7 +295,7 @@ export default function ProjectForm({
               type="button"
               onClick={() => setDeleteConfirmOpen(true)}
               disabled={saving || archiving || deleting}
-              className="rounded-card border border-[color:var(--red)] px-5 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
+              className="btn btn-danger"
             >
               {deleting ? 'Deleting...' : 'Delete permanently'}
             </button>

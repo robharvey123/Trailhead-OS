@@ -42,8 +42,7 @@ export default function MergeDialog({ request, onClose, onMerged }: MergeDialogP
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.4)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45 p-4"
       onClick={onClose}
     >
       <div className="os-card w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
@@ -57,13 +56,12 @@ export default function MergeDialog({ request, onClose, onMerged }: MergeDialogP
           {[a, b].map((opt) => (
             <label
               key={opt.id}
-              className="card flex cursor-pointer items-center gap-3"
-              style={{ borderColor: winnerId === opt.id ? 'var(--accent)' : undefined }}
+              className={`card flex cursor-pointer items-center gap-3 ${winnerId === opt.id ? 'border-[var(--accent)]!' : ''}`}
             >
               <input type="radio" name="winner" checked={winnerId === opt.id} onChange={() => setWinnerId(opt.id)} />
               <div className="min-w-0">
                 <div className="text-sm font-medium text-[color:var(--text)]">{opt.name}</div>
-                <div className="td-num text-xs" style={{ color: 'var(--text-3)' }}>
+                <div className="td-num">
                   {winnerId === opt.id ? 'keep' : 'archive'}
                 </div>
               </div>

@@ -81,7 +81,7 @@ export default function NewContactForm({
       <div className="os-card space-y-6 p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Name</span>
+            <span className="field-label">Name</span>
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -91,7 +91,7 @@ export default function NewContactForm({
           </label>
           {accountId ? null : showCompany ? (
             <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Company (unlinked)</span>
+              <span className="field-label">Company (unlinked)</span>
               <input
                 value={company}
                 onChange={(event) => setCompany(event.target.value)}
@@ -109,7 +109,7 @@ export default function NewContactForm({
             </button>
           )}
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Email</span>
+            <span className="field-label">Email</span>
             <input
               type="email"
               value={email}
@@ -118,7 +118,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Phone</span>
+            <span className="field-label">Phone</span>
             <input
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
@@ -126,7 +126,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Role</span>
+            <span className="field-label">Role</span>
             <input
               value={role}
               onChange={(event) => setRole(event.target.value)}
@@ -134,7 +134,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Channel</span>
+            <span className="field-label">Channel</span>
             <input
               value={channel}
               onChange={(event) => setChannel(event.target.value)}
@@ -143,7 +143,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Website</span>
+            <span className="field-label">Website</span>
             <input
               value={website}
               onChange={(event) => setWebsite(event.target.value)}
@@ -152,7 +152,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Address line 1</span>
+            <span className="field-label">Address line 1</span>
             <input
               value={addressLine1}
               onChange={(event) => setAddressLine1(event.target.value)}
@@ -160,7 +160,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Address line 2</span>
+            <span className="field-label">Address line 2</span>
             <input
               value={addressLine2}
               onChange={(event) => setAddressLine2(event.target.value)}
@@ -168,7 +168,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">City</span>
+            <span className="field-label">City</span>
             <input
               value={city}
               onChange={(event) => setCity(event.target.value)}
@@ -176,7 +176,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Postcode</span>
+            <span className="field-label">Postcode</span>
             <input
               value={postcode}
               onChange={(event) => setPostcode(event.target.value)}
@@ -184,7 +184,7 @@ export default function NewContactForm({
             />
           </label>
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Country</span>
+            <span className="field-label">Country</span>
             <input
               value={country}
               onChange={(event) => setCountry(event.target.value)}
@@ -200,7 +200,7 @@ export default function NewContactForm({
             clearable
           />
           <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
+            <span className="field-label">Workstream</span>
             <select
               value={workstreamId}
               onChange={(event) => setWorkstreamId(event.target.value)}
@@ -215,7 +215,7 @@ export default function NewContactForm({
             </select>
           </label>
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Status</span>
+            <span className="field-label">Status</span>
             <select
               value={status}
               onChange={(event) => setStatus(event.target.value as ContactStatus)}
@@ -229,7 +229,7 @@ export default function NewContactForm({
             </select>
           </label>
           <label className="space-y-2 md:col-span-2">
-            <span className="text-sm text-[color:var(--text-2)]">Notes</span>
+            <span className="field-label">Notes</span>
             <textarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
@@ -246,14 +246,14 @@ export default function NewContactForm({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+            className="btn btn-primary"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
           <button
             type="button"
             onClick={() => router.push('/crm/contacts')}
-            className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+            className="btn btn-ghost"
           >
             Cancel
           </button>

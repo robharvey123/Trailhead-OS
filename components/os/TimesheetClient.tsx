@@ -242,30 +242,30 @@ export default function TimesheetClient({
     <div className="panel overflow-hidden">
       <div className="stats-bar">
         <div className="stat-item"><div className="stat-label">Today</div><div className="stat-value">{fmtDur(totals.todayMinutes)}</div><div className="stat-sub">{formatCurrency(totals.todayAmount, 'GBP')}</div></div>
-        <div className="stat-item"><div className="stat-label">{RANGE_LABELS[range].replace('…', '')}</div><div className="stat-value" style={{ color: 'var(--accent)' }}>{fmtDur(totals.minutes)}</div><div className="stat-sub">{formatCurrency(totals.summary.amount, 'GBP')}</div></div>
-        <div className="stat-item"><div className="stat-label">Billable this range</div><div className="stat-value" style={{ color: 'var(--emerald)' }}>{formatCurrency(totals.summary.amount, 'GBP')}</div><div className="stat-sub">{totals.billableRate}% billable</div></div>
-        <div className="stat-item"><div className="stat-label">Top client</div><div className="stat-value" style={{ fontSize: 16 }}>{totals.topClient?.name ?? '—'}</div><div className="stat-sub">{totals.topClient ? fmtDur(totals.topClient.minutes) : ''}</div></div>
+        <div className="stat-item"><div className="stat-label">{RANGE_LABELS[range].replace('…', '')}</div><div className="stat-value text-[var(--accent-strong)]!">{fmtDur(totals.minutes)}</div><div className="stat-sub">{formatCurrency(totals.summary.amount, 'GBP')}</div></div>
+        <div className="stat-item"><div className="stat-label">Billable this range</div><div className="stat-value text-[var(--emerald-strong)]!">{formatCurrency(totals.summary.amount, 'GBP')}</div><div className="stat-sub">{totals.billableRate}% billable</div></div>
+        <div className="stat-item"><div className="stat-label">Top client</div><div className="stat-value text-base!">{totals.topClient?.name ?? '—'}</div><div className="stat-sub">{totals.topClient ? fmtDur(totals.topClient.minutes) : ''}</div></div>
         {capLeader ? (
-          <Link className="stat-item" href={`/engagements/${capLeader.e.id}`} style={{ textDecoration: 'none' }}>
+          <Link className="stat-item no-underline" href={`/engagements/${capLeader.e.id}`}>
             <div className="stat-label">Engagement caps</div>
-            <div className="stat-value" style={{ fontSize: 15, color: capLeader.pct > 100 ? 'var(--red)' : capLeader.pct >= 80 ? 'var(--amber)' : 'var(--text)' }}>
+            <div className={`stat-value text-[15px]! ${capLeader.pct > 100 ? 'text-[var(--red-strong)]!' : capLeader.pct >= 80 ? 'text-[var(--amber-strong)]!' : ''}`}>
               {capLeader.e.name.split(' ')[0]}: {capLeader.used.toFixed(0)}/{capLeader.e.included_hours_monthly}h
             </div>
-            <div style={{ height: 5, background: 'var(--surface-3)', borderRadius: 'var(--radius-pill)', marginTop: 6 }}>
-              <div style={{ width: `${Math.min(100, capLeader.pct)}%`, height: '100%', borderRadius: 'var(--radius-pill)', background: capLeader.pct > 100 ? 'var(--red)' : capLeader.pct >= 80 ? 'var(--amber)' : 'var(--green)' }} />
+            <div className="mt-1.5 h-[5px] rounded-pill bg-[var(--surface-3)]">
+              <div className={`h-full rounded-pill ${capLeader.pct > 100 ? 'bg-[var(--red)]' : capLeader.pct >= 80 ? 'bg-[var(--amber)]' : 'bg-[var(--accent)]'}`} style={{ width: `${Math.min(100, capLeader.pct)}%` }} />
             </div>
           </Link>
         ) : (
-          <div className="stat-item"><div className="stat-label">Engagement caps</div><div className="stat-value" style={{ fontSize: 15, color: 'var(--text-3)' }}>—</div></div>
+          <div className="stat-item"><div className="stat-label">Engagement caps</div><div className="stat-value text-[15px]! text-[var(--text-3)]!">—</div></div>
         )}
       </div>
 
       {capToast ? (
-        <div style={{ padding: '8px 24px', background: capToast.level === 'red' ? 'var(--red-dim)' : 'var(--amber-dim)', borderBottom: `1px solid ${capToast.level === 'red' ? 'var(--red)' : 'var(--amber)'}`, color: capToast.level === 'red' ? 'var(--red)' : 'var(--amber)', fontSize: 13, display: 'flex', justifyContent: 'space-between' }}>
+        <div className={`flex justify-between border-b px-6 py-2 text-[13px] ${capToast.level === 'red' ? 'border-[var(--red)] bg-[var(--red-dim)] text-[var(--red-strong)]' : 'border-[var(--amber)] bg-[var(--amber-dim)] text-[var(--amber-strong)]'}`}>
           <span>{capToast.msg}</span>
-          <span style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            {capToast.engagementId ? <Link href={`/engagements/${capToast.engagementId}`} style={{ color: 'inherit', textDecoration: 'underline' }}>Request approval</Link> : null}
-            <button onClick={() => setCapToast(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>✕</button>
+          <span className="flex items-center gap-3">
+            {capToast.engagementId ? <Link href={`/engagements/${capToast.engagementId}`} className="text-inherit underline">Request approval</Link> : null}
+            <button onClick={() => setCapToast(null)} className="cursor-pointer">✕</button>
           </span>
         </div>
       ) : null}
@@ -297,47 +297,47 @@ export default function TimesheetClient({
         <div className="seg-toggle">{segBtn('all', 'All')}{segBtn('billable', 'Billable')}{segBtn('nonbill', 'Non-billable')}</div>
       </div>
 
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '8px 24px' }}>{error}</p> : null}
+      {error ? <p className="px-6 py-2 text-xs text-[var(--red-strong)]">{error}</p> : null}
 
       <div className="overflow-x-auto">
         {loading ? <div className="empty">Loading entries…</div> : entries.length === 0 && !timer ? <div className="empty">No time entries in this range.</div> : (
           <table className="data-table">
-            <thead><tr><th>Date</th><th>Account</th><th>Engagement</th><th>Project</th><th>Task</th><th>Person</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Rate</th><th style={{ textAlign: 'right' }}>Amount</th><th></th><th></th></tr></thead>
+            <thead><tr><th>Date</th><th>Account</th><th>Engagement</th><th>Project</th><th>Task</th><th>Person</th><th>Description</th><th className="text-right!">Duration</th><th className="text-right!">Rate</th><th className="text-right!">Amount</th><th></th><th></th></tr></thead>
             <tbody>
               {timer ? (
                 <tr className="row-running">
                   <td className="td-num">Now</td>
                   <td className="td-name">{timer.account?.name ?? '—'}</td>
-                  <td className="td-mono">{timer.engagement ? timer.engagement.code ?? timer.engagement.name : '—'}</td>
+                  <td className={timer.engagement?.code ? 'td-mono' : 'td-num'}>{timer.engagement ? timer.engagement.code ?? timer.engagement.name : '—'}</td>
                   <td>{timer.project?.name ?? '—'}</td>
                   <td>{timer.task?.title ?? '—'}</td>
                   <td>{timer.person?.full_name ?? '—'}</td>
                   <td>{timer.description ?? 'Running timer'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{fmtClock(elapsedSeconds)} <span className="pill timer" style={{ marginLeft: 6 }}>● live</span></td>
+                  <td className="td-num text-right">{fmtClock(elapsedSeconds)} <span className="pill timer ml-1.5">● live</span></td>
                   <td colSpan={4}></td>
                 </tr>
               ) : null}
               {entries.map((e) => (
                 <tr key={e.id}>
-                  <td className="td-num" style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{new Date(e.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
-                  <td className="td-name" style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{e.account?.name ?? '—'}</td>
-                  <td className="td-mono">{e.engagement ? e.engagement.code ?? e.engagement.name : '—'}</td>
+                  <td className="td-num cursor-pointer" onClick={() => openEdit(e)}>{new Date(e.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
+                  <td className="td-name cursor-pointer" onClick={() => openEdit(e)}>{e.account?.name ?? '—'}</td>
+                  <td className={e.engagement?.code ? 'td-mono' : 'td-num'}>{e.engagement ? e.engagement.code ?? e.engagement.name : '—'}</td>
                   <td>{e.project?.name ?? '—'}</td>
-                  <td style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.task?.title ?? '—'}</td>
+                  <td className="max-w-[140px] truncate">{e.task?.title ?? '—'}</td>
                   <td>{e.person?.full_name ?? '—'}</td>
-                  <td style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{e.description ?? '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{fmtDur(e.duration_minutes)}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{e.billable ? `£${Number(e.rate_snapshot).toFixed(0)}` : '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-num">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
+                  <td className="cursor-pointer" onClick={() => openEdit(e)}>{e.description ?? '—'}</td>
+                  <td className="td-num text-right">{fmtDur(e.duration_minutes)}</td>
+                  <td className="td-num text-right">{e.billable ? `£${Number(e.rate_snapshot).toFixed(0)}` : '—'}</td>
+                  <td className="td-num text-right">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
                   <td>
                     <span className={`pill ${e.billable ? 'billable' : 'nonbill'}`}>{e.billable ? 'Billable' : 'Non-bill'}</span>
-                    {e.billed ? <span className="pill" style={{ marginLeft: 4, background: 'var(--emerald-dim)', color: 'var(--emerald-strong)' }} title={e.invoice ? `Invoice ${e.invoice.invoice_number}` : 'Billed'}>Billed</span> : null}
+                    {e.billed ? <span className="pill billable ml-1" title={e.invoice ? `Invoice ${e.invoice.invoice_number}` : 'Billed'}>Billed</span> : null}
                   </td>
                   <td><button className="btn btn-ghost btn-sm" title="Delete" onClick={() => quickDelete(e)}>🗑</button></td>
                 </tr>
               ))}
             </tbody>
-            <tfoot><tr><td className="total-label" colSpan={7}>Total · {RANGE_LABELS[range].replace('…', '')}</td><td className="total-val" style={{ textAlign: 'right' }}>{fmtDur(totals.minutes)}</td><td></td><td className="total-amount" style={{ textAlign: 'right' }}>{formatCurrency(totals.summary.amount, 'GBP')}</td><td colSpan={2}></td></tr></tfoot>
+            <tfoot><tr><td className="total-label" colSpan={7}>Total · {RANGE_LABELS[range].replace('…', '')}</td><td className="total-val text-right">{fmtDur(totals.minutes)}</td><td></td><td className="total-amount text-right">{formatCurrency(totals.summary.amount, 'GBP')}</td><td colSpan={2}></td></tr></tfoot>
           </table>
         )}
       </div>

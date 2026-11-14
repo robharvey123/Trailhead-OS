@@ -35,7 +35,7 @@ export default function SyncGranolaButton() {
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="rounded-pill border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-2)] transition hover:border-[var(--accent)]/40 disabled:opacity-60"
+        className="btn btn-ghost"
       >
         {busy ? 'Syncing…' : 'Sync now'}
       </button>

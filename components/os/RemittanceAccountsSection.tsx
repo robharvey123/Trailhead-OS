@@ -123,8 +123,8 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
     }
   }
 
-  const inputClass = 'os-input w-full rounded-control px-4 py-3 text-sm'
-  const labelClass = 'text-sm font-medium text-[color:var(--text-2)]'
+  const inputClass = 'os-input w-full px-4 py-3 text-sm'
+  const labelClass = 'field-label'
 
   return (
     <div>
@@ -145,7 +145,7 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
             ) : (
               <div className="mt-2 overflow-x-auto">
                 <table className="min-w-full text-sm">
-                  <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+                  <thead className="os-label text-left">
                     <tr><th className="pb-2">Label</th><th className="pb-2">Rail</th><th className="pb-2">Number</th><th className="pb-2 text-right">Order</th><th className="pb-2">Active</th><th className="pb-2" /></tr>
                   </thead>
                   <tbody>
@@ -156,13 +156,13 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
                         <td className="py-2.5 font-mono text-xs text-[color:var(--text-2)]">{maskNumber(a.iban ?? a.account_number)}</td>
                         <td className="py-2.5 text-right text-[color:var(--text-2)]">{a.sort_order}</td>
                         <td className="py-2.5">
-                          <button type="button" onClick={() => void toggleActive(a)} className={`rounded-pill border px-2.5 py-0.5 text-xs ${a.active ? 'border-[color:var(--emerald)] bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-3)]'}`}>
+                          <button type="button" onClick={() => void toggleActive(a)} className={`rounded-pill border px-2.5 py-0.5 text-xs font-semibold ${a.active ? 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]' : 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]'}`}>
                             {a.active ? 'Active' : 'Inactive'}
                           </button>
                         </td>
                         <td className="py-2.5 text-right">
-                          <button type="button" className="text-xs text-[color:var(--accent-strong)] hover:underline" onClick={() => openEdit(a)}>Edit</button>
-                          <button type="button" className="ml-3 text-xs text-[color:var(--red-strong)] hover:underline" onClick={() => void remove(a)}>Delete</button>
+                          <button type="button" className="btn btn-text btn-sm" onClick={() => openEdit(a)}>Edit</button>
+                          <button type="button" className="btn btn-danger btn-sm ml-2" onClick={() => void remove(a)}>Delete</button>
                         </td>
                       </tr>
                     ))}
@@ -177,13 +177,13 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
       {error ? <p className="mt-3 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       {draft ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] px-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45 px-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
             <h2 className="os-section-title">{editingId ? 'Edit account' : `Add ${draft.currency} account`}</h2>
             <div className="mt-5 grid gap-4">
               <label className="space-y-2">
                 <span className={labelClass}>Rail</span>
-                <select className="os-select w-full" value={draft.rail} onChange={(e) => set('rail', e.target.value as RemittanceRail)}>
+                <select className="os-select w-full px-4 py-3 text-sm" value={draft.rail} onChange={(e) => set('rail', e.target.value as RemittanceRail)}>
                   {REMITTANCE_RAILS.map((r) => (<option key={r} value={r}>{RAIL_LABELS[r]}</option>))}
                 </select>
               </label>
@@ -196,7 +196,7 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
                 <label key={field} className="space-y-2">
                   <span className={labelClass}>{FIELD_LABELS[field]}</span>
                   {MULTILINE.has(field) ? (
-                    <textarea rows={2} className="os-textarea w-full rounded-control px-4 py-3 text-sm" value={(draft[field as keyof Draft] as string | null) ?? ''} onChange={(e) => set(field as keyof Draft, e.target.value as never)} />
+                    <textarea rows={2} className="os-textarea w-full px-4 py-3 text-sm" value={(draft[field as keyof Draft] as string | null) ?? ''} onChange={(e) => set(field as keyof Draft, e.target.value as never)} />
                   ) : (
                     <input className={inputClass} value={(draft[field as keyof Draft] as string | null) ?? ''} placeholder={PLACEHOLDERS[field]} onChange={(e) => set(field as keyof Draft, e.target.value as never)} />
                   )}
@@ -220,8 +220,8 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
             </div>
             {error ? <p className="mt-3 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
             <div className="mt-6 flex justify-end gap-3">
-              <button type="button" className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)]" onClick={() => setDraft(null)}>Cancel</button>
-              <button type="button" className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60" onClick={() => void save()} disabled={busy}>
+              <button type="button" className="btn btn-ghost" onClick={() => setDraft(null)}>Cancel</button>
+              <button type="button" className="btn btn-primary" onClick={() => void save()} disabled={busy}>
                 {busy ? 'Saving…' : 'Save account'}
               </button>
             </div>

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import sanitizeHtml from 'sanitize-html'
+import { BRAND } from '@/lib/brand'
 
 // Strict allowlist: no <script>/<style>/<iframe>/<object>, no on* handlers
 // (not in allowedAttributes → stripped), no javascript: URLs (not in schemes).
@@ -30,7 +31,7 @@ export default function SafeEmailHtml({ html }: { html: string }) {
   const ref = useRef<HTMLIFrameElement>(null)
   const [height, setHeight] = useState(220)
   const clean = sanitizeHtml(html, OPTIONS)
-  const srcDoc = `<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;font:14px/1.5 system-ui,-apple-system,sans-serif;color:#0f172a;word-break:break-word}img{max-width:100%;height:auto}a{color:#2563eb}</style></head><body>${clean}</body></html>`
+  const srcDoc = `<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;font:14px/1.5 system-ui,-apple-system,sans-serif;color:${BRAND.body};word-break:break-word}img{max-width:100%;height:auto}a{color:${BRAND.blueInk}}</style></head><body>${clean}</body></html>`
 
   return (
     <iframe
@@ -38,7 +39,8 @@ export default function SafeEmailHtml({ html }: { html: string }) {
       title="Email content"
       sandbox="allow-same-origin"
       srcDoc={srcDoc}
-      style={{ width: '100%', border: 'none', height }}
+      className="w-full border-0"
+      style={{ height }}
       onLoad={() => {
         try {
           const doc = ref.current?.contentDocument
