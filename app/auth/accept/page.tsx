@@ -1,4 +1,6 @@
 import { safeNextPath } from '@/lib/auth/safe-next'
+import AuthShell from '@/components/os/AuthShell'
+import Button from '@/components/ui/Button'
 
 export const metadata = { title: 'Sign in | Trailhead OS' }
 
@@ -25,36 +27,28 @@ export default async function AcceptPage({
   const isRecovery = type === 'recovery'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-      <div className="w-full max-w-md rounded-card border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
-        <h1 className="text-2xl font-semibold">{isInvite ? 'Accept your invite' : isRecovery ? 'Reset your password' : 'Sign in'}</h1>
-        {valid ? (
-          <>
-            <p className="mt-2 text-sm text-slate-300">
-              {isInvite
-                ? 'Click the button to accept your invite and sign in to Trailhead OS.'
-                : isRecovery
-                  ? 'Click the button to continue, then choose a new password.'
-                  : 'Click the button to finish signing in to Trailhead OS.'}
-            </p>
-            <form method="post" action="/auth/confirm" className="mt-6">
-              <input type="hidden" name="token_hash" value={tokenHash} />
-              <input type="hidden" name="type" value={type} />
-              <input type="hidden" name="next" value={next} />
-              <button
-                type="submit"
-                className="w-full rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white"
-              >
-                {isInvite ? 'Accept and sign in' : isRecovery ? 'Continue' : 'Sign in'}
-              </button>
-            </form>
-          </>
-        ) : (
-          <p className="mt-2 text-sm text-slate-300">
-            This link is incomplete. Ask for a new one, or sign in with your password.
-          </p>
-        )}
-      </div>
-    </div>
+    <AuthShell
+      title={isInvite ? 'Accept your invite' : isRecovery ? 'Reset your password' : 'Sign in'}
+      description={
+        valid
+          ? isInvite
+            ? 'Click the button to accept your invite and sign in to Trailhead OS.'
+            : isRecovery
+              ? 'Click the button to continue, then choose a new password.'
+              : 'Click the button to finish signing in to Trailhead OS.'
+          : 'This link is incomplete. Ask for a new one, or sign in with your password.'
+      }
+    >
+      {valid ? (
+        <form method="post" action="/auth/confirm" className="mt-6">
+          <input type="hidden" name="token_hash" value={tokenHash} />
+          <input type="hidden" name="type" value={type} />
+          <input type="hidden" name="next" value={next} />
+          <Button type="submit" variant="primary" className="w-full">
+            {isInvite ? 'Accept and sign in' : isRecovery ? 'Continue' : 'Sign in'}
+          </Button>
+        </form>
+      ) : null}
+    </AuthShell>
   )
 }

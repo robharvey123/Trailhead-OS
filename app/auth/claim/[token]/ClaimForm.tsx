@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { claimInvite } from '../actions'
+import { authInputClass } from '@/components/os/AuthShell'
+import Button from '@/components/ui/Button'
 
 export default function ClaimForm({ token, email }: { token: string; email: string }) {
   const [fullName, setFullName] = useState('')
@@ -10,8 +12,8 @@ export default function ClaimForm({ token, email }: { token: string; email: stri
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
+  const input = authInputClass
+  const label = 'field-label block'
 
   async function submit() {
     if (!fullName.trim()) { setError('Please enter your full name.'); return }
@@ -31,13 +33,13 @@ export default function ClaimForm({ token, email }: { token: string; email: stri
   }
 
   return (
-    <div style={{ display: 'grid', gap: 12 }}>
+    <div className="grid gap-3">
       <div><label className={label}>Email</label><input className={input} value={email} readOnly disabled /></div>
       <div><label className={label}>Full name</label><input className={input} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="e.g. Rob Harvey" autoFocus /></div>
       <div><label className={label}>Password</label><input className={input} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" /></div>
       <div><label className={label}>Confirm password</label><input className={input} type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></div>
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12 }}>{error}</p> : null}
-      <button className="btn btn-primary btn-sm" onClick={submit} disabled={busy}>{busy ? 'Setting up…' : 'Claim account'}</button>
+      {error ? <p role="alert" className="text-sm text-[var(--red-strong)]">{error}</p> : null}
+      <Button variant="primary" onClick={submit} disabled={busy} className="mt-1 w-full">{busy ? 'Setting up…' : 'Claim account'}</Button>
     </div>
   )
 }

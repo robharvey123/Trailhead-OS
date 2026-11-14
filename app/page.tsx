@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import TrailheadLogo from '@/components/brand/TrailheadLogo'
 import {
   buildAppLoginHref,
   buildMarketingSiteUrl,
@@ -35,14 +36,13 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-slate-800 bg-slate-950/90">
+    <div className="thmock th-dark">
+    <div className="min-h-screen bg-[linear-gradient(180deg,var(--navy),var(--navy-deep))]">
+      <header className="border-b border-[var(--border)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
-          <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-sky-300">
-              Trailhead Holdings Ltd
-            </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
+          <div className="flex items-center gap-4">
+            <TrailheadLogo variant="reverse" />
+            <h1 className="border-l border-[var(--border-light)] pl-4 font-[Georgia,serif] text-lg font-bold text-[var(--text)]">
               Trailhead OS
             </h1>
           </div>
@@ -50,13 +50,13 @@ export default async function Home() {
           <div className="flex items-center gap-3">
             <Link
               href={buildMarketingSiteUrl('/privacy', isLocalhost)}
-              className="text-sm text-slate-300 transition hover:text-white"
+              className="text-sm text-[var(--text-2)] transition hover:text-[var(--text)]"
             >
               Privacy Policy
             </Link>
             <Link
               href={buildAppLoginHref(isLocalhost)}
-              className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+              className="btn btn-ghost"
             >
               Sign in
             </Link>
@@ -67,19 +67,19 @@ export default async function Home() {
       <main className="px-6 py-16 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
           <section className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-sky-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.09em] text-[var(--accent-strong)]">
               Business Operating System
             </p>
-            <h2 className="mt-6 text-5xl font-bold leading-[1.02] tracking-[-0.05em] text-white md:text-6xl">
+            <h2 className="mt-5 font-[Georgia,serif] text-4xl font-bold leading-[1.08] tracking-[-0.02em] text-[var(--text)] md:text-5xl">
               Trailhead OS keeps the work of Trailhead Holdings in one place.
             </h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--text-2)]">
               Trailhead OS is the internal operations platform for Trailhead
               Holdings Ltd. It is used to manage day-to-day work across
               projects, personal admin, calendar events, CRM, enquiries,
               quoting, invoicing, and selected client-facing workflows.
             </p>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--text-2)]">
               The application is designed for operational control rather than
               public sign-up. Clients may interact with specific shared forms or
               views, while authenticated access is reserved for the Trailhead
@@ -89,36 +89,36 @@ export default async function Home() {
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
                 href={buildAppLoginHref(isLocalhost)}
-                className="rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-400"
+                className="btn btn-primary"
               >
                 Sign in to Trailhead OS
               </Link>
               <Link
                 href={buildMarketingSiteUrl('/', isLocalhost)}
-                className="rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:text-white"
+                className="btn btn-ghost"
               >
                 Visit trailheadholdings.uk
               </Link>
             </div>
           </section>
 
-          <aside className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-8 shadow-[0_30px_80px_-45px_rgba(14,165,233,0.35)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
+          <aside className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.09em] text-[var(--text-3)]">
               What the app covers
             </p>
             <ul className="mt-6 space-y-4">
               {features.map((feature) => (
                 <li
                   key={feature}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-4 text-sm leading-6 text-slate-200"
+                  className="rounded-control border border-[var(--border)] bg-[var(--surface)] px-4 py-4 text-sm leading-6 text-[var(--text-2)]"
                 >
                   {feature}
                 </li>
               ))}
             </ul>
 
-            <div className="mt-8 rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4">
-              <p className="text-sm leading-6 text-sky-100">
+            <div className="mt-8 rounded-control border border-[var(--accent)]/30 bg-[var(--accent-dim)] p-4">
+              <p className="text-sm leading-6 text-[var(--text-2)]">
                 Homepage, privacy policy, and product description are publicly
                 available here for verification and compliance. Application data
                 access remains behind authentication.
@@ -128,31 +128,32 @@ export default async function Home() {
         </div>
       </main>
 
-      <footer className="border-t border-slate-800 px-6 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
+      <footer className="border-t border-[var(--border)] px-6 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm text-[var(--text-3)] md:flex-row md:items-center md:justify-between">
           <p>Trailhead OS by Trailhead Holdings Ltd</p>
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href={buildMarketingSiteUrl('/privacy', isLocalhost)}
-              className="transition hover:text-white"
+              className="transition hover:text-[var(--text)]"
             >
               Privacy Policy
             </Link>
             <Link
               href={buildMarketingSiteUrl('/terms', isLocalhost)}
-              className="transition hover:text-white"
+              className="transition hover:text-[var(--text)]"
             >
               Terms of Service
             </Link>
             <Link
               href={buildMarketingSiteUrl('/contact', isLocalhost)}
-              className="transition hover:text-white"
+              className="transition hover:text-[var(--text)]"
             >
               Contact
             </Link>
           </div>
         </div>
       </footer>
+    </div>
     </div>
   )
 }
