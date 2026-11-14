@@ -5,6 +5,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { getCompanySettings } from '@/lib/company-settings'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'New invoice' }
+
 export default async function NewInvoicePage({
   searchParams,
 }: {

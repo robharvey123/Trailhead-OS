@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PageHeader from '@/components/ui/PageHeader'
 
-export const metadata = { title: 'Product | Sales | Trailhead OS' }
+export const metadata = { title: 'Product | Sales' }
 
 /** Read-only product context, via the sales_products/_phases/_milestones views (safe columns only). */
 export default async function SalesProductPage({ params }: { params: Promise<{ id: string }> }) {

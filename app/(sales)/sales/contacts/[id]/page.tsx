@@ -8,7 +8,7 @@ import PipelinePanel from './PipelinePanel'
 import FollowUpEmail from './FollowUpEmail'
 import { OUTCOME_LABELS, type OutcomeCode, type PipelineStage } from '@/lib/sales/queue'
 
-export const metadata = { title: 'Contact | Sales | Trailhead OS' }
+export const metadata = { title: 'Contact | Sales' }
 
 function fmt(v: string | null) {
   return v ? new Date(v).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''

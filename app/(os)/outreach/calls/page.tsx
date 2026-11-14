@@ -5,7 +5,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import CtpsScreenButton from '@/components/os/CtpsScreenButton'
 import { logCallOutcome } from './actions'
 
-export const metadata = { title: 'Call queue | Trailhead OS' }
+export const metadata = { title: 'Call queue' }
 
 const OUTCOMES = ['no_answer', 'voicemail', 'connected', 'interested', 'not_interested', 'callback', 'bad_number', 'do_not_call']
 

@@ -6,6 +6,8 @@ import StatusBadge from '@/components/os/StatusBadge'
 import PageHeader from '@/components/ui/PageHeader'
 import type { EnquiryStatus } from '@/lib/types'
 
+export const metadata = { title: 'Enquiries' }
+
 const ENQUIRY_TABS = [
   { value: 'all', label: 'All' },
   { value: 'new', label: 'New' },

@@ -4,6 +4,8 @@ import { getSeoArticles, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Articles' }
+
 const STATUS_STYLE: Record<string, string> = {
   drafting: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
   review: 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',

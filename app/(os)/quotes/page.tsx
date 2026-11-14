@@ -5,6 +5,8 @@ import WorkstreamBadge from '@/components/os/WorkstreamBadge'
 import { getQuotes } from '@/lib/db/quotes'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Quotes' }
+
 const QUOTE_TABS = [
   { value: 'all', label: 'All' },
   { value: 'draft', label: 'Draft' },

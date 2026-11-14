@@ -4,6 +4,8 @@ import { mockupFontVars } from '@/lib/fonts'
 import NotificationsSettings from '@/components/notifications/NotificationsSettings'
 import type { NotificationSettings } from '@/lib/types'
 
+export const metadata = { title: 'Push notifications' }
+
 export const dynamic = 'force-dynamic'
 
 const DEFAULTS: NotificationSettings = {

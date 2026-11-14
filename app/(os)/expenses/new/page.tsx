@@ -4,6 +4,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { listEngagements } from '@/lib/db/engagements'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Add expense' }
+
 export default async function NewExpensePage() {
   const supabase = await createClient()
   const [accounts, workstreams, engagements] = await Promise.all([

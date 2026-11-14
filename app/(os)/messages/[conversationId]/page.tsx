@@ -9,6 +9,8 @@ import { listEngagements } from '@/lib/db/engagements'
 import { normalizeMessage } from '../normalize'
 import type { ChatMessage } from '../actions'
 
+export const metadata = { title: 'Conversation' }
+
 export const dynamic = 'force-dynamic'
 
 const MSG_SELECT = 'id, sender_id, body, created_at, edited_at, deleted_at, attachments:chat_attachments(id, message_id, storage_path, file_name, mime_type, byte_size, width, height), mentions:chat_message_mentions(mentioned_person_id, person:people(id, full_name))'

@@ -14,6 +14,8 @@ import {
 } from '../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Topic clusters' }
+
 const STATUS_STYLE: Record<string, string> = {
   proposed: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
   approved: 'border-[var(--emerald)]/40 bg-[var(--emerald-dim)] text-[var(--emerald-strong)]',

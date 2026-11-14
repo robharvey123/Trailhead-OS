@@ -21,6 +21,8 @@ import {
 import { linkAdsAccountAction, syncAdsNowAction } from '../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Paid media' }
+
 /** E6: /paid — Search (Google), Social (Meta), Blended. */
 
 function money(n: number | null | undefined, currency?: string | null): string {

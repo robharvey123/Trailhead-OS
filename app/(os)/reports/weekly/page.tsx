@@ -1,6 +1,8 @@
 import { getInternalWeeklyReport } from '@/lib/reports/data'
 import InternalWeeklyClient from './InternalWeeklyClient'
 
+export const metadata = { title: 'Weekly report' }
+
 export const dynamic = 'force-dynamic'
 
 const MAX_BACK = 4 // current week + 4 weeks back

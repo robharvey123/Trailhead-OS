@@ -14,6 +14,8 @@ import PageHeader from '@/components/ui/PageHeader'
 import ProjectStatusPanel from '@/components/projects/ProjectStatusPanel'
 import MilestoneList from '@/components/projects/MilestoneList'
 
+export const metadata = { title: 'Project' }
+
 function fmtDate(v: string) {
   return new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }

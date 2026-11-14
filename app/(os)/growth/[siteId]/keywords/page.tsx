@@ -10,6 +10,8 @@ import { recrawlAction, runEnrichNowAction } from '../../actions'
 import type { SeoCluster } from '@/lib/types'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Keywords and pages' }
+
 /**
  * C4: the keyword coverage matrix, with the pages index and open technical
  * issues on the same route (?issues=1).

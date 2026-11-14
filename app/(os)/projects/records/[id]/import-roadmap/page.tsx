@@ -7,6 +7,8 @@ import PageHeader from '@/components/ui/PageHeader'
 import RoadmapUploadClient from './RoadmapUploadClient'
 import RoadmapReviewClient from './RoadmapReviewClient'
 
+export const metadata = { title: 'Import roadmap' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function ImportRoadmapPage({

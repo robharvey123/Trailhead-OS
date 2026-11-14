@@ -8,6 +8,8 @@ import { gapKeywords, suggestCompetitors } from '@/lib/growth/competitors'
 import { addCompetitorAction, pullCompetitorAction, toggleCompetitorAction } from '../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Competitor gap' }
+
 /** B2: "what do they rank for that we do not". */
 export default async function GrowthGapPage({
   params,

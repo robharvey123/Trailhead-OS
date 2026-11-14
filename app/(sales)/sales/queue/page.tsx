@@ -4,7 +4,7 @@ import { getSalesQueue } from '@/lib/sales/queue'
 import PageHeader from '@/components/ui/PageHeader'
 import QueueClient from './QueueClient'
 
-export const metadata = { title: 'Call queue | Sales | Trailhead OS' }
+export const metadata = { title: 'Call queue | Sales' }
 
 export default async function SalesQueuePage() {
   const supabase = await createClient()

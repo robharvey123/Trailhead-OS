@@ -4,6 +4,8 @@ import { getSeoBriefs, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Article briefs' }
+
 const STATUS_STYLE: Record<string, string> = {
   proposed: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
   approved: 'border-[var(--emerald)]/40 bg-[var(--emerald-dim)] text-[var(--emerald-strong)]',

@@ -5,6 +5,8 @@ import { getEnquiryById } from '@/lib/db/enquiries'
 import { getProjectById, getProjects } from '@/lib/db/projects'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Enquiry' }
+
 export default async function EnquiryDetailPage({
   params,
 }: {

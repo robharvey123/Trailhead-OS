@@ -10,6 +10,8 @@ import {
   updateCampaignScheduleAction, addCampaignStepAction, removeCampaignStepAction, sendTestEmailAction,
 } from './actions'
 
+export const metadata = { title: 'Campaign' }
+
 const WEEKDAY_LABELS: Record<number, string> = { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' }
 const WEEKDAYS: Array<{ n: number; label: string }> = [1, 2, 3, 4, 5, 6, 7].map((n) => ({ n, label: WEEKDAY_LABELS[n] }))
 

@@ -4,7 +4,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementForm from '@/components/os/engagements/EngagementForm'
 
-export const metadata = { title: 'New engagement | Trailhead OS' }
+export const metadata = { title: 'New engagement' }
 
 export default async function NewEngagementPage() {
   const supabase = await createClient()

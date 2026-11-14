@@ -15,6 +15,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import type { Workstream } from '@/lib/types'
 
+export const metadata = { title: 'Contact' }
+
 export default async function ContactDetailPage({
   params,
 }: {

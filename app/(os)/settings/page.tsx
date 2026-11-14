@@ -18,6 +18,8 @@ import ProfileSettingsForm from '@/components/os/ProfileSettingsForm'
 import CoworkActivityPanel, { type CoworkActivityRow } from '@/components/os/CoworkActivityPanel'
 import type { PricingTier, Workstream } from '@/lib/types'
 
+export const metadata = { title: 'Settings' }
+
 export default async function SettingsPage() {
   const supabase = await createClient()
   const {

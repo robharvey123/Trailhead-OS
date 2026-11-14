@@ -8,6 +8,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 
+export const metadata = { title: 'Invoice' }
+
 export default async function InvoiceDetailPage({
   params,
   searchParams,

@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { approveBriefAction, rejectBriefAction } from '../../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Article brief' }
+
 interface BriefOutline {
   angle?: string
   sections?: Array<{ heading: string; notes: string }>

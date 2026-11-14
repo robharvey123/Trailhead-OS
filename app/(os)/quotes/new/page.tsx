@@ -6,6 +6,8 @@ import type { ProjectPhase } from '@/lib/types'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'New quote' }
+
 function mapProjectPhasesToScope(phases: ProjectPhase[] | undefined) {
   return (phases ?? []).map((phase) => ({
     phase: phase.name,

@@ -21,6 +21,8 @@ import {
   type EngagementTaskActivity,
 } from '@/lib/types'
 
+export const metadata = { title: 'Task' }
+
 function fmtDate(v: string | null) {
   return v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 }

@@ -5,6 +5,8 @@ import { getProjectById } from '@/lib/db/projects'
 import { listEngagements } from '@/lib/db/engagements'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Edit project' }
+
 export default async function EditProjectPage({
   params,
 }: {

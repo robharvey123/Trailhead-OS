@@ -5,7 +5,7 @@ import { getVerifiedSendingDomains } from '@/lib/sales/sender'
 import PageHeader from '@/components/ui/PageHeader'
 import { SenderIdentityForm, SendingDomainsForm } from './SettingsForms'
 
-export const metadata = { title: 'Settings | Sales | Trailhead OS' }
+export const metadata = { title: 'Settings | Sales' }
 
 export default async function SalesSettingsPage() {
   const supabase = await createClient()

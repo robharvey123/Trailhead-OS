@@ -8,6 +8,8 @@ import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 import MyWorkClient from '../my-work/MyWorkClient'
 
+export const metadata = { title: 'Tasks' }
+
 export const dynamic = 'force-dynamic'
 
 // /tasks now serves the engagement_tasks views (assigned to me / reported by me /

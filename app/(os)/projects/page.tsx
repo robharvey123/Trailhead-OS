@@ -5,6 +5,8 @@ import { getProjects } from '@/lib/db/projects'
 import { createClient } from '@/lib/supabase/server'
 import type { ProjectStatus } from '@/lib/types'
 
+export const metadata = { title: 'Projects' }
+
 const PROJECT_TABS: Array<{ value: 'all' | ProjectStatus; label: string }> = [
   { value: 'all', label: 'All' },
   { value: 'planning', label: 'Planning' },

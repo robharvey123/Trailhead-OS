@@ -5,6 +5,8 @@ import { formatCurrency } from '@/lib/format'
 import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Hours by person' }
+
 export const dynamic = 'force-dynamic'
 
 function monthRange() {

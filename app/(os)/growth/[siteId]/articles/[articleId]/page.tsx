@@ -16,6 +16,8 @@ import {
 } from '../../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Article' }
+
 // The Regenerate action runs draftArticle inline, and a full article is the
 // longest model call in the OS — the same reason /api/cron/growth-draft raises
 // its own ceiling. Server actions inherit this segment's limit.

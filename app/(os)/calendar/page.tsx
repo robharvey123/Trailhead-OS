@@ -5,6 +5,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { listEngagements } from '@/lib/db/engagements'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Calendar' }
+
 export default async function CalendarPage() {
   const supabase = await createClient()
   const [workstreams, contacts, projects, accountsResult, engagementRows, googleTokenResult, feedsResult] = await Promise.all([

@@ -7,6 +7,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import type { ExpenseCategory } from '@/lib/types'
 
+export const metadata = { title: 'Expenses' }
+
 const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   travel: 'Travel',
   software: 'Software',

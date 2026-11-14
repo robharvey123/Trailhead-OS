@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/server'
 import { updateGrowthBudgetsAction, updateSeoSiteAction } from '../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Site settings' }
+
 const INPUT_CLASS =
   'os-input w-full px-4 py-2.5 text-sm'
 

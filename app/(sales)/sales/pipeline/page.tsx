@@ -5,7 +5,7 @@ import { listPipelineContacts } from '@/lib/sales/queue'
 import PageHeader from '@/components/ui/PageHeader'
 import PipelineClient from './PipelineClient'
 
-export const metadata = { title: 'Pipeline | Sales | Trailhead OS' }
+export const metadata = { title: 'Pipeline | Sales' }
 
 export default async function SalesPipelinePage() {
   const supabase = await createClient()

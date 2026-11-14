@@ -11,6 +11,8 @@ import { getAccounts } from '@/lib/db/accounts'
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementDetailClient from '@/components/os/engagements/EngagementDetailClient'
 
+export const metadata = { title: 'Engagement' }
+
 export default async function EngagementDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()

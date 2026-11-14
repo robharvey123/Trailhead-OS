@@ -5,6 +5,8 @@ import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
 import GenerateReportControls from '@/components/os/engagements/GenerateReportControls'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Engagement reports' }
+
 export const dynamic = 'force-dynamic'
 
 const KIND_LABEL: Record<string, string> = {

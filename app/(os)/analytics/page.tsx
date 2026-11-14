@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import CreateWorkspaceForm from '@/app/(app)/workspaces/CreateWorkspaceForm'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Analytics' }
+
 export default async function AnalyticsPage() {
   const supabase = await createClient()
   const { data: workspaces } = await supabase

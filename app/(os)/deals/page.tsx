@@ -5,7 +5,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import DealsClient from '@/components/os/DealsClient'
 
 export const metadata = {
-  title: 'Deals | Trailhead OS',
+  title: 'Deals',
 }
 
 export default async function DealsPage() {

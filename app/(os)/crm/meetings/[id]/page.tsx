@@ -7,6 +7,8 @@ import MeetingSummary from '@/components/os/MeetingSummary'
 import MeetingLinksEditor, { type LinkItem } from '@/components/os/MeetingLinksEditor'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Meeting' }
+
 function fmtDate(iso: string | null) {
   if (!iso) return 'No date'
   return new Date(iso).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })

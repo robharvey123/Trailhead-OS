@@ -16,6 +16,8 @@ import {
 } from '../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Link building' }
+
 const STATUS_STYLE: Record<string, string> = {
   identified: 'border-[color:var(--border)] text-[color:var(--text-2)]',
   researching: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',

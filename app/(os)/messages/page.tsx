@@ -5,6 +5,8 @@ import type { ConversationRow } from '@/components/messaging/ConversationList'
 import MessagesScreen from '@/components/messaging/MessagesScreen'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Messages' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function MessagesPage() {

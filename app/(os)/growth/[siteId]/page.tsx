@@ -12,6 +12,8 @@ import type { SeoGscDaily, SeoGrowthScore } from '@/lib/types'
 import { expandSeedsAction, researchKeywordsAction, syncGscNowAction } from '../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Growth site' }
+
 /** D5: an action names its object, shows the measurement + window, states the gain and links to a real destination. */
 interface RankedAction {
   label: string

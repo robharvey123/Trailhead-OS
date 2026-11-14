@@ -8,6 +8,8 @@ import { listPeople } from '@/lib/db/people'
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementTasksClient from './EngagementTasksClient'
 
+export const metadata = { title: 'Engagement tasks' }
+
 export const dynamic = 'force-dynamic'
 
 export default async function EngagementTasksPage({ params }: { params: Promise<{ id: string }> }) {

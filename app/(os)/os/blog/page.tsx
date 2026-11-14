@@ -6,6 +6,8 @@ import { createClient } from '@/lib/supabase/server'
 import { buildMarketingSiteUrl, isLocalDevelopmentHost } from '@/lib/site'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Blog' }
+
 export default async function OsBlogPage() {
   const host = (await headers()).get('host') || ''
   const isLocalhost = isLocalDevelopmentHost(host)

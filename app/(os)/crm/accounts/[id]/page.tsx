@@ -15,6 +15,8 @@ import { getCompanySettings } from '@/lib/company-settings'
 import { mockupFontVars } from '@/lib/fonts'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Account' }
+
 export default async function AccountDetailPage({
   params,
 }: {

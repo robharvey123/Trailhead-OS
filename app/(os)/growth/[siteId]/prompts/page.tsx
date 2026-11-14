@@ -7,6 +7,8 @@ import { PendingButton } from '@/components/growth/PendingButton'
 import { addPromptAction, seedPromptsAction, togglePromptAction } from '../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'AI visibility prompts' }
+
 const INPUT_CLASS = 'os-input px-3 py-2 text-sm'
 
 export default async function GrowthPromptsPage({

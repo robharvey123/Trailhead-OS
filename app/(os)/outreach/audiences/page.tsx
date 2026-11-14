@@ -3,7 +3,7 @@ import { listAudiences } from '@/lib/db/outreach'
 import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 
-export const metadata = { title: 'Audiences | Trailhead OS' }
+export const metadata = { title: 'Audiences' }
 
 export default async function AudiencesPage() {
   const supabase = await createClient()

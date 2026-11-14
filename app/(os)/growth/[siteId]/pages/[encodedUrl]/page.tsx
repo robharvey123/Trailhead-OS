@@ -10,6 +10,8 @@ import { CTR_MODEL_LABEL } from '@/lib/growth/ctr'
 import { generateWorksheetAction, openRefreshPrAction, setWorksheetStatusAction } from '../../../actions'
 import PageHeader from '@/components/ui/PageHeader'
 
+export const metadata = { title: 'Page refresh' }
+
 /**
  * D2: the refresh worksheet — one per URL, where a refresh actually gets done.
  */

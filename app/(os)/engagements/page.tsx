@@ -4,7 +4,7 @@ import { currentPeriodHoursByEngagement, listEngagements } from '@/lib/db/engage
 import { mockupFontVars } from '@/lib/fonts'
 import EngagementsClient from '@/components/os/engagements/EngagementsClient'
 
-export const metadata = { title: 'Engagements | Trailhead OS' }
+export const metadata = { title: 'Engagements' }
 
 function monthStartISO() {
   // Direct YYYY-MM-01 string: new Date(y, m, 1).toISOString() shifts back a day in

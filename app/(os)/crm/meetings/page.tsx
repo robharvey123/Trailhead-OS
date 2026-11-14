@@ -6,7 +6,7 @@ import SyncGranolaButton from '@/components/os/SyncGranolaButton'
 import PageHeader from '@/components/ui/PageHeader'
 
 export const metadata = {
-  title: 'Meetings | Trailhead OS',
+  title: 'Meetings',
 }
 
 function fmtDate(iso: string | null) {

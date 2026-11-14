@@ -11,6 +11,8 @@ import { createClient } from '@/lib/supabase/server'
 import { calculateTotals, roundMoney, type InvoiceStatus } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
 
+export const metadata = { title: 'Invoicing' }
+
 const INVOICE_TABS = [
   { value: 'all', label: 'All' },
   { value: 'draft', label: 'Draft' },

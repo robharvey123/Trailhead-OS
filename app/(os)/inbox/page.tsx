@@ -8,7 +8,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import InboxClient from '@/components/os/inbox/InboxClient'
 
 export const metadata = {
-  title: 'Inbox | Trailhead OS',
+  title: 'Inbox',
 }
 
 export default async function InboxPage() {

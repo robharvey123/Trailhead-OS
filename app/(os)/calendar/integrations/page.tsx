@@ -4,6 +4,8 @@ import PageHeader from '@/components/ui/PageHeader'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Calendar integrations' }
+
 export default async function CalendarIntegrationsPage() {
   const supabase = await createClient()
 

@@ -4,7 +4,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import { listSalesProducts } from '@/lib/sales/data'
 import { getSalesDashboard, STAGE_LABELS, type WeekStats } from '@/lib/sales/queue'
 
-export const metadata = { title: 'Sales dashboard | Trailhead OS' }
+export const metadata = { title: 'Sales dashboard' }
 
 const METRICS: Array<{ key: keyof WeekStats; label: string }> = [
   { key: 'dials', label: 'Dials' },

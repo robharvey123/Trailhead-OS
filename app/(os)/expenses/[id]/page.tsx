@@ -6,6 +6,8 @@ import { getWorkstreams } from '@/lib/db/workstreams'
 import { listEngagements } from '@/lib/db/engagements'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Edit expense' }
+
 export default async function ExpenseDetailPage({
   params,
 }: {

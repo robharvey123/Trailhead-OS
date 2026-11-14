@@ -5,7 +5,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 import SafeEmailHtml from '@/components/os/SafeEmailHtml'
 
-export const metadata = { title: 'Templates | Trailhead OS' }
+export const metadata = { title: 'Templates' }
 
 // A realistic sample contact so the preview reads like a real send.
 const SAMPLE: Record<string, string> = {

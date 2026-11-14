@@ -3,6 +3,8 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'New contact' }
+
 export default async function NewContactPage({
   searchParams,
 }: {

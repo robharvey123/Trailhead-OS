@@ -7,6 +7,8 @@ import { getDailyBriefData } from '@/lib/db/daily-brief'
 import { getPortfolioOverview } from '@/lib/db/portfolio'
 import { createClient } from '@/lib/supabase/server'
 
+export const metadata = { title: 'Dashboard' }
+
 function formatDate(value: Date) {
   const year = value.getFullYear()
   const month = String(value.getMonth() + 1).padStart(2, '0')

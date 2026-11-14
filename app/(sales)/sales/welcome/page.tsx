@@ -3,7 +3,7 @@ import { getCurrentProfile } from '@/lib/auth/roles'
 import PageHeader from '@/components/ui/PageHeader'
 import WelcomeForm from './WelcomeForm'
 
-export const metadata = { title: 'Welcome | Sales | Trailhead OS' }
+export const metadata = { title: 'Welcome | Sales' }
 
 export default async function SalesWelcomePage() {
   const supabase = await createClient()

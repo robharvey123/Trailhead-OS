@@ -4,7 +4,7 @@ import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 import { createCampaign } from '../[id]/actions'
 
-export const metadata = { title: 'New campaign | Trailhead OS' }
+export const metadata = { title: 'New campaign' }
 
 const WEEKDAYS: Array<{ n: number; label: string }> = [
   { n: 1, label: 'Mon' }, { n: 2, label: 'Tue' }, { n: 3, label: 'Wed' }, { n: 4, label: 'Thu' },

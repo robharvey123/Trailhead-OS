@@ -5,6 +5,8 @@ import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 import HoursByEngagementClient from '@/components/reports/HoursByEngagementClient'
 
+export const metadata = { title: 'Hours by engagement' }
+
 export const dynamic = 'force-dynamic'
 
 function monthRange() {

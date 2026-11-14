@@ -5,7 +5,7 @@ import { OUTREACH_CAMPAIGN_STATUS_LABELS } from '@/lib/types'
 import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 
-export const metadata = { title: 'Outreach | Trailhead OS' }
+export const metadata = { title: 'Outreach' }
 
 export default async function OutreachPage() {
   const supabase = await createClient()
