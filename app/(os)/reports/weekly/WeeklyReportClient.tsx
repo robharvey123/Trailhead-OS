@@ -3,22 +3,7 @@
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import type { WeeklyReportData } from '@/lib/db/weekly-report'
-
-const WORKSTREAM_COLOUR_MAP: Record<string, string> = {
-  teal: 'bg-teal-400',
-  amber: 'bg-amber-400',
-  purple: 'bg-purple-400',
-  green: 'bg-emerald-400',
-  coral: 'bg-pink-400',
-}
-
-const WORKSTREAM_TEXT_MAP: Record<string, string> = {
-  teal: 'text-teal-400',
-  amber: 'text-amber-400',
-  purple: 'text-purple-400',
-  green: 'text-emerald-400',
-  coral: 'text-pink-400',
-}
+import { getWorkstreamColour } from '@/lib/workstreams'
 
 export default function WeeklyReportClient({ initialData }: { initialData: WeeklyReportData }) {
   const [data, setData] = useState(initialData)
@@ -127,7 +112,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
           {workstreams.map((ws) => (
             <div key={ws.id} className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-3">
-                <span className={`h-2.5 w-2.5 rounded-pill ${WORKSTREAM_COLOUR_MAP[ws.colour] ?? 'bg-gray-400'}`} />
+                <span className={`h-2.5 w-2.5 rounded-pill ${getWorkstreamColour(ws.colour).dot}`} />
                 <span className="font-medium text-[color:var(--text)]">{ws.label}</span>
               </div>
               <div className="flex items-center gap-5 text-sm text-[color:var(--text-2)]">
@@ -157,7 +142,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
                   <div className="min-w-0 flex-1 pr-4">
                     <p className="truncate font-medium text-[color:var(--text)]">{proj.name}</p>
                     {proj.workstream_label ? (
-                      <p className={`text-xs ${WORKSTREAM_TEXT_MAP[proj.workstream_colour ?? ''] ?? 'text-[color:var(--text-2)]'}`}>
+                      <p className={`text-xs ${getWorkstreamColour(proj.workstream_colour ?? '').header}`}>
                         {proj.workstream_label}
                       </p>
                     ) : null}
