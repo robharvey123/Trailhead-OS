@@ -76,13 +76,13 @@ export default function OsShell({
         width/padding are layout properties, so the old 300ms transition reflowed
         the whole document every frame of a toggle. */}
     <div
-      className="os-shell min-h-screen bg-[#F1F5F9] text-[#0F172A]"
+      className="thmock os-shell min-h-screen bg-[var(--surface)]"
       data-sidebar={collapsed ? 'collapsed' : 'expanded'}
     >
       {/* First tab stop on every OS page: jump the ~40-item sidebar. */}
       <a
         href="#os-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-2xl focus:border focus:border-[#E2E8F0] focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[#0F172A] focus:outline-2 focus:outline-offset-2 focus:outline-[#0369A1]"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-pill focus:border focus:border-[var(--border)] focus:bg-[var(--bg)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text)] focus:outline-2 focus:outline-offset-2 focus:outline-[var(--focus)]"
       >
         Skip to main content
       </a>
@@ -101,7 +101,7 @@ export default function OsShell({
         tabIndex={-1}
         className="os-shell-main min-h-screen"
       >
-        <div className="thmock min-h-screen w-full bg-[var(--surface)] pt-14 md:pt-0">
+        <div className="min-h-screen w-full bg-[var(--surface)] pt-14 md:pt-0">
           <Topbar onOpenSearch={openSearch} />
           <div className="w-full px-4 pb-8 pt-6 md:px-6 lg:px-8">{children}</div>
         </div>

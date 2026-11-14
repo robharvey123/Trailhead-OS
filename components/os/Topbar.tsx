@@ -37,7 +37,7 @@ export default function Topbar({ onOpenSearch }: { onOpenSearch: () => void }) {
   }))
 
   return (
-    <div className="sticky top-0 z-30 flex h-12 items-center justify-between gap-4 border-b border-[color:var(--border)] bg-[var(--surface)]/95 px-4 backdrop-blur md:px-6 lg:px-8">
+    <div className="sticky top-0 z-30 flex h-12 items-center justify-between gap-4 border-b border-[color:var(--border)] bg-[var(--bg)]/95 px-4 backdrop-blur md:px-6 lg:px-8">
       <nav aria-label="Breadcrumb" className="min-w-0">
         <ol className="flex min-w-0 items-center gap-1.5 text-sm">
           <li className="shrink-0">
@@ -67,14 +67,14 @@ export default function Topbar({ onOpenSearch }: { onOpenSearch: () => void }) {
       <button
         type="button"
         onClick={onOpenSearch}
-        className="flex shrink-0 items-center gap-2 rounded-xl border border-[color:var(--border)] bg-white px-3 py-1.5 text-sm text-[color:var(--text-3)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text-2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent-strong)]"
+        className="flex shrink-0 items-center gap-2 rounded-control border border-[color:var(--border)] bg-[var(--bg)] px-3 py-1.5 text-sm text-[color:var(--text-3)] transition hover:border-[color:var(--border-light)] hover:text-[color:var(--text-2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--focus)]"
       >
         <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
         <span className="hidden sm:inline">Search</span>
-        <kbd className="os-mono hidden rounded border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] sm:inline">
+        <kbd className="os-mono hidden rounded-control border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] sm:inline">
           ⌘K
         </kbd>
       </button>

@@ -934,8 +934,8 @@ body {
 /* scrollbars (3.12) */
 .thmock ::-webkit-scrollbar { width: 6px; height: 6px; }
 .thmock ::-webkit-scrollbar-track { background: transparent; }
-.thmock ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: var(--radius-control); }
-.thmock ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+.thmock ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: var(--radius-control); }
+.thmock ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
 /* ==========================================================================
    TOUCH TARGETS (WCAG 2.5.8 AA — 24x24 minimum, 44x44 on coarse pointers)
