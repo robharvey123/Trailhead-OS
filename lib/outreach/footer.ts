@@ -1,4 +1,5 @@
 import type { CompanySettings } from '@/lib/company-settings'
+import { BRAND } from '@/lib/brand'
 
 // Outreach-only email footer. This DELIBERATELY omits the street address
 // (address_line1 / address_line2) and the postcode: os_company_settings holds
@@ -54,14 +55,14 @@ export function renderOutreachFooterHtml(settings: CompanySettings, opts: { conf
 
   if (settings.company_email) {
     lines.push(
-      `<p style="margin:4px 0 0"><a href="mailto:${escapeHtml(settings.company_email)}" style="color:#0f172a;text-decoration:none">${escapeHtml(settings.company_email)}</a></p>`
+      `<p style="margin:4px 0 0"><a href="mailto:${escapeHtml(settings.company_email)}" style="color:${BRAND.navy};text-decoration:none">${escapeHtml(settings.company_email)}</a></p>`
     )
   }
 
   return `
-    <div style="margin-top:32px;padding-top:16px;border-top:1px solid #e2e8f0;color:#475569;font-size:12px;line-height:1.6">
+    <div style="margin-top:32px;padding-top:16px;border-top:1px solid ${BRAND.border};color:${BRAND.slate};font-size:12px;line-height:1.6">
       ${lines.join('')}
     </div>
-    <p style="margin:8px 0 0;color:#94a3b8;font-size:12px"><a href="${opts.confirmUnsubUrl}" style="color:#94a3b8;text-decoration:underline">Unsubscribe from these emails</a> · <a href="${PRIVACY_URL}" style="color:#94a3b8;text-decoration:underline">Privacy</a></p>
+    <p style="margin:8px 0 0;color:${BRAND.slate};font-size:12px"><a href="${opts.confirmUnsubUrl}" style="color:${BRAND.slate};text-decoration:underline">Unsubscribe from these emails</a> · <a href="${PRIVACY_URL}" style="color:${BRAND.slate};text-decoration:underline">Privacy</a></p>
   `
 }

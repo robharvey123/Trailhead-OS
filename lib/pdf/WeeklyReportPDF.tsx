@@ -7,29 +7,23 @@ import {
   renderToBuffer,
 } from '@react-pdf/renderer'
 import type { WeeklyReportData } from '@/lib/db/weekly-report'
+import { BRAND } from '@/lib/brand'
+import { getWorkstreamColour } from '@/lib/workstreams'
 
+// The weekly report prints on white in the brand palette. Brand colours come
+// from lib/brand.ts, workstream colours from the one map in lib/workstreams.ts,
+// and the three status inks match the OS status tokens.
 const COLOURS = {
-  bg: '#0C0C14',
-  card: '#1A1A28',
-  border: '#2A2A3A',
-  lime: '#B8FF00',
-  white: '#FFFFFF',
-  muted: '#9CA3AF',
-  teal: '#2DD4BF',
-  amber: '#FBBF24',
-  purple: '#A78BFA',
-  green: '#34D399',
-  coral: '#FB7185',
-  rose: '#FF4081',
+  bg: BRAND.paper,
+  card: BRAND.coolLight,
+  border: BRAND.border,
+  ink: BRAND.navy,
+  accent: BRAND.blueInk,
+  muted: BRAND.slate,
+  good: '#15803D',
+  warn: '#B45309',
+  bad: '#B91C1C',
 } as const
-
-const WORKSTREAM_COLOURS: Record<string, string> = {
-  teal: COLOURS.teal,
-  amber: COLOURS.amber,
-  purple: COLOURS.purple,
-  green: COLOURS.green,
-  coral: COLOURS.coral,
-}
 
 const styles = StyleSheet.create({
   page: {
@@ -39,7 +33,7 @@ const styles = StyleSheet.create({
     paddingLeft: 36,
     fontFamily: 'Helvetica',
     fontSize: 10,
-    color: COLOURS.white,
+    color: COLOURS.ink,
     backgroundColor: COLOURS.bg,
   },
   headerRow: {
@@ -52,7 +46,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: 700,
     letterSpacing: 3,
-    color: COLOURS.lime,
+    color: COLOURS.accent,
   },
   weekLabel: {
     fontSize: 11,
@@ -61,7 +55,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 700,
-    color: COLOURS.white,
+    color: COLOURS.ink,
     marginBottom: 16,
   },
   section: {
@@ -72,7 +66,7 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     letterSpacing: 2,
     textTransform: 'uppercase',
-    color: COLOURS.lime,
+    color: COLOURS.accent,
     marginBottom: 8,
   },
   card: {
@@ -96,7 +90,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: 700,
-    color: COLOURS.white,
+    color: COLOURS.ink,
   },
   statLabel: {
     fontSize: 7,
@@ -115,7 +109,7 @@ const styles = StyleSheet.create({
   wsLabel: {
     fontSize: 10,
     fontWeight: 700,
-    color: COLOURS.white,
+    color: COLOURS.ink,
   },
   wsStats: {
     flexDirection: 'row',
@@ -135,7 +129,7 @@ const styles = StyleSheet.create({
   projName: {
     fontSize: 10,
     fontWeight: 700,
-    color: COLOURS.white,
+    color: COLOURS.ink,
     maxWidth: '55%',
   },
   projMeta: {
@@ -190,7 +184,7 @@ function WeeklyReportDocument({ data }: { data: WeeklyReportData }) {
               <Text style={styles.statLabel}>Open</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: COLOURS.lime }]}>{taskSummary.completed}</Text>
+              <Text style={[styles.statValue, { color: COLOURS.good }]}>{taskSummary.completed}</Text>
               <Text style={styles.statLabel}>Completed</Text>
             </View>
             <View style={styles.statBox}>
@@ -198,13 +192,13 @@ function WeeklyReportDocument({ data }: { data: WeeklyReportData }) {
               <Text style={styles.statLabel}>Added</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: taskSummary.overdue > 0 ? COLOURS.rose : COLOURS.white }]}>
+              <Text style={[styles.statValue, { color: taskSummary.overdue > 0 ? COLOURS.bad : COLOURS.ink }]}>
                 {taskSummary.overdue}
               </Text>
               <Text style={styles.statLabel}>Overdue</Text>
             </View>
             <View style={styles.statBox}>
-              <Text style={[styles.statValue, { color: COLOURS.amber }]}>{taskSummary.dueSoon}</Text>
+              <Text style={[styles.statValue, { color: COLOURS.warn }]}>{taskSummary.dueSoon}</Text>
               <Text style={styles.statLabel}>Due Soon</Text>
             </View>
           </View>
@@ -222,18 +216,18 @@ function WeeklyReportDocument({ data }: { data: WeeklyReportData }) {
                       width: 6,
                       height: 6,
                       borderRadius: 3,
-                      backgroundColor: WORKSTREAM_COLOURS[ws.colour] ?? COLOURS.muted,
+                      backgroundColor: getWorkstreamColour(ws.colour).hex,
                     }}
                   />
                   <Text style={styles.wsLabel}>{ws.label}</Text>
                 </View>
                 <View style={styles.wsStats}>
                   <Text style={styles.wsStat}>{ws.openTasks} open</Text>
-                  <Text style={[styles.wsStat, { color: COLOURS.lime }]}>
+                  <Text style={[styles.wsStat, { color: COLOURS.good }]}>
                     {ws.completedThisWeek} done
                   </Text>
                   {ws.overdue > 0 ? (
-                    <Text style={[styles.wsStat, { color: COLOURS.rose }]}>
+                    <Text style={[styles.wsStat, { color: COLOURS.bad }]}>
                       {ws.overdue} overdue
                     </Text>
                   ) : null}
@@ -256,7 +250,7 @@ function WeeklyReportDocument({ data }: { data: WeeklyReportData }) {
                       {proj.completed_task_count}/{proj.task_count} tasks
                     </Text>
                     {proj.next_milestone ? (
-                      <Text style={[styles.projMeta, { color: COLOURS.amber }]}>
+                      <Text style={[styles.projMeta, { color: COLOURS.warn }]}>
                         → {proj.next_milestone}
                       </Text>
                     ) : null}
