@@ -1,7 +1,7 @@
 import AuthShell from '@/components/os/AuthShell'
 import ForgotForm from './ForgotForm'
 
-export const metadata = { title: 'Reset password | Trailhead OS' }
+export const metadata = { title: 'Reset password' }
 
 export default function ForgotPasswordPage() {
   return (

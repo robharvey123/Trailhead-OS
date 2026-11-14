@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import SalesShell from '@/components/sales/SalesShell'
@@ -6,6 +7,11 @@ import { createClient } from '@/lib/supabase/server'
 import { mockupFontVars } from '@/lib/fonts'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
+  title: { template: '%s | Trailhead OS', absolute: 'Sales | Trailhead OS' },
+  robots: { index: false, follow: false },
+}
 
 /**
  * /sales/* is for the Sales Lead seat, plus owner/admin (to see what the seat

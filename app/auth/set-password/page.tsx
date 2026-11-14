@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import AuthShell from '@/components/os/AuthShell'
 import SetPasswordForm from './SetPasswordForm'
 
-export const metadata = { title: 'Choose a new password | Trailhead OS' }
+export const metadata = { title: 'Choose a new password' }
 
 export default async function SetPasswordPage() {
   const supabase = await createClient()

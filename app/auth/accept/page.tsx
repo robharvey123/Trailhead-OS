@@ -2,7 +2,7 @@ import { safeNextPath } from '@/lib/auth/safe-next'
 import AuthShell from '@/components/os/AuthShell'
 import Button from '@/components/ui/Button'
 
-export const metadata = { title: 'Sign in | Trailhead OS' }
+export const metadata = { title: 'Sign in' }
 
 /**
  * Landing page for emailed sign-in and invite links. It renders a button that

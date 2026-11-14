@@ -4,6 +4,8 @@ import ClaimForm from './ClaimForm'
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = { title: 'Claim your account' }
+
 export default async function ClaimPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
   const invite = await lookupClaimableInvite(token)

@@ -30,26 +30,28 @@ export default function ConfirmDialog({
 
   if (!open) return null
 
+  // Solid red is allowed here and only here: the confirming action in a dialog.
+  // White on amber fails contrast, so the warning variant sets navy type.
   const btnClass = variant === 'danger'
-    ? 'bg-[var(--red)] hover:bg-[var(--red)] text-white'
+    ? 'btn-danger-solid'
     : variant === 'warning'
-      ? 'bg-[var(--amber)] hover:bg-[var(--amber)] text-white'
-      : 'bg-white/90 hover:bg-white text-[var(--text)]'
+      ? 'bg-[var(--amber)] text-[var(--navy)]'
+      : 'btn-primary'
 
   return (
     <dialog
       ref={dialogRef}
       onClose={onCancel}
-      className="fixed inset-0 z-50 m-auto w-full max-w-sm rounded-card border border-[var(--border)] bg-[var(--bg)] p-0 text-[var(--text)] backdrop:bg-black/60"
+      className="thmock fixed inset-0 z-50 m-auto w-full max-w-sm rounded-card border border-[var(--border)] p-0 shadow-[var(--shadow-lg)] backdrop:bg-[var(--navy)]/45"
     >
       <div className="p-6">
         <h3 className="text-lg font-semibold">{title}</h3>
-        <p className="mt-2 text-sm text-[var(--text-3)]">{message}</p>
+        <p className="mt-2 text-sm text-[var(--text-2)]">{message}</p>
         <div className="mt-6 flex justify-end gap-3">
-          <button onClick={onCancel} className="rounded-control border border-[var(--border)] px-4 py-2 text-xs uppercase text-[var(--text-2)] hover:text-white">
+          <button type="button" onClick={onCancel} className="btn btn-ghost btn-sm">
             {cancelLabel}
           </button>
-          <button onClick={onConfirm} className={`rounded-control px-4 py-2 text-xs font-semibold uppercase ${btnClass}`}>
+          <button type="button" onClick={onConfirm} className={`btn btn-sm ${btnClass}`}>
             {confirmLabel}
           </button>
         </div>

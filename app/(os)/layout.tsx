@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import OsShell from '@/components/os/OsShell'
@@ -6,6 +7,14 @@ import { getUnreadTaskCount, getUnreadMailCount, getUnreadMessagesCount, getUnre
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
+
+// Every OS page sets a short `title`; this template names the product. `absolute`
+// on the default stops the root layout appending the marketing site's name.
+// The OS is private, so it is kept out of search indexes.
+export const metadata: Metadata = {
+  title: { template: '%s | Trailhead OS', absolute: 'Trailhead OS' },
+  robots: { index: false, follow: false },
+}
 
 export default async function OsLayout({
   children,
