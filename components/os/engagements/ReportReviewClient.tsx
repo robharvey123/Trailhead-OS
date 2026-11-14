@@ -95,7 +95,7 @@ export default function ReportReviewClient(props: {
 
   const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
   const sectionWrap = 'rounded-card border border-[color:var(--border)] p-4'
-  const label = 'text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--text-3)]'
+  const label = 'os-label'
 
   const s = props.spine
   const factGroups: Array<{ head: string; items: string[] }> = s ? [
@@ -124,11 +124,11 @@ export default function ReportReviewClient(props: {
         actions={
           props.xlsxUrl || !readOnly ? (
             <>
-              {props.xlsxUrl ? <a href={props.xlsxUrl} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]">Download timesheet</a> : null}
+              {props.xlsxUrl ? <a href={props.xlsxUrl} className="btn btn-ghost btn-sm">Download timesheet</a> : null}
               {!readOnly ? (
                 <>
-                  <button type="button" disabled={pending} onClick={regenAll} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)] disabled:opacity-60">Regenerate prose</button>
-                  <button type="button" disabled={pending} onClick={save} className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60">{savedFlash ? 'Saved ✓' : 'Save draft'}</button>
+                  <button type="button" disabled={pending} onClick={regenAll} className="btn btn-ghost btn-sm">Regenerate prose</button>
+                  <button type="button" disabled={pending} onClick={save} className="btn btn-primary btn-sm">{savedFlash ? 'Saved ✓' : 'Save draft'}</button>
                 </>
               ) : null}
             </>
@@ -142,7 +142,7 @@ export default function ReportReviewClient(props: {
           Click “Regenerate prose”, or write the sections manually. Reason: {props.narrativeError}
         </div>
       ) : null}
-      {error ? <p className="text-sm text-[color:var(--red)]">{error}</p> : null}
+      {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* PDF preview */}
@@ -208,7 +208,7 @@ export default function ReportReviewClient(props: {
             {!readOnly ? (
               <div className="mt-2 flex gap-2">
                 <input className={input} placeholder="add email…" value={recipientInput} onChange={(e) => setRecipientInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addRecipient(recipientInput) } }} />
-                <button type="button" className="rounded-card border border-[color:var(--border)] px-3 text-sm" onClick={() => addRecipient(recipientInput)}>Add</button>
+                <button type="button" className="btn btn-ghost" onClick={() => addRecipient(recipientInput)}>Add</button>
               </div>
             ) : null}
             {!readOnly && props.suggested.length ? (
@@ -224,7 +224,7 @@ export default function ReportReviewClient(props: {
               </div>
             ) : null}
             {!readOnly ? (
-              <button type="button" disabled={pending || recipients.length === 0} onClick={send} title={recipients.length === 0 ? 'Add a recipient first' : 'Send with PDF + timesheet attached'} className="mt-3 w-full rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" disabled={pending || recipients.length === 0} onClick={send} title={recipients.length === 0 ? 'Add a recipient first' : 'Send with PDF + timesheet attached'} className="btn btn-primary mt-3 w-full">
                 {pending ? 'Sending…' : `Send${recipients.length ? ` to ${recipients.length}` : ''}`}
               </button>
             ) : null}

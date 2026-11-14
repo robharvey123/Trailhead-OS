@@ -11,43 +11,21 @@ export default function MentionToken({ fullName }: { fullName: string }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <span style={{ position: 'relative', display: 'inline-block' }}>
+    <span className="relative inline-block">
       <span
         tabIndex={0}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        style={{
-          background: 'var(--accent-dim, rgba(14,165,233,0.16))',
-          color: 'var(--accent-strong, #0369a1)',
-          borderRadius: 'var(--radius-control)',
-          padding: '0 4px',
-          fontWeight: 600,
-          cursor: 'default',
-          whiteSpace: 'nowrap',
-        }}
+        className="cursor-default whitespace-nowrap rounded-control bg-[var(--accent-dim)] px-1 font-semibold text-[var(--accent-strong)]"
       >
         @{fullName}
       </span>
       {open ? (
         <span
           role="tooltip"
-          style={{
-            position: 'absolute',
-            bottom: 'calc(100% + 4px)',
-            left: 0,
-            zIndex: 30,
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-control)',
-            padding: '6px 10px',
-            fontSize: 12,
-            fontWeight: 500,
-            color: 'var(--text)',
-            whiteSpace: 'nowrap',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-          }}
+          className="absolute bottom-[calc(100%+4px)] left-0 z-30 whitespace-nowrap rounded-control border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs font-medium not-italic text-[var(--text)] shadow-[var(--shadow-lg)]"
         >
           {fullName}
         </span>

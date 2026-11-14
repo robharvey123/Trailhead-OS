@@ -119,7 +119,7 @@ export default async function ConversationPage({
       />
       {/* Height = viewport minus the shell chrome and the page header, so the thread scrolls inside the panel. */}
       <div className="panel flex h-[calc(100vh-248px)] max-w-[720px] flex-col overflow-hidden md:h-[calc(100vh-200px)]">
-        <div style={{ flex: 1, minHeight: 0 }}>
+        <div className="min-h-0 flex-1">
           <MessageClient
             conversationId={conversationId}
             meId={user.id}

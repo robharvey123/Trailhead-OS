@@ -289,7 +289,9 @@ export default function EngagementDetailClient({
 
   const hours = detail.hoursThisMonth
   const pct = hours.pct
-  const barColor = pct > 100 ? 'var(--red)' : pct >= 80 ? 'var(--amber)' : 'var(--green)'
+  // The bar is always brand blue on its track; the status reads from the figure beside it.
+  // `!` because `.td-num` sets its own colour outside a cascade layer.
+  const pctTone = pct > 100 ? 'text-[var(--red-strong)]!' : pct >= 80 ? 'text-[var(--amber-strong)]!' : 'text-[var(--green-strong)]!'
 
   const summary = useMemo(() => {
     const completed = milestones.filter((m) => m.is_complete).length
@@ -340,10 +342,12 @@ export default function EngagementDetailClient({
   }
 
   const dot = (set: boolean) => (
-    <span style={{ width: 9, height: 9, borderRadius: 'var(--radius-pill)', display: 'inline-block', background: set ? 'var(--green)' : 'var(--surface-3)', marginRight: 4 }} />
+    <span className={`mr-1 inline-block h-[9px] w-[9px] rounded-pill ${set ? 'bg-[var(--green)]' : 'bg-[var(--surface-3)]'}`} />
   )
 
   const tier1AccountIds = new Set(milestones.map((m) => m.account_id))
+
+  const menuItem = 'block w-full cursor-pointer rounded-control border-none bg-transparent px-2.5 py-2 text-left text-[13px] enabled:hover:bg-[var(--surface-2)]'
 
   return (
     <>
@@ -367,30 +371,26 @@ export default function EngagementDetailClient({
             <button className="btn btn-ghost btn-sm" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>⋯</button>
             {menuOpen ? (
               <>
-                <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
-                <div role="menu" style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 41, minWidth: 210, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', boxShadow: '0 8px 28px rgba(0,0,0,0.16)', overflow: 'hidden', padding: 4 }}>
-                  <div style={{ padding: '6px 10px 4px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)' }}>Set status</div>
+                <div onClick={() => setMenuOpen(false)} className="fixed inset-0 z-40" />
+                <div role="menu" className="absolute right-0 top-[calc(100%+4px)] z-[41] min-w-[210px] overflow-hidden rounded-control border border-[var(--border)] bg-[var(--surface)] p-1 shadow-[var(--shadow-lg)]">
+                  <div className="os-label px-2.5 pb-1 pt-1.5">Set status</div>
                   {ENGAGEMENT_STATUSES.filter((s) => s !== e.status && s !== 'Terminated').map((s) => (
                     <button
                       key={s}
                       role="menuitem"
                       disabled={busy}
                       onClick={() => { setMenuOpen(false); void changeStatus(s) }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 'var(--radius-control)', fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
-                      onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
-                      onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
+                      className={`${menuItem} text-[var(--text)]`}
                     >
                       {s}
                     </button>
                   ))}
-                  <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+                  <div className="my-1 h-px bg-[var(--border)]" />
                   {e.status !== 'Terminated' ? (
                     <button
                       role="menuitem"
                       onClick={() => { setMenuOpen(false); setTerminateOpen(true) }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 'var(--radius-control)', fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
-                      onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
-                      onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
+                      className={`${menuItem} text-[var(--text)]`}
                     >
                       Terminate engagement
                     </button>
@@ -398,9 +398,7 @@ export default function EngagementDetailClient({
                   <button
                     role="menuitem"
                     onClick={() => { setMenuOpen(false); setDeleteOpen(true) }}
-                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 'var(--radius-control)', fontSize: 13, color: 'var(--red)', cursor: 'pointer' }}
-                    onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
-                    onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
+                    className={`${menuItem} text-[var(--red-strong)]`}
                   >
                     Delete engagement
                   </button>
@@ -418,47 +416,47 @@ export default function EngagementDetailClient({
         ))}
       </div>
 
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, padding: '6px 24px' }}>{error}</p> : null}
+      {error ? <p className="px-6 py-1.5 text-xs text-[var(--red-strong)]">{error}</p> : null}
 
-      <div style={{ padding: 24 }}>
+      <div className="p-6">
         {/* OVERVIEW */}
         {tab === 'Overview' ? (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
             <div className="card">
               <div className="panel-section-title">Billing month hours · {formatBillingPeriod(hours.period)}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div className="mb-1.5 flex justify-between">
                 <span className="td-name">{hours.used.toFixed(1)}h / {hours.included ?? '—'}h</span>
-                <span className="td-num" style={{ color: barColor }}>{pct}%</span>
+                <span className={`td-num ${pctTone}`}>{pct}%</span>
               </div>
-              <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.min(100, pct)}%`, height: '100%', background: barColor }} />
+              <div className="h-2 overflow-hidden rounded-pill bg-[var(--surface-3)]">
+                <div className="h-full bg-[var(--accent)]" style={{ width: `${Math.min(100, pct)}%` }} />
               </div>
               {hours.over > (e.approval_thresholds?.hours_overage_hours ?? 0) ? (
-                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <p style={{ color: 'var(--red)', fontSize: 12 }}>{hours.over.toFixed(1)}h over cap — exceeds the {e.approval_thresholds?.hours_overage_hours ?? 0}h approval threshold.</p>
+                <div className="mt-2 flex items-center gap-2.5">
+                  <p className="text-xs text-[var(--red-strong)]">{hours.over.toFixed(1)}h over cap — exceeds the {e.approval_thresholds?.hours_overage_hours ?? 0}h approval threshold.</p>
                   <button className="btn btn-ghost btn-sm" onClick={requestOverage}>Request approval</button>
                 </div>
               ) : hours.over > 0 ? (
-                <p style={{ color: 'var(--amber)', fontSize: 12, marginTop: 6 }}>{hours.over.toFixed(1)}h over the included {e.included_hours_monthly}h.</p>
+                <p className="mt-1.5 text-xs text-[var(--amber-strong)]">{hours.over.toFixed(1)}h over the included {e.included_hours_monthly}h.</p>
               ) : null}
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="flex flex-col gap-4">
               <div className="card">
                 <div className="panel-section-title">Tier-1 milestones</div>
-                <div style={{ display: 'flex', gap: 16 }}>
-                  <div><div className="stat-value" style={{ fontSize: 22 }}>{summary.tracked}</div><div className="field-label">tracked</div></div>
-                  <div><div className="stat-value" style={{ fontSize: 22, color: 'var(--green)' }}>{summary.completed}</div><div className="field-label">complete</div></div>
-                  <div><div className="stat-value" style={{ fontSize: 22, color: 'var(--emerald)' }}>{formatCurrency(summary.uninvoiced, e.currency)}</div><div className="field-label">uninvoiced</div></div>
+                <div className="flex gap-4">
+                  <div><div className="stat-value">{summary.tracked}</div><div className="field-label">tracked</div></div>
+                  <div><div className="stat-value">{summary.completed}</div><div className="field-label">complete</div></div>
+                  <div><div className="stat-value">{formatCurrency(summary.uninvoiced, e.currency)}</div><div className="field-label">uninvoiced</div></div>
                 </div>
               </div>
               <div className="card">
                 <div className="panel-section-title">Term &amp; renewal</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
+                <div className="mt-1 flex justify-between">
                   <span className="field-label">Term</span>
                   <span className="td-num">{fmtDate(e.start_date)} → {fmtDate(e.end_date)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
+                <div className="mt-1 flex justify-between">
                   <span className="field-label">Notice due</span>
                   <span className="td-num">{e.notice_date ? fmtDate(e.notice_date) : e.notice_period_days ? '—' : 'no notice period set'}</span>
                 </div>
@@ -466,28 +464,28 @@ export default function EngagementDetailClient({
                   const days = daysUntil(e.notice_date)
                   if (days === null) return null
                   if (days < 0) {
-                    return <p style={{ fontSize: 12, marginTop: 6, color: e.auto_renews ? 'var(--amber)' : 'var(--text-3)' }}>
+                    return <p className={`mt-1.5 text-xs ${e.auto_renews ? 'text-[var(--amber-strong)]' : 'text-[var(--text-3)]'}`}>
                       Notice date passed{e.auto_renews ? ` — auto-renews for ${e.renewal_term_months ?? 12} months` : ''}.
                     </p>
                   }
                   if (days <= 45) {
-                    return <p style={{ fontSize: 12, marginTop: 6, color: days <= 14 ? 'var(--red)' : 'var(--amber)' }}>
+                    return <p className={`mt-1.5 text-xs ${days <= 14 ? 'text-[var(--red-strong)]' : 'text-[var(--amber-strong)]'}`}>
                       Notice due in {days} day{days === 1 ? '' : 's'}{days <= 14 ? ' — act now' : ''}.
                     </p>
                   }
                   return null
                 })()}
-                {e.auto_renews ? <p style={{ fontSize: 11, marginTop: 6, color: 'var(--text-3)' }}>Auto-renews for {e.renewal_term_months ?? 12}-month terms.</p> : null}
+                {e.auto_renews ? <p className="mt-1.5 text-[11px] text-[var(--text-3)]">Auto-renews for {e.renewal_term_months ?? 12}-month terms.</p> : null}
               </div>
               <div className="card">
                 <div className="panel-section-title">Quick actions</div>
-                <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 10 }}>
+                <p className="mb-2.5 text-xs text-[var(--text-3)]">
                   Last interaction:{' '}
                   {touchpoints[0]
                     ? `${touchpoints[0].type} — ${touchpoints[0].subject} (${fmtDate(touchpoints[0].occurred_at.slice(0, 10))})`
                     : 'none logged'}
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="flex flex-col gap-2">
                   <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/reports`}>Reports</Link>
                   <Link className="btn btn-ghost btn-sm" href={`/engagements/${e.id}/tasks`}>Task board</Link>
                   <StartTimerButton engagementId={e.id} accountId={e.end_client_account_id} />
@@ -520,8 +518,8 @@ export default function EngagementDetailClient({
         {/* CONTRIBUTORS */}
         {tab === 'Contributors' ? (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <p className="field-label" style={{ margin: 0 }}>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="m-0 text-xs text-[var(--text-3)]">
                 Rates are snapshotted per engagement — changing a person’s default rate later won’t affect these.
               </p>
               <button className="btn btn-primary btn-sm" onClick={() => { resetContributorForm(); setError(''); setShowAddContributor(true) }}>+ Add contributor</button>
@@ -529,17 +527,17 @@ export default function EngagementDetailClient({
             {contributors.length === 0 ? <div className="empty">No contributors yet.</div> : (
               <div className="overflow-x-auto">
               <table className="data-table">
-                <thead><tr><th>Person</th><th>Role</th><th style={{ textAlign: 'right' }}>Rate £/h</th><th>Active</th></tr></thead>
+                <thead><tr><th>Person</th><th>Role</th><th className="text-right!">Rate £/h</th><th>Active</th></tr></thead>
                 <tbody>
                   {contributors.map((c) => (
-                    <tr key={c.id} style={{ opacity: c.is_active ? 1 : 0.5 }}>
+                    <tr key={c.id} className={c.is_active ? undefined : 'opacity-50'}>
                       <td className="td-name">{c.person?.full_name ?? '—'}{c.person?.email ? <div className="td-sub">{c.person.email}</div> : null}</td>
                       <td>
-                        <input className="filter-select" style={{ width: '100%' }} defaultValue={c.role ?? ''} placeholder="role"
+                        <input className="filter-select w-full" defaultValue={c.role ?? ''} placeholder="role"
                           onBlur={(ev) => { const v = ev.target.value.trim(); if (v !== (c.role ?? '')) patchContributor(c.id, { role: v || null }) }} />
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <input type="number" className="filter-select" style={{ width: 90, textAlign: 'right' }} defaultValue={c.hourly_rate_gbp}
+                      <td className="text-right">
+                        <input type="number" className="filter-select w-[90px] text-right" defaultValue={c.hourly_rate_gbp}
                           onBlur={(ev) => { const v = Number(ev.target.value); if (!Number.isNaN(v) && v !== c.hourly_rate_gbp) patchContributor(c.id, { hourly_rate_gbp: v }) }} />
                       </td>
                       <td>
@@ -557,7 +555,7 @@ export default function EngagementDetailClient({
         {/* TIER 1 */}
         {tab === 'Tier 1' ? (
           <div>
-            <div className="filterbar" style={{ padding: '0 0 12px', border: 'none', background: 'none' }}>
+            <div className="flex flex-wrap items-center gap-2.5 pb-3">
               <select className="filter-select" value={addAccountId} onChange={(ev) => setAddAccountId(ev.target.value)}>
                 <option value="">Add account…</option>
                 {accounts.filter((a) => !tier1AccountIds.has(a.id)).map((a) => (<option key={a.id} value={a.id}>{a.name}</option>))}
@@ -567,7 +565,7 @@ export default function EngagementDetailClient({
             {milestones.length === 0 ? <div className="empty">No Tier-1 accounts yet.</div> : (
               <div className="overflow-x-auto">
               <table className="data-table">
-                <thead><tr><th>Account</th><th>Channel</th><th>Milestone</th><th style={{ textAlign: 'right' }}>Fee</th><th>Invoice</th><th></th></tr></thead>
+                <thead><tr><th>Account</th><th>Channel</th><th>Milestone</th><th className="text-right!">Fee</th><th>Invoice</th><th></th></tr></thead>
                 <tbody>
                   {milestones.map((m) => (
                     <tr key={m.id}>
@@ -575,9 +573,9 @@ export default function EngagementDetailClient({
                       <td>{m.account?.channel ? <span className="channel-tag">{m.account.channel}</span> : '—'}</td>
                       <td>
                         {dot(!!m.range_review_decided_at)}{dot(!!m.go_live_confirmed_at)}{dot(!!m.first_po_received_at)}
-                        {m.is_complete ? <span className="pill billable" style={{ marginLeft: 6 }}>complete</span> : null}
+                        {m.is_complete ? <span className="pill billable ml-1.5">complete</span> : null}
                       </td>
-                      <td style={{ textAlign: 'right' }} className="td-num">{m.performance_fee != null ? formatCurrency(m.performance_fee, e.currency) : '—'}</td>
+                      <td className="td-num text-right">{m.performance_fee != null ? formatCurrency(m.performance_fee, e.currency) : '—'}</td>
                       <td>{m.fee_invoice_id ? <span className="pill billable">invoiced</span> : m.is_complete ? <span className="pill timer">due</span> : <span className="td-num">—</span>}</td>
                       <td><button className="btn btn-ghost btn-sm" onClick={() => removeTier1(m.account_id)}>✕</button></td>
                     </tr>
@@ -592,10 +590,10 @@ export default function EngagementDetailClient({
         {/* MILESTONES */}
         {tab === 'Milestones' ? (
           milestones.length === 0 ? <div className="empty">Add Tier-1 accounts first.</div> : (
-            <div style={{ display: 'grid', gap: 12 }}>
+            <div className="grid gap-3">
               {milestones.map((m) => (
                 <div className="card" key={m.id}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div className="mb-2.5 flex items-center justify-between">
                     <span className="td-name">{m.account?.name ?? '—'}</span>
                     {m.is_complete && !m.fee_invoice_id ? (
                       <button className="btn btn-primary btn-sm" onClick={() => raiseInvoice(m)}>Raise {formatCurrency(m.performance_fee ?? 0, e.currency)} invoice</button>
@@ -605,7 +603,7 @@ export default function EngagementDetailClient({
                     {([['range_review_decided_at', 'Range review decided'], ['go_live_confirmed_at', 'Go-live confirmed'], ['first_po_received_at', 'First PO received']] as const).map(([field, lbl]) => (
                       <div key={field}>
                         <label className="field-label">{lbl}</label>
-                        <input type="date" className="filter-select" style={{ width: '100%' }} value={(m[field] as string | null) ?? ''} onChange={(ev) => setDate(m, field, ev.target.value)} />
+                        <input type="date" className="filter-select w-full" value={(m[field] as string | null) ?? ''} onChange={(ev) => setDate(m, field, ev.target.value)} />
                       </div>
                     ))}
                   </div>
@@ -617,7 +615,7 @@ export default function EngagementDetailClient({
 
         {/* PROJECTS */}
         {tab === 'Timeline' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="flex flex-col gap-5">
             <TouchpointTimeline
               initialTouchpoints={touchpoints}
               engagementId={e.id}
@@ -634,7 +632,7 @@ export default function EngagementDetailClient({
             <table className="data-table">
               <thead><tr><th>Project</th><th>Status</th></tr></thead>
               <tbody>{projects.map((p) => (
-                <tr key={p.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/projects/records/${p.id}`)}>
+                <tr key={p.id} className="cursor-pointer" onClick={() => router.push(`/projects/records/${p.id}`)}>
                   <td className="td-name">{p.name}</td><td className="td-num">{p.status}</td>
                 </tr>
               ))}</tbody>
@@ -646,25 +644,25 @@ export default function EngagementDetailClient({
         {/* APPROVALS */}
         {tab === 'Approvals' ? (
           <div>
-            <div className="card" style={{ marginBottom: 16 }}>
+            <div className="card mb-4">
               <div className="panel-section-title">Request approval</div>
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <div>
                   <label className="field-label">Type</label>
-                  <select className="filter-select" style={{ width: '100%' }} value={reqType} onChange={(ev) => setReqType(ev.target.value as ApprovalType)}>
+                  <select className="filter-select w-full" value={reqType} onChange={(ev) => setReqType(ev.target.value as ApprovalType)}>
                     {(Object.keys(APPROVAL_TYPE_LABELS) as ApprovalType[]).map((t) => (<option key={t} value={t}>{APPROVAL_TYPE_LABELS[t]}</option>))}
                   </select>
                 </div>
                 <div>
                   <label className="field-label">Amount ({e.currency})</label>
-                  <input type="number" className="filter-select" style={{ width: '100%' }} value={reqAmount} onChange={(ev) => setReqAmount(ev.target.value)} placeholder="optional" />
+                  <input type="number" className="filter-select w-full" value={reqAmount} onChange={(ev) => setReqAmount(ev.target.value)} placeholder="optional" />
                 </div>
               </div>
-              <div style={{ marginTop: 10 }}>
+              <div className="mt-2.5">
                 <label className="field-label">Detail</label>
-                <input className="filter-select" style={{ width: '100%' }} value={reqDesc} onChange={(ev) => setReqDesc(ev.target.value)} placeholder="What needs approving and why" />
+                <input className="filter-select w-full" value={reqDesc} onChange={(ev) => setReqDesc(ev.target.value)} placeholder="What needs approving and why" />
               </div>
-              <div style={{ marginTop: 10, textAlign: 'right' }}>
+              <div className="mt-2.5 text-right">
                 <button className="btn btn-primary btn-sm" onClick={createApprovalReq}>Submit request</button>
               </div>
             </div>
@@ -672,20 +670,20 @@ export default function EngagementDetailClient({
             {approvals.length === 0 ? <div className="empty">No approval requests yet.</div> : (
               <div className="overflow-x-auto">
               <table className="data-table">
-                <thead><tr><th>Type</th><th style={{ textAlign: 'right' }}>Amount</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Type</th><th className="text-right!">Amount</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead>
                 <tbody>
                   {approvals.map((a) => (
                     <tr key={a.id}>
                       <td className="td-name">{APPROVAL_TYPE_LABELS[a.type]}{a.description ? <div className="td-sub">{a.description}</div> : null}</td>
-                      <td style={{ textAlign: 'right' }} className="td-num">{a.amount != null ? formatCurrency(a.amount, a.currency) : '—'}</td>
+                      <td className="td-num text-right">{a.amount != null ? formatCurrency(a.amount, a.currency) : '—'}</td>
                       <td><span className={`status-badge ${APPROVAL_STATUS_CLASS[a.status] ?? 'status-on_hold'}`}>{a.status}</span>{a.decision_notes ? <div className="td-sub">{a.decision_notes}</div> : null}</td>
                       <td className="td-num">{fmtDate(a.requested_at)}</td>
                       <td>
                         {a.status === 'Open' ? (
-                          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                          <div className="flex flex-wrap gap-1">
                             <button className="btn btn-ghost btn-sm" onClick={() => emailApprovalReq(a.id)}>✉ Email</button>
-                            <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'approve')} style={{ color: 'var(--green)' }}>Approve</button>
-                            <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'decline')} style={{ color: 'var(--red)' }}>Decline</button>
+                            <button className="btn btn-ghost btn-sm text-[var(--green-strong)]!" onClick={() => decideApprovalReq(a.id, 'approve')}>Approve</button>
+                            <button className="btn btn-danger btn-sm" onClick={() => decideApprovalReq(a.id, 'decline')}>Decline</button>
                             <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'withdraw')}>Withdraw</button>
                           </div>
                         ) : a.gmail_thread_id ? <Link className="btn btn-ghost btn-sm" href="/inbox">View thread</Link> : <span className="td-num">—</span>}
@@ -702,7 +700,7 @@ export default function EngagementDetailClient({
         {/* WEEKLY UPDATES */}
         {tab === 'Weekly Updates' ? (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <div className="mb-3 flex justify-end">
               <Link className="btn btn-primary btn-sm" href={`/engagements/${e.id}/reports`}>Generate weekly report</Link>
             </div>
             {documents.filter((d) => d.type === 'weekly_update').length === 0 ? (
@@ -729,12 +727,12 @@ export default function EngagementDetailClient({
         {/* DOCUMENTS */}
         {tab === 'Documents' ? (
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
-              <label className="btn btn-primary btn-sm" style={{ cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.6 : 1 }}>
+            <div className="mb-3.5 flex flex-wrap items-center gap-3">
+              <label className={`btn btn-primary btn-sm ${uploading ? 'cursor-default! opacity-60' : ''}`}>
                 {uploading ? 'Uploading…' : '＋ Upload document'}
                 <input
                   type="file"
-                  style={{ display: 'none' }}
+                  className="hidden"
                   disabled={uploading}
                   onChange={(ev) => {
                     const file = ev.target.files?.[0]
@@ -743,7 +741,7 @@ export default function EngagementDetailClient({
                   }}
                 />
               </label>
-              <span className="td-num" style={{ color: 'var(--text-3)', fontSize: 12 }}>PDF, Word, Excel, images — up to 25 MB.</span>
+              <span className="td-num">PDF, Word, Excel, images — up to 25 MB.</span>
             </div>
 
             {documents.length === 0 ? (
@@ -751,32 +749,31 @@ export default function EngagementDetailClient({
             ) : (
               <div className="overflow-x-auto">
               <table className="data-table">
-                <thead><tr><th>Title</th><th>Type</th><th>Size</th><th>Created</th><th style={{ textAlign: 'right' }}></th></tr></thead>
+                <thead><tr><th>Title</th><th>Type</th><th>Size</th><th>Created</th><th className="text-right!"></th></tr></thead>
                 <tbody>
                   {documents.map((d) => (
                     <tr
                       key={d.id}
                       onClick={d.file_path ? () => setPreviewDoc(d) : undefined}
-                      style={d.file_path ? { cursor: 'pointer' } : undefined}
+                      className={d.file_path ? 'cursor-pointer' : undefined}
                       title={d.file_path ? 'Click to preview' : undefined}
                     >
                       <td className="td-name">{d.title ?? d.file_name ?? (d.file_path ? 'Untitled' : '—')}</td>
                       <td><span className="channel-tag">{d.type}</span></td>
                       <td className="td-num">{fmtBytes(d.size_bytes)}</td>
                       <td className="td-num">{fmtDate(d.created_at)}</td>
-                      <td style={{ textAlign: 'right' }} onClick={(ev) => ev.stopPropagation()}>
+                      <td className="text-right" onClick={(ev) => ev.stopPropagation()}>
                         {d.file_path ? (
                           <a
                             href={`/api/engagements/${e.id}/documents/${d.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="btn btn-ghost btn-sm"
-                            style={{ marginRight: 4 }}
+                            className="btn btn-ghost btn-sm mr-1"
                           >
                             Download
                           </a>
                         ) : null}
-                        <button className="btn btn-ghost btn-sm" onClick={() => deleteDoc(d.id)}>Delete</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => deleteDoc(d.id)}>Delete</button>
                       </td>
                     </tr>
                   ))}
@@ -790,8 +787,7 @@ export default function EngagementDetailClient({
 
       {editing ? (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-[rgba(15,23,42,0.45)]"
-          style={{ padding: '40px 16px' }}
+          className="fixed inset-0 z-50 overflow-y-auto bg-[var(--navy)]/45 px-4 py-10"
           onClick={(ev) => { if (ev.target === ev.currentTarget) setEditing(false) }}
         >
           <EngagementForm
@@ -805,16 +801,15 @@ export default function EngagementDetailClient({
 
       {showAddContributor ? (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto"
-          style={{ background: 'rgba(15,23,42,0.45)', padding: '60px 16px' }}
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--navy)]/45 px-4 py-[60px]"
           onClick={(ev) => { if (ev.target === ev.currentTarget) setShowAddContributor(false) }}
         >
-          <div className="panel" style={{ width: '100%', maxWidth: 460, padding: 20 }}>
+          <div className="panel w-full max-w-[460px] p-5">
             <div className="panel-section-title">Add contributor</div>
-            <div style={{ display: 'grid', gap: 12, marginTop: 8 }}>
+            <div className="mt-2 grid gap-3">
               <div>
                 <label className="field-label">Person</label>
-                <select className="filter-select" style={{ width: '100%' }} value={personPick} onChange={(ev) => setPersonPick(ev.target.value)}>
+                <select className="filter-select w-full" value={personPick} onChange={(ev) => setPersonPick(ev.target.value)}>
                   <option value="">Choose…</option>
                   {availablePeople.map((p) => (<option key={p.id} value={p.id}>{p.full_name}{p.email ? ` · ${p.email}` : ''}</option>))}
                   <option value="__new__">➕ Create new person…</option>
@@ -822,16 +817,16 @@ export default function EngagementDetailClient({
               </div>
               {personPick === '__new__' ? (
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                  <div><label className="field-label">Full name *</label><input className="filter-select" style={{ width: '100%' }} value={newName} onChange={(ev) => setNewName(ev.target.value)} /></div>
-                  <div><label className="field-label">Email</label><input className="filter-select" style={{ width: '100%' }} value={newEmail} onChange={(ev) => setNewEmail(ev.target.value)} placeholder="optional" /></div>
+                  <div><label className="field-label">Full name *</label><input className="filter-select w-full" value={newName} onChange={(ev) => setNewName(ev.target.value)} /></div>
+                  <div><label className="field-label">Email</label><input className="filter-select w-full" value={newEmail} onChange={(ev) => setNewEmail(ev.target.value)} placeholder="optional" /></div>
                 </div>
               ) : null}
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                <div><label className="field-label">Role</label><input className="filter-select" style={{ width: '100%' }} value={cRole} onChange={(ev) => setCRole(ev.target.value)} placeholder="e.g. Engineer" /></div>
-                <div><label className="field-label">Rate £/h *</label><input type="number" className="filter-select" style={{ width: '100%' }} value={cRate} onChange={(ev) => setCRate(ev.target.value)} placeholder="0 for volunteer" /></div>
+                <div><label className="field-label">Role</label><input className="filter-select w-full" value={cRole} onChange={(ev) => setCRole(ev.target.value)} placeholder="e.g. Engineer" /></div>
+                <div><label className="field-label">Rate £/h *</label><input type="number" className="filter-select w-full" value={cRate} onChange={(ev) => setCRate(ev.target.value)} placeholder="0 for volunteer" /></div>
               </div>
-              {error ? <p style={{ color: 'var(--red)', fontSize: 12, margin: 0 }}>{error}</p> : null}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              {error ? <p className="m-0 text-xs text-[var(--red-strong)]">{error}</p> : null}
+              <div className="flex justify-end gap-2">
                 <button className="btn btn-ghost btn-sm" onClick={() => setShowAddContributor(false)} disabled={savingContributor}>Cancel</button>
                 <button className="btn btn-primary btn-sm" onClick={submitContributor} disabled={savingContributor}>{savingContributor ? 'Adding…' : 'Add contributor'}</button>
               </div>
@@ -857,10 +852,10 @@ export default function EngagementDetailClient({
         title="Delete engagement?"
         description={`Permanently delete ${e.name}. Projects and time entries are unlinked but kept; milestones, approval requests and documents are deleted.`}
         banner={
-          <div style={{ display: 'flex', gap: 8, padding: '10px 12px', borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--text-2)' }}>
-            <span aria-hidden style={{ color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>ⓘ</span>
+          <div className="flex gap-2 rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 text-[12.5px] leading-[1.45] text-[var(--text-2)]">
+            <span aria-hidden className="shrink-0 font-bold text-[var(--accent-strong)]">ⓘ</span>
             <span>
-              Most of the time, use <strong style={{ color: 'var(--text)' }}>Terminate</strong> instead — it keeps everything (milestones, approvals, documents, invoices). Delete is for engagements created by mistake (test data, duplicates).
+              Most of the time, use <strong className="text-[var(--text)]">Terminate</strong> instead — it keeps everything (milestones, approvals, documents, invoices). Delete is for engagements created by mistake (test data, duplicates).
             </span>
           </div>
         }

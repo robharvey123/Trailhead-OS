@@ -54,14 +54,14 @@ export default function Attachment({ attachment }: { attachment: ChatAttachment 
         <button
           type="button"
           onClick={() => setLightbox(true)}
-          style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', display: 'block' }}
+          className="block cursor-pointer border-none bg-transparent p-0"
           aria-label={`Open image ${attachment.file_name}`}
         >
           {imgUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imgUrl} alt={attachment.file_name} loading="lazy" style={{ maxWidth: 320, maxHeight: 320, borderRadius: 'var(--radius-control)', border: '1px solid var(--border)', objectFit: 'cover' }} />
+            <img src={imgUrl} alt={attachment.file_name} loading="lazy" className="max-h-80 max-w-80 rounded-control border border-[var(--border)] object-cover" />
           ) : (
-            <div style={{ width: 200, height: 140, borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
+            <div className="h-[140px] w-[200px] rounded-control border border-[var(--border)] bg-[var(--surface-2)]" />
           )}
         </button>
         {lightbox && imgUrl ? (
@@ -70,10 +70,10 @@ export default function Attachment({ attachment }: { attachment: ChatAttachment 
             aria-modal="true"
             aria-label={attachment.file_name}
             onClick={() => setLightbox(false)}
-            style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-[var(--navy)]/80 p-6"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imgUrl} alt={attachment.file_name} style={{ maxWidth: '95vw', maxHeight: '90vh', borderRadius: 'var(--radius-control)' }} />
+            <img src={imgUrl} alt={attachment.file_name} className="max-h-[90vh] max-w-[95vw] rounded-control" />
           </div>
         ) : null}
       </>
@@ -81,13 +81,13 @@ export default function Attachment({ attachment }: { attachment: ChatAttachment 
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 'var(--radius-control)', border: '1px solid var(--border)', background: 'var(--surface-2)', maxWidth: 320 }}>
-      <span style={{ fontSize: 20, flex: 'none' }}>{iconFor(attachment.mime_type)}</span>
-      <span style={{ minWidth: 0, flex: 1 }}>
-        <span style={{ display: 'block', fontSize: 13, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attachment.file_name}</span>
-        <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{fmtBytes(attachment.byte_size)}</span>
+    <div className="flex max-w-80 items-center gap-2.5 rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
+      <span className="flex-none text-xl">{iconFor(attachment.mime_type)}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13px] text-[var(--text)]">{attachment.file_name}</span>
+        <span className="text-[11px] text-[var(--text-3)]">{fmtBytes(attachment.byte_size)}</span>
       </span>
-      <button className="btn btn-ghost btn-sm" onClick={openFile} disabled={busy} style={{ flex: 'none' }}>
+      <button className="btn btn-ghost btn-sm flex-none" onClick={openFile} disabled={busy}>
         {busy ? '…' : attachment.mime_type === 'application/pdf' ? 'Open' : 'Download'}
       </button>
     </div>

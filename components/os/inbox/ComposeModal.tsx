@@ -25,7 +25,7 @@ function EditorSkeleton() {
           <div key={index} className="h-7 w-8 animate-pulse rounded-control bg-[var(--surface-3)]" />
         ))}
       </div>
-      <div className="space-y-2 px-3 py-3" style={{ minHeight: 190 }}>
+      <div className="min-h-[190px] space-y-2 px-3 py-3">
         <div className="h-3 w-3/4 animate-pulse rounded-pill bg-[var(--surface-3)]" />
         <div className="h-3 w-full animate-pulse rounded-pill bg-[var(--surface-3)]" />
         <div className="h-3 w-2/3 animate-pulse rounded-pill bg-[var(--surface-3)]" />
@@ -204,9 +204,9 @@ export default function ComposeModal({
       ? contacts.filter((c) => c.email && `${c.name} ${c.email}`.toLowerCase().includes(q.toLowerCase()) && !recips.some((r) => r.email.toLowerCase() === c.email!.toLowerCase())).slice(0, 6)
       : []
     return (
-      <div style={{ position: 'relative' }}>
+      <div className="relative">
         <div className="flex flex-wrap items-center gap-1 rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1">
-          <span className="mr-1 text-[11px] uppercase tracking-wide text-[var(--text-3)]">{label}</span>
+          <span className="os-label mr-1">{label}</span>
           {recips.map((r) => (
             <span key={r.email} className={`tag-chip ${r.inCrm ? 'accent' : 'amber'}`} title={r.email}>
               {r.name ? `${r.name} ` : ''}{r.email}{!r.inCrm ? ' · Not in CRM' : ''}
@@ -224,7 +224,7 @@ export default function ComposeModal({
           />
         </div>
         {matches.length > 0 ? (
-          <div className="panel" style={{ position: 'absolute', zIndex: 60, left: 0, right: 0, top: 'calc(100% + 2px)', maxHeight: 200, overflowY: 'auto' }}>
+          <div className="panel absolute left-0 right-0 top-[calc(100%+2px)] z-[60] max-h-[200px] overflow-y-auto shadow-[var(--shadow-lg)]!">
             {matches.map((c) => (
               <button key={c.id} className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[var(--surface-2)]" onClick={() => addRecipient(f, { email: c.email!, name: c.name, inCrm: true, accountId: c.account_id })}>
                 <span className="text-sm text-[var(--text)]">{c.name}</span>
@@ -340,7 +340,7 @@ export default function ComposeModal({
         title={title}
         closeLabel="Close compose window"
         overlayClassName="p-4"
-        panelClassName="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-control border border-[var(--border)] bg-white"
+        panelClassName="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-card border border-[var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]"
       >
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3">
           <h2 className="text-base font-semibold text-[var(--text)]">{title}</h2>
@@ -373,11 +373,11 @@ export default function ComposeModal({
           </div>
           {signature ? (
             <div className="rounded-control border border-[var(--border)] bg-[var(--surface-2)] p-3">
-              <div className="mb-1 text-[11px] uppercase tracking-wide text-[var(--text-3)]">Signature (appended on send)</div>
+              <div className="os-label mb-1">Signature (appended on send)</div>
               <div className="text-sm text-[var(--text-2)]" dangerouslySetInnerHTML={{ __html: signature }} />
             </div>
           ) : null}
-          {error ? <p role="alert" className="text-sm text-[var(--red)]">{error}</p> : null}
+          {error ? <p role="alert" className="text-sm text-[var(--red-strong)]">{error}</p> : null}
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border)] px-5 py-3">
@@ -388,9 +388,9 @@ export default function ComposeModal({
             <button className="btn btn-primary btn-sm" onClick={doSendCheck} disabled={busy}>{busy ? 'Working…' : '↗ Send'}</button>
             {onSchedule ? (
               <>
-                <button className="btn btn-primary btn-sm" onClick={() => setScheduleOpen((o) => !o)} disabled={busy} aria-label="Schedule send" aria-expanded={scheduleOpen} aria-controls={scheduleMenuId} title="Schedule send">▾</button>
+                <button className="btn btn-ghost btn-sm" onClick={() => setScheduleOpen((o) => !o)} disabled={busy} aria-label="Schedule send" aria-expanded={scheduleOpen} aria-controls={scheduleMenuId} title="Schedule send">▾</button>
                 {scheduleOpen ? (
-                  <div id={scheduleMenuId} className="panel" style={{ position: 'absolute', bottom: 'calc(100% + 4px)', right: 0, zIndex: 70, minWidth: 220, padding: 6 }}>
+                  <div id={scheduleMenuId} className="panel absolute bottom-[calc(100%+4px)] right-0 z-[70] min-w-[220px] p-1.5 shadow-[var(--shadow-lg)]!">
                     <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-[var(--surface-2)]" onClick={() => schedule(tomorrow.toISOString())}>
                       Send tomorrow 8am <span className="text-[11px] text-[var(--text-3)]">{labelFor(tomorrow)}</span>
                     </button>
@@ -415,7 +415,7 @@ export default function ComposeModal({
         title="These recipients aren’t in your CRM. Add them?"
         closeLabel="Cancel adding recipients"
         overlayClassName="z-[60] p-4"
-        panelClassName="w-full max-w-lg rounded-control border border-[var(--border)] bg-white p-5"
+        panelClassName="w-full max-w-lg rounded-card border border-[var(--border)] bg-[var(--bg)] p-5 shadow-[var(--shadow-lg)]"
       >
         <h3 className="text-base font-semibold text-[var(--text)]">These recipients aren’t in your CRM. Add them?</h3>
         <div className="mt-3 space-y-3">

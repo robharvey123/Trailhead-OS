@@ -31,7 +31,7 @@ export default function RichTextEditor({
   })
 
   if (!editor) {
-    return <div className="rounded-control border border-[var(--border)] bg-[var(--surface-2)]" style={{ minHeight: 220 }} />
+    return <div className="rounded-control border border-[var(--border)] bg-[var(--surface-2)] min-h-[220px]" />
   }
 
   const cls = (active: boolean) => `btn btn-ghost btn-sm ${active ? 'active' : ''}`

@@ -50,7 +50,7 @@ export default async function EngagementReportsPage({ params }: { params: Promis
         <div className="os-card overflow-hidden p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[color:var(--border)] text-left text-[11px] uppercase tracking-[0.14em] text-[color:var(--text-3)]">
+              <tr className="os-label border-b border-[color:var(--border)] text-left">
                 <th className="px-4 py-3">Period</th>
                 <th className="px-4 py-3">Kind</th>
                 <th className="px-4 py-3">Status</th>

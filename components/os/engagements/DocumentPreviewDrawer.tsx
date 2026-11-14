@@ -80,7 +80,7 @@ export default function DocumentPreviewDrawer({
       <div
         onClick={onClose}
         aria-hidden
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-40 bg-[var(--navy)]/45 transition-opacity duration-200 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       />
 
       {/* Panel */}
@@ -104,7 +104,7 @@ export default function DocumentPreviewDrawer({
                 {shown.file_path ? (
                   <a
                     href={downloadUrl}
-                    className="rounded-control border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+                    className="btn btn-ghost btn-sm"
                   >
                     Download
                   </a>
@@ -152,7 +152,7 @@ export default function DocumentPreviewDrawer({
                       href={previewUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
+                      className="btn btn-primary"
                     >
                       Open PDF
                     </a>
@@ -164,7 +164,7 @@ export default function DocumentPreviewDrawer({
                     name={name}
                     sub="Inline preview unavailable for this file."
                     action={
-                      <a href={downloadUrl} className="mt-4 inline-block rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white">
+                      <a href={downloadUrl} className="btn btn-primary mt-4">
                         Download file
                       </a>
                     }
@@ -175,7 +175,7 @@ export default function DocumentPreviewDrawer({
                   <div className="mx-auto max-w-[760px] px-4 py-6">
                     <style>{DOCX_STYLE}</style>
                     <div
-                      className="docx-preview rounded-control bg-white p-8 text-[13.5px] leading-relaxed text-[#1a1a1a] shadow-[var(--shadow-sm)]"
+                      className="docx-preview rounded-card bg-[var(--bg)] p-8 text-[13.5px] leading-relaxed text-[var(--text)] shadow-[var(--shadow-sm)]"
                       dangerouslySetInnerHTML={{ __html: docx.html }}
                     />
                   </div>
@@ -187,7 +187,7 @@ export default function DocumentPreviewDrawer({
                   action={
                     <a
                       href={downloadUrl}
-                      className="mt-4 inline-block rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
+                      className="btn btn-primary mt-4"
                     >
                       Download file
                     </a>
@@ -212,9 +212,9 @@ const DOCX_STYLE = `
 .docx-preview p { margin: 0 0 0.7em; }
 .docx-preview ul, .docx-preview ol { margin: 0 0 0.7em; padding-left: 1.4em; }
 .docx-preview li { margin: 0.2em 0; }
-.docx-preview a { color: #0369a1; text-decoration: underline; }
+.docx-preview a { color: var(--accent-strong); text-decoration: underline; }
 .docx-preview table { border-collapse: collapse; width: 100%; margin: 0.6em 0; font-size: 0.95em; }
-.docx-preview th, .docx-preview td { border: 1px solid #d4d4d4; padding: 5px 8px; text-align: left; vertical-align: top; }
+.docx-preview th, .docx-preview td { border: 1px solid var(--border-light); padding: 5px 8px; text-align: left; vertical-align: top; }
 .docx-preview img { max-width: 100%; height: auto; }
 .docx-preview strong { font-weight: 700; }
 `

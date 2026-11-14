@@ -88,8 +88,8 @@ export default function EngagementTasksClient({
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {!projectId && projects.length > 0 ? (
             <select className="filter-select" value={scope} onChange={(e) => setScope(e.target.value)}>
               <option value="all">All tasks</option>
@@ -113,12 +113,12 @@ export default function EngagementTasksClient({
           ) : null}
 
           {allLabels.length > 0 ? (
-            <div ref={labelsRef} style={{ position: 'relative' }}>
-              <button type="button" className="filter-select" style={{ cursor: 'pointer' }} onClick={() => setLabelsOpen((o) => !o)}>
+            <div ref={labelsRef} className="relative">
+              <button type="button" className="filter-select" onClick={() => setLabelsOpen((o) => !o)}>
                 Labels{activeLabels.length > 0 ? ` (${activeLabels.length})` : ''} ▾
               </button>
               {labelsOpen ? (
-                <div style={{ position: 'absolute', zIndex: 20, marginTop: 4, maxHeight: 280, minWidth: 200, overflowY: 'auto', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', boxShadow: '0 12px 40px rgba(15,23,42,0.12)', padding: 6 }}>
+                <div className="absolute z-20 mt-1 max-h-[280px] min-w-[200px] overflow-y-auto rounded-control border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-[var(--shadow-lg)]">
                   {allLabels.map((l) => {
                     const c = labelColor(l)
                     const active = activeLabels.includes(l)
@@ -127,11 +127,11 @@ export default function EngagementTasksClient({
                         key={l}
                         type="button"
                         onClick={() => toggleLabel(l)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '6px 8px', borderRadius: 'var(--radius-control)', background: active ? 'var(--surface-2)' : 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--text)' }}
+                        className={`flex w-full cursor-pointer items-center gap-2 rounded-control px-2 py-1.5 text-left text-xs text-[var(--text)] ${active ? 'bg-[var(--surface-2)]' : 'bg-transparent'}`}
                       >
-                        <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-pill)', background: c.solidBg, flexShrink: 0 }} />
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l}</span>
-                        {active ? <span style={{ color: 'var(--accent-strong)' }}>✓</span> : null}
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-pill" style={{ background: c.solidBg }} />
+                        <span className="flex-1 truncate">{l}</span>
+                        {active ? <span className="text-[var(--accent-strong)]">✓</span> : null}
                       </button>
                     )
                   })}
@@ -148,7 +148,10 @@ export default function EngagementTasksClient({
                 type="button"
                 onClick={() => toggleLabel(l)}
                 title={`Remove filter: ${l}`}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 'var(--radius-pill)', cursor: 'pointer', background: c.solidBg, color: '#fff', border: 'none', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                // The label's own tint and ink (lib/tags), not white type on its solid hue:
+                // white fails contrast on the lighter hues.
+                className="inline-flex max-w-[200px] cursor-pointer items-center gap-1.5 truncate rounded-pill px-[9px] py-[3px] text-[11px] font-semibold"
+                style={{ background: c.bg, color: c.fg, border: `1px solid ${c.border}` }}
               >
                 {l} ✕
               </button>

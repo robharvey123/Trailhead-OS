@@ -34,12 +34,11 @@ export default function StartConversationModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(15,23,42,0.45)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45"
       onClick={() => !busy && onClose()}
     >
-      <div className="panel" style={{ width: 'min(420px, 92vw)', padding: 20, display: 'grid', gap: 12 }} onClick={(e) => e.stopPropagation()}>
-        <div className="panel-section-title" style={{ margin: 0 }}>Start a conversation</div>
+      <div className="panel grid w-[min(420px,92vw)] gap-3 p-5" onClick={(e) => e.stopPropagation()}>
+        <div className="panel-section-title m-0!">Start a conversation</div>
         <input
           autoFocus
           className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]"
@@ -47,9 +46,9 @@ export default function StartConversationModal({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <div style={{ display: 'grid', gap: 4, maxHeight: 320, overflowY: 'auto' }}>
+        <div className="grid max-h-[320px] gap-1 overflow-y-auto">
           {filtered.length === 0 ? (
-            <p style={{ fontSize: 13, color: 'var(--text-3)', padding: '8px 4px' }}>No people found.</p>
+            <p className="px-1 py-2 text-[13px] text-[var(--text-3)]">No people found.</p>
           ) : (
             filtered.map((u) => (
               <button
@@ -67,8 +66,8 @@ export default function StartConversationModal({
             ))
           )}
         </div>
-        {error ? <p style={{ color: 'var(--red)', fontSize: 12, margin: 0 }}>{error}</p> : null}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        {error ? <p className="m-0 text-xs text-[var(--red-strong)]">{error}</p> : null}
+        <div className="flex justify-end">
           <button className="btn btn-ghost btn-sm" onClick={onClose} disabled={busy}>Cancel</button>
         </div>
       </div>

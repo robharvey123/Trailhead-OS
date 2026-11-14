@@ -78,8 +78,13 @@ export default function MessageBubble({
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(body)
 
-  const bubbleBg = mine ? 'var(--accent)' : 'var(--surface-2)'
-  const bubbleColor = mine ? '#fff' : 'var(--text)'
+  // Own messages sit on the pale accent ground with normal type. White type on
+  // brand blue fails contrast, so the bubble is never a solid blue fill.
+  const bubbleTone = deleted
+    ? 'border border-dashed border-[var(--border)] bg-transparent italic text-[var(--text-3)]'
+    : mine
+      ? 'bg-[var(--accent-dim)] text-[var(--text)]'
+      : 'bg-[var(--surface-2)] text-[var(--text)]'
 
   function saveEdit() {
     const v = draft.trim()
@@ -95,12 +100,12 @@ export default function MessageBubble({
 
   return (
     <div
-      style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start', position: 'relative' }}
+      className={`relative flex ${mine ? 'justify-end' : 'justify-start'}`}
       onMouseLeave={() => setMenuOpen(false)}
     >
-      <div style={{ maxWidth: '72%', display: 'flex', flexDirection: 'column', alignItems: mine ? 'flex-end' : 'flex-start' }}>
+      <div className={`flex max-w-[72%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
         {editing ? (
-          <div style={{ display: 'grid', gap: 6, width: '100%' }}>
+          <div className="grid w-full gap-1.5">
             <textarea
               autoFocus
               className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] resize-none"
@@ -111,30 +116,17 @@ export default function MessageBubble({
                 else if (e.key === 'Escape') { setEditing(false); setDraft(body) }
               }}
             />
-            <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+            <div className="flex justify-end gap-1.5">
               <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(false); setDraft(body) }}>Cancel</button>
               <button className="btn btn-primary btn-sm" onClick={saveEdit}>Save</button>
             </div>
           </div>
         ) : (
           <div
-            style={{
-              padding: '8px 12px',
-              borderRadius: 'var(--radius-card)',
-              fontSize: 14,
-              lineHeight: 1.4,
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-              background: deleted ? 'transparent' : bubbleBg,
-              color: deleted ? 'var(--text-3)' : bubbleColor,
-              border: deleted ? '1px dashed var(--border)' : 'none',
-              fontStyle: deleted ? 'italic' : 'normal',
-              opacity: pending ? 0.6 : 1,
-              position: 'relative',
-            }}
+            className={`relative whitespace-pre-wrap rounded-card px-3 py-2 text-sm leading-[1.4] [word-break:break-word] ${bubbleTone} ${pending ? 'opacity-60' : ''}`}
           >
             {deleted ? <span>Message deleted</span> : body ? <span>{renderBody(body, mentions)}</span> : null}
-            <span style={{ display: 'block', fontSize: 10, opacity: 0.7, marginTop: 2, textAlign: 'right' }}>
+            <span className="mt-0.5 block text-right text-[10px] opacity-70">
               {edited && !deleted ? '(edited) ' : ''}{pending ? 'sending…' : fmtTime(at)}
             </span>
 
@@ -143,10 +135,7 @@ export default function MessageBubble({
                 type="button"
                 aria-label="Message actions"
                 onClick={() => setMenuOpen((o) => !o)}
-                style={{
-                  position: 'absolute', top: 2, [mine ? 'left' : 'right']: -22,
-                  border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 16, lineHeight: 1, padding: 2,
-                } as React.CSSProperties}
+                className={`absolute top-0.5 cursor-pointer border-none bg-transparent p-0.5 text-base not-italic leading-none text-[var(--text-3)] ${mine ? '-left-[22px]' : '-right-[22px]'}`}
               >
                 ⋯
               </button>
@@ -154,10 +143,7 @@ export default function MessageBubble({
 
             {menuOpen ? (
               <div
-                style={{
-                  position: 'absolute', top: 22, [mine ? 'left' : 'right']: -8, zIndex: 20,
-                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: 4, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-                } as React.CSSProperties}
+                className={`absolute top-[22px] z-20 min-w-[180px] rounded-control border border-[var(--border)] bg-[var(--surface)] p-1 shadow-[var(--shadow-lg)] ${mine ? '-left-2' : '-right-2'}`}
               >
                 <button className="block w-full rounded-control px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onConvert?.(id) }}>Create task from message</button>
                 {editable ? (
@@ -171,20 +157,17 @@ export default function MessageBubble({
           </div>
         )}
         {!deleted && attachments && attachments.length ? (
-          <div style={{ display: 'grid', gap: 6, marginTop: 6 }}>
+          <div className="mt-1.5 grid gap-1.5">
             {attachments.map((a) => <Attachment key={a.id} attachment={a} />)}
           </div>
         ) : null}
         {createdTask ? (
           <Link
             href={`/my-work/${createdTask.id}`}
-            style={{
-              marginTop: 4, fontSize: 11, color: 'var(--accent-strong, #0369a1)', textDecoration: 'none',
-              display: 'inline-flex', alignItems: 'center', gap: 4, maxWidth: '100%',
-            }}
+            className="mt-1 inline-flex max-w-full items-center gap-1 text-[11px] text-[var(--accent-strong)] no-underline"
           >
             <span aria-hidden>→</span>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span className="truncate">
               Created task: {createdTask.title}
             </span>
           </Link>

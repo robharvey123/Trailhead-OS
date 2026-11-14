@@ -30,7 +30,7 @@ export default async function EngagementTasksPage({ params }: { params: Promise<
     <div className={`thmock ${mockupFontVars}`}>
       <PageHeader back={{ href: `/engagements/${id}`, label: engagement.name }} title="Tasks" />
       <div className="panel overflow-hidden">
-        <div style={{ padding: 24 }}>
+        <div className="p-6">
           <EngagementTasksClient
             engagementId={id}
             initialTasks={tasks}

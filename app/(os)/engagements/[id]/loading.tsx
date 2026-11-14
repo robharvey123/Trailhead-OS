@@ -28,7 +28,7 @@ export default function EngagementDetailLoading() {
         <div className="grid gap-4 p-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <div key={index} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                 <SkeletonBar className="h-3 w-32" />
                 <div className="mt-3 space-y-2">
                   <SkeletonBar className="h-4 w-full" />
@@ -40,7 +40,7 @@ export default function EngagementDetailLoading() {
           </div>
           <div className="space-y-4">
             {Array.from({ length: 2 }).map((_, index) => (
-              <div key={index} className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <div key={index} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                 <SkeletonBar className="h-3 w-24" />
                 <div className="mt-3 space-y-2">
                   <SkeletonBar className="h-4 w-full" />

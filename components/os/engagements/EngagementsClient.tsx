@@ -67,15 +67,15 @@ export default function EngagementsClient({
     />
     <div className="panel overflow-hidden">
       {toast ? (
-        <div style={{ padding: '10px 24px', background: 'var(--accent-dim)', borderBottom: '1px solid var(--accent)', color: 'var(--accent-strong)', fontSize: 13 }}>
+        <div className="border-b border-[var(--accent)] bg-[var(--accent-dim)] px-6 py-2.5 text-[13px] text-[var(--accent-strong)]">
           {toast}
         </div>
       ) : null}
 
       <div className="stats-bar">
         <div className="stat-item"><div className="stat-label">Active engagements</div><div className="stat-value">{stats.active}</div></div>
-        <div className="stat-item"><div className="stat-label">Hours this billing month</div><div className="stat-value" style={{ color: 'var(--accent)' }}>{stats.mtdHours.toFixed(1)}h</div></div>
-        <div className="stat-item"><div className="stat-label">MTD retainer</div><div className="stat-value" style={{ color: 'var(--emerald)' }}>{formatCurrency(stats.mtdRetainer, 'GBP')}</div></div>
+        <div className="stat-item"><div className="stat-label">Hours this billing month</div><div className="stat-value">{stats.mtdHours.toFixed(1)}h</div></div>
+        <div className="stat-item"><div className="stat-label">MTD retainer</div><div className="stat-value">{formatCurrency(stats.mtdRetainer, 'GBP')}</div></div>
         <div className="stat-item"><div className="stat-label">Tier-1 complete this month</div><div className="stat-value">{milestonesCompletedThisMonth}</div></div>
       </div>
 
@@ -84,8 +84,8 @@ export default function EngagementsClient({
           <thead>
             <tr>
               <th>Name</th><th>End client</th><th>Billed via</th><th>Status</th>
-              <th style={{ textAlign: 'right' }}>Hours (mo)</th>
-              <th style={{ textAlign: 'right' }}>Retainer</th>
+              <th className="text-right!">Hours (mo)</th>
+              <th className="text-right!">Retainer</th>
               <th>Term ends</th>
             </tr>
           </thead>
@@ -98,7 +98,7 @@ export default function EngagementsClient({
                 const inc = e.included_hours_monthly
                 const over = inc != null && used > inc
                 return (
-                  <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/engagements/${e.id}`)}>
+                  <tr key={e.id} className="cursor-pointer" onClick={() => router.push(`/engagements/${e.id}`)}>
                     <td>
                       <div className="td-name">{e.name}</div>
                       {e.code ? <div className="td-sub">{e.code}</div> : null}
@@ -106,11 +106,11 @@ export default function EngagementsClient({
                     <td className="td-name">{e.end_client?.name ?? '—'}</td>
                     <td className="td-num">{e.billed_via?.name ?? 'direct'}</td>
                     <td><span className={`status-badge ${STATUS_CLASS[e.status] ?? 'status-on_hold'}`}>{e.status}</span></td>
-                    <td style={{ textAlign: 'right' }} className="td-num">
-                      <span style={{ color: over ? 'var(--red)' : 'var(--text)' }}>{used.toFixed(1)}</span>
-                      {inc != null ? <span style={{ color: 'var(--text-3)' }}> / {inc}</span> : null}
+                    <td className="td-num text-right">
+                      <span className={over ? 'text-[var(--red-strong)]' : 'text-[var(--text)]'}>{used.toFixed(1)}</span>
+                      {inc != null ? <span className="text-[var(--text-3)]"> / {inc}</span> : null}
                     </td>
-                    <td style={{ textAlign: 'right' }} className="td-num">{e.retainer_amount_monthly != null ? formatCurrency(e.retainer_amount_monthly, e.currency || 'GBP') : '—'}</td>
+                    <td className="td-num text-right">{e.retainer_amount_monthly != null ? formatCurrency(e.retainer_amount_monthly, e.currency || 'GBP') : '—'}</td>
                     <td className="td-num">{fmtDate(e.end_date)}</td>
                   </tr>
                 )

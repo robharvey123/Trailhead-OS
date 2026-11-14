@@ -55,7 +55,7 @@ export default function EngagementForm({
 
   const input =
     'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
+  const label = 'field-label block'
 
   async function submit() {
     if (!name.trim() || !startDate || (!isInternal && !endClient)) {
@@ -120,8 +120,8 @@ export default function EngagementForm({
               {(Object.keys(ENGAGEMENT_TYPE_LABELS) as EngagementType[]).map((t) => (<option key={t} value={t}>{ENGAGEMENT_TYPE_LABELS[t]}</option>))}
             </select>
           </label>
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0, paddingBottom: 9 }}>
+          <div className="flex items-end">
+            <p className="m-0 pb-[9px] text-xs text-[var(--text-3)]">
               {isInternal ? 'Internal · non-billable — cost is tracked from contributor time.' : 'Client · billable.'}
             </p>
           </div>
@@ -158,7 +158,7 @@ export default function EngagementForm({
         </div>
         <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block"><span className={label}>Notice period (days)</span><input type="number" className={input} value={noticeDays} onChange={(e) => setNoticeDays(e.target.value)} placeholder="30" /></label>
-          <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13, paddingBottom: 8 }}><input type="checkbox" checked={autoRenews} onChange={(e) => setAutoRenews(e.target.checked)} /> Auto-renews</label>
+          <label className="flex items-center gap-1.5 pb-2 text-[13px]"><input type="checkbox" checked={autoRenews} onChange={(e) => setAutoRenews(e.target.checked)} /> Auto-renews</label>
           <label className="block"><span className={label}>Renewal term (months)</span><input type="number" className={input} value={renewalTerm} onChange={(e) => setRenewalTerm(e.target.value)} placeholder="12" /></label>
         </div>
         {!isInternal ? (
@@ -176,15 +176,15 @@ export default function EngagementForm({
             <label className="block"><span className={label}>Hours overage trigger (h)</span><input type="number" className={input} value={hoursOverage} onChange={(e) => setHoursOverage(e.target.value)} /></label>
             <label className="block"><span className={label}>Travel approval threshold (£)</span><input type="number" className={input} value={travelThreshold} onChange={(e) => setTravelThreshold(e.target.value)} /></label>
           </div>
-          <div style={{ display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
-            <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}><input type="checkbox" checked={slotting} onChange={(e) => setSlotting(e.target.checked)} /> Slotting fees require approval</label>
-            <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}><input type="checkbox" checked={exhibition} onChange={(e) => setExhibition(e.target.checked)} /> Exhibitions</label>
-            <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}><input type="checkbox" checked={thirdParty} onChange={(e) => setThirdParty(e.target.checked)} /> Third-party costs</label>
+          <div className="mt-3 flex flex-wrap gap-4">
+            <label className="flex items-center gap-1.5 text-[13px]"><input type="checkbox" checked={slotting} onChange={(e) => setSlotting(e.target.checked)} /> Slotting fees require approval</label>
+            <label className="flex items-center gap-1.5 text-[13px]"><input type="checkbox" checked={exhibition} onChange={(e) => setExhibition(e.target.checked)} /> Exhibitions</label>
+            <label className="flex items-center gap-1.5 text-[13px]"><input type="checkbox" checked={thirdParty} onChange={(e) => setThirdParty(e.target.checked)} /> Third-party costs</label>
           </div>
         </div>
 
-        {error ? <p style={{ color: 'var(--red)', fontSize: 13 }}>{error}</p> : null}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        {error ? <p className="text-[13px] text-[var(--red-strong)]">{error}</p> : null}
+        <div className="flex justify-end gap-2">
           <button className="btn btn-ghost btn-sm" onClick={() => (onCancel ? onCancel() : router.push('/engagements'))}>Cancel</button>
           <button className="btn btn-primary btn-sm" onClick={submit} disabled={saving}>
             {saving ? (isEdit ? 'Saving…' : 'Creating…') : isEdit ? 'Save changes' : 'Create engagement'}
