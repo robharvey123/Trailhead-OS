@@ -84,21 +84,21 @@ export default function DiscoveryOSClient({
                 <button
                   type="button"
                   onClick={() => void handleCopyLink()}
-                  className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+                  className="btn btn-primary"
                 >
                   {copied ? 'Copied!' : 'Copy link'}
                 </button>
                 <button
                   type="button"
                   onClick={handleOpenForm}
-                  className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
+                  className="btn btn-ghost"
                 >
                   Open form
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPreview((current) => !current)}
-                  className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
+                  className="btn btn-ghost"
                 >
                   {showPreview ? 'Hide preview' : 'Preview'}
                 </button>
@@ -110,8 +110,7 @@ export default function DiscoveryOSClient({
             <iframe
               src="/discovery?view=form"
               title="Discovery form preview"
-              className="mt-4 w-full rounded-control border border-[color:var(--border)]"
-              style={{ height: '600px' }}
+              className="mt-4 h-[600px] w-full rounded-control border border-[color:var(--border)]"
             />
           ) : null}
         </div>
@@ -129,18 +128,18 @@ export default function DiscoveryOSClient({
         ) : (
           <div className="mt-6 overflow-hidden rounded-card border border-[color:var(--border)]">
             <table className="min-w-full divide-y divide-[color:var(--border)] text-left">
-              <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+              <thead className="os-label bg-[var(--surface-2)]">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Business</th>
-                  <th className="px-4 py-3 font-medium">Contact</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
-                  <th className="px-4 py-3 font-medium">Phone</th>
-                  <th className="px-4 py-3 font-medium">Submitted</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">View</th>
+                  <th className="px-4 py-3">Business</th>
+                  <th className="px-4 py-3">Contact</th>
+                  <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Phone</th>
+                  <th className="px-4 py-3">Submitted</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">View</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[color:var(--border)] bg-white text-sm text-[color:var(--text-2)]">
+              <tbody className="divide-y divide-[color:var(--border)] bg-[var(--bg)] text-sm text-[color:var(--text-2)]">
                 {enquiries.map((enquiry) => (
                   <tr key={enquiry.id}>
                     <td className="px-4 py-4 font-medium text-[color:var(--text)]">{enquiry.biz_name}</td>
@@ -164,7 +163,7 @@ export default function DiscoveryOSClient({
                     <td className="px-4 py-4">
                       <Link
                         href={`/enquiries/${enquiry.id}`}
-                        className="inline-flex rounded-pill border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+                        className="btn btn-ghost btn-sm"
                       >
                         View
                       </Link>

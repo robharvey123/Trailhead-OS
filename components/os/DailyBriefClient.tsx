@@ -89,13 +89,13 @@ function getAccentClasses(priority: DailyBriefTask['priority']) {
   if (priority === 'high') {
     return {
       border: 'border-l-[color:var(--amber)]',
-      text: 'text-[color:var(--amber-strong)]',
+      text: 'text-[var(--amber-strong)]!',
     }
   }
 
   return {
     border: 'border-l-[color:var(--red)]',
-    text: 'text-[color:var(--red-strong)]',
+    text: 'text-[var(--red-strong)]!',
   }
 }
 
@@ -123,7 +123,7 @@ function ActionRequiredRow({ task, todayKey }: { task: DailyBriefTask; todayKey:
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${accent.text}`}>
+          <p className={`os-label ${accent.text}`}>
             {overdue ? 'Overdue' : 'Needs attention'}
           </p>
           <p className="font-medium text-[color:var(--text)]">{task.title}</p>
@@ -308,10 +308,14 @@ export default function DailyBriefClient({ today, initialData, children }: Daily
         description={
           <>
             {summary}
+            {/* The one orange on this screen: the overdue count, as a filled
+                badge with navy type (6.37:1). Orange type on white is not allowed. */}
             <span
-              className={`tag-chip ml-3 align-middle ${
-                pressure.tone === 'over' ? 'red' : pressure.tone === 'due' ? 'amber' : 'emerald'
-              }`}
+              className={
+                pressure.tone === 'over'
+                  ? 'ml-3 inline-flex items-center rounded-pill bg-[var(--orange)] px-2 py-0.5 align-middle text-[11px] font-semibold text-[var(--navy)]'
+                  : `tag-chip ml-3 align-middle ${pressure.tone === 'due' ? 'amber' : 'emerald'}`
+              }
             >
               {pressure.label}
             </span>
@@ -325,8 +329,8 @@ export default function DailyBriefClient({ today, initialData, children }: Daily
         <div className="grid gap-3 sm:grid-cols-3">
           {statItems.map((item) => (
             <div key={item.label} className={`rounded-card border px-4 py-4 ${item.tone}`}>
-              <p className="text-[11px] uppercase tracking-[0.2em] text-inherit/70">{item.label}</p>
-              <p className="mt-2 text-2xl font-semibold text-inherit">{item.value}</p>
+              <p className="os-label text-inherit!">{item.label}</p>
+              <p className="stat-value mt-2 text-inherit!">{item.value}</p>
             </div>
           ))}
         </div>

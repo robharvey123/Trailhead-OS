@@ -271,7 +271,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
               <select
                 value={projectFilter}
                 onChange={(e) => setProjectFilter(e.target.value)}
-                className="rounded-card border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+                className="os-select px-3 py-2 text-sm"
               >
                 <option value="">All projects</option>
                 {projects.map((p) => (
@@ -284,14 +284,14 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
             <button
               type="button"
               onClick={() => setShowForecast(true)}
-              className="rounded-card border border-[color:var(--border)] bg-white px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+              className="btn btn-ghost"
             >
               Forecast
             </button>
             <button
               type="button"
               onClick={openNew}
-              className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+              className="btn btn-primary"
             >
               + New deal
             </button>
@@ -314,7 +314,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
       ) : (
         <div className="os-card overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-2)]">
+            <thead className="os-label border-b border-[color:var(--border)]">
               <tr>
                 <th scope="col" className="px-4 py-3">Name</th>
                 <th scope="col" className="px-4 py-3">Account</th>
@@ -406,7 +406,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
         title="Weighted forecast — next 6 months"
         closeLabel="Close forecast"
         overlayClassName="p-4"
-        panelClassName="w-full max-w-lg rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        panelClassName="w-full max-w-lg rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]"
       >
         <div className="flex items-center justify-between">
           <h2 className="os-section-title">Weighted forecast — next 6 months</h2>
@@ -422,7 +422,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
           value × probability, bucketed by expected close. Excludes Won/Lost.
         </p>
         <table className="mt-4 w-full text-left text-sm">
-          <thead className="border-b border-[color:var(--border)] text-xs uppercase tracking-wide text-[color:var(--text-2)]">
+          <thead className="os-label border-b border-[color:var(--border)]">
             <tr>
               <th scope="col" className="py-2">Month</th>
               <th scope="col" className="py-2 text-right">Deals</th>

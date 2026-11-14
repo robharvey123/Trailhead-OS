@@ -86,10 +86,12 @@ export default function ConfirmDialog({
 
   const phraseUnmet = confirmPhrase != null && typed.trim() !== confirmPhrase.trim()
 
-  const confirmColour =
+  // The solid red button is the confirm dialog's own. The warning variant keeps
+  // its amber fill with navy type: white on amber fails contrast.
+  const confirmVariant =
     variant === 'destructive'
-      ? 'bg-[var(--red)] text-white hover:bg-[var(--red-strong)]'
-      : 'bg-[var(--amber)] text-white hover:bg-[var(--amber-strong)]'
+      ? 'btn-danger-solid'
+      : 'bg-[var(--amber)] text-[var(--navy)] hover:bg-[var(--amber)]/85'
 
   return createPortal(
     // `thmock` is required: this portals to document.body, OUTSIDE the app's
@@ -97,14 +99,14 @@ export default function ConfirmDialog({
     // defined. Without it, the destructive button's bg-[var(--red)] resolves to
     // nothing and the white-text button is invisible (looked like "Cancel only").
     <div
-      className="thmock fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)]"
+      className="thmock fixed inset-0 z-50 flex items-center justify-center bg-[var(--navy)]/45"
       onClick={(e) => {
         if (e.target === e.currentTarget) onOpenChange(false)
       }}
     >
       <div
         ref={panelRef}
-        className="mx-4 w-full max-w-md rounded-control border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        className="mx-4 w-full max-w-md rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
@@ -122,7 +124,7 @@ export default function ConfirmDialog({
         {items && items.length > 0 ? (
           <div className="mb-4 rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
             {itemsLabel ? (
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[2px] text-[color:var(--text-2)]">
+              <p className="os-label mb-2">
                 {itemsLabel}
               </p>
             ) : null}
@@ -139,7 +141,7 @@ export default function ConfirmDialog({
 
         {confirmPhrase != null ? (
           <div className="mb-4">
-            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]">
+            <label className="field-label block">
               {confirmPhraseLabel ?? `Type “${confirmPhrase}” to confirm`}
             </label>
             <input
@@ -148,13 +150,13 @@ export default function ConfirmDialog({
               onChange={(e) => setTyped(e.target.value)}
               disabled={loading}
               autoFocus
-              className="w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[var(--accent)]"
+              className="os-input w-full px-3 py-2 text-sm"
               placeholder={confirmPhrase}
             />
           </div>
         ) : null}
 
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
@@ -162,7 +164,7 @@ export default function ConfirmDialog({
             // Default focus on Cancel (not the destructive action) so Enter can't
             // accidentally confirm — unless there's a type-to-confirm input to focus.
             autoFocus={confirmPhrase == null}
-            className="rounded-control border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)]"
+            className="btn btn-ghost"
           >
             {cancelLabel}
           </button>
@@ -171,7 +173,7 @@ export default function ConfirmDialog({
               type="button"
               onClick={secondaryAction.onClick}
               disabled={loading}
-              className="rounded-control border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
+              className="btn btn-ghost"
             >
               {secondaryAction.label}
             </button>
@@ -181,7 +183,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={loading || phraseUnmet}
-            className={`rounded-control px-4 py-2 font-bold disabled:opacity-50 ${confirmColour}`}
+            className={`btn ${confirmVariant}`}
           >
             {loading ? (
               <span className="flex items-center gap-2">

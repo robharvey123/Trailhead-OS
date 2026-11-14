@@ -71,7 +71,7 @@ export default function CoworkActivityPanel({ activity }: { activity: CoworkActi
         <div className="mt-6 space-y-6">
           {groups.map((group) => (
             <div key={group.label}>
-              <p className="text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">{group.label}</p>
+              <p className="os-label">{group.label}</p>
               <ul className="mt-3 space-y-2">
                 {group.rows.map((row) => {
                   const href = entityHref(row)
@@ -90,7 +90,7 @@ export default function CoworkActivityPanel({ activity }: { activity: CoworkActi
                       {isReversible(row) ? (
                         <form action={revertCoworkActivityAction}>
                           <input type="hidden" name="id" value={row.id} />
-                          <button className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]">
+                          <button className="btn btn-ghost btn-sm">
                             Revert
                           </button>
                         </form>

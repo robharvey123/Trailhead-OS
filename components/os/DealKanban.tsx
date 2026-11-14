@@ -50,7 +50,7 @@ export default function DealKanban({ deals, onMove, onSelect }: DealKanbanProps)
           >
             <div className="flex items-start justify-between gap-3 border-b border-[color:var(--border)] pb-3">
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--text-2)]">
+                <h2 className="os-label">
                   {stage}
                 </h2>
                 <p className="mt-1 text-sm font-semibold text-[color:var(--text)]">

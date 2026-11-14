@@ -42,7 +42,7 @@ export default function CtpsScreenButton() {
   }
 
   return (
-    <span style={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+    <span className="inline-flex flex-wrap items-center gap-2">
       <button type="button" className="btn btn-primary btn-sm" onClick={screen} disabled={busy}>
         {busy ? 'Screening…' : 'Screen now'}
       </button>

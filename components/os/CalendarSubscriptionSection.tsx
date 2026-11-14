@@ -70,14 +70,14 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
           <button
             type="button"
             onClick={() => copyUrl(fullUrl, 'main')}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+            className="btn btn-ghost"
           >
             {copiedKey === 'main' ? 'Copied!' : 'Copy URL'}
           </button>
           <button
             type="button"
             onClick={() => window.open(fullUrl)}
-            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary"
           >
             Open in Apple Calendar
           </button>
@@ -136,7 +136,7 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
                     <button
                       type="button"
                       onClick={() => copyUrl(workstreamUrl, copyKey)}
-                      className="rounded-card border border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                      className="btn btn-ghost btn-sm"
                     >
                       {copiedKey === copyKey ? 'Copied!' : 'Copy'}
                     </button>

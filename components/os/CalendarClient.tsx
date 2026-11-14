@@ -33,6 +33,8 @@ import ConfirmDialog from './ConfirmDialog'
 import WorkstreamBadge from './WorkstreamBadge'
 import LogToCrmForm from './LogToCrmForm'
 
+// The event colour picker. These values are data: the chosen hex is stored on
+// the event row and applied by FullCalendar, so they stay literal hex.
 const EVENT_COLOURS = [
   { label: 'Blue', value: '#3B82F6' },
   { label: 'Green', value: '#10B981' },
@@ -353,8 +355,9 @@ function toEventInput(
       : event.start_at,
     end: event.all_day ? formatLocalDate(new Date(event.end_at)) : event.end_at,
     allDay: event.all_day,
-    backgroundColor: event.colour || '#3B82F6',
-    borderColor: event.colour || '#3B82F6',
+    // No stored colour: blue ink, which carries FullCalendar's white event type.
+    backgroundColor: event.colour || 'var(--accent-strong)',
+    borderColor: event.colour || 'var(--accent-strong)',
     editable: !event.read_only,
     extendedProps: {
       type: 'event',
@@ -455,7 +458,7 @@ export default function CalendarClient({
 
   const calendarOptions = [
     { key: 'tasks', label: 'Tasks', colour: 'var(--accent)' },
-    { key: 'events', label: 'My events', colour: '#3B82F6' },
+    { key: 'events', label: 'My events', colour: 'var(--accent-strong)' },
     ...feeds.map((feed) => ({ key: `feed:${feed.id}`, label: feed.name, colour: feed.colour || 'var(--text-3)' })),
   ]
   const calendarKeyForEvent = (event: CalendarEvent) =>
@@ -798,7 +801,7 @@ export default function CalendarClient({
                 <button
                   type="button"
                   onClick={() => setCalMenuOpen((open) => !open)}
-                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
+                  className="btn btn-ghost"
                 >
                   Calendars{hiddenCalendars.size ? ` (${calendarOptions.length - hiddenCalendars.size}/${calendarOptions.length})` : ''}
                 </button>
@@ -816,7 +819,7 @@ export default function CalendarClient({
                         return (
                           <label
                             key={option.key}
-                            className="flex cursor-pointer items-center gap-3 rounded-card px-3 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)]"
+                            className="flex cursor-pointer items-center gap-3 rounded-control px-3 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)]"
                           >
                             <input type="checkbox" checked={visible} onChange={() => toggleCalendar(option.key)} />
                             <span className="h-2.5 w-2.5 flex-none rounded-pill" style={{ backgroundColor: option.colour }} />
@@ -844,7 +847,7 @@ export default function CalendarClient({
                 type="button"
                 onClick={() => void handleGoogleSync()}
                 disabled={syncState === 'syncing'}
-                className="rounded-card border border-[color:var(--accent)] px-4 py-2.5 text-sm font-medium text-[color:var(--accent-strong)] transition hover:bg-[var(--surface-2)] disabled:opacity-50"
+                className="btn btn-ghost"
               >
                 {syncState === 'syncing'
                   ? 'Syncing...'
@@ -854,7 +857,7 @@ export default function CalendarClient({
               </button>
               <Link
                 href="/calendar/integrations"
-                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
+                className="btn btn-ghost"
               >
                 Integrations
               </Link>
@@ -867,7 +870,7 @@ export default function CalendarClient({
                     allDay: false,
                   })
                 }
-                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)] hover:bg-[var(--surface-2)]"
+                className="btn btn-primary"
               >
                 New event
               </button>
@@ -926,14 +929,14 @@ export default function CalendarClient({
       </div>
 
       {selectedItem ? (
-        <div className="fixed inset-0 z-50 flex justify-end bg-[rgba(15,23,42,0.45)]">
+        <div className="fixed inset-0 z-50 flex justify-end bg-[var(--navy)]/45">
           <button
             type="button"
             aria-label="Close detail panel"
             className="flex-1"
             onClick={() => setSelectedItem(null)}
           />
-          <div className="relative h-full w-full max-w-xl overflow-y-auto border-l border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+          <div className="relative h-full w-full max-w-xl overflow-y-auto border-l border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="os-eyebrow">
@@ -946,7 +949,7 @@ export default function CalendarClient({
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
-                className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
+                className="btn btn-ghost btn-sm"
               >
                 Close
               </button>
@@ -986,7 +989,7 @@ export default function CalendarClient({
                 {selectedTask.workstream_slug ? (
                   <Link
                     href={`/projects/${selectedTask.workstream_slug}`}
-                    className="inline-flex items-center rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                    className="btn btn-ghost"
                   >
                     View on board →
                   </Link>
@@ -1079,7 +1082,7 @@ export default function CalendarClient({
                       href={selectedEvent.meet_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+                      className="btn btn-primary"
                     >
                       🎥 Join Meet
                     </a>
@@ -1089,7 +1092,7 @@ export default function CalendarClient({
                       href={selectedEvent.html_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                      className="btn btn-ghost"
                     >
                       Open in Google Calendar
                     </a>
@@ -1099,14 +1102,14 @@ export default function CalendarClient({
                       <button
                         type="button"
                         onClick={() => openEditForm(selectedEvent)}
-                        className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                        className="btn btn-ghost"
                       >
                         Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDeleteEvent(selectedEvent)}
-                        className="rounded-card border border-[color:var(--red)] px-4 py-2.5 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)]"
+                        className="btn btn-danger"
                       >
                         Delete
                       </button>
@@ -1131,14 +1134,14 @@ export default function CalendarClient({
       ) : null}
 
       {formOpen ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,23,42,0.45)] p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--navy)]/45 p-4">
           <button
             type="button"
             className="absolute inset-0"
             aria-label="Close event form"
             onClick={closeForm}
           />
-          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-card border border-[color:var(--border)] bg-[var(--bg)] p-6 shadow-[var(--shadow-lg)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="os-eyebrow">
@@ -1153,7 +1156,7 @@ export default function CalendarClient({
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
+                className="btn btn-ghost btn-sm"
               >
                 Close
               </button>
@@ -1167,7 +1170,7 @@ export default function CalendarClient({
               ) : null}
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Title
                 </span>
                 <input
@@ -1193,14 +1196,13 @@ export default function CalendarClient({
                       all_day: event.target.checked,
                     }))
                   }
-                  className="h-4 w-4 rounded-control border-[color:var(--border)] bg-white"
                 />
                 <span className="text-sm text-[color:var(--text-2)]">All day</span>
               </label>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     Start date
                   </span>
                   <input
@@ -1217,7 +1219,7 @@ export default function CalendarClient({
                 </label>
                 {!form.all_day ? (
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                    <span className="field-label block">
                       Start time
                     </span>
                     <input
@@ -1234,7 +1236,7 @@ export default function CalendarClient({
                   </label>
                 ) : null}
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     End date
                   </span>
                   <input
@@ -1251,7 +1253,7 @@ export default function CalendarClient({
                 </label>
                 {!form.all_day ? (
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                    <span className="field-label block">
                       End time
                     </span>
                     <input
@@ -1271,7 +1273,7 @@ export default function CalendarClient({
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     Location
                   </span>
                   <input
@@ -1287,7 +1289,7 @@ export default function CalendarClient({
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                  <span className="field-label block">
                     Workstream
                   </span>
                   <select
@@ -1323,7 +1325,7 @@ export default function CalendarClient({
                     <span>🎥 Add Google Meet link</span>
                   </label>
                   <div>
-                    <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">Attendees</span>
+                    <span className="field-label block">Attendees</span>
                     <input
                       value={form.attendees}
                       onChange={(event) =>
@@ -1352,7 +1354,7 @@ export default function CalendarClient({
               ) : null}
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Project
                 </span>
                 <select
@@ -1375,7 +1377,7 @@ export default function CalendarClient({
               </label>
 
               <div className="space-y-2">
-                <span className="block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Contact
                 </span>
                 <input
@@ -1411,7 +1413,7 @@ export default function CalendarClient({
               </div>
 
               <div className="space-y-2">
-                <span className="block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Colour
                 </span>
                 <div className="flex flex-wrap gap-3">
@@ -1425,7 +1427,7 @@ export default function CalendarClient({
                           colour: colour.value,
                         }))
                       }
-                      className={`rounded-card border px-3 py-2 text-sm transition ${
+                      className={`rounded-pill border px-3 py-2 text-sm transition ${
                         form.colour === colour.value
                           ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                           : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
@@ -1444,7 +1446,7 @@ export default function CalendarClient({
               </div>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[color:var(--text-2)]">
+                <span className="field-label block">
                   Description
                 </span>
                 <textarea
@@ -1465,7 +1467,7 @@ export default function CalendarClient({
               <button
                 type="button"
                 onClick={closeForm}
-                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -1473,7 +1475,7 @@ export default function CalendarClient({
                 type="button"
                 disabled={formSaving}
                 onClick={handleSaveEvent}
-                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {formSaving ? 'Saving...' : 'Save'}
               </button>
@@ -1489,7 +1491,7 @@ export default function CalendarClient({
             href={meetToast}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-card bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary btn-sm"
           >
             Open Meet
           </a>

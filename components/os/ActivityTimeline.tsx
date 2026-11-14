@@ -126,7 +126,7 @@ export default function ActivityTimeline({
             if (showForm) resetForm()
             setShowForm((current) => !current)
           }}
-          className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+          className="btn btn-ghost btn-sm"
         >
           {showForm ? 'Cancel' : 'Log activity'}
         </button>
@@ -134,7 +134,7 @@ export default function ActivityTimeline({
 
       {nextOpenAction ? (
         <div className="mt-4 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--amber-strong)]">
+          <p className="os-label text-[var(--amber-strong)]!">
             Next Action
           </p>
           <p className="mt-1 text-sm text-[color:var(--text)]">{nextOpenAction.next_action}</p>
@@ -153,12 +153,12 @@ export default function ActivityTimeline({
           className="mt-4 space-y-4 rounded-card os-card-muted p-4"
         >
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Type</span>
+            <label className="block">
+              <span className="field-label block">Type</span>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as ActivityType)}
-                className="os-select w-full"
+                className="os-select w-full px-3 py-2 text-sm"
               >
                 {ACTIVITY_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -167,53 +167,53 @@ export default function ActivityTimeline({
                 ))}
               </select>
             </label>
-            <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Date</span>
+            <label className="block">
+              <span className="field-label block">Date</span>
               <input
                 type="date"
                 value={activityDate}
                 onChange={(e) => setActivityDate(e.target.value)}
-                className="os-input w-full"
+                className="os-input w-full px-3 py-2 text-sm"
               />
             </label>
           </div>
 
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Subject</span>
+          <label className="block">
+            <span className="field-label block">Subject</span>
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="os-input w-full"
+              className="os-input w-full px-3 py-2 text-sm"
             />
           </label>
 
-          <label className="space-y-2">
-            <span className="text-sm text-[color:var(--text-2)]">Notes</span>
+          <label className="block">
+            <span className="field-label block">Notes</span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="os-textarea w-full rounded-control"
+              className="os-textarea w-full px-3 py-2 text-sm"
             />
           </label>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Next action</span>
+            <label className="block">
+              <span className="field-label block">Next action</span>
               <input
                 value={nextAction}
                 onChange={(e) => setNextAction(e.target.value)}
                 placeholder="e.g. Follow up call"
-                className="os-input w-full"
+                className="os-input w-full px-3 py-2 text-sm"
               />
             </label>
-            <label className="space-y-2">
-              <span className="text-sm text-[color:var(--text-2)]">Next action date</span>
+            <label className="block">
+              <span className="field-label block">Next action date</span>
               <input
                 type="date"
                 value={nextActionDate}
                 onChange={(e) => setNextActionDate(e.target.value)}
-                className="os-input w-full"
+                className="os-input w-full px-3 py-2 text-sm"
               />
             </label>
           </div>
@@ -221,7 +221,7 @@ export default function ActivityTimeline({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Saving...' : 'Save activity'}
           </button>
@@ -276,7 +276,7 @@ export default function ActivityTimeline({
                 <button
                   type="button"
                   onClick={() => handleDelete(activity.id)}
-                  className="flex-shrink-0 rounded-pill border border-[color:var(--red)] px-3 py-1 text-xs text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)]"
+                  className="btn btn-danger btn-sm shrink-0"
                 >
                   Delete
                 </button>

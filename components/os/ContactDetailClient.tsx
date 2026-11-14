@@ -222,7 +222,7 @@ export default function ContactDetailClient({
                 type="button"
                 onClick={saveChanges}
                 disabled={saving}
-                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="btn btn-primary"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>
@@ -250,7 +250,7 @@ export default function ContactDetailClient({
                   })
                   setError(null)
                 }}
-                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -259,7 +259,7 @@ export default function ContactDetailClient({
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+              className="btn btn-ghost"
             >
               Edit
             </button>
@@ -274,48 +274,48 @@ export default function ContactDetailClient({
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {editing ? (
             <>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Name</span>
+              <label className="block">
+                <span className="field-label block">Name</span>
                 <input
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Company</span>
+              <label className="block">
+                <span className="field-label block">Company</span>
                 <input
                   value={form.company}
                   onChange={(event) => setForm({ ...form, company: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Email</span>
+              <label className="block">
+                <span className="field-label block">Email</span>
                 <input
                   value={form.email}
                   onChange={(event) => setForm({ ...form, email: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Phone</span>
+              <label className="block">
+                <span className="field-label block">Phone</span>
                 <input
                   value={form.phone}
                   onChange={(event) => setForm({ ...form, phone: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Role</span>
+              <label className="block">
+                <span className="field-label block">Role</span>
                 <input
                   value={form.role}
                   onChange={(event) => setForm({ ...form, role: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Channel</span>
+              <label className="block">
+                <span className="field-label block">Channel</span>
                 <input
                   value={form.channel}
                   onChange={(event) => setForm({ ...form, channel: event.target.value })}
@@ -323,8 +323,8 @@ export default function ContactDetailClient({
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Website</span>
+              <label className="block">
+                <span className="field-label block">Website</span>
                 <input
                   value={form.website}
                   onChange={(event) => setForm({ ...form, website: event.target.value })}
@@ -332,48 +332,48 @@ export default function ContactDetailClient({
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-[color:var(--text-2)]">Address line 1</span>
+              <label className="block md:col-span-2">
+                <span className="field-label block">Address line 1</span>
                 <input
                   value={form.address_line1}
                   onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-[color:var(--text-2)]">Address line 2</span>
+              <label className="block md:col-span-2">
+                <span className="field-label block">Address line 2</span>
                 <input
                   value={form.address_line2}
                   onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">City</span>
+              <label className="block">
+                <span className="field-label block">City</span>
                 <input
                   value={form.city}
                   onChange={(event) => setForm({ ...form, city: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Postcode</span>
+              <label className="block">
+                <span className="field-label block">Postcode</span>
                 <input
                   value={form.postcode}
                   onChange={(event) => setForm({ ...form, postcode: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-[color:var(--text-2)]">Country</span>
+              <label className="block md:col-span-2">
+                <span className="field-label block">Country</span>
                 <input
                   value={form.country}
                   onChange={(event) => setForm({ ...form, country: event.target.value })}
                   className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
-              <label className="space-y-2">
-                <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
+              <label className="block">
+                <span className="field-label block">Workstream</span>
                 <select
                   value={form.workstream_id}
                   onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
@@ -395,8 +395,8 @@ export default function ContactDetailClient({
                 onChange={(opt) => setForm({ ...form, account_id: opt.id })}
                 clearable
               />
-              <label className="space-y-2 md:col-span-2">
-                <span className="text-sm text-[color:var(--text-2)]">Status</span>
+              <label className="block md:col-span-2">
+                <span className="field-label block">Status</span>
                 <select
                   value={form.status}
                   onChange={(event) => setForm({ ...form, status: event.target.value as ContactStatus })}
@@ -481,7 +481,7 @@ export default function ContactDetailClient({
                         type="button"
                         onClick={saveChanges}
                         disabled={saving || !form.account_id}
-                        className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+                        className="btn btn-ghost btn-sm"
                       >
                         Link account
                       </button>
@@ -492,7 +492,7 @@ export default function ContactDetailClient({
                       <button
                         type="button"
                         onClick={() => setLinkingAccount(true)}
-                        className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+                        className="btn btn-ghost btn-sm"
                       >
                         Link to account
                       </button>
@@ -521,7 +521,7 @@ export default function ContactDetailClient({
 
       {sourceEnquiryId ? (
         <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] p-6">
-          <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent-strong)]">Converted from enquiry</p>
+          <p className="os-label text-[var(--accent-strong)]!">Converted from enquiry</p>
           <Link
             href={`/enquiries/${sourceEnquiryId}`}
             className="mt-3 inline-flex text-sm font-medium text-[color:var(--accent-strong)] hover:underline"
@@ -547,7 +547,7 @@ export default function ContactDetailClient({
                 <thead><tr><th>Engagement</th><th>Code</th><th>Status</th></tr></thead>
                 <tbody>
                   {engagements.map((e) => (
-                    <tr key={e.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/engagements/${e.id}`)}>
+                    <tr key={e.id} className="cursor-pointer" onClick={() => router.push(`/engagements/${e.id}`)}>
                       <td className="td-name">{e.name}</td>
                       <td className="td-mono">{e.code ?? '—'}</td>
                       <td><span className={`status-badge ${ENG_STATUS_CLASS[e.status] ?? 'status-on_hold'}`}>{e.status}</span></td>
@@ -566,7 +566,7 @@ export default function ContactDetailClient({
             <h2 className="os-section-title">Projects</h2>
             <p className="text-sm text-[color:var(--text-2)]">The account’s projects appear automatically; link one directly below.</p>
           </div>
-          <div style={{ minWidth: 260 }}>
+          <div className="min-w-[260px]">
             <EntityCombobox
               label=""
               entity="project"
@@ -593,8 +593,8 @@ export default function ContactDetailClient({
                     <tr key={p.id}>
                       <td className="td-name"><Link href={`/projects/records/${p.id}`}>{p.name}</Link></td>
                       <td className="td-num">{p.status}</td>
-                      <td>{direct ? <span className="channel-tag">direct</span> : <span className="td-num text-xs" style={{ color: 'var(--text-3)' }}>via account</span>}</td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td>{direct ? <span className="channel-tag">direct</span> : <span className="td-num">via account</span>}</td>
+                      <td className="text-right">
                         {direct ? <button className="btn btn-ghost btn-sm" disabled={projBusy} onClick={() => void unlinkProject(p.id)}>Unlink</button> : null}
                       </td>
                     </tr>
@@ -609,12 +609,12 @@ export default function ContactDetailClient({
       <div className="os-card rounded-card p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-[color:var(--text)]">Quotes</h2>
+            <h2 className="os-section-title">Quotes</h2>
             <p className="text-sm text-[color:var(--text-2)]">Proposals linked to this contact.</p>
           </div>
           <Link
             href={contact.account_id ? `/quotes/new?account_id=${contact.account_id}` : '/quotes/new'}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+            className="btn btn-ghost btn-sm"
           >
             New quote
           </Link>
@@ -654,7 +654,7 @@ export default function ContactDetailClient({
       <div className="os-card rounded-card p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-[color:var(--text)]">Notes</h2>
+            <h2 className="os-section-title">Notes</h2>
             <p className="text-sm text-[color:var(--text-2)]">Auto-saves when you leave the field.</p>
           </div>
           {notesSaving ? <p className="text-xs text-[color:var(--text-3)]">Saving…</p> : null}
@@ -684,10 +684,10 @@ export default function ContactDetailClient({
       <div className="os-card rounded-card p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-[color:var(--text)]">Emails</h2>
+            <h2 className="os-section-title">Emails</h2>
             <p className="text-sm text-[color:var(--text-2)]">Gmail threads linked to this contact.</p>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex gap-2">
             <SyncMailButton />
             <button
               className="btn btn-primary btn-sm"
@@ -702,7 +702,7 @@ export default function ContactDetailClient({
         {emailThreads.length === 0 ? (
           <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-center text-sm text-[color:var(--text-3)]">
             No email threads linked to this contact yet.
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+            <div className="mt-3 flex justify-center">
               <SyncMailButton />
             </div>
           </div>
@@ -714,7 +714,7 @@ export default function ContactDetailClient({
               </thead>
               <tbody>
                 {emailThreads.map((t) => (
-                  <tr key={t.gmail_thread_id} style={{ cursor: 'pointer' }} onClick={() => router.push('/inbox')}>
+                  <tr key={t.gmail_thread_id} className="cursor-pointer" onClick={() => router.push('/inbox')}>
                     <td className="td-name">{t.from_name}</td>
                     <td>
                       <div>{t.subject}</div>
@@ -745,7 +745,7 @@ export default function ContactDetailClient({
       <div className="os-card rounded-card p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-[color:var(--text)]">Linked tasks</h2>
+            <h2 className="os-section-title">Linked tasks</h2>
             <p className="text-sm text-[color:var(--text-2)]">Tasks currently tied to this contact.</p>
           </div>
           <Link href="/tasks" className="text-sm text-[color:var(--text-2)] transition hover:text-[color:var(--text)]">

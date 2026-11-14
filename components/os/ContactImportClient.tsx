@@ -308,7 +308,7 @@ export default function ContactImportClient({
         actions={
           <Link
             href="/crm/contacts"
-            className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+            className="btn btn-ghost"
           >
             Back to contacts
           </Link>
@@ -326,10 +326,10 @@ export default function ContactImportClient({
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
-          className="os-card flex flex-col items-center gap-4 border-2 border-dashed px-8 py-16 text-center transition hover:border-[color:var(--accent)]"
+          className="flex flex-col items-center gap-4 rounded-card border-2 border-dashed border-[var(--border-light)] bg-[var(--bg)] px-8 py-16 text-center transition hover:border-[var(--accent)]"
         >
           <div className="rounded-pill bg-[var(--accent-dim)] p-4">
-            <svg className="h-8 w-8 text-[color:var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="h-8 w-8 text-[var(--accent-strong)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
           </div>
@@ -346,7 +346,7 @@ export default function ContactImportClient({
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-card bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary"
           >
             Choose file
           </button>
@@ -359,14 +359,14 @@ export default function ContactImportClient({
           <div className="os-card p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-[color:var(--text)]">Map columns</h2>
+                <h2 className="os-section-title">Map columns</h2>
                 <p className="mt-1 text-sm text-[color:var(--text-2)]">
                   {fileName} — {csvRows.length} row{csvRows.length !== 1 && 's'} found
                 </p>
               </div>
               <button
                 onClick={handleReset}
-                className="rounded-card border border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] hover:text-[color:var(--text)]"
+                className="btn btn-ghost btn-sm"
               >
                 Choose different file
               </button>
@@ -388,7 +388,7 @@ export default function ContactImportClient({
                         [header]: e.target.value as FieldKey | '',
                       }))
                     }
-                    className="os-select"
+                    className="os-select px-3 py-2 text-sm"
                   >
                     <option value="">— Skip —</option>
                     {CONTACT_FIELDS.map((f) => (
@@ -412,14 +412,14 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={handleReset}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="btn btn-ghost"
             >
               Cancel
             </button>
             <button
               disabled={!nameIsMapped}
               onClick={() => setStep('preview')}
-              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              className="btn btn-primary"
             >
               Preview import
             </button>
@@ -432,7 +432,7 @@ export default function ContactImportClient({
         <div className="space-y-6">
           <div className="os-card p-6">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[color:var(--text)]">Preview</h2>
+              <h2 className="os-section-title">Preview</h2>
               <p className="mt-1 text-sm text-[color:var(--text-2)]">
                 {validRowCount} of {mappedRows.length} rows have a name and will be imported.
                 {mappedRows.length - validRowCount > 0 && (
@@ -445,7 +445,7 @@ export default function ContactImportClient({
 
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+                <thead className="os-label text-left">
                   <tr>
                     <th className="pb-3 pr-4">#</th>
                     {CONTACT_FIELDS.filter((f) =>
@@ -495,12 +495,12 @@ export default function ContactImportClient({
               </p>
               <div className="grid gap-4 md:grid-cols-2">
                 {workstreams.length > 0 && (
-                  <label className="space-y-2">
-                    <span className="text-sm text-[color:var(--text-2)]">Workstream</span>
+                  <label className="block">
+                    <span className="field-label block">Workstream</span>
                     <select
                       value={globalWorkstreamId}
                       onChange={(e) => setGlobalWorkstreamId(e.target.value)}
-                      className="os-select w-full"
+                      className="os-select w-full px-3 py-2 text-sm"
                     >
                       <option value="">— None (use CSV value) —</option>
                       {workstreams.map((ws) => (
@@ -512,12 +512,12 @@ export default function ContactImportClient({
                   </label>
                 )}
                 {projects.length > 0 && (
-                  <label className="space-y-2">
-                    <span className="text-sm text-[color:var(--text-2)]">Project</span>
+                  <label className="block">
+                    <span className="field-label block">Project</span>
                     <select
                       value={globalProjectId}
                       onChange={(e) => setGlobalProjectId(e.target.value)}
-                      className="os-select w-full"
+                      className="os-select w-full px-3 py-2 text-sm"
                     >
                       <option value="">— None —</option>
                       {projects.map((p) => (
@@ -535,7 +535,7 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setStep('map')}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="btn btn-ghost"
             >
               Back to mapping
             </button>
@@ -543,7 +543,7 @@ export default function ContactImportClient({
               <button
                 disabled={matching || validRowCount === 0}
                 onClick={goToAccounts}
-                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                className="btn btn-primary"
               >
                 {matching ? 'Matching accounts…' : 'Match accounts →'}
               </button>
@@ -551,7 +551,7 @@ export default function ContactImportClient({
               <button
                 disabled={importing || validRowCount === 0}
                 onClick={handleImport}
-                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                className="btn btn-primary"
               >
                 {importing ? 'Importing…' : `Import ${validRowCount} contact${validRowCount !== 1 ? 's' : ''}`}
               </button>
@@ -565,7 +565,7 @@ export default function ContactImportClient({
         <div className="space-y-6">
           <div className="os-card p-6">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[color:var(--text)]">Match to accounts</h2>
+              <h2 className="os-section-title">Match to accounts</h2>
               <p className="mt-1 text-sm text-[color:var(--text-2)]">
                 {matches.length} distinct compan{matches.length === 1 ? 'y' : 'ies'} found.{' '}
                 <span className="text-[color:var(--text-3)]">
@@ -579,7 +579,7 @@ export default function ContactImportClient({
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
-                  <thead className="text-left text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
+                  <thead className="os-label text-left">
                     <tr><th className="pb-3 pr-4">Company</th><th className="pb-3 pr-4">Account</th></tr>
                   </thead>
                   <tbody>
@@ -593,7 +593,7 @@ export default function ContactImportClient({
                           <td className="py-3 pr-4 text-[color:var(--text)]">{m.company}</td>
                           <td className="py-3 pr-4">
                             <select
-                              className="os-select"
+                              className="os-select px-3 py-2 text-sm"
                               value={value}
                               onChange={(e) => {
                                 const v = e.target.value
@@ -623,14 +623,14 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setStep('preview')}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="btn btn-ghost"
             >
               Back to preview
             </button>
             <button
               disabled={importing || validRowCount === 0}
               onClick={handleImport}
-              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              className="btn btn-primary"
             >
               {importing ? 'Importing…' : `Import ${validRowCount} contact${validRowCount !== 1 ? 's' : ''}`}
             </button>
@@ -649,7 +649,7 @@ export default function ContactImportClient({
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-[color:var(--text)]">Import complete</h2>
+                <h2 className="os-section-title">Import complete</h2>
                 <p className="mt-1 text-sm text-[color:var(--text-2)]">
                   {result.inserted} contact{result.inserted !== 1 && 's'} imported successfully.
                   {(result.updated ?? 0) > 0 && (
@@ -683,13 +683,13 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={handleReset}
-              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="btn btn-ghost"
             >
               Import more
             </button>
             <Link
               href="/crm/contacts"
-              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+              className="btn btn-primary"
             >
               View contacts
             </Link>

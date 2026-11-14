@@ -172,7 +172,7 @@ export default function AccountDetailClient({
 
         {/* tags row */}
         {tags.length > 0 ? (
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', padding: '10px 24px', borderBottom: '1px solid var(--border)' }}>
+          <div className="flex flex-wrap gap-1 border-b border-[var(--border)] px-6 py-2.5">
             {tags.map((t) => (<span key={t.id} className={`tag-chip ${t.color}`}>{t.name}</span>))}
           </div>
         ) : null}
@@ -188,7 +188,7 @@ export default function AccountDetailClient({
           ))}
         </div>
 
-        <div style={{ padding: 24 }}>
+        <div className="p-6">
           {/* OVERVIEW */}
           {tab === 'Overview' ? (
             editing ? (
@@ -214,23 +214,22 @@ export default function AccountDetailClient({
                     <Field label="Industry" value={account.industry} />
                     <Field label="Website" value={account.website} />
                     <Field label="Size" value={account.size} />
-                    <div style={{ gridColumn: '1/-1' }}>
+                    <div className="col-span-full">
                       <div className="field-label">HQ / Address</div>
-                      <div className="field-value" style={{ whiteSpace: 'pre-wrap' }}>
+                      <div className="field-value whitespace-pre-wrap">
                         {account.hq_address ||
                           [account.address_line1, account.address_line2, account.city, account.postcode, account.country].filter(Boolean).join('\n') ||
                           '—'}
                       </div>
                     </div>
                   </div>
-                  <div className="panel-section-title" style={{ marginTop: 20 }}>Notes</div>
+                  <div className="panel-section-title mt-5">Notes</div>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     onBlur={saveNotesOnBlur}
                     rows={6}
-                    className="search-input"
-                    style={{ width: '100%', paddingLeft: 12, resize: 'vertical' }}
+                    className="os-textarea w-full resize-y px-3 py-2 text-sm"
                   />
                 </div>
 
@@ -240,17 +239,17 @@ export default function AccountDetailClient({
                     <Link href={`/crm/contacts/new?account_id=${account.id}`} className="btn btn-ghost btn-sm">Add</Link>
                   </div>
                   {account.contacts?.length ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div className="flex flex-col gap-2">
                       {account.contacts.map((c) => (
-                        <Link key={c.id} href={`/crm/contacts/${c.id}`} className="card" style={{ display: 'block', textDecoration: 'none' }}>
+                        <Link key={c.id} href={`/crm/contacts/${c.id}`} className="card block no-underline">
                           <div className="td-name">{c.name}</div>
                           <div className="td-sub">{c.role ?? 'No role'}</div>
-                          {c.email ? <div className="field-value" style={{ marginTop: 4, fontSize: 12, color: 'var(--accent-strong)' }}>{c.email}</div> : null}
+                          {c.email ? <div className="mt-1 text-xs font-medium text-[var(--accent-strong)]">{c.email}</div> : null}
                         </Link>
                       ))}
                     </div>
                   ) : (
-                    <p className="field-label">No contacts linked.</p>
+                    <p className="text-sm text-[var(--text-3)]">No contacts linked.</p>
                   )}
                 </div>
               </div>
@@ -260,15 +259,15 @@ export default function AccountDetailClient({
           {/* EMAILS */}
           {tab === 'Emails' ? (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 12 }}>
+              <div className="mb-3 flex justify-end gap-2">
                 <SyncMailButton />
                 <button className="btn btn-primary btn-sm" onClick={() => setComposeOpen(true)}>+ New email</button>
               </div>
               {emailThreads.length === 0 ? (
                 <div className="empty">
                   No email threads linked to this account yet. New mail auto-links by contact/domain;
-                  you can also link threads from the <Link href="/inbox" className="acct-chip" style={{ display: 'inline-flex' }}>Inbox</Link>.
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+                  you can also link threads from the <Link href="/inbox" className="acct-chip">Inbox</Link>.
+                  <div className="mt-3 flex justify-center">
                     <SyncMailButton />
                   </div>
                 </div>
@@ -280,7 +279,7 @@ export default function AccountDetailClient({
                   </thead>
                   <tbody>
                     {emailThreads.map((t) => (
-                      <tr key={t.gmail_thread_id} style={{ cursor: 'pointer' }} onClick={() => router.push('/inbox')}>
+                      <tr key={t.gmail_thread_id} className="cursor-pointer" onClick={() => router.push('/inbox')}>
                         <td className="td-name">{t.from_name}</td>
                         <td>
                           <div>{t.subject}</div>
@@ -300,7 +299,7 @@ export default function AccountDetailClient({
           {/* DEALS */}
           {tab === 'Deals' ? (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <div className="mb-3 flex justify-end">
                 <button className="btn btn-primary btn-sm" onClick={() => { setEditingDeal(null); setDealFormOpen(true) }}>+ New deal</button>
               </div>
               {deals.length === 0 ? (
@@ -309,15 +308,15 @@ export default function AccountDetailClient({
                 <div className="overflow-x-auto">
                 <table className="data-table">
                   <thead>
-                    <tr><th>Name</th><th>Stage</th><th style={{ textAlign: 'right' }}>Value</th><th style={{ textAlign: 'right' }}>Prob.</th><th>Close</th></tr>
+                    <tr><th>Name</th><th>Stage</th><th className="text-right!">Value</th><th className="text-right!">Prob.</th><th>Close</th></tr>
                   </thead>
                   <tbody>
                     {deals.map((d) => (
-                      <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => { setEditingDeal(d); setDealFormOpen(true) }}>
+                      <tr key={d.id} className="cursor-pointer" onClick={() => { setEditingDeal(d); setDealFormOpen(true) }}>
                         <td className="td-name">{d.name}</td>
                         <td><span className={`status-badge ${stageClass(d.stage)}`}>{d.stage}</span></td>
-                        <td style={{ textAlign: 'right' }} className="td-num">{d.value_amount != null ? formatCurrency(d.value_amount, d.value_currency || 'GBP') : '—'}</td>
-                        <td style={{ textAlign: 'right' }} className="td-num">{d.probability}%</td>
+                        <td className="td-num text-right">{d.value_amount != null ? formatCurrency(d.value_amount, d.value_currency || 'GBP') : '—'}</td>
+                        <td className="td-num text-right">{d.probability}%</td>
                         <td className="td-num">{fmtDate(d.expected_close_date)}</td>
                       </tr>
                     ))}
@@ -337,20 +336,20 @@ export default function AccountDetailClient({
                 placeholder="Add a task for this account..."
                 onCreated={() => router.refresh()}
               />
-              <div className="panel-section-title" style={{ marginTop: 16 }}>Open</div>
+              <div className="panel-section-title mt-4">Open</div>
               {openTasks.length ? openTasks.map((t) => (
-                <div key={t.id} className="card" style={{ marginBottom: 8 }}>
+                <div key={t.id} className="card mb-2">
                   <div className="td-name">{t.title}</div>
                   <div className="td-sub">Due: {formatTaskSchedule(t.due_date, t.due_time)}</div>
                 </div>
-              )) : <p className="field-label">No open tasks.</p>}
-              <div className="panel-section-title" style={{ marginTop: 16 }}>Completed</div>
+              )) : <p className="text-sm text-[var(--text-3)]">No open tasks.</p>}
+              <div className="panel-section-title mt-4">Completed</div>
               {completedTasks.length ? completedTasks.map((t) => (
-                <div key={t.id} className="card" style={{ marginBottom: 8, opacity: 0.7 }}>
+                <div key={t.id} className="card mb-2 opacity-70">
                   <div className="td-name">{t.title}</div>
                   <div className="td-sub">Completed {t.completed_at?.slice(0, 10)}</div>
                 </div>
-              )) : <p className="field-label">No completed tasks.</p>}
+              )) : <p className="text-sm text-[var(--text-3)]">No completed tasks.</p>}
             </div>
           ) : null}
 
@@ -375,16 +374,16 @@ export default function AccountDetailClient({
                 <div className="overflow-x-auto">
                 <table className="data-table">
                   <thead>
-                    <tr><th>Date</th><th>Description</th><th style={{ textAlign: 'right' }}>Duration</th><th style={{ textAlign: 'right' }}>Rate</th><th style={{ textAlign: 'right' }}>Amount</th><th></th></tr>
+                    <tr><th>Date</th><th>Description</th><th className="text-right!">Duration</th><th className="text-right!">Rate</th><th className="text-right!">Amount</th><th></th></tr>
                   </thead>
                   <tbody>
                     {timeEntries.map((e) => (
                       <tr key={e.id}>
                         <td className="td-num">{fmtDate(e.entry_date)}</td>
                         <td>{e.description ?? '—'}</td>
-                        <td style={{ textAlign: 'right' }} className="td-num">{fmtMinutes(e.duration_minutes)}</td>
-                        <td style={{ textAlign: 'right' }} className="td-num">{e.rate_snapshot ? formatCurrency(e.rate_snapshot, e.currency_snapshot || 'GBP') + '/h' : '—'}</td>
-                        <td style={{ textAlign: 'right' }} className="td-num">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
+                        <td className="td-num text-right">{fmtMinutes(e.duration_minutes)}</td>
+                        <td className="td-num text-right">{e.rate_snapshot ? formatCurrency(e.rate_snapshot, e.currency_snapshot || 'GBP') + '/h' : '—'}</td>
+                        <td className="td-num text-right">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
                         <td><span className={`pill ${e.billable ? 'billable' : 'nonbill'}`}>{e.billable ? 'Billable' : 'Non-bill'}</span></td>
                       </tr>
                     ))}
@@ -392,9 +391,9 @@ export default function AccountDetailClient({
                   <tfoot>
                     <tr>
                       <td className="total-label" colSpan={2}>Total</td>
-                      <td className="total-val" style={{ textAlign: 'right' }}>{fmtMinutes(timeTotals.minutes)}</td>
+                      <td className="total-val text-right">{fmtMinutes(timeTotals.minutes)}</td>
                       <td></td>
-                      <td className="total-amount" style={{ textAlign: 'right' }}>{formatCurrency(timeTotals.amount, 'GBP')}</td>
+                      <td className="total-amount text-right">{formatCurrency(timeTotals.amount, 'GBP')}</td>
                       <td></td>
                     </tr>
                   </tfoot>
@@ -413,7 +412,7 @@ export default function AccountDetailClient({
 
           {/* ACTIVITY (reuses existing components) */}
           {tab === 'Activity' ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div className="flex flex-col gap-5">
               <TouchpointTimeline
                 initialTouchpoints={account.touchpoints}
                 accountId={account.id}

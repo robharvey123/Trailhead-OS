@@ -100,7 +100,7 @@ export default async function ActiveProjectTasks() {
         <div className="mt-4 space-y-5">
           {visibleGroups.map((group) => (
             <div key={group.name}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--text-3)]">
+              <p className="os-label">
                 {group.name}
               </p>
               <ul className="mt-2 space-y-2">

@@ -55,6 +55,8 @@ interface CalendarFeed {
   created_at: string
 }
 
+// The feed colour picker. These values are data: the chosen hex is stored on
+// the feed row and used as its event colour, so they stay literal hex.
 const FEED_COLOURS = [
   { label: 'Indigo', value: '#6366F1' },
   { label: 'Blue', value: '#3B82F6' },
@@ -375,7 +377,7 @@ export default function CalendarIntegrationsClient({
             type="button"
             disabled={syncState === 'syncing'}
             onClick={handleSyncAll}
-            className="rounded-card bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="btn btn-primary"
           >
             {syncState === 'syncing'
               ? 'Syncing…'
@@ -406,7 +408,7 @@ export default function CalendarIntegrationsClient({
           </div>
           <a
             href="/api/auth/google"
-            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-ghost"
           >
             + Connect Google account
           </a>
@@ -482,7 +484,7 @@ export default function CalendarIntegrationsClient({
                     </span>
                     <a
                       href="/api/auth/google"
-                      className="shrink-0 rounded-card bg-[var(--accent)] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[var(--accent-hover)]"
+                      className="btn btn-ghost btn-sm shrink-0"
                     >
                       Reconnect
                     </a>
@@ -514,13 +516,12 @@ export default function CalendarIntegrationsClient({
                                   onChange={() =>
                                     toggleCalendar(account.id, cal.id)
                                   }
-                                  className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[var(--accent-strong)] focus:ring-[var(--accent)]"
                                 />
                                 <span
                                   className="inline-block h-3 w-3 rounded-pill"
                                   style={{
                                     backgroundColor:
-                                      cal.backgroundColor ?? '#3B82F6',
+                                      cal.backgroundColor ?? 'var(--accent)',
                                   }}
                                 />
                                 <span className="text-[color:var(--text-2)]">
@@ -546,7 +547,7 @@ export default function CalendarIntegrationsClient({
                                         | 'both'
                                     )
                                   }
-                                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
+                                  className="os-select px-3 py-1.5 text-xs"
                                 >
                                   <option value="pull">Pull only</option>
                                   <option value="push">Push only</option>
@@ -564,7 +565,7 @@ export default function CalendarIntegrationsClient({
                             onClick={() =>
                               saveCalendarSelections(account.id)
                             }
-                            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent)] disabled:opacity-50"
+                            className="btn btn-primary btn-sm"
                           >
                             {savingCalendars ? 'Saving…' : 'Save selections'}
                           </button>
@@ -595,7 +596,7 @@ export default function CalendarIntegrationsClient({
           </div>
           <a
             href="/api/auth/microsoft"
-            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-ghost"
           >
             + Connect Microsoft account
           </a>
@@ -684,12 +685,11 @@ export default function CalendarIntegrationsClient({
                                   onChange={() =>
                                     toggleMsCalendar(account.id, cal.id)
                                   }
-                                  className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[var(--accent-strong)] focus:ring-[var(--accent)]"
                                 />
                                 <span
                                   className="inline-block h-3 w-3 rounded-pill"
                                   style={{
-                                    backgroundColor: cal.colour ?? '#3B82F6',
+                                    backgroundColor: cal.colour ?? 'var(--accent)',
                                   }}
                                 />
                                 <span className="text-[color:var(--text-2)]">
@@ -715,7 +715,7 @@ export default function CalendarIntegrationsClient({
                                         | 'both'
                                     )
                                   }
-                                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
+                                  className="os-select px-3 py-1.5 text-xs"
                                 >
                                   <option value="pull">Pull only</option>
                                   <option value="push">Push only</option>
@@ -733,7 +733,7 @@ export default function CalendarIntegrationsClient({
                             onClick={() =>
                               saveMsCalendarSelections(account.id)
                             }
-                            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent)] disabled:opacity-50"
+                            className="btn btn-primary btn-sm"
                           >
                             {savingMsCalendars ? 'Saving…' : 'Save selections'}
                           </button>
@@ -766,7 +766,7 @@ export default function CalendarIntegrationsClient({
           <button
             type="button"
             onClick={() => setShowAddFeed(true)}
-            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-ghost"
           >
             + Add feed
           </button>
@@ -783,7 +783,7 @@ export default function CalendarIntegrationsClient({
                 value={feedName}
                 onChange={(e) => setFeedName(e.target.value)}
                 placeholder="e.g. iCloud Personal, Outlook Work"
-                className="mt-2 w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)]"
+                className="os-input mt-2 w-full px-4 py-3 text-sm"
               />
             </div>
             <div>
@@ -794,7 +794,7 @@ export default function CalendarIntegrationsClient({
                 value={feedUrl}
                 onChange={(e) => setFeedUrl(e.target.value)}
                 placeholder="https://... or webcal://..."
-                className="mt-2 w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)]"
+                className="os-input mt-2 w-full px-4 py-3 text-sm"
               />
             </div>
             <div>
@@ -830,7 +830,7 @@ export default function CalendarIntegrationsClient({
                 type="button"
                 disabled={feedSaving || !feedName.trim() || !feedUrl.trim()}
                 onClick={handleAddFeed}
-                className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent)] disabled:opacity-50"
+                className="btn btn-primary"
               >
                 {feedSaving ? 'Adding…' : 'Add & sync'}
               </button>
@@ -840,7 +840,7 @@ export default function CalendarIntegrationsClient({
                   setShowAddFeed(false)
                   setFeedError(null)
                 }}
-                className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>
@@ -931,7 +931,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleSyncFeed(feed.id)}
-                    className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                    className="btn btn-ghost btn-sm"
                     title="Sync now"
                   >
                     ↻ Sync
@@ -939,7 +939,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleToggleFeed(feed)}
-                    className={`rounded-card border px-3 py-1.5 text-xs transition ${
+                    className={`rounded-pill border px-3 py-1.5 text-xs transition ${
                       feed.enabled
                         ? 'border-[color:var(--green)] text-[color:var(--green-strong)]'
                         : 'border-[color:var(--border)] text-[color:var(--text-3)]'
@@ -950,7 +950,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleDeleteFeed(feed.id)}
-                    className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
+                    className="btn btn-danger btn-sm"
                   >
                     Remove
                   </button>

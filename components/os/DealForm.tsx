@@ -80,8 +80,8 @@ export default function DealForm({
   }
 
   const inputClass =
-    'w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
-  const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]'
+    'os-input w-full px-3 py-2 text-sm'
+  const labelClass = 'field-label block'
 
   return (
     <Modal
@@ -90,7 +90,7 @@ export default function DealForm({
       title={deal ? 'Edit deal' : 'New deal'}
       placement="right"
       closeLabel="Close deal panel"
-      panelClassName="flex h-full w-full max-w-md flex-col border-l border-[color:var(--border)] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+      panelClassName="flex h-full w-full max-w-md flex-col border-l border-[color:var(--border)] bg-[var(--bg)] shadow-[var(--shadow-lg)]"
     >
       <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-4">
         <h2 className="text-lg font-semibold text-[color:var(--text)]">{deal ? 'Edit deal' : 'New deal'}</h2>
@@ -237,7 +237,7 @@ export default function DealForm({
           <button
             type="button"
             onClick={() => onDelete(deal.id)}
-            className="text-sm text-[color:var(--red-strong)] hover:text-[color:var(--red)]"
+            className="btn btn-danger"
           >
             Delete
           </button>
@@ -248,7 +248,7 @@ export default function DealForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[color:var(--text)]"
+            className="btn btn-ghost"
           >
             Cancel
           </button>
@@ -256,7 +256,7 @@ export default function DealForm({
             type="button"
             onClick={handleSubmit}
             disabled={saving}
-            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="btn btn-primary"
           >
             {saving ? 'Saving…' : 'Save deal'}
           </button>
