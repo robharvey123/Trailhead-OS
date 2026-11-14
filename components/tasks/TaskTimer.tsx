@@ -65,30 +65,30 @@ export default function TaskTimer({
   }
 
   return (
-    <div style={{ display: 'grid', gap: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+    <div className="grid gap-2.5">
+      <div className="flex items-center justify-between gap-3">
         <span className="field-label">Logged</span>
-        <span className="td-num" style={{ fontSize: 13, color: 'var(--text)' }}>{fmtMinutes(loggedMinutes)}</span>
+        <span className="text-[13px] tabular-nums text-[var(--text)]">{fmtMinutes(loggedMinutes)}</span>
       </div>
 
       {onThisTask ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <span className="td-num" style={{ fontSize: 20, color: 'var(--accent)' }}>{fmtElapsed(elapsedSeconds)}</span>
-          <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)', borderColor: 'var(--red)' }} onClick={() => void onStop()} disabled={busy}>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xl tabular-nums text-[var(--accent-strong)]">{fmtElapsed(elapsedSeconds)}</span>
+          <button className="btn btn-danger btn-sm" onClick={() => void onStop()} disabled={busy}>
             {busy ? 'Stopping…' : '■ Stop'}
           </button>
         </div>
       ) : elsewhere ? (
-        <p style={{ fontSize: 12, color: 'var(--text-3)' }}>
+        <p className="text-xs text-[var(--text-3)]">
           A timer is already running on another task. Stop it from the bar above before timing this one.
         </p>
       ) : (
-        <button className="btn btn-primary btn-sm" onClick={() => void onStart()} disabled={busy} style={{ justifySelf: 'start' }}>
+        <button className="btn btn-primary btn-sm justify-self-start" onClick={() => void onStart()} disabled={busy}>
           {busy ? 'Starting…' : '▶ Start timer'}
         </button>
       )}
 
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12 }}>{error}</p> : null}
+      {error ? <p className="text-xs text-[var(--red)]">{error}</p> : null}
     </div>
   )
 }

@@ -8,9 +8,9 @@ export default function WeeklyReportLoading() {
           <div className="mt-3 h-7 w-56 rounded-control bg-[var(--surface-3)]" />
         </div>
         <div className="flex gap-2">
-          <div className="h-10 w-24 rounded-card bg-[var(--surface-3)]" />
-          <div className="h-10 w-36 rounded-card bg-[var(--surface-3)]" />
-          <div className="h-10 w-32 rounded-card bg-[var(--surface-3)]" />
+          <div className="h-10 w-24 rounded-pill bg-[var(--surface-3)]" />
+          <div className="h-10 w-36 rounded-pill bg-[var(--surface-3)]" />
+          <div className="h-10 w-32 rounded-pill bg-[var(--surface-3)]" />
         </div>
       </div>
 

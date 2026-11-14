@@ -8,7 +8,7 @@ export default function WorkstreamBoardLoading() {
             key={index}
             className="min-w-[20rem] rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-4"
           >
-            <div className="h-6 w-28 animate-pulse rounded-card bg-[var(--surface-2)]" />
+            <div className="h-6 w-28 animate-pulse rounded-control bg-[var(--surface-2)]" />
             <div className="mt-4 space-y-3">
               {Array.from({ length: 3 }).map((__, lineIndex) => (
                 <div key={lineIndex} className="h-28 animate-pulse rounded-card bg-[var(--surface-3)]" />

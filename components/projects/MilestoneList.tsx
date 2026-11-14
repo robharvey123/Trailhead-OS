@@ -78,29 +78,29 @@ export default function MilestoneList({
   const singleBlocked = single ? (dependentCounts[single.id] ?? 0) > 0 : false
 
   return (
-    <div className="panel" style={{ padding: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <div className="panel-section-title" style={{ margin: 0 }}>Milestones</div>
-        <span className="td-num" style={{ color: 'var(--text-3)' }}>{milestones.length}</span>
+    <div className="panel p-5">
+      <div className="mb-2.5 flex items-center justify-between">
+        <div className="panel-section-title m-0!">Milestones</div>
+        <span className="td-num">{milestones.length}</span>
       </div>
 
       {/* Bulk action bar — below the modal overlay (z-index 40 < dialog 50). */}
       {selected.size > 0 ? (
-        <div style={{ position: 'sticky', top: 0, zIndex: 40, display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-          <strong style={{ fontSize: 13 }}>{selected.size} selected</strong>
-          <button className="btn btn-sm" style={{ background: 'var(--red)', color: 'white' }} onClick={() => setBulkOpen(true)}>Delete</button>
+        <div className="sticky top-0 z-40 mb-2.5 flex items-center gap-3 rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2">
+          <strong className="text-[13px]">{selected.size} selected</strong>
+          <button className="btn btn-danger btn-sm" onClick={() => setBulkOpen(true)}>Delete</button>
           <button className="btn btn-ghost btn-sm" onClick={() => setSelected(new Set())}>Cancel</button>
         </div>
       ) : null}
 
-      {error ? <p style={{ color: 'var(--red)', fontSize: 12, marginBottom: 8 }}>{error}</p> : null}
+      {error ? <p className="mb-2 text-xs text-[var(--red)]">{error}</p> : null}
 
       {milestones.length === 0 ? <div className="empty">No milestones.</div> : (
         <div className="overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{ width: 32 }}><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all" /></th>
+              <th className="w-8"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all" /></th>
               <th>Title</th><th>Due</th><th>Status</th><th></th>
             </tr>
           </thead>
@@ -113,7 +113,7 @@ export default function MilestoneList({
                   <td className="td-name">{m.title}{deps > 0 ? <span className="td-sub">{deps} linked task{deps === 1 ? '' : 's'}</span> : null}</td>
                   <td className="td-num">{fmtDate(m.due_date)}</td>
                   <td><span className="channel-tag">{m.status}</span></td>
-                  <td><button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }} onClick={() => setSingle(m)}>Delete</button></td>
+                  <td><button className="btn btn-danger btn-sm" onClick={() => setSingle(m)}>Delete</button></td>
                 </tr>
               )
             })}

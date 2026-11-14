@@ -52,14 +52,14 @@ export default function InternalWeeklyClient({
             <Link
               href={atOldest ? '#' : `/reports/weekly?week=${data.offsetWeeks - 1}`}
               aria-disabled={atOldest}
-              className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${atOldest ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
+              className={`btn btn-ghost btn-sm ${atOldest ? 'pointer-events-none' : ''}`}
             >
               ‹ Earlier
             </Link>
             {!isCurrent ? (
               <Link
                 href="/reports/weekly"
-                className="rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+                className="btn btn-ghost btn-sm"
               >
                 This week
               </Link>
@@ -67,7 +67,7 @@ export default function InternalWeeklyClient({
             <Link
               href={isCurrent ? '#' : `/reports/weekly?week=${data.offsetWeeks + 1}`}
               aria-disabled={isCurrent}
-              className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${isCurrent ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
+              className={`btn btn-ghost btn-sm ${isCurrent ? 'pointer-events-none' : ''}`}
             >
               Later ›
             </Link>
@@ -89,7 +89,7 @@ export default function InternalWeeklyClient({
         <div className="os-card overflow-hidden p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[color:var(--border)] text-left text-[11px] uppercase tracking-[0.14em] text-[color:var(--text-3)]">
+              <tr className="os-label border-b border-[color:var(--border)] text-left">
                 <th className="px-4 py-3">Engagement</th>
                 <th className="px-4 py-3 text-right">Hours</th>
                 <th className="px-4 py-3 text-right">Billable</th>
@@ -124,8 +124,8 @@ export default function InternalWeeklyClient({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--text-3)]">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-[color:var(--text)]">{value}</p>
+      <p className="os-label">{label}</p>
+      <p className="stat-value mt-1">{value}</p>
     </div>
   )
 }

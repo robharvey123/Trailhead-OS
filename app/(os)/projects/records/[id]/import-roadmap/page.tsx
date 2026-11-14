@@ -47,7 +47,7 @@ export default async function ImportRoadmapPage({
       <div className="os-narrow">
         <PageHeader title="Import roadmap" back={{ href: `/projects/records/${id}`, label: 'Project' }} />
         <div className="panel overflow-hidden">
-          <div style={{ padding: 24 }}>
+          <div className="p-6">
             <RoadmapUploadClient projectId={id} />
           </div>
         </div>

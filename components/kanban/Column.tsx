@@ -32,16 +32,16 @@ function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      style={{ flex: '1 1 0', minWidth: 240, background: isOver ? 'var(--surface-2)' : 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: 10, display: 'flex', flexDirection: 'column' }}
+      className={`flex min-w-[240px] flex-[1_1_0] flex-col rounded-card border border-[var(--border)] p-2.5 ${isOver ? 'bg-[var(--surface-2)]' : 'bg-[var(--surface)]'}`}
     >
-      <div className="panel-section-title" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+      <div className="panel-section-title">
         <TaskStatusBadge status={status} />
-        <span className="td-num" style={{ color: 'var(--text-3)' }}>{tasks.length}</span>
+        <span className="td-num">{tasks.length}</span>
       </div>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-        <div style={{ minHeight: 40, flex: 1 }}>
+        <div className="min-h-10 flex-1">
           {tasks.map((t) => (<TaskCard key={t.id} task={t} loggedMinutes={minutesByTask?.[t.id] ?? 0} onOpen={onOpen} activeLabels={activeLabels} onToggleLabel={onToggleLabel} />))}
-          {tasks.length === 0 ? <div style={{ fontSize: 12, color: 'var(--text-3)', padding: 8 }}>—</div> : null}
+          {tasks.length === 0 ? <div className="p-2 text-xs text-[var(--text-3)]">—</div> : null}
         </div>
       </SortableContext>
     </div>

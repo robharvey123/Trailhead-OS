@@ -40,13 +40,13 @@ export default function EndProjectDialog({
       panelClassName="panel w-full max-w-[440px] p-5"
     >
       <div className="panel-section-title">End project</div>
-      <div style={{ display: 'grid', gap: 14, marginTop: 8 }}>
-        <div style={{ display: 'grid', gap: 6 }}>
-          <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
+      <div className="mt-2 grid gap-3.5">
+        <div className="grid gap-1.5">
+          <label className="flex items-center gap-2 text-[13px]">
             <input type="radio" name="outcome" checked={outcome === 'completed'} onChange={() => setOutcome('completed')} />
             <span><strong>Completed</strong> — work finished as planned</span>
           </label>
-          <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
+          <label className="flex items-center gap-2 text-[13px]">
             <input type="radio" name="outcome" checked={outcome === 'cancelled'} onChange={() => setOutcome('cancelled')} />
             <span><strong>Cancelled</strong> — stopped without completing</span>
           </label>
@@ -64,18 +64,18 @@ export default function EndProjectDialog({
         </label>
 
         {openTaskCount > 0 ? (
-          <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
+          <label className="flex items-center gap-2 text-[13px]">
             <input type="checkbox" checked={cancelTasks} onChange={(e) => setCancelTasks(e.target.checked)} />
             Also cancel {openTaskCount} open task{openTaskCount === 1 ? '' : 's'} on this project
           </label>
         ) : (
-          <p style={{ fontSize: 12, color: 'var(--text-3)' }}>No open tasks linked to this project.</p>
+          <p className="text-xs text-[var(--text-3)]">No open tasks linked to this project.</p>
         )}
 
-        {error ? <p id={errorId} role="alert" style={{ color: 'var(--red)', fontSize: 12 }}>{error}</p> : null}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        {error ? <p id={errorId} role="alert" className="text-xs text-[var(--red)]">{error}</p> : null}
+        <div className="flex justify-end gap-2">
           <button className="btn btn-ghost btn-sm" onClick={onClose} disabled={busy}>Cancel</button>
-          <button className="btn btn-sm" style={{ background: 'var(--red)', color: 'white' }} onClick={submit} disabled={busy}>
+          <button className="btn btn-danger-solid btn-sm" onClick={submit} disabled={busy}>
             {busy ? 'Ending…' : `End project (${outcome === 'completed' ? 'Completed' : 'Cancelled'})`}
           </button>
         </div>

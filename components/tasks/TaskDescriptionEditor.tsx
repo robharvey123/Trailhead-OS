@@ -23,7 +23,7 @@ export default function TaskDescriptionEditor({ taskId, description }: { taskId:
   }
 
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
+    <div className="grid gap-2">
       <textarea
         className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] min-h-[4rem] resize-y"
         value={value}
@@ -32,8 +32,8 @@ export default function TaskDescriptionEditor({ taskId, description }: { taskId:
         onChange={(e) => setValue(e.target.value)}
         onBlur={save}
       />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, alignItems: 'center' }}>
-        {error ? <span style={{ color: 'var(--red)', fontSize: 12 }}>{error}</span> : null}
+      <div className="flex items-center justify-end gap-2">
+        {error ? <span className="text-xs text-[var(--red)]">{error}</span> : null}
         {dirty ? <button className="btn btn-primary btn-sm" onClick={save} disabled={pending}>{pending ? 'Saving…' : 'Save'}</button> : null}
       </div>
     </div>

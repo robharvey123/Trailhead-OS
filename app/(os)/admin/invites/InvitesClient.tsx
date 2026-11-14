@@ -76,7 +76,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
   }
 
   const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
-  const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
+  const label = 'field-label block'
 
   return (
     <>
@@ -98,15 +98,15 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
               </div>
             </div>
             {isSales ? (
-              <div style={{ marginTop: 12 }}>
+              <div className="mt-3">
                 <label className={label}>Display name</label>
                 <input className={input} value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Francesca Harvey" />
-                <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 6 }}>
+                <p className="mt-1.5 text-xs text-[var(--text-3)]">
                   Sales Lead: sees /sales only (queue, pipeline, dashboard) and only contacts tagged for sales campaigns. They get an emailed sign-in link and choose a password on first sign-in. Inviting the same email again sends a fresh link.
                 </p>
               </div>
             ) : null}
-            <div style={{ marginTop: 12, display: isSales ? 'none' : undefined }}>
+            <div className={isSales ? 'mt-3 hidden' : 'mt-3'}>
               <label className={label}>Link to person</label>
               <select className={input} value={personPick} onChange={(e) => setPersonPick(e.target.value)}>
                 <option value="">— none</option>
@@ -120,21 +120,21 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
                 <div><label className={label}>Default rate £/h</label><input className={input} type="number" value={newRate} onChange={(e) => setNewRate(e.target.value)} placeholder="optional" /></div>
               </div>
             ) : null}
-            {error ? <p style={{ color: 'var(--red)', fontSize: 12, marginTop: 10 }}>{error}</p> : null}
-            <div style={{ marginTop: 12, textAlign: 'right' }}>
+            {error ? <p className="mt-2.5 text-xs text-[var(--red)]">{error}</p> : null}
+            <div className="mt-3 text-right">
               <button className="btn btn-primary btn-sm" onClick={submit} disabled={busy}>{busy ? 'Sending…' : 'Send invite'}</button>
             </div>
 
             {createdLink ? (
-              <div style={{ marginTop: 14, padding: 12, borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
-                <p style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 6 }}>
+              <div className="mt-3.5 rounded-control border border-[var(--border)] bg-[var(--surface-2)] p-3">
+                <p className="mb-1.5 text-xs text-[var(--text-2)]">
                   {createdLink.kind === 'sales_link'
                     ? (createdLink.emailed ? 'Sales Lead login ready and sign-in link emailed. ' : 'Sales Lead login ready, but the email did not send. Share this one-time sign-in link privately: ')
                     : `Invite created${createdLink.emailed ? ' and emailed' : ' (email not sent, so share this link)'}. Claim link:`}
                 </p>
                 {/* An emailed Sales Lead link signs in as that person, so it isn't shown. */}
                 {createdLink.kind === 'sales_link' && createdLink.emailed ? null : (
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="flex gap-2">
                     <input className={input} readOnly value={createdLink.link} onFocus={(e) => e.currentTarget.select()} />
                     <button className="btn btn-ghost btn-sm" onClick={copyLink}>{copied ? 'Copied' : 'Copy'}</button>
                   </div>
@@ -157,7 +157,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
                       <td>{USER_ROLE_LABELS[inv.role]}</td>
                       <td><span className={`status-badge ${s.cls}`}>{s.label}</span></td>
                       <td className="td-num">{fmtDate(inv.expires_at)}</td>
-                      <td>{pending ? <button className="btn btn-ghost btn-sm" onClick={() => revoke(inv.id)} style={{ color: 'var(--red)' }}>Revoke</button> : null}</td>
+                      <td>{pending ? <button className="btn btn-danger btn-sm" onClick={() => revoke(inv.id)}>Revoke</button> : null}</td>
                     </tr>
                   )
                 })}

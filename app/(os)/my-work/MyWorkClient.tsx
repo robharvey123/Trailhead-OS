@@ -207,7 +207,7 @@ export default function MyWorkClient({
         ) : null}
       </div>
 
-      <div style={{ padding: 24, paddingTop: 12 }}>
+      <div className="px-6 pb-6 pt-3">
         {view === 'board' ? (
           // Re-key so the board re-seeds its local state when the tab or a shared
           // filter changes. The key stays stable across the post-move router.refresh(),

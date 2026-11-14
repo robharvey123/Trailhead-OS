@@ -47,7 +47,7 @@ export default async function ProjectsPage({
         actions={
           <Link
             href="/projects/new"
-            className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="btn btn-primary"
           >
             New project
           </Link>
@@ -64,7 +64,7 @@ export default async function ProjectsPage({
         />
         <button
           type="submit"
-          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="btn btn-ghost"
         >
           Apply
         </button>

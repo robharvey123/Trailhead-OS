@@ -1,15 +1,22 @@
 import {
-  ENGAGEMENT_TASK_STATUS_COLOURS,
   ENGAGEMENT_TASK_STATUS_LABELS,
   type EngagementTaskStatus,
 } from '@/lib/types'
 
 /**
- * Single source of truth for rendering an engagement-task status chip: a colour
- * dot + label tinted with the status colour. The colour comes from the status
- * definition (ENGAGEMENT_TASK_STATUS_COLOURS) and is applied inline — Tailwind
- * can't compile dynamic hex, so we never build class strings from the colour.
+ * Single source of truth for rendering an engagement-task status chip: a dot
+ * and a label. Each status maps to one of the OS status tones (a strong type
+ * colour on its dim ground), so the chip reads the brand tokens and never
+ * carries a hex value of its own.
  */
+const STATUS_TONE: Record<EngagementTaskStatus, string> = {
+  backlog: 'status-grey',
+  in_progress: 'status-accent',
+  review: 'status-amber',
+  done: 'status-emerald',
+  cancelled: 'status-red',
+}
+
 export default function TaskStatusBadge({
   status,
   className = '',
@@ -17,13 +24,8 @@ export default function TaskStatusBadge({
   status: EngagementTaskStatus
   className?: string
 }) {
-  const colour = ENGAGEMENT_TASK_STATUS_COLOURS[status]
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-pill px-2.5 py-0.5 text-[11px] font-semibold ${className}`.trim()}
-      style={{ backgroundColor: `${colour}20`, color: colour }}
-    >
-      <span style={{ width: 6, height: 6, borderRadius: 'var(--radius-pill)', background: colour, flexShrink: 0 }} />
+    <span className={`status-badge ${STATUS_TONE[status]} ${className}`.trim()}>
       {ENGAGEMENT_TASK_STATUS_LABELS[status]}
     </span>
   )

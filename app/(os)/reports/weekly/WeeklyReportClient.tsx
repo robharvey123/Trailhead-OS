@@ -70,7 +70,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void refresh()}
             disabled={loading}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
+            className="btn btn-ghost"
           >
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -78,7 +78,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void generateNarrative()}
             disabled={narrativeLoading}
-            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
+            className="btn btn-ghost"
           >
             {narrativeLoading ? 'Generating...' : 'Generate AI briefing'}
           </button>
@@ -86,7 +86,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void downloadPdf()}
             disabled={pdfLoading}
-            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+            className="btn btn-primary"
           >
             {pdfLoading ? 'Generating...' : 'Download PDF'}
           </button>
@@ -106,7 +106,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
 
       {/* Workstreams */}
       <section>
-        <p className="os-eyebrow mb-3 text-[color:var(--accent-strong)]">
+        <p className="os-eyebrow mb-3">
           WORKSTREAMS
         </p>
         <div className="os-card divide-y divide-[color:var(--border)]">
@@ -132,7 +132,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
       {/* Projects */}
       {projectSummary.length > 0 ? (
         <section>
-          <p className="os-eyebrow mb-3 text-[color:var(--accent-strong)]">
+          <p className="os-eyebrow mb-3">
             ACTIVE PROJECTS
           </p>
           <div className="os-card divide-y divide-[color:var(--border)]">
@@ -166,7 +166,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
       {/* Narrative */}
       {narrative ? (
         <section>
-          <p className="os-eyebrow mb-3 text-[color:var(--accent-strong)]">
+          <p className="os-eyebrow mb-3">
             AI BRIEFING
           </p>
           <div className="os-card p-6">
@@ -182,7 +182,7 @@ function StatCard({ label, value, colour }: { label: string; value: number; colo
   return (
     <div className="os-card px-4 py-5 text-center">
       <p className={`text-3xl font-bold ${colour ?? 'text-[color:var(--text)]'}`}>{value}</p>
-      <p className="os-eyebrow mt-1 tracking-[2px] text-[color:var(--text-3)]">{label}</p>
+      <p className="os-eyebrow mt-1">{label}</p>
     </div>
   )
 }
