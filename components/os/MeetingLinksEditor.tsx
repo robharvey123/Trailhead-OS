@@ -56,7 +56,7 @@ export default function MeetingLinksEditor({
   }
 
   return (
-    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
+    <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-6">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Linked records</h2>
       {error ? <p className="mt-2 text-xs text-[color:var(--red)]">{error}</p> : null}
 
@@ -108,15 +108,15 @@ function LinkSection({
 
   return (
     <div className="mt-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-2)]">{label}</p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {linked.map((item) => (
           <span key={item.id} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs text-[color:var(--text)]">
             <a href={`${hrefBase}/${item.id}`} className="hover:text-[color:var(--accent)]" title={item.sub ?? item.name}>{item.name}</a>
-            <button type="button" onClick={() => onRemove(item)} className="text-[var(--muted)] transition hover:text-[color:var(--red)]" aria-label={`Unlink ${item.name}`}>✕</button>
+            <button type="button" onClick={() => onRemove(item)} className="text-[var(--text-2)] transition hover:text-[color:var(--red)]" aria-label={`Unlink ${item.name}`}>✕</button>
           </span>
         ))}
-        {linked.length === 0 ? <span className="text-xs text-[var(--muted)]">None linked yet.</span> : null}
+        {linked.length === 0 ? <span className="text-xs text-[var(--text-2)]">None linked yet.</span> : null}
       </div>
 
       <div ref={boxRef} className="relative mt-2 max-w-sm">
@@ -138,7 +138,7 @@ function LinkSection({
                 className="flex w-full flex-col items-start px-3 py-1.5 text-left hover:bg-[var(--surface-2)]"
               >
                 <span className="text-sm text-[color:var(--text)]">{m.name}</span>
-                {m.sub ? <span className="text-[11px] text-[var(--muted)]">{m.sub}</span> : null}
+                {m.sub ? <span className="text-[11px] text-[var(--text-2)]">{m.sub}</span> : null}
               </button>
             ))}
           </div>

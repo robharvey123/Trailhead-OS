@@ -20,9 +20,9 @@ export default async function CallQueuePage() {
     <div className={`thmock ${mockupFontVars}`}>
       <div className="mx-auto max-w-6xl space-y-6 p-6">
         <div>
-          <Link href="/outreach" className="text-sm text-[var(--muted)] hover:text-white">← Outreach</Link>
+          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
           <h1 className="mt-3 text-2xl font-semibold text-white">Call queue</h1>
-          <p className="text-sm text-[var(--muted)]">
+          <p className="text-sm text-[var(--text-2)]">
             Delivered prospects, earliest first. Only numbers CTPS-screened clear in the last 28 days, and not unsubscribed, bounced or do-not-call, appear.
           </p>
         </div>
@@ -46,14 +46,14 @@ export default async function CallQueuePage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">{row.company ?? row.name}</p>
-                    <p className="text-xs text-[var(--muted)]">
+                    <p className="text-xs text-[var(--text-2)]">
                       {row.name}{row.phone ? ` · ${row.phone}` : ''}{row.website ? ` · ${row.website}` : ''}
                     </p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">
+                    <p className="mt-1 text-xs text-[var(--text-2)]">
                       {[row.sub_trade, row.size_signal].filter(Boolean).join(' · ') || 'No opening-line context'}
                     </p>
                     {row.call_status ? (
-                      <p className="mt-1 text-xs text-[var(--lime)]">Last outcome: {row.call_status}</p>
+                      <p className="mt-1 text-xs text-[var(--accent-strong)]">Last outcome: {row.call_status}</p>
                     ) : null}
                   </div>
                   <form action={logCallOutcome} className="flex flex-wrap items-center gap-2">

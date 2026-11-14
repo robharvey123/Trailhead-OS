@@ -197,7 +197,7 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
   const hidden = messages.length - Math.min(messages.length, COLLAPSED_LIMIT)
 
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card-alt)]">
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface-2)]">
       <div className={`flex flex-wrap items-start justify-between gap-3 px-4 py-3 ${expanded ? 'border-b border-[var(--border)]' : ''}`}>
         <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
           <div className="flex flex-wrap items-center gap-2">
@@ -279,7 +279,7 @@ function ConversationPanel({ conversation, defaultExpanded, onChanged }: { conve
 
         {groups.map((g) => (
           <div key={g.day} className="mb-3">
-            <div className="sticky top-0 z-10 -mx-4 bg-[var(--card-alt)] px-4 py-1.5 text-center text-[11px] uppercase tracking-wide text-[color:var(--text-3)]">{g.day}</div>
+            <div className="sticky top-0 z-10 -mx-4 bg-[var(--surface-2)] px-4 py-1.5 text-center text-[11px] uppercase tracking-wide text-[color:var(--text-3)]">{g.day}</div>
             <div className="space-y-1.5">
               {g.items.map((m) => (
                 <Bubble

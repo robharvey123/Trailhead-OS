@@ -16,7 +16,7 @@ export default async function OutreachPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold text-white">Outreach</h1>
-            <p className="text-sm text-[var(--muted)]">Cold email campaigns and the follow-up call queue.</p>
+            <p className="text-sm text-[var(--text-2)]">Cold email campaigns and the follow-up call queue.</p>
           </div>
           <div className="flex items-center gap-2">
             <Link className="btn btn-ghost btn-sm" href="/outreach/audiences">Audiences</Link>

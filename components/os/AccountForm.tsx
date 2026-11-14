@@ -110,7 +110,7 @@ export default function AccountForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-6">
+    <div className="space-y-6 rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-6">
       {!onSaved ? (
         <div>
           <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
@@ -122,7 +122,7 @@ export default function AccountForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Name</span>
+          <span className="text-sm text-[var(--text-2)]">Name</span>
           <input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
@@ -132,7 +132,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Website</span>
+          <span className="text-sm text-[var(--text-2)]">Website</span>
           <input
             value={form.website}
             onChange={(event) => setForm({ ...form, website: event.target.value })}
@@ -141,7 +141,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Industry</span>
+          <span className="text-sm text-[var(--text-2)]">Industry</span>
           <select
             value={form.industry}
             onChange={(event) => setForm({ ...form, industry: event.target.value })}
@@ -157,7 +157,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Company size</span>
+          <span className="text-sm text-[var(--text-2)]">Company size</span>
           <select
             value={form.size}
             onChange={(event) => setForm({ ...form, size: event.target.value })}
@@ -173,7 +173,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Workstream</span>
+          <span className="text-sm text-[var(--text-2)]">Workstream</span>
           <select
             value={form.workstream_id}
             onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
@@ -189,7 +189,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Status</span>
+          <span className="text-sm text-[var(--text-2)]">Status</span>
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value as AccountStatus })}
@@ -203,7 +203,7 @@ export default function AccountForm({
           </select>
         </label>
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Channel</span>
+          <span className="text-sm text-[var(--text-2)]">Channel</span>
           <input
             value={form.channel}
             onChange={(event) => setForm({ ...form, channel: event.target.value })}
@@ -213,7 +213,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Source</span>
+          <span className="text-sm text-[var(--text-2)]">Source</span>
           <input
             value={form.source}
             onChange={(event) => setForm({ ...form, source: event.target.value })}
@@ -222,7 +222,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Email contact</span>
+          <span className="text-sm text-[var(--text-2)]">Email contact</span>
           <input
             type="email"
             value={form.email_contact}
@@ -232,7 +232,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">HQ / Address</span>
+          <span className="text-sm text-[var(--text-2)]">HQ / Address</span>
           <input
             value={form.hq_address}
             onChange={(event) => setForm({ ...form, hq_address: event.target.value })}
@@ -240,7 +240,7 @@ export default function AccountForm({
           />
         </label>
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Address line 1</span>
+          <span className="text-sm text-[var(--text-2)]">Address line 1</span>
           <input
             value={form.address_line1}
             onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
@@ -249,7 +249,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Address line 2</span>
+          <span className="text-sm text-[var(--text-2)]">Address line 2</span>
           <input
             value={form.address_line2}
             onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
@@ -258,7 +258,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">City</span>
+          <span className="text-sm text-[var(--text-2)]">City</span>
           <input
             value={form.city}
             onChange={(event) => setForm({ ...form, city: event.target.value })}
@@ -267,7 +267,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm text-[var(--muted)]">Postcode</span>
+          <span className="text-sm text-[var(--text-2)]">Postcode</span>
           <input
             value={form.postcode}
             onChange={(event) => setForm({ ...form, postcode: event.target.value })}
@@ -276,7 +276,7 @@ export default function AccountForm({
         </label>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Country</span>
+          <span className="text-sm text-[var(--text-2)]">Country</span>
           <input
             value={form.country}
             onChange={(event) => setForm({ ...form, country: event.target.value })}
@@ -286,10 +286,10 @@ export default function AccountForm({
 
         <div className="md:col-span-2 rounded-[1.5rem] border border-[var(--border)] p-4">
           <p className="text-sm font-medium text-[var(--text,inherit)]">Billing</p>
-          <p className="mt-1 text-xs text-[var(--muted)]">Flows onto invoices raised against this account.</p>
+          <p className="mt-1 text-xs text-[var(--text-2)]">Flows onto invoices raised against this account.</p>
           <div className="mt-3 grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">VAT number</span>
+              <span className="text-sm text-[var(--text-2)]">VAT number</span>
               <input
                 value={form.vat_number}
                 onChange={(event) => setForm({ ...form, vat_number: event.target.value })}
@@ -297,7 +297,7 @@ export default function AccountForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Company number</span>
+              <span className="text-sm text-[var(--text-2)]">Company number</span>
               <input
                 value={form.company_number}
                 onChange={(event) => setForm({ ...form, company_number: event.target.value })}
@@ -305,7 +305,7 @@ export default function AccountForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Billing email</span>
+              <span className="text-sm text-[var(--text-2)]">Billing email</span>
               <input
                 type="email"
                 value={form.billing_email}
@@ -315,7 +315,7 @@ export default function AccountForm({
               />
             </label>
             <label className="space-y-2">
-              <span className="text-sm text-[var(--muted)]">Payment terms (days)</span>
+              <span className="text-sm text-[var(--text-2)]">Payment terms (days)</span>
               <input
                 type="number"
                 min="0"
@@ -332,13 +332,13 @@ export default function AccountForm({
                 checked={form.po_required}
                 onChange={(event) => setForm({ ...form, po_required: event.target.checked })}
               />
-              <span className="text-sm text-[var(--muted)]">PO number required on every invoice</span>
+              <span className="text-sm text-[var(--text-2)]">PO number required on every invoice</span>
             </label>
           </div>
         </div>
 
         <label className="space-y-2 md:col-span-2">
-          <span className="text-sm text-[var(--muted)]">Notes</span>
+          <span className="text-sm text-[var(--text-2)]">Notes</span>
           <textarea
             value={form.notes}
             onChange={(event) => setForm({ ...form, notes: event.target.value })}
@@ -355,7 +355,7 @@ export default function AccountForm({
           type="button"
           onClick={handleSave}
           disabled={saving || !form.name.trim()}
-          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--lime)]/90 disabled:opacity-60"
+          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--accent)]/90 disabled:opacity-60"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -369,7 +369,7 @@ export default function AccountForm({
 
             router.push(cancelHref)
           }}
-          className="rounded-2xl border border-[var(--border)] px-5 py-3 text-sm font-medium text-[var(--muted)] transition hover:border-[var(--lime)]/40"
+          className="rounded-2xl border border-[var(--border)] px-5 py-3 text-sm font-medium text-[var(--text-2)] transition hover:border-[var(--accent)]/40"
         >
           Cancel
         </button>

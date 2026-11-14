@@ -28,7 +28,7 @@ export default function MeetingNoteRematch({ noteId }: { noteId: string }) {
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)] transition hover:border-[var(--lime)]/40 disabled:opacity-60"
+        className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--text-2)] transition hover:border-[var(--accent)]/40 disabled:opacity-60"
       >
         {busy ? 'Re-matching…' : 'Re-match'}
       </button>

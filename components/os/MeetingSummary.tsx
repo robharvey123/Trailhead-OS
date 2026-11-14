@@ -9,11 +9,11 @@ import ReactMarkdown from 'react-markdown'
  */
 export default function MeetingSummary({ markdown }: { markdown: string | null }) {
   if (!markdown || !markdown.trim()) {
-    return <p className="text-sm text-[var(--muted)]">No summary was generated for this meeting.</p>
+    return <p className="text-sm text-[var(--text-2)]">No summary was generated for this meeting.</p>
   }
 
   return (
-    <div className="space-y-2 text-sm text-[var(--muted)]">
+    <div className="space-y-2 text-sm text-[var(--text-2)]">
       <ReactMarkdown
         components={{
           h1: (props) => <h1 className="mt-4 text-xl font-semibold text-[color:var(--text)]" {...props} />,
@@ -23,7 +23,7 @@ export default function MeetingSummary({ markdown }: { markdown: string | null }
           ul: (props) => <ul className="mt-2 list-disc space-y-1 pl-5" {...props} />,
           ol: (props) => <ol className="mt-2 list-decimal space-y-1 pl-5" {...props} />,
           strong: (props) => <strong className="font-semibold text-[color:var(--text)]" {...props} />,
-          a: (props) => <a className="text-[var(--lime)] underline" {...props} />,
+          a: (props) => <a className="text-[var(--accent-strong)] underline" {...props} />,
           code: (props) => <code className="rounded bg-[var(--bg)] px-1 py-0.5 text-xs" {...props} />,
         }}
       >

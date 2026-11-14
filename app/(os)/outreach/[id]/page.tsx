@@ -56,14 +56,14 @@ export default async function CampaignDetailPage({
     <div className={`thmock ${mockupFontVars}`}>
       <div className="mx-auto max-w-5xl space-y-6 p-6">
         <div>
-          <Link href="/outreach" className="text-sm text-[var(--muted)] hover:text-white">← Outreach</Link>
+          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
           <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold text-white">{campaign.name}</h1>
-              <p className="mt-1 text-sm text-[var(--muted)]">
+              <p className="mt-1 text-sm text-[var(--text-2)]">
                 {campaign.from_name} &lt;{campaign.from_email}&gt; · reply-to {campaign.reply_to ?? '—'} · cap {campaign.daily_send_cap}/day
               </p>
-              <p className="mt-1 text-sm text-[var(--muted)]">🗓 {scheduleLabel(campaign.send_days, campaign.send_window_start, campaign.send_window_end, campaign.timezone)}</p>
+              <p className="mt-1 text-sm text-[var(--text-2)]">🗓 {scheduleLabel(campaign.send_days, campaign.send_window_start, campaign.send_window_end, campaign.timezone)}</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="meta-chip">{OUTREACH_CAMPAIGN_STATUS_LABELS[campaign.status]}</span>
@@ -93,12 +93,12 @@ export default async function CampaignDetailPage({
         {/* Schedule editor */}
         <div className="os-card rounded-[2rem] p-6">
           <h2 className="text-lg font-semibold text-white">Schedule</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">Editable any time — a change takes effect on the next tick, no pause needed.</p>
+          <p className="mt-1 text-sm text-[var(--text-2)]">Editable any time — a change takes effect on the next tick, no pause needed.</p>
           <form action={updateCampaignScheduleAction} className="mt-4 space-y-4">
             <input type="hidden" name="id" value={campaign.id} />
             <div className="flex flex-wrap gap-3 text-sm">
               {WEEKDAYS.map((d) => (
-                <label key={d.n} className="flex items-center gap-1.5 text-[var(--muted)]">
+                <label key={d.n} className="flex items-center gap-1.5 text-[var(--text-2)]">
                   <input type="checkbox" name="send_days" value={d.n} defaultChecked={campaign.send_days.includes(d.n)} />
                   {d.label}
                 </label>
@@ -106,15 +106,15 @@ export default async function CampaignDetailPage({
             </div>
             <div className="flex flex-wrap items-end gap-3">
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--muted)]">Start</span>
+                <span className="block text-[var(--text-2)]">Start</span>
                 <input name="send_window_start" type="time" className={input} defaultValue={hm(campaign.send_window_start)} />
               </label>
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--muted)]">End</span>
+                <span className="block text-[var(--text-2)]">End</span>
                 <input name="send_window_end" type="time" className={input} defaultValue={hm(campaign.send_window_end)} />
               </label>
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--muted)]">Timezone</span>
+                <span className="block text-[var(--text-2)]">Timezone</span>
                 <input name="timezone" className={input} defaultValue={campaign.timezone} />
               </label>
               <button className="btn btn-ghost btn-sm">Save schedule</button>
@@ -129,7 +129,7 @@ export default async function CampaignDetailPage({
             <p className="mt-1 text-sm text-[color:var(--amber-strong)]">Steps are locked while the campaign is running — recipients hold a step position that would shift onto the wrong email. Pause to edit.</p>
           ) : null}
           {steps.length === 0 ? (
-            <p className="mt-2 text-sm text-[var(--muted)]">No steps yet. Add the first-touch email below — a campaign with zero steps can’t start.</p>
+            <p className="mt-2 text-sm text-[var(--text-2)]">No steps yet. Add the first-touch email below — a campaign with zero steps can’t start.</p>
           ) : (
             <div className="overflow-x-auto">
             <table className="data-table mt-3">
@@ -159,14 +159,14 @@ export default async function CampaignDetailPage({
             <form action={addCampaignStepAction} className="mt-4 flex flex-wrap items-end gap-3">
               <input type="hidden" name="id" value={campaign.id} />
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--muted)]">Template</span>
+                <span className="block text-[var(--text-2)]">Template</span>
                 <select name="template_id" className={input} defaultValue="">
                   <option value="" disabled>Choose…</option>
                   {templates.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </label>
               <label className="space-y-1 text-sm">
-                <span className="block text-[var(--muted)]">Delay (days after previous)</span>
+                <span className="block text-[var(--text-2)]">Delay (days after previous)</span>
                 <input name="delay_days" type="number" min={0} defaultValue={steps.length === 0 ? 0 : 3} className={input} style={{ width: 90 }} />
               </label>
               <button className="btn btn-primary btn-sm">Add step</button>
@@ -178,20 +178,20 @@ export default async function CampaignDetailPage({
         <div className="os-card rounded-[2rem] p-6">
           <h2 className="text-lg font-semibold text-white">Send test</h2>
           {steps.length === 0 ? (
-            <p className="mt-2 text-sm text-[var(--muted)]">Add a step first — there’s nothing to render yet.</p>
+            <p className="mt-2 text-sm text-[var(--text-2)]">Add a step first — there’s nothing to render yet.</p>
           ) : audienceContacts.length === 0 ? (
-            <p className="mt-2 text-sm text-[var(--muted)]">This campaign’s audience has no contacts with an email, so there’s no sample to render the per-channel template against.</p>
+            <p className="mt-2 text-sm text-[var(--text-2)]">This campaign’s audience has no contacts with an email, so there’s no sample to render the per-channel template against.</p>
           ) : (
             <>
-              <p className="mt-1 text-sm text-[var(--muted)]">Renders exactly like a real send (subject prefixed <code>[TEST]</code>), including the per-channel override for the chosen contact. Writes nothing — no recipient, no send row, no effect on stats or the cap.</p>
+              <p className="mt-1 text-sm text-[var(--text-2)]">Renders exactly like a real send (subject prefixed <code>[TEST]</code>), including the per-channel override for the chosen contact. Writes nothing — no recipient, no send row, no effect on stats or the cap.</p>
               <form action={sendTestEmailAction} className="mt-4 flex flex-wrap items-end gap-3">
                 <input type="hidden" name="id" value={campaign.id} />
                 <label className="space-y-1 text-sm">
-                  <span className="block text-[var(--muted)]">To</span>
+                  <span className="block text-[var(--text-2)]">To</span>
                   <input name="to_email" type="email" required defaultValue={userEmail} className={input} style={{ minWidth: 220 }} />
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="block text-[var(--muted)]">As contact</span>
+                  <span className="block text-[var(--text-2)]">As contact</span>
                   <select name="contact_id" className={input} defaultValue={audienceContacts[0]?.id}>
                     {audienceContacts.map((c) => (
                       <option key={c.id} value={c.id}>{(c.company ?? c.name)}{c.channel ? ` · ${c.channel}` : ''}</option>
@@ -199,7 +199,7 @@ export default async function CampaignDetailPage({
                   </select>
                 </label>
                 <label className="space-y-1 text-sm">
-                  <span className="block text-[var(--muted)]">Step</span>
+                  <span className="block text-[var(--text-2)]">Step</span>
                   <select name="step_number" className={input} defaultValue={steps[0]?.step_number}>
                     {steps.map((s) => <option key={s.id} value={s.step_number}>{s.step_number}. {s.template_name ?? '—'}</option>)}
                   </select>
@@ -224,7 +224,7 @@ export default async function CampaignDetailPage({
             </div>
           </div>
           {recipients.length === 0 ? (
-            <p className="mt-3 text-sm text-[var(--muted)]">No recipients{statusFilter ? ` with status ${statusFilter}` : ''}.</p>
+            <p className="mt-3 text-sm text-[var(--text-2)]">No recipients{statusFilter ? ` with status ${statusFilter}` : ''}.</p>
           ) : (
             <div className="overflow-x-auto">
             <table className="data-table mt-3">

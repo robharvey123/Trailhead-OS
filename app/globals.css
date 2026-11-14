@@ -8,18 +8,6 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --bg:       #0C0C14;
-  --card:     #1A1A28;
-  --card-alt: #13131E;
-  --border:   #2A2A3A;
-  --lime:     #B8FF00;
-  --muted:    #9CA3AF;
-  --orange:   #FF6B35;
-  --blue-d:   #4B9FFF;
-  --pink-d:   #FF4081;
-  --purple-d: #A78BFA;
-  --green-d:  #34D399;
-  --yellow-d: #FBBF24;
 }
 
 @theme inline {
@@ -27,13 +15,16 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
-  --color-os-bg:       #0C0C14;
-  --color-os-card:     #1A1A28;
-  --color-os-card-alt: #13131E;
-  --color-os-border:   #2A2A3A;
-  --color-os-lime:     #B8FF00;
-  --color-os-muted:    #9CA3AF;
-  --color-os-orange:   #FF6B35;
+}
+
+/* The OS uses three radii and nothing else (Brand Guidelines v1.0, see
+   DESIGN.md "OS surface"). Declared as theme variables so Tailwind generates
+   rounded-control, rounded-card and rounded-pill, and `static` so the custom
+   properties are always emitted for the hand-written rules further down. */
+@theme static {
+  --radius-control: 8px; /* inputs, selects, small buttons, table chips */
+  --radius-card: 14px; /* cards, panels, modals, sidebar nav rows */
+  --radius-pill: 999px; /* buttons, status badges, filter chips */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -203,7 +194,7 @@ body {
 .os-shimmer-bar {
   background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3, var(--border)) 37%, var(--surface-2) 63%);
   background-size: 400% 100%;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   animation: os-shimmer 1.4s ease infinite;
 }
 
@@ -317,7 +308,7 @@ body {
   font-family: var(--sans);
   font-size: 0.78rem;
   font-weight: 600;
-  border-radius: var(--radius-sm, 8px);
+  border-radius: var(--radius-control);
   padding: 0.4rem 0.8rem;
   box-shadow: none;
   text-transform: capitalize;
@@ -362,7 +353,7 @@ body {
 }
 /* Soft rounded grid, matching the app's cards. */
 .fc .fc-scrollgrid {
-  border-radius: var(--radius, 14px);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
@@ -394,7 +385,7 @@ body {
 .typing-dot {
   width: 5px;
   height: 5px;
-  border-radius: 50%;
+  border-radius: var(--radius-pill);
   background: var(--text-3, #94a3b8);
   display: inline-block;
   animation: typing-bounce 1.2s infinite ease-in-out;
@@ -434,7 +425,7 @@ body {
 /* Schedule (list) view — themed to the app. */
 .fc .fc-list {
   border-color: var(--border);
-  border-radius: var(--radius, 14px);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 .fc .fc-list-day-cushion {
@@ -459,36 +450,49 @@ body {
 }
 
 /* ==========================================================================
-   Mockup design system — scoped to /crm, /timesheet, /inbox via .thmock
-   Indigo accent, Inter (sans) + JetBrains Mono (loaded via @import at top).
+   Trailhead OS design system, scoped under .thmock (the class name predates
+   the brand work and is kept because several hundred files reference it).
+   Navy and brand blue from Brand Guidelines v1.0; Georgia for titles, Inter
+   for everything else, JetBrains Mono for codes only. See DESIGN.md.
    All selectors are nested under .thmock so they never leak app-wide.
    ========================================================================== */
-.thmock {
-  /* Trailhead Consulting — light theme */
+.thmock,
+.th-light {
+  /* Brand palette: Trailhead Brand Guidelines v1.0. These are the only place
+     the brand hex values are written in the OS. */
+  --navy: #0F172A;        /* sidebar and login ground, headings, primary type */
+  --navy-deep: #0B1120;   /* far edge and hover ground on navy */
+  --blue: #0EA5E9;        /* the one accent: button fill, active marker, progress */
+  --blue-bright: #38BDF8; /* blue as type or icon on navy, button hover */
+  --blue-ink: #0369A1;    /* blue as type on white, 5.93:1 */
+  --slate: #64748B;       /* captions on white only, 4.76:1 */
+  --orange: #F97316;      /* once per screen: the dashboard attention count */
+
+  /* Working tokens. Components read these; .th-dark remaps them for navy. */
   --bg: #ffffff;
-  --surface: #F8FAFC;
+  --surface: #F8FAFC;                /* cool light: page ground behind white cards */
   --surface-2: #F1F5F9;
   --surface-3: #E2E8F0;
   --border: #E2E8F0;
   --border-light: #CBD5E1;
-  --text: #0F172A;
-  --text-2: #334155;                 /* darkened from #475569 (was 7.58:1 on white) to hold a
-                                         perceptible step above the darkened --text-3 below;
-                                         now 10.35:1 on white, 9.90:1 on --surface */
-  --text-3: #5B6B82;                 /* was #94A3B8 (2.56:1 on white — fails AA 4.5:1). Darkened
+  --text: var(--navy);
+  --text-2: #334155;                 /* body copy, 10.35:1 on white */
+  --text-3: #5B6B82;                 /* was #94A3B8 (2.56:1 on white, fails AA 4.5:1). Darkened
                                          past the ~#64748B midpoint because --text-3 also sits on
                                          --surface-2 (#F1F5F9) in several selectors (topbar-count,
                                          seg-toggle, search placeholder, meta-chip, range-chip),
                                          where #64748B only reaches 4.34:1. #5B6B82 reaches
                                          5.43:1 on white, 5.19:1 on --surface, 4.95:1 on
                                          --surface-2 */
-  --accent: #0EA5E9;
+  --accent: var(--blue);
   --accent-dim: #E0F2FE;
   --accent-glow: rgba(14,165,233,0.15);
-  --accent-strong: #0369A1;          /* readable accent text on light bg */
-  --accent-hover: #075985;           /* darkened from #0284C7 (white text on it only reached
-                                         4.10:1 in .btn-primary:hover / .fc-today-button:hover,
-                                         failing AA); now 7.56:1 */
+  --accent-strong: var(--blue-ink);  /* readable accent text on light bg */
+  --accent-hover: #075985;           /* blue ink, one step darker: link and text hover */
+  --on-accent: var(--navy);          /* type on a brand-blue fill, 6.44:1 */
+  --focus: var(--blue-ink);          /* focus ring on light grounds, 5.93:1 on white */
+
+  /* Status colours. Data, not brand. */
   --green: #16A34A;
   --green-dim: #DCFCE7;
   --green-strong: #15803D;
@@ -503,34 +507,49 @@ body {
   --emerald-strong: #047857;
   --grey: #64748B;
   --grey-dim: #F1F5F9;
-  --grey-strong: #475569;            /* new: matches the -strong pattern above. #64748B on
+  --grey-strong: #475569;            /* matches the -strong pattern above. #64748B on
                                          --grey-dim was 4.34:1 (fails AA); #475569 reaches
-                                         6.92:1. Also equals the hardcoded value .status-on_hold
-                                         already used, so that rule now references this token
-                                         instead of a duplicate hex */
-  --radius: 8px;
-  --radius-sm: 5px;
+                                         6.92:1 */
+
   --serif: Georgia, 'Times New Roman', serif;
   --sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Two shadows only: cards at rest, and overlays. */
   --shadow-sm: 0 1px 2px rgba(15,23,42,0.04);
-  --shadow-md: 0 4px 12px rgba(15,23,42,0.06);
   --shadow-lg: 0 20px 60px rgba(15,23,42,0.12);
 
-  /* Aliases of the :root (lime) token names, remapped to this theme.
-     Shared components reference these via var(--...) so they inherit the
-     light palette inside .thmock while staying unchanged at :root.
-     (--bg and --border are already redefined above.) */
-  --card: var(--surface);
-  --card-alt: var(--surface-2);
-  --muted: var(--text-2);
-  --lime: var(--accent);
-
-  font-family: var(--sans);
-  line-height: 1.5;
   color: var(--text);
+}
+
+.thmock {
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
   background: var(--bg);
   min-height: 100%;
+}
+
+/* Navy surfaces (sidebar, login ground, mobile drawer). One scope remaps the
+   working tokens, mirroring .th-dark in app/(marketing)/bay.css, so the same
+   component reads correctly on either ground. Do not hard-code light or dark
+   colours inside it. A white card placed on navy opts back in with .th-light. */
+.thmock .th-dark,
+.thmock.th-dark {
+  --bg: var(--navy);
+  --surface: rgba(255,255,255,0.04);
+  --surface-2: rgba(255,255,255,0.06);  /* hover ground on navy */
+  --surface-3: rgba(255,255,255,0.12);  /* neutral count badge on navy */
+  --border: rgba(255,255,255,0.08);
+  --border-light: rgba(255,255,255,0.16);
+  --text: #ffffff;
+  --text-2: #CBD5E1;                 /* resting nav type, 12.02:1 on navy */
+  --text-3: #94A3B8;                 /* icons and group headers, 6.96:1 on navy */
+  --accent-dim: rgba(14,165,233,0.14);  /* active row ground */
+  --accent-strong: var(--blue-bright);  /* blue as type on navy, 8.33:1 */
+  --accent-hover: #7DD3FC;
+  --focus: var(--blue-bright);       /* blue ink is only 3.01:1 on navy */
+  color: var(--text);
 }
 .thmock .mono { font-family: var(--mono); }
 
@@ -540,20 +559,20 @@ body {
 .thmock .os-card {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-sm);
   color: var(--text);
 }
 .thmock .os-card-muted {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   color: var(--text);
 }
 .thmock .os-card-inset {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--text);
 }
 
@@ -570,7 +589,7 @@ body {
 .thmock .os-input, .thmock .os-select, .thmock .os-textarea {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   color: var(--text);
   font-family: var(--sans);
   outline: none;
@@ -619,10 +638,10 @@ body {
 /* status badges */
 .thmock .status-badge {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 9px; border-radius: 20px;
+  padding: 3px 9px; border-radius: var(--radius-pill);
   font-size: 12px; font-weight: 700; letter-spacing: 0.03em;
 }
-.thmock .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.thmock .status-badge::before { content: ''; width: 5px; height: 5px; border-radius: var(--radius-pill); background: currentColor; }
 .thmock .status-prospect { color: var(--accent-strong); background: var(--accent-dim); }
 .thmock .status-contacted { color: var(--amber-strong); background: var(--amber-dim); }
 .thmock .status-active { color: var(--green-strong); background: var(--green-dim); }
@@ -634,7 +653,7 @@ body {
 
 /* channel tags */
 .thmock .channel-tag {
-  display: inline-block; padding: 2px 7px; border-radius: 3px;
+  display: inline-block; padding: 2px 7px; border-radius: var(--radius-control);
   font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
   background: var(--surface-3); color: var(--text-2);
   font-family: var(--mono);
@@ -643,7 +662,7 @@ body {
 /* generic tag chip (CRM tags) */
 .thmock .tag-chip {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 999px;
+  padding: 2px 8px; border-radius: var(--radius-pill);
   font-size: 11px; font-weight: 600;
   font-family: var(--mono);
   background: var(--surface-3); color: var(--text-2);
@@ -662,7 +681,7 @@ body {
 /* buttons */
 .thmock .btn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: var(--radius-sm);
+  padding: 7px 14px; border-radius: var(--radius-control);
   font-family: var(--sans);
   font-size: 12px; font-weight: 600; cursor: pointer; border: none;
   transition: all 0.15s; letter-spacing: 0.02em;
@@ -688,7 +707,7 @@ body {
 .thmock .panel .topbar-title { font-size: 22px; letter-spacing: -0.02em; }
 .thmock .topbar-count {
   font-family: var(--mono); font-size: 12px; color: var(--text-3);
-  background: var(--surface-2); padding: 3px 8px; border-radius: 4px;
+  background: var(--surface-2); padding: 3px 8px; border-radius: var(--radius-control);
 }
 .thmock .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 
@@ -711,14 +730,14 @@ body {
 .thmock .search-wrap { position: relative; flex: 1; max-width: 320px; }
 .thmock .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-3); }
 .thmock .search-input {
-  width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control);
   padding: 7px 10px 7px 32px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none;
 }
 .thmock .search-input::placeholder { color: var(--text-3); }
 .thmock .search-input:focus { border-color: var(--accent); }
 .thmock .search-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .thmock .filter-select {
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control);
   padding: 7px 10px; font-family: var(--sans); font-size: 12px; color: var(--text-2); cursor: pointer; outline: none;
 }
 .thmock .filter-select:focus { border-color: var(--accent); }
@@ -729,13 +748,13 @@ body {
 }
 
 /* range chips + billable toggle */
-.thmock .range-chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
+.thmock .range-chips { display: flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 3px; }
 .thmock .range-chip {
-  padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer;
+  padding: 4px 10px; border-radius: var(--radius-control); font-size: 11px; font-weight: 600; cursor: pointer;
   border: none; background: none; color: var(--text-3); font-family: var(--sans);
 }
 .thmock .range-chip.active { background: var(--surface-3); color: var(--text); }
-.thmock .seg-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+.thmock .seg-toggle { display: flex; border: 1px solid var(--border); border-radius: var(--radius-control); overflow: hidden; }
 .thmock .seg-toggle button {
   padding: 6px 10px; font-size: 11px; font-family: var(--sans);
   background: var(--surface-2); color: var(--text-3); border: none; cursor: pointer;
@@ -768,7 +787,7 @@ body {
 .thmock .website-link:hover { color: var(--accent-strong); } /* 5.17:1 on --surface; base --accent was 2.65:1 */
 
 /* pills (timesheet) */
-.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; font-family: var(--mono); }
+.thmock .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 700; font-family: var(--mono); }
 .thmock .pill.billable { color: var(--emerald-strong); background: var(--emerald-dim); }
 .thmock .pill.nonbill { color: var(--text-2); background: var(--surface-2); border: 1px solid var(--border); }
 .thmock .pill.timer { color: var(--red-strong); background: var(--red-dim); }
@@ -780,12 +799,12 @@ body {
 
 /* live timer pill */
 .thmock .timer {
-  display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: 999px;
+  display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 12px; border-radius: var(--radius-pill);
   background: linear-gradient(135deg, #FEF2F2, #FEE2E2); border: 1px solid var(--red);
   box-shadow: var(--shadow-sm);
   font-family: var(--mono);
 }
-.thmock .timer-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 var(--red); animation: thmock-pulse 1.6s infinite; }
+.thmock .timer-dot { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--red); box-shadow: 0 0 0 0 var(--red); animation: thmock-pulse 1.6s infinite; }
 @keyframes thmock-pulse {
   0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.5) }
   70% { box-shadow: 0 0 0 10px rgba(220,38,38,0) }
@@ -795,11 +814,11 @@ body {
 .thmock .timer-meta b { font-family: var(--sans); font-weight: 700; }
 .thmock .timer-meta span { color: var(--text-3); font-size: 10px; }
 .thmock .timer-clock { font-size: 13px; font-weight: 700; color: var(--red); letter-spacing: 0.04em; min-width: 62px; text-align: right; }
-.thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.thmock .timer-stop { background: var(--red); color: white; border: none; border-radius: var(--radius-pill); width: 22px; height: 22px; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 
 /* panels / cards */
-.thmock .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-.thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.thmock .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); }
+.thmock .card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 12px 14px; }
 .thmock .panel-section-title {
   font-family: var(--mono); font-size: 9px; font-weight: 500; color: var(--text-3);
   letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
@@ -829,10 +848,10 @@ body {
 .thmock .empty { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
 
 /* ---- inbox 3-pane ---- */
-.thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 120px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
+.thmock .inbox { display: grid; grid-template-columns: 210px 340px 1fr; height: calc(100vh - 120px); min-height: 520px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-card); }
 .thmock .folders { border-right: 1px solid var(--border); background: var(--surface); padding: 12px 8px; overflow-y: auto; }
 .thmock .folder-label { font-family: var(--mono); font-size: 10px; color: var(--text-3); letter-spacing: 0.08em; padding: 6px 10px 4px; text-transform: uppercase; }
-.thmock .folder { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; color: var(--text-2); background: none; border: none; width: 100%; text-align: left; }
+.thmock .folder { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-control); font-size: 12px; cursor: pointer; color: var(--text-2); background: none; border: none; width: 100%; text-align: left; }
 .thmock .folder:hover { background: var(--surface-2); color: var(--text); }
 .thmock .folder.active { background: var(--accent-dim); color: var(--accent-strong); font-weight: 700; } /* was --accent, 2.42:1 — fails AA */
 .thmock .folder-count { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--text-3); }
@@ -850,7 +869,7 @@ body {
 .thmock .thread.unread:not(.active) { border-left: 3px solid var(--accent); padding-left: 11px; }
 .thmock .thread.unread .thread-subj { font-weight: 700; }
 .thmock .thread.unread .thread-from::before {
-  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  content: ''; display: inline-block; width: 7px; height: 7px; border-radius: var(--radius-pill);
   background: var(--accent); margin-right: 7px; vertical-align: middle; flex-shrink: 0;
 }
 .thmock .thread.unread:hover { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
@@ -860,7 +879,7 @@ body {
 .thmock .thread-subj { font-size: 14px; color: var(--text-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-snippet { font-size: 11px; color: var(--text-3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .thmock .thread-tags { display: flex; gap: 4px; margin-top: 6px; align-items: center; }
-.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 3px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; background: var(--surface-3); color: var(--text-2); }
+.thmock .acct-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: var(--radius-control); font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em; background: var(--surface-3); color: var(--text-2); }
 .thmock .acct-pill.matched { background: var(--accent-dim); color: var(--accent-strong); }
 .thmock .acct-pill.unmatched { background: var(--amber-dim); color: var(--amber-strong); }
 .thmock .acct-pill.outbound { background: var(--emerald-dim); color: var(--emerald-strong); }
@@ -869,14 +888,14 @@ body {
 .thmock .reader-header { padding: 18px 24px 14px; border-bottom: 1px solid var(--border); }
 .thmock .reader-subject { font-family: var(--serif); font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .thmock .reader-meta-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
-.thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-strong); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
+.thmock .acct-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent-strong); font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
 .thmock .acct-chip:hover { background: var(--accent-strong); color: white; } /* was --accent, 2.77:1 — fails AA */
-.thmock .meta-chip { padding: 3px 8px; border-radius: 4px; font-family: var(--mono); font-size: 11px; background: var(--surface-2); color: var(--text-3); }
+.thmock .meta-chip { padding: 3px 8px; border-radius: var(--radius-control); font-family: var(--mono); font-size: 11px; background: var(--surface-2); color: var(--text-3); }
 .thmock .reader-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 .thmock .reader-body { flex: 1; overflow-y: auto; padding: 0 24px; }
 .thmock .message { padding: 18px 0; border-bottom: 1px solid var(--border); }
 .thmock .message-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
-.thmock .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+.thmock .avatar { width: 36px; height: 36px; border-radius: var(--radius-pill); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
 .thmock .avatar.inbound { background: linear-gradient(135deg, #0EA5E9, #38BDF8); }
 .thmock .avatar.outbound { background: linear-gradient(135deg, #059669, #34D399); }
 .thmock .msg-from { font-size: 14px; font-weight: 700; color: var(--text); }
@@ -884,7 +903,7 @@ body {
 .thmock .msg-time { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
 .thmock .msg-body { font-size: 14px; line-height: 1.7; color: var(--text-2); white-space: pre-wrap; padding-left: 48px; }
 .thmock .reader-reply { border-top: 1px solid var(--border); background: var(--surface); padding: 14px 24px; }
-.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
+.thmock .reply-input { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 10px 12px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; min-height: 80px; resize: vertical; }
 .thmock .reply-input:focus { border-color: var(--accent); }
 .thmock .reply-input:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 2px; }
 .thmock .reply-actions { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
@@ -892,7 +911,7 @@ body {
 /* scrollbars (3.12) */
 .thmock ::-webkit-scrollbar { width: 6px; height: 6px; }
 .thmock ::-webkit-scrollbar-track { background: transparent; }
-.thmock ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+.thmock ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: var(--radius-control); }
 .thmock ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
 /* ==========================================================================

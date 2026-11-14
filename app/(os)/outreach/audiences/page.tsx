@@ -13,9 +13,9 @@ export default async function AudiencesPage() {
     <div className={`thmock ${mockupFontVars}`}>
       <div className="mx-auto max-w-4xl space-y-6 p-6">
         <div>
-          <Link href="/outreach" className="text-sm text-[var(--muted)] hover:text-white">← Outreach</Link>
+          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
           <h1 className="mt-3 text-2xl font-semibold text-white">Audiences</h1>
-          <p className="text-sm text-[var(--muted)]">Static snapshots of contacts. Membership doesn’t change once a campaign is running.</p>
+          <p className="text-sm text-[var(--text-2)]">Static snapshots of contacts. Membership doesn’t change once a campaign is running.</p>
         </div>
 
         {audiences.length === 0 ? (

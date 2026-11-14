@@ -29,9 +29,9 @@ export default async function TemplatesPage() {
     <div className={`thmock ${mockupFontVars}`}>
       <div className="mx-auto max-w-4xl space-y-6 p-6">
         <div>
-          <Link href="/outreach" className="text-sm text-[var(--muted)] hover:text-white">← Outreach</Link>
+          <Link href="/outreach" className="text-sm text-[var(--text-2)] hover:text-white">← Outreach</Link>
           <h1 className="mt-3 text-2xl font-semibold text-white">Templates</h1>
-          <p className="text-sm text-[var(--muted)]">
+          <p className="text-sm text-[var(--text-2)]">
             Merge tags: {'{{email_greeting}}, {{company}}, {{name}}, {{city}}, {{channel}}, {{sub_trade}}, {{size_signal}}'}.
           </p>
         </div>
@@ -49,9 +49,9 @@ export default async function TemplatesPage() {
                     <p className="text-sm font-semibold text-white">{t.name}</p>
                     {placeholder ? <span className="meta-chip" style={{ color: 'var(--amber-strong)' }}>Placeholder copy</span> : null}
                   </div>
-                  <p className="mt-1 text-xs text-[var(--muted)]">Subject: {t.subject || '—'}</p>
+                  <p className="mt-1 text-xs text-[var(--text-2)]">Subject: {t.subject || '—'}</p>
                   <details className="mt-3">
-                    <summary className="cursor-pointer text-xs text-[var(--muted)]">Preview (sample contact)</summary>
+                    <summary className="cursor-pointer text-xs text-[var(--text-2)]">Preview (sample contact)</summary>
                     <div className="mt-2 rounded-xl border border-[var(--border)] bg-white p-3 text-sm text-slate-800">
                       {p.ok ? <SafeEmailHtml html={p.html} /> : <span className="text-[color:var(--red-strong)]">{p.error}</span>}
                     </div>

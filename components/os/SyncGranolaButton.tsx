@@ -29,13 +29,13 @@ export default function SyncGranolaButton() {
 
   return (
     <div className="flex items-center gap-3">
-      {message ? <span className="text-xs text-[var(--muted)]">{message}</span> : null}
+      {message ? <span className="text-xs text-[var(--text-2)]">{message}</span> : null}
       {error ? <span className="text-xs text-rose-300">{error}</span> : null}
       <button
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="rounded-full border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)] transition hover:border-[var(--lime)]/40 disabled:opacity-60"
+        className="rounded-full border border-[var(--border)] px-4 py-2 text-sm text-[var(--text-2)] transition hover:border-[var(--accent)]/40 disabled:opacity-60"
       >
         {busy ? 'Syncing…' : 'Sync now'}
       </button>
