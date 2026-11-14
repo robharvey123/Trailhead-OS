@@ -613,6 +613,16 @@ body {
   font-family: var(--sans);
   outline: none;
 }
+/* Default padding and size, in the components layer so a padding or text
+   utility at a call site still overrides it. Without this a bare `os-input`
+   has no padding at all: Tailwind's preflight zeroes it. */
+@layer components {
+  .thmock .os-input, .thmock .os-select, .thmock .os-textarea {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+}
 .thmock .os-input::placeholder, .thmock .os-textarea::placeholder { color: var(--text-3); }
 .thmock .os-input:focus, .thmock .os-select:focus, .thmock .os-textarea:focus { border-color: var(--accent); }
 
