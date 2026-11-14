@@ -31,25 +31,25 @@ export default function ConfirmDialog({
   if (!open) return null
 
   const btnClass = variant === 'danger'
-    ? 'bg-rose-600 hover:bg-rose-500 text-white'
+    ? 'bg-[var(--red)] hover:bg-[var(--red)] text-white'
     : variant === 'warning'
-      ? 'bg-amber-600 hover:bg-amber-500 text-white'
-      : 'bg-white/90 hover:bg-white text-slate-950'
+      ? 'bg-[var(--amber)] hover:bg-[var(--amber)] text-white'
+      : 'bg-white/90 hover:bg-white text-[var(--text)]'
 
   return (
     <dialog
       ref={dialogRef}
       onClose={onCancel}
-      className="fixed inset-0 z-50 m-auto w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-0 text-slate-100 backdrop:bg-black/60"
+      className="fixed inset-0 z-50 m-auto w-full max-w-sm rounded-card border border-[var(--border)] bg-[var(--bg)] p-0 text-[var(--text)] backdrop:bg-black/60"
     >
       <div className="p-6">
         <h3 className="text-lg font-semibold">{title}</h3>
-        <p className="mt-2 text-sm text-slate-400">{message}</p>
+        <p className="mt-2 text-sm text-[var(--text-3)]">{message}</p>
         <div className="mt-6 flex justify-end gap-3">
-          <button onClick={onCancel} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">
+          <button onClick={onCancel} className="rounded-control border border-[var(--border)] px-4 py-2 text-xs uppercase text-[var(--text-2)] hover:text-white">
             {cancelLabel}
           </button>
-          <button onClick={onConfirm} className={`rounded-lg px-4 py-2 text-xs font-semibold uppercase ${btnClass}`}>
+          <button onClick={onConfirm} className={`rounded-control px-4 py-2 text-xs font-semibold uppercase ${btnClass}`}>
             {confirmLabel}
           </button>
         </div>

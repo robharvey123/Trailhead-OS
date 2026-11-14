@@ -76,8 +76,8 @@ export default async function SalesDashboardPage() {
           {d.funnel.map((f) => (
             <li key={f.stage} className="grid grid-cols-[8rem_1fr_2.5rem] items-center gap-3 text-sm">
               <span className="text-[color:var(--text-2)]">{STAGE_LABELS[f.stage]}</span>
-              <span className="h-2.5 rounded-full bg-[var(--surface-3)]" aria-hidden="true">
-                <span className="block h-2.5 rounded-full bg-[var(--accent)]" style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
+              <span className="h-2.5 rounded-pill bg-[var(--surface-3)]" aria-hidden="true">
+                <span className="block h-2.5 rounded-pill bg-[var(--accent)]" style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
               </span>
               <span className="text-right tabular-nums">{f.count}</span>
             </li>

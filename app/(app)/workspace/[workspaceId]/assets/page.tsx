@@ -16,15 +16,15 @@ export default async function AssetsPage({ params }: { params: Promise<Workspace
       </div>
 
       {(!assets || assets.length === 0) ? (
-        <div className="rounded-2xl border border-dashed border-slate-700 py-16 text-center">
+        <div className="rounded-card border border-dashed border-slate-700 py-16 text-center">
           <p className="text-sm text-slate-400">No assets uploaded yet.</p>
           <p className="mt-1 text-xs text-slate-500">Upload images, videos, and documents for your campaigns.</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {assets.map((a) => (
-            <div key={a.id} className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
-              <div className="mb-3 flex h-24 items-center justify-center rounded-lg bg-slate-800/50 text-2xl text-slate-500">
+            <div key={a.id} className="rounded-card border border-slate-800 bg-slate-900/50 p-4">
+              <div className="mb-3 flex h-24 items-center justify-center rounded-control bg-slate-800/50 text-2xl text-slate-500">
                 {a.file_type === 'image' ? '🖼️' : a.file_type === 'video' ? '🎬' : a.file_type === 'audio' ? '🎵' : '📄'}
               </div>
               <p className="truncate text-sm font-medium">{a.name}</p>

@@ -339,7 +339,7 @@ export default function EngagementDetailClient({
   }
 
   const dot = (set: boolean) => (
-    <span style={{ width: 9, height: 9, borderRadius: '50%', display: 'inline-block', background: set ? 'var(--green)' : 'var(--surface-3)', marginRight: 4 }} />
+    <span style={{ width: 9, height: 9, borderRadius: 'var(--radius-pill)', display: 'inline-block', background: set ? 'var(--green)' : 'var(--surface-3)', marginRight: 4 }} />
   )
 
   const tier1AccountIds = new Set(milestones.map((m) => m.account_id))
@@ -362,7 +362,7 @@ export default function EngagementDetailClient({
             {menuOpen ? (
               <>
                 <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
-                <div role="menu" style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 41, minWidth: 210, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.16)', overflow: 'hidden', padding: 4 }}>
+                <div role="menu" style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 41, minWidth: 210, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', boxShadow: '0 8px 28px rgba(0,0,0,0.16)', overflow: 'hidden', padding: 4 }}>
                   <div style={{ padding: '6px 10px 4px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)' }}>Set status</div>
                   {ENGAGEMENT_STATUSES.filter((s) => s !== e.status && s !== 'Terminated').map((s) => (
                     <button
@@ -370,7 +370,7 @@ export default function EngagementDetailClient({
                       role="menuitem"
                       disabled={busy}
                       onClick={() => { setMenuOpen(false); void changeStatus(s) }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 4, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 'var(--radius-control)', fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
                       onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
                       onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
                     >
@@ -382,7 +382,7 @@ export default function EngagementDetailClient({
                     <button
                       role="menuitem"
                       onClick={() => { setMenuOpen(false); setTerminateOpen(true) }}
-                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 4, fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 'var(--radius-control)', fontSize: 13, color: 'var(--text)', cursor: 'pointer' }}
                       onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
                       onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
                     >
@@ -392,7 +392,7 @@ export default function EngagementDetailClient({
                   <button
                     role="menuitem"
                     onClick={() => { setMenuOpen(false); setDeleteOpen(true) }}
-                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 4, fontSize: 13, color: 'var(--red)', cursor: 'pointer' }}
+                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 10px', border: 'none', background: 'none', borderRadius: 'var(--radius-control)', fontSize: 13, color: 'var(--red)', cursor: 'pointer' }}
                     onMouseEnter={(ev) => (ev.currentTarget.style.background = 'var(--surface-2)')}
                     onMouseLeave={(ev) => (ev.currentTarget.style.background = 'none')}
                   >
@@ -423,7 +423,7 @@ export default function EngagementDetailClient({
                 <span className="td-name">{hours.used.toFixed(1)}h / {hours.included ?? '—'}h</span>
                 <span className="td-num" style={{ color: barColor }}>{pct}%</span>
               </div>
-              <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
                 <div style={{ width: `${Math.min(100, pct)}%`, height: '100%', background: barColor }} />
               </div>
               {hours.over > (e.approval_thresholds?.hours_overage_hours ?? 0) ? (
@@ -850,7 +850,7 @@ export default function EngagementDetailClient({
         title="Delete engagement?"
         description={`Permanently delete ${e.name}. Projects and time entries are unlinked but kept; milestones, approval requests and documents are deleted.`}
         banner={
-          <div style={{ display: 'flex', gap: 8, padding: '10px 12px', borderRadius: 6, background: 'var(--surface-2)', border: '1px solid var(--border)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--text-2)' }}>
+          <div style={{ display: 'flex', gap: 8, padding: '10px 12px', borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--text-2)' }}>
             <span aria-hidden style={{ color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>ⓘ</span>
             <span>
               Most of the time, use <strong style={{ color: 'var(--text)' }}>Terminate</strong> instead — it keeps everything (milestones, approvals, documents, invoices). Delete is for engagements created by mistake (test data, duplicates).

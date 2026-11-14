@@ -107,7 +107,7 @@ export default function RecordEmailDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={buttonClassName ?? `${fullWidth ? 'w-full ' : ''}rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]`}
+        className={buttonClassName ?? `${fullWidth ? 'w-full ' : ''}rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]`}
       >
         {buttonLabel}
       </button>
@@ -122,7 +122,7 @@ export default function RecordEmailDialog({
         title={dialogTitle}
         closeLabel="Close email dialog"
         overlayClassName="z-[70] px-4 py-8"
-        panelClassName="w-full max-w-2xl rounded-[2rem] border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        panelClassName="w-full max-w-2xl rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -133,7 +133,7 @@ export default function RecordEmailDialog({
             type="button"
             onClick={() => setOpen(false)}
             disabled={sending}
-            className="rounded-full border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+            className="rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
           >
             Close
           </button>
@@ -191,7 +191,7 @@ export default function RecordEmailDialog({
               type="button"
               onClick={() => setOpen(false)}
               disabled={sending}
-              className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+              className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
             >
               Cancel
             </button>
@@ -199,7 +199,7 @@ export default function RecordEmailDialog({
               type="button"
               onClick={() => void handleSend()}
               disabled={sending}
-              className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+              className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
             >
               {sending ? 'Sending...' : 'Send email'}
             </button>

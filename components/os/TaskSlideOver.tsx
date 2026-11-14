@@ -287,7 +287,7 @@ export default function TaskSlideOver({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
+          className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] text-[color:var(--text-2)]"
         >
           Close
         </button>
@@ -376,12 +376,12 @@ export default function TaskSlideOver({
             />
           </label>
 
-          <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+          <label className="flex items-center gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
             <input
               type="checkbox"
               checked={isMasterTodo}
               onChange={(event) => setIsMasterTodo(event.target.checked)}
-              className="h-4 w-4 rounded border-[color:var(--border)] bg-white"
+              className="h-4 w-4 rounded-control border-[color:var(--border)] bg-white"
             />
             <span className="text-sm text-[color:var(--text-2)]">Show on master to-do</span>
           </label>
@@ -430,7 +430,7 @@ export default function TaskSlideOver({
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             rows={6}
-            className="os-textarea w-full rounded-3xl"
+            className="os-textarea w-full rounded-control"
           />
         </label>
       </div>
@@ -448,11 +448,11 @@ export default function TaskSlideOver({
               onChange={(event) => setNoteDraft(event.target.value)}
               rows={3}
               placeholder="Add a note..."
-              className="os-textarea w-full rounded-3xl"
+              className="os-textarea w-full rounded-control"
             />
             <button
               type="submit"
-              className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:bg-[var(--surface-2)]"
+              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text)] transition hover:bg-[var(--surface-2)]"
             >
               Add note
             </button>
@@ -464,12 +464,12 @@ export default function TaskSlideOver({
             {notesLoading ? (
               <p className="text-sm text-[color:var(--text-2)]">Loading notes...</p>
             ) : notes.length === 0 ? (
-              <p className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-6 text-sm text-[color:var(--text-2)]">
+              <p className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-6 text-sm text-[color:var(--text-2)]">
                 No notes yet.
               </p>
             ) : (
               notes.map((note) => (
-                <article key={note.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                <article key={note.id} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                   {note.title ? <h4 className="font-medium text-[color:var(--text)]">{note.title}</h4> : null}
                   <p className="mt-1 whitespace-pre-wrap text-sm text-[color:var(--text-2)]">{note.body}</p>
                   <p className="mt-3 text-xs text-[color:var(--text-3)]">{formatDateTime(note.updated_at)}</p>
@@ -489,7 +489,7 @@ export default function TaskSlideOver({
               type="button"
               onClick={handleComplete}
               disabled={deleting}
-              className="rounded-2xl border border-[color:var(--red)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-60"
+              className="rounded-card border border-[color:var(--red)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-60"
             >
               {deleting ? 'Completing...' : 'Mark complete'}
             </button>
@@ -498,7 +498,7 @@ export default function TaskSlideOver({
             <button
               type="button"
               onClick={() => setEmailModalOpen(true)}
-              className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
             >
               Email task
             </button>
@@ -508,7 +508,7 @@ export default function TaskSlideOver({
           type="button"
           onClick={handleSave}
           disabled={saving || !title.trim()}
-          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {saving ? 'Saving...' : task ? 'Save changes' : 'Create task'}
         </button>

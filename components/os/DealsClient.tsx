@@ -242,7 +242,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
     <button
       type="button"
       onClick={() => setView(target)}
-      className={`rounded-lg px-3 py-1.5 text-sm transition ${
+      className={`rounded-control px-3 py-1.5 text-sm transition ${
         view === target ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'text-[color:var(--text-2)] hover:bg-[var(--surface-2)]'
       }`}
     >
@@ -261,7 +261,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] p-1">
+          <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-1">
             {toggleBtn('kanban', 'Kanban')}
             {toggleBtn('table', 'Table')}
           </div>
@@ -269,7 +269,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="rounded-xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+              className="rounded-card border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
             >
               <option value="">All projects</option>
               {projects.map((p) => (
@@ -282,14 +282,14 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
           <button
             type="button"
             onClick={() => setShowForecast(true)}
-            className="rounded-xl border border-[color:var(--border)] bg-white px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
+            className="rounded-card border border-[color:var(--border)] bg-white px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)]"
           >
             Forecast
           </button>
           <button
             type="button"
             onClick={openNew}
-            className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)]"
           >
             + New deal
           </button>
@@ -355,7 +355,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
                           {d.projects.map((p) => (
                             <span
                               key={p.id}
-                              className="inline-flex rounded-full bg-[var(--accent-dim)] px-2 py-0.5 text-xs font-medium text-[color:var(--accent-strong)]"
+                              className="inline-flex rounded-pill bg-[var(--accent-dim)] px-2 py-0.5 text-xs font-medium text-[color:var(--accent-strong)]"
                             >
                               {p.name}
                             </span>
@@ -403,7 +403,7 @@ export default function DealsClient({ initialDeals, accounts, projects = [] }: D
         title="Weighted forecast — next 6 months"
         closeLabel="Close forecast"
         overlayClassName="p-4"
-        panelClassName="w-full max-w-lg rounded-2xl border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        panelClassName="w-full max-w-lg rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
       >
         <div className="flex items-center justify-between">
           <h2 className="os-section-title">Weighted forecast — next 6 months</h2>

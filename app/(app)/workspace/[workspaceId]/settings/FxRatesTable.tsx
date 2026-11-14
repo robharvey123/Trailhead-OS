@@ -98,7 +98,7 @@ export default function FxRatesTable({
             value={fromCurrency}
             onChange={(e) => setFromCurrency(e.target.value)}
             required
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
           >
             <option value="">Select</option>
             {otherCurrencies.map((c) => (
@@ -118,7 +118,7 @@ export default function FxRatesTable({
             onChange={(e) => setRate(e.target.value)}
             required
             placeholder="0.85"
-            className="w-28 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className="w-28 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -129,20 +129,20 @@ export default function FxRatesTable({
             type="date"
             value={effectiveDate}
             onChange={(e) => setEffectiveDate(e.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
           />
         </div>
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-70"
+          className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-70"
         >
           Add
         </button>
       </form>
 
       {rates.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">

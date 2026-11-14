@@ -69,7 +69,7 @@ export default function ProjectStatusPanel({
   return (
     <div className="panel" style={{ padding: 20, display: 'grid', gap: 14 }}>
       {ended ? (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
           <span style={{ fontSize: 13, color: 'var(--text-2)' }}>
             Ended {fmtDate(endedAt)}, marked <strong style={{ color: 'var(--text)' }}>{status === 'completed' ? 'Completed' : 'Cancelled'}</strong>
             {endedReason ? ` — ${endedReason}` : ''}

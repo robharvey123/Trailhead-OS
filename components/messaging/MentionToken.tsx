@@ -21,7 +21,7 @@ export default function MentionToken({ fullName }: { fullName: string }) {
         style={{
           background: 'var(--accent-dim, rgba(14,165,233,0.16))',
           color: 'var(--accent-strong, #0369a1)',
-          borderRadius: 6,
+          borderRadius: 'var(--radius-control)',
           padding: '0 4px',
           fontWeight: 600,
           cursor: 'default',
@@ -40,7 +40,7 @@ export default function MentionToken({ fullName }: { fullName: string }) {
             zIndex: 30,
             background: 'var(--surface)',
             border: '1px solid var(--border)',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-control)',
             padding: '6px 10px',
             fontSize: 12,
             fontWeight: 500,

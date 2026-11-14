@@ -36,8 +36,8 @@ export default function TimerBar() {
   }
 
   return (
-    <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[color:var(--border)] bg-white px-2.5 py-1 text-sm" title={error || undefined}>
-      <span aria-hidden="true" className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#DC2626]" />
+    <div className="flex min-w-0 items-center gap-2 rounded-card border border-[color:var(--border)] bg-white px-2.5 py-1 text-sm" title={error || undefined}>
+      <span aria-hidden="true" className="h-2 w-2 shrink-0 animate-pulse rounded-pill bg-[#DC2626]" />
       <span className="shrink-0 tabular-nums text-[color:var(--text)]">{fmtClock(elapsedSeconds)}</span>
       <span className="hidden max-w-[26rem] truncate text-[color:var(--text-3)] md:inline">
         {unassigned ? <span className="font-medium text-[#B45309]">Unassigned</span> : parts.join(' › ')}
@@ -52,7 +52,7 @@ export default function TimerBar() {
         type="button"
         onClick={() => void onStop()}
         disabled={busy}
-        className="shrink-0 rounded-lg border border-[#FCA5A5] px-2 py-0.5 text-xs font-medium text-[#DC2626] transition hover:bg-[#FEF2F2] disabled:opacity-50"
+        className="shrink-0 rounded-control border border-[#FCA5A5] px-2 py-0.5 text-xs font-medium text-[#DC2626] transition hover:bg-[#FEF2F2] disabled:opacity-50"
       >
         {busy ? '…' : '■ Stop'}
       </button>

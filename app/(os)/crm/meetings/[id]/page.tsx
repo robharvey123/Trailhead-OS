@@ -58,7 +58,7 @@ export default async function MeetingDetailPage({
         </div>
 
         {meeting.attendees.length > 0 ? (
-          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-6">
+          <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Attendees</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {meeting.attendees.map((attendee, i) => {
@@ -68,14 +68,14 @@ export default async function MeetingDetailPage({
                   <Link
                     key={`${attendee.email}-${i}`}
                     href={`/crm/contacts/${matched.id}`}
-                    className="rounded-full border border-[var(--accent)]/40 px-3 py-1 text-xs text-[var(--accent-strong)] transition hover:border-[var(--accent)]"
+                    className="rounded-pill border border-[var(--accent)]/40 px-3 py-1 text-xs text-[var(--accent-strong)] transition hover:border-[var(--accent)]"
                   >
                     {label}
                   </Link>
                 ) : (
                   <span
                     key={`${attendee.email}-${i}`}
-                    className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--text-2)]"
+                    className="rounded-pill border border-[var(--border)] px-3 py-1 text-xs text-[var(--text-2)]"
                   >
                     {label}
                   </span>
@@ -93,7 +93,7 @@ export default async function MeetingDetailPage({
           allContacts={allContacts}
         />
 
-        <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-6">
+        <div className="rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--text)]">Summary</h2>
           <div className="mt-3">
             <MeetingSummary markdown={meeting.summary_md} />

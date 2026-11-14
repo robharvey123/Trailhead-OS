@@ -15,9 +15,9 @@ import type { SeoCluster } from '@/lib/types'
  */
 
 const SEVERITY_STYLE: Record<string, string> = {
-  critical: 'border-red-300 bg-red-50 text-red-700',
-  high: 'border-orange-300 bg-orange-50 text-orange-700',
-  medium: 'border-amber-300 bg-amber-50 text-amber-700',
+  critical: 'border-[var(--red)]/40 bg-[var(--red-dim)] text-[var(--red-strong)]',
+  high: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
+  medium: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
   low: 'border-[color:var(--border)] text-[color:var(--text-3)]',
 }
 
@@ -87,16 +87,16 @@ export default async function GrowthKeywordsPage({
         </div>
       </div>
 
-      {resolved?.error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{resolved.error}</div> : null}
+      {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
       ) : null}
 
       <div className="flex flex-wrap gap-3 text-sm">
-        <Link href={`/growth/${site.id}/keywords`} className={`rounded-full border px-3 py-1 ${!showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
+        <Link href={`/growth/${site.id}/keywords`} className={`rounded-pill border px-3 py-1 ${!showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
           Keywords
         </Link>
-        <Link href={`/growth/${site.id}/keywords?issues=1`} className={`rounded-full border px-3 py-1 ${showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
+        <Link href={`/growth/${site.id}/keywords?issues=1`} className={`rounded-pill border px-3 py-1 ${showIssues ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}>
           Technical issues ({issues.length})
         </Link>
       </div>
@@ -125,7 +125,7 @@ export default async function GrowthKeywordsPage({
                   {issues.map((i) => (
                     <tr key={i.id} className="border-b border-[color:var(--border)] last:border-0">
                       <td className="py-2 pr-3">
-                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${SEVERITY_STYLE[i.severity]}`}>{i.severity}</span>
+                        <span className={`rounded-pill border px-2 py-0.5 text-[10px] font-medium ${SEVERITY_STYLE[i.severity]}`}>{i.severity}</span>
                       </td>
                       <td className="py-2 pr-3 text-[color:var(--text)]">{i.issue_type.replace(/_/g, ' ')}</td>
                       <td className="py-2 pr-3 text-xs">
@@ -189,7 +189,7 @@ export default async function GrowthKeywordsPage({
                             </Link>
                           </td>
                           <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{p.clicks.toLocaleString('en-GB')}</td>
-                          <td className={`py-2 pr-3 text-right tabular-nums ${delta < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                          <td className={`py-2 pr-3 text-right tabular-nums ${delta < 0 ? 'text-[var(--red-strong)]' : 'text-[var(--emerald-strong)]'}`}>
                             {delta > 0 ? '+' : ''}
                             {delta}
                           </td>

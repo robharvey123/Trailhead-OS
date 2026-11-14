@@ -86,7 +86,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void refresh()}
             disabled={loading}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
           >
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -94,7 +94,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void generateNarrative()}
             disabled={narrativeLoading}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
           >
             {narrativeLoading ? 'Generating...' : 'Generate AI briefing'}
           </button>
@@ -102,7 +102,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
             type="button"
             onClick={() => void downloadPdf()}
             disabled={pdfLoading}
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
           >
             {pdfLoading ? 'Generating...' : 'Download PDF'}
           </button>
@@ -127,7 +127,7 @@ export default function WeeklyReportClient({ initialData }: { initialData: Weekl
           {workstreams.map((ws) => (
             <div key={ws.id} className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-3">
-                <span className={`h-2.5 w-2.5 rounded-full ${WORKSTREAM_COLOUR_MAP[ws.colour] ?? 'bg-gray-400'}`} />
+                <span className={`h-2.5 w-2.5 rounded-pill ${WORKSTREAM_COLOUR_MAP[ws.colour] ?? 'bg-gray-400'}`} />
                 <span className="font-medium text-[color:var(--text)]">{ws.label}</span>
               </div>
               <div className="flex items-center gap-5 text-sm text-[color:var(--text-2)]">

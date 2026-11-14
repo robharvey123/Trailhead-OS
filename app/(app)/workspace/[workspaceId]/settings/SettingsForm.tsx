@@ -24,7 +24,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+      className="rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
     >
       {pending ? 'Saving...' : 'Save settings'}
     </button>
@@ -49,7 +49,7 @@ export default function SettingsForm({
           <input
             name="brand_filter"
             defaultValue={settings.brand_filter}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
           />
         </label>
         <label className="space-y-2 text-sm">
@@ -57,7 +57,7 @@ export default function SettingsForm({
           <select
             name="base_currency"
             defaultValue={settings.base_currency}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
           >
             {ALL_CURRENCIES.map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -74,7 +74,7 @@ export default function SettingsForm({
                   name="supported_currencies"
                   value={c}
                   defaultChecked={settings.supported_currencies.includes(c)}
-                  className="rounded border-slate-600 bg-slate-900"
+                  className="rounded-control border-slate-600 bg-slate-900"
                 />
                 {c}
               </label>
@@ -88,7 +88,7 @@ export default function SettingsForm({
             type="number"
             step="0.01"
             defaultValue={settings.cogs_pct}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
           />
         </label>
         <label className="space-y-2 text-sm">
@@ -98,7 +98,7 @@ export default function SettingsForm({
             type="number"
             step="0.01"
             defaultValue={settings.promo_cost}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
           />
         </label>
       </div>

@@ -85,7 +85,7 @@ export default function PricingTierSelector({
           ? Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={index}
-                className="min-h-[220px] rounded-[1.75rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-5 animate-pulse"
+                className="min-h-[220px] rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-5 animate-pulse"
               />
             ))
           : tiers.map((tier) => {
@@ -99,7 +99,7 @@ export default function PricingTierSelector({
                     onChange(tier)
                     onRatesApplied?.(tier)
                   }}
-                  className={`text-left rounded-[1.75rem] border p-5 transition ${
+                  className={`text-left rounded-card border p-5 transition ${
                     isSelected
                       ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] shadow-[0_0_0_1px_rgba(14,165,233,0.25)]'
                       : 'border-[color:var(--border)] bg-white hover:border-[color:var(--border-light)]'
@@ -111,7 +111,7 @@ export default function PricingTierSelector({
                       <p className="mt-2 text-sm text-[color:var(--text-2)]">{tier.description}</p>
                     </div>
                     <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-pill border ${
                         isSelected
                           ? 'border-[color:var(--accent)] bg-[var(--accent)] text-white'
                           : 'border-[color:var(--border)] text-transparent'
@@ -125,21 +125,21 @@ export default function PricingTierSelector({
                   </div>
 
                   <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
                       <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Hourly</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">{formatCurrency(tier.hourly_rate)}</p>
                     </div>
-                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
                       <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Day</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">{formatCurrency(tier.day_rate)}</p>
                     </div>
-                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
                       <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Retainer</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">
                         {formatCurrency(tier.monthly_retainer, '/mo')}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+                    <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
                       <p className="text-xs uppercase tracking-[0.16em] text-[color:var(--text-3)]">Hosting</p>
                       <p className="mt-1 font-medium text-[color:var(--text)]">
                         {formatCurrency(tier.hosting_maintenance, '/mo')}

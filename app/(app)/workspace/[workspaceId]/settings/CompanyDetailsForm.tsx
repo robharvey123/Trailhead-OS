@@ -28,7 +28,7 @@ const initialState: SettingsState = {}
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <button type="submit" disabled={pending} className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70">
+    <button type="submit" disabled={pending} className="rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70">
       {pending ? 'Saving...' : 'Save company details'}
     </button>
   )
@@ -43,39 +43,39 @@ export default function CompanyDetailsForm({ workspaceId, company }: { workspace
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">Company Name</span>
-          <input name="company_name" defaultValue={company.company_name || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_name" defaultValue={company.company_name || ''} className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">VAT / Tax Number</span>
-          <input name="company_vat_number" defaultValue={company.company_vat_number || ''} placeholder="e.g. GB123456789" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_vat_number" defaultValue={company.company_vat_number || ''} placeholder="e.g. GB123456789" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">Company Number</span>
-          <input name="company_number" defaultValue={company.company_number || ''} placeholder="e.g. 12345678" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_number" defaultValue={company.company_number || ''} placeholder="e.g. 12345678" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm md:col-span-2">
           <span className="font-medium text-slate-200">Address</span>
-          <input name="company_address" defaultValue={company.company_address || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_address" defaultValue={company.company_address || ''} className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">City</span>
-          <input name="company_city" defaultValue={company.company_city || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_city" defaultValue={company.company_city || ''} className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">Postcode</span>
-          <input name="company_postcode" defaultValue={company.company_postcode || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_postcode" defaultValue={company.company_postcode || ''} className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">Country</span>
-          <input name="company_country" defaultValue={company.company_country || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_country" defaultValue={company.company_country || ''} className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">Email</span>
-          <input name="company_email" type="email" defaultValue={company.company_email || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_email" type="email" defaultValue={company.company_email || ''} className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
         <label className="space-y-2 text-sm">
           <span className="font-medium text-slate-200">Phone</span>
-          <input name="company_phone" defaultValue={company.company_phone || ''} className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+          <input name="company_phone" defaultValue={company.company_phone || ''} className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
         </label>
       </div>
 
@@ -84,27 +84,27 @@ export default function CompanyDetailsForm({ workspaceId, company }: { workspace
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
             <span className="font-medium text-slate-200">Bank Name</span>
-            <input name="bank_name" defaultValue={company.bank_name || ''} placeholder="e.g. Barclays" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+            <input name="bank_name" defaultValue={company.bank_name || ''} placeholder="e.g. Barclays" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
           </label>
           <label className="space-y-2 text-sm">
             <span className="font-medium text-slate-200">Account Name</span>
-            <input name="bank_account_name" defaultValue={company.bank_account_name || ''} placeholder="e.g. Trailhead Holdings Ltd" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+            <input name="bank_account_name" defaultValue={company.bank_account_name || ''} placeholder="e.g. Trailhead Holdings Ltd" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
           </label>
           <label className="space-y-2 text-sm">
             <span className="font-medium text-slate-200">Sort Code</span>
-            <input name="bank_sort_code" defaultValue={company.bank_sort_code || ''} placeholder="e.g. 20-00-00" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+            <input name="bank_sort_code" defaultValue={company.bank_sort_code || ''} placeholder="e.g. 20-00-00" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
           </label>
           <label className="space-y-2 text-sm">
             <span className="font-medium text-slate-200">Account Number</span>
-            <input name="bank_account_number" defaultValue={company.bank_account_number || ''} placeholder="e.g. 12345678" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+            <input name="bank_account_number" defaultValue={company.bank_account_number || ''} placeholder="e.g. 12345678" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
           </label>
           <label className="space-y-2 text-sm">
             <span className="font-medium text-slate-200">IBAN</span>
-            <input name="bank_iban" defaultValue={company.bank_iban || ''} placeholder="e.g. GB00BARC20000012345678" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+            <input name="bank_iban" defaultValue={company.bank_iban || ''} placeholder="e.g. GB00BARC20000012345678" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
           </label>
           <label className="space-y-2 text-sm">
             <span className="font-medium text-slate-200">BIC / SWIFT</span>
-            <input name="bank_swift" defaultValue={company.bank_swift || ''} placeholder="e.g. BARCGB22" className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
+            <input name="bank_swift" defaultValue={company.bank_swift || ''} placeholder="e.g. BARCGB22" className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white" />
           </label>
         </div>
       </div>

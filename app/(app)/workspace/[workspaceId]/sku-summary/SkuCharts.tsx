@@ -56,7 +56,7 @@ export default function SkuCharts({ data }: { data: SkuChartDatum[] }) {
   const showRightAxis = showSellThrough
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+    <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
       <h3 className="text-sm font-semibold text-slate-200">
         Top SKUs: shipped vs sell through
       </h3>
@@ -68,7 +68,7 @@ export default function SkuCharts({ data }: { data: SkuChartDatum[] }) {
               key={option.value}
               type="button"
               onClick={() => setSeriesFilter(option.value)}
-              className={`rounded-full border px-3 py-1 text-xs uppercase tracking-wide transition ${
+              className={`rounded-pill border px-3 py-1 text-xs uppercase tracking-wide transition ${
                 isActive
                   ? 'border-slate-200 bg-slate-200 text-slate-900'
                   : 'border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100'

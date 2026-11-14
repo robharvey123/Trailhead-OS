@@ -30,7 +30,7 @@ type Props = {
   onImported: (result: ImportResult) => void
 }
 
-const fieldClass = 'w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] focus:border-[color:var(--accent)] focus:outline-none'
+const fieldClass = 'w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] focus:border-[color:var(--accent)] focus:outline-none'
 const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]'
 
 function fmt(iso: string | null) {
@@ -247,7 +247,7 @@ export default function WhatsAppImportModal({ defaultAccountId, defaultEngagemen
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}>
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl">
+      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-card border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-lg)]">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h3 className="text-lg font-semibold text-[color:var(--text)]">Import WhatsApp chat</h3>
@@ -298,7 +298,7 @@ export default function WhatsAppImportModal({ defaultAccountId, defaultEngagemen
 
         {step === 2 && preview ? (
           <div className="mt-4 space-y-5">
-            <div className="grid gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4 text-sm sm:grid-cols-4">
+            <div className="grid gap-3 rounded-card border border-[var(--border)] bg-[var(--surface-2)] p-4 text-sm sm:grid-cols-4">
               <div>
                 <p className="text-xs text-[color:var(--text-3)]">Detected</p>
                 <p className="font-medium text-[color:var(--text)]">{preview.title ?? 'Untitled chat'}</p>
@@ -354,7 +354,7 @@ export default function WhatsAppImportModal({ defaultAccountId, defaultEngagemen
                   const pv = preview.participants[i]
                   const needsResolution = selectedCandidate ? unresolved.some((u) => u.display_name === m.display_name) : false
                   return (
-                    <div key={m.display_name} className={`grid gap-2 rounded-2xl border p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] ${needsResolution ? 'border-[color:var(--amber-strong)]' : 'border-[var(--border)]'}`}>
+                    <div key={m.display_name} className={`grid gap-2 rounded-card border p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] ${needsResolution ? 'border-[color:var(--amber-strong)]' : 'border-[var(--border)]'}`}>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-[color:var(--text)]">{m.display_name}</p>
                         <p className="text-xs text-[color:var(--text-3)]">
@@ -405,7 +405,7 @@ export default function WhatsAppImportModal({ defaultAccountId, defaultEngagemen
 
             <div>
               <p className={labelClass}>Sample — first {preview.sample.length} messages</p>
-              <div className="max-h-56 space-y-1 overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3 text-xs">
+              <div className="max-h-56 space-y-1 overflow-y-auto rounded-card border border-[var(--border)] bg-[var(--surface-2)] p-3 text-xs">
                 {preview.sample.map((s, i) => (
                   <p key={i} className="text-[color:var(--text)]">
                     <span className="text-[color:var(--text-3)]">{s.occurred_at_local.replace('T', ' ')}</span> <span className="font-medium">{s.sender ?? 'system'}:</span>{' '}
@@ -428,7 +428,7 @@ export default function WhatsAppImportModal({ defaultAccountId, defaultEngagemen
 
         {step === 3 && result ? (
           <div className="mt-4 space-y-4">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4 text-sm">
+            <div className="rounded-card border border-[var(--border)] bg-[var(--surface-2)] p-4 text-sm">
               {undone ? (
                 <p className="text-[color:var(--text)]">Import undone. {result.imported} messages removed.</p>
               ) : (

@@ -110,7 +110,7 @@ export default function AccountForm({
   }
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-[var(--border)] bg-[var(--surface)] p-6">
+    <div className="space-y-6 rounded-card border border-[var(--border)] bg-[var(--surface)] p-6">
       {!onSaved ? (
         <div>
           <p className="text-xs uppercase tracking-[0.32em] text-white0">Clients</p>
@@ -126,7 +126,7 @@ export default function AccountForm({
           <input
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
             required
           />
         </label>
@@ -136,7 +136,7 @@ export default function AccountForm({
           <input
             value={form.website}
             onChange={(event) => setForm({ ...form, website: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -145,7 +145,7 @@ export default function AccountForm({
           <select
             value={form.industry}
             onChange={(event) => setForm({ ...form, industry: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             <option value="">Select industry</option>
             {ACCOUNT_INDUSTRY_OPTIONS.map((option) => (
@@ -161,7 +161,7 @@ export default function AccountForm({
           <select
             value={form.size}
             onChange={(event) => setForm({ ...form, size: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             <option value="">Select size</option>
             {ACCOUNT_SIZE_OPTIONS.map((option) => (
@@ -177,7 +177,7 @@ export default function AccountForm({
           <select
             value={form.workstream_id}
             onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             <option value="">None</option>
             {workstreams.map((workstream) => (
@@ -193,7 +193,7 @@ export default function AccountForm({
           <select
             value={form.status}
             onChange={(event) => setForm({ ...form, status: event.target.value as AccountStatus })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           >
             {ACCOUNT_STATUSES.map((status) => (
               <option key={status} value={status}>
@@ -208,7 +208,7 @@ export default function AccountForm({
             value={form.channel}
             onChange={(event) => setForm({ ...form, channel: event.target.value })}
             placeholder="e.g. Major UK Retailers"
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -217,7 +217,7 @@ export default function AccountForm({
           <input
             value={form.source}
             onChange={(event) => setForm({ ...form, source: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -227,7 +227,7 @@ export default function AccountForm({
             type="email"
             value={form.email_contact}
             onChange={(event) => setForm({ ...form, email_contact: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -236,7 +236,7 @@ export default function AccountForm({
           <input
             value={form.hq_address}
             onChange={(event) => setForm({ ...form, hq_address: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
         <label className="space-y-2 md:col-span-2">
@@ -244,7 +244,7 @@ export default function AccountForm({
           <input
             value={form.address_line1}
             onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -253,7 +253,7 @@ export default function AccountForm({
           <input
             value={form.address_line2}
             onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -262,7 +262,7 @@ export default function AccountForm({
           <input
             value={form.city}
             onChange={(event) => setForm({ ...form, city: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -271,7 +271,7 @@ export default function AccountForm({
           <input
             value={form.postcode}
             onChange={(event) => setForm({ ...form, postcode: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
@@ -280,11 +280,11 @@ export default function AccountForm({
           <input
             value={form.country}
             onChange={(event) => setForm({ ...form, country: event.target.value })}
-            className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
 
-        <div className="md:col-span-2 rounded-[1.5rem] border border-[var(--border)] p-4">
+        <div className="md:col-span-2 rounded-card border border-[var(--border)] p-4">
           <p className="text-sm font-medium text-[var(--text,inherit)]">Billing</p>
           <p className="mt-1 text-xs text-[var(--text-2)]">Flows onto invoices raised against this account.</p>
           <div className="mt-3 grid gap-4 md:grid-cols-2">
@@ -293,7 +293,7 @@ export default function AccountForm({
               <input
                 value={form.vat_number}
                 onChange={(event) => setForm({ ...form, vat_number: event.target.value })}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+                className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
               />
             </label>
             <label className="space-y-2">
@@ -301,7 +301,7 @@ export default function AccountForm({
               <input
                 value={form.company_number}
                 onChange={(event) => setForm({ ...form, company_number: event.target.value })}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+                className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
               />
             </label>
             <label className="space-y-2">
@@ -311,7 +311,7 @@ export default function AccountForm({
                 value={form.billing_email}
                 onChange={(event) => setForm({ ...form, billing_email: event.target.value })}
                 placeholder="accounts@…"
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+                className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
               />
             </label>
             <label className="space-y-2">
@@ -323,7 +323,7 @@ export default function AccountForm({
                 value={form.payment_terms_days}
                 onChange={(event) => setForm({ ...form, payment_terms_days: event.target.value })}
                 placeholder="e.g. 30"
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+                className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
               />
             </label>
             <label className="flex items-center gap-2 md:col-span-2">
@@ -343,19 +343,19 @@ export default function AccountForm({
             value={form.notes}
             onChange={(event) => setForm({ ...form, notes: event.target.value })}
             rows={6}
-            className="w-full rounded-[1.5rem] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
+            className="w-full rounded-card border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-black"
           />
         </label>
       </div>
 
-      {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="text-sm text-[var(--red-strong)]">{error}</p> : null}
 
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
           onClick={handleSave}
           disabled={saving || !form.name.trim()}
-          className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--accent)]/90 disabled:opacity-60"
+          className="rounded-card bg-white px-5 py-3 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--accent)]/90 disabled:opacity-60"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -369,7 +369,7 @@ export default function AccountForm({
 
             router.push(cancelHref)
           }}
-          className="rounded-2xl border border-[var(--border)] px-5 py-3 text-sm font-medium text-[var(--text-2)] transition hover:border-[var(--accent)]/40"
+          className="rounded-card border border-[var(--border)] px-5 py-3 text-sm font-medium text-[var(--text-2)] transition hover:border-[var(--accent)]/40"
         >
           Cancel
         </button>

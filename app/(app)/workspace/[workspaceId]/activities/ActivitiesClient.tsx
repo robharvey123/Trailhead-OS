@@ -102,62 +102,62 @@ export default function ActivitiesClient({
           <h1 className="mt-1 text-2xl font-semibold">Activities</h1>
           <p className="mt-1 text-sm text-slate-400">{filtered.length} activities</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ Log Activity</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ Log Activity</button>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search activities…" className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-white/30" />
-        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search activities…" className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-white/30" />
+        <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
           <option value="all">All Types</option>
           {CRM_ACTIVITY_TYPES.map((t) => <option key={t} value={t}>{CRM_ACTIVITY_TYPE_LABELS[t]}</option>)}
         </select>
-        <select value={filterAccount} onChange={(e) => setFilterAccount(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+        <select value={filterAccount} onChange={(e) => setFilterAccount(e.target.value)} className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
           <option value="all">All Accounts</option>
           {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-card border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <h2 className="text-lg font-semibold">Log Activity</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div><label className="block text-xs text-slate-400 mb-1">Type</label>
-              <select value={type} onChange={(e) => setType(e.target.value as CrmActivityType)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={type} onChange={(e) => setType(e.target.value as CrmActivityType)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 {CRM_ACTIVITY_TYPES.map((t) => <option key={t} value={t}>{CRM_ACTIVITY_TYPE_LABELS[t]}</option>)}
               </select>
             </div>
-            <div><label className="block text-xs text-slate-400 mb-1">Subject *</label><input value={subject} onChange={(e) => setSubject(e.target.value)} required className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
-            <div><label className="block text-xs text-slate-400 mb-1">Date</label><input type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+            <div><label className="block text-xs text-slate-400 mb-1">Subject *</label><input value={subject} onChange={(e) => setSubject(e.target.value)} required className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+            <div><label className="block text-xs text-slate-400 mb-1">Date</label><input type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
             <div><label className="block text-xs text-slate-400 mb-1">Account</label>
-              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 <option value="">—</option>
                 {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div><label className="block text-xs text-slate-400 mb-1">Contact</label>
-              <select value={contactId} onChange={(e) => setContactId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={contactId} onChange={(e) => setContactId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 <option value="">—</option>
                 {(accountId ? contacts.filter((c) => c.account_id === accountId) : contacts).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div><label className="block text-xs text-slate-400 mb-1">Deal</label>
-              <select value={dealId} onChange={(e) => setDealId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={dealId} onChange={(e) => setDealId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 <option value="">—</option>
                 {(accountId ? deals.filter((d) => d.account_id === accountId) : deals).map((d) => <option key={d.id} value={d.id}>{d.title}</option>)}
               </select>
             </div>
           </div>
-          <div><label className="block text-xs text-slate-400 mb-1">Details</label><textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+          <div><label className="block text-xs text-slate-400 mb-1">Details</label><textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white disabled:opacity-50">{saving ? 'Saving…' : 'Log Activity'}</button>
-            <button type="button" onClick={() => { resetForm(); setShowForm(false) }} className="rounded-lg border border-slate-700 px-4 py-1.5 text-xs uppercase tracking-wide text-slate-400 hover:text-white">Cancel</button>
+            <button type="submit" disabled={saving} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white disabled:opacity-50">{saving ? 'Saving…' : 'Log Activity'}</button>
+            <button type="button" onClick={() => { resetForm(); setShowForm(false) }} className="rounded-control border border-slate-700 px-4 py-1.5 text-xs uppercase tracking-wide text-slate-400 hover:text-white">Cancel</button>
           </div>
         </form>
       )}
 
       {/* Timeline */}
       {grouped.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 py-16">
+        <div className="flex flex-col items-center justify-center rounded-card border border-dashed border-slate-700 py-16">
           <div className="mb-3 text-4xl text-slate-600">📋</div>
           <p className="text-slate-400">No activities recorded yet</p>
           <button onClick={() => { resetForm(); setShowForm(true) }} className="mt-3 text-xs text-blue-400 hover:underline">Log your first activity</button>
@@ -169,11 +169,11 @@ export default function ActivitiesClient({
               <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">{date}</h3>
               <div className="space-y-2">
                 {items.map((a) => (
-                  <div key={a.id} className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4 transition hover:border-slate-700">
+                  <div key={a.id} className="flex items-start gap-3 rounded-card border border-slate-800 bg-slate-900/60 p-4 transition hover:border-slate-700">
                     <span className="mt-0.5 text-lg">{ACTIVITY_TYPE_ICONS[a.type] || '📝'}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs rounded bg-slate-800 px-1.5 py-0.5 text-slate-300">{CRM_ACTIVITY_TYPE_LABELS[a.type]}</span>
+                        <span className="text-xs rounded-control bg-slate-800 px-1.5 py-0.5 text-slate-300">{CRM_ACTIVITY_TYPE_LABELS[a.type]}</span>
                         <span className="font-medium">{a.subject}</span>
                       </div>
                       {a.body && <p className="mt-1 text-sm text-slate-400 line-clamp-2">{a.body}</p>}

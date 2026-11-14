@@ -255,7 +255,7 @@ export default async function SkuSummaryPage({
 
       <SkuCharts data={topSkuChart} />
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">SKU performance summary</h2>
         <p className="mt-2 text-sm text-slate-300">
           Sorted by total shipped.
@@ -266,7 +266,7 @@ export default async function SkuSummaryPage({
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h3 className="text-sm font-semibold text-slate-200">
             Sell in by SKU
           </h3>
@@ -284,7 +284,7 @@ export default async function SkuSummaryPage({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h3 className="text-sm font-semibold text-slate-200">
             Sell out by SKU
           </h3>

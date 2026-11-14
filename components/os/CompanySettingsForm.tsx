@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+      className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
     >
       {pending ? 'Saving...' : 'Save footer details'}
     </button>
@@ -33,7 +33,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
           <input
             name="company_name"
             defaultValue={company.company_name}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -42,7 +42,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
           <input
             name="address_line1"
             defaultValue={company.address_line1 ?? ''}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -51,7 +51,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
           <input
             name="address_line2"
             defaultValue={company.address_line2 ?? ''}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -60,7 +60,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
           <input
             name="city"
             defaultValue={company.city ?? ''}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -69,7 +69,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
           <input
             name="postcode"
             defaultValue={company.postcode ?? ''}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -78,7 +78,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
           <input
             name="country"
             defaultValue={company.country ?? ''}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -88,7 +88,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
             name="company_email"
             type="email"
             defaultValue={company.company_email ?? ''}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -97,7 +97,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
           <input
             name="company_number"
             defaultValue={company.company_number ?? ''}
-            className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input w-full rounded-control px-4 py-3 text-sm"
           />
         </label>
 
@@ -109,7 +109,7 @@ export default function CompanySettingsForm({ company }: { company: CompanySetti
             onChange={(e) => setSig(e.target.value)}
             rows={6}
             placeholder={'<strong>Rob Harvey</strong><br>Trailhead Holdings Ltd<br><a href="mailto:rob@trailheadholdings.uk">rob@trailheadholdings.uk</a>'}
-            className="os-textarea w-full rounded-2xl px-4 py-3 font-mono text-sm"
+            className="os-textarea w-full rounded-control px-4 py-3 font-mono text-sm"
           />
           <span className="text-xs text-[color:var(--text-3)]">
             HTML — supports links, bold, images (e.g. <code>&lt;img src=&quot;https://…/logo.png&quot;&gt;</code>). Appended to emails you compose and reply to in the Inbox.

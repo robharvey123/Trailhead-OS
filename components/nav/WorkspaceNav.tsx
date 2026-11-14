@@ -42,7 +42,7 @@ export default function WorkspaceNav({
             href={withQuery}
             aria-current={isActive ? 'page' : undefined}
             title={item.label}
-            className={`whitespace-nowrap rounded-full border px-3 py-1.5 transition ${
+            className={`whitespace-nowrap rounded-pill border px-3 py-1.5 transition ${
               isActive
                 ? 'border-white/60 bg-white/10 text-white'
                 : 'border-slate-800 text-slate-300 hover:border-slate-600 hover:text-white'

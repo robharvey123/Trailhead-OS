@@ -148,7 +148,7 @@ export default function MessageComposer({
       {files.length ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 12px 0' }}>
           {files.map((f, i) => (
-            <span key={`${f.name}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '4px 8px', color: 'var(--text-2)' }}>
+            <span key={`${f.name}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: '4px 8px', color: 'var(--text-2)' }}>
               📎 {f.name} <span style={{ color: 'var(--text-3)' }}>{fmtBytes(f.size)}</span>
               <button type="button" onClick={() => setFiles((cur) => cur.filter((_, j) => j !== i))} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-3)' }}>✕</button>
             </span>
@@ -170,7 +170,7 @@ export default function MessageComposer({
         <input ref={inputRef} type="file" multiple hidden onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = '' }} />
         <textarea
           ref={textareaRef}
-          className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] resize-none"
+          className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] resize-none"
           value={value}
           rows={1}
           placeholder="Write a message…   (@ to mention)"

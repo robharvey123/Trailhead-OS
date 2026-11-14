@@ -39,7 +39,7 @@ export default async function SettingsPage({
     <div className="space-y-8">
       <HoldingSettingsClient workspaceId={workspaceId} />
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Company &amp; Bank Details</h2>
         <p className="mt-2 text-sm text-slate-300">
           Your company name, address, VAT/company numbers, and bank account details will appear on invoices and PDF exports.

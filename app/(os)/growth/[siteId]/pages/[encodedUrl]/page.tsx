@@ -22,7 +22,7 @@ function Delta({ now, prev }: { now: number; prev: number }) {
   const delta = now - prev
   const pct = prev > 0 ? Math.round((delta / prev) * 100) : null
   return (
-    <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${delta >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+    <span className={`ml-2 rounded-pill px-2 py-0.5 text-[11px] font-medium tabular-nums ${delta >= 0 ? 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]' : 'bg-[var(--red-dim)] text-[var(--red-strong)]'}`}>
       {delta >= 0 ? '+' : ''}
       {delta}
       {pct !== null ? ` (${pct >= 0 ? '+' : ''}${pct}%)` : ''} vs prior 28d
@@ -112,13 +112,13 @@ export default async function RefreshWorksheetPage({
       </div>
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{resolved.error}</div>
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
       ) : null}
       {worksheet?.pr_url ? (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        <div className="rounded-card border border-[var(--emerald)]/40 bg-[var(--emerald-dim)] px-4 py-3 text-sm text-[var(--emerald-strong)]">
           Applied via{' '}
           <a href={worksheet.pr_url.startsWith('http') ? worksheet.pr_url : '#'} target="_blank" rel="noreferrer" className="underline">
             {worksheet.pr_url.startsWith('http') ? 'pull request' : `WordPress draft ${worksheet.pr_url}`}
@@ -158,11 +158,11 @@ export default async function RefreshWorksheetPage({
       </div>
 
       {payload?.quality_score_note ? (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{payload.quality_score_note}</div>
+        <div className="rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] px-4 py-3 text-sm text-[var(--amber-strong)]">{payload.quality_score_note}</div>
       ) : null}
 
       {stats.queries.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           Search Console has no query data for this URL in the last 28 days. If the site was connected recently, the first sync backfills 90 days of query×page history overnight.
         </div>
       ) : null}
@@ -211,11 +211,11 @@ export default async function RefreshWorksheetPage({
             <dl className="mt-3 space-y-3 text-sm">
               <div>
                 <dt className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Title ({payload.page.title?.length ?? 0} chars)</dt>
-                <dd className="text-[color:var(--text)]">{payload.page.title ?? <span className="text-red-600">missing</span>}</dd>
+                <dd className="text-[color:var(--text)]">{payload.page.title ?? <span className="text-[var(--red-strong)]">missing</span>}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Meta description ({payload.page.meta_description?.length ?? 0} chars)</dt>
-                <dd className="text-[color:var(--text-2)]">{payload.page.meta_description ?? <span className="text-red-600">missing</span>}</dd>
+                <dd className="text-[color:var(--text-2)]">{payload.page.meta_description ?? <span className="text-[var(--red-strong)]">missing</span>}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Outline · {payload.page.word_count.toLocaleString('en-GB')} words</dt>
@@ -255,9 +255,9 @@ export default async function RefreshWorksheetPage({
             ) : (
               <>
                 {payload.gap_headings.length > 0 ? (
-                  <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">Content gap — on 3+ of the top 5, absent here</p>
-                    <ul className="mt-2 space-y-1 text-sm text-amber-900">
+                  <div className="mt-3 rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[var(--amber-strong)]">Content gap — on 3+ of the top 5, absent here</p>
+                    <ul className="mt-2 space-y-1 text-sm text-[var(--amber-strong)]">
                       {payload.gap_headings.map((h) => (
                         <li key={h}>• {h}</li>
                       ))}

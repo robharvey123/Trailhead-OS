@@ -56,7 +56,7 @@ export default async function QuotesPage({
         </div>
         <Link
           href="/quotes/new"
-          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           New quote
         </Link>
@@ -81,7 +81,7 @@ export default async function QuotesPage({
             <Link
               key={tab.value}
               href={href}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
+              className={`rounded-pill border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                   : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--accent)] hover:text-[color:var(--text)]'
@@ -95,7 +95,7 @@ export default async function QuotesPage({
 
       <div className="os-card overflow-x-auto p-6">
         {quotes.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+          <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No quotes in this view yet.
           </div>
         ) : (

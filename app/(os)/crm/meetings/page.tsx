@@ -31,7 +31,7 @@ export default async function MeetingsPage() {
         </div>
 
         {meetings.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-[var(--border)] px-6 py-16 text-center text-sm text-[var(--text-2)]">
+          <div className="rounded-card border border-dashed border-[var(--border)] px-6 py-16 text-center text-sm text-[var(--text-2)]">
             No meetings synced yet. Hit “Sync now”, or wait for the hourly sync.
           </div>
         ) : (
@@ -40,7 +40,7 @@ export default async function MeetingsPage() {
               <Link
                 key={meeting.id}
                 href={`/crm/meetings/${meeting.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4 transition hover:border-[var(--accent)]/40"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[var(--border)] bg-[var(--surface)] p-4 transition hover:border-[var(--accent)]/40"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-[color:var(--text)]">{meeting.title || 'Untitled meeting'}</p>
@@ -48,11 +48,11 @@ export default async function MeetingsPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {meeting.account ? (
-                    <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--text-2)]">
+                    <span className="rounded-pill border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--text-2)]">
                       {meeting.account.name}
                     </span>
                   ) : null}
-                  <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--text-2)]">
+                  <span className="rounded-pill border border-[var(--border)] px-2 py-0.5 text-[11px] text-[var(--text-2)]">
                     {meeting.attendees.length} attendee{meeting.attendees.length !== 1 ? 's' : ''}
                   </span>
                 </div>

@@ -44,7 +44,7 @@ export default async function AnalyticsWorkspaceLayout({
 
   return (
     <div className="space-y-8">
-      <div className="rounded-3xl border border-[#2A2A3A] bg-[#1A1A28]">
+      <div className="rounded-card border border-[#2A2A3A] bg-[#1A1A28]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2A2A3A] px-6 py-6">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-[#9CA3AF]">

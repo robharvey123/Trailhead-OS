@@ -42,7 +42,7 @@ export default function StartConversationModal({
         <div className="panel-section-title" style={{ margin: 0 }}>Start a conversation</div>
         <input
           autoFocus
-          className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]"
+          className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]"
           placeholder="Search people…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -57,9 +57,9 @@ export default function StartConversationModal({
                 type="button"
                 disabled={busy}
                 onClick={() => pick(u.id)}
-                className="flex items-center gap-3 rounded-[8px] px-3 py-2 text-left text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] disabled:opacity-50"
+                className="flex items-center gap-3 rounded-control px-3 py-2 text-left text-sm text-[var(--text)] transition hover:bg-[var(--surface-2)] disabled:opacity-50"
               >
-                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">
+                <span className="flex h-7 w-7 flex-none items-center justify-center rounded-pill bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">
                   {u.name.slice(0, 2).toUpperCase()}
                 </span>
                 <span>{u.name}</span>

@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+      className="rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
     >
       {pending ? 'Creating...' : 'Create workspace'}
     </button>
@@ -34,7 +34,7 @@ export default function CreateWorkspaceForm() {
           id="workspace-name"
           name="name"
           required
-          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
           placeholder="Acme Brands"
         />
       </div>
@@ -45,7 +45,7 @@ export default function CreateWorkspaceForm() {
         <select
           id="workspace-type"
           name="type"
-          className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-slate-500 focus:outline-none"
+          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-slate-500 focus:outline-none"
           defaultValue="brand"
         >
           <option value="brand">Brand</option>

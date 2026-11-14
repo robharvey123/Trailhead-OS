@@ -44,7 +44,7 @@ export default async function EngagementReportsPage({ params }: { params: Promis
       {!isAdmin ? (
         <p className="text-sm text-[color:var(--text-3)]">Reports are available to admins.</p>
       ) : !reports || reports.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No reports yet. Generate a weekly or monthly report above.
         </div>
       ) : (

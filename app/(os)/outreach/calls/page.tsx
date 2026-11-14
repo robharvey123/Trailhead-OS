@@ -28,7 +28,7 @@ export default async function CallQueuePage() {
         </div>
 
         {unscreened > 0 ? (
-          <div className="space-y-3 rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 text-sm text-[color:var(--amber-strong)]">
+          <div className="space-y-3 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 text-sm text-[color:var(--amber-strong)]">
             <p>
               ⚠ {unscreened} delivered {unscreened === 1 ? 'prospect is' : 'prospects are'} not CTPS-screened in the last 28 days and are hidden from this queue.
               Numbers are screened automatically through Data Soap every night at 04:30 UTC, or screen them now.
@@ -42,7 +42,7 @@ export default async function CallQueuePage() {
         ) : (
           <div className="space-y-3">
             {queue.map((row) => (
-              <div key={row.recipient_id} className="os-card rounded-[1.5rem] p-4">
+              <div key={row.recipient_id} className="os-card rounded-card p-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">{row.company ?? row.name}</p>

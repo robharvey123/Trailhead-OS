@@ -34,7 +34,7 @@ export default function CompanyMonthlyCharts({
   title?: string
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+    <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
       <h3 className="text-sm font-semibold text-slate-200">{title}</h3>
       <div className="mt-4 h-64 min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={200}>

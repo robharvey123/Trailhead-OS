@@ -311,14 +311,14 @@ export default function ContactImportClient({
         </div>
         <Link
           href="/crm/contacts"
-          className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+          className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
         >
           Back to contacts
         </Link>
       </div>
 
       {error && (
-        <div className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
+        <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
           {error}
         </div>
       )}
@@ -330,7 +330,7 @@ export default function ContactImportClient({
           onDrop={handleDrop}
           className="os-card flex flex-col items-center gap-4 border-2 border-dashed px-8 py-16 text-center transition hover:border-[color:var(--accent)]"
         >
-          <div className="rounded-full bg-[var(--accent-dim)] p-4">
+          <div className="rounded-pill bg-[var(--accent-dim)] p-4">
             <svg className="h-8 w-8 text-[color:var(--accent)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
@@ -348,7 +348,7 @@ export default function ContactImportClient({
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-2xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
           >
             Choose file
           </button>
@@ -368,7 +368,7 @@ export default function ContactImportClient({
               </div>
               <button
                 onClick={handleReset}
-                className="rounded-xl border border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] hover:text-[color:var(--text)]"
+                className="rounded-card border border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)] hover:text-[color:var(--text)]"
               >
                 Choose different file
               </button>
@@ -414,14 +414,14 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={handleReset}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
             >
               Cancel
             </button>
             <button
               disabled={!nameIsMapped}
               onClick={() => setStep('preview')}
-              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
             >
               Preview import
             </button>
@@ -537,7 +537,7 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setStep('map')}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
             >
               Back to mapping
             </button>
@@ -545,7 +545,7 @@ export default function ContactImportClient({
               <button
                 disabled={matching || validRowCount === 0}
                 onClick={goToAccounts}
-                className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
               >
                 {matching ? 'Matching accounts…' : 'Match accounts →'}
               </button>
@@ -553,7 +553,7 @@ export default function ContactImportClient({
               <button
                 disabled={importing || validRowCount === 0}
                 onClick={handleImport}
-                className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+                className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
               >
                 {importing ? 'Importing…' : `Import ${validRowCount} contact${validRowCount !== 1 ? 's' : ''}`}
               </button>
@@ -625,14 +625,14 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setStep('preview')}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
             >
               Back to preview
             </button>
             <button
               disabled={importing || validRowCount === 0}
               onClick={handleImport}
-              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-40"
             >
               {importing ? 'Importing…' : `Import ${validRowCount} contact${validRowCount !== 1 ? 's' : ''}`}
             </button>
@@ -645,7 +645,7 @@ export default function ContactImportClient({
         <div className="space-y-6">
           <div className="os-card p-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-[var(--emerald-dim)] p-3">
+              <div className="rounded-pill bg-[var(--emerald-dim)] p-3">
                 <svg className="h-6 w-6 text-[color:var(--emerald-strong)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
@@ -685,13 +685,13 @@ export default function ContactImportClient({
           <div className="flex justify-end gap-3">
             <button
               onClick={handleReset}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)]"
             >
               Import more
             </button>
             <Link
               href="/crm/contacts"
-              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
             >
               View contacts
             </Link>

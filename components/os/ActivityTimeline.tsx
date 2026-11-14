@@ -112,7 +112,7 @@ export default function ActivityTimeline({
   )
 
   return (
-    <div className="rounded-[2rem] os-card p-6">
+    <div className="rounded-card os-card p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="os-section-title">Activity Log</h2>
@@ -126,14 +126,14 @@ export default function ActivityTimeline({
             if (showForm) resetForm()
             setShowForm((current) => !current)
           }}
-          className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+          className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
         >
           {showForm ? 'Cancel' : 'Log activity'}
         </button>
       </div>
 
       {nextOpenAction ? (
-        <div className="mt-4 rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3">
+        <div className="mt-4 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--amber-strong)]">
             Next Action
           </p>
@@ -150,7 +150,7 @@ export default function ActivityTimeline({
       {showForm ? (
         <form
           onSubmit={handleSubmit}
-          className="mt-4 space-y-4 rounded-[1.5rem] os-card-muted p-4"
+          className="mt-4 space-y-4 rounded-card os-card-muted p-4"
         >
           <div className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
@@ -193,7 +193,7 @@ export default function ActivityTimeline({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="os-textarea w-full rounded-[1.5rem]"
+              className="os-textarea w-full rounded-control"
             />
           </label>
 
@@ -221,7 +221,7 @@ export default function ActivityTimeline({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save activity'}
           </button>
@@ -231,7 +231,7 @@ export default function ActivityTimeline({
       {error ? <p className="mt-4 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
       {activities.length === 0 ? (
-        <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+        <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
           No activities logged yet.
         </div>
       ) : (
@@ -239,7 +239,7 @@ export default function ActivityTimeline({
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="rounded-3xl os-card-muted p-4"
+              className="rounded-card os-card-muted p-4"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -250,7 +250,7 @@ export default function ActivityTimeline({
                     <p className="font-medium text-[color:var(--text)]">
                       {activity.subject || activity.type}
                     </p>
-                    <span className="rounded-full bg-[var(--surface-3)] px-2 py-1 text-[11px] text-[color:var(--text-2)]">
+                    <span className="rounded-pill bg-[var(--surface-3)] px-2 py-1 text-[11px] text-[color:var(--text-2)]">
                       {activity.type}
                     </span>
                   </div>
@@ -263,7 +263,7 @@ export default function ActivityTimeline({
                     </p>
                   ) : null}
                   {activity.next_action ? (
-                    <div className="mt-3 rounded-xl border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-2">
+                    <div className="mt-3 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-2">
                       <p className="text-xs font-medium text-[color:var(--amber-strong)]">
                         Next: {activity.next_action}
                         {activity.next_action_date
@@ -276,7 +276,7 @@ export default function ActivityTimeline({
                 <button
                   type="button"
                   onClick={() => handleDelete(activity.id)}
-                  className="flex-shrink-0 rounded-full border border-[color:var(--red)] px-3 py-1 text-xs text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)]"
+                  className="flex-shrink-0 rounded-pill border border-[color:var(--red)] px-3 py-1 text-xs text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)]"
                 >
                   Delete
                 </button>

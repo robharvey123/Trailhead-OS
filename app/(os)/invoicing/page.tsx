@@ -26,7 +26,7 @@ const STATUS_VALUES = new Set<InvoiceStatus>(['draft', 'sent', 'part_paid', 'pai
 function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]) {
   if (invoice.paid_at || invoice.status === 'paid') {
     return (
-      <span className="rounded-full border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-3 py-1 text-xs font-medium text-[color:var(--emerald-strong)]">
+      <span className="rounded-pill border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-3 py-1 text-xs font-medium text-[color:var(--emerald-strong)]">
         Paid
       </span>
     )
@@ -34,7 +34,7 @@ function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]
 
   if (invoice.is_recurring) {
     return (
-      <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
+      <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
         Recurring
       </span>
     )
@@ -42,13 +42,13 @@ function getStripeState(invoice: Awaited<ReturnType<typeof getInvoices>>[number]
 
   if (invoice.stripe_payment_link) {
     return (
-      <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+      <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
         Link sent
       </span>
     )
   }
 
-  return <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--surface-3)]" />
+  return <span className="inline-block h-2.5 w-2.5 rounded-pill bg-[var(--surface-3)]" />
 }
 
 export default async function InvoicingPage({
@@ -104,14 +104,14 @@ export default async function InvoicingPage({
           <p className="os-eyebrow">Finance</p>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <h1 className="os-page-title">Invoicing</h1>
-            <span className="rounded-full border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-1 text-sm font-medium text-[color:var(--amber-strong)]">
+            <span className="rounded-pill border border-[color:var(--amber)] bg-[var(--amber-dim)] px-3 py-1 text-sm font-medium text-[color:var(--amber-strong)]">
               Outstanding {formatMoney(outstandingAmount, 'GBP')}
             </span>
           </div>
         </div>
         <Link
           href="/invoicing/new"
-          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           New invoice
         </Link>
@@ -129,7 +129,7 @@ export default async function InvoicingPage({
             <Link
               key={tab.value}
               href={href}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
+              className={`rounded-pill border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                   : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--border-light)] hover:text-[color:var(--text)]'
@@ -146,7 +146,7 @@ export default async function InvoicingPage({
 
       <div className="os-card p-6">
         {invoices.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+          <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No invoices in this view yet.
           </div>
         ) : (

@@ -24,7 +24,7 @@ export default function ProjectDetail({
           <ProjectStatusBadge status={project.status} />
           <Link
             href={`/projects/records/${project.id}/edit`}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
           >
             Edit
           </Link>
@@ -42,7 +42,7 @@ export default function ProjectDetail({
         {project.account ? (
           <Link
             href={`/crm/accounts/${project.account.id}`}
-            className="rounded-full border border-[color:var(--border)] px-2.5 py-1 text-[11px] font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+            className="rounded-pill border border-[color:var(--border)] px-2.5 py-1 text-[11px] font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
           >
             {project.account.name}
           </Link>
@@ -76,7 +76,7 @@ export default function ProjectDetail({
             ) : (
               <div className="mt-4 space-y-3">
                 {openTasks.map((task) => (
-                  <div key={task.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <div key={task.id} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <p className="font-medium text-[color:var(--text)]">{task.title}</p>
                     <p className="mt-1 text-sm text-[color:var(--text-2)]">
                       {task.phase_name ? `${task.phase_name} · ` : ''}{task.due_date ?? 'No due date'}
@@ -96,7 +96,7 @@ export default function ProjectDetail({
             ) : (
               <div className="mt-4 space-y-3">
                 {project.phases.map((phase) => (
-                  <div key={phase.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <div key={phase.id} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <p className="font-medium text-[color:var(--text)]">{phase.name}</p>
                     <p className="mt-1 text-sm text-[color:var(--text-2)]">
                       {phase.start_date ?? '—'} to {phase.end_date ?? '—'}
@@ -114,7 +114,7 @@ export default function ProjectDetail({
             ) : (
               <div className="mt-4 space-y-3">
                 {project.milestones.map((milestone) => (
-                  <div key={milestone.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <div key={milestone.id} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <p className="font-medium text-[color:var(--text)]">{milestone.name}</p>
                     <p className="mt-1 text-sm text-[color:var(--text-2)]">{milestone.date}</p>
                   </div>
@@ -133,7 +133,7 @@ export default function ProjectDetail({
                   <Link
                     key={contact.id}
                     href={`/crm/contacts/${contact.id}`}
-                    className="block rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4 transition hover:border-[color:var(--border-light)]"
+                    className="block rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4 transition hover:border-[color:var(--border-light)]"
                   >
                     <p className="font-medium text-[color:var(--text)]">{contact.name}</p>
                     <p className="mt-1 text-sm text-[color:var(--text-2)]">{contact.company ?? contact.email ?? 'No company set'}</p>
@@ -153,7 +153,7 @@ export default function ProjectDetail({
                   <Link
                     key={enquiry.id}
                     href={`/enquiries/${enquiry.id}`}
-                    className="block rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4 transition hover:border-[color:var(--border-light)]"
+                    className="block rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4 transition hover:border-[color:var(--border-light)]"
                   >
                     <p className="font-medium text-[color:var(--text)]">{enquiry.biz_name}</p>
                     <p className="mt-1 text-sm text-[color:var(--text-2)]">

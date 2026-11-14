@@ -55,7 +55,7 @@ export default function EndProjectDialog({
         <label className="block">
           <span className="field-label">Reason (optional)</span>
           <textarea
-            className="w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] min-h-[3rem] resize-y"
+            className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] min-h-[3rem] resize-y"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             aria-invalid={error ? true : undefined}

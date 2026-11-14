@@ -21,7 +21,7 @@ export default async function WorkspacesPage() {
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h2 className="text-lg font-semibold">Your workspaces</h2>
           <p className="mt-2 text-sm text-slate-300">
             Choose a workspace to view analytics or manage data.
@@ -33,7 +33,7 @@ export default async function WorkspacesPage() {
                 <Link
                   key={workspace.id}
                   href={`/analytics/${workspace.id}`}
-                  className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 px-4 py-3 text-sm transition hover:border-slate-700"
+                  className="flex items-center justify-between rounded-control border border-slate-800 bg-slate-950 px-4 py-3 text-sm transition hover:border-slate-700"
                 >
                   <span>{workspace.name}</span>
                   <span className="text-xs text-slate-400">
@@ -43,13 +43,13 @@ export default async function WorkspacesPage() {
               ))}
             </div>
           ) : (
-            <div className="mt-6 rounded-lg border border-dashed border-slate-700 p-6 text-sm text-slate-300">
+            <div className="mt-6 rounded-control border border-dashed border-slate-700 p-6 text-sm text-slate-300">
               No workspaces yet. Create one to start importing data.
             </div>
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h2 className="text-lg font-semibold">Create a workspace</h2>
           <p className="mt-2 text-sm text-slate-300">
             Workspaces isolate each brand and its customers.

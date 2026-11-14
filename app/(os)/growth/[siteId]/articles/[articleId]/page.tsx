@@ -82,7 +82,7 @@ export default async function GrowthArticleDetailPage({
           <form action={approveArticleAction.bind(null, site.id, article.id)}>
             <button
               type="submit"
-              className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+              className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
             >
               Approve article
             </button>
@@ -136,7 +136,7 @@ export default async function GrowthArticleDetailPage({
           <form action={retryDraftAction.bind(null, site.id, article.id)}>
             <button
               type="submit"
-              className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+              className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
             >
               Retry draft
             </button>
@@ -145,30 +145,30 @@ export default async function GrowthArticleDetailPage({
       </div>
 
       {voiceStaleWarning && article.status !== 'published' ? (
-        <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+        <div className="rounded-card border border-[var(--amber)]/40 bg-[var(--amber-dim)] px-4 py-3 text-sm text-[var(--amber-strong)] dark:border-[var(--amber)]/40 dark:bg-[var(--amber-dim)] dark:text-[var(--amber-strong)]">
           {voiceStaleWarning}
         </div>
       ) : null}
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
       {article.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           Draft failed: {article.error}
         </div>
       ) : null}
       {article.publish_error && article.status !== 'published' ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           Publish failed: {article.publish_error}
           {article.publish_branch ? (
-            <span className="mt-1 block text-red-600">
+            <span className="mt-1 block text-[var(--red-strong)]">
               Publishing again resumes the branch{' '}
               <code className="font-mono">{article.publish_branch}</code> rather than opening a
               second one.
@@ -271,7 +271,7 @@ export default async function GrowthArticleDetailPage({
           </article>
         </div>
       ) : !article.error ? (
-        <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           Drafting in progress — the drafting job runs every five minutes and you&apos;ll get a
           push when it&apos;s ready.
         </div>
@@ -282,7 +282,7 @@ export default async function GrowthArticleDetailPage({
           <summary className="cursor-pointer text-sm font-semibold text-[color:var(--text)]">
             Schema JSON-LD
           </summary>
-          <pre className="mt-3 overflow-x-auto rounded-2xl bg-[var(--surface-2)] p-4 text-xs text-[color:var(--text-2)]">
+          <pre className="mt-3 overflow-x-auto rounded-card bg-[var(--surface-2)] p-4 text-xs text-[color:var(--text-2)]">
             {JSON.stringify(article.schema_jsonld, null, 2)}
           </pre>
         </details>

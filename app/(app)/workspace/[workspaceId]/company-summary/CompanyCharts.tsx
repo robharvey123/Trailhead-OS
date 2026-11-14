@@ -38,7 +38,7 @@ const tooltipFormatter: Formatter<ValueType, NameType> = (value, name) => {
 
 export default function CompanyCharts({ data }: { data: CompanyChartDatum[] }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+    <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
       <h3 className="text-sm font-semibold text-slate-200">
         Top companies: shipped vs sell through
       </h3>

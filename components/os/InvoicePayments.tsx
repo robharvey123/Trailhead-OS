@@ -127,14 +127,14 @@ export default function InvoicePayments({
           <button
             type="button"
             onClick={() => openModal()}
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
           >
             Record payment
           </button>
         ) : null}
       </div>
 
-      <dl className="mt-4 grid grid-cols-3 gap-3 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4 text-sm">
+      <dl className="mt-4 grid grid-cols-3 gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4 text-sm">
         <div>
           <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Total</dt>
           <dd className="mt-1 font-medium text-[color:var(--text)]">{formatMoney(total, currency)}</dd>
@@ -193,7 +193,7 @@ export default function InvoicePayments({
 
       {recordOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,23,42,0.45)] px-4">
-          <div className="w-full max-w-md rounded-[2rem] border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+          <div className="w-full max-w-md rounded-card border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
             <h2 className="os-section-title">{editing ? 'Edit payment' : 'Record payment'}</h2>
             <div className="mt-5 grid gap-4">
               <label className="space-y-2">
@@ -224,7 +224,7 @@ export default function InvoicePayments({
               <button
                 type="button"
                 onClick={() => onRecordOpenChange(false)}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
               >
                 Cancel
               </button>
@@ -232,7 +232,7 @@ export default function InvoicePayments({
                 type="button"
                 onClick={() => void save()}
                 disabled={busy}
-                className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
               >
                 {busy ? 'Saving…' : editing ? 'Save changes' : 'Record payment'}
               </button>

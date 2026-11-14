@@ -210,7 +210,7 @@ export default function ContactDetailClient({
 
   return (
     <div className="space-y-6">
-      <div className="os-card rounded-[2rem] p-6">
+      <div className="os-card rounded-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="os-eyebrow">Contact</p>
@@ -226,7 +226,7 @@ export default function ContactDetailClient({
                   type="button"
                   onClick={saveChanges}
                   disabled={saving}
-                  className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+                  className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>
@@ -254,7 +254,7 @@ export default function ContactDetailClient({
                     })
                     setError(null)
                   }}
-                  className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+                  className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
                 >
                   Cancel
                 </button>
@@ -263,7 +263,7 @@ export default function ContactDetailClient({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+                className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
               >
                 Edit
               </button>
@@ -281,7 +281,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -289,7 +289,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.company}
                   onChange={(event) => setForm({ ...form, company: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -297,7 +297,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.email}
                   onChange={(event) => setForm({ ...form, email: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -305,7 +305,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.phone}
                   onChange={(event) => setForm({ ...form, phone: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -313,7 +313,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.role}
                   onChange={(event) => setForm({ ...form, role: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -322,7 +322,7 @@ export default function ContactDetailClient({
                   value={form.channel}
                   onChange={(event) => setForm({ ...form, channel: event.target.value })}
                   placeholder="e.g. Online Pouch Retailers"
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -331,7 +331,7 @@ export default function ContactDetailClient({
                   value={form.website}
                   onChange={(event) => setForm({ ...form, website: event.target.value })}
                   placeholder="e.g. example.com"
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2 md:col-span-2">
@@ -339,7 +339,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.address_line1}
                   onChange={(event) => setForm({ ...form, address_line1: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2 md:col-span-2">
@@ -347,7 +347,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.address_line2}
                   onChange={(event) => setForm({ ...form, address_line2: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -355,7 +355,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.city}
                   onChange={(event) => setForm({ ...form, city: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -363,7 +363,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.postcode}
                   onChange={(event) => setForm({ ...form, postcode: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2 md:col-span-2">
@@ -371,7 +371,7 @@ export default function ContactDetailClient({
                 <input
                   value={form.country}
                   onChange={(event) => setForm({ ...form, country: event.target.value })}
-                  className="os-input w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-input w-full rounded-control px-4 py-3 text-sm"
                 />
               </label>
               <label className="space-y-2">
@@ -379,7 +379,7 @@ export default function ContactDetailClient({
                 <select
                   value={form.workstream_id}
                   onChange={(event) => setForm({ ...form, workstream_id: event.target.value })}
-                  className="os-select w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-select w-full rounded-control px-4 py-3 text-sm"
                 >
                   <option value="">None</option>
                   {workstreams.map((workstream) => (
@@ -402,7 +402,7 @@ export default function ContactDetailClient({
                 <select
                   value={form.status}
                   onChange={(event) => setForm({ ...form, status: event.target.value as ContactStatus })}
-                  className="os-select w-full rounded-2xl px-4 py-3 text-sm"
+                  className="os-select w-full rounded-control px-4 py-3 text-sm"
                 >
                   {CONTACT_STATUSES.map((status) => (
                     <option key={status} value={status}>
@@ -483,7 +483,7 @@ export default function ContactDetailClient({
                         type="button"
                         onClick={saveChanges}
                         disabled={saving || !form.account_id}
-                        className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
+                        className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-60"
                       >
                         Link account
                       </button>
@@ -494,7 +494,7 @@ export default function ContactDetailClient({
                       <button
                         type="button"
                         onClick={() => setLinkingAccount(true)}
-                        className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+                        className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
                       >
                         Link to account
                       </button>
@@ -522,7 +522,7 @@ export default function ContactDetailClient({
       </div>
 
       {sourceEnquiryId ? (
-        <div className="rounded-[2rem] border border-[color:var(--accent)] bg-[var(--accent-dim)] p-6">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] p-6">
           <p className="text-xs uppercase tracking-[0.24em] text-[color:var(--accent-strong)]">Converted from enquiry</p>
           <Link
             href={`/enquiries/${sourceEnquiryId}`}
@@ -534,13 +534,13 @@ export default function ContactDetailClient({
       ) : null}
 
       {contact.account_id ? (
-        <section className="os-card rounded-[2rem] p-6">
+        <section className="os-card rounded-card p-6">
           <div>
             <h2 className="os-section-title">Engagements</h2>
             <p className="text-sm text-[color:var(--text-2)]">Engagements for {contact.account?.name ?? 'this contact’s account'} — synced automatically.</p>
           </div>
           {engagements.length === 0 ? (
-            <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+            <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
               No engagements on this account yet.
             </div>
           ) : (
@@ -562,7 +562,7 @@ export default function ContactDetailClient({
         </section>
       ) : null}
 
-      <section className="os-card rounded-[2rem] p-6">
+      <section className="os-card rounded-card p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="os-section-title">Projects</h2>
@@ -581,7 +581,7 @@ export default function ContactDetailClient({
         </div>
 
         {projects.length === 0 ? (
-          <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+          <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
             No projects on this contact or its account yet.
           </div>
         ) : (
@@ -608,7 +608,7 @@ export default function ContactDetailClient({
         )}
       </section>
 
-      <div className="os-card rounded-[2rem] p-6">
+      <div className="os-card rounded-card p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-[color:var(--text)]">Quotes</h2>
@@ -616,7 +616,7 @@ export default function ContactDetailClient({
           </div>
           <Link
             href={contact.account_id ? `/quotes/new?account_id=${contact.account_id}` : '/quotes/new'}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
           >
             New quote
           </Link>
@@ -628,7 +628,7 @@ export default function ContactDetailClient({
               <Link
                 key={quote.id}
                 href={`/quotes/${quote.id}`}
-                className="block rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4 transition hover:border-[color:var(--accent-strong)]"
+                className="block rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4 transition hover:border-[color:var(--accent-strong)]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -647,13 +647,13 @@ export default function ContactDetailClient({
             ))}
           </div>
         ) : (
-          <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+          <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
             No quotes linked to this contact yet.
           </div>
         )}
       </div>
 
-      <div className="os-card rounded-[2rem] p-6">
+      <div className="os-card rounded-card p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-[color:var(--text)]">Notes</h2>
@@ -666,7 +666,7 @@ export default function ContactDetailClient({
           onChange={(event) => setNotes(event.target.value)}
           onBlur={saveNotesOnBlur}
           rows={7}
-          className="os-textarea mt-4 w-full rounded-[1.5rem] px-4 py-3 text-sm"
+          className="os-textarea mt-4 w-full rounded-control px-4 py-3 text-sm"
         />
         {notesError ? <p className="mt-3 text-sm text-[color:var(--red-strong)]">{notesError}</p> : null}
       </div>
@@ -683,7 +683,7 @@ export default function ContactDetailClient({
       <MeetingsTimeline meetings={meetings} />
       <WhatsAppTimeline conversations={whatsappConversations} contactId={contact.id} accountId={contact.account_id} />
 
-      <div className="os-card rounded-[2rem] p-6">
+      <div className="os-card rounded-card p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-[color:var(--text)]">Emails</h2>
@@ -702,7 +702,7 @@ export default function ContactDetailClient({
         </div>
 
         {emailThreads.length === 0 ? (
-          <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-center text-sm text-[color:var(--text-3)]">
+          <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-center text-sm text-[color:var(--text-3)]">
             No email threads linked to this contact yet.
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
               <SyncMailButton />
@@ -744,7 +744,7 @@ export default function ContactDetailClient({
         />
       ) : null}
 
-      <div className="os-card rounded-[2rem] p-6">
+      <div className="os-card rounded-card p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-[color:var(--text)]">Linked tasks</h2>
@@ -756,13 +756,13 @@ export default function ContactDetailClient({
         </div>
 
         {linkedTasks.length === 0 ? (
-          <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
+          <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-8 text-sm text-[color:var(--text-3)]">
             No tasks are linked to this contact yet.
           </div>
         ) : (
           <div className="mt-4 space-y-3">
             {linkedTasks.map((task) => (
-              <div key={task.id} className="rounded-3xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <div key={task.id} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-medium text-[color:var(--text)]">{task.title}</p>

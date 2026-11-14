@@ -219,8 +219,8 @@ export default function TimeLedger({
               {hoursThisMonth.used.toFixed(1)}{included != null ? ` / ${included}h` : 'h'}
             </div>
             {included != null ? (
-              <div style={{ height: 5, background: 'var(--surface-3)', borderRadius: 999, marginTop: 6 }}>
-                <div style={{ width: `${Math.min(100, hoursThisMonth.pct)}%`, height: '100%', borderRadius: 999, background: hoursThisMonth.pct > 100 ? 'var(--red)' : hoursThisMonth.pct >= 80 ? 'var(--amber)' : 'var(--green)' }} />
+              <div style={{ height: 5, background: 'var(--surface-3)', borderRadius: 'var(--radius-pill)', marginTop: 6 }}>
+                <div style={{ width: `${Math.min(100, hoursThisMonth.pct)}%`, height: '100%', borderRadius: 'var(--radius-pill)', background: hoursThisMonth.pct > 100 ? 'var(--red)' : hoursThisMonth.pct >= 80 ? 'var(--amber)' : 'var(--green)' }} />
               </div>
             ) : null}
           </div>

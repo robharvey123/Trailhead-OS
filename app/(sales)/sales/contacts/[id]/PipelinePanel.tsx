@@ -46,7 +46,7 @@ export default function PipelinePanel({
   }
 
   const needsReason = moveTo === 'lost' || moveTo === 'disqualified'
-  const input = 'rounded-[5px] border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm outline-none focus:border-[var(--accent)]'
+  const input = 'rounded-control border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-sm outline-none focus:border-[var(--accent)]'
   const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]'
 
   return (

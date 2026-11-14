@@ -193,7 +193,7 @@ export default function MasterTaskKanban({
               key={column.id}
               onDrop={(event) => handleDrop(event, column.id)}
               onDragOver={handleDragOver}
-              className="os-card flex min-h-[28rem] w-[20rem] min-w-[20rem] flex-shrink-0 flex-col rounded-[2rem] p-4"
+              className="os-card flex min-h-[28rem] w-[20rem] min-w-[20rem] flex-shrink-0 flex-col rounded-card p-4"
             >
               <div className="flex items-start justify-between gap-3 border-b border-[color:var(--border)] pb-4">
                 <div>
@@ -202,14 +202,14 @@ export default function MasterTaskKanban({
                   </h2>
                   <p className="mt-1 text-xs text-[color:var(--text-3)]">{column.helper}</p>
                 </div>
-                <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs text-[color:var(--text-2)]">
+                <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs text-[color:var(--text-2)]">
                   {columnTasks.length}
                 </span>
               </div>
 
               <div className="mt-4 flex flex-1 flex-col gap-3">
                 {columnTasks.length === 0 ? (
-                  <div className="flex flex-1 items-center justify-center rounded-[1.5rem] border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 text-center text-sm text-[color:var(--text-2)]">
+                  <div className="flex flex-1 items-center justify-center rounded-card border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 text-center text-sm text-[color:var(--text-2)]">
                     Drop a task here
                   </div>
                 ) : (

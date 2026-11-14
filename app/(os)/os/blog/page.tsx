@@ -24,13 +24,13 @@ export default async function OsBlogPage() {
         </div>
         <Link
           href="/blog/new"
-          className="inline-flex items-center justify-center rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="inline-flex items-center justify-center rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           New post
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-[color:var(--border)] bg-white">
+      <div className="overflow-hidden rounded-card border border-[color:var(--border)] bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-[color:var(--border)] text-left">
             <thead className="bg-[var(--surface)] text-xs uppercase tracking-[0.2em] text-[color:var(--text-3)]">
@@ -60,7 +60,7 @@ export default async function OsBlogPage() {
                       {post.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--text-2)]"
+                          className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[color:var(--text-2)]"
                         >
                           {tag}
                         </span>
@@ -72,7 +72,7 @@ export default async function OsBlogPage() {
                   </td>
                   <td className="px-6 py-5">
                     <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                      className={`inline-flex rounded-pill px-3 py-1 text-xs font-semibold ${
                         post.published
                           ? 'bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]'
                           : 'bg-[var(--surface-2)] text-[color:var(--text-2)]'

@@ -49,13 +49,13 @@ export function KanbanBoard({ tasks, onSelectTask, onStatusChange }: KanbanBoard
         return (
           <div
             key={col.key}
-            className={`flex w-64 min-w-[16rem] flex-shrink-0 flex-col rounded-2xl border border-slate-800 ${col.color} p-3`}
+            className={`flex w-64 min-w-[16rem] flex-shrink-0 flex-col rounded-card border border-slate-800 ${col.color} p-3`}
             onDrop={(e) => handleDrop(e, col.key)}
             onDragOver={handleDragOver}
           >
             <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
               {col.label}
-              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-normal text-slate-500">
+              <span className="rounded-pill bg-white/10 px-2 py-0.5 text-[10px] font-normal text-slate-500">
                 {columnTasks.length}
               </span>
             </div>

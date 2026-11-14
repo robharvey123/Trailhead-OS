@@ -36,7 +36,7 @@ export default function DashboardCharts({
 }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h3 className="text-sm font-semibold text-slate-200">
           Monthly shipped vs sell out
         </h3>
@@ -78,7 +78,7 @@ export default function DashboardCharts({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h3 className="text-sm font-semibold text-slate-200">
           Cumulative channel stock build
         </h3>

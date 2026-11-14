@@ -59,9 +59,9 @@ export default function Attachment({ attachment }: { attachment: ChatAttachment 
         >
           {imgUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imgUrl} alt={attachment.file_name} loading="lazy" style={{ maxWidth: 320, maxHeight: 320, borderRadius: 10, border: '1px solid var(--border)', objectFit: 'cover' }} />
+            <img src={imgUrl} alt={attachment.file_name} loading="lazy" style={{ maxWidth: 320, maxHeight: 320, borderRadius: 'var(--radius-control)', border: '1px solid var(--border)', objectFit: 'cover' }} />
           ) : (
-            <div style={{ width: 200, height: 140, borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
+            <div style={{ width: 200, height: 140, borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)' }} />
           )}
         </button>
         {lightbox && imgUrl ? (
@@ -73,7 +73,7 @@ export default function Attachment({ attachment }: { attachment: ChatAttachment 
             style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imgUrl} alt={attachment.file_name} style={{ maxWidth: '95vw', maxHeight: '90vh', borderRadius: 8 }} />
+            <img src={imgUrl} alt={attachment.file_name} style={{ maxWidth: '95vw', maxHeight: '90vh', borderRadius: 'var(--radius-control)' }} />
           </div>
         ) : null}
       </>
@@ -81,7 +81,7 @@ export default function Attachment({ attachment }: { attachment: ChatAttachment 
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--surface-2)', maxWidth: 320 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 'var(--radius-control)', border: '1px solid var(--border)', background: 'var(--surface-2)', maxWidth: 320 }}>
       <span style={{ fontSize: 20, flex: 'none' }}>{iconFor(attachment.mime_type)}</span>
       <span style={{ minWidth: 0, flex: 1 }}>
         <span style={{ display: 'block', fontSize: 13, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{attachment.file_name}</span>

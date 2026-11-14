@@ -37,7 +37,7 @@ export default function DashboardKPIs({ kpis, workspaceId }: { kpis: ModuleKPIs;
       <h2 className="mb-3 text-sm font-medium uppercase tracking-[0.15em] text-slate-400">Module Overview</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
-          <Link key={c.label} href={c.href} className={`rounded-xl border border-slate-800 bg-slate-900/70 p-4 transition hover:bg-slate-900 ${c.color ? `border-l-4 ${c.color}` : ''}`}>
+          <Link key={c.label} href={c.href} className={`rounded-card border border-slate-800 bg-slate-900/70 p-4 transition hover:bg-slate-900 ${c.color ? `border-l-4 ${c.color}` : ''}`}>
             <p className="text-[11px] uppercase tracking-wider text-slate-400">{c.label}</p>
             <p className="mt-1 text-lg font-semibold">{c.value}</p>
             <p className="mt-0.5 text-xs text-slate-500">{c.sub}</p>

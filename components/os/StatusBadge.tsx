@@ -86,7 +86,7 @@ export default function StatusBadge({
 
   return (
     <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${classes} ${className}`.trim()}
+      className={`inline-flex rounded-pill border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${classes} ${className}`.trim()}
     >
       {formatStatusLabel(status)}
     </span>

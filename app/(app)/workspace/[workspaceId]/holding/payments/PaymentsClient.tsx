@@ -64,14 +64,14 @@ export default function PaymentsClient({ workspaceId }: { workspaceId: string })
         <button
           onClick={handleSync}
           disabled={syncing}
-          className="rounded-lg bg-violet-600 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-violet-500 disabled:opacity-50"
+          className="rounded-control bg-violet-600 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-violet-500 disabled:opacity-50"
         >
           {syncing ? 'Syncing…' : 'Sync from Stripe'}
         </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All statuses</option>
           <option value="succeeded">Succeeded</option>
           <option value="pending">Pending</option>
@@ -82,21 +82,21 @@ export default function PaymentsClient({ workspaceId }: { workspaceId: string })
 
       {/* Summary Cards */}
       <section className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Succeeded</p>
           <p className="mt-3 text-2xl font-semibold text-emerald-400">
             {fmtCurrency(payments.filter((p) => p.status === 'succeeded').reduce((s, p) => s + p.amount, 0))}
           </p>
           <p className="mt-1 text-xs text-slate-500">{payments.filter((p) => p.status === 'succeeded').length} payments</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Pending</p>
           <p className="mt-3 text-2xl font-semibold text-amber-400">
             {fmtCurrency(payments.filter((p) => p.status === 'pending').reduce((s, p) => s + p.amount, 0))}
           </p>
           <p className="mt-1 text-xs text-slate-500">{payments.filter((p) => p.status === 'pending').length} payments</p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Total Payments</p>
           <p className="mt-3 text-2xl font-semibold text-white">{payments.length}</p>
         </div>
@@ -105,10 +105,10 @@ export default function PaymentsClient({ workspaceId }: { workspaceId: string })
       {/* Table */}
       {loading ? (
         <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-xl border border-slate-800 bg-slate-900/70" />)}
+          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-card border border-slate-800 bg-slate-900/70" />)}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">

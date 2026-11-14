@@ -48,7 +48,7 @@ export default async function ProjectsPage({
         </div>
         <Link
           href="/projects/new"
-          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           New project
         </Link>
@@ -60,11 +60,11 @@ export default async function ProjectsPage({
           name="search"
           defaultValue={search}
           placeholder="Search by project name or summary"
-          className="os-input rounded-2xl px-4 py-3 text-sm"
+          className="os-input rounded-control px-4 py-3 text-sm"
         />
         <button
           type="submit"
-          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           Apply
         </button>
@@ -87,7 +87,7 @@ export default async function ProjectsPage({
             <Link
               key={tab.value}
               href={href}
-              className={`rounded-full border px-4 py-2 text-sm transition ${
+              className={`rounded-pill border px-4 py-2 text-sm transition ${
                 active
                   ? 'border-[color:var(--border)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                   : 'border-[color:var(--border)] text-[color:var(--text-2)] hover:border-[color:var(--border-light)] hover:text-[color:var(--text)]'
@@ -100,7 +100,7 @@ export default async function ProjectsPage({
       </div>
 
       {projects.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No projects match this view yet.
         </div>
       ) : (

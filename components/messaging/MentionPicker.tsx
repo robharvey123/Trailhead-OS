@@ -34,7 +34,7 @@ export default function MentionPicker({
         zIndex: 40,
         background: 'var(--surface)',
         border: '1px solid var(--border)',
-        borderRadius: 10,
+        borderRadius: 'var(--radius-control)',
         padding: 4,
         boxShadow: '0 12px 32px rgba(0,0,0,0.22)',
       }}
@@ -57,7 +57,7 @@ export default function MentionPicker({
             textAlign: 'left',
             border: 'none',
             cursor: 'pointer',
-            borderRadius: 6,
+            borderRadius: 'var(--radius-control)',
             padding: '6px 10px',
             fontSize: 13,
             color: 'var(--text)',

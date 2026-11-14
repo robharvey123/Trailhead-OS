@@ -44,7 +44,7 @@ export default async function TemplatesPage() {
               const p = preview(t.body_html ?? '')
               const placeholder = (t.body_html ?? '').includes('[Replace') || (t.subject ?? '').includes('[Replace')
               return (
-                <div key={t.id} className="os-card rounded-[1.5rem] p-5">
+                <div key={t.id} className="os-card rounded-card p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-white">{t.name}</p>
                     {placeholder ? <span className="meta-chip" style={{ color: 'var(--amber-strong)' }}>Placeholder copy</span> : null}
@@ -52,7 +52,7 @@ export default async function TemplatesPage() {
                   <p className="mt-1 text-xs text-[var(--text-2)]">Subject: {t.subject || '—'}</p>
                   <details className="mt-3">
                     <summary className="cursor-pointer text-xs text-[var(--text-2)]">Preview (sample contact)</summary>
-                    <div className="mt-2 rounded-xl border border-[var(--border)] bg-white p-3 text-sm text-slate-800">
+                    <div className="mt-2 rounded-card border border-[var(--border)] bg-white p-3 text-sm text-[var(--text)]">
                       {p.ok ? <SafeEmailHtml html={p.html} /> : <span className="text-[color:var(--red-strong)]">{p.error}</span>}
                     </div>
                   </details>

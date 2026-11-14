@@ -23,7 +23,7 @@ export default function ProfileSettingsForm({
           id="full_name"
           name="full_name"
           defaultValue={fullName}
-          className="mt-2 w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[color:var(--accent)]"
+          className="mt-2 w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[color:var(--accent)]"
         />
       </div>
       <div>
@@ -40,7 +40,7 @@ export default function ProfileSettingsForm({
           {state.error ? <span className="text-[color:var(--red)]">{state.error}</span> : null}
           {state.success ? <span className="text-[color:var(--green)]">Saved.</span> : null}
         </div>
-        <button type="submit" disabled={pending} className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
+        <button type="submit" disabled={pending} className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
           {pending ? 'Saving…' : 'Save'}
         </button>
       </div>

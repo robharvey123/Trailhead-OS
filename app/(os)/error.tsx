@@ -39,13 +39,13 @@ export default function OsError({
           <button
             type="button"
             onClick={reset}
-            className="rounded-xl bg-[var(--accent-strong)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent-strong)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
           >
             Try again
           </button>
           <Link
             href="/dashboard"
-            className="rounded-xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
           >
             Back to dashboard
           </Link>

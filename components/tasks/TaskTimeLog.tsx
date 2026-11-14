@@ -83,7 +83,7 @@ export default function TaskTimeLog({
     setBusy(false); setOpen(false); router.refresh()
   }
 
-  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   return (
     <div style={{ display: 'grid', gap: 12 }}>

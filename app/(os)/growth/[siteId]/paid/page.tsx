@@ -64,7 +64,7 @@ export default async function GrowthPaidPage({
   ])
   const wastedGroups = groupWastedTerms(wasted)
   const inputClass =
-    'rounded-2xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+    'rounded-control border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
 
   const tabs = [
     { key: 'search', label: `Search · Google${googleAccounts.length ? '' : ' (not linked)'}` },
@@ -93,13 +93,13 @@ export default async function GrowthPaidPage({
         ) : null}
       </div>
 
-      {resolved?.error ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{resolved.error}</div> : null}
+      {resolved?.error ? <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">{resolved.error}</div> : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">{resolved.notice}</div>
       ) : null}
 
       {tracking.length > 0 ? (
-        <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           <strong>Conversion tracking check.</strong>{' '}
           {tracking.map((t) => `${t.campaign} (${t.platform}) spent ${money(t.spend14d, currency)} in 14 days with zero conversions`).join(' · ')}. Almost always a broken tag, not bad performance.
         </div>
@@ -116,7 +116,7 @@ export default async function GrowthPaidPage({
                 projects to {money(p.projectedMonthEnd, currency)}
                 {p.target ? ` vs ${money(p.target, currency)} target` : ' — set a monthly media budget in settings for pacing alerts'}
                 {p.variancePct !== null ? (
-                  <span className={`ml-2 rounded-full px-2 py-0.5 text-[11px] font-medium ${Math.abs(p.variancePct) >= 15 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                  <span className={`ml-2 rounded-pill px-2 py-0.5 text-[11px] font-medium ${Math.abs(p.variancePct) >= 15 ? 'bg-[var(--amber-dim)] text-[var(--amber-strong)]' : 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]'}`}>
                     {p.variancePct > 0 ? '+' : ''}
                     {p.variancePct}%
                   </span>
@@ -132,7 +132,7 @@ export default async function GrowthPaidPage({
           <Link
             key={t.key}
             href={`/growth/${site.id}/paid?tab=${t.key}`}
-            className={`rounded-full border px-3 py-1 ${tab === t.key ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}
+            className={`rounded-pill border px-3 py-1 ${tab === t.key ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]' : 'border-[color:var(--border)] text-[color:var(--text-2)]'}`}
           >
             {t.label}
           </Link>
@@ -150,7 +150,7 @@ export default async function GrowthPaidPage({
               <li key={a.id}>
                 {a.platform === 'google' ? 'Google Ads' : 'Meta'} · {a.name ?? a.external_id} ({a.external_id})
                 {a.last_synced_at ? ` · synced ${new Date(a.last_synced_at).toLocaleString('en-GB')}` : ' · never synced'}
-                {a.last_error ? <span className="ml-2 text-red-600">{a.last_error.slice(0, 160)}</span> : null}
+                {a.last_error ? <span className="ml-2 text-[var(--red-strong)]">{a.last_error.slice(0, 160)}</span> : null}
               </li>
             ))}
           </ul>
@@ -321,7 +321,7 @@ export default async function GrowthPaidPage({
                         <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{k.clicks}</td>
                         <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{k.conversions}</td>
                         <td className="py-2 pr-3 text-right tabular-nums text-[color:var(--text-2)]">{k.quality_score ?? '—'}</td>
-                        <td className={`py-2 pr-3 text-xs ${k.qs_landing_page === 'BELOW_AVERAGE' ? 'text-red-600' : 'text-[color:var(--text-3)]'}`}>{k.qs_landing_page?.toLowerCase().replace('_', ' ') ?? '—'}</td>
+                        <td className={`py-2 pr-3 text-xs ${k.qs_landing_page === 'BELOW_AVERAGE' ? 'text-[var(--red-strong)]' : 'text-[color:var(--text-3)]'}`}>{k.qs_landing_page?.toLowerCase().replace('_', ' ') ?? '—'}</td>
                         <td className="py-2 text-right tabular-nums text-[color:var(--text-2)]">{k.impression_share !== null ? `${Math.round(Number(k.impression_share) * 100)}%` : '—'}</td>
                       </tr>
                     ))}
@@ -429,12 +429,12 @@ export default async function GrowthPaidPage({
                   </table>
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-[color:var(--border)] p-4">
+                  <div className="rounded-card border border-[color:var(--border)] p-4">
                     <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Equivalent media value of organic</p>
                     <p className="mt-1 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(blended.equivalentMediaValue, currency)}</p>
                     <p className="mt-1 text-xs text-[color:var(--text-3)]">What this month&apos;s organic clicks would have cost at your Ads CPCs (DataForSEO CPC where never bought). A model, not revenue.</p>
                   </div>
-                  <div className="rounded-2xl border border-[color:var(--border)] p-4">
+                  <div className="rounded-card border border-[color:var(--border)] p-4">
                     <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Blended CAC (paid channels)</p>
                     <p className="mt-1 text-2xl font-semibold tabular-nums text-[color:var(--text)]">{money(blended.blendedCac, currency)}</p>
                     <p className="mt-1 text-xs text-[color:var(--text-3)]">Google and Meta attribute differently and can double count; treat as directional.</p>

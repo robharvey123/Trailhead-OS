@@ -302,7 +302,7 @@ export default function InsightsClient({
 
   return (
     <div className="space-y-8">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold">Report controls</h2>
@@ -315,7 +315,7 @@ export default function InsightsClient({
               type="button"
               onClick={generateReport}
               disabled={isGenerating}
-              className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950 disabled:opacity-70"
+              className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950 disabled:opacity-70"
             >
               {isGenerating ? 'Generating...' : 'Generate summary'}
             </button>
@@ -323,7 +323,7 @@ export default function InsightsClient({
               type="button"
               onClick={downloadPdf}
               disabled={isDownloading}
-              className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-200 disabled:opacity-70"
+              className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-200 disabled:opacity-70"
             >
               {isDownloading ? 'Preparing...' : 'Download PDF'}
             </button>
@@ -331,7 +331,7 @@ export default function InsightsClient({
               type="button"
               onClick={sendEmail}
               disabled={isSending}
-              className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-200 disabled:opacity-70"
+              className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-200 disabled:opacity-70"
             >
               {isSending ? 'Sending...' : 'Send email'}
             </button>
@@ -339,7 +339,7 @@ export default function InsightsClient({
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <div className="rounded-card border border-slate-800 bg-slate-950/60 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Report type
             </p>
@@ -365,7 +365,7 @@ export default function InsightsClient({
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <div className="rounded-card border border-slate-800 bg-slate-950/60 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Financials
             </p>
@@ -384,7 +384,7 @@ export default function InsightsClient({
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+          <div className="rounded-card border border-slate-800 bg-slate-950/60 p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Recipients
             </p>
@@ -424,12 +424,12 @@ export default function InsightsClient({
                 value={newRecipient}
                 onChange={(event) => setNewRecipient(event.target.value)}
                 placeholder="name@company.com"
-                className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+                className="flex-1 rounded-control border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-200"
               />
               <button
                 type="button"
                 onClick={addRecipient}
-                className="rounded-lg border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200"
+                className="rounded-control border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200"
               >
                 Add
               </button>
@@ -437,7 +437,7 @@ export default function InsightsClient({
                 type="button"
                 onClick={saveRecipients}
                 disabled={isSavingRecipients}
-                className="rounded-lg bg-white/90 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950 disabled:opacity-70"
+                className="rounded-control bg-white/90 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950 disabled:opacity-70"
               >
                 {isSavingRecipients ? 'Saving...' : 'Save'}
               </button>
@@ -453,7 +453,7 @@ export default function InsightsClient({
         {metrics.map((metric) => (
           <div
             key={metric.label}
-            className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4"
+            className="rounded-card border border-slate-800 bg-slate-900/70 p-4"
           >
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               {metric.label}
@@ -463,14 +463,14 @@ export default function InsightsClient({
         ))}
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">AI summary</h2>
         <p className="mt-2 text-sm text-slate-300">
           Use Generate summary to refresh the narrative for this period.
         </p>
         {reportMessage ? (
           <div
-            className={`mt-4 rounded-xl px-4 py-3 text-sm ${
+            className={`mt-4 rounded-card px-4 py-3 text-sm ${
               reportMessage.tone === 'error'
                 ? 'border border-rose-900/50 bg-rose-950/30 text-rose-200'
                 : 'border border-emerald-900/50 bg-emerald-950/30 text-emerald-200'
@@ -527,7 +527,7 @@ export default function InsightsClient({
 
       <DashboardCharts data={data.chartData} />
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Monthly summary</h2>
         <p className="mt-2 text-sm text-slate-300">
           Sell in, promo, shipments, sell out, and variance by month.
@@ -547,7 +547,7 @@ export default function InsightsClient({
         currencySymbol={data.currencySymbol}
       />
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Inbound vs outbound by company</h2>
         <p className="mt-2 text-sm text-slate-300">
           Sell-in volumes mapped to sell-out companies with channel stock build.

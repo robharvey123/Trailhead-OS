@@ -248,14 +248,14 @@ export default function NewContactForm({
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+          className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
         <button
           type="button"
           onClick={() => router.push('/crm/contacts')}
-          className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
+          className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent-strong)]"
         >
           Cancel
         </button>

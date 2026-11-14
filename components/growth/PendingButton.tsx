@@ -23,8 +23,8 @@ export function PendingButton({
 
   const base =
     variant === 'primary'
-      ? 'rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]'
-      : 'rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]'
+      ? 'rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]'
+      : 'rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]'
 
   return (
     <button

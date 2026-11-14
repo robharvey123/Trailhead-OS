@@ -117,47 +117,47 @@ export default function CreditNotesClient({
           <h1 className="mt-1 text-2xl font-semibold">Credit Notes</h1>
           <p className="mt-1 text-sm text-slate-400">Total: {fmtCur(totals.total)} &middot; Issued: {fmtCur(totals.issued)}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Credit Note</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Credit Note</button>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
           <option value="all">All Statuses</option>
           {CREDIT_NOTE_STATUSES.map((s) => <option key={s} value={s}>{CREDIT_NOTE_STATUS_LABELS[s]}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-card border border-slate-800 bg-slate-900/80 p-6 space-y-4">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Credit Note' : 'New Credit Note'}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div><label className="block text-xs text-slate-400 mb-1">Credit Note #</label><input value={cnNumber} onChange={(e) => setCnNumber(e.target.value)} required className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+            <div><label className="block text-xs text-slate-400 mb-1">Credit Note #</label><input value={cnNumber} onChange={(e) => setCnNumber(e.target.value)} required className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
             <div><label className="block text-xs text-slate-400 mb-1">Related Invoice</label>
-              <select value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 <option value="">None</option>
                 {invoices.map((inv) => <option key={inv.id} value={inv.id}>{inv.invoice_number}</option>)}
               </select>
             </div>
             <div><label className="block text-xs text-slate-400 mb-1">Account</label>
-              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 <option value="">—</option>
                 {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div><label className="block text-xs text-slate-400 mb-1">Direction</label>
-              <select value={direction} onChange={(e) => setDirection(e.target.value as InvoiceDirection)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={direction} onChange={(e) => setDirection(e.target.value as InvoiceDirection)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 <option value="outgoing">Outgoing</option><option value="incoming">Incoming</option>
               </select>
             </div>
-            <div><label className="block text-xs text-slate-400 mb-1">Issue Date</label><input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
-            <div><label className="block text-xs text-slate-400 mb-1">Tax Rate (%)</label><input type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+            <div><label className="block text-xs text-slate-400 mb-1">Issue Date</label><input type="date" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+            <div><label className="block text-xs text-slate-400 mb-1">Tax Rate (%)</label><input type="number" step="0.01" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
             <div><label className="block text-xs text-slate-400 mb-1">Currency</label>
-              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
+              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm">
                 {supportedCurrencies.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
-          <div><label className="block text-xs text-slate-400 mb-1">Reason</label><input value={reason} onChange={(e) => setReason(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+          <div><label className="block text-xs text-slate-400 mb-1">Reason</label><input value={reason} onChange={(e) => setReason(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
 
           {/* Line Items */}
           <div>
@@ -167,9 +167,9 @@ export default function CreditNotesClient({
             </div>
             {lineItems.map((item) => (
               <div key={item.id} className="mb-2 grid grid-cols-12 gap-2 items-center">
-                <input value={item.description} onChange={(e) => updateLineItem(item.id, 'description', e.target.value)} placeholder="Description" className="col-span-5 rounded-lg border border-slate-700 bg-slate-800/60 px-2 py-1 text-sm" />
-                <input type="number" value={item.quantity} onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-slate-700 bg-slate-800/60 px-2 py-1 text-sm text-right" />
-                <input type="number" step="0.01" value={item.unit_price} onChange={(e) => updateLineItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-slate-700 bg-slate-800/60 px-2 py-1 text-sm text-right" />
+                <input value={item.description} onChange={(e) => updateLineItem(item.id, 'description', e.target.value)} placeholder="Description" className="col-span-5 rounded-control border border-slate-700 bg-slate-800/60 px-2 py-1 text-sm" />
+                <input type="number" value={item.quantity} onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-control border border-slate-700 bg-slate-800/60 px-2 py-1 text-sm text-right" />
+                <input type="number" step="0.01" value={item.unit_price} onChange={(e) => updateLineItem(item.id, 'unit_price', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-control border border-slate-700 bg-slate-800/60 px-2 py-1 text-sm text-right" />
                 <span className="col-span-2 text-right text-sm">{fmtCur(item.quantity * item.unit_price)}</span>
                 <button type="button" onClick={() => removeLineItem(item.id)} className="col-span-1 text-xs text-rose-400">&times;</button>
               </div>
@@ -183,22 +183,22 @@ export default function CreditNotesClient({
             )}
           </div>
 
-          <div><label className="block text-xs text-slate-400 mb-1">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
+          <div><label className="block text-xs text-slate-400 mb-1">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-sm" /></div>
           <div className="flex gap-3">
-            <button type="submit" disabled={saving} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white disabled:opacity-50">{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</button>
-            <button type="button" onClick={() => { resetForm(); setShowForm(false) }} className="rounded-lg border border-slate-700 px-4 py-1.5 text-xs uppercase tracking-wide text-slate-400 hover:text-white">Cancel</button>
+            <button type="submit" disabled={saving} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white disabled:opacity-50">{saving ? 'Saving…' : editingId ? 'Update' : 'Create'}</button>
+            <button type="button" onClick={() => { resetForm(); setShowForm(false) }} className="rounded-control border border-slate-700 px-4 py-1.5 text-xs uppercase tracking-wide text-slate-400 hover:text-white">Cancel</button>
           </div>
         </form>
       )}
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-700 py-16">
+        <div className="flex flex-col items-center justify-center rounded-card border border-dashed border-slate-700 py-16">
           <div className="mb-3 text-4xl text-slate-600">📋</div>
           <p className="text-slate-400">No credit notes yet</p>
           <button onClick={() => { resetForm(); setShowForm(true) }} className="mt-3 text-xs text-blue-400 hover:underline">Create your first credit note</button>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-800 text-left text-xs uppercase tracking-wider text-slate-400">

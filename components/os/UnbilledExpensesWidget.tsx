@@ -74,7 +74,7 @@ export default function UnbilledExpensesWidget({
   if (loading) {
     return (
       <div className="os-card p-4">
-        <div className="h-4 w-40 animate-pulse rounded bg-[var(--surface-2)]" />
+        <div className="h-4 w-40 animate-pulse rounded-control bg-[var(--surface-2)]" />
       </div>
     )
   }
@@ -84,7 +84,7 @@ export default function UnbilledExpensesWidget({
   }
 
   return (
-    <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 space-y-3">
+    <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-[color:var(--amber-strong)]">
           {expenses.length} unbilled expense{expenses.length !== 1 ? 's' : ''} totalling{' '}
@@ -95,7 +95,7 @@ export default function UnbilledExpensesWidget({
             type="checkbox"
             checked={selectedIds.size === expenses.length && expenses.length > 0}
             onChange={toggleAll}
-            className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+            className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
           />
           Select all
         </label>
@@ -105,13 +105,13 @@ export default function UnbilledExpensesWidget({
         {expenses.map((expense) => (
           <label
             key={expense.id}
-            className="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-[var(--surface-2)]"
+            className="flex items-center gap-3 rounded-card px-2 py-1.5 transition hover:bg-[var(--surface-2)]"
           >
             <input
               type="checkbox"
               checked={selectedIds.has(expense.id)}
               onChange={() => toggleExpense(expense.id)}
-              className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+              className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
             />
             <span className="flex-1 text-sm text-[color:var(--text-2)]">{expense.description}</span>
             <span className="text-xs text-[color:var(--text-3)]">{expense.date}</span>
@@ -130,7 +130,7 @@ export default function UnbilledExpensesWidget({
           <button
             type="button"
             onClick={handleAddToInvoice}
-            className="rounded-xl bg-[var(--amber-dim)] px-4 py-2 text-sm font-medium text-[color:var(--amber-strong)] transition hover:bg-[var(--amber)]"
+            className="rounded-card bg-[var(--amber-dim)] px-4 py-2 text-sm font-medium text-[color:var(--amber-strong)] transition hover:bg-[var(--amber)]"
           >
             Add to invoice
           </button>

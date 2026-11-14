@@ -57,7 +57,7 @@ export default function FiltersBar({
     <form
       method="get"
       action={basePath}
-      className="flex flex-wrap items-end gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-4 text-sm"
+      className="flex flex-wrap items-end gap-3 rounded-card border border-slate-800 bg-slate-900/70 p-4 text-sm"
     >
       <label className="flex flex-col gap-2">
         <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
@@ -67,7 +67,7 @@ export default function FiltersBar({
           name="brand"
           defaultValue={brand}
           placeholder="Brand"
-          className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+          className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
         />
       </label>
       {showCompanySelect ? (
@@ -78,7 +78,7 @@ export default function FiltersBar({
           <select
             name="company"
             defaultValue={company}
-            className="min-w-[180px] rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="min-w-[180px] rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
           >
             <option value="">All companies</option>
             {companyOptions.map((value) => (
@@ -97,7 +97,7 @@ export default function FiltersBar({
           <select
             name="start"
             defaultValue={start}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
           >
             <option value="">All months</option>
             {monthOptions.map((month) => (
@@ -111,7 +111,7 @@ export default function FiltersBar({
             type="month"
             name="start"
             defaultValue={start}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
           />
         )}
       </label>
@@ -123,7 +123,7 @@ export default function FiltersBar({
           <select
             name="end"
             defaultValue={end}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
           >
             <option value="">All months</option>
             {monthOptions.map((month) => (
@@ -137,19 +137,19 @@ export default function FiltersBar({
             type="month"
             name="end"
             defaultValue={end}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
           />
         )}
       </label>
       <button
         type="submit"
-        className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950"
+        className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950"
       >
         Apply
       </button>
       <Link
         href={basePath}
-        className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300"
+        className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300"
       >
         Reset
       </Link>

@@ -107,27 +107,27 @@ export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts
           <h1 className="mt-1 text-2xl font-semibold">Purchase Orders</h1>
           <p className="mt-1 text-sm text-slate-400">{filtered.length} orders &middot; Total: {fmtCurrency(totalValue)}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New PO</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New PO</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All statuses</option>
           {PO_STATUSES.map((s) => <option key={s} value={s}>{PO_STATUS_LABELS[s]}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit PO' : 'New Purchase Order'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-slate-400">PO # *</label><input required value={poNumber} onChange={(e) => setPONumber(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Vendor</label><select value={vendorId} onChange={(e) => setVendorId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as POStatus)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{PO_STATUSES.map((s) => <option key={s} value={s}>{PO_STATUS_LABELS[s]}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Order Date</label><input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Expected Delivery</label><input type="date" value={expectedDate} onChange={(e) => setExpectedDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Shipping Cost</label><input type="number" step="0.01" value={shippingCost} onChange={(e) => setShippingCost(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">PO # *</label><input required value={poNumber} onChange={(e) => setPONumber(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Vendor</label><select value={vendorId} onChange={(e) => setVendorId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as POStatus)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{PO_STATUSES.map((s) => <option key={s} value={s}>{PO_STATUS_LABELS[s]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Order Date</label><input type="date" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Expected Delivery</label><input type="date" value={expectedDate} onChange={(e) => setExpectedDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Shipping Cost</label><input type="number" step="0.01" value={shippingCost} onChange={(e) => setShippingCost(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -136,25 +136,25 @@ export default function PurchaseOrdersClient({ workspaceId, initialPOs, accounts
               </div>
               {lineItems.map((item) => (
                 <div key={item.id} className="mb-2 grid grid-cols-12 gap-2 items-center">
-                  <input placeholder="Description" value={item.description} onChange={(e) => updateLineItem(item.id, 'description', e.target.value)} className="col-span-4 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-                  <input placeholder="SKU" value={item.sku || ''} onChange={(e) => updateLineItem(item.id, 'sku', e.target.value)} className="col-span-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-                  <input type="number" placeholder="Qty" value={item.quantity} onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
-                  <input type="number" step="0.01" placeholder="Cost" value={item.unit_cost} onChange={(e) => updateLineItem(item.id, 'unit_cost', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input placeholder="Description" value={item.description} onChange={(e) => updateLineItem(item.id, 'description', e.target.value)} className="col-span-4 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input placeholder="SKU" value={item.sku || ''} onChange={(e) => updateLineItem(item.id, 'sku', e.target.value)} className="col-span-2 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input type="number" placeholder="Qty" value={item.quantity} onChange={(e) => updateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input type="number" step="0.01" placeholder="Cost" value={item.unit_cost} onChange={(e) => updateLineItem(item.id, 'unit_cost', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                   <span className="col-span-1 text-right text-sm text-slate-300">{fmtCurrency(item.quantity * item.unit_cost)}</span>
                   <button type="button" onClick={() => removeLineItem(item.id)} className="col-span-1 text-xs text-rose-400 hover:text-rose-300">×</button>
                 </div>
               ))}
             </div>
-            <div><label className="mb-1 block text-xs text-slate-400">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
             <th className="px-4 py-3">PO #</th><th className="px-4 py-3">Vendor</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Expected</th><th className="px-4 py-3">Items</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"></th>

@@ -54,14 +54,14 @@ export default function InternalWeeklyClient({
           <Link
             href={atOldest ? '#' : `/reports/weekly?week=${data.offsetWeeks - 1}`}
             aria-disabled={atOldest}
-            className={`rounded-full border border-[color:var(--border)] px-3 py-2 text-sm ${atOldest ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
+            className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${atOldest ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
           >
             ‹ Earlier
           </Link>
           {!isCurrent ? (
             <Link
               href="/reports/weekly"
-              className="rounded-full border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+              className="rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]"
             >
               This week
             </Link>
@@ -69,7 +69,7 @@ export default function InternalWeeklyClient({
           <Link
             href={isCurrent ? '#' : `/reports/weekly?week=${data.offsetWeeks + 1}`}
             aria-disabled={isCurrent}
-            className={`rounded-full border border-[color:var(--border)] px-3 py-2 text-sm ${isCurrent ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
+            className={`rounded-pill border border-[color:var(--border)] px-3 py-2 text-sm ${isCurrent ? 'pointer-events-none opacity-40' : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'}`}
           >
             Later ›
           </Link>
@@ -83,7 +83,7 @@ export default function InternalWeeklyClient({
       </div>
 
       {data.engagements.length === 0 ? (
-        <div className="rounded-[2rem] border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No time logged against an engagement this week.
         </div>
       ) : (
@@ -148,7 +148,7 @@ function FragmentRow({
             <span className={`text-[color:var(--text-3)] transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
             <span className="font-medium text-[color:var(--text)]">{eng.engagement_name}</span>
             {!eng.is_billable ? (
-              <span className="rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[color:var(--text-3)]">internal</span>
+              <span className="rounded-pill border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-[color:var(--text-3)]">internal</span>
             ) : null}
           </button>
         </td>

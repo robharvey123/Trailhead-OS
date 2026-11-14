@@ -20,7 +20,7 @@ interface BlogPostEditorProps {
 }
 
 const inputClassName =
-  'w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[var(--accent-dim)]'
+  'w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none transition placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:ring-4 focus:ring-[var(--accent-dim)]'
 
 export default function BlogPostEditor({
   mode,
@@ -131,7 +131,7 @@ export default function BlogPostEditor({
               href={publishedUrl}
               target={isLocalhost ? undefined : '_blank'}
               rel={isLocalhost ? undefined : 'noreferrer'}
-              className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+              className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
             >
               View on site →
             </Link>
@@ -139,7 +139,7 @@ export default function BlogPostEditor({
           <button
             type="button"
             onClick={() => setPreview((current) => !current)}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)]"
           >
             {preview ? 'Hide preview' : 'Show preview'}
           </button>
@@ -215,12 +215,12 @@ export default function BlogPostEditor({
               />
             </div>
 
-            <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+            <label className="flex items-center gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
               <input
                 type="checkbox"
                 checked={published}
                 onChange={(event) => setPublished(event.target.checked)}
-                className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--bg)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+                className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--bg)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
               />
               Published
             </label>
@@ -249,7 +249,7 @@ export default function BlogPostEditor({
               />
 
               {preview ? (
-                <div className="min-h-[460px] rounded-3xl border border-[color:var(--border)] bg-white p-6">
+                <div className="min-h-[460px] rounded-card border border-[color:var(--border)] bg-white p-6">
                   <div className={blogMarkdownClassName}>
                     {/* Same plugins as the public post page, so the preview
                         matches what gets published. */}
@@ -264,13 +264,13 @@ export default function BlogPostEditor({
         </div>
 
         {error ? (
-          <p className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
+          <p className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
             {error}
           </p>
         ) : null}
 
         {savedMessage ? (
-          <p className="rounded-2xl border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3 text-sm text-[color:var(--emerald-strong)]">
+          <p className="rounded-card border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3 text-sm text-[color:var(--emerald-strong)]">
             {savedMessage}
           </p>
         ) : null}
@@ -278,7 +278,7 @@ export default function BlogPostEditor({
         <button
           type="submit"
           disabled={saving}
-          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+          className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>

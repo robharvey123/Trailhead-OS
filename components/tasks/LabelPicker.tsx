@@ -21,7 +21,7 @@ export default function LabelPicker({
   const [query, setQuery] = useState('')
 
   const input =
-    'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+    'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   function add(raw: string) {
     const l = raw.trim()
@@ -62,7 +62,7 @@ export default function LabelPicker({
           fontSize: 11,
           fontWeight: 600,
           padding: '3px 9px',
-          borderRadius: 999,
+          borderRadius: 'var(--radius-pill)',
           cursor: 'pointer',
           background: opts.active ? c.solidBg : c.bg,
           color: opts.active ? '#fff' : c.fg,
@@ -111,7 +111,7 @@ export default function LabelPicker({
                 fontSize: 11,
                 fontWeight: 600,
                 padding: '3px 9px',
-                borderRadius: 999,
+                borderRadius: 'var(--radius-pill)',
                 cursor: 'pointer',
                 background: 'transparent',
                 color: 'var(--text-3)',

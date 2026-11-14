@@ -91,42 +91,42 @@ export default function CatalogClient({ workspaceId, initialProducts, baseCurren
           <h1 className="mt-1 text-2xl font-semibold">Catalog</h1>
           <p className="mt-1 text-sm text-slate-400">{filtered.length} products</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Product</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Product</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <input placeholder="Search products…" value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500 w-64" />
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <input placeholder="Search products…" value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 placeholder:text-slate-500 w-64" />
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All statuses</option>
           {PRODUCT_STATUSES.map((s) => <option key={s} value={s}>{PRODUCT_STATUS_LABELS[s]}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Product' : 'New Product'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">SKU *</label><input required value={sku} onChange={(e) => setSku(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Brand</label><input value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Category</label><input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Unit Cost</label><input type="number" step="0.01" value={unitCost} onChange={(e) => setUnitCost(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Unit Price</label><input type="number" step="0.01" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as ProductStatus)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{PRODUCT_STATUSES.map((s) => <option key={s} value={s}>{PRODUCT_STATUS_LABELS[s]}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Barcode</label><input value={barcode} onChange={(e) => setBarcode(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Tags (comma-separated)</label><input value={tags} onChange={(e) => setTags(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">SKU *</label><input required value={sku} onChange={(e) => setSku(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Brand</label><input value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Category</label><input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Unit Cost</label><input type="number" step="0.01" value={unitCost} onChange={(e) => setUnitCost(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Unit Price</label><input type="number" step="0.01" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as ProductStatus)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{PRODUCT_STATUSES.map((s) => <option key={s} value={s}>{PRODUCT_STATUS_LABELS[s]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Barcode</label><input value={barcode} onChange={(e) => setBarcode(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Tags (comma-separated)</label><input value={tags} onChange={(e) => setTags(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             </div>
-            <div><label className="mb-1 block text-xs text-slate-400">Description</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Description</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
             <th className="px-4 py-3">Name</th><th className="px-4 py-3">SKU</th><th className="px-4 py-3">Brand</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Cost</th><th className="px-4 py-3">Price</th><th className="px-4 py-3">Margin</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"></th>

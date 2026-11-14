@@ -10,7 +10,7 @@ import type { EngagementTaskPriority } from '@/lib/types'
 import type { RoadmapExtraction, RoadmapMilestone, RoadmapTask } from '@/lib/roadmap/schema'
 import { commitRoadmapImport } from './actions'
 
-const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1.5 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-2.5 py-1.5 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
 export default function RoadmapReviewClient({
   projectId,
@@ -101,7 +101,7 @@ export default function RoadmapReviewClient({
 
             <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
               {m.tasks.map((t, ti) => (
-                <div key={ti} style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 10 }}>
+                <div key={ti} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: 10 }}>
                   {readOnly ? (
                     <div>
                       <div className="td-name" style={{ fontSize: 13 }}>{t.title}</div>

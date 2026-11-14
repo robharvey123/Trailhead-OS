@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { updateGrowthBudgetsAction, updateSeoSiteAction } from '../../actions'
 
 const INPUT_CLASS =
-  'w-full rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  'w-full rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
 
 export default async function GrowthSiteSettingsPage({
   params,
@@ -44,12 +44,12 @@ export default async function GrowthSiteSettingsPage({
       </div>
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
@@ -103,7 +103,7 @@ export default async function GrowthSiteSettingsPage({
             className={`mt-1.5 ${INPUT_CLASS}`}
           />
         </label>
-        <fieldset className="rounded-2xl border border-[color:var(--border)] p-4">
+        <fieldset className="rounded-card border border-[color:var(--border)] p-4">
           <legend className="px-1 text-sm font-semibold text-[color:var(--text)]">Publishing</legend>
           <label className="block text-sm">
             <span className="text-[color:var(--text-2)]">CMS</span>
@@ -221,7 +221,7 @@ export default async function GrowthSiteSettingsPage({
         </div>
         <button
           type="submit"
-          className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+          className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
         >
           Save settings
         </button>
@@ -255,7 +255,7 @@ export default async function GrowthSiteSettingsPage({
         </div>
         <button
           type="submit"
-          className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+          className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
         >
           Save budgets
         </button>

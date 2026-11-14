@@ -166,13 +166,13 @@ export default function ProjectMilestonePanel({
                 placeholder="Milestone title"
               />
             </div>
-            <button type="button" onClick={onClose} className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-2)]">
+            <button type="button" onClick={onClose} className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[color:var(--text-2)]">
               Close
             </button>
           </div>
 
           <div className="mt-4 flex items-center gap-2">
-            <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getMilestoneStatusClasses(status)}`}>
+            <span className={`inline-flex rounded-pill border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getMilestoneStatusClasses(status)}`}>
               {status}
             </span>
             <span className="text-xs text-[color:var(--text-2)]">{dueDate ? formatTaskDate(dueDate) : 'No due date'}</span>
@@ -187,7 +187,7 @@ export default function ProjectMilestonePanel({
                 type="date"
                 value={dueDate}
                 onChange={(event) => setDueDate(event.target.value)}
-                className="w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
             </label>
 
@@ -196,7 +196,7 @@ export default function ProjectMilestonePanel({
               <select
                 value={status}
                 onChange={(event) => setStatus(event.target.value as ProjectMilestone['status'])}
-                className="w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -213,19 +213,19 @@ export default function ProjectMilestonePanel({
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={6}
-              className="w-full rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+              className="w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
             />
           </label>
 
           <label className="space-y-2 text-sm text-[color:var(--text-2)]">
             <span>Colour</span>
-            <div className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
-              <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} className="h-10 w-16 rounded border border-[color:var(--border)] bg-transparent" />
+            <div className="flex items-center gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+              <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} className="h-10 w-16 rounded-control border border-[color:var(--border)] bg-transparent" />
               <span className="text-sm text-[color:var(--text)]">{colour}</span>
             </div>
           </label>
 
-          <div className="rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+          <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-[color:var(--text)]">Linked tasks</p>
               <span className="text-xs text-[color:var(--text-2)]">{linkedTasks.length} linked</span>
@@ -235,7 +235,7 @@ export default function ProjectMilestonePanel({
             ) : (
               <div className="mt-3 space-y-3">
                 {linkedTasks.map((task) => (
-                  <div key={task.id} className="rounded-2xl border border-[color:var(--border)] bg-white px-3 py-3">
+                  <div key={task.id} className="rounded-card border border-[color:var(--border)] bg-white px-3 py-3">
                     <p className="text-sm font-medium text-[color:var(--text)]">{task.title}</p>
                     <p className="mt-1 text-xs text-[color:var(--text-2)]">{task.status.replace('_', ' ')} {task.due_date ? `· ${formatTaskDate(task.due_date)}` : ''}</p>
                   </div>
@@ -247,10 +247,10 @@ export default function ProjectMilestonePanel({
           {error ? <p className="text-sm text-[color:var(--red-strong)]">{error}</p> : null}
 
           <div className="flex justify-end gap-3 border-t border-[color:var(--border)] pt-5">
-            <button type="button" onClick={onClose} className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+            <button type="button" onClick={onClose} className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)]">
               Cancel
             </button>
-            <button type="button" onClick={() => void handleSave()} disabled={saving || !title.trim() || !dueDate} className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-bold text-white disabled:opacity-60">
+            <button type="button" onClick={() => void handleSave()} disabled={saving || !title.trim() || !dueDate} className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-bold text-white disabled:opacity-60">
               {saving ? 'Saving...' : milestone ? 'Save milestone' : 'Create milestone'}
             </button>
           </div>

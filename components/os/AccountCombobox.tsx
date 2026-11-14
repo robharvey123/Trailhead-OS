@@ -18,7 +18,7 @@ interface AccountComboboxProps {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  'w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
 const labelClass =
   'mb-1 block text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]'
 
@@ -105,7 +105,7 @@ export default function AccountCombobox({ label, value, selectedName, onChange }
       />
 
       {open ? (
-        <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-[color:var(--border)] bg-white shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
+        <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-card border border-[color:var(--border)] bg-white shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
           {loading ? (
             <p className="px-3 py-2 text-sm text-[color:var(--text-3)]">Searching…</p>
           ) : results.length > 0 ? (

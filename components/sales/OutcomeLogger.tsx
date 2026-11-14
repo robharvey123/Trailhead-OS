@@ -86,7 +86,7 @@ export default function OutcomeLogger({
     })
   }
 
-  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]'
   const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[color:var(--text-3)]'
 
   return (
@@ -94,7 +94,7 @@ export default function OutcomeLogger({
       <div role="group" aria-label="Outcome" className="flex flex-wrap gap-1.5">
         {OUTCOME_CODES.map((c) => {
           const active = code === c
-          const tone = POSITIVE.has(c) ? 'border-emerald-300' : NEGATIVE.has(c) ? 'border-rose-300' : 'border-[var(--border)]'
+          const tone = POSITIVE.has(c) ? 'border-[var(--emerald)]/40' : NEGATIVE.has(c) ? 'border-[var(--red)]/40' : 'border-[var(--border)]'
           return (
             <button
               key={c}
@@ -106,7 +106,7 @@ export default function OutcomeLogger({
                 setError(null)
                 setDone(null)
               }}
-              className={`tap rounded-md border px-2.5 py-1.5 text-xs font-semibold transition ${tone} ${
+              className={`tap rounded-control border px-2.5 py-1.5 text-xs font-semibold transition ${tone} ${
                 active ? 'bg-[var(--accent-strong)] text-white' : 'bg-[var(--surface)] text-[color:var(--text)] hover:bg-[var(--surface-2)]'
               }`}
             >

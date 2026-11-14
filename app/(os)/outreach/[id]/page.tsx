@@ -50,7 +50,7 @@ export default async function CampaignDetailPage({
   ])
   const isRunning = campaign.status === 'running'
   const userEmail = userData?.user?.email ?? ''
-  const input = 'os-input rounded-xl px-3 py-2 text-sm'
+  const input = 'os-input rounded-control px-3 py-2 text-sm'
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -84,14 +84,14 @@ export default async function CampaignDetailPage({
         </div>
 
         {errorMsg ? (
-          <div className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] p-4 text-sm text-[color:var(--red-strong)]">⚠ {errorMsg}</div>
+          <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] p-4 text-sm text-[color:var(--red-strong)]">⚠ {errorMsg}</div>
         ) : null}
         {testSentTo ? (
-          <div className="rounded-2xl border border-[color:var(--green)] bg-[var(--green-dim)] p-4 text-sm text-[color:var(--green-strong)]">✓ Test email sent to {testSentTo}.</div>
+          <div className="rounded-card border border-[color:var(--green)] bg-[var(--green-dim)] p-4 text-sm text-[color:var(--green-strong)]">✓ Test email sent to {testSentTo}.</div>
         ) : null}
 
         {/* Schedule editor */}
-        <div className="os-card rounded-[2rem] p-6">
+        <div className="os-card rounded-card p-6">
           <h2 className="text-lg font-semibold text-white">Schedule</h2>
           <p className="mt-1 text-sm text-[var(--text-2)]">Editable any time — a change takes effect on the next tick, no pause needed.</p>
           <form action={updateCampaignScheduleAction} className="mt-4 space-y-4">
@@ -123,7 +123,7 @@ export default async function CampaignDetailPage({
         </div>
 
         {/* Steps */}
-        <div className="os-card rounded-[2rem] p-6">
+        <div className="os-card rounded-card p-6">
           <h2 className="text-lg font-semibold text-white">Sequence</h2>
           {isRunning ? (
             <p className="mt-1 text-sm text-[color:var(--amber-strong)]">Steps are locked while the campaign is running — recipients hold a step position that would shift onto the wrong email. Pause to edit.</p>
@@ -175,7 +175,7 @@ export default async function CampaignDetailPage({
         </div>
 
         {/* Send test */}
-        <div className="os-card rounded-[2rem] p-6">
+        <div className="os-card rounded-card p-6">
           <h2 className="text-lg font-semibold text-white">Send test</h2>
           {steps.length === 0 ? (
             <p className="mt-2 text-sm text-[var(--text-2)]">Add a step first — there’s nothing to render yet.</p>
@@ -211,7 +211,7 @@ export default async function CampaignDetailPage({
         </div>
 
         {/* Recipients */}
-        <div className="os-card rounded-[2rem] p-6">
+        <div className="os-card rounded-card p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-white">Recipients ({campaign.stats?.recipients ?? recipients.length})</h2>
             <div className="flex flex-wrap gap-1">

@@ -125,12 +125,12 @@ export default function CommissionClient({ workspaceId }: { workspaceId: string 
       </header>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-slate-800 bg-slate-900/50 p-1 w-fit">
+      <div className="flex gap-1 rounded-control border border-slate-800 bg-slate-900/50 p-1 w-fit">
         {(['rates', 'earnings'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${
+            className={`rounded-control px-4 py-1.5 text-sm font-medium transition ${
               tab === t ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -143,58 +143,58 @@ export default function CommissionClient({ workspaceId }: { workspaceId: string 
       {tab === 'rates' && (
         <div className="space-y-6">
           <div className="flex justify-end">
-            <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Rate</button>
+            <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Rate</button>
           </div>
 
           {showForm && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+            <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
               <h2 className="text-lg font-semibold">{editingId ? 'Edit Rate' : 'New Commission Rate'}</h2>
               <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <label className="mb-1 block text-xs text-slate-400">Stream *</label>
-                    <select required value={streamId} onChange={(e) => setStreamId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+                    <select required value={streamId} onChange={(e) => setStreamId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                       <option value="">Select stream</option>
                       {commissionStreams.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-slate-400">Source Workspace ID *</label>
-                    <input required value={sourceWorkspaceId} onChange={(e) => setSourceWorkspaceId(e.target.value)} placeholder="Workspace UUID" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                    <input required value={sourceWorkspaceId} onChange={(e) => setSourceWorkspaceId(e.target.value)} placeholder="Workspace UUID" className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-slate-400">Brand *</label>
-                    <input required value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                    <input required value={brand} onChange={(e) => setBrand(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-slate-400">Type</label>
-                    <select value={commissionType} onChange={(e) => setCommissionType(e.target.value as CommissionType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+                    <select value={commissionType} onChange={(e) => setCommissionType(e.target.value as CommissionType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                       <option value="percentage">Percentage</option>
                       <option value="fixed_per_unit">Fixed per unit</option>
                     </select>
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-slate-400">Rate {commissionType === 'percentage' ? '(%)' : '(£/unit)'}</label>
-                    <input type="number" step="0.01" value={rate} onChange={(e) => setRate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                    <input type="number" step="0.01" value={rate} onChange={(e) => setRate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="mb-1 block text-xs text-slate-400">From</label>
-                      <input type="date" required value={effectiveFrom} onChange={(e) => setEffectiveFrom(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                      <input type="date" required value={effectiveFrom} onChange={(e) => setEffectiveFrom(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                     </div>
                     <div>
                       <label className="mb-1 block text-xs text-slate-400">To</label>
-                      <input type="date" value={effectiveTo} onChange={(e) => setEffectiveTo(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                      <input type="date" value={effectiveTo} onChange={(e) => setEffectiveTo(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                     </div>
                   </div>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs text-slate-400">Notes</label>
-                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                 </div>
                 <div className="flex gap-2">
-                  <button type="submit" disabled={saving} className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-50">{editingId ? 'Update' : 'Create'}</button>
-                  <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+                  <button type="submit" disabled={saving} className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-50">{editingId ? 'Update' : 'Create'}</button>
+                  <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
                 </div>
               </form>
             </div>
@@ -202,10 +202,10 @@ export default function CommissionClient({ workspaceId }: { workspaceId: string 
 
           {loadingRates ? (
             <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-2xl border border-slate-800 bg-slate-900/70" />)}
+              {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 animate-pulse rounded-card border border-slate-800 bg-slate-900/70" />)}
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-800">
+            <div className="overflow-x-auto rounded-card border border-slate-800">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -249,18 +249,18 @@ export default function CommissionClient({ workspaceId }: { workspaceId: string 
         <div className="space-y-6">
           {loadingEarnings ? (
             <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 animate-pulse rounded-2xl border border-slate-800 bg-slate-900/70" />)}
+              {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-20 animate-pulse rounded-card border border-slate-800 bg-slate-900/70" />)}
             </div>
           ) : (
             <>
               {/* Summary */}
               {earningsSummary && (
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                  <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Total Earned</p>
                     <p className="mt-3 text-2xl font-semibold text-emerald-400">{fmtCurrency(earningsSummary.total_earned)}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                  <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400">By Brand</p>
                     <div className="mt-3 space-y-1">
                       {earningsSummary.by_brand.map((b) => (
@@ -271,7 +271,7 @@ export default function CommissionClient({ workspaceId }: { workspaceId: string 
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                  <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400">By Month</p>
                     <div className="mt-3 space-y-1">
                       {earningsSummary.by_month.slice(-6).map((m) => (
@@ -286,7 +286,7 @@ export default function CommissionClient({ workspaceId }: { workspaceId: string 
               )}
 
               {/* Earnings Table */}
-              <div className="overflow-x-auto rounded-2xl border border-slate-800">
+              <div className="overflow-x-auto rounded-card border border-slate-800">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">

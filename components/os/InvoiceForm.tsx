@@ -552,7 +552,7 @@ export default function InvoiceForm({
         </label>
 
         {isForeign ? (
-          <div className="md:col-span-2 rounded-[1.25rem] border border-[color:var(--border)] bg-[color:var(--surface-2)] p-4">
+          <div className="md:col-span-2 rounded-card border border-[color:var(--border)] bg-[color:var(--surface-2)] p-4">
             <p className="text-sm font-medium text-[color:var(--text)]">Exchange rate</p>
             <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-[color:var(--text-2)]">
@@ -563,7 +563,7 @@ export default function InvoiceForm({
                 type="button"
                 onClick={() => void fetchRate()}
                 disabled={fetchingRate}
-                className="rounded-xl border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
+                className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text)] transition hover:border-[color:var(--accent-strong)] disabled:opacity-50"
               >
                 {fetchingRate ? 'Fetching…' : 'Refresh rate (Wise)'}
               </button>
@@ -648,10 +648,10 @@ export default function InvoiceForm({
                 className="sr-only"
               />
               <div
-                className={`h-6 w-11 rounded-full transition-colors ${isRecurring ? 'bg-[var(--accent)]' : 'bg-[var(--surface-3)]'}`}
+                className={`h-6 w-11 rounded-pill transition-colors ${isRecurring ? 'bg-[var(--accent)]' : 'bg-[var(--surface-3)]'}`}
               />
               <div
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
+                className={`absolute top-0.5 h-5 w-5 rounded-pill bg-white shadow-[var(--shadow-sm)] transition-transform ${isRecurring ? 'translate-x-5' : 'translate-x-0.5'}`}
               />
             </div>
             <span className="text-sm text-[color:var(--text-2)]">Recurring invoice</span>
@@ -666,7 +666,7 @@ export default function InvoiceForm({
                     key={interval}
                     type="button"
                     onClick={() => setRecurringInterval(interval)}
-                    className={`rounded-2xl border px-4 py-2 text-sm transition-colors ${
+                    className={`rounded-card border px-4 py-2 text-sm transition-colors ${
                       recurringInterval === interval
                         ? 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                         : 'border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
@@ -684,7 +684,7 @@ export default function InvoiceForm({
         </div>
       </div>
 
-      <div className="os-card-muted rounded-[1.75rem] p-4">
+      <div className="os-card-muted rounded-card p-4">
         <div>
           <h2 className="os-section-title">Bill to</h2>
           <p className="mt-1 text-sm text-[color:var(--text-2)]">
@@ -776,7 +776,7 @@ export default function InvoiceForm({
         </div>
 
         {nonUkVatHint ? (
-          <div className="mt-4 rounded-[1.5rem] border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
+          <div className="mt-4 rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
             <p>Non-UK client. Consider 0% VAT with a reverse charge note.</p>
             {vatNote ? (
               <label className="mt-2 block space-y-1">
@@ -790,7 +790,7 @@ export default function InvoiceForm({
                   setVatNote(RC_NOTE)
                   setVatRate('0')
                 }}
-                className="mt-2 rounded-xl border border-[color:var(--amber-strong)] px-3 py-1.5 text-xs font-medium transition hover:bg-[var(--amber-dim)]"
+                className="mt-2 rounded-card border border-[color:var(--amber-strong)] px-3 py-1.5 text-xs font-medium transition hover:bg-[var(--amber-dim)]"
               >
                 Set 0% VAT + reverse charge note
               </button>
@@ -820,7 +820,7 @@ export default function InvoiceForm({
         />
       )}
 
-      <div className="os-card-muted rounded-[1.75rem] p-4">
+      <div className="os-card-muted rounded-card p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="os-section-title">Line items</h2>
@@ -831,7 +831,7 @@ export default function InvoiceForm({
             onClick={() => {
               setLineItems((current) => [...current, createEmptyLineItem()])
             }}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
           >
             Add line item
           </button>
@@ -839,14 +839,14 @@ export default function InvoiceForm({
 
         <div className="mt-4 space-y-3">
           {lineItems.length === 0 ? (
-            <div className="rounded-[1.5rem] border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6 text-center text-sm text-[color:var(--text-3)]">
+            <div className="rounded-card border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-6 text-center text-sm text-[color:var(--text-3)]">
               Add a line item, or pull unbilled time and expenses from the account above.
             </div>
           ) : null}
           {lineItems.map((item) => (
             <div
               key={item.id}
-              className="grid gap-3 rounded-3xl border border-[color:var(--border)] bg-white p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
+              className="grid gap-3 rounded-card border border-[color:var(--border)] bg-white p-4 md:grid-cols-[minmax(0,1fr)_90px_140px_140px_auto]"
             >
               <input
                 value={item.description}
@@ -854,7 +854,7 @@ export default function InvoiceForm({
                   updateLineItem(item.id, { description: event.target.value })
                 }
                 placeholder="Description"
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
               <input
                 type="number"
@@ -864,7 +864,7 @@ export default function InvoiceForm({
                 onChange={(event) =>
                   updateLineItem(item.id, { qty: Number(event.target.value) })
                 }
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
               <input
                 type="number"
@@ -876,15 +876,15 @@ export default function InvoiceForm({
                     unit_price: Number(event.target.value),
                   })
                 }
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
+                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)]"
               />
-              <div className="flex items-center rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+              <div className="flex items-center rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
                 {formatMoney(item.qty * item.unit_price, 'GBP')}
               </div>
               <button
                 type="button"
                 onClick={() => removeLineItem(item.id)}
-                className="rounded-2xl border border-[color:var(--red)] px-4 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)]"
+                className="rounded-card border border-[color:var(--red)] px-4 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)]"
               >
                 Remove
               </button>
@@ -904,7 +904,7 @@ export default function InvoiceForm({
           />
         </label>
 
-        <div className="os-card-muted rounded-[1.75rem] p-5">
+        <div className="os-card-muted rounded-card p-5">
           <h2 className="os-section-title">Invoice summary</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div className="flex items-center justify-between gap-4">
@@ -920,7 +920,7 @@ export default function InvoiceForm({
               <dd className="text-lg font-semibold text-[color:var(--text)]">{formatMoney(totals.total, 'GBP')}</dd>
             </div>
             {isForeign ? (
-              <div className="flex items-center justify-between gap-4 rounded-[1rem] bg-[color:var(--accent-dim)] px-3 py-2">
+              <div className="flex items-center justify-between gap-4 rounded-card bg-[color:var(--accent-dim)] px-3 py-2">
                 <dt className="text-sm font-medium text-[color:var(--text)]">
                   Client billed{fxQuote ? ` · 1 GBP = ${fxQuote} ${currency}` : ''}
                 </dt>
@@ -942,14 +942,14 @@ export default function InvoiceForm({
               type="button"
               onClick={() => submitInvoice('edit')}
               disabled={savingAs !== null}
-              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'edit' ? 'Saving...' : 'Save'}
             </button>
             <button
               type="button"
               onClick={() => router.push(`/invoicing/${initialInvoice.id}`)}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             >
               Cancel
             </button>
@@ -960,7 +960,7 @@ export default function InvoiceForm({
               type="button"
               onClick={() => submitInvoice('draft')}
               disabled={savingAs !== null}
-              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
             </button>
@@ -968,7 +968,7 @@ export default function InvoiceForm({
               type="button"
               onClick={() => submitInvoice('sent')}
               disabled={savingAs !== null}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
             >
               {savingAs === 'sent' ? 'Saving...' : 'Mark as sent'}
             </button>

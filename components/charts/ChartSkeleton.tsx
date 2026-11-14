@@ -21,10 +21,10 @@ export default function ChartSkeleton({
       {Array.from({ length: cards }).map((_, index) => (
         <div
           key={index}
-          className="animate-pulse rounded-2xl border border-slate-800 bg-slate-900/70 p-6"
+          className="animate-pulse rounded-card border border-slate-800 bg-slate-900/70 p-6"
         >
-          <div className="h-4 w-48 rounded bg-slate-800" />
-          <div className={`mt-4 rounded-xl bg-slate-800/60 ${tall ? 'h-72' : 'h-64'}`} />
+          <div className="h-4 w-48 rounded-control bg-slate-800" />
+          <div className={`mt-4 rounded-card bg-slate-800/60 ${tall ? 'h-72' : 'h-64'}`} />
         </div>
       ))}
     </div>

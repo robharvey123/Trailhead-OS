@@ -92,35 +92,35 @@ export default function ContentClient({ workspaceId, initialContent, campaigns }
           <h1 className="mt-1 text-2xl font-semibold">Content Calendar</h1>
           <p className="mt-1 text-sm text-slate-400">{content.length} piece{content.length !== 1 ? 's' : ''} of content</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Content</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Content</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex rounded-lg border border-slate-700 text-sm">
+        <div className="flex rounded-control border border-slate-700 text-sm">
           {(['calendar', 'list'] as const).map((m) => (
-            <button key={m} onClick={() => setViewMode(m)} className={`px-3 py-1.5 capitalize transition ${viewMode === m ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200'} ${m === 'calendar' ? 'rounded-l-lg' : 'rounded-r-lg'}`}>{m}</button>
+            <button key={m} onClick={() => setViewMode(m)} className={`px-3 py-1.5 capitalize transition ${viewMode === m ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200'} ${m === 'calendar' ? 'rounded-l-control' : 'rounded-r-control'}`}>{m}</button>
           ))}
         </div>
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All statuses</option>
           {CONTENT_STATUSES.map((s) => <option key={s} value={s}>{CONTENT_STATUS_LABELS[s]}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Content' : 'New Content'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div><label className="mb-1 block text-xs text-slate-400">Title *</label><input required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-            <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={contentType} onChange={(e) => setContentType(e.target.value as ContentType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CONTENT_TYPES.map((t) => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}</select></div>
-            <div><label className="mb-1 block text-xs text-slate-400">Channel</label><select value={channel} onChange={(e) => setChannel(e.target.value as ContentChannel)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{CONTENT_CHANNELS.map((c) => <option key={c} value={c}>{CONTENT_CHANNEL_LABELS[c]}</option>)}</select></div>
-            <div><label className="mb-1 block text-xs text-slate-400">Campaign</label><select value={campaignId} onChange={(e) => setCampaignId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-            <div><label className="mb-1 block text-xs text-slate-400">Scheduled Date</label><input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-            <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as ContentStatus)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CONTENT_STATUSES.map((s) => <option key={s} value={s}>{CONTENT_STATUS_LABELS[s]}</option>)}</select></div>
-            <div className="sm:col-span-2"><label className="mb-1 block text-xs text-slate-400">Body / Copy</label><textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Title *</label><input required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Type</label><select value={contentType} onChange={(e) => setContentType(e.target.value as ContentType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CONTENT_TYPES.map((t) => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}</select></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Channel</label><select value={channel} onChange={(e) => setChannel(e.target.value as ContentChannel)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{CONTENT_CHANNELS.map((c) => <option key={c} value={c}>{CONTENT_CHANNEL_LABELS[c]}</option>)}</select></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Campaign</label><select value={campaignId} onChange={(e) => setCampaignId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Scheduled Date</label><input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as ContentStatus)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{CONTENT_STATUSES.map((s) => <option key={s} value={s}>{CONTENT_STATUS_LABELS[s]}</option>)}</select></div>
+            <div className="sm:col-span-2"><label className="mb-1 block text-xs text-slate-400">Body / Copy</label><textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="flex gap-2 sm:col-span-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
@@ -134,12 +134,12 @@ export default function ContentClient({ workspaceId, initialContent, campaigns }
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{date === 'unscheduled' ? 'Unscheduled' : new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</h3>
               <div className="flex flex-col gap-2">
                 {items.map((c) => (
-                  <div key={c.id} className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3">
+                  <div key={c.id} className="flex items-center gap-4 rounded-card border border-slate-800 bg-slate-900/50 px-4 py-3">
                     <div className="flex-1">
                       <p className="text-sm font-medium">{c.title}</p>
                       <p className="text-xs text-slate-400">{c.content_type} {c.channel ? `· ${CONTENT_CHANNEL_LABELS[c.channel]}` : ''} {c.campaign_id ? <>{' · '}<Link href={`/workspace/${workspaceId}/campaigns`} className="hover:text-white hover:underline">{campaignMap.get(c.campaign_id)}</Link></> : ''}</p>
                     </div>
-                    <span className="rounded-full border border-slate-700 px-2 py-0.5 text-[10px] uppercase">{CONTENT_STATUS_LABELS[c.status]}</span>
+                    <span className="rounded-pill border border-slate-700 px-2 py-0.5 text-[10px] uppercase">{CONTENT_STATUS_LABELS[c.status]}</span>
                     <div className="flex gap-2">
                       <button onClick={() => openEdit(c)} className="text-xs text-slate-400 hover:text-white">Edit</button>
                       <button onClick={() => handleDelete(c.id)} className="text-xs text-rose-400 hover:text-rose-300">Del</button>
@@ -155,7 +155,7 @@ export default function ContentClient({ workspaceId, initialContent, campaigns }
 
       {/* List View */}
       {viewMode === 'list' && (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-slate-800">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
               <th className="px-4 py-3">Title</th><th className="px-4 py-3">Type</th><th className="px-4 py-3">Channel</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"></th>
@@ -167,7 +167,7 @@ export default function ContentClient({ workspaceId, initialContent, campaigns }
                   <td className="px-4 py-3 text-slate-400">{c.content_type}</td>
                   <td className="px-4 py-3 text-slate-400">{c.channel ? CONTENT_CHANNEL_LABELS[c.channel] : '—'}</td>
                   <td className="px-4 py-3 text-slate-400">{c.scheduled_date || '—'}</td>
-                  <td className="px-4 py-3"><span className="rounded-full border border-slate-700 px-2 py-0.5 text-xs">{CONTENT_STATUS_LABELS[c.status]}</span></td>
+                  <td className="px-4 py-3"><span className="rounded-pill border border-slate-700 px-2 py-0.5 text-xs">{CONTENT_STATUS_LABELS[c.status]}</span></td>
                   <td className="px-4 py-3"><div className="flex gap-2"><button onClick={() => openEdit(c)} className="text-xs text-slate-400 hover:text-white">Edit</button><button onClick={() => handleDelete(c.id)} className="text-xs text-rose-400 hover:text-rose-300">Delete</button></div></td>
                 </tr>
               ))}

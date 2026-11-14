@@ -32,7 +32,7 @@ function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      style={{ flex: '1 1 0', minWidth: 240, background: isOver ? 'var(--surface-2)' : 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: 10, padding: 10, display: 'flex', flexDirection: 'column' }}
+      style={{ flex: '1 1 0', minWidth: 240, background: isOver ? 'var(--surface-2)' : 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: 10, display: 'flex', flexDirection: 'column' }}
     >
       <div className="panel-section-title" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
         <TaskStatusBadge status={status} />

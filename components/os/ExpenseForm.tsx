@@ -301,7 +301,7 @@ export default function ExpenseForm({
             type="file"
             accept="image/*,.pdf"
             onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
-            className="os-input w-full file:mr-4 file:rounded-full file:border-0 file:bg-[var(--surface-2)] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[color:var(--text-2)]"
+            className="os-input w-full file:mr-4 file:rounded-pill file:border-0 file:bg-[var(--surface-2)] file:px-4 file:py-2 file:text-sm file:font-medium file:text-[color:var(--text-2)]"
           />
           {initialExpense?.receipt_url && !receiptFile && (
             <a
@@ -323,7 +323,7 @@ export default function ExpenseForm({
             type="checkbox"
             checked={billable}
             onChange={(e) => setBillable(e.target.checked)}
-            className="h-5 w-5 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+            className="h-5 w-5 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
           />
           <span className="text-sm text-[color:var(--text-2)]">Billable to client</span>
         </label>
@@ -333,7 +333,7 @@ export default function ExpenseForm({
             type="checkbox"
             checked={taxDeductible}
             onChange={(e) => setTaxDeductible(e.target.checked)}
-            className="h-5 w-5 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
+            className="h-5 w-5 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[color:var(--accent)] focus:ring-[color:var(--accent)]"
           />
           <span className="text-sm text-[color:var(--text-2)]">Tax deductible</span>
         </label>
@@ -341,11 +341,11 @@ export default function ExpenseForm({
 
       {/* Summary */}
       {amount && Number(amount) > 0 && (
-        <div className="os-card-inset rounded-2xl px-4 py-3">
+        <div className="os-card-inset rounded-card px-4 py-3">
           <p className="text-sm text-[color:var(--text-2)]">
             Amount: <span className="font-medium text-[color:var(--text)]">{formatMoney(Number(amount))}</span>
             {billable && (
-              <span className="ml-3 rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-2 py-0.5 text-xs text-[color:var(--accent-strong)]">
+              <span className="ml-3 rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-2 py-0.5 text-xs text-[color:var(--accent-strong)]">
                 Billable
               </span>
             )}
@@ -355,7 +355,7 @@ export default function ExpenseForm({
 
       {/* Error */}
       {error && (
-        <p className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
+        <p className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-3 text-sm text-[color:var(--red-strong)]">
           {error}
         </p>
       )}
@@ -366,7 +366,7 @@ export default function ExpenseForm({
           type="button"
           onClick={handleSubmit}
           disabled={saving || deleting}
-          className="rounded-2xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+          className="rounded-card bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? 'Saving…' : isEdit ? 'Update expense' : 'Save expense'}
         </button>
@@ -375,7 +375,7 @@ export default function ExpenseForm({
           type="button"
           onClick={() => router.back()}
           disabled={saving || deleting}
-          className="rounded-2xl border border-[color:var(--border)] px-6 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)] disabled:opacity-50"
+          className="rounded-card border border-[color:var(--border)] px-6 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--text)] disabled:opacity-50"
         >
           Cancel
         </button>
@@ -385,7 +385,7 @@ export default function ExpenseForm({
             type="button"
             onClick={handleDelete}
             disabled={saving || deleting}
-            className="ml-auto rounded-2xl border border-[color:var(--red)] px-6 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-50"
+            className="ml-auto rounded-card border border-[color:var(--red)] px-6 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:bg-[var(--red-dim)] disabled:opacity-50"
           >
             {deleting ? 'Deleting…' : 'Delete'}
           </button>

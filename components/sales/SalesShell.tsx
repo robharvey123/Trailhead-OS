@@ -50,7 +50,7 @@ export default function SalesShell({
                   key={item.href}
                   href={item.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`tap inline-flex items-center rounded-lg px-3 py-1.5 text-sm transition ${
+                  className={`tap inline-flex items-center rounded-control px-3 py-1.5 text-sm transition ${
                     active
                       ? 'bg-[var(--surface-2)] font-medium text-[color:var(--text)]'
                       : 'text-[color:var(--text-2)] hover:bg-[var(--surface-2)]'
@@ -66,7 +66,7 @@ export default function SalesShell({
               <Link href="/dashboard" className="tap inline-flex items-center hover:text-[color:var(--text)]">Back to OS</Link>
             ) : null}
             {displayName ? <span className="hidden sm:inline">{displayName}</span> : null}
-            <button type="button" onClick={signOut} className="tap rounded-lg px-2 py-1 hover:bg-[var(--surface-2)]">
+            <button type="button" onClick={signOut} className="tap rounded-control px-2 py-1 hover:bg-[var(--surface-2)]">
               Sign out
             </button>
           </div>

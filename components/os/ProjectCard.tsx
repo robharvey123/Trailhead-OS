@@ -36,7 +36,7 @@ export default function ProjectCard({
       <div className="group relative">
         <Link
           href={`/projects/records/${project.id}`}
-          className="os-card block rounded-[1.75rem] p-5 transition hover:bg-[var(--surface-2)]"
+          className="os-card block rounded-card p-5 transition hover:bg-[var(--surface-2)]"
         >
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -50,7 +50,7 @@ export default function ProjectCard({
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {project.account ? (
-          <span className="rounded-full border border-[color:var(--border)] px-2.5 py-1 text-[11px] font-medium text-[color:var(--text-2)]">
+          <span className="rounded-pill border border-[color:var(--border)] px-2.5 py-1 text-[11px] font-medium text-[color:var(--text-2)]">
             {project.account.name}
           </span>
         ) : null}
@@ -84,7 +84,7 @@ export default function ProjectCard({
             e.stopPropagation()
             setConfirmOpen(true)
           }}
-          className="absolute right-3 top-3 rounded-lg border border-[color:var(--border)] bg-white p-1.5 text-[color:var(--text-2)] opacity-0 transition hover:border-[color:var(--red)] hover:text-[color:var(--red-strong)] group-hover:opacity-100"
+          className="absolute right-3 top-3 rounded-control border border-[color:var(--border)] bg-white p-1.5 text-[color:var(--text-2)] opacity-0 transition hover:border-[color:var(--red)] hover:text-[color:var(--red-strong)] group-hover:opacity-100"
           title="Delete project"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>

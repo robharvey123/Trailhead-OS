@@ -26,7 +26,7 @@ export default async function AcceptPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
+      <div className="w-full max-w-md rounded-card border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
         <h1 className="text-2xl font-semibold">{isInvite ? 'Accept your invite' : isRecovery ? 'Reset your password' : 'Sign in'}</h1>
         {valid ? (
           <>
@@ -43,7 +43,7 @@ export default async function AcceptPage({
               <input type="hidden" name="next" value={next} />
               <button
                 type="submit"
-                className="w-full rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white"
+                className="w-full rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white"
               >
                 {isInvite ? 'Accept and sign in' : isRecovery ? 'Continue' : 'Sign in'}
               </button>

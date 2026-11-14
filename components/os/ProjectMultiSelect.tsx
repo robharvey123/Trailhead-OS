@@ -50,7 +50,7 @@ export default function ProjectMultiSelect({ label, options, value, onChange }: 
           {value.map((id) => (
             <span
               key={id}
-              className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-dim)] px-2.5 py-1 text-xs font-medium text-[color:var(--accent-strong)]"
+              className="inline-flex items-center gap-1 rounded-pill bg-[var(--accent-dim)] px-2.5 py-1 text-xs font-medium text-[color:var(--accent-strong)]"
             >
               {byId.get(id)?.name ?? 'Unknown project'}
               <button
@@ -68,7 +68,7 @@ export default function ProjectMultiSelect({ label, options, value, onChange }: 
 
       <div className="relative">
         <input
-          className="w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+          className="w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
           value={query}
           placeholder={options.length === 0 ? 'No projects available' : 'Add a project…'}
           disabled={options.length === 0}
@@ -81,7 +81,7 @@ export default function ProjectMultiSelect({ label, options, value, onChange }: 
         />
 
         {open && available.length > 0 ? (
-          <div className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-[color:var(--border)] bg-white shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
+          <div className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-card border border-[color:var(--border)] bg-white shadow-[0_12px_40px_rgba(15,23,42,0.12)]">
             {available.map((option) => (
               <button
                 key={option.id}

@@ -530,7 +530,7 @@ export default function QuoteForm({
           <button
             type="button"
             onClick={() => setScope((current) => [...current, createEmptyPhase()])}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
           >
             Add phase
           </button>
@@ -557,7 +557,7 @@ export default function QuoteForm({
                 <button
                   type="button"
                   onClick={() => setScope((current) => current.filter((_, phaseIndex) => phaseIndex !== index))}
-                  className="rounded-2xl border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
+                  className="rounded-card border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
                 >
                   Remove
                 </button>
@@ -604,7 +604,7 @@ export default function QuoteForm({
                           deliverables: phase.deliverables.filter((_, entryIndex) => entryIndex !== deliverableIndex),
                         })
                       }
-                      className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
+                      className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
                     >
                       {deliverable} ×
                     </button>
@@ -694,19 +694,19 @@ export default function QuoteForm({
                 ),
               ])
             }}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
           >
             Add line item
           </button>
         </div>
 
         {showTierNotice ? (
-          <div className="mt-4 flex items-start justify-between gap-4 rounded-[1.5rem] border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+          <div className="mt-4 flex items-start justify-between gap-4 rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
             <p>Tier updated - adjust line item rates manually if needed.</p>
             <button
               type="button"
               onClick={() => setShowTierNotice(false)}
-              className="rounded-full border border-[color:var(--accent)] px-2 py-1 text-xs font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
+              className="rounded-pill border border-[color:var(--accent)] px-2 py-1 text-xs font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)]"
             >
               Dismiss
             </button>
@@ -778,7 +778,7 @@ export default function QuoteForm({
                     <button
                       type="button"
                       onClick={() => removeLineItem(item.id)}
-                      className="rounded-2xl border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
+                      className="rounded-card border border-[color:var(--red-dim)] px-3 py-2 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
                     >
                       Remove
                     </button>
@@ -789,7 +789,7 @@ export default function QuoteForm({
           </table>
         </div>
 
-        <div className="sticky bottom-4 mt-5 rounded-[1.5rem] border border-[color:var(--border)] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+        <div className="sticky bottom-4 mt-5 rounded-card border border-[color:var(--border)] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
           <div className="grid gap-3 md:grid-cols-[1fr_180px_180px_180px]">
             <label className="space-y-2">
               <span className="text-sm text-[color:var(--text-2)]">VAT rate (%)</span>
@@ -803,15 +803,15 @@ export default function QuoteForm({
                 className="os-input w-full"
               />
             </label>
-            <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
               <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Subtotal</p>
               <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.subtotal)}</p>
             </div>
-            <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
               <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">VAT ({Number(vatRate) || 0}%)</p>
               <p className="mt-2 text-base font-medium text-[color:var(--text)]">{formatMoney(totals.vat_amount)}</p>
             </div>
-            <div className="rounded-2xl border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3">
+            <div className="rounded-card border border-[color:var(--emerald)] bg-[var(--emerald-dim)] px-4 py-3">
               <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--emerald-strong)]">Total</p>
               <p className="mt-2 text-lg font-semibold text-[color:var(--emerald-strong)]">{formatMoney(totals.total)}</p>
             </div>
@@ -849,7 +849,7 @@ export default function QuoteForm({
                 type="button"
                 onClick={refreshFromEnquiry}
                 disabled={savingAs !== null || refreshingFromEnquiry}
-                className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-5 py-3 text-sm font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)] disabled:opacity-50"
+                className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-5 py-3 text-sm font-medium text-[color:var(--accent-strong)] transition hover:border-[color:var(--accent-hover)] disabled:opacity-50"
               >
                 {refreshingFromEnquiry ? 'Refreshing from enquiry...' : 'Refresh from enquiry'}
               </button>
@@ -858,13 +858,13 @@ export default function QuoteForm({
               type="button"
               onClick={() => submitQuote('edit')}
               disabled={savingAs !== null || refreshingFromEnquiry}
-              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'edit' ? 'Saving...' : 'Save'}
             </button>
             <Link
               href={`/quotes/${initialQuote.id}`}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
             >
               Cancel
             </Link>
@@ -875,7 +875,7 @@ export default function QuoteForm({
               type="button"
               onClick={() => submitQuote('draft')}
               disabled={savingAs !== null}
-              className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+              className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
             >
               {savingAs === 'draft' ? 'Saving...' : 'Save as draft'}
             </button>
@@ -883,7 +883,7 @@ export default function QuoteForm({
               type="button"
               onClick={() => submitQuote('sent')}
               disabled={savingAs !== null}
-              className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+              className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
             >
               {savingAs === 'sent' ? 'Saving...' : 'Save & send'}
             </button>

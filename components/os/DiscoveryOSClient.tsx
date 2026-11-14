@@ -85,21 +85,21 @@ export default function DiscoveryOSClient({
                 <button
                   type="button"
                   onClick={() => void handleCopyLink()}
-                  className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
+                  className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-medium text-white transition hover:bg-[var(--accent-hover)]"
                 >
                   {copied ? 'Copied!' : 'Copy link'}
                 </button>
                 <button
                   type="button"
                   onClick={handleOpenForm}
-                  className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
+                  className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
                 >
                   Open form
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPreview((current) => !current)}
-                  className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
+                  className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text)] transition hover:border-[color:var(--border-light)] hover:bg-[var(--surface-2)]"
                 >
                   {showPreview ? 'Hide preview' : 'Preview'}
                 </button>
@@ -111,7 +111,7 @@ export default function DiscoveryOSClient({
             <iframe
               src="/discovery?view=form"
               title="Discovery form preview"
-              className="mt-4 w-full rounded-lg border border-[color:var(--border)]"
+              className="mt-4 w-full rounded-control border border-[color:var(--border)]"
               style={{ height: '600px' }}
             />
           ) : null}
@@ -124,11 +124,11 @@ export default function DiscoveryOSClient({
         </div>
 
         {enquiries.length === 0 ? (
-          <div className="mt-6 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+          <div className="mt-6 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
             No enquiries yet. Share the form link above to get started.
           </div>
         ) : (
-          <div className="mt-6 overflow-hidden rounded-3xl border border-[color:var(--border)]">
+          <div className="mt-6 overflow-hidden rounded-card border border-[color:var(--border)]">
             <table className="min-w-full divide-y divide-[color:var(--border)] text-left">
               <thead className="bg-[var(--surface-2)] text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                 <tr>
@@ -157,7 +157,7 @@ export default function DiscoveryOSClient({
                     </td>
                     <td className="px-4 py-4">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium capitalize ${getStatusClasses(enquiry.status)}`}
+                        className={`inline-flex rounded-pill px-3 py-1 text-xs font-medium capitalize ${getStatusClasses(enquiry.status)}`}
                       >
                         {enquiry.status}
                       </span>
@@ -165,7 +165,7 @@ export default function DiscoveryOSClient({
                     <td className="px-4 py-4">
                       <Link
                         href={`/enquiries/${enquiry.id}`}
-                        className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+                        className="inline-flex rounded-pill border border-[color:var(--border)] px-3 py-1.5 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                       >
                         View
                       </Link>

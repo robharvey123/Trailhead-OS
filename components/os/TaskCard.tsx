@@ -44,7 +44,7 @@ export default function TaskCard({
         {task.tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
-            className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
+            className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
           >
             #{tag}
           </span>

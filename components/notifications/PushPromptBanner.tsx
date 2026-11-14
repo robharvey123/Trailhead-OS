@@ -48,7 +48,7 @@ export default function PushPromptBanner({ userId }: { userId: string }) {
     <div
       style={{
         position: 'fixed', bottom: 16, right: 16, zIndex: 60, maxWidth: 340,
-        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14,
+        background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)',
         boxShadow: '0 12px 32px rgba(0,0,0,0.22)', padding: 16,
       }}
     >

@@ -19,16 +19,16 @@ const RichTextEditor = dynamic(() => import('./RichTextEditor'), {
 /** Mirrors the editor's own pre-ready placeholder: same frame, toolbar, body. */
 function EditorSkeleton() {
   return (
-    <div className="rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)]" aria-hidden>
+    <div className="rounded-control border border-[var(--border)] bg-[var(--surface-2)]" aria-hidden>
       <div className="flex flex-wrap gap-1 border-b border-[var(--border)] p-1">
         {Array.from({ length: 7 }).map((_, index) => (
-          <div key={index} className="h-7 w-8 animate-pulse rounded-[4px] bg-[var(--surface-3)]" />
+          <div key={index} className="h-7 w-8 animate-pulse rounded-control bg-[var(--surface-3)]" />
         ))}
       </div>
       <div className="space-y-2 px-3 py-3" style={{ minHeight: 190 }}>
-        <div className="h-3 w-3/4 animate-pulse rounded-full bg-[var(--surface-3)]" />
-        <div className="h-3 w-full animate-pulse rounded-full bg-[var(--surface-3)]" />
-        <div className="h-3 w-2/3 animate-pulse rounded-full bg-[var(--surface-3)]" />
+        <div className="h-3 w-3/4 animate-pulse rounded-pill bg-[var(--surface-3)]" />
+        <div className="h-3 w-full animate-pulse rounded-pill bg-[var(--surface-3)]" />
+        <div className="h-3 w-2/3 animate-pulse rounded-pill bg-[var(--surface-3)]" />
       </div>
     </div>
   )
@@ -147,7 +147,7 @@ export default function ComposeModal({
 
   const value = (f: Field) => (f === 'to' ? to : f === 'cc' ? cc : bcc)
   const set = (f: Field) => (f === 'to' ? setTo : f === 'cc' ? setCc : setBcc)
-  const input = 'rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const input = 'rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   function addRecipient(f: Field, r: Recipient) {
     set(f)((prev) => prev.some((x) => x.email.toLowerCase() === r.email.toLowerCase()) ? prev : [...prev, r])
@@ -205,7 +205,7 @@ export default function ComposeModal({
       : []
     return (
       <div style={{ position: 'relative' }}>
-        <div className="flex flex-wrap items-center gap-1 rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1">
+        <div className="flex flex-wrap items-center gap-1 rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-2 py-1">
           <span className="mr-1 text-[11px] uppercase tracking-wide text-[var(--text-3)]">{label}</span>
           {recips.map((r) => (
             <span key={r.email} className={`tag-chip ${r.inCrm ? 'accent' : 'amber'}`} title={r.email}>
@@ -340,7 +340,7 @@ export default function ComposeModal({
         title={title}
         closeLabel="Close compose window"
         overlayClassName="p-4"
-        panelClassName="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-[8px] border border-[var(--border)] bg-white"
+        panelClassName="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-control border border-[var(--border)] bg-white"
       >
         <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3">
           <h2 className="text-base font-semibold text-[var(--text)]">{title}</h2>
@@ -372,7 +372,7 @@ export default function ComposeModal({
             ))}
           </div>
           {signature ? (
-            <div className="rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] p-3">
+            <div className="rounded-control border border-[var(--border)] bg-[var(--surface-2)] p-3">
               <div className="mb-1 text-[11px] uppercase tracking-wide text-[var(--text-3)]">Signature (appended on send)</div>
               <div className="text-sm text-[var(--text-2)]" dangerouslySetInnerHTML={{ __html: signature }} />
             </div>
@@ -415,12 +415,12 @@ export default function ComposeModal({
         title="These recipients aren’t in your CRM. Add them?"
         closeLabel="Cancel adding recipients"
         overlayClassName="z-[60] p-4"
-        panelClassName="w-full max-w-lg rounded-[8px] border border-[var(--border)] bg-white p-5"
+        panelClassName="w-full max-w-lg rounded-control border border-[var(--border)] bg-white p-5"
       >
         <h3 className="text-base font-semibold text-[var(--text)]">These recipients aren’t in your CRM. Add them?</h3>
         <div className="mt-3 space-y-3">
           {(addList ?? []).map((r, i) => (
-            <div key={r.email} className="rounded-[5px] border border-[var(--border)] p-3">
+            <div key={r.email} className="rounded-control border border-[var(--border)] p-3">
               <label className="flex items-center gap-2 text-sm text-[var(--text)]">
                 <input type="checkbox" checked={r.add} onChange={(e) => setAddList((l) => l!.map((x, j) => j === i ? { ...x, add: e.target.checked } : x))} />
                 {r.email}

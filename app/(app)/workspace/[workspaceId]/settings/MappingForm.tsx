@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+      className="rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
     >
       {pending ? 'Saving...' : 'Add mapping'}
     </button>
@@ -33,7 +33,7 @@ export default function MappingForm({ workspaceId }: { workspaceId: string }) {
           <input
             name="sell_in_customer"
             required
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
           />
         </label>
         <label className="space-y-2 text-sm">
@@ -41,7 +41,7 @@ export default function MappingForm({ workspaceId }: { workspaceId: string }) {
           <input
             name="sell_out_company"
             required
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
           />
         </label>
         <label className="space-y-2 text-sm">
@@ -49,7 +49,7 @@ export default function MappingForm({ workspaceId }: { workspaceId: string }) {
           <input
             name="group_name"
             placeholder="Optional"
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
           />
         </label>
       </div>

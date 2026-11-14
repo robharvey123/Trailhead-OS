@@ -10,7 +10,7 @@ export default function SetPasswordForm() {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
-  const input = 'w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-slate-500 focus:outline-none'
+  const input = 'w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus:border-slate-500 focus:outline-none'
 
   return (
     <form
@@ -38,7 +38,7 @@ export default function SetPasswordForm() {
       </div>
       <p className="text-xs text-slate-400">At least 10 characters.</p>
       {error ? <p role="alert" className="text-sm text-rose-300">{error}</p> : null}
-      <button type="submit" disabled={pending} className="w-full rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70">
+      <button type="submit" disabled={pending} className="w-full rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70">
         {pending ? 'Saving…' : 'Save new password'}
       </button>
     </form>

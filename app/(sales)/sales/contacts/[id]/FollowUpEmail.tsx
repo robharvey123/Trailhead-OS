@@ -10,7 +10,7 @@ export default function FollowUpEmail({ contactId, contactEmail, blocked }: { co
   const [body, setBody] = useState('')
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [pending, start] = useTransition()
-  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]'
 
   if (!contactEmail) return <p className="text-sm text-[color:var(--text-3)]">No email address on file, so no follow-up email.</p>
   if (blocked) return <p className="text-sm text-[color:var(--text-3)]">Unsubscribed or bounced, so no follow-up email.</p>

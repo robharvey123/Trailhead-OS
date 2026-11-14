@@ -104,7 +104,7 @@ export default function ConfirmDialog({
     >
       <div
         ref={panelRef}
-        className="mx-4 w-full max-w-md rounded-lg border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        className="mx-4 w-full max-w-md rounded-control border border-[color:var(--border)] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
@@ -120,7 +120,7 @@ export default function ConfirmDialog({
         {banner ? <div className="mb-4">{banner}</div> : null}
 
         {items && items.length > 0 ? (
-          <div className="mb-4 rounded border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+          <div className="mb-4 rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
             {itemsLabel ? (
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[2px] text-[color:var(--text-2)]">
                 {itemsLabel}
@@ -148,7 +148,7 @@ export default function ConfirmDialog({
               onChange={(e) => setTyped(e.target.value)}
               disabled={loading}
               autoFocus
-              className="w-full rounded border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[var(--accent)]"
+              className="w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] outline-none focus:border-[var(--accent)]"
               placeholder={confirmPhrase}
             />
           </div>
@@ -162,7 +162,7 @@ export default function ConfirmDialog({
             // Default focus on Cancel (not the destructive action) so Enter can't
             // accidentally confirm — unless there's a type-to-confirm input to focus.
             autoFocus={confirmPhrase == null}
-            className="rounded border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)]"
+            className="rounded-control border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)]"
           >
             {cancelLabel}
           </button>
@@ -171,7 +171,7 @@ export default function ConfirmDialog({
               type="button"
               onClick={secondaryAction.onClick}
               disabled={loading}
-              className="rounded border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
+              className="rounded-control border border-[color:var(--border)] bg-white px-4 py-2 text-[color:var(--text)] hover:bg-[var(--surface-2)] disabled:opacity-50"
             >
               {secondaryAction.label}
             </button>
@@ -181,7 +181,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={loading || phraseUnmet}
-            className={`rounded px-4 py-2 font-bold disabled:opacity-50 ${confirmColour}`}
+            className={`rounded-control px-4 py-2 font-bold disabled:opacity-50 ${confirmColour}`}
           >
             {loading ? (
               <span className="flex items-center gap-2">

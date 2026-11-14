@@ -86,7 +86,7 @@ export default function MilestoneList({
 
       {/* Bulk action bar — below the modal overlay (z-index 40 < dialog 50). */}
       {selected.size > 0 ? (
-        <div style={{ position: 'sticky', top: 0, zIndex: 40, display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', marginBottom: 10, borderRadius: 8, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+        <div style={{ position: 'sticky', top: 0, zIndex: 40, display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
           <strong style={{ fontSize: 13 }}>{selected.size} selected</strong>
           <button className="btn btn-sm" style={{ background: 'var(--red)', color: 'white' }} onClick={() => setBulkOpen(true)}>Delete</button>
           <button className="btn btn-ghost btn-sm" onClick={() => setSelected(new Set())}>Cancel</button>

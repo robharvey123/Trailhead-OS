@@ -24,7 +24,7 @@ export default function MeetingSummary({ markdown }: { markdown: string | null }
           ol: (props) => <ol className="mt-2 list-decimal space-y-1 pl-5" {...props} />,
           strong: (props) => <strong className="font-semibold text-[color:var(--text)]" {...props} />,
           a: (props) => <a className="text-[var(--accent-strong)] underline" {...props} />,
-          code: (props) => <code className="rounded bg-[var(--bg)] px-1 py-0.5 text-xs" {...props} />,
+          code: (props) => <code className="rounded-control bg-[var(--bg)] px-1 py-0.5 text-xs" {...props} />,
         }}
       >
         {markdown}

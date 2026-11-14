@@ -17,14 +17,14 @@ import {
 
 const STATUS_STYLE: Record<string, string> = {
   identified: 'border-[color:var(--border)] text-[color:var(--text-2)]',
-  researching: 'border-amber-300 bg-amber-50 text-amber-700',
+  researching: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
   outreach: 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
-  won: 'border-emerald-400 bg-emerald-50 text-emerald-800',
+  won: 'border-[var(--emerald)] bg-[var(--emerald-dim)] text-[var(--emerald-strong)]',
   lost: 'border-[color:var(--border)] text-[color:var(--text-3)]',
 }
 
 const INPUT_CLASS =
-  'rounded-2xl border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  'rounded-control border border-[color:var(--border)] bg-white px-3 py-2 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
 
 export default async function GrowthLinksPage({
   params,
@@ -57,12 +57,12 @@ export default async function GrowthLinksPage({
       </div>
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
@@ -115,7 +115,7 @@ export default async function GrowthLinksPage({
       ) : null}
 
       {targets.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           No link targets yet — mine a competitor above.
         </div>
       ) : (
@@ -142,7 +142,7 @@ export default async function GrowthLinksPage({
                     <p className="mt-1 text-sm text-[color:var(--text-2)]">{target.angle}</p>
                   ) : null}
                   {target.contact_id ? (
-                    <p className="mt-1 text-sm text-emerald-700">
+                    <p className="mt-1 text-sm text-[var(--emerald-strong)]">
                       Contact found{target.contact_note ? ` — ${target.contact_note}` : ''}
                     </p>
                   ) : target.contact_search_at ? (
@@ -151,7 +151,7 @@ export default async function GrowthLinksPage({
                     </p>
                   ) : null}
                   {target.pitch_subject && target.pitch_body ? (
-                    <details className="mt-2 rounded-2xl border border-[color:var(--border)] px-3 py-2">
+                    <details className="mt-2 rounded-card border border-[color:var(--border)] px-3 py-2">
                       <summary className="cursor-pointer text-sm font-medium text-[color:var(--text)]">
                         Pitch: {target.pitch_subject}
                       </summary>
@@ -161,11 +161,11 @@ export default async function GrowthLinksPage({
                     </details>
                   ) : null}
                   {target.won_url ? (
-                    <p className="mt-1 break-all text-sm text-emerald-700">Won: {target.won_url}</p>
+                    <p className="mt-1 break-all text-sm text-[var(--emerald-strong)]">Won: {target.won_url}</p>
                   ) : null}
                 </div>
                 <span
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${STATUS_STYLE[target.status] ?? ''}`}
+                  className={`rounded-pill border px-3 py-1 text-xs font-medium ${STATUS_STYLE[target.status] ?? ''}`}
                 >
                   {target.status}
                 </span>
@@ -211,7 +211,7 @@ export default async function GrowthLinksPage({
                     />
                     <button
                       type="submit"
-                      className="rounded-2xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 transition hover:border-emerald-400"
+                      className="rounded-card border border-[var(--emerald)]/40 bg-[var(--emerald-dim)] px-3 py-1.5 text-sm font-medium text-[var(--emerald-strong)] transition hover:border-[var(--emerald)]"
                     >
                       Won
                     </button>
@@ -219,7 +219,7 @@ export default async function GrowthLinksPage({
                   <form action={markLinkLostAction.bind(null, site.id, target.id)}>
                     <button
                       type="submit"
-                      className="rounded-2xl border border-[color:var(--border)] px-3 py-1.5 text-sm text-[color:var(--text-3)] transition hover:border-red-300 hover:text-red-600"
+                      className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-sm text-[color:var(--text-3)] transition hover:border-[var(--red)]/40 hover:text-[var(--red-strong)]"
                     >
                       Lost
                     </button>

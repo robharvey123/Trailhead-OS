@@ -81,10 +81,10 @@ export default function GlobalSearch() {
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => results && setOpen(true)}
         placeholder="Search..."
-        className="w-48 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none sm:w-64"
+        className="w-48 rounded-control border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none sm:w-64"
       />
       {open && results && (
-        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded-xl border border-slate-700 bg-slate-900 shadow-xl">
+        <div className="absolute right-0 top-full z-50 mt-1 w-80 rounded-card border border-slate-700 bg-slate-900 shadow-xl">
           {!hasResults ? (
             <p className="px-4 py-3 text-xs text-slate-500">No results found</p>
           ) : (

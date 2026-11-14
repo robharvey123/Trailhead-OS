@@ -188,7 +188,7 @@ export default function WorkspaceSidebar({
                       key={item.slug}
                       href={withQuery}
                       aria-current={isActive ? 'page' : undefined}
-                      className={`rounded-lg px-3 py-1.5 text-sm transition ${
+                      className={`rounded-control px-3 py-1.5 text-sm transition ${
                         isActive
                           ? 'bg-white/10 font-medium text-white'
                           : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
@@ -211,7 +211,7 @@ export default function WorkspaceSidebar({
                         key={item.slug}
                         href={href}
                         aria-current="page"
-                        className="rounded-lg bg-white/10 px-3 py-1.5 text-sm font-medium text-white"
+                        className="rounded-control bg-white/10 px-3 py-1.5 text-sm font-medium text-white"
                       >
                         {item.label}
                       </Link>

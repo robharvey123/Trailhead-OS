@@ -85,7 +85,7 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-lg border p-4 transition ${
+      className={`rounded-control border p-4 transition ${
         isOver
           ? 'border-[color:var(--accent)] bg-[var(--accent-dim)]'
           : 'border-[color:var(--border)] bg-white'
@@ -260,7 +260,7 @@ export default function WorkstreamBoardClient({
             {info.getValue().map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
+                className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-[11px] text-[color:var(--text-2)]"
               >
                 #{tag}
               </span>
@@ -280,7 +280,7 @@ export default function WorkstreamBoardClient({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <span className={`h-3 w-3 rounded-full ${colourClasses.dot}`} />
+            <span className={`h-3 w-3 rounded-pill ${colourClasses.dot}`} />
             <p className="os-eyebrow">Workstream</p>
           </div>
           <h1 className="os-page-title mt-2">{workstream.label}</h1>
@@ -289,13 +289,13 @@ export default function WorkstreamBoardClient({
           </p>
         </div>
 
-        <div className="inline-flex rounded-2xl border border-[color:var(--border)] bg-white p-1">
+        <div className="inline-flex rounded-card border border-[color:var(--border)] bg-white p-1">
           {(['board', 'list'] as const).map((mode) => (
             <button
               key={mode}
               type="button"
               onClick={() => setViewMode(mode)}
-              className={`rounded-2xl px-4 py-2 text-sm capitalize transition ${
+              className={`rounded-card px-4 py-2 text-sm capitalize transition ${
                 viewMode === mode
                   ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)] border border-[color:var(--accent)]'
                   : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'
@@ -347,7 +347,7 @@ export default function WorkstreamBoardClient({
                     </SortableContext>
 
                     {columnTasks.length === 0 ? (
-                      <div className="mt-3 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-6 text-center text-sm text-[color:var(--text-2)]">
+                      <div className="mt-3 rounded-card border border-dashed border-[color:var(--border)] px-4 py-6 text-center text-sm text-[color:var(--text-2)]">
                         Drop a card here
                       </div>
                     ) : null}
@@ -367,7 +367,7 @@ export default function WorkstreamBoardClient({
                         <button
                           type="button"
                           onClick={() => setAddingColumnId(column.id)}
-                          className="relative z-10 w-full rounded-2xl border border-dashed border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+                          className="relative z-10 w-full rounded-card border border-dashed border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
                         >
                           Add card
                         </button>

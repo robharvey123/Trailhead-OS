@@ -768,7 +768,7 @@ export default function InboxClient({
             title={liveStatus === 'live' ? 'Live — inbox updates automatically' : liveStatus === 'connecting' ? 'Connecting to live updates…' : 'Live updates offline — will refresh on focus'}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: 'var(--text-3)', marginLeft: 8 }}
           >
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: liveStatus === 'live' ? 'var(--green, #16a34a)' : liveStatus === 'connecting' ? 'var(--amber, #d97706)' : 'var(--text-3)' }} />
+            <span style={{ width: 7, height: 7, borderRadius: 'var(--radius-pill)', background: liveStatus === 'live' ? 'var(--green, #16a34a)' : liveStatus === 'connecting' ? 'var(--amber, #d97706)' : 'var(--text-3)' }} />
             {liveStatus === 'live' ? 'Live' : liveStatus === 'connecting' ? 'Connecting…' : 'Offline'}
           </span>
         ) : null}
@@ -812,7 +812,7 @@ export default function InboxClient({
 
       {undoPayload ? (
         <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 80 }}
-          className="flex items-center gap-3 rounded-[8px] border border-[var(--border)] bg-[var(--text)] px-4 py-2.5 text-sm text-white shadow-lg">
+          className="flex items-center gap-3 rounded-control border border-[var(--border)] bg-[var(--text)] px-4 py-2.5 text-sm text-white shadow-[var(--shadow-lg)]">
           <span>Sending…</span>
           <button className="font-semibold underline" onClick={undoSend}>Undo</button>
         </div>
@@ -824,7 +824,7 @@ export default function InboxClient({
         title="Keyboard shortcuts"
         closeLabel="Close keyboard shortcuts"
         overlayClassName="p-4"
-        panelClassName="min-w-[340px] rounded-[8px] border border-[var(--border)] bg-white p-5"
+        panelClassName="min-w-[340px] rounded-control border border-[var(--border)] bg-white p-5"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-[var(--text)]">Keyboard shortcuts</h2>
@@ -1163,7 +1163,7 @@ function MessagesSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div className="message" key={i}>
           <div className="message-head">
-            <div className="os-shimmer-bar" style={{ width: 34, height: 34, borderRadius: '50%' }} />
+            <div className="os-shimmer-bar" style={{ width: 34, height: 34, borderRadius: 'var(--radius-pill)' }} />
             <div style={{ flex: 1 }}>
               <div className="os-shimmer-bar" style={{ height: 12, width: '40%' }} />
               <div className="os-shimmer-bar" style={{ height: 10, width: '55%', marginTop: 6 }} />

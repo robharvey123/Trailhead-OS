@@ -36,7 +36,7 @@ export default function LoginForm({ nextPath, initialMessage = null }: { nextPat
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
+      <div className="w-full max-w-md rounded-card border border-slate-800 bg-slate-900/70 p-8 shadow-xl">
         <h1 className="text-2xl font-semibold">Sign in to Brand Opps</h1>
         <p className="mt-2 text-sm text-slate-300">
           Use your email and password to access your workspace.
@@ -52,7 +52,7 @@ export default function LoginForm({ nextPath, initialMessage = null }: { nextPat
               type="email"
               required
               autoComplete="email"
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
@@ -67,7 +67,7 @@ export default function LoginForm({ nextPath, initialMessage = null }: { nextPat
               type="password"
               required
               autoComplete="current-password"
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-slate-500 focus:outline-none"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
@@ -76,7 +76,7 @@ export default function LoginForm({ nextPath, initialMessage = null }: { nextPat
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>

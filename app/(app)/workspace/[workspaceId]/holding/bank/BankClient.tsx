@@ -150,12 +150,12 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
       </header>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-slate-800 bg-slate-900/50 p-1 w-fit">
+      <div className="flex gap-1 rounded-control border border-slate-800 bg-slate-900/50 p-1 w-fit">
         {(['transactions', 'import', 'reconcile'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${
+            className={`rounded-control px-4 py-1.5 text-sm font-medium transition ${
               tab === t ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -168,12 +168,12 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
       {tab === 'transactions' && (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <select value={filterDir} onChange={(e) => setFilterDir(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+            <select value={filterDir} onChange={(e) => setFilterDir(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
               <option value="all">All directions</option>
               <option value="in">Money In</option>
               <option value="out">Money Out</option>
             </select>
-            <select value={filterReconciled} onChange={(e) => setFilterReconciled(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+            <select value={filterReconciled} onChange={(e) => setFilterReconciled(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
               <option value="all">All</option>
               <option value="true">Reconciled</option>
               <option value="false">Unreconciled</option>
@@ -182,16 +182,16 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search counterparty, reference…"
-              className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 w-64"
+              className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200 w-64"
             />
           </div>
 
           {loadingTxs ? (
             <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-xl border border-slate-800 bg-slate-900/70" />)}
+              {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-card border border-slate-800 bg-slate-900/70" />)}
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-800">
+            <div className="overflow-x-auto rounded-card border border-slate-800">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -244,7 +244,7 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
       {/* === Import Tab === */}
       {tab === 'import' && (
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+          <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
             <h2 className="text-lg font-semibold">Import Tide CSV</h2>
             <p className="mt-1 text-sm text-slate-400">
               Export transactions from your Tide account and upload the CSV file. Duplicate transactions are automatically skipped.
@@ -255,13 +255,13 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
                 type="file"
                 accept=".csv"
                 onChange={handleFileSelect}
-                className="block w-full text-sm text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-white/20"
+                className="block w-full text-sm text-slate-300 file:mr-4 file:rounded-control file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-white/20"
               />
 
               {csvRows.length > 0 && (
                 <>
                   <p className="text-sm text-slate-300">{csvRows.length} rows ready to import</p>
-                  <div className="max-h-64 overflow-auto rounded-xl border border-slate-800">
+                  <div className="max-h-64 overflow-auto rounded-card border border-slate-800">
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-slate-400">
@@ -287,7 +287,7 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
                   <button
                     onClick={handleImport}
                     disabled={importing}
-                    className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-50"
+                    className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-50"
                   >
                     {importing ? 'Importing…' : `Import ${csvRows.length} Transactions`}
                   </button>
@@ -295,7 +295,7 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
               )}
 
               {importResult && (
-                <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 text-sm">
+                <div className="rounded-card border border-slate-800 bg-slate-900/50 p-4 text-sm">
                   <p className="text-emerald-400">Imported: {importResult.imported}</p>
                   {importResult.skipped > 0 && <p className="text-slate-400">Skipped (duplicates): {importResult.skipped}</p>}
                   {importResult.errors > 0 && <p className="text-rose-400">Errors: {importResult.errors}</p>}
@@ -311,7 +311,7 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
         <div className="space-y-6">
           {selectedTx ? (
             <>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+              <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
                 <h2 className="text-lg font-semibold">Reconcile Transaction</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-4">
                   <div>
@@ -335,18 +335,18 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+              <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
                 <h3 className="font-semibold">Suggested Matches</h3>
                 {loadingSuggestions ? (
                   <div className="mt-4 space-y-3">
-                    {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-xl border border-slate-800 bg-slate-900/70" />)}
+                    {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-card border border-slate-800 bg-slate-900/70" />)}
                   </div>
                 ) : suggestions.length === 0 ? (
                   <p className="mt-4 text-sm text-slate-500">No matching invoices, expenses, or Stripe payments found.</p>
                 ) : (
                   <div className="mt-4 space-y-2">
                     {suggestions.map((s) => (
-                      <div key={`${s.type}-${s.id}`} className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                      <div key={`${s.type}-${s.id}`} className="flex items-center justify-between rounded-card border border-slate-800 bg-slate-950/50 p-4">
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs uppercase text-slate-500">{s.type}</span>
@@ -357,7 +357,7 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
                         </div>
                         <button
                           onClick={() => handleMatch(selectedTx, s.type, s.id)}
-                          className="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold uppercase text-white hover:bg-emerald-500"
+                          className="rounded-control bg-emerald-600 px-4 py-1.5 text-xs font-semibold uppercase text-white hover:bg-emerald-500"
                         >
                           Match
                         </button>
@@ -367,18 +367,18 @@ export default function BankClient({ workspaceId, baseCurrency }: { workspaceId:
                 )}
                 <button
                   onClick={() => { setSelectedTx(null); setTab('transactions') }}
-                  className="mt-4 rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white"
+                  className="mt-4 rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white"
                 >
                   Back to Transactions
                 </button>
               </div>
             </>
           ) : (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-8 text-center">
+            <div className="rounded-card border border-slate-800 bg-slate-900/80 p-8 text-center">
               <p className="text-slate-400">Select an unreconciled transaction from the Transactions tab to begin reconciliation.</p>
               <button
                 onClick={() => setTab('transactions')}
-                className="mt-4 rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white"
+                className="mt-4 rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white"
               >
                 View Transactions
               </button>

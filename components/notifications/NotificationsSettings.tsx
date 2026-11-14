@@ -71,7 +71,7 @@ export default function NotificationsSettings({ initialSettings }: { initialSett
     <div className="panel" style={{ padding: 20, display: 'grid', gap: 16, maxWidth: 520 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <h1 className="topbar-title" style={{ flex: 1 }}>Push notifications</h1>
-        <span style={{ fontSize: 12, fontWeight: 600, borderRadius: 999, padding: '3px 10px', background: pill.bg, color: pill.fg }}>
+        <span style={{ fontSize: 12, fontWeight: 600, borderRadius: 'var(--radius-pill)', padding: '3px 10px', background: pill.bg, color: pill.fg }}>
           {pill.text}
         </span>
       </div>

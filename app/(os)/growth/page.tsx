@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createSeoSiteAction } from './actions'
 
 const INPUT_CLASS =
-  'w-full rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+  'w-full rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
 
 export default async function GrowthPage({
   searchParams,
@@ -32,7 +32,7 @@ export default async function GrowthPage({
       </div>
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
@@ -50,11 +50,11 @@ export default async function GrowthPage({
                 <p className="mt-1 text-sm text-[color:var(--text-2)]">{site.domain}</p>
               </div>
               {site.is_client ? (
-                <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+                <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                   Client{site.account_name ? ` · ${site.account_name}` : ''}
                 </span>
               ) : (
-                <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
+                <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
                   Internal
                 </span>
               )}
@@ -72,7 +72,7 @@ export default async function GrowthPage({
           </Link>
         ))}
         {sites.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)] md:col-span-2">
+          <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)] md:col-span-2">
             No sites yet — add engineeros.uk below to start the engine.
           </div>
         ) : null}
@@ -153,7 +153,7 @@ export default async function GrowthPage({
           <div className="md:col-span-2">
             <button
               type="submit"
-              className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+              className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
             >
               Add site
             </button>

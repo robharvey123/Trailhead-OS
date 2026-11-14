@@ -600,7 +600,7 @@ export default async function DashboardPage({
         {metrics.map((metric) => (
           <div
             key={metric.label}
-            className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4"
+            className="rounded-card border border-slate-800 bg-slate-900/70 p-4"
           >
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               {metric.label}
@@ -631,7 +631,7 @@ export default async function DashboardPage({
         monthlyLeaders={monthlySkuLeaders}
       />
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Monthly summary</h2>
         <p className="mt-2 text-sm text-slate-300">
           Sell in, promo, shipments, sell out, and variance by month.

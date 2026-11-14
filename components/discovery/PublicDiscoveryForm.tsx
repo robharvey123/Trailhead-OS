@@ -283,9 +283,9 @@ function ProgressBar({ currentStep }: { currentStep: number }) {
 
   return (
     <div className="space-y-3">
-      <div className="h-1.5 overflow-hidden rounded-full bg-[#eadfce]">
+      <div className="h-1.5 overflow-hidden rounded-pill bg-[#eadfce]">
         <div
-          className="h-full rounded-full bg-[#b76e42] transition-[width] duration-300 ease-out"
+          className="h-full rounded-pill bg-[#b76e42] transition-[width] duration-300 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -412,7 +412,7 @@ export default function PublicDiscoveryForm() {
           onChange={(event) => updateField(step.field, event.target.value)}
           onKeyDown={onAdvanceKeyDown}
           placeholder={step.placeholder}
-          className="w-full rounded-[1.75rem] border border-[#d9ccb9] bg-white px-5 py-4 text-lg text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf]"
+          className="w-full rounded-card border border-[#d9ccb9] bg-white px-5 py-4 text-lg text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf]"
         />
       )
     }
@@ -426,7 +426,7 @@ export default function PublicDiscoveryForm() {
           onChange={(event) => updateField(step.field, event.target.value)}
           onKeyDown={onAdvanceKeyDown}
           placeholder={step.hint}
-          className="min-h-40 w-full rounded-[1.75rem] border border-[#d9ccb9] bg-white px-5 py-4 text-lg text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf]"
+          className="min-h-40 w-full rounded-card border border-[#d9ccb9] bg-white px-5 py-4 text-lg text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf]"
         />
       )
     }
@@ -465,7 +465,7 @@ export default function PublicDiscoveryForm() {
 
                   updateField(step.field, option)
                 }}
-                className={`flex min-h-12 w-full items-center justify-between rounded-[1.4rem] border px-4 py-4 text-left text-base transition sm:text-lg ${
+                className={`flex min-h-12 w-full items-center justify-between rounded-card border px-4 py-4 text-left text-base transition sm:text-lg ${
                   selected
                     ? 'border-[#b76e42] bg-[#fff7ef] text-[#6f3f1f] shadow-[0_18px_45px_rgba(183,110,66,0.15)]'
                     : 'border-[#dbcdbb] bg-white text-[#334155] hover:border-[#c99a77] hover:bg-[#fffaf4]'
@@ -473,7 +473,7 @@ export default function PublicDiscoveryForm() {
               >
                 <span>{option}</span>
                 <span
-                  className={`h-5 w-5 rounded-full border ${
+                  className={`h-5 w-5 rounded-pill border ${
                     selected
                       ? 'border-[#b76e42] bg-[#b76e42] ring-4 ring-[#f3dec8]'
                       : 'border-[#cbb8a1] bg-white'
@@ -491,7 +491,7 @@ export default function PublicDiscoveryForm() {
               onChange={(event) => updateField(step.field, event.target.value)}
               onKeyDown={onAdvanceKeyDown}
               placeholder="Please describe your business"
-              className="w-full rounded-[1.4rem] border border-[#d9ccb9] bg-white px-5 py-4 text-base text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf] sm:text-lg"
+              className="w-full rounded-card border border-[#d9ccb9] bg-white px-5 py-4 text-base text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf] sm:text-lg"
             />
           ) : null}
 
@@ -510,7 +510,7 @@ export default function PublicDiscoveryForm() {
                         key={option}
                         type="button"
                         onClick={() => updateField('budget', selectedBudget ? '' : option)}
-                        className={`flex min-h-12 w-full items-center justify-between rounded-[1.4rem] border px-4 py-4 text-left text-base transition sm:text-lg ${
+                        className={`flex min-h-12 w-full items-center justify-between rounded-card border px-4 py-4 text-left text-base transition sm:text-lg ${
                           selectedBudget
                             ? 'border-[#b76e42] bg-[#fff7ef] text-[#6f3f1f] shadow-[0_18px_45px_rgba(183,110,66,0.15)]'
                             : 'border-[#dbcdbb] bg-white text-[#334155] hover:border-[#c99a77] hover:bg-[#fffaf4]'
@@ -518,7 +518,7 @@ export default function PublicDiscoveryForm() {
                       >
                         <span>{option}</span>
                         <span
-                          className={`h-5 w-5 rounded-full border ${
+                          className={`h-5 w-5 rounded-pill border ${
                             selectedBudget
                               ? 'border-[#b76e42] bg-[#b76e42] ring-4 ring-[#f3dec8]'
                               : 'border-[#cbb8a1] bg-white'
@@ -539,7 +539,7 @@ export default function PublicDiscoveryForm() {
                   value={form.extra}
                   onChange={(event) => updateField('extra', event.target.value)}
                   placeholder="Extra context, must-haves, or things that haven't worked before"
-                  className="min-h-32 w-full rounded-[1.4rem] border border-[#d9ccb9] bg-white px-5 py-4 text-base text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf] sm:text-lg"
+                  className="min-h-32 w-full rounded-card border border-[#d9ccb9] bg-white px-5 py-4 text-base text-[#1f2937] shadow-[0_20px_70px_rgba(148,163,184,0.12)] outline-none transition focus:border-[#b76e42] focus:ring-4 focus:ring-[#f2d7bf] sm:text-lg"
                 />
               </div>
             </div>
@@ -564,7 +564,7 @@ export default function PublicDiscoveryForm() {
                   : [...currentValues, option]
                 updateField(step.field, nextValues)
               }}
-              className={`min-h-11 rounded-full border px-4 py-2.5 text-sm font-medium transition sm:text-base ${
+              className={`min-h-11 rounded-pill border px-4 py-2.5 text-sm font-medium transition sm:text-base ${
                 selected
                   ? 'border-[#b76e42] bg-[#fff3e3] text-[#7a451f] shadow-[0_16px_34px_rgba(183,110,66,0.16)]'
                   : 'border-[#d8c9b4] bg-white text-[#475569] hover:border-[#c99a77] hover:bg-[#fffaf4]'
@@ -586,7 +586,7 @@ export default function PublicDiscoveryForm() {
   if (isComplete) {
     return (
       <section className="flex min-h-[calc(100svh-4.5rem)] items-center justify-center px-4 py-10">
-        <div className="w-full max-w-3xl rounded-[2rem] border border-[#d8cbb9] bg-white/90 p-6 shadow-[0_28px_90px_rgba(148,163,184,0.18)] backdrop-blur sm:p-8">
+        <div className="w-full max-w-3xl rounded-card border border-[#d8cbb9] bg-white/90 p-6 shadow-[0_28px_90px_rgba(148,163,184,0.18)] backdrop-blur sm:p-8">
           <p className="text-sm uppercase tracking-[0.24em] text-[#8b7357]">Discovery sent</p>
           <h1 className="mt-4 text-3xl font-semibold text-[#1f2937] sm:text-4xl">
             All done — thank you!
@@ -595,7 +595,7 @@ export default function PublicDiscoveryForm() {
             We&apos;ll be in touch shortly to talk through your requirements.
           </p>
 
-          <div className="mt-8 grid gap-4 rounded-[1.5rem] border border-[#e5d8c7] bg-[#fcfaf6] p-5 sm:grid-cols-3">
+          <div className="mt-8 grid gap-4 rounded-card border border-[#e5d8c7] bg-[#fcfaf6] p-5 sm:grid-cols-3">
             <div>
               <p className="text-xs uppercase tracking-[0.22em] text-[#9a8060]">Business</p>
               <p className="mt-2 text-base font-medium text-[#1f2937]">{form.biz_name}</p>
@@ -636,7 +636,7 @@ export default function PublicDiscoveryForm() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-[2rem] border border-[#dccfbf] bg-white/90 p-5 shadow-[0_28px_90px_rgba(148,163,184,0.18)] backdrop-blur sm:p-8"
+          className="rounded-card border border-[#dccfbf] bg-white/90 p-5 shadow-[0_28px_90px_rgba(148,163,184,0.18)] backdrop-blur sm:p-8"
         >
           {/* Honeypot: hidden off-screen (not display:none, which some bots skip). */}
           <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
@@ -656,7 +656,7 @@ export default function PublicDiscoveryForm() {
             className="animate-os-step-enter flex min-h-[56svh] flex-col justify-between gap-8"
           >
             <div className="space-y-5">
-              <div className="inline-flex rounded-full border border-[#eadcc8] bg-[#fbf7f1] px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-[#977553]">
+              <div className="inline-flex rounded-pill border border-[#eadcc8] bg-[#fbf7f1] px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-[#977553]">
                 {step.required ? 'Required' : 'Optional'}
               </div>
               <div className="space-y-3">
@@ -677,7 +677,7 @@ export default function PublicDiscoveryForm() {
 
             <div className="space-y-4 border-t border-[#eee3d4] pt-5">
               {submitError ? (
-                <p className="rounded-2xl border border-[#e2b8b1] bg-[#fff3f1] px-4 py-3 text-sm text-[#a23c33]">
+                <p className="rounded-card border border-[#e2b8b1] bg-[#fff3f1] px-4 py-3 text-sm text-[#a23c33]">
                   {submitError}
                 </p>
               ) : null}
@@ -688,7 +688,7 @@ export default function PublicDiscoveryForm() {
                     <button
                       type="button"
                       onClick={goBack}
-                      className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#d3c4af] px-4 text-sm font-medium text-[#5a6472] transition hover:border-[#b89271] hover:text-[#2f3a48]"
+                      className="inline-flex min-h-11 items-center justify-center rounded-pill border border-[#d3c4af] px-4 text-sm font-medium text-[#5a6472] transition hover:border-[#b89271] hover:text-[#2f3a48]"
                     >
                       Back
                     </button>
@@ -698,7 +698,7 @@ export default function PublicDiscoveryForm() {
                     <button
                       type="button"
                       onClick={() => void skipOptionalStep()}
-                      className="inline-flex min-h-11 items-center justify-center rounded-full px-2 text-sm font-medium text-[#8b7357] transition hover:text-[#6f5536]"
+                      className="inline-flex min-h-11 items-center justify-center rounded-pill px-2 text-sm font-medium text-[#8b7357] transition hover:text-[#6f5536]"
                     >
                       Skip
                     </button>
@@ -709,13 +709,13 @@ export default function PublicDiscoveryForm() {
                   key={`${currentStep}-${shakeNonce}`}
                   type="submit"
                   disabled={isSubmitting}
-                  className={`inline-flex min-h-12 min-w-36 items-center justify-center gap-2 rounded-full bg-[#b76e42] px-5 text-sm font-semibold text-white transition hover:bg-[#9f5d35] disabled:cursor-not-allowed disabled:opacity-70 ${
+                  className={`inline-flex min-h-12 min-w-36 items-center justify-center gap-2 rounded-pill bg-[#b76e42] px-5 text-sm font-semibold text-white transition hover:bg-[#9f5d35] disabled:cursor-not-allowed disabled:opacity-70 ${
                     shakeNonce > 0 ? 'animate-os-shake' : ''
                   }`}
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      <span className="h-4 w-4 animate-spin rounded-pill border-2 border-white/30 border-t-white" />
                       <span>Submitting...</span>
                     </>
                   ) : (

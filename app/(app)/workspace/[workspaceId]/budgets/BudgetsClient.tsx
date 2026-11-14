@@ -78,31 +78,31 @@ export default function BudgetsClient({ workspaceId, initialBudgets, baseCurrenc
           <h1 className="mt-1 text-2xl font-semibold">Budgets</h1>
           <p className="mt-1 text-sm text-slate-400">Allocated: {fmtCurrency(totals.allocated)} &middot; Spent: {fmtCurrency(totals.spent)} &middot; Remaining: {fmtCurrency(totals.allocated - totals.spent)}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Budget</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Budget</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select value={filterCat} onChange={(e) => setFilterCat(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterCat} onChange={(e) => setFilterCat(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All categories</option>
           {BUDGET_CATEGORIES.map((c) => <option key={c} value={c}>{BUDGET_CATEGORY_LABELS[c]}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Budget' : 'New Budget'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Category</label><select value={category} onChange={(e) => setCategory(e.target.value as BudgetCategory)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{BUDGET_CATEGORIES.map((c) => <option key={c} value={c}>{BUDGET_CATEGORY_LABELS[c]}</option>)}</select></div>
-              <div className="grid grid-cols-2 gap-2"><div><label className="mb-1 block text-xs text-slate-400">Start</label><input type="date" required value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div><div><label className="mb-1 block text-xs text-slate-400">End</label><input type="date" required value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Allocated</label><input type="number" step="0.01" value={allocated} onChange={(e) => setAllocated(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Spent</label><input type="number" step="0.01" value={spent} onChange={(e) => setSpent(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Name *</label><input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Category</label><select value={category} onChange={(e) => setCategory(e.target.value as BudgetCategory)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{BUDGET_CATEGORIES.map((c) => <option key={c} value={c}>{BUDGET_CATEGORY_LABELS[c]}</option>)}</select></div>
+              <div className="grid grid-cols-2 gap-2"><div><label className="mb-1 block text-xs text-slate-400">Start</label><input type="date" required value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div><div><label className="mb-1 block text-xs text-slate-400">End</label><input type="date" required value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Allocated</label><input type="number" step="0.01" value={allocated} onChange={(e) => setAllocated(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Spent</label><input type="number" step="0.01" value={spent} onChange={(e) => setSpent(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             </div>
-            <div><label className="mb-1 block text-xs text-slate-400">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Notes</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
@@ -113,7 +113,7 @@ export default function BudgetsClient({ workspaceId, initialBudgets, baseCurrenc
           const pct = b.allocated > 0 ? Math.min((b.spent / b.allocated) * 100, 100) : 0
           const overBudget = b.spent > b.allocated
           return (
-            <div key={b.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-3">
+            <div key={b.id} className="rounded-card border border-slate-800 bg-slate-900/80 p-5 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-medium">{b.name}</h3>
@@ -126,8 +126,8 @@ export default function BudgetsClient({ workspaceId, initialBudgets, baseCurrenc
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-xs"><span className="text-slate-400">Spent</span><span className={overBudget ? 'text-rose-400' : 'text-slate-200'}>{fmtCurrency(b.spent)} / {fmtCurrency(b.allocated)}</span></div>
-                <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${overBudget ? 'bg-rose-500' : catColors[b.category]}`} style={{ width: `${pct}%` }} />
+                <div className="h-2 w-full rounded-pill bg-slate-800 overflow-hidden">
+                  <div className={`h-full rounded-pill transition-all ${overBudget ? 'bg-rose-500' : catColors[b.category]}`} style={{ width: `${pct}%` }} />
                 </div>
                 <p className="text-right text-xs text-slate-500">{pct.toFixed(0)}% used &middot; {fmtCurrency(Math.max(b.allocated - b.spent, 0))} remaining</p>
               </div>

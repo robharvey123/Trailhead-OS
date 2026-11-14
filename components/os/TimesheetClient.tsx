@@ -248,8 +248,8 @@ export default function TimesheetClient({
             <div className="stat-value" style={{ fontSize: 15, color: capLeader.pct > 100 ? 'var(--red)' : capLeader.pct >= 80 ? 'var(--amber)' : 'var(--text)' }}>
               {capLeader.e.name.split(' ')[0]}: {capLeader.used.toFixed(0)}/{capLeader.e.included_hours_monthly}h
             </div>
-            <div style={{ height: 5, background: 'var(--surface-3)', borderRadius: 999, marginTop: 6 }}>
-              <div style={{ width: `${Math.min(100, capLeader.pct)}%`, height: '100%', borderRadius: 999, background: capLeader.pct > 100 ? 'var(--red)' : capLeader.pct >= 80 ? 'var(--amber)' : 'var(--green)' }} />
+            <div style={{ height: 5, background: 'var(--surface-3)', borderRadius: 'var(--radius-pill)', marginTop: 6 }}>
+              <div style={{ width: `${Math.min(100, capLeader.pct)}%`, height: '100%', borderRadius: 'var(--radius-pill)', background: capLeader.pct > 100 ? 'var(--red)' : capLeader.pct >= 80 ? 'var(--amber)' : 'var(--green)' }} />
             </div>
           </Link>
         ) : (

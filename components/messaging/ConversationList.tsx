@@ -31,7 +31,7 @@ function Row({ c, activeId }: { c: ConversationRow; activeId?: string }) {
       href={`/messages/${c.id}`}
       style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--border)', textDecoration: 'none', background: c.id === activeId ? 'var(--surface-2)' : 'transparent' }}
     >
-      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-[var(--surface-3)] text-xs text-[var(--text-2)]">{icon}</span>
+      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-pill bg-[var(--surface-3)] text-xs text-[var(--text-2)]">{icon}</span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
           <span className="td-name" style={{ fontWeight: c.unread ? 700 : 600, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -43,7 +43,7 @@ function Row({ c, activeId }: { c: ConversationRow; activeId?: string }) {
         <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 13, color: c.unread ? 'var(--text)' : 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lastBody || 'No messages yet'}</span>
           {c.unread > 0 ? (
-            <span style={{ flex: 'none', minWidth: 18, height: 18, padding: '0 5px', borderRadius: 9, background: 'var(--accent)', color: '#fff', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.unread}</span>
+            <span style={{ flex: 'none', minWidth: 18, height: 18, padding: '0 5px', borderRadius: 'var(--radius-control)', background: 'var(--accent)', color: '#fff', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{c.unread}</span>
           ) : null}
         </span>
       </span>

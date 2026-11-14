@@ -13,7 +13,7 @@ const STAGE_CLASSES: Record<DealStage, string> = {
 export default function StageBadge({ stage }: { stage: DealStage }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${STAGE_CLASSES[stage]}`}
+      className={`inline-flex items-center rounded-pill border px-2.5 py-0.5 text-[11px] font-medium ${STAGE_CLASSES[stage]}`}
     >
       {stage}
     </span>

@@ -46,7 +46,7 @@ export default function DealKanban({ deals, onMove, onSelect }: DealKanbanProps)
             key={stage}
             onDrop={(event) => handleDrop(event, stage)}
             onDragOver={handleDragOver}
-            className="os-card flex min-h-[28rem] w-[19rem] min-w-[19rem] flex-shrink-0 flex-col rounded-3xl p-4"
+            className="os-card flex min-h-[28rem] w-[19rem] min-w-[19rem] flex-shrink-0 flex-col rounded-card p-4"
           >
             <div className="flex items-start justify-between gap-3 border-b border-[color:var(--border)] pb-3">
               <div>
@@ -57,14 +57,14 @@ export default function DealKanban({ deals, onMove, onSelect }: DealKanbanProps)
                   {formatCurrency(total, 'GBP')}
                 </p>
               </div>
-              <span className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs text-[color:var(--text-2)]">
+              <span className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2.5 py-1 text-xs text-[color:var(--text-2)]">
                 {columnDeals.length}
               </span>
             </div>
 
             <div className="mt-4 flex flex-1 flex-col gap-3">
               {columnDeals.length === 0 ? (
-                <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 text-center text-sm text-[color:var(--text-3)]">
+                <div className="flex flex-1 items-center justify-center rounded-card border border-dashed border-[color:var(--border)] bg-[var(--surface-2)] px-4 text-center text-sm text-[color:var(--text-3)]">
                   Drop a deal here
                 </div>
               ) : (

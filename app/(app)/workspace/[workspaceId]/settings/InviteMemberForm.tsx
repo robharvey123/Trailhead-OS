@@ -41,7 +41,7 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
-          className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
         />
       </div>
       <div>
@@ -51,7 +51,7 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
-          className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
         />
       </div>
       <div>
@@ -59,7 +59,7 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
         <select
           value={role}
           onChange={e => setRole(e.target.value)}
-          className="w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
         >
           <option value="viewer">Viewer</option>
           <option value="editor">Editor</option>
@@ -69,7 +69,7 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+        className="rounded-control bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
       >
         {loading ? "Adding..." : "Add User"}
       </button>

@@ -52,7 +52,7 @@ export default async function GrowthBriefDetailPage({
             <form action={approveBriefAction.bind(null, site.id, brief.id)}>
               <button
                 type="submit"
-                className="rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                className="rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
               >
                 Approve &amp; queue draft
               </button>
@@ -60,26 +60,26 @@ export default async function GrowthBriefDetailPage({
             <form action={rejectBriefAction.bind(null, site.id, brief.id)}>
               <button
                 type="submit"
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-red-300 hover:text-red-600"
+                className="rounded-card border border-[color:var(--border)] px-4 py-3 text-sm text-[color:var(--text-2)] transition hover:border-[var(--red)]/40 hover:text-[var(--red-strong)]"
               >
                 Reject
               </button>
             </form>
           </div>
         ) : (
-          <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
+          <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs font-medium text-[color:var(--text-2)]">
             {brief.status}
           </span>
         )}
       </div>
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
@@ -127,7 +127,7 @@ export default async function GrowthBriefDetailPage({
               brief.secondary_keywords.map((k) => (
                 <span
                   key={k}
-                  className="rounded-full border border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)]"
+                  className="rounded-pill border border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)]"
                 >
                   {k}
                 </span>

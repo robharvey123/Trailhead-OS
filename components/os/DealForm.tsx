@@ -80,7 +80,7 @@ export default function DealForm({
   }
 
   const inputClass =
-    'w-full rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
+    'w-full rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[color:var(--text)] placeholder-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none'
   const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-[color:var(--text-2)]'
 
   return (
@@ -248,7 +248,7 @@ export default function DealForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[color:var(--text)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[color:var(--text)]"
           >
             Cancel
           </button>
@@ -256,7 +256,7 @@ export default function DealForm({
             type="button"
             onClick={handleSubmit}
             disabled={saving}
-            className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save deal'}
           </button>

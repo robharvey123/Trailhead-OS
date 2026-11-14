@@ -53,7 +53,7 @@ export default function EngagementForm({
   const [error, setError] = useState('')
 
   const input =
-    'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+    'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
   const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
 
   async function submit() {

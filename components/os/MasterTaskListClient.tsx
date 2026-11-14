@@ -176,7 +176,7 @@ export default function MasterTaskListClient({
             type="checkbox"
             checked={table.getIsAllRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
-            className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)]"
+            className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)]"
           />
         ),
         cell: ({ row }) => (
@@ -184,7 +184,7 @@ export default function MasterTaskListClient({
             type="checkbox"
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
-            className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)]"
+            className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)]"
           />
         ),
       }),
@@ -281,7 +281,7 @@ export default function MasterTaskListClient({
             {info.getValue().map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-1 text-[11px] text-[color:var(--text-2)]"
+                className="rounded-pill border border-[color:var(--border)] bg-[var(--surface-2)] px-2 py-1 text-[11px] text-[color:var(--text-2)]"
               >
                 #{tag}
               </span>
@@ -337,13 +337,13 @@ export default function MasterTaskListClient({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="inline-flex rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-1">
+          <div className="inline-flex rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-1">
             {(['table', 'kanban'] as const).map((mode) => (
               <button
                 key={mode}
                 type="button"
                 onClick={() => setViewMode(mode)}
-                className={`rounded-xl px-4 py-2 text-sm font-medium capitalize transition ${
+                className={`rounded-card px-4 py-2 text-sm font-medium capitalize transition ${
                   viewMode === mode
                     ? 'bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                     : 'text-[color:var(--text-2)] hover:text-[color:var(--text)]'
@@ -357,7 +357,7 @@ export default function MasterTaskListClient({
           <button
             type="button"
             onClick={() => setCreatingTask(true)}
-            className="relative z-10 rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="relative z-10 rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
           >
             New task
           </button>
@@ -369,7 +369,7 @@ export default function MasterTaskListClient({
           <span className="os-eyebrow mb-2 block">
             Workstreams
           </span>
-          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
             {workstreams.map((workstream) => (
               <button
                 key={workstream.id}
@@ -379,7 +379,7 @@ export default function MasterTaskListClient({
                     toggleFilterValue(current, workstream.id)
                   )
                 }
-                className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                className={`rounded-pill border px-3 py-1.5 text-sm transition ${
                   workstreamFilter.includes(workstream.id)
                     ? 'border-transparent bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                     : 'border-[color:var(--border)] bg-[var(--surface)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
@@ -436,7 +436,7 @@ export default function MasterTaskListClient({
           <span className="os-eyebrow mb-2 block">
             Priority
           </span>
-          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
+          <div className="flex min-h-[3.25rem] flex-wrap gap-2 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-3">
             {PRIORITIES.map((priority) => (
               <button
                 key={priority}
@@ -446,7 +446,7 @@ export default function MasterTaskListClient({
                     toggleFilterValue(current, priority)
                   )
                 }
-                className={`rounded-full border px-3 py-1.5 text-sm capitalize transition ${
+                className={`rounded-pill border px-3 py-1.5 text-sm capitalize transition ${
                   priorityFilter.includes(priority)
                     ? 'border-transparent bg-[var(--accent-dim)] text-[color:var(--accent-strong)]'
                     : 'border-[color:var(--border)] bg-[var(--surface)] text-[color:var(--text-2)] hover:border-[color:var(--accent)]'
@@ -482,12 +482,12 @@ export default function MasterTaskListClient({
           />
         </label>
 
-        <label className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
+        <label className="flex items-center gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3">
           <input
             type="checkbox"
             checked={masterOnly}
             onChange={(event) => setMasterOnly(event.target.checked)}
-            className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)]"
+            className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)]"
           />
           <span className="text-sm text-[color:var(--text-2)]">
             Show only master to-do tasks
@@ -510,7 +510,7 @@ export default function MasterTaskListClient({
                   current.filter((entry) => entry !== workstreamId)
                 )
               }
-              className="rounded-full border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
+              className="rounded-pill border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
             >
               {workstreamsById.get(workstreamId)?.label ?? 'Workstream'} ×
             </button>
@@ -520,7 +520,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setAccountFilter('')}
-              className="rounded-full border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
+              className="rounded-pill border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
             >
               {accountsById.get(accountFilter)?.name ?? 'Account'} ×
             </button>
@@ -535,7 +535,7 @@ export default function MasterTaskListClient({
                   current.filter((entry) => entry !== priority)
                 )
               }
-              className="rounded-full border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm capitalize text-[color:var(--accent-strong)]"
+              className="rounded-pill border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm capitalize text-[color:var(--accent-strong)]"
             >
               {priority} ×
             </button>
@@ -545,7 +545,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setDueFrom('')}
-              className="rounded-full border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
+              className="rounded-pill border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
             >
               From {dueFrom} ×
             </button>
@@ -555,7 +555,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setDueTo('')}
-              className="rounded-full border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
+              className="rounded-pill border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
             >
               To {dueTo} ×
             </button>
@@ -565,7 +565,7 @@ export default function MasterTaskListClient({
             <button
               type="button"
               onClick={() => setMasterOnly(false)}
-              className="rounded-full border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
+              className="rounded-pill border border-transparent bg-[var(--accent-dim)] px-3 py-1 text-sm text-[color:var(--accent-strong)]"
             >
               Master to-do only ×
             </button>
@@ -574,7 +574,7 @@ export default function MasterTaskListClient({
           <button
             type="button"
             onClick={clearAllFilters}
-            className="ml-auto rounded-full border border-[color:var(--border)] px-3 py-1 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
+            className="ml-auto rounded-pill border border-[color:var(--border)] px-3 py-1 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent-strong)]"
           >
             Clear all
           </button>
@@ -601,7 +601,7 @@ export default function MasterTaskListClient({
                 }
               )
             }
-            className="rounded-2xl border border-[color:var(--red)] px-4 py-2 text-sm text-[color:var(--red-strong)]"
+            className="rounded-card border border-[color:var(--red)] px-4 py-2 text-sm text-[color:var(--red-strong)]"
           >
             Mark complete
           </button>
@@ -643,7 +643,7 @@ export default function MasterTaskListClient({
                 }
               )
             }
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
           >
             Change priority
           </button>
@@ -674,7 +674,7 @@ export default function MasterTaskListClient({
                 }
               )
             }}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
           >
             Add/remove master flag
           </button>
@@ -684,14 +684,14 @@ export default function MasterTaskListClient({
               setEmailModalTasks(selectedTasks)
               setEmailModalOpen(true)
             }}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)]"
           >
             Email selected
           </button>
           <button
             type="button"
             onClick={() => setHardDeleteOpen(true)}
-            className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)]"
+            className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-4 py-2 text-sm font-medium text-[color:var(--red-strong)]"
           >
             Delete selected
           </button>

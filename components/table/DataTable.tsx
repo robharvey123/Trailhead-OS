@@ -120,7 +120,7 @@ export default function DataTable<T>({
               onChange={(event) => setGlobalFilter(event.target.value)}
               placeholder={filterPlaceholder}
               aria-label={filterPlaceholder}
-              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 md:max-w-xs"
+              className="w-full rounded-control border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 md:max-w-xs"
             />
             {monthOptions?.length ? (
               <label className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
@@ -128,7 +128,7 @@ export default function DataTable<T>({
                 <select
                   value={monthFilter}
                   onChange={(event) => setMonthFilter(event.target.value)}
-                  className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+                  className="rounded-control border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200"
                 >
                   <option value="">All</option>
                   {monthOptions.map((option) => (
@@ -143,14 +143,14 @@ export default function DataTable<T>({
           <button
             type="button"
             onClick={handleExport}
-            className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
+            className="rounded-pill border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
           >
             Export CSV
           </button>
         </div>
       ) : null}
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="min-w-full divide-y divide-slate-800 text-sm">
           <thead className="sticky top-0 bg-slate-950 text-xs uppercase tracking-[0.2em] text-slate-400">
             {table.getHeaderGroups().map((headerGroup) => (

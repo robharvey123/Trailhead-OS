@@ -351,7 +351,7 @@ export default function CalendarIntegrationsClient({
   return (
     <div className="space-y-8">
       {googleAccounts.some((a) => a.needs_reconnect) && (
-        <div className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] px-5 py-4">
+        <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] px-5 py-4">
           <p className="text-sm font-semibold text-[color:var(--red-strong)]">A Google account needs reconnecting</p>
           <p className="mt-1 text-sm text-[color:var(--text-2)]">
             Google rejected the stored access for one or more accounts (token expired or revoked), so
@@ -375,7 +375,7 @@ export default function CalendarIntegrationsClient({
             type="button"
             disabled={syncState === 'syncing'}
             onClick={handleSyncAll}
-            className="rounded-2xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+            className="rounded-card bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
           >
             {syncState === 'syncing'
               ? 'Syncing…'
@@ -406,7 +406,7 @@ export default function CalendarIntegrationsClient({
           </div>
           <a
             href="/api/auth/google"
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
           >
             + Connect Google account
           </a>
@@ -421,7 +421,7 @@ export default function CalendarIntegrationsClient({
             {googleAccounts.map((account) => (
               <div
                 key={account.id}
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface)]"
+                className="rounded-card border border-[color:var(--border)] bg-[var(--surface)]"
               >
                 <button
                   type="button"
@@ -429,7 +429,7 @@ export default function CalendarIntegrationsClient({
                   className="flex w-full items-center justify-between px-5 py-4 text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-blue-600">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-pill bg-[var(--accent-dim)] text-[var(--accent-strong)]">
                       <svg
                         className="h-5 w-5"
                         fill="none"
@@ -448,7 +448,7 @@ export default function CalendarIntegrationsClient({
                       <p className="flex items-center gap-2 font-medium text-[color:var(--text)]">
                         {account.email}
                         {account.needs_reconnect && (
-                          <span className="rounded-full border border-[color:var(--red)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--red-strong)]">
+                          <span className="rounded-pill border border-[color:var(--red)] px-2 py-0.5 text-[10px] font-semibold text-[color:var(--red-strong)]">
                             Reconnect required
                           </span>
                         )}
@@ -482,7 +482,7 @@ export default function CalendarIntegrationsClient({
                     </span>
                     <a
                       href="/api/auth/google"
-                      className="shrink-0 rounded-xl bg-[var(--accent)] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[var(--accent-hover)]"
+                      className="shrink-0 rounded-card bg-[var(--accent)] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[var(--accent-hover)]"
                     >
                       Reconnect
                     </a>
@@ -514,10 +514,10 @@ export default function CalendarIntegrationsClient({
                                   onChange={() =>
                                     toggleCalendar(account.id, cal.id)
                                   }
-                                  className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-blue-500 focus:ring-blue-500"
+                                  className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[var(--accent-strong)] focus:ring-[var(--accent)]"
                                 />
                                 <span
-                                  className="inline-block h-3 w-3 rounded-full"
+                                  className="inline-block h-3 w-3 rounded-pill"
                                   style={{
                                     backgroundColor:
                                       cal.backgroundColor ?? '#3B82F6',
@@ -546,7 +546,7 @@ export default function CalendarIntegrationsClient({
                                         | 'both'
                                     )
                                   }
-                                  className="rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
+                                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
                                 >
                                   <option value="pull">Pull only</option>
                                   <option value="push">Push only</option>
@@ -564,7 +564,7 @@ export default function CalendarIntegrationsClient({
                             onClick={() =>
                               saveCalendarSelections(account.id)
                             }
-                            className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500 disabled:opacity-50"
+                            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent)] disabled:opacity-50"
                           >
                             {savingCalendars ? 'Saving…' : 'Save selections'}
                           </button>
@@ -595,7 +595,7 @@ export default function CalendarIntegrationsClient({
           </div>
           <a
             href="/api/auth/microsoft"
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
           >
             + Connect Microsoft account
           </a>
@@ -610,7 +610,7 @@ export default function CalendarIntegrationsClient({
             {microsoftAccounts.map((account) => (
               <div
                 key={account.id}
-                className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface)]"
+                className="rounded-card border border-[color:var(--border)] bg-[var(--surface)]"
               >
                 <button
                   type="button"
@@ -618,7 +618,7 @@ export default function CalendarIntegrationsClient({
                   className="flex w-full items-center justify-between px-5 py-4 text-left"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500/20 text-sky-600">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-pill bg-[var(--accent-dim)] text-[var(--accent-strong)]">
                       <svg
                         className="h-5 w-5"
                         fill="none"
@@ -684,10 +684,10 @@ export default function CalendarIntegrationsClient({
                                   onChange={() =>
                                     toggleMsCalendar(account.id, cal.id)
                                   }
-                                  className="h-4 w-4 rounded border-[color:var(--border)] bg-[var(--surface-2)] text-sky-500 focus:ring-sky-500"
+                                  className="h-4 w-4 rounded-control border-[color:var(--border)] bg-[var(--surface-2)] text-[var(--accent-strong)] focus:ring-[var(--accent)]"
                                 />
                                 <span
-                                  className="inline-block h-3 w-3 rounded-full"
+                                  className="inline-block h-3 w-3 rounded-pill"
                                   style={{
                                     backgroundColor: cal.colour ?? '#3B82F6',
                                   }}
@@ -715,7 +715,7 @@ export default function CalendarIntegrationsClient({
                                         | 'both'
                                     )
                                   }
-                                  className="rounded-xl border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
+                                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-3 py-1.5 text-xs text-[color:var(--text-2)]"
                                 >
                                   <option value="pull">Pull only</option>
                                   <option value="push">Push only</option>
@@ -733,7 +733,7 @@ export default function CalendarIntegrationsClient({
                             onClick={() =>
                               saveMsCalendarSelections(account.id)
                             }
-                            className="rounded-2xl bg-sky-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-sky-500 disabled:opacity-50"
+                            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent)] disabled:opacity-50"
                           >
                             {savingMsCalendars ? 'Saving…' : 'Save selections'}
                           </button>
@@ -766,7 +766,7 @@ export default function CalendarIntegrationsClient({
           <button
             type="button"
             onClick={() => setShowAddFeed(true)}
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
           >
             + Add feed
           </button>
@@ -774,7 +774,7 @@ export default function CalendarIntegrationsClient({
 
         {/* Add feed form */}
         {showAddFeed && (
-          <div className="mt-6 rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-5 space-y-4">
+          <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-5 space-y-4">
             <div>
               <label className="os-eyebrow">
                 Feed name
@@ -783,7 +783,7 @@ export default function CalendarIntegrationsClient({
                 value={feedName}
                 onChange={(e) => setFeedName(e.target.value)}
                 placeholder="e.g. iCloud Personal, Outlook Work"
-                className="mt-2 w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)]"
+                className="mt-2 w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)]"
               />
             </div>
             <div>
@@ -794,7 +794,7 @@ export default function CalendarIntegrationsClient({
                 value={feedUrl}
                 onChange={(e) => setFeedUrl(e.target.value)}
                 placeholder="https://... or webcal://..."
-                className="mt-2 w-full rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)]"
+                className="mt-2 w-full rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)]"
               />
             </div>
             <div>
@@ -807,7 +807,7 @@ export default function CalendarIntegrationsClient({
                     key={c.value}
                     type="button"
                     onClick={() => setFeedColour(c.value)}
-                    className={`h-8 w-8 rounded-full border-2 transition ${
+                    className={`h-8 w-8 rounded-pill border-2 transition ${
                       feedColour === c.value
                         ? 'border-[color:var(--text)] scale-110'
                         : 'border-transparent opacity-60 hover:opacity-100'
@@ -830,7 +830,7 @@ export default function CalendarIntegrationsClient({
                 type="button"
                 disabled={feedSaving || !feedName.trim() || !feedUrl.trim()}
                 onClick={handleAddFeed}
-                className="rounded-2xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-500 disabled:opacity-50"
+                className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--accent)] disabled:opacity-50"
               >
                 {feedSaving ? 'Adding…' : 'Add & sync'}
               </button>
@@ -840,14 +840,14 @@ export default function CalendarIntegrationsClient({
                   setShowAddFeed(false)
                   setFeedError(null)
                 }}
-                className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
               >
                 Cancel
               </button>
             </div>
 
             {/* How-to guide */}
-            <details className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
+            <details className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3 text-sm text-[color:var(--text-2)]">
               <summary className="cursor-pointer font-medium text-[color:var(--text)]">
                 How to find your iCal URL
               </summary>
@@ -904,11 +904,11 @@ export default function CalendarIntegrationsClient({
             {feeds.map((feed) => (
               <div
                 key={feed.id}
-                className="flex items-center justify-between rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] px-5 py-4"
+                className="flex items-center justify-between rounded-card border border-[color:var(--border)] bg-[var(--surface)] px-5 py-4"
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className="inline-block h-3 w-3 rounded-full"
+                    className="inline-block h-3 w-3 rounded-pill"
                     style={{ backgroundColor: feed.colour }}
                   />
                   <div>
@@ -931,7 +931,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleSyncFeed(feed.id)}
-                    className="rounded-xl border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                    className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                     title="Sync now"
                   >
                     ↻ Sync
@@ -939,7 +939,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleToggleFeed(feed)}
-                    className={`rounded-xl border px-3 py-1.5 text-xs transition ${
+                    className={`rounded-card border px-3 py-1.5 text-xs transition ${
                       feed.enabled
                         ? 'border-[color:var(--green)] text-[color:var(--green-strong)]'
                         : 'border-[color:var(--border)] text-[color:var(--text-3)]'
@@ -950,7 +950,7 @@ export default function CalendarIntegrationsClient({
                   <button
                     type="button"
                     onClick={() => handleDeleteFeed(feed.id)}
-                    className="rounded-xl border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
+                    className="rounded-card border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--red-strong)] transition hover:border-[color:var(--red)]"
                   >
                     Remove
                   </button>

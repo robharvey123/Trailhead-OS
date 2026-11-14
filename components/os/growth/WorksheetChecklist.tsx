@@ -31,7 +31,7 @@ export default function WorksheetChecklist({
               .filter((i) => i.group === group)
               .map((item) => (
                 <li key={item.key}>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]">
+                  <label className="flex cursor-pointer items-start gap-3 rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]">
                     <input
                       type="checkbox"
                       checked={Boolean(optimistic[item.key])}

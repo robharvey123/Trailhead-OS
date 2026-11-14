@@ -322,7 +322,7 @@ export default function MessageClient({
             const mine = m.sender_id === meId
             const editable = mine && !m.deleted_at && !m.pending && now - new Date(m.created_at).getTime() < EDIT_WINDOW_MS
             return (
-              <div key={m.id} data-mid={m.id} style={{ borderRadius: 12, transition: 'background 0.4s', background: m.id === flashId ? 'var(--accent-dim)' : 'transparent', padding: m.id === flashId ? 4 : 0 }}>
+              <div key={m.id} data-mid={m.id} style={{ borderRadius: 'var(--radius-card)', transition: 'background 0.4s', background: m.id === flashId ? 'var(--accent-dim)' : 'transparent', padding: m.id === flashId ? 4 : 0 }}>
                 <MessageBubble id={m.id} body={m.body} mine={mine} at={m.created_at} pending={m.pending} edited={!!m.edited_at} deleted={!!m.deleted_at} editable={editable} attachments={m.attachments} mentions={m.mentions} createdTask={createdTasks[m.id] ?? null} onEdit={handleEdit} onRequestDelete={(id) => setDeleteTargetId(id)} onConvert={() => setConvertMsg(m)} />
                 {m.id === lastSentId && !m.deleted_at ? <ReadIndicator label={receiptLabel} /> : null}
               </div>

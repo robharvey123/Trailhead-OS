@@ -55,8 +55,8 @@ function DeltaChip({ delta, goodWhenDown }: { delta: number | null; goodWhenDown
   const improving = goodWhenDown ? delta < 0 : delta > 0
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${
-        improving ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+      className={`rounded-pill px-2 py-0.5 text-[11px] font-medium tabular-nums ${
+        improving ? 'bg-[var(--emerald-dim)] text-[var(--emerald-strong)]' : 'bg-[var(--red-dim)] text-[var(--red-strong)]'
       }`}
     >
       {delta > 0 ? '+' : ''}
@@ -468,7 +468,7 @@ export default async function GrowthSitePage({
                 Score
               </span>
             </div>
-            <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-2xl border border-[color:var(--border)] bg-white p-4 shadow-lg group-focus-within:visible group-hover:visible">
+            <div className="invisible absolute right-0 top-full z-20 mt-2 w-80 rounded-card border border-[color:var(--border)] bg-white p-4 shadow-[var(--shadow-lg)] group-focus-within:visible group-hover:visible">
               {latestScore ? (
                 <>
                   <p className="text-xs text-[color:var(--text-2)]">{latestScore.breakdown.summary}</p>
@@ -511,12 +511,12 @@ export default async function GrowthSitePage({
       </div>
 
       {resolved?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-card border border-[var(--red)]/40 bg-[var(--red-dim)] px-4 py-3 text-sm text-[var(--red-strong)]">
           {resolved.error}
         </div>
       ) : null}
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
@@ -561,20 +561,20 @@ export default async function GrowthSitePage({
               <li key={action.label}>
                 <Link
                   href={action.href}
-                  className="flex items-start gap-3 rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm transition hover:border-[color:var(--accent)]"
+                  className="flex items-start gap-3 rounded-card border border-[color:var(--border)] px-4 py-3 text-sm transition hover:border-[color:var(--accent)]"
                 >
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent-dim)] text-xs font-semibold text-[color:var(--accent-strong)]">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-[var(--accent-dim)] text-xs font-semibold text-[color:var(--accent-strong)]">
                     {i + 1}
                   </span>
                   <span className="min-w-0 grow">
                     <span className="block font-medium text-[color:var(--text)]">
                       {action.label}
                       <span
-                        className={`ml-2 rounded-full border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
+                        className={`ml-2 rounded-pill border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${
                           action.kind === 'paid'
-                            ? 'border-violet-200 bg-violet-50 text-violet-700'
+                            ? 'border-[var(--grey)]/40 bg-[var(--grey-dim)] text-[var(--grey-strong)]'
                             : action.kind === 'organic'
-                              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                              ? 'border-[var(--emerald)]/40 bg-[var(--emerald-dim)] text-[var(--emerald-strong)]'
                               : 'border-[color:var(--border)] text-[color:var(--text-3)]'
                         }`}
                       >
@@ -607,7 +607,7 @@ export default async function GrowthSitePage({
             </Link>
           </div>
           {data.keywords.length === 0 ? (
-            <div className="mt-4 rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+            <div className="mt-4 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
               No keywords yet. Sync GSC or queue keyword research below.
             </div>
           ) : (
@@ -663,7 +663,7 @@ export default async function GrowthSitePage({
         <div className="mt-4 flex items-stretch gap-2 overflow-x-auto">
           {pipeline.map((stage, i) => (
             <div key={stage.label} className="flex min-w-28 grow items-center gap-2">
-              <div className="grow rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center">
+              <div className="grow rounded-card border border-[color:var(--border)] px-4 py-3 text-center">
                 <p className="text-lg font-semibold tabular-nums text-[color:var(--text)]">
                   {stage.count}
                 </p>
@@ -692,7 +692,7 @@ export default async function GrowthSitePage({
             rows={2}
             required
             placeholder="job management software, field service app, digital job sheets"
-            className="min-w-64 grow rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+            className="min-w-64 grow rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
           />
           <PendingButton variant="primary" pendingLabel="Queueing with DataForSEO…">
             Queue research (Google Ads ideas)
@@ -704,7 +704,7 @@ export default async function GrowthSitePage({
             rows={1}
             required
             placeholder="Up to 5 seeds for Labs suggestions + related keywords (instant, tagged by source)"
-            className="min-w-64 grow rounded-2xl border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
+            className="min-w-64 grow rounded-control border border-[color:var(--border)] bg-white px-4 py-2.5 text-sm text-[color:var(--text)] placeholder:text-[color:var(--text-3)] focus:border-[color:var(--accent)] focus:outline-none"
           />
           <PendingButton pendingLabel="Asking DataForSEO Labs…">Expand with Labs</PendingButton>
         </form>

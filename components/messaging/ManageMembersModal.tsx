@@ -56,7 +56,7 @@ export default function ManageMembersModal({
     setAdding(false); setSelected(new Set()); setQuery('')
   }
 
-  const input = 'w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }} onClick={() => !busy && onClose()}>
@@ -68,7 +68,7 @@ export default function ManageMembersModal({
             <input className={input} placeholder="Search people…" value={query} onChange={(e) => setQuery(e.target.value)} autoFocus />
             <div style={{ display: 'grid', gap: 2, maxHeight: 200, overflowY: 'auto' }}>
               {addable.map((u) => (
-                <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-[8px] px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)]">
+                <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-control px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)]">
                   <input type="checkbox" checked={selected.has(u.id)} onChange={() => setSelected((p) => { const n = new Set(p); if (n.has(u.id)) n.delete(u.id); else n.add(u.id); return n })} />
                   <span>{u.name}</span>
                 </label>
@@ -84,8 +84,8 @@ export default function ManageMembersModal({
           <>
             <div style={{ display: 'grid', gap: 2, maxHeight: 280, overflowY: 'auto' }}>
               {members.map((m) => (
-                <div key={m.userId} className="flex items-center gap-3 rounded-[8px] px-3 py-2 text-sm">
-                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">{m.name.slice(0, 2).toUpperCase()}</span>
+                <div key={m.userId} className="flex items-center gap-3 rounded-control px-3 py-2 text-sm">
+                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-pill bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">{m.name.slice(0, 2).toUpperCase()}</span>
                   <span style={{ flex: 1, color: 'var(--text)' }}>{m.name}{m.userId === meId ? ' (you)' : ''}</span>
                   {m.role === 'admin' ? <span className="channel-tag">admin</span> : null}
                   {isAdmin && m.userId !== meId ? (

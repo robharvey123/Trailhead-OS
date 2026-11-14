@@ -272,7 +272,7 @@ export default function QuoteDetailClient({
   return (
     <div className="space-y-6">
       {warning === 'edit-blocked' ? (
-        <div className="rounded-[1.75rem] border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
+        <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-5 py-4 text-sm text-[color:var(--amber-strong)]">
           Accepted and converted quotes are locked. You were redirected back to the detail view.
         </div>
       ) : null}
@@ -289,11 +289,11 @@ export default function QuoteDetailClient({
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <h1 className="os-page-title">{quoteState.quote_number}</h1>
                   {quoteState.pricing_tier ? (
-                    <span className="rounded-full border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
+                    <span className="rounded-pill border border-[color:var(--accent)] bg-[var(--accent-dim)] px-3 py-1 text-xs font-medium text-[color:var(--accent-strong)]">
                       {quoteState.pricing_tier.name} tier
                     </span>
                   ) : null}
-                  <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
+                  <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
                     v{quoteState.version}
                   </span>
                 </div>
@@ -463,7 +463,7 @@ export default function QuoteDetailClient({
           </div>
 
           {quoteState.ai_generated && (quoteState.estimated_hours || quoteState.estimated_timeline) ? (
-            <div className="rounded-[2rem] border border-[color:var(--accent)] bg-[var(--accent-dim)] p-6">
+            <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] p-6">
               <h2 className="os-section-title">Estimated hours & timeline</h2>
               <p className="mt-4 text-sm text-[color:var(--accent-strong)]">
                 Estimated: {quoteState.estimated_hours ?? '—'} hours
@@ -478,12 +478,12 @@ export default function QuoteDetailClient({
             {quoteState.scope.length ? (
               <div className="mt-4 space-y-4">
                 {quoteState.scope.map((phase, index) => (
-                  <div key={`${phase.phase}-${index}`} className="rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <div key={`${phase.phase}-${index}`} className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="font-semibold text-[color:var(--text)]">
                         {index + 1}. {phase.phase}
                       </p>
-                      <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
+                      <span className="rounded-pill border border-[color:var(--border)] px-3 py-1 text-xs text-[color:var(--text-2)]">
                         {phase.duration}
                         {phase.estimated_hours ? ` · ${phase.estimated_hours} hrs` : ''}
                       </span>
@@ -546,7 +546,7 @@ export default function QuoteDetailClient({
                 ) : null}
 
                 <dl className="grid gap-3 md:grid-cols-3">
-                  <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                       Before buffer
                     </dt>
@@ -554,13 +554,13 @@ export default function QuoteDetailClient({
                       {quoteState.complexity_breakdown.total_hours_before_buffer} hrs
                     </dd>
                   </div>
-                  <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">Overhead</dt>
                     <dd className="mt-2 text-base font-medium text-[color:var(--text)]">
                       {quoteState.complexity_breakdown.overhead_hours} hrs
                     </dd>
                   </div>
-                  <div className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+                  <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                     <dt className="text-xs uppercase tracking-[0.18em] text-[color:var(--text-3)]">
                       Final with {quoteState.complexity_breakdown.buffer_applied}
                     </dt>
@@ -594,7 +594,7 @@ export default function QuoteDetailClient({
                     {versions.map((version) => (
                       <div
                         key={version.id}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3"
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-3"
                       >
                         <div>
                           <p className="text-sm font-medium text-[color:var(--text)]">Version {version.version}</p>
@@ -604,7 +604,7 @@ export default function QuoteDetailClient({
                           <button
                             type="button"
                             onClick={() => setDraftContent(version.content)}
-                            className="rounded-2xl border border-[color:var(--border)] px-3 py-2 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                            className="rounded-card border border-[color:var(--border)] px-3 py-2 text-xs font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                           >
                             Restore into draft
                           </button>
@@ -657,7 +657,7 @@ export default function QuoteDetailClient({
             <p className="os-eyebrow">Status</p>
             <StatusBadge status={quoteState.status} kind="quote" className="mt-4" />
 
-            <div className="mt-6 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+            <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
               <p className="os-eyebrow">AI handoff</p>
               {quoteState.project ? (
                 <>
@@ -666,7 +666,7 @@ export default function QuoteDetailClient({
                   </p>
                   <Link
                     href={`/projects/records/${quoteState.project.id}`}
-                    className="mt-3 block rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                    className="mt-3 block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                   >
                     Open linked project
                   </Link>
@@ -681,7 +681,7 @@ export default function QuoteDetailClient({
                       type="button"
                       onClick={() => void createProjectFromQuote(true)}
                       disabled={loadingAction !== null}
-                      className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                      className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                     >
                       {loadingAction === 'create-project-ai' ? 'Creating AI project...' : 'Create project with AI plan'}
                     </button>
@@ -689,7 +689,7 @@ export default function QuoteDetailClient({
                       type="button"
                       onClick={() => void createProjectFromQuote(false)}
                       disabled={loadingAction !== null}
-                      className="w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+                      className="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
                     >
                       {loadingAction === 'create-project' ? 'Creating project...' : 'Create project only'}
                     </button>
@@ -703,7 +703,7 @@ export default function QuoteDetailClient({
                   <button
                     type="button"
                     disabled
-                    className="mt-3 w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-3)] opacity-80"
+                    className="mt-3 w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-3)] opacity-80"
                   >
                     Accept quote to enable AI project planning
                   </button>
@@ -717,7 +717,7 @@ export default function QuoteDetailClient({
                   type="button"
                   onClick={() => void markReadyToSend()}
                   disabled={loadingAction !== null}
-                  className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                  className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                 >
                   Mark ready to send
                 </button>
@@ -732,7 +732,7 @@ export default function QuoteDetailClient({
                   defaultRecipient={quoteState.contact?.email ?? quoteState.enquiry?.contact_email ?? null}
                   defaultSubject={`Quote for ${quoteState.account?.name ?? quoteState.enquiry?.biz_name ?? quoteState.title}`}
                   defaultMessage={`Hi,\n\nPlease find the attached quote for ${quoteState.title}. Let me know if you would like to review any part of the scope.\n\nBest,\nRob`}
-                  buttonClassName="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                  buttonClassName="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                   fullWidth
                   onSent={handleQuoteSent}
                 />
@@ -744,7 +744,7 @@ export default function QuoteDetailClient({
                     type="button"
                     onClick={() => patchQuote({ status: 'accepted' })}
                     disabled={loadingAction !== null}
-                    className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                    className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                   >
                     Mark as accepted
                   </button>
@@ -752,7 +752,7 @@ export default function QuoteDetailClient({
                     type="button"
                     onClick={() => patchQuote({ status: 'declined' })}
                     disabled={loadingAction !== null}
-                    className="w-full rounded-2xl border border-[color:var(--red)] px-4 py-3 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
+                    className="w-full rounded-card border border-[color:var(--red)] px-4 py-3 text-sm text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
                   >
                     Mark as declined
                   </button>
@@ -764,7 +764,7 @@ export default function QuoteDetailClient({
                   type="button"
                   onClick={convertToInvoice}
                   disabled={loadingAction !== null}
-                  className="w-full rounded-2xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+                  className="w-full rounded-card bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
                 >
                   Convert to invoice
                 </button>
@@ -773,7 +773,7 @@ export default function QuoteDetailClient({
               {quoteState.status === 'converted' && quoteState.invoice ? (
                 <Link
                   href={`/invoicing/${quoteState.invoice.id}`}
-                  className="block rounded-2xl bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
+                  className="block rounded-card bg-[var(--accent)] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
                 >
                   View invoice →
                 </Link>
@@ -784,7 +784,7 @@ export default function QuoteDetailClient({
               {(quoteState.status === 'draft' || quoteState.status === 'review' || quoteState.status === 'sent') ? (
                 <Link
                   href={`/quotes/${quoteState.id}/edit`}
-                  className="block rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                  className="block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                 >
                   Edit quote
                 </Link>
@@ -792,7 +792,7 @@ export default function QuoteDetailClient({
 
               <a
                 href={`/api/quotes/${quoteState.id}/pdf`}
-                className="block rounded-2xl border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                className="block rounded-card border border-[color:var(--border)] px-4 py-3 text-center text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
               >
                 Download PDF
               </a>
@@ -805,7 +805,7 @@ export default function QuoteDetailClient({
                 defaultRecipient={quoteState.contact?.email ?? quoteState.enquiry?.contact_email ?? null}
                 defaultSubject={`Quote ${quoteState.quote_number} - ${quoteState.title}`}
                 defaultMessage={`Hi,\n\nPlease find the attached quote for ${quoteState.title}.\n\nLet me know if you have any questions.`}
-                buttonClassName="w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
+                buttonClassName="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)]"
                 fullWidth
               />
 
@@ -813,14 +813,14 @@ export default function QuoteDetailClient({
                 type="button"
                 onClick={duplicateQuote}
                 disabled={loadingAction !== null}
-                className="w-full rounded-2xl border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
+                className="w-full rounded-card border border-[color:var(--border)] px-4 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--accent)] disabled:opacity-50"
               >
                 Duplicate quote
               </button>
             </div>
 
             {quoteState.status === 'converted' && quoteState.invoice ? (
-              <div className="mt-6 rounded-[1.5rem] border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <div className="mt-6 rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                 <p className="os-eyebrow">Converted invoice</p>
                 <p className="mt-2 text-sm text-[color:var(--text)]">{quoteState.invoice.invoice_number}</p>
               </div>

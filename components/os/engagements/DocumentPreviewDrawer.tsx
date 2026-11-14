@@ -88,7 +88,7 @@ export default function DocumentPreviewDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={`Preview: ${name}`}
-        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-[var(--surface)] shadow-2xl transition-transform duration-200 ease-out sm:w-[560px] lg:w-[720px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col bg-[var(--surface)] shadow-[var(--shadow-lg)] transition-transform duration-200 ease-out sm:w-[560px] lg:w-[720px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {shown ? (
           <>
@@ -104,7 +104,7 @@ export default function DocumentPreviewDrawer({
                 {shown.file_path ? (
                   <a
                     href={downloadUrl}
-                    className="rounded-lg border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+                    className="rounded-control border border-[color:var(--border)] px-3 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
                   >
                     Download
                   </a>
@@ -113,7 +113,7 @@ export default function DocumentPreviewDrawer({
                   type="button"
                   onClick={onClose}
                   aria-label="Close preview"
-                  className="rounded-lg border border-[color:var(--border)] px-2.5 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
+                  className="rounded-control border border-[color:var(--border)] px-2.5 py-1.5 text-xs text-[color:var(--text-2)] hover:text-[color:var(--text)]"
                 >
                   ✕
                 </button>
@@ -152,7 +152,7 @@ export default function DocumentPreviewDrawer({
                       href={previewUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
+                      className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
                     >
                       Open PDF
                     </a>
@@ -164,7 +164,7 @@ export default function DocumentPreviewDrawer({
                     name={name}
                     sub="Inline preview unavailable for this file."
                     action={
-                      <a href={downloadUrl} className="mt-4 inline-block rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white">
+                      <a href={downloadUrl} className="mt-4 inline-block rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white">
                         Download file
                       </a>
                     }
@@ -175,7 +175,7 @@ export default function DocumentPreviewDrawer({
                   <div className="mx-auto max-w-[760px] px-4 py-6">
                     <style>{DOCX_STYLE}</style>
                     <div
-                      className="docx-preview rounded-lg bg-white p-8 text-[13.5px] leading-relaxed text-[#1a1a1a] shadow-sm"
+                      className="docx-preview rounded-control bg-white p-8 text-[13.5px] leading-relaxed text-[#1a1a1a] shadow-[var(--shadow-sm)]"
                       dangerouslySetInnerHTML={{ __html: docx.html }}
                     />
                   </div>
@@ -187,7 +187,7 @@ export default function DocumentPreviewDrawer({
                   action={
                     <a
                       href={downloadUrl}
-                      className="mt-4 inline-block rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
+                      className="mt-4 inline-block rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white"
                     >
                       Download file
                     </a>
@@ -220,7 +220,7 @@ const DOCX_STYLE = `
 `
 
 function Skeleton() {
-  return <div className="h-40 w-40 animate-pulse rounded-xl bg-[var(--surface-3)]" />
+  return <div className="h-40 w-40 animate-pulse rounded-card bg-[var(--surface-3)]" />
 }
 
 function FallbackCard({ name, sub, action }: { name: string; sub: string; action?: ReactNode }) {

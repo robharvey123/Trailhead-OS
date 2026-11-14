@@ -34,7 +34,7 @@ export default function NewChannelModal({ users, onClose }: { users: DirectoryUs
     router.push(`/messages/${res.id}`)
   }
 
-  const input = 'w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(15,23,42,0.45)' }} onClick={() => !busy && onClose()}>
@@ -52,9 +52,9 @@ export default function NewChannelModal({ users, onClose }: { users: DirectoryUs
               <p style={{ fontSize: 13, color: 'var(--text-3)', padding: '6px 4px' }}>No people found.</p>
             ) : (
               filtered.map((u) => (
-                <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-[8px] px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)]">
+                <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-control px-3 py-2 text-sm text-[var(--text)] hover:bg-[var(--surface-2)]">
                   <input type="checkbox" checked={selected.has(u.id)} onChange={() => toggle(u.id)} />
-                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">{u.name.slice(0, 2).toUpperCase()}</span>
+                  <span className="flex h-7 w-7 flex-none items-center justify-center rounded-pill bg-[var(--surface-3)] text-[11px] text-[var(--text-2)]">{u.name.slice(0, 2).toUpperCase()}</span>
                   <span>{u.name}</span>
                 </label>
               ))

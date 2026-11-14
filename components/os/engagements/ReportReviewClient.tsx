@@ -92,8 +92,8 @@ export default function ReportReviewClient(props: {
     run(() => sendReportAction(props.reportId))
   }
 
-  const input = 'w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
-  const sectionWrap = 'rounded-2xl border border-[color:var(--border)] p-4'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const sectionWrap = 'rounded-card border border-[color:var(--border)] p-4'
   const label = 'text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--text-3)]'
 
   const s = props.spine
@@ -115,22 +115,22 @@ export default function ReportReviewClient(props: {
           <h1 className="os-page-title mt-1">{KIND_LABEL[props.kind] ?? 'Report'}</h1>
           <p className="mt-1 text-sm text-[color:var(--text-2)]">{props.periodStart} → {props.periodEnd}</p>
           {props.status === 'sent' ? (
-            <p className="mt-1 text-xs text-emerald-700">Sent {props.sentAt ? new Date(props.sentAt).toLocaleString('en-GB') : ''}{props.sentByName ? ` by ${props.sentByName}` : ''}</p>
+            <p className="mt-1 text-xs text-[var(--emerald-strong)]">Sent {props.sentAt ? new Date(props.sentAt).toLocaleString('en-GB') : ''}{props.sentByName ? ` by ${props.sentByName}` : ''}</p>
           ) : null}
         </div>
         <div className="flex items-center gap-2">
-          {props.xlsxUrl ? <a href={props.xlsxUrl} className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]">Download timesheet</a> : null}
+          {props.xlsxUrl ? <a href={props.xlsxUrl} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)]">Download timesheet</a> : null}
           {!readOnly ? (
             <>
-              <button type="button" disabled={pending} onClick={regenAll} className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)] disabled:opacity-60">Regenerate prose</button>
-              <button type="button" disabled={pending} onClick={save} className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60">{savedFlash ? 'Saved ✓' : 'Save draft'}</button>
+              <button type="button" disabled={pending} onClick={regenAll} className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm text-[color:var(--text-2)] hover:text-[color:var(--text)] disabled:opacity-60">Regenerate prose</button>
+              <button type="button" disabled={pending} onClick={save} className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--accent-hover)] disabled:opacity-60">{savedFlash ? 'Saved ✓' : 'Save draft'}</button>
             </>
           ) : null}
         </div>
       </div>
 
       {props.narrativeError ? (
-        <div className="rounded-2xl border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
+        <div className="rounded-card border border-[color:var(--amber)] bg-[var(--amber-dim)] px-4 py-3 text-sm text-[color:var(--amber-strong)]">
           <strong>AI narrative not applied</strong> — the report still shows the factual lists below, but has no written prose.
           Click “Regenerate prose”, or write the sections manually. Reason: {props.narrativeError}
         </div>
@@ -141,7 +141,7 @@ export default function ReportReviewClient(props: {
         {/* PDF preview */}
         <div className="os-card p-2">
           {props.pdfUrl ? (
-            <iframe src={props.pdfUrl} title="Report PDF" className="h-[760px] w-full rounded-xl" />
+            <iframe src={props.pdfUrl} title="Report PDF" className="h-[760px] w-full rounded-card" />
           ) : (
             <p className="p-6 text-sm text-[color:var(--text-3)]">PDF not available yet. Save to render it.</p>
           )}
@@ -191,7 +191,7 @@ export default function ReportReviewClient(props: {
             <span className={label}>Sending to</span>
             <div className="mt-2 flex flex-wrap gap-2">
               {recipients.map((r) => (
-                <span key={r} className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-3)] px-2.5 py-1 text-xs text-[color:var(--text)]">
+                <span key={r} className="inline-flex items-center gap-1 rounded-pill bg-[var(--surface-3)] px-2.5 py-1 text-xs text-[color:var(--text)]">
                   {r}
                   {!readOnly ? <button type="button" onClick={() => saveRecipients(recipients.filter((x) => x !== r))} className="text-[color:var(--text-3)]">✕</button> : null}
                 </span>
@@ -201,7 +201,7 @@ export default function ReportReviewClient(props: {
             {!readOnly ? (
               <div className="mt-2 flex gap-2">
                 <input className={input} placeholder="add email…" value={recipientInput} onChange={(e) => setRecipientInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addRecipient(recipientInput) } }} />
-                <button type="button" className="rounded-2xl border border-[color:var(--border)] px-3 text-sm" onClick={() => addRecipient(recipientInput)}>Add</button>
+                <button type="button" className="rounded-card border border-[color:var(--border)] px-3 text-sm" onClick={() => addRecipient(recipientInput)}>Add</button>
               </div>
             ) : null}
             {!readOnly && props.suggested.length ? (
@@ -209,7 +209,7 @@ export default function ReportReviewClient(props: {
                 <p className="text-[11px] text-[color:var(--text-3)]">Suggested (click to add):</p>
                 <div className="mt-1 flex flex-wrap gap-2">
                   {props.suggested.filter((sg) => !recipients.includes(sg.email.toLowerCase())).map((sg) => (
-                    <button key={sg.email} type="button" onClick={() => addRecipient(sg.email)} className="rounded-full border border-dashed border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)] hover:border-[color:var(--accent)]">
+                    <button key={sg.email} type="button" onClick={() => addRecipient(sg.email)} className="rounded-pill border border-dashed border-[color:var(--border)] px-2.5 py-1 text-xs text-[color:var(--text-2)] hover:border-[color:var(--accent)]">
                       + {sg.name} ({sg.email})
                     </button>
                   ))}
@@ -217,7 +217,7 @@ export default function ReportReviewClient(props: {
               </div>
             ) : null}
             {!readOnly ? (
-              <button type="button" disabled={pending || recipients.length === 0} onClick={send} title={recipients.length === 0 ? 'Add a recipient first' : 'Send with PDF + timesheet attached'} className="mt-3 w-full rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" disabled={pending || recipients.length === 0} onClick={send} title={recipients.length === 0 ? 'Add a recipient first' : 'Send with PDF + timesheet attached'} className="mt-3 w-full rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-50">
                 {pending ? 'Sending…' : `Send${recipients.length ? ` to ${recipients.length}` : ''}`}
               </button>
             ) : null}

@@ -40,7 +40,7 @@ export default function GenerateReportControls({ engagementId }: { engagementId:
           type="button"
           disabled={pending}
           onClick={() => generate('weekly_client')}
-          className="rounded-2xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
+          className="rounded-card bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-60"
         >
           {busyKind === 'weekly_client' ? 'Generating…' : 'Weekly report'}
         </button>
@@ -48,7 +48,7 @@ export default function GenerateReportControls({ engagementId }: { engagementId:
           type="button"
           disabled={pending}
           onClick={() => generate('monthly_client')}
-          className="rounded-2xl border border-[color:var(--border)] px-4 py-2.5 text-sm font-semibold text-[color:var(--text-2)] transition hover:text-[color:var(--text)] disabled:opacity-60"
+          className="rounded-card border border-[color:var(--border)] px-4 py-2.5 text-sm font-semibold text-[color:var(--text-2)] transition hover:text-[color:var(--text)] disabled:opacity-60"
         >
           {busyKind === 'monthly_client' ? 'Generating…' : 'Monthly report'}
         </button>

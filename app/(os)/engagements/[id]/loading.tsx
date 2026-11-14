@@ -11,24 +11,24 @@ export default function EngagementDetailLoading() {
         <div className="topbar">
           <div className="space-y-2">
             <SkeletonBar className="h-3 w-28" />
-            <SkeletonBar className="h-6 w-64 rounded-lg" />
+            <SkeletonBar className="h-6 w-64 rounded-control" />
           </div>
           <div className="topbar-actions">
-            <SkeletonBar className="h-8 w-20 rounded-lg" />
-            <SkeletonBar className="h-8 w-10 rounded-lg" />
+            <SkeletonBar className="h-8 w-20 rounded-control" />
+            <SkeletonBar className="h-8 w-10 rounded-control" />
           </div>
         </div>
 
         <div className="tabbar">
           {Array.from({ length: 10 }).map((_, index) => (
-            <SkeletonBar key={index} className="my-2 mr-2 h-7 w-20 shrink-0 rounded-lg" />
+            <SkeletonBar key={index} className="my-2 mr-2 h-7 w-20 shrink-0 rounded-control" />
           ))}
         </div>
 
         <div className="grid gap-4 p-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="rounded-lg border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <div key={index} className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                 <SkeletonBar className="h-3 w-32" />
                 <div className="mt-3 space-y-2">
                   <SkeletonBar className="h-4 w-full" />
@@ -40,7 +40,7 @@ export default function EngagementDetailLoading() {
           </div>
           <div className="space-y-4">
             {Array.from({ length: 2 }).map((_, index) => (
-              <div key={index} className="rounded-lg border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
+              <div key={index} className="rounded-control border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
                 <SkeletonBar className="h-3 w-24" />
                 <div className="mt-3 space-y-2">
                   <SkeletonBar className="h-4 w-full" />

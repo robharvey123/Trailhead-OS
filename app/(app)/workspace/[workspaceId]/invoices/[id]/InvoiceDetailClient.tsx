@@ -127,7 +127,7 @@ export default function InvoiceDetailClient({
           {balanceDue > 0 && (
             <button
               onClick={() => { resetPaymentForm(); setPayAmount(balanceDue.toFixed(2)); setShowPaymentForm(true) }}
-              className="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-emerald-500"
+              className="rounded-control bg-emerald-600 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-emerald-500"
             >
               Record Payment
             </button>
@@ -135,7 +135,7 @@ export default function InvoiceDetailClient({
           <a
             href={`/api/finance/invoices/${invoice.id}/pdf`}
             download
-            className="rounded-lg border border-slate-700 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-300 hover:text-white"
+            className="rounded-control border border-slate-700 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-300 hover:text-white"
           >
             Download PDF
           </a>
@@ -145,7 +145,7 @@ export default function InvoiceDetailClient({
       {/* Invoice Details Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Left: From / To */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 space-y-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6 space-y-6">
           {hasCompany && (
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">From</p>
@@ -190,7 +190,7 @@ export default function InvoiceDetailClient({
         </div>
 
         {/* Right: Meta */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Issue Date</p>
@@ -213,7 +213,7 @@ export default function InvoiceDetailClient({
       </div>
 
       {/* Line Items Table */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-800">
+      <div className="overflow-x-auto rounded-card border border-slate-800">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
@@ -258,7 +258,7 @@ export default function InvoiceDetailClient({
 
       {/* Notes */}
       {invoice.notes && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-2">Notes</p>
           <p className="text-sm text-slate-300 whitespace-pre-wrap">{invoice.notes}</p>
         </div>
@@ -266,41 +266,41 @@ export default function InvoiceDetailClient({
 
       {/* Record Payment Form */}
       {showPaymentForm && (
-        <div className="rounded-2xl border border-emerald-900/50 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-emerald-900/50 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">Record Payment</h2>
           <form onSubmit={handleRecordPayment} className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1 block text-xs text-slate-400">Amount *</label>
-              <input required type="number" step="0.01" min="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input required type="number" step="0.01" min="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Payment Date</label>
-              <input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Account Type *</label>
-              <select value={payAccountType} onChange={(e) => setPayAccountType(e.target.value as PaymentAccountType)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={payAccountType} onChange={(e) => setPayAccountType(e.target.value as PaymentAccountType)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 {PAYMENT_ACCOUNT_TYPES.map((t) => <option key={t} value={t}>{PAYMENT_ACCOUNT_TYPE_LABELS[t]}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Payment Method</label>
-              <select value={payMethod} onChange={(e) => setPayMethod(e.target.value as PaymentMethod)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
+              <select value={payMethod} onChange={(e) => setPayMethod(e.target.value as PaymentMethod)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">
                 <option value="">Select method...</option>
                 {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{PAYMENT_METHOD_LABELS[m]}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Reference Number</label>
-              <input value={payReference} onChange={(e) => setPayReference(e.target.value)} placeholder="e.g. CHQ-001 or TXN-123" className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={payReference} onChange={(e) => setPayReference(e.target.value)} placeholder="e.g. CHQ-001 or TXN-123" className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div>
               <label className="mb-1 block text-xs text-slate-400">Notes</label>
-              <input value={payNotes} onChange={(e) => setPayNotes(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+              <input value={payNotes} onChange={(e) => setPayNotes(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
             </div>
             <div className="flex gap-2 sm:col-span-2">
-              <button type="submit" disabled={saving} className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase text-white hover:bg-emerald-500 disabled:opacity-50">{saving ? 'Saving...' : 'Record Payment'}</button>
-              <button type="button" onClick={() => { setShowPaymentForm(false); resetPaymentForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" disabled={saving} className="rounded-control bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase text-white hover:bg-emerald-500 disabled:opacity-50">{saving ? 'Saving...' : 'Record Payment'}</button>
+              <button type="button" onClick={() => { setShowPaymentForm(false); resetPaymentForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
@@ -310,11 +310,11 @@ export default function InvoiceDetailClient({
       <div>
         <h2 className="text-lg font-semibold mb-3">Payment History</h2>
         {payments.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-8 text-center text-sm text-slate-500">
+          <div className="rounded-card border border-slate-800 bg-slate-900/50 px-4 py-8 text-center text-sm text-slate-500">
             No payments recorded yet
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-slate-800">
+          <div className="overflow-x-auto rounded-card border border-slate-800">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">

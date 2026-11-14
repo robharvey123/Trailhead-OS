@@ -21,7 +21,7 @@ function Highlighted({ text, query }: { text: string; query: string }) {
   return (
     <>
       {parts.map((p, i) =>
-        re.test(p) ? <mark key={i} style={{ background: 'var(--accent-dim)', color: 'var(--accent-strong)', padding: '0 1px', borderRadius: 2 }}>{p}</mark> : <Fragment key={i}>{p}</Fragment>
+        re.test(p) ? <mark key={i} style={{ background: 'var(--accent-dim)', color: 'var(--accent-strong)', padding: '0 1px', borderRadius: 'var(--radius-control)' }}>{p}</mark> : <Fragment key={i}>{p}</Fragment>
       )}
     </>
   )

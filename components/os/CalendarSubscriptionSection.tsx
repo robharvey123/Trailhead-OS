@@ -47,7 +47,7 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
   }
 
   return (
-    <section className="os-card rounded-[2rem] p-6">
+    <section className="os-card rounded-card p-6">
       <p className="os-eyebrow">Calendar</p>
       <h2 className="os-section-title mt-2">
         Subscribe in Apple Calendar (or any calendar app)
@@ -62,7 +62,7 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
           <input
             readOnly
             value={maskedUrl}
-            className="os-input mt-2 w-full rounded-2xl px-4 py-3 text-sm"
+            className="os-input mt-2 w-full rounded-control px-4 py-3 text-sm"
           />
         </div>
 
@@ -70,20 +70,20 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
           <button
             type="button"
             onClick={() => copyUrl(fullUrl, 'main')}
-            className="rounded-2xl border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+            className="rounded-card border border-[color:var(--border)] px-4 py-2 text-sm text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
           >
             {copiedKey === 'main' ? 'Copied!' : 'Copy URL'}
           </button>
           <button
             type="button"
             onClick={() => window.open(fullUrl)}
-            className="rounded-2xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
+            className="rounded-card bg-[var(--accent)] px-4 py-2 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)]"
           >
             Open in Apple Calendar
           </button>
         </div>
 
-        <details className="os-card-inset rounded-2xl px-4 py-3 text-sm text-[color:var(--text-2)]">
+        <details className="os-card-inset rounded-card px-4 py-3 text-sm text-[color:var(--text-2)]">
           <summary className="cursor-pointer font-medium text-[color:var(--text)]">How to subscribe</summary>
           <div className="mt-4 space-y-4 text-[color:var(--text-2)]">
             <div>
@@ -115,7 +115,7 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
           </div>
         </details>
 
-        <div className="os-card-inset rounded-2xl p-4">
+        <div className="os-card-inset rounded-card p-4">
           <p className="text-sm font-medium text-[color:var(--text)]">Or subscribe to a single workstream:</p>
           <div className="mt-4 space-y-3">
             {workstreams.slice(0, 5).map((workstream) => {
@@ -126,7 +126,7 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
               return (
                 <div
                   key={workstream.id}
-                  className="rounded-2xl border border-[color:var(--border)] bg-[var(--surface)] p-3"
+                  className="rounded-card border border-[color:var(--border)] bg-[var(--surface)] p-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -136,7 +136,7 @@ export default function CalendarSubscriptionSection({ appUrl, icalSecret, workst
                     <button
                       type="button"
                       onClick={() => copyUrl(workstreamUrl, copyKey)}
-                      className="rounded-2xl border border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
+                      className="rounded-card border border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text)] transition hover:border-[color:var(--accent)]"
                     >
                       {copiedKey === copyKey ? 'Copied!' : 'Copy'}
                     </button>

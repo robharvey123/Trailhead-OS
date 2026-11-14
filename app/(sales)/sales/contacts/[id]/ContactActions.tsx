@@ -33,7 +33,7 @@ export default function ContactActions({ contactId, unsubscribed }: { contactId:
         rows={3}
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        className="w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
+        className="w-full rounded-control border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
         placeholder="What did they say?"
       />
       <div className="flex flex-wrap items-center gap-2">

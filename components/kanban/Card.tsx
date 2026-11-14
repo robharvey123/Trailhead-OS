@@ -65,7 +65,7 @@ function TaskCard({
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 10, marginBottom: 8, cursor: 'grab' }}
+      style={{ ...style, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: 10, marginBottom: 8, cursor: 'grab' }}
       {...attributes}
       {...listeners}
       onClick={() => onOpen(task.id)}
@@ -82,7 +82,7 @@ function TaskCard({
         >
           {task.title}
         </button>
-        <span title={ENGAGEMENT_TASK_PRIORITY_LABELS[task.priority]} style={{ width: 8, height: 8, borderRadius: '50%', background: PRIORITY_COLOR[task.priority], flexShrink: 0, marginTop: 4 }} />
+        <span title={ENGAGEMENT_TASK_PRIORITY_LABELS[task.priority]} style={{ width: 8, height: 8, borderRadius: 'var(--radius-pill)', background: PRIORITY_COLOR[task.priority], flexShrink: 0, marginTop: 4 }} />
       </div>
       {task.labels.length > 0 ? (
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
@@ -102,7 +102,7 @@ function TaskCard({
                   fontWeight: 600,
                   lineHeight: 1.4,
                   padding: '2px 8px',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-pill)',
                   cursor: onToggleLabel ? 'pointer' : 'default',
                   maxWidth: 180,
                   overflow: 'hidden',
@@ -128,7 +128,7 @@ function TaskCard({
             </span>
           ) : null}
         </span>
-        <span title={task.assignee?.full_name ?? 'Unassigned'} style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--surface-3)', color: 'var(--text-2)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span title={task.assignee?.full_name ?? 'Unassigned'} style={{ width: 22, height: 22, borderRadius: 'var(--radius-pill)', background: 'var(--surface-3)', color: 'var(--text-2)', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {initials(task.assignee?.full_name)}
         </span>
       </div>

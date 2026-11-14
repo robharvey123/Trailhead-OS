@@ -33,7 +33,7 @@ export default function TaskTitleEditor({ taskId, title }: { taskId: string; tit
     <input
       autoFocus
       className="topbar-title"
-      style={{ border: '1px solid var(--border)', borderRadius: 5, padding: '2px 6px', background: 'var(--surface-2)' }}
+      style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: '2px 6px', background: 'var(--surface-2)' }}
       value={value}
       disabled={pending}
       onChange={(e) => setValue(e.target.value)}

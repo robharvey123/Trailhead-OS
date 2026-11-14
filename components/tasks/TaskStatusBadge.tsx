@@ -20,10 +20,10 @@ export default function TaskStatusBadge({
   const colour = ENGAGEMENT_TASK_STATUS_COLOURS[status]
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${className}`.trim()}
+      className={`inline-flex items-center gap-1.5 rounded-pill px-2.5 py-0.5 text-[11px] font-semibold ${className}`.trim()}
       style={{ backgroundColor: `${colour}20`, color: colour }}
     >
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: colour, flexShrink: 0 }} />
+      <span style={{ width: 6, height: 6, borderRadius: 'var(--radius-pill)', background: colour, flexShrink: 0 }} />
       {ENGAGEMENT_TASK_STATUS_LABELS[status]}
     </span>
   )

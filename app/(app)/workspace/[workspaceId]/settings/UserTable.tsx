@@ -59,7 +59,7 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
       {loading ? (
         <p>Loading users...</p>
       ) : (
-        <table className="w-full text-sm border border-slate-800 rounded-lg">
+        <table className="w-full text-sm border border-slate-800 rounded-control">
           <thead>
             <tr className="bg-slate-900">
               <th className="p-2 text-left">Email</th>
@@ -86,19 +86,19 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
                         value={newPassword}
                         onChange={e => setNewPassword(e.target.value)}
                         placeholder="New password"
-                        className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-white"
+                        className="rounded-control border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-white"
                       />
                       <button
                         type="button"
                         onClick={() => handleChangePassword(user.id)}
-                        className="rounded bg-blue-600 px-2 py-1 text-white text-xs"
+                        className="rounded-control bg-blue-600 px-2 py-1 text-white text-xs"
                       >
                         Save
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditId(null)}
-                        className="rounded bg-slate-700 px-2 py-1 text-white text-xs"
+                        className="rounded-control bg-slate-700 px-2 py-1 text-white text-xs"
                       >
                         Cancel
                       </button>
@@ -107,7 +107,7 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
                     <button
                       type="button"
                       onClick={() => setEditId(user.id)}
-                      className="rounded bg-slate-700 px-2 py-1 text-white text-xs"
+                      className="rounded-control bg-slate-700 px-2 py-1 text-white text-xs"
                     >
                       Change
                     </button>

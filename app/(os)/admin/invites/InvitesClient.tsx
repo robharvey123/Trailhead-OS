@@ -74,7 +74,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
     } catch { /* clipboard may be blocked; link is shown for manual copy */ }
   }
 
-  const input = 'w-full rounded-[5px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
+  const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
   const label = 'mb-1 block text-[11px] font-medium uppercase tracking-wide text-[var(--text-3)]'
 
   return (
@@ -125,7 +125,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
           </div>
 
           {createdLink ? (
-            <div style={{ marginTop: 14, padding: 12, borderRadius: 6, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+            <div style={{ marginTop: 14, padding: 12, borderRadius: 'var(--radius-control)', background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
               <p style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 6 }}>
                 {createdLink.kind === 'sales_link'
                   ? (createdLink.emailed ? 'Sales Lead login ready and sign-in link emailed. ' : 'Sales Lead login ready, but the email did not send. Share this one-time sign-in link privately: ')

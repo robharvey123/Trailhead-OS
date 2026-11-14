@@ -103,7 +103,7 @@ export default function MessageBubble({
           <div style={{ display: 'grid', gap: 6, width: '100%' }}>
             <textarea
               autoFocus
-              className="w-full rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] resize-none"
+              className="w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)] resize-none"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -120,7 +120,7 @@ export default function MessageBubble({
           <div
             style={{
               padding: '8px 12px',
-              borderRadius: 14,
+              borderRadius: 'var(--radius-card)',
               fontSize: 14,
               lineHeight: 1.4,
               whiteSpace: 'pre-wrap',
@@ -156,14 +156,14 @@ export default function MessageBubble({
               <div
                 style={{
                   position: 'absolute', top: 22, [mine ? 'left' : 'right']: -8, zIndex: 20,
-                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 4, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: 4, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
                 } as React.CSSProperties}
               >
-                <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onConvert?.(id) }}>Create task from message</button>
+                <button className="block w-full rounded-control px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onConvert?.(id) }}>Create task from message</button>
                 {editable ? (
                   <>
-                    <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); setDraft(body); setEditing(true) }}>Edit</button>
-                    <button className="block w-full rounded-[6px] px-3 py-1.5 text-left text-sm text-[var(--red-strong)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onRequestDelete?.(id) }}>Delete</button>
+                    <button className="block w-full rounded-control px-3 py-1.5 text-left text-sm text-[var(--text)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); setDraft(body); setEditing(true) }}>Edit</button>
+                    <button className="block w-full rounded-control px-3 py-1.5 text-left text-sm text-[var(--red-strong)] hover:bg-[var(--surface-2)]" onClick={() => { setMenuOpen(false); onRequestDelete?.(id) }}>Delete</button>
                   </>
                 ) : null}
               </div>

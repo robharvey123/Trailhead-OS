@@ -15,7 +15,7 @@ export default async function NewCampaignPage({ searchParams }: { searchParams?:
   const supabase = await createClient()
   const audiences = await listAudiences(supabase).catch(() => [])
   const error = (searchParams ? await searchParams : undefined)?.error ?? null
-  const input = 'os-input w-full rounded-2xl px-4 py-3 text-sm'
+  const input = 'os-input w-full rounded-control px-4 py-3 text-sm'
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
@@ -27,10 +27,10 @@ export default async function NewCampaignPage({ searchParams }: { searchParams?:
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-[color:var(--red)] bg-[var(--red-dim)] p-4 text-sm text-[color:var(--red-strong)]">⚠ {error}</div>
+          <div className="rounded-card border border-[color:var(--red)] bg-[var(--red-dim)] p-4 text-sm text-[color:var(--red-strong)]">⚠ {error}</div>
         ) : null}
 
-        <form action={createCampaign} className="os-card space-y-4 rounded-[2rem] p-6">
+        <form action={createCampaign} className="os-card space-y-4 rounded-card p-6">
           <label className="block space-y-1 text-sm">
             <span className="text-[var(--text-2)]">Name</span>
             <input name="name" required className={input} placeholder="Engineer OS cold outreach" />

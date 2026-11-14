@@ -4,12 +4,12 @@ import { getSeoArticles, getSeoSiteById } from '@/lib/db/growth'
 import { createClient } from '@/lib/supabase/server'
 
 const STATUS_STYLE: Record<string, string> = {
-  drafting: 'border-amber-300 bg-amber-50 text-amber-700',
+  drafting: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
   review: 'border-[color:var(--accent)] bg-[var(--accent-dim)] text-[color:var(--accent-strong)]',
-  approved: 'border-emerald-300 bg-emerald-50 text-emerald-700',
+  approved: 'border-[var(--emerald)]/40 bg-[var(--emerald-dim)] text-[var(--emerald-strong)]',
   // Amber, like drafting: in flight, not done.
-  publishing: 'border-amber-300 bg-amber-50 text-amber-700',
-  published: 'border-emerald-400 bg-emerald-50 text-emerald-800',
+  publishing: 'border-[var(--amber)]/40 bg-[var(--amber-dim)] text-[var(--amber-strong)]',
+  published: 'border-[var(--emerald)] bg-[var(--emerald-dim)] text-[var(--emerald-strong)]',
   archived: 'border-[color:var(--border)] text-[color:var(--text-3)]',
 }
 
@@ -39,13 +39,13 @@ export default async function GrowthArticlesPage({
       </div>
 
       {resolved?.notice ? (
-        <div className="rounded-2xl border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
+        <div className="rounded-card border border-[color:var(--accent)] bg-[var(--accent-dim)] px-4 py-3 text-sm text-[color:var(--accent-strong)]">
           {resolved.notice}
         </div>
       ) : null}
 
       {articles.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
+        <div className="rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
           Nothing drafted yet — approve a brief to queue the first article.
         </div>
       ) : (
@@ -65,11 +65,11 @@ export default async function GrowthArticlesPage({
                     {new Date(article.created_at).toLocaleDateString('en-GB')}
                   </p>
                   {article.error ? (
-                    <p className="mt-1 text-sm text-red-600">Draft failed: {article.error}</p>
+                    <p className="mt-1 text-sm text-[var(--red-strong)]">Draft failed: {article.error}</p>
                   ) : null}
                 </div>
                 <span
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${STATUS_STYLE[article.status] ?? ''}`}
+                  className={`rounded-pill border px-3 py-1 text-xs font-medium ${STATUS_STYLE[article.status] ?? ''}`}
                 >
                   {article.status === 'drafting' && !article.error ? 'drafting…' : article.status}
                 </span>

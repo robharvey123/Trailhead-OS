@@ -78,40 +78,40 @@ export default function LaunchesClient({ workspaceId, initialLaunches, products 
           <h1 className="mt-1 text-2xl font-semibold">Launches</h1>
           <p className="mt-1 text-sm text-slate-400">{filtered.length} launches</p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-lg bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Launch</button>
+        <button onClick={() => { resetForm(); setShowForm(true) }} className="rounded-control bg-white/90 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-950 hover:bg-white">+ New Launch</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="rounded-control border border-slate-700 bg-slate-950 px-3 py-1.5 text-sm text-slate-200">
           <option value="all">All statuses</option>
           {LAUNCH_STATUSES.map((s) => <option key={s} value={s}>{LAUNCH_STATUS_LABELS[s]}</option>)}
         </select>
       </div>
 
       {showForm && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/80 p-6">
           <h2 className="text-lg font-semibold">{editingId ? 'Edit Launch' : 'New Launch'}</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div><label className="mb-1 block text-xs text-slate-400">Title *</label><input required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Product</label><select value={productId} onChange={(e) => setProductId(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Launch Date</label><input type="date" value={launchDate} onChange={(e) => setLaunchDate(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
-              <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as LaunchStatus)} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{LAUNCH_STATUSES.map((s) => <option key={s} value={s}>{LAUNCH_STATUS_LABELS[s]}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Title *</label><input required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Product</label><select value={productId} onChange={(e) => setProductId(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"><option value="">None</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Launch Date</label><input type="date" value={launchDate} onChange={(e) => setLaunchDate(e.target.value)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+              <div><label className="mb-1 block text-xs text-slate-400">Status</label><select value={status} onChange={(e) => setStatus(e.target.value as LaunchStatus)} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm">{LAUNCH_STATUSES.map((s) => <option key={s} value={s}>{LAUNCH_STATUS_LABELS[s]}</option>)}</select></div>
             </div>
-            <div><label className="mb-1 block text-xs text-slate-400">Description</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
+            <div><label className="mb-1 block text-xs text-slate-400">Description</label><textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" /></div>
             <div>
               <div className="flex items-center justify-between mb-2"><label className="text-xs text-slate-400">Checklist</label><button type="button" onClick={addChecklistItem} className="text-xs text-blue-400 hover:text-blue-300">+ Add item</button></div>
               {checklist.map((item) => (
                 <div key={item.id} className="mb-2 flex items-center gap-2">
                   <input type="checkbox" checked={item.done} onChange={(e) => updateChecklistItem(item.id, 'done', e.target.checked)} className="rounded" />
-                  <input value={item.title} onChange={(e) => updateChecklistItem(item.id, 'title', e.target.value)} placeholder="Checklist item…" className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
+                  <input value={item.title} onChange={(e) => updateChecklistItem(item.id, 'title', e.target.value)} placeholder="Checklist item…" className="flex-1 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm" />
                   <button type="button" onClick={() => removeChecklistItem(item.id)} className="text-xs text-rose-400 hover:text-rose-300">×</button>
                 </div>
               ))}
             </div>
             <div className="flex gap-2">
-              <button type="submit" className="rounded-lg bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
-              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-lg border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
+              <button type="submit" className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white">{editingId ? 'Update' : 'Create'}</button>
+              <button type="button" onClick={() => { setShowForm(false); resetForm() }} className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase text-slate-300 hover:text-white">Cancel</button>
             </div>
           </form>
         </div>
@@ -122,7 +122,7 @@ export default function LaunchesClient({ workspaceId, initialLaunches, products 
           const done = l.checklist?.filter((i) => i.done).length || 0
           const total = l.checklist?.length || 0
           return (
-            <div key={l.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 space-y-3">
+            <div key={l.id} className="rounded-card border border-slate-800 bg-slate-900/80 p-5 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="font-medium">{l.title}</h3>
@@ -133,12 +133,12 @@ export default function LaunchesClient({ workspaceId, initialLaunches, products 
                   <button onClick={() => handleDelete(l.id)} className="text-xs text-rose-400 hover:text-rose-300">×</button>
                 </div>
               </div>
-              <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${LAUNCH_STATUS_COLORS[l.status]}`}>{LAUNCH_STATUS_LABELS[l.status]}</span>
+              <span className={`inline-block rounded-pill px-2 py-0.5 text-xs ${LAUNCH_STATUS_COLORS[l.status]}`}>{LAUNCH_STATUS_LABELS[l.status]}</span>
               {l.description && <p className="text-sm text-slate-400 line-clamp-2">{l.description}</p>}
               {total > 0 && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-slate-400"><span>Checklist</span><span>{done}/{total}</span></div>
-                  <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden"><div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${(done / total) * 100}%` }} /></div>
+                  <div className="h-1.5 w-full rounded-pill bg-slate-800 overflow-hidden"><div className="h-full rounded-pill bg-emerald-500 transition-all" style={{ width: `${(done / total) * 100}%` }} /></div>
                 </div>
               )}
             </div>

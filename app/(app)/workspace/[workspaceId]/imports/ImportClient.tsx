@@ -459,7 +459,7 @@ const ManualEntrySection = ({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+    <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
       <div>
         <h2 className="text-lg font-semibold">{config.title}</h2>
         <p className="mt-1 text-sm text-slate-300">{config.description}</p>
@@ -512,7 +512,7 @@ const ManualEntrySection = ({
                   }
                   placeholder={field.placeholder}
                   list={listId}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+                  className="w-full rounded-control border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
                 />
                 {listId ? (
                   <datalist id={listId}>
@@ -530,7 +530,7 @@ const ManualEntrySection = ({
           <button
             type="button"
             onClick={handleAddRow}
-            className="rounded-lg border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
+            className="rounded-control border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
           >
             Add row
           </button>
@@ -539,7 +539,7 @@ const ManualEntrySection = ({
           </span>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+        <div className="rounded-card border border-slate-800 bg-slate-950/60 p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
             Paste rows (CSV/TSV with headers)
           </p>
@@ -548,19 +548,19 @@ const ManualEntrySection = ({
             onChange={(event) => setPasteText(event.target.value)}
             placeholder={config.expectedHeaders.join(',')}
             rows={4}
-            className="mt-2 w-full resize-none rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
+            className="mt-2 w-full resize-none rounded-control border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500"
           />
           <button
             type="button"
             onClick={handlePasteRows}
-            className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
+            className="mt-3 rounded-control border border-slate-700 px-3 py-2 text-xs uppercase tracking-wide text-slate-200 transition hover:border-slate-500"
           >
             Add pasted rows
           </button>
         </div>
 
         {queue.length ? (
-          <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
+          <div className="rounded-card border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Pending rows
             </p>
@@ -585,7 +585,7 @@ const ManualEntrySection = ({
         ) : null}
 
         {errors.length ? (
-          <div className="rounded-xl border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
+          <div className="rounded-card border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
             {errors.map((error) => (
               <p key={error}>{error}</p>
             ))}
@@ -596,14 +596,14 @@ const ManualEntrySection = ({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting || !queue.length}
-          className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+          className="rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? 'Submitting...' : `Submit ${config.title} rows`}
         </button>
       </div>
 
       {result ? (
-        <div className="mt-6 space-y-3 rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
+        <div className="mt-6 space-y-3 rounded-card border border-emerald-900/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
           <div>Inserted rows: {result.inserted}</div>
           <div>Rejected rows: {result.rejected.length}</div>
           {result.rejected.length ? (
@@ -732,7 +732,7 @@ const ImportSection = ({
   })
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+    <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">{config.title}</h2>
@@ -741,7 +741,7 @@ const ImportSection = ({
         <button
           type="button"
           onClick={() => downloadTemplate(`${config.title}.csv`, config.template)}
-          className="rounded-full border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
+          className="rounded-pill border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
         >
           Download template
         </button>
@@ -749,7 +749,7 @@ const ImportSection = ({
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
-          <label className="flex cursor-pointer flex-col gap-2 rounded-xl border border-dashed border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
+          <label className="flex cursor-pointer flex-col gap-2 rounded-card border border-dashed border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
             <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
               Upload {config.title} file
             </span>
@@ -805,14 +805,14 @@ const ImportSection = ({
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-400">
+        <div className="rounded-card border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-400">
           {brandSummary && <div>{brandSummary}</div>}
           {dateSummary && <div>{dateSummary}</div>}
           <div>Rows detected: {rows.length}</div>
         </div>
 
         {parseErrors.length ? (
-          <div className="rounded-xl border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
+          <div className="rounded-card border border-rose-800 bg-rose-950/40 px-4 py-3 text-sm text-rose-200">
             {parseErrors.map((error) => (
               <p key={error}>{error}</p>
             ))}
@@ -822,14 +822,14 @@ const ImportSection = ({
         <button
           type="submit"
           disabled={isSubmitting || !rows.length}
-          className="rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+          className="rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? 'Importing...' : `Import ${config.title}`}
         </button>
       </form>
 
       {result ? (
-        <div className="mt-6 space-y-3 rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
+        <div className="mt-6 space-y-3 rounded-card border border-emerald-900/50 bg-emerald-950/20 px-4 py-3 text-sm text-emerald-200">
           <div>Inserted rows: {result.inserted}</div>
           <div>Rejected rows: {result.rejected.length}</div>
           {result.rejected.length ? (
@@ -1045,7 +1045,7 @@ export default function ImportClient({
           Upload CSV or Excel files to keep workspace data up to date. Row
           numbers in errors refer to data rows (excluding headers).
         </p>
-        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
+        <div className="mt-4 rounded-card border border-slate-800 bg-slate-950/60 px-4 py-3 text-xs text-slate-300">
           <strong className="text-slate-200">Modes:</strong> Append adds new
           rows only (duplicates skipped). Update replaces only the
           customers/companies in your file within the detected brand/date range.

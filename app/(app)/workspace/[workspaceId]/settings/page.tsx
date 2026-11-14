@@ -96,7 +96,7 @@ export default async function SettingsPage({
         <h1 className="mt-2 text-2xl font-semibold">Workspace settings</h1>
       </header>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Invite member</h2>
         <p className="mt-2 text-sm text-slate-300">
           Add a user to this workspace by email and password. (Password will be visible to you and the user.)
@@ -106,7 +106,7 @@ export default async function SettingsPage({
         </div>
         <UserTable workspaceId={resolvedParams.workspaceId} />
       </section>
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Company details</h2>
         <p className="mt-2 text-sm text-slate-300">
           Your company name and address will appear on invoices and PDF exports.
@@ -119,7 +119,7 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Model settings</h2>
         <p className="mt-2 text-sm text-slate-300">
           Configure brand filters and cost assumptions for this workspace.
@@ -132,7 +132,7 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">FX rates</h2>
         <p className="mt-2 text-sm text-slate-300">
           Manual exchange rates vs base currency ({currentSettings.base_currency}). Used for multi-currency reporting.
@@ -147,7 +147,7 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold">Customer mappings</h2>
         <p className="mt-2 text-sm text-slate-300">
           Map sell-in customers to sell-out companies and optional groups.

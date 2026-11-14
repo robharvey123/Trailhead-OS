@@ -41,7 +41,7 @@ type DashboardInsightsProps = {
 }
 
 const chartCardClass =
-  'rounded-2xl border border-slate-800 bg-slate-900/70 p-6'
+  'rounded-card border border-slate-800 bg-slate-900/70 p-6'
 
 const formatNumberValue = (value?: ValueType) =>
   value == null ? '' : formatNumber(Number(value))

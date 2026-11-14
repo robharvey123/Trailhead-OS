@@ -118,7 +118,7 @@ export default function EngagementTasksClient({
                 Labels{activeLabels.length > 0 ? ` (${activeLabels.length})` : ''} ▾
               </button>
               {labelsOpen ? (
-                <div style={{ position: 'absolute', zIndex: 20, marginTop: 4, maxHeight: 280, minWidth: 200, overflowY: 'auto', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 12px 40px rgba(15,23,42,0.12)', padding: 6 }}>
+                <div style={{ position: 'absolute', zIndex: 20, marginTop: 4, maxHeight: 280, minWidth: 200, overflowY: 'auto', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', boxShadow: '0 12px 40px rgba(15,23,42,0.12)', padding: 6 }}>
                   {allLabels.map((l) => {
                     const c = labelColor(l)
                     const active = activeLabels.includes(l)
@@ -127,9 +127,9 @@ export default function EngagementTasksClient({
                         key={l}
                         type="button"
                         onClick={() => toggleLabel(l)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '6px 8px', borderRadius: 6, background: active ? 'var(--surface-2)' : 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--text)' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '6px 8px', borderRadius: 'var(--radius-control)', background: active ? 'var(--surface-2)' : 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--text)' }}
                       >
-                        <span style={{ width: 10, height: 10, borderRadius: 999, background: c.solidBg, flexShrink: 0 }} />
+                        <span style={{ width: 10, height: 10, borderRadius: 'var(--radius-pill)', background: c.solidBg, flexShrink: 0 }} />
                         <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l}</span>
                         {active ? <span style={{ color: 'var(--accent-strong)' }}>✓</span> : null}
                       </button>
@@ -148,7 +148,7 @@ export default function EngagementTasksClient({
                 type="button"
                 onClick={() => toggleLabel(l)}
                 title={`Remove filter: ${l}`}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999, cursor: 'pointer', background: c.solidBg, color: '#fff', border: 'none', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 'var(--radius-pill)', cursor: 'pointer', background: c.solidBg, color: '#fff', border: 'none', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
               >
                 {l} ✕
               </button>

@@ -21,7 +21,7 @@ export default async function AnalyticsPage() {
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-6">
+        <div className="rounded-card border border-[#2A2A3A] bg-[#1A1A28] p-6">
           <h2 className="text-lg font-semibold">Your workspaces</h2>
           <p className="mt-2 text-sm text-[#9CA3AF]">
             Choose a workspace to view analytics or manage data.
@@ -33,7 +33,7 @@ export default async function AnalyticsPage() {
                 <Link
                   key={workspace.id}
                   href={`/analytics/${workspace.id}`}
-                  className="flex items-center justify-between rounded-lg border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm transition hover:border-[#2A2A3A]"
+                  className="flex items-center justify-between rounded-control border border-[#2A2A3A] bg-[#0C0C14] px-4 py-3 text-sm transition hover:border-[#2A2A3A]"
                 >
                   <span>{workspace.name}</span>
                   <span className="text-xs text-[#9CA3AF]">
@@ -43,13 +43,13 @@ export default async function AnalyticsPage() {
               ))}
             </div>
           ) : (
-            <div className="mt-6 rounded-lg border border-dashed border-[#2A2A3A] p-6 text-sm text-[#9CA3AF]">
+            <div className="mt-6 rounded-control border border-dashed border-[#2A2A3A] p-6 text-sm text-[#9CA3AF]">
               No workspaces yet. Create one to start importing data.
             </div>
           )}
         </div>
 
-        <div className="rounded-2xl border border-[#2A2A3A] bg-[#1A1A28] p-6">
+        <div className="rounded-card border border-[#2A2A3A] bg-[#1A1A28] p-6">
           <h2 className="text-lg font-semibold">Create a workspace</h2>
           <p className="mt-2 text-sm text-[#9CA3AF]">
             Workspaces isolate each brand and its customers.

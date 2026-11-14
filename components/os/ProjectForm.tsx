@@ -273,14 +273,14 @@ export default function ProjectForm({
           type="button"
           onClick={handleSave}
           disabled={saving || archiving || deleting || !form.name.trim()}
-          className="rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
+          className="rounded-card bg-[var(--accent)] px-5 py-3 text-sm font-bold text-white transition hover:bg-[var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
         <button
           type="button"
           onClick={() => router.push(cancelHref)}
-          className="rounded-2xl border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]"
+          className="rounded-card border border-[color:var(--border)] px-5 py-3 text-sm font-medium text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]"
         >
           Cancel
         </button>
@@ -289,7 +289,7 @@ export default function ProjectForm({
             type="button"
             onClick={() => setArchiveConfirmOpen(true)}
             disabled={saving || archiving || deleting}
-            className="rounded-2xl border border-[color:var(--amber)] px-5 py-3 text-sm font-medium text-[color:var(--amber-strong)] transition hover:border-[color:var(--amber-strong)] disabled:opacity-50"
+            className="rounded-card border border-[color:var(--amber)] px-5 py-3 text-sm font-medium text-[color:var(--amber-strong)] transition hover:border-[color:var(--amber-strong)] disabled:opacity-50"
           >
             {archiving ? 'Archiving...' : 'Archive project'}
           </button>
@@ -299,7 +299,7 @@ export default function ProjectForm({
             type="button"
             onClick={() => setDeleteConfirmOpen(true)}
             disabled={saving || archiving || deleting}
-            className="rounded-2xl border border-[color:var(--red)] px-5 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
+            className="rounded-card border border-[color:var(--red)] px-5 py-3 text-sm font-medium text-[color:var(--red-strong)] transition hover:border-[color:var(--red-strong)] disabled:opacity-50"
           >
             {deleting ? 'Deleting...' : 'Delete permanently'}
           </button>

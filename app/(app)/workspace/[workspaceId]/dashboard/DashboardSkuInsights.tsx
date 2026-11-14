@@ -63,13 +63,13 @@ export default function DashboardSkuInsights({
         <div className="flex flex-wrap gap-2 text-sm">
           <Link
             href={`/workspace/${workspaceId}/sku-summary`}
-            className="rounded-full border border-slate-700 px-4 py-2 text-slate-200 transition hover:border-slate-500"
+            className="rounded-pill border border-slate-700 px-4 py-2 text-slate-200 transition hover:border-slate-500"
           >
             Open SKU summary
           </Link>
           <Link
             href={`/workspace/${workspaceId}/company-sku-detail`}
-            className="rounded-full border border-slate-700 px-4 py-2 text-slate-200 transition hover:border-slate-500"
+            className="rounded-pill border border-slate-700 px-4 py-2 text-slate-200 transition hover:border-slate-500"
           >
             Open company SKU view
           </Link>
@@ -77,21 +77,21 @@ export default function DashboardSkuInsights({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Top shipped SKU</p>
           <p className="mt-3 text-lg font-semibold text-white">{bestShipped?.sku ?? '—'}</p>
           <p className="mt-1 text-sm text-slate-300">
             {bestShipped ? `${formatNumber(bestShipped.totalShipped)} shipped` : 'No SKU data yet'}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Top sell-out SKU</p>
           <p className="mt-3 text-lg font-semibold text-white">{bestSellOut?.sku ?? '—'}</p>
           <p className="mt-1 text-sm text-slate-300">
             {bestSellOut ? `${formatNumber(bestSellOut.sellOut)} sold out` : 'No SKU data yet'}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-5">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Best sell-through</p>
           <p className="mt-3 text-lg font-semibold text-white">{bestSellThrough?.sku ?? '—'}</p>
           <p className="mt-1 text-sm text-slate-300">
@@ -101,7 +101,7 @@ export default function DashboardSkuInsights({
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h3 className="text-sm font-semibold text-slate-200">Top 10 SKUs all time</h3>
           <div className="mt-4 h-80 min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={240} minHeight={220}>
@@ -129,13 +129,13 @@ export default function DashboardSkuInsights({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
           <h3 className="text-sm font-semibold text-slate-200">Top SKU leaderboard</h3>
           <div className="mt-4 space-y-3">
             {topSkus.map((sku) => (
               <div
                 key={sku.sku}
-                className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3"
+                className="rounded-card border border-slate-800 bg-slate-950/60 px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -156,7 +156,7 @@ export default function DashboardSkuInsights({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+      <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
         <h3 className="text-sm font-semibold text-slate-200">Monthly SKU leaders</h3>
         <p className="mt-2 text-sm text-slate-300">
           Best performer each month for shipped units and sell-out.
