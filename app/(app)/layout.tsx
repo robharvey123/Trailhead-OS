@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import TrailheadLogo from '@/components/brand/TrailheadLogo'
 
 export default async function AppLayout({
   children,
@@ -18,25 +19,30 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800 bg-slate-950/70">
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
-          <Link href="/workspaces" className="text-sm font-semibold">
-            Brand Opps
-          </Link>
-          <form action="/logout" method="post">
-            <button
-              type="submit"
-              className="rounded-pill border border-slate-700 px-4 py-1 text-xs uppercase tracking-wide text-slate-300 transition hover:border-slate-500 hover:text-white"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </header>
-      <main className="mx-auto w-full max-w-screen-2xl px-6 py-8">
-        {children}
-      </main>
+    // The legacy analytics app is a navy island. `thmock th-dark` remaps the
+    // working tokens for a navy ground, so the components it shares with the OS
+    // read correctly here. The token classes sit on this outer wrapper and the
+    // layout utilities on the inner one, because the unlayered .thmock rules
+    // beat utilities on the same element. `color-scheme` keeps native controls
+    // (select menus, month pickers, scrollbars) dark as well.
+    <div className="thmock th-dark [color-scheme:dark]">
+      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+        <header className="border-b border-[var(--border)]">
+          <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-6 py-4">
+            <Link href="/workspaces" className="no-underline">
+              <TrailheadLogo variant="reverse" />
+            </Link>
+            <form action="/logout" method="post">
+              <button type="submit" className="btn btn-ghost btn-sm">
+                Sign out
+              </button>
+            </form>
+          </div>
+        </header>
+        <main className="mx-auto w-full max-w-screen-2xl px-6 py-8">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

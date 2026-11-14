@@ -42,10 +42,10 @@ export default function WorkspaceNav({
             href={withQuery}
             aria-current={isActive ? 'page' : undefined}
             title={item.label}
-            className={`whitespace-nowrap rounded-pill border px-3 py-1.5 transition ${
+            className={`whitespace-nowrap rounded-pill border px-3 py-1.5 no-underline transition ${
               isActive
-                ? 'border-white/60 bg-white/10 text-white'
-                : 'border-slate-800 text-slate-300 hover:border-slate-600 hover:text-white'
+                ? 'border-[var(--accent-strong)] bg-[var(--accent-dim)] text-[var(--accent-strong)]'
+                : 'border-[var(--border)] text-[var(--text-2)] hover:border-[var(--border-light)] hover:text-[var(--text)]'
             }`}
           >
             {item.label}

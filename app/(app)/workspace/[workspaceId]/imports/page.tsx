@@ -32,7 +32,7 @@ export default async function ImportsPage({
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
-    return <div className="p-8">You must be logged in to view this page.</div>
+    return <div className="p-8 text-sm text-[var(--text-2)]">You must be logged in to view this page.</div>
   }
 
   const { data: member } = await supabase
@@ -45,8 +45,8 @@ export default async function ImportsPage({
   if (!member || !['owner', 'admin', 'editor'].includes(member.role)) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-xl font-semibold mb-2">Access denied</h2>
-        <p className="text-slate-400">Only workspace admins and editors can import data.</p>
+        <h2 className="mb-2 text-xl font-semibold text-[var(--text)]">Access denied</h2>
+        <p className="text-[var(--text-3)]">Only workspace admins and editors can import data.</p>
       </div>
     )
   }

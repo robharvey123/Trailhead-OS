@@ -9,6 +9,7 @@ import { DashboardCharts, DashboardInsights, DashboardSkuInsights } from './char
 import DashboardKPIs from './DashboardKPIs'
 import DashboardTable from './DashboardTable'
 import FiltersBar from '@/components/filters/FiltersBar'
+import PageHeader from '@/components/ui/PageHeader'
 
 type SellInMonthlyRow = {
   month: string
@@ -576,15 +577,11 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-8">
-      <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Dashboard
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">Sell-in vs sell-out</h1>
-        <p className="mt-2 text-sm text-slate-300">
-          {brandFilter ? `Brand filter: ${brandFilter}` : 'All brands'}
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Dashboard"
+        title="Sell-in vs sell-out"
+        description={brandFilter ? `Brand filter: ${brandFilter}` : 'All brands'}
+      />
 
       <FiltersBar
         basePath={`/analytics/${resolvedParams.workspaceId}`}
@@ -600,14 +597,10 @@ export default async function DashboardPage({
         {metrics.map((metric) => (
           <div
             key={metric.label}
-            className="rounded-card border border-slate-800 bg-slate-900/70 p-4"
+            className="os-card p-4"
           >
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              {metric.label}
-            </p>
-            <p className="mt-3 text-xl font-semibold text-white">
-              {metric.value}
-            </p>
+            <p className="os-label">{metric.label}</p>
+            <p className="stat-value mt-3">{metric.value}</p>
           </div>
         ))}
       </section>
@@ -631,9 +624,9 @@ export default async function DashboardPage({
         monthlyLeaders={monthlySkuLeaders}
       />
 
-      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-        <h2 className="text-lg font-semibold">Monthly summary</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <section className="os-card p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Monthly summary</h2>
+        <p className="mt-2 text-sm text-[var(--text-2)]">
           Sell in, promo, shipments, sell out, and variance by month.
         </p>
         <div className="mt-6">

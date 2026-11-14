@@ -93,12 +93,12 @@ export default function FxRatesTable({
         className="flex flex-wrap items-end gap-3"
       >
         <div>
-          <label className="mb-1 block text-xs text-slate-400">From</label>
+          <label className="field-label block">From</label>
           <select
             value={fromCurrency}
             onChange={(e) => setFromCurrency(e.target.value)}
             required
-            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className="os-select px-3 py-2 text-sm"
           >
             <option value="">Select</option>
             {otherCurrencies.map((c) => (
@@ -108,9 +108,9 @@ export default function FxRatesTable({
             ))}
           </select>
         </div>
-        <div className="text-sm text-slate-400 pb-2">→ {baseCurrency}</div>
+        <div className="text-sm text-[var(--text-3)] pb-2">→ {baseCurrency}</div>
         <div>
-          <label className="mb-1 block text-xs text-slate-400">Rate</label>
+          <label className="field-label block">Rate</label>
           <input
             type="number"
             step="0.00000001"
@@ -118,57 +118,57 @@ export default function FxRatesTable({
             onChange={(e) => setRate(e.target.value)}
             required
             placeholder="0.85"
-            className="w-28 rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className="os-input w-28 px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-slate-400">
+          <label className="field-label block">
             Effective date
           </label>
           <input
             type="date"
             value={effectiveDate}
             onChange={(e) => setEffectiveDate(e.target.value)}
-            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm"
+            className="os-input px-3 py-2 text-sm"
           />
         </div>
         <button
           type="submit"
           disabled={saving}
-          className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase text-slate-950 hover:bg-white disabled:opacity-70"
+          className="btn btn-primary btn-sm"
         >
           Add
         </button>
       </form>
 
       {rates.length > 0 && (
-        <div className="overflow-x-auto rounded-card border border-slate-800">
+        <div className="overflow-x-auto rounded-card border border-[var(--border)]">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-900/50 text-left text-xs uppercase tracking-wider text-slate-400">
-                <th className="px-4 py-2">From</th>
-                <th className="px-4 py-2">To</th>
-                <th className="px-4 py-2">Rate</th>
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2"></th>
+              <tr className="border-b border-[var(--border)] bg-[var(--surface)] text-left">
+                <th className="os-label px-4 py-2">From</th>
+                <th className="os-label px-4 py-2">To</th>
+                <th className="os-label px-4 py-2">Rate</th>
+                <th className="os-label px-4 py-2">Date</th>
+                <th className="os-label px-4 py-2"></th>
               </tr>
             </thead>
             <tbody>
               {rates.map((r) => (
                 <tr
                   key={r.id}
-                  className="border-b border-slate-800/50 hover:bg-white/[0.02]"
+                  className="border-b border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface-2)]"
                 >
                   <td className="px-4 py-2">{r.from_currency}</td>
                   <td className="px-4 py-2">{r.to_currency}</td>
-                  <td className="px-4 py-2 font-mono">{r.rate}</td>
-                  <td className="px-4 py-2 text-slate-400">
+                  <td className="px-4 py-2">{r.rate}</td>
+                  <td className="px-4 py-2 text-[var(--text-3)]">
                     {r.effective_date}
                   </td>
                   <td className="px-4 py-2">
                     <button
                       onClick={() => handleDelete(r.id)}
-                      className="text-xs text-rose-400 hover:text-rose-300"
+                      className="btn btn-danger btn-sm"
                     >
                       Delete
                     </button>
@@ -181,7 +181,7 @@ export default function FxRatesTable({
       )}
 
       {rates.length === 0 && (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-[var(--text-3)]">
           No FX rates configured. Add rates to enable multi-currency reporting.
         </p>
       )}

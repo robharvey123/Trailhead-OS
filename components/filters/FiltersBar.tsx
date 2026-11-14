@@ -57,28 +57,28 @@ export default function FiltersBar({
     <form
       method="get"
       action={basePath}
-      className="flex flex-wrap items-end gap-3 rounded-card border border-slate-800 bg-slate-900/70 p-4 text-sm"
+      className="flex flex-wrap items-end gap-3 rounded-card border border-[var(--border)] bg-[var(--bg)] p-4 text-sm shadow-[var(--shadow-sm)]"
     >
       <label className="flex flex-col gap-2">
-        <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        <span className="os-label">
           Brand
         </span>
         <input
           name="brand"
           defaultValue={brand}
           placeholder="Brand"
-          className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+          className="os-input px-3 py-2 text-sm"
         />
       </label>
       {showCompanySelect ? (
         <label className="flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+          <span className="os-label">
             {companyLabel}
           </span>
           <select
             name="company"
             defaultValue={company}
-            className="min-w-[180px] rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="os-select min-w-[180px] px-3 py-2 text-sm"
           >
             <option value="">All companies</option>
             {companyOptions.map((value) => (
@@ -90,14 +90,14 @@ export default function FiltersBar({
         </label>
       ) : null}
       <label className="flex flex-col gap-2">
-        <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        <span className="os-label">
           Start month
         </span>
         {showSelects ? (
           <select
             name="start"
             defaultValue={start}
-            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="os-select px-3 py-2 text-sm"
           >
             <option value="">All months</option>
             {monthOptions.map((month) => (
@@ -111,19 +111,19 @@ export default function FiltersBar({
             type="month"
             name="start"
             defaultValue={start}
-            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="os-input px-3 py-2 text-sm"
           />
         )}
       </label>
       <label className="flex flex-col gap-2">
-        <span className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        <span className="os-label">
           End month
         </span>
         {showSelects ? (
           <select
             name="end"
             defaultValue={end}
-            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="os-select px-3 py-2 text-sm"
           >
             <option value="">All months</option>
             {monthOptions.map((month) => (
@@ -137,23 +137,23 @@ export default function FiltersBar({
             type="month"
             name="end"
             defaultValue={end}
-            className="rounded-control border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200"
+            className="os-input px-3 py-2 text-sm"
           />
         )}
       </label>
       <button
         type="submit"
-        className="rounded-control bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-950"
+        className="btn btn-primary btn-sm"
       >
         Apply
       </button>
       <Link
         href={basePath}
-        className="rounded-control border border-slate-700 px-4 py-2 text-xs uppercase tracking-wide text-slate-300"
+        className="btn btn-ghost btn-sm"
       >
         Reset
       </Link>
-      <span className="text-xs uppercase tracking-[0.2em] text-slate-500">
+      <span className="os-label">
         Range: {monthRangeLabel}
       </span>
     </form>

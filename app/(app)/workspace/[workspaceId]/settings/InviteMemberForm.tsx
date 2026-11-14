@@ -35,31 +35,31 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium">Email</label>
+        <label className="block text-sm font-medium text-[var(--text)]">Email</label>
         <input
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
-          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+          className="os-input w-full px-3 py-2 text-sm"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium">Password</label>
+        <label className="block text-sm font-medium text-[var(--text)]">Password</label>
         <input
           type="text"
           value={password}
           onChange={e => setPassword(e.target.value)}
           required
-          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+          className="os-input w-full px-3 py-2 text-sm"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium">Role</label>
+        <label className="block text-sm font-medium text-[var(--text)]">Role</label>
         <select
           value={role}
           onChange={e => setRole(e.target.value)}
-          className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+          className="os-select w-full px-3 py-2 text-sm"
         >
           <option value="viewer">Viewer</option>
           <option value="editor">Editor</option>
@@ -69,11 +69,11 @@ export default function InviteMemberForm({ workspaceId }: { workspaceId: string 
       <button
         type="submit"
         disabled={loading}
-        className="rounded-control bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+        className="btn btn-primary"
       >
         {loading ? "Adding..." : "Add User"}
       </button>
-      {message && <p className="text-sm mt-2">{message}</p>}
+      {message && <p className="mt-2 text-sm text-[var(--text-2)]">{message}</p>}
     </form>
   )
 }

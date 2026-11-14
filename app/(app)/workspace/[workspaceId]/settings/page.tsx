@@ -6,6 +6,7 @@ import MappingForm from './MappingForm'
 import MappingTable from './MappingTable'
 import InviteMemberForm from './InviteMemberForm'
 import UserTable from './UserTable'
+import PageHeader from '@/components/ui/PageHeader'
 import {
   resolveWorkspaceParams,
   type WorkspaceRouteParams,
@@ -37,7 +38,7 @@ export default async function SettingsPage({
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-semibold mb-2">Access denied</h2>
-        <p className="text-slate-400">Only workspace admins can view or edit settings.</p>
+        <p className="text-[var(--text-3)]">Only workspace admins can view or edit settings.</p>
       </div>
     )
   }
@@ -89,16 +90,11 @@ export default async function SettingsPage({
 
   return (
     <div className="space-y-8">
-      <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Settings
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">Workspace settings</h1>
-      </header>
+      <PageHeader eyebrow="Settings" title="Workspace settings" />
 
-      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-        <h2 className="text-lg font-semibold">Invite member</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <section className="os-card p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Invite member</h2>
+        <p className="mt-2 text-sm text-[var(--text-2)]">
           Add a user to this workspace by email and password. (Password will be visible to you and the user.)
         </p>
         <div className="mt-6">
@@ -106,9 +102,9 @@ export default async function SettingsPage({
         </div>
         <UserTable workspaceId={resolvedParams.workspaceId} />
       </section>
-      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-        <h2 className="text-lg font-semibold">Company details</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <section className="os-card p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Company details</h2>
+        <p className="mt-2 text-sm text-[var(--text-2)]">
           Your company name and address will appear on invoices and PDF exports.
         </p>
         <div className="mt-6">
@@ -119,9 +115,9 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-        <h2 className="text-lg font-semibold">Model settings</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <section className="os-card p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Model settings</h2>
+        <p className="mt-2 text-sm text-[var(--text-2)]">
           Configure brand filters and cost assumptions for this workspace.
         </p>
         <div className="mt-6">
@@ -132,9 +128,9 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-        <h2 className="text-lg font-semibold">FX rates</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <section className="os-card p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)]">FX rates</h2>
+        <p className="mt-2 text-sm text-[var(--text-2)]">
           Manual exchange rates vs base currency ({currentSettings.base_currency}). Used for multi-currency reporting.
         </p>
         <div className="mt-6">
@@ -147,9 +143,9 @@ export default async function SettingsPage({
         </div>
       </section>
 
-      <section className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-        <h2 className="text-lg font-semibold">Customer mappings</h2>
-        <p className="mt-2 text-sm text-slate-300">
+      <section className="os-card p-6">
+        <h2 className="text-lg font-semibold text-[var(--text)]">Customer mappings</h2>
+        <p className="mt-2 text-sm text-[var(--text-2)]">
           Map sell-in customers to sell-out companies and optional groups.
         </p>
         <div className="mt-6">

@@ -24,7 +24,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-control bg-white/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+      className="btn btn-primary"
     >
       {pending ? 'Saving...' : 'Save settings'}
     </button>
@@ -45,19 +45,19 @@ export default function SettingsForm({
       <input type="hidden" name="workspaceId" value={workspaceId} />
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">Brand filter</span>
+          <span className="font-medium text-[var(--text)]">Brand filter</span>
           <input
             name="brand_filter"
             defaultValue={settings.brand_filter}
-            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="os-input w-full px-3 py-2 text-sm"
           />
         </label>
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">Base currency</span>
+          <span className="font-medium text-[var(--text)]">Base currency</span>
           <select
             name="base_currency"
             defaultValue={settings.base_currency}
-            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="os-select w-full px-3 py-2 text-sm"
           >
             {ALL_CURRENCIES.map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -65,16 +65,15 @@ export default function SettingsForm({
           </select>
         </label>
         <label className="space-y-2 text-sm md:col-span-2">
-          <span className="font-medium text-slate-200">Supported currencies</span>
+          <span className="font-medium text-[var(--text)]">Supported currencies</span>
           <div className="flex flex-wrap gap-2">
             {ALL_CURRENCIES.map((c) => (
-              <label key={c} className="flex items-center gap-1.5 text-sm text-slate-300">
+              <label key={c} className="flex items-center gap-1.5 text-sm text-[var(--text-2)]">
                 <input
                   type="checkbox"
                   name="supported_currencies"
                   value={c}
                   defaultChecked={settings.supported_currencies.includes(c)}
-                  className="rounded-control border-slate-600 bg-slate-900"
                 />
                 {c}
               </label>
@@ -82,23 +81,23 @@ export default function SettingsForm({
           </div>
         </label>
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">COGS %</span>
+          <span className="font-medium text-[var(--text)]">COGS %</span>
           <input
             name="cogs_pct"
             type="number"
             step="0.01"
             defaultValue={settings.cogs_pct}
-            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="os-input w-full px-3 py-2 text-sm"
           />
         </label>
         <label className="space-y-2 text-sm">
-          <span className="font-medium text-slate-200">Promo cost</span>
+          <span className="font-medium text-[var(--text)]">Promo cost</span>
           <input
             name="promo_cost"
             type="number"
             step="0.01"
             defaultValue={settings.promo_cost}
-            className="w-full rounded-control border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white"
+            className="os-input w-full px-3 py-2 text-sm"
           />
         </label>
       </div>
@@ -106,10 +105,10 @@ export default function SettingsForm({
       <SubmitButton />
 
       {state.error ? (
-        <p className="text-sm text-rose-200">{state.error}</p>
+        <p className="text-sm text-[var(--red-strong)]">{state.error}</p>
       ) : null}
       {state.success ? (
-        <p className="text-sm text-emerald-200">Settings saved.</p>
+        <p className="text-sm text-[var(--emerald-strong)]">Settings saved.</p>
       ) : null}
     </form>
   )

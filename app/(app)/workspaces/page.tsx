@@ -14,16 +14,14 @@ export default async function WorkspacesPage() {
   return (
     <div className="space-y-8">
       <header>
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-          Workspace
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">Workspaces</h1>
+        <p className="os-label">Workspace</p>
+        <h1 className="mt-2 text-2xl font-semibold text-[var(--text)]">Workspaces</h1>
       </header>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-          <h2 className="text-lg font-semibold">Your workspaces</h2>
-          <p className="mt-2 text-sm text-slate-300">
+        <div className="rounded-card border border-[var(--border)] bg-[var(--bg)] p-6">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Your workspaces</h2>
+          <p className="mt-2 text-sm text-[var(--text-2)]">
             Choose a workspace to view analytics or manage data.
           </p>
 
@@ -33,25 +31,25 @@ export default async function WorkspacesPage() {
                 <Link
                   key={workspace.id}
                   href={`/analytics/${workspace.id}`}
-                  className="flex items-center justify-between rounded-control border border-slate-800 bg-slate-950 px-4 py-3 text-sm transition hover:border-slate-700"
+                  className="flex items-center justify-between rounded-control border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text)] no-underline transition hover:border-[var(--border-light)] hover:bg-[var(--surface-2)]"
                 >
                   <span>{workspace.name}</span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-[var(--text-3)]">
                     {workspace.is_paid ? 'Paid' : 'Trial'}
                   </span>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="mt-6 rounded-control border border-dashed border-slate-700 p-6 text-sm text-slate-300">
+            <div className="mt-6 rounded-control border border-dashed border-[var(--border-light)] p-6 text-sm text-[var(--text-3)]">
               No workspaces yet. Create one to start importing data.
             </div>
           )}
         </div>
 
-        <div className="rounded-card border border-slate-800 bg-slate-900/70 p-6">
-          <h2 className="text-lg font-semibold">Create a workspace</h2>
-          <p className="mt-2 text-sm text-slate-300">
+        <div className="rounded-card border border-[var(--border)] bg-[var(--bg)] p-6">
+          <h2 className="text-lg font-semibold text-[var(--text)]">Create a workspace</h2>
+          <p className="mt-2 text-sm text-[var(--text-2)]">
             Workspaces isolate each brand and its customers.
           </p>
           <div className="mt-6">

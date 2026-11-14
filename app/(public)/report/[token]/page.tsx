@@ -456,17 +456,21 @@ export default async function PublicReportPage({
             </div>
           </div>
 
-          <DashboardCharts data={chartData} />
+          {/* The dashboard charts read the OS design tokens. This page sits outside
+              the OS shell, so `.th-light` supplies them here. */}
+          <div className="th-light space-y-8">
+            <DashboardCharts data={chartData} />
 
-          <DashboardInsights
-            aspData={aspData}
-            promoRateData={promoRateData}
-            platformData={platformData}
-            regionData={regionData}
-            topCustomerRevenue={topCustomerRevenue}
-            topCompanySellOut={topCompanySellOut}
-            currencySymbol={currencyCode}
-          />
+            <DashboardInsights
+              aspData={aspData}
+              promoRateData={promoRateData}
+              platformData={platformData}
+              regionData={regionData}
+              topCustomerRevenue={topCustomerRevenue}
+              topCompanySellOut={topCompanySellOut}
+              currencySymbol={currencyCode}
+            />
+          </div>
 
           <section className="rounded-card border border-[#e5d8c6] bg-white/85 p-6">
             <div className="flex flex-wrap items-end justify-between gap-4">

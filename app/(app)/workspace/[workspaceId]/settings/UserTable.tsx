@@ -55,22 +55,22 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
 
   return (
     <div className="mt-8">
-      <h2 className="text-lg font-semibold mb-4">Workspace Users</h2>
+      <h2 className="mb-4 text-lg font-semibold text-[var(--text)]">Workspace Users</h2>
       {loading ? (
-        <p>Loading users...</p>
+        <p className="text-sm text-[var(--text-3)]">Loading users...</p>
       ) : (
-        <table className="w-full text-sm border border-slate-800 rounded-control">
+        <table className="w-full rounded-control border border-[var(--border)] text-sm text-[var(--text)]">
           <thead>
-            <tr className="bg-slate-900">
-              <th className="p-2 text-left">Email</th>
-              <th className="p-2 text-left">Role</th>
-              <th className="p-2 text-left">Last Login</th>
-              <th className="p-2 text-left">Change Password</th>
+            <tr className="bg-[var(--surface)]">
+              <th className="os-label p-2 text-left">Email</th>
+              <th className="os-label p-2 text-left">Role</th>
+              <th className="os-label p-2 text-left">Last Login</th>
+              <th className="os-label p-2 text-left">Change Password</th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
-              <tr key={user.id} className="border-t border-slate-800">
+              <tr key={user.id} className="border-t border-[var(--border)]">
                 <td className="p-2">{user.email}</td>
                 <td className="p-2">{user.role}</td>
                 <td className="p-2">
@@ -86,19 +86,19 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
                         value={newPassword}
                         onChange={e => setNewPassword(e.target.value)}
                         placeholder="New password"
-                        className="rounded-control border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-white"
+                        className="os-input px-2 py-1 text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => handleChangePassword(user.id)}
-                        className="rounded-control bg-blue-600 px-2 py-1 text-white text-xs"
+                        className="btn btn-primary btn-sm"
                       >
                         Save
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditId(null)}
-                        className="rounded-control bg-slate-700 px-2 py-1 text-white text-xs"
+                        className="btn btn-ghost btn-sm"
                       >
                         Cancel
                       </button>
@@ -107,7 +107,7 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
                     <button
                       type="button"
                       onClick={() => setEditId(user.id)}
-                      className="rounded-control bg-slate-700 px-2 py-1 text-white text-xs"
+                      className="btn btn-ghost btn-sm"
                     >
                       Change
                     </button>
@@ -118,7 +118,7 @@ export default function UserTable({ workspaceId }: { workspaceId: string }) {
           </tbody>
         </table>
       )}
-      {message && <p className="mt-2 text-sm">{message}</p>}
+      {message && <p className="mt-2 text-sm text-[var(--text-2)]">{message}</p>}
     </div>
   )
 }
