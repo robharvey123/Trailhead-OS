@@ -232,7 +232,7 @@ export default function MyWorkClient({
                   <td>{t.engagement?.name ?? '—'}</td>
                   <td><TaskStatusBadge status={t.status} /></td>
                   <td>{ENGAGEMENT_TASK_PRIORITY_LABELS[t.priority]}</td>
-                  <td className="td-mono">{fmtDate(t.due_date)}</td>
+                  <td className="td-num">{fmtDate(t.due_date)}</td>
                 </tr>
               ))}
             </tbody>

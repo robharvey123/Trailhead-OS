@@ -155,7 +155,7 @@ export default function InvitesClient({ invites, people }: { invites: Invite[]; 
                     <td className="td-name">{inv.email}</td>
                     <td>{USER_ROLE_LABELS[inv.role]}</td>
                     <td><span className={`status-badge ${s.cls}`}>{s.label}</span></td>
-                    <td className="td-mono">{fmtDate(inv.expires_at)}</td>
+                    <td className="td-num">{fmtDate(inv.expires_at)}</td>
                     <td>{pending ? <button className="btn btn-ghost btn-sm" onClick={() => revoke(inv.id)} style={{ color: 'var(--red)' }}>Revoke</button> : null}</td>
                   </tr>
                 )

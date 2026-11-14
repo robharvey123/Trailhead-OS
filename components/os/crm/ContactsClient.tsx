@@ -60,7 +60,7 @@ export default function ContactsClient({ contacts, accounts, channels }: Contact
   return (
     <div className="panel overflow-hidden">
       <div className="topbar">
-        <Link href="/crm/accounts" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Accounts</Link>
+        <Link href="/crm/accounts" className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Accounts</Link>
         <span className="topbar-title">Contacts</span>
         <span className="topbar-count">{contacts.length} contacts</span>
         <div className="topbar-actions">
@@ -123,14 +123,14 @@ export default function ContactsClient({ contacts, accounts, channels }: Contact
                     <div className="td-name">{c.name}</div>
                     {c.company ? <div className="td-sub">{c.company}</div> : null}
                   </td>
-                  <td className="td-mono">{c.account_id ? accountName.get(c.account_id) ?? '—' : <span className="meta-chip" style={{ color: 'var(--amber-strong)', background: 'var(--amber-dim)' }}>unlinked</span>}</td>
+                  <td className="td-num">{c.account_id ? accountName.get(c.account_id) ?? '—' : <span className="meta-chip" style={{ color: 'var(--amber-strong)', background: 'var(--amber-dim)' }}>unlinked</span>}</td>
                   <td style={{ color: 'var(--text-2)', fontSize: 12 }}>{c.role ?? '—'}</td>
                   <td>
                     {c.email ? (
                       <a className="website-link" href={`mailto:${c.email}`} onClick={(e) => e.stopPropagation()}>{c.email}</a>
-                    ) : <span className="td-mono">—</span>}
+                    ) : <span className="td-num">—</span>}
                   </td>
-                  <td>{c.channel ? <span className="channel-tag">{c.channel}</span> : <span className="td-mono">—</span>}</td>
+                  <td>{c.channel ? <span className="channel-tag">{c.channel}</span> : <span className="td-num">—</span>}</td>
                   <td><span className={`status-badge ${STATUS_CLASS[c.status] ?? 'status-on_hold'}`}>{STATUS_LABEL[c.status] ?? c.status}</span></td>
                   <td>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>

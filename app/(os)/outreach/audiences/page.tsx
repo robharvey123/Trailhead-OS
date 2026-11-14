@@ -29,7 +29,7 @@ export default async function AudiencesPage() {
                 <tr key={a.id}>
                   <td className="td-name">{a.name}</td>
                   <td className="td-sub">{a.description ?? '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{a.member_count}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{a.member_count}</td>
                 </tr>
               ))}
             </tbody>

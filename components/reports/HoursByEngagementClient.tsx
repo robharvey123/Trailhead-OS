@@ -64,9 +64,9 @@ export default function HoursByEngagementClient({ rows }: { rows: HoursByEngagem
                         r.engagement_name
                       )}
                     </td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{r.total_hours.toFixed(1)}h</td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{r.billable_hours.toFixed(1)}h</td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{formatCurrency(r.total_cost, 'GBP')}</td>
+                    <td style={{ textAlign: 'right' }} className="td-num">{r.total_hours.toFixed(1)}h</td>
+                    <td style={{ textAlign: 'right' }} className="td-num">{r.billable_hours.toFixed(1)}h</td>
+                    <td style={{ textAlign: 'right' }} className="td-num">{formatCurrency(r.total_cost, 'GBP')}</td>
                   </tr>,
                   billingMonths && r.months.length > 0 ? (
                     <tr key={`${key}-months`}>
@@ -78,7 +78,7 @@ export default function HoursByEngagementClient({ rows }: { rows: HoursByEngagem
                             ) : (
                               <span>{m.label}</span>
                             )}
-                            <span className="td-mono">
+                            <span className="td-num">
                               {m.hours.toFixed(1)}{m.included != null ? ` / ${m.included}h` : 'h'} · {formatCurrency(m.amount, 'GBP')}
                             </span>
                           </div>
@@ -96,7 +96,7 @@ export default function HoursByEngagementClient({ rows }: { rows: HoursByEngagem
                               {groups.map((g) => (
                                 <div key={`${g.id}:${g.name}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 12, padding: '2px 0' }}>
                                   <span>{g.name}</span>
-                                  <span className="td-mono">{g.hours.toFixed(1)}h · {formatCurrency(g.amount, 'GBP')}</span>
+                                  <span className="td-num">{g.hours.toFixed(1)}h · {formatCurrency(g.amount, 'GBP')}</span>
                                 </div>
                               ))}
                             </div>

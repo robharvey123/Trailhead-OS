@@ -289,7 +289,7 @@ export default async function GrowthPaidPage({
                 </ul>
                 <div>
                   <p className="text-xs uppercase tracking-wide text-[color:var(--text-3)]">Negatives, ready to paste</p>
-                  <textarea readOnly rows={10} value={wasted.map((t) => t.search_term).join('\n')} className={`mt-1 w-full ${inputClass} font-mono text-xs`} />
+                  <textarea readOnly rows={10} value={wasted.map((t) => t.search_term).join('\n')} className={`mt-1 w-full ${inputClass} text-xs`} />
                 </div>
               </div>
             )}

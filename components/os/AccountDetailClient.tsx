@@ -155,7 +155,7 @@ export default function AccountDetailClient({
     <div className="panel overflow-hidden">
       {/* header */}
       <div className="topbar">
-        <Link href="/crm/accounts" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>
+        <Link href="/crm/accounts" className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>
           ‹ CRM
         </Link>
         <span className="topbar-title">{account.name}</span>
@@ -208,9 +208,9 @@ export default function AccountDetailClient({
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Field label="Channel" value={account.channel} />
                   <Field label="Source" value={account.source} />
-                  <Field label="Email" value={account.email_contact} mono />
+                  <Field label="Email" value={account.email_contact} />
                   <Field label="Industry" value={account.industry} />
-                  <Field label="Website" value={account.website} mono />
+                  <Field label="Website" value={account.website} />
                   <Field label="Size" value={account.size} />
                   <div style={{ gridColumn: '1/-1' }}>
                     <div className="field-label">HQ / Address</div>
@@ -243,7 +243,7 @@ export default function AccountDetailClient({
                       <Link key={c.id} href={`/crm/contacts/${c.id}`} className="card" style={{ display: 'block', textDecoration: 'none' }}>
                         <div className="td-name">{c.name}</div>
                         <div className="td-sub">{c.role ?? 'No role'}</div>
-                        {c.email ? <div className="field-value mono" style={{ marginTop: 4, color: 'var(--accent)' }}>{c.email}</div> : null}
+                        {c.email ? <div className="field-value" style={{ marginTop: 4, fontSize: 12, color: 'var(--accent-strong)' }}>{c.email}</div> : null}
                       </Link>
                     ))}
                   </div>
@@ -284,7 +284,7 @@ export default function AccountDetailClient({
                         <div>{t.subject}</div>
                         <div className="td-sub">{t.snippet}</div>
                       </td>
-                      <td className="td-mono">{fmtDate(t.last_at)}</td>
+                      <td className="td-num">{fmtDate(t.last_at)}</td>
                       <td>{t.is_unread ? <span className="pill timer">unread</span> : null}</td>
                     </tr>
                   ))}
@@ -314,9 +314,9 @@ export default function AccountDetailClient({
                     <tr key={d.id} style={{ cursor: 'pointer' }} onClick={() => { setEditingDeal(d); setDealFormOpen(true) }}>
                       <td className="td-name">{d.name}</td>
                       <td><span className={`status-badge ${stageClass(d.stage)}`}>{d.stage}</span></td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{d.value_amount != null ? formatCurrency(d.value_amount, d.value_currency || 'GBP') : '—'}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{d.probability}%</td>
-                      <td className="td-mono">{fmtDate(d.expected_close_date)}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{d.value_amount != null ? formatCurrency(d.value_amount, d.value_currency || 'GBP') : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{d.probability}%</td>
+                      <td className="td-num">{fmtDate(d.expected_close_date)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -378,11 +378,11 @@ export default function AccountDetailClient({
                 <tbody>
                   {timeEntries.map((e) => (
                     <tr key={e.id}>
-                      <td className="td-mono">{fmtDate(e.entry_date)}</td>
+                      <td className="td-num">{fmtDate(e.entry_date)}</td>
                       <td>{e.description ?? '—'}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{fmtMinutes(e.duration_minutes)}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{e.rate_snapshot ? formatCurrency(e.rate_snapshot, e.currency_snapshot || 'GBP') + '/h' : '—'}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{fmtMinutes(e.duration_minutes)}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{e.rate_snapshot ? formatCurrency(e.rate_snapshot, e.currency_snapshot || 'GBP') + '/h' : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
                       <td><span className={`pill ${e.billable ? 'billable' : 'nonbill'}`}>{e.billable ? 'Billable' : 'Non-bill'}</span></td>
                     </tr>
                   ))}

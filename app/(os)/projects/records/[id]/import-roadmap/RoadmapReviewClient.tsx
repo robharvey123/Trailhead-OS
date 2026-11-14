@@ -67,7 +67,7 @@ export default function RoadmapReviewClient({
   return (
     <div className="panel overflow-hidden">
       <div className="topbar">
-        <Link href={`/projects/records/${projectId}`} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Project</Link>
+        <Link href={`/projects/records/${projectId}`} className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Project</Link>
         <span className="topbar-title">{committed ? 'Imported roadmap' : 'Review extracted tasks'}</span>
         <span className="topbar-count">{taskCount} task{taskCount === 1 ? '' : 's'}</span>
         {!readOnly ? (
@@ -91,7 +91,7 @@ export default function RoadmapReviewClient({
         {extraction.milestones.map((m, mi) => (
           <details key={mi} className="card" open>
             <summary style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-              <span className="td-name">{m.name} <span className="td-mono" style={{ color: 'var(--text-3)' }}>· {m.tasks.length}</span></span>
+              <span className="td-name">{m.name} <span className="td-num" style={{ color: 'var(--text-3)' }}>· {m.tasks.length}</span></span>
               {!readOnly ? (
                 <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }} onClick={(ev) => { ev.preventDefault(); removeMilestone(mi) }}>Remove milestone</button>
               ) : null}
@@ -106,7 +106,7 @@ export default function RoadmapReviewClient({
                     <div>
                       <div className="td-name" style={{ fontSize: 13 }}>{t.title}</div>
                       {t.description ? <div className="td-sub">{t.description}</div> : null}
-                      <div className="td-mono" style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
+                      <div className="td-num" style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4 }}>
                         {ENGAGEMENT_TASK_PRIORITY_LABELS[t.priority]}{t.suggested_due_date ? ` · due ${t.suggested_due_date}` : ''}{t.labels.length ? ` · ${t.labels.join(', ')}` : ''}
                       </div>
                     </div>

@@ -1043,7 +1043,7 @@ export default function InboxClient({
                       <span className="acct-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                         <Link href={`/crm/contacts/${active.contact_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>◇ {active.contact_name ?? 'Contact'}</Link>
                         <button
-                          className="td-mono"
+                          className="td-num"
                           title="Clear contact"
                           style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 0 }}
                           onClick={() => threadAction('link', { account_id: active.account_id, account_name: active.account_name, contact_id: null })}

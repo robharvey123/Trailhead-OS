@@ -100,7 +100,7 @@ export default async function TaskDetailPage({
     <div className={`thmock ${mockupFontVars}`}>
       <div className="panel overflow-hidden">
         <div className="topbar">
-          <Link href={backHref} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>{backLabel}</Link>
+          <Link href={backHref} className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>{backLabel}</Link>
           {canEdit ? <TaskTitleEditor taskId={task.id} title={task.title} /> : <span className="topbar-title">{task.title}</span>}
           <TaskStatusBadge status={task.status} />
         </div>
@@ -152,13 +152,13 @@ export default async function TaskDetailPage({
               <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '6px 12px', fontSize: 13, margin: 0 }}>
                 <dt className="field-label">Engagement</dt><dd>{task.engagement ? <Link href={`/engagements/${task.engagement.id}/tasks`}>{task.engagement.name}</Link> : '—'}</dd>
                 <dt className="field-label">Reporter</dt><dd>{task.reporter?.full_name ?? '—'}</dd>
-                <dt className="field-label">Completed</dt><dd className="td-mono">{fmtDate(task.completed_at)}</dd>
+                <dt className="field-label">Completed</dt><dd className="td-num">{fmtDate(task.completed_at)}</dd>
                 {/* Priority/Assignee/Due/Labels are editable above for editors; show read-only here only for viewers. */}
                 {!canEdit ? (
                   <>
                     <dt className="field-label">Priority</dt><dd>{ENGAGEMENT_TASK_PRIORITY_LABELS[task.priority]}</dd>
                     <dt className="field-label">Assignee</dt><dd>{task.assignee?.full_name ?? '—'}</dd>
-                    <dt className="field-label">Due</dt><dd className="td-mono">{fmtDate(task.due_date)}</dd>
+                    <dt className="field-label">Due</dt><dd className="td-num">{fmtDate(task.due_date)}</dd>
                     {task.labels.length ? <><dt className="field-label">Labels</dt><dd>{task.labels.join(', ')}</dd></> : null}
                   </>
                 ) : null}
@@ -183,7 +183,7 @@ export default async function TaskDetailPage({
                   {activity.map((a) => (
                     <li key={a.id} style={{ fontSize: 12, color: 'var(--text-2)' }}>
                       <span>{activityText(a)}</span>
-                      <span className="td-mono" style={{ color: 'var(--text-3)', marginLeft: 6 }}>{fmtAt(a.created_at)}</span>
+                      <span className="td-num" style={{ color: 'var(--text-3)', marginLeft: 6 }}>{fmtAt(a.created_at)}</span>
                     </li>
                   ))}
                 </ul>

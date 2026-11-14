@@ -47,12 +47,12 @@ export default async function OutreachPage() {
                     <div className="td-sub">{c.audience_name ?? 'No audience'}</div>
                   </td>
                   <td><span className="meta-chip">{OUTREACH_CAMPAIGN_STATUS_LABELS[c.status]}</span></td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{c.stats?.audience_size ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{c.stats?.sent ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{c.stats?.delivered ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{c.stats?.opened ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{c.stats?.replied ?? 0}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{c.stats?.stopped ?? 0}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.audience_size ?? 0}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.sent ?? 0}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.delivered ?? 0}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.opened ?? 0}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.replied ?? 0}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{c.stats?.stopped ?? 0}</td>
                 </tr>
               ))}
             </tbody>

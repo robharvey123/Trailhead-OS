@@ -347,7 +347,7 @@ export default function EngagementDetailClient({
   return (
     <div className="panel overflow-hidden">
       <div className="topbar">
-        <Link href="/engagements" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Engagements</Link>
+        <Link href="/engagements" className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Engagements</Link>
         <span className="topbar-title">{e.name}</span>
         <span className={`status-badge ${STATUS_CLASS[e.status] ?? 'status-on_hold'}`}>{e.status}</span>
         <span className="acct-pill matched">◈ {e.end_client?.name ?? 'End client'}</span>
@@ -421,7 +421,7 @@ export default function EngagementDetailClient({
               <div className="panel-section-title">Billing month hours · {formatBillingPeriod(hours.period)}</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span className="td-name">{hours.used.toFixed(1)}h / {hours.included ?? '—'}h</span>
-                <span className="td-mono" style={{ color: barColor }}>{pct}%</span>
+                <span className="td-num" style={{ color: barColor }}>{pct}%</span>
               </div>
               <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 999, overflow: 'hidden' }}>
                 <div style={{ width: `${Math.min(100, pct)}%`, height: '100%', background: barColor }} />
@@ -449,11 +449,11 @@ export default function EngagementDetailClient({
                 <div className="panel-section-title">Term &amp; renewal</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
                   <span className="field-label">Term</span>
-                  <span className="td-mono">{fmtDate(e.start_date)} → {fmtDate(e.end_date)}</span>
+                  <span className="td-num">{fmtDate(e.start_date)} → {fmtDate(e.end_date)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
                   <span className="field-label">Notice due</span>
-                  <span className="td-mono">{e.notice_date ? fmtDate(e.notice_date) : e.notice_period_days ? '—' : 'no notice period set'}</span>
+                  <span className="td-num">{e.notice_date ? fmtDate(e.notice_date) : e.notice_period_days ? '—' : 'no notice period set'}</span>
                 </div>
                 {(() => {
                   const days = daysUntil(e.notice_date)
@@ -570,8 +570,8 @@ export default function EngagementDetailClient({
                         {dot(!!m.range_review_decided_at)}{dot(!!m.go_live_confirmed_at)}{dot(!!m.first_po_received_at)}
                         {m.is_complete ? <span className="pill billable" style={{ marginLeft: 6 }}>complete</span> : null}
                       </td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{m.performance_fee != null ? formatCurrency(m.performance_fee, e.currency) : '—'}</td>
-                      <td>{m.fee_invoice_id ? <span className="pill billable">invoiced</span> : m.is_complete ? <span className="pill timer">due</span> : <span className="td-mono">—</span>}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{m.performance_fee != null ? formatCurrency(m.performance_fee, e.currency) : '—'}</td>
+                      <td>{m.fee_invoice_id ? <span className="pill billable">invoiced</span> : m.is_complete ? <span className="pill timer">due</span> : <span className="td-num">—</span>}</td>
                       <td><button className="btn btn-ghost btn-sm" onClick={() => removeTier1(m.account_id)}>✕</button></td>
                     </tr>
                   ))}
@@ -628,7 +628,7 @@ export default function EngagementDetailClient({
               <thead><tr><th>Project</th><th>Status</th></tr></thead>
               <tbody>{projects.map((p) => (
                 <tr key={p.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/projects/records/${p.id}`)}>
-                  <td className="td-name">{p.name}</td><td className="td-mono">{p.status}</td>
+                  <td className="td-name">{p.name}</td><td className="td-num">{p.status}</td>
                 </tr>
               ))}</tbody>
             </table>
@@ -670,9 +670,9 @@ export default function EngagementDetailClient({
                   {approvals.map((a) => (
                     <tr key={a.id}>
                       <td className="td-name">{APPROVAL_TYPE_LABELS[a.type]}{a.description ? <div className="td-sub">{a.description}</div> : null}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{a.amount != null ? formatCurrency(a.amount, a.currency) : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{a.amount != null ? formatCurrency(a.amount, a.currency) : '—'}</td>
                       <td><span className={`status-badge ${APPROVAL_STATUS_CLASS[a.status] ?? 'status-on_hold'}`}>{a.status}</span>{a.decision_notes ? <div className="td-sub">{a.decision_notes}</div> : null}</td>
-                      <td className="td-mono">{fmtDate(a.requested_at)}</td>
+                      <td className="td-num">{fmtDate(a.requested_at)}</td>
                       <td>
                         {a.status === 'Open' ? (
                           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
@@ -681,7 +681,7 @@ export default function EngagementDetailClient({
                             <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'decline')} style={{ color: 'var(--red)' }}>Decline</button>
                             <button className="btn btn-ghost btn-sm" onClick={() => decideApprovalReq(a.id, 'withdraw')}>Withdraw</button>
                           </div>
-                        ) : a.gmail_thread_id ? <Link className="btn btn-ghost btn-sm" href="/inbox">View thread</Link> : <span className="td-mono">—</span>}
+                        ) : a.gmail_thread_id ? <Link className="btn btn-ghost btn-sm" href="/inbox">View thread</Link> : <span className="td-num">—</span>}
                       </td>
                     </tr>
                   ))}
@@ -708,8 +708,8 @@ export default function EngagementDetailClient({
                   {documents.filter((d) => d.type === 'weekly_update').map((d) => (
                     <tr key={d.id}>
                       <td className="td-name">{d.title ?? 'Weekly update'}</td>
-                      <td className="td-mono">{d.week_start ? fmtDate(d.week_start) : '—'}</td>
-                      <td className="td-mono">{fmtDate(d.created_at)}</td>
+                      <td className="td-num">{d.week_start ? fmtDate(d.week_start) : '—'}</td>
+                      <td className="td-num">{fmtDate(d.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -736,7 +736,7 @@ export default function EngagementDetailClient({
                   }}
                 />
               </label>
-              <span className="td-mono" style={{ color: 'var(--text-3)', fontSize: 12 }}>PDF, Word, Excel, images — up to 25 MB.</span>
+              <span className="td-num" style={{ color: 'var(--text-3)', fontSize: 12 }}>PDF, Word, Excel, images — up to 25 MB.</span>
             </div>
 
             {documents.length === 0 ? (
@@ -755,8 +755,8 @@ export default function EngagementDetailClient({
                     >
                       <td className="td-name">{d.title ?? d.file_name ?? (d.file_path ? 'Untitled' : '—')}</td>
                       <td><span className="channel-tag">{d.type}</span></td>
-                      <td className="td-mono">{fmtBytes(d.size_bytes)}</td>
-                      <td className="td-mono">{fmtDate(d.created_at)}</td>
+                      <td className="td-num">{fmtBytes(d.size_bytes)}</td>
+                      <td className="td-num">{fmtDate(d.created_at)}</td>
                       <td style={{ textAlign: 'right' }} onClick={(ev) => ev.stopPropagation()}>
                         {d.file_path ? (
                           <a

@@ -414,9 +414,9 @@ export default function AccountsClient({
                       <div className="td-sub">{[a.city, a.postcode].filter(Boolean).join(' ')}</div>
                     ) : null}
                   </td>
-                  <td>{a.channel ? <span className="channel-tag">{a.channel}</span> : <span className="td-mono">—</span>}</td>
+                  <td>{a.channel ? <span className="channel-tag">{a.channel}</span> : <span className="td-num">—</span>}</td>
                   <td><span className={`status-badge status-${a.status}`}>{STATUS_LABEL[a.status] ?? a.status}</span></td>
-                  <td className="td-mono">
+                  <td className="td-num">
                     {a.payment_terms_days != null ? (
                       `${a.payment_terms_days}d`
                     ) : (
@@ -435,10 +435,10 @@ export default function AccountsClient({
                       <a className="website-link" href={a.website.startsWith('http') ? a.website : `https://${a.website}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
                         {a.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
                       </a>
-                    ) : <span className="td-mono">—</span>}
+                    ) : <span className="td-num">—</span>}
                   </td>
-                  <td className="td-mono">{a.contacts && a.contacts.length > 0 ? a.contacts[0].name : '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{a.contacts_count ?? 0}</td>
+                  <td className="td-num">{a.contacts && a.contacts.length > 0 ? a.contacts[0].name : '—'}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{a.contacts_count ?? 0}</td>
                 </tr>
               ))
             )}

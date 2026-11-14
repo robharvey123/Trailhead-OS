@@ -594,8 +594,8 @@ export default function ContactDetailClient({
                   return (
                     <tr key={p.id}>
                       <td className="td-name"><Link href={`/projects/records/${p.id}`}>{p.name}</Link></td>
-                      <td className="td-mono">{p.status}</td>
-                      <td>{direct ? <span className="channel-tag">direct</span> : <span className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>via account</span>}</td>
+                      <td className="td-num">{p.status}</td>
+                      <td>{direct ? <span className="channel-tag">direct</span> : <span className="td-num text-xs" style={{ color: 'var(--text-3)' }}>via account</span>}</td>
                       <td style={{ textAlign: 'right' }}>
                         {direct ? <button className="btn btn-ghost btn-sm" disabled={projBusy} onClick={() => void unlinkProject(p.id)}>Unlink</button> : null}
                       </td>
@@ -722,7 +722,7 @@ export default function ContactDetailClient({
                       <div>{t.subject}</div>
                       <div className="td-sub">{t.snippet}</div>
                     </td>
-                    <td className="td-mono">{fmtThreadDate(t.last_at)}</td>
+                    <td className="td-num">{fmtThreadDate(t.last_at)}</td>
                     <td>{t.is_unread ? <span className="pill timer">unread</span> : null}</td>
                   </tr>
                 ))}

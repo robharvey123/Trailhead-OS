@@ -22,9 +22,9 @@ function EntryRow({ entry }: { entry: TaskTimeEntryRow }) {
   return (
     <li style={{ display: 'grid', gap: 2, padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-        <span className="td-mono" style={{ color: 'var(--text-3)', minWidth: 84 }}>{fmtDate(entry.entry_date)}</span>
+        <span className="td-num" style={{ color: 'var(--text-3)', minWidth: 84 }}>{fmtDate(entry.entry_date)}</span>
         <span style={{ color: 'var(--text)', flex: 1 }}>{entry.person?.full_name ?? 'Unattributed'}</span>
-        <span className="td-mono" style={{ color: 'var(--text)' }}>{hrs(entry.duration_minutes)}</span>
+        <span className="td-num" style={{ color: 'var(--text)' }}>{hrs(entry.duration_minutes)}</span>
         {entry.billable ? <span className="channel-tag" style={{ background: 'var(--emerald-dim)', color: 'var(--emerald-strong)' }}>Billable</span> : null}
       </div>
       {note ? (
@@ -104,7 +104,7 @@ export default function TaskTimeLog({
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 12, color: 'var(--text-2)' }}>
           {summary.people.map((p, i) => (
             <span key={p.personId ?? `none-${i}`}>
-              {p.fullName} <span className="td-mono" style={{ color: 'var(--text-3)' }}>{hrs(p.minutes)}</span>
+              {p.fullName} <span className="td-num" style={{ color: 'var(--text-3)' }}>{hrs(p.minutes)}</span>
               {i < summary.people.length - 1 ? <span style={{ color: 'var(--text-3)' }}> · </span> : null}
             </span>
           ))}

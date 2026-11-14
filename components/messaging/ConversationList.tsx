@@ -38,7 +38,7 @@ function Row({ c, activeId }: { c: ConversationRow; activeId?: string }) {
             {c.title}
             {c.kind === 'channel' ? <span style={{ fontWeight: 400, color: 'var(--text-3)', fontSize: 12 }}> · {c.memberCount}</span> : null}
           </span>
-          <span className="td-mono" style={{ fontSize: 11, color: 'var(--text-3)', flex: 'none' }}>{fmtWhen(c.lastAt)}</span>
+          <span className="td-num" style={{ fontSize: 11, color: 'var(--text-3)', flex: 'none' }}>{fmtWhen(c.lastAt)}</span>
         </span>
         <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 13, color: c.unread ? 'var(--text)' : 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lastBody || 'No messages yet'}</span>

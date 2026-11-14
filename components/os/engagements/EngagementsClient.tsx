@@ -101,14 +101,14 @@ export default function EngagementsClient({
                       {e.code ? <div className="td-sub">{e.code}</div> : null}
                     </td>
                     <td className="td-name">{e.end_client?.name ?? '—'}</td>
-                    <td className="td-mono">{e.billed_via?.name ?? 'direct'}</td>
+                    <td className="td-num">{e.billed_via?.name ?? 'direct'}</td>
                     <td><span className={`status-badge ${STATUS_CLASS[e.status] ?? 'status-on_hold'}`}>{e.status}</span></td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">
+                    <td style={{ textAlign: 'right' }} className="td-num">
                       <span style={{ color: over ? 'var(--red)' : 'var(--text)' }}>{used.toFixed(1)}</span>
                       {inc != null ? <span style={{ color: 'var(--text-3)' }}> / {inc}</span> : null}
                     </td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{e.retainer_amount_monthly != null ? formatCurrency(e.retainer_amount_monthly, e.currency || 'GBP') : '—'}</td>
-                    <td className="td-mono">{fmtDate(e.end_date)}</td>
+                    <td style={{ textAlign: 'right' }} className="td-num">{e.retainer_amount_monthly != null ? formatCurrency(e.retainer_amount_monthly, e.currency || 'GBP') : '—'}</td>
+                    <td className="td-num">{fmtDate(e.end_date)}</td>
                   </tr>
                 )
               })

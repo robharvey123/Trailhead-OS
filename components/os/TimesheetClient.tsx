@@ -303,29 +303,29 @@ export default function TimesheetClient({
             <tbody>
               {timer ? (
                 <tr className="row-running">
-                  <td className="td-mono">Now</td>
+                  <td className="td-num">Now</td>
                   <td className="td-name">{timer.account?.name ?? '—'}</td>
                   <td className="td-mono">{timer.engagement ? timer.engagement.code ?? timer.engagement.name : '—'}</td>
                   <td>{timer.project?.name ?? '—'}</td>
                   <td>{timer.task?.title ?? '—'}</td>
                   <td>{timer.person?.full_name ?? '—'}</td>
                   <td>{timer.description ?? 'Running timer'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{fmtClock(elapsedSeconds)} <span className="pill timer" style={{ marginLeft: 6 }}>● live</span></td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{fmtClock(elapsedSeconds)} <span className="pill timer" style={{ marginLeft: 6 }}>● live</span></td>
                   <td colSpan={4}></td>
                 </tr>
               ) : null}
               {entries.map((e) => (
                 <tr key={e.id}>
-                  <td className="td-mono" style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{new Date(e.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
+                  <td className="td-num" style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{new Date(e.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</td>
                   <td className="td-name" style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{e.account?.name ?? '—'}</td>
                   <td className="td-mono">{e.engagement ? e.engagement.code ?? e.engagement.name : '—'}</td>
                   <td>{e.project?.name ?? '—'}</td>
                   <td style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.task?.title ?? '—'}</td>
                   <td>{e.person?.full_name ?? '—'}</td>
                   <td style={{ cursor: 'pointer' }} onClick={() => openEdit(e)}>{e.description ?? '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{fmtDur(e.duration_minutes)}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{e.billable ? `£${Number(e.rate_snapshot).toFixed(0)}` : '—'}</td>
-                  <td style={{ textAlign: 'right' }} className="td-mono">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{fmtDur(e.duration_minutes)}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{e.billable ? `£${Number(e.rate_snapshot).toFixed(0)}` : '—'}</td>
+                  <td style={{ textAlign: 'right' }} className="td-num">{e.billable ? formatCurrency((e.duration_minutes / 60) * e.rate_snapshot, e.currency_snapshot || 'GBP') : '—'}</td>
                   <td>
                     <span className={`pill ${e.billable ? 'billable' : 'nonbill'}`}>{e.billable ? 'Billable' : 'Non-bill'}</span>
                     {e.billed ? <span className="pill" style={{ marginLeft: 4, background: 'var(--emerald-dim)', color: 'var(--emerald-strong)' }} title={e.invoice ? `Invoice ${e.invoice.invoice_number}` : 'Billed'}>Billed</span> : null}

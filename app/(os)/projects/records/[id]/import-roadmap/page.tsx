@@ -44,7 +44,7 @@ export default async function ImportRoadmapPage({
     <div className={`thmock ${mockupFontVars}`}>
       <div className="panel overflow-hidden">
         <div className="topbar">
-          <Link href={`/projects/records/${id}`} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Project</Link>
+          <Link href={`/projects/records/${id}`} className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Project</Link>
           <span className="topbar-title">Import roadmap</span>
         </div>
         <div style={{ padding: 24 }}>

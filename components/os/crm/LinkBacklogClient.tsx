@@ -103,7 +103,7 @@ export default function LinkBacklogClient() {
   return (
     <div className="thmock space-y-4">
       <div>
-        <Link href="/crm/contacts" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Contacts</Link>
+        <Link href="/crm/contacts" className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Contacts</Link>
         <h1 className="os-page-title mt-2">Linking backlog</h1>
         <p className="mt-1 text-sm text-[color:var(--text-2)]">
           Suggestions only — nothing is applied automatically. {data.placeholders_count > 0 ? `${data.placeholders_count} placeholder contacts (name = company) are handled by the cleanup script, not here.` : ''}
@@ -136,13 +136,13 @@ export default function LinkBacklogClient() {
                   <div key={row.contact.id} className="card flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-sm font-semibold text-[color:var(--text)]">{row.contact.name}</div>
-                      <div className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>{[row.contact.company, row.contact.email].filter(Boolean).join(' · ') || 'no company / email'}</div>
+                      <div className="td-num text-xs" style={{ color: 'var(--text-3)' }}>{[row.contact.company, row.contact.email].filter(Boolean).join(' · ') || 'no company / email'}</div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       {top ? (
                         <span className="meta-chip" title={`match: ${REASON_LABEL[top.reason]}`}>{top.account.name} · {pct(top.score)}</span>
                       ) : (
-                        <span className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>no suggestion</span>
+                        <span className="td-num text-xs" style={{ color: 'var(--text-3)' }}>no suggestion</span>
                       )}
                       {top ? <button className="btn btn-primary btn-sm" disabled={working} onClick={() => void accept(row, top)}>Accept</button> : null}
                       {row.suggestions.slice(1).map((s) => (
@@ -171,7 +171,7 @@ export default function LinkBacklogClient() {
                   <tr key={`${d.a.id}:${d.b.id}`}>
                     <td className="td-name"><Link href={`/crm/accounts/${d.a.id}`}>{d.a.name}</Link></td>
                     <td className="td-name"><Link href={`/crm/accounts/${d.b.id}`}>{d.b.name}</Link></td>
-                    <td className="td-mono" style={{ textAlign: 'right' }}>{pct(d.score)}</td>
+                    <td className="td-num" style={{ textAlign: 'right' }}>{pct(d.score)}</td>
                     <td style={{ textAlign: 'right' }}>
                       <button className="btn btn-ghost btn-sm" onClick={() => setMerge({ type: 'account', a: d.a, b: d.b })}>Merge…</button>
                     </td>
@@ -219,9 +219,9 @@ export default function LinkBacklogClient() {
               <tbody>
                 {data.unmatched_threads.map((t) => (
                   <tr key={t.gmail_thread_id}>
-                    <td className="td-mono text-xs">{t.from_address ?? '—'}</td>
+                    <td className="td-num text-xs">{t.from_address ?? '—'}</td>
                     <td>{t.subject ?? '—'}</td>
-                    <td>{t.suggestion ? <span className="meta-chip">{t.suggestion.name}</span> : <span className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>—</span>}</td>
+                    <td>{t.suggestion ? <span className="meta-chip">{t.suggestion.name}</span> : <span className="td-num text-xs" style={{ color: 'var(--text-3)' }}>—</span>}</td>
                   </tr>
                 ))}
               </tbody>

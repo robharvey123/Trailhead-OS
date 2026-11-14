@@ -333,11 +333,11 @@ export default function TimeLedger({
                     <td colSpan={unattributedOnly ? 6 : 5} style={{ fontWeight: 600, fontSize: 12 }}>
                       {formatBillingPeriod(b.period, { year: true })}{b.period.isFirst && engagement?.start_date ? ' · month one (incl. pre-start work)' : ''}
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }} className="td-mono">
+                    <td style={{ textAlign: 'right', fontWeight: 600 }} className="td-num">
                       {b.summary.total_hours.toFixed(1)}{included != null ? ` / ${included}h` : 'h'}
                     </td>
                     <td></td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }} className="td-mono">{formatCurrency(b.summary.amount, 'GBP')}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 600 }} className="td-num">{formatCurrency(b.summary.amount, 'GBP')}</td>
                     <td colSpan={2}></td>
                   </tr>
                   {b.rows.map((r) => (
@@ -347,7 +347,7 @@ export default function TimeLedger({
                           <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggleSelected(r.id)} aria-label="Select entry" />
                         </td>
                       ) : null}
-                      <td className="td-mono">{fmtDate(r.entry_date)}</td>
+                      <td className="td-num">{fmtDate(r.entry_date)}</td>
                       <td>{r.person?.full_name ?? '—'}</td>
                       <td>{r.project?.name ?? '—'}</td>
                       <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.task?.title ?? '—'}</td>
@@ -362,11 +362,11 @@ export default function TimeLedger({
                           <span style={{ display: 'block', color: 'var(--red)', fontSize: 11 }}>{rowErrors[r.id]}</span>
                         ) : null}
                       </td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{fmtDur(r.duration_minutes)}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{r.billable ? `£${Number(r.rate_snapshot).toFixed(0)}` : '—'}</td>
-                      <td style={{ textAlign: 'right' }} className="td-mono">{r.billable ? formatCurrency((r.duration_minutes / 60) * Number(r.rate_snapshot), 'GBP') : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{fmtDur(r.duration_minutes)}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{r.billable ? `£${Number(r.rate_snapshot).toFixed(0)}` : '—'}</td>
+                      <td style={{ textAlign: 'right' }} className="td-num">{r.billable ? formatCurrency((r.duration_minutes / 60) * Number(r.rate_snapshot), 'GBP') : '—'}</td>
                       <td><span className={`pill ${r.billable ? 'billable' : 'nonbill'}`}>{r.billable ? 'Billable' : 'Non-bill'}</span></td>
-                      <td className="td-mono" style={{ fontSize: 11 }}>{r.billed ? r.invoice?.invoice_number ?? 'Billed' : '—'}</td>
+                      <td className="td-mono">{r.billed ? r.invoice?.invoice_number ?? 'Billed' : '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -391,7 +391,7 @@ export default function TimeLedger({
                   {groups.slice(0, 10).map((g) => (
                     <div key={`${g.id}:${g.name}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 12, padding: '2px 0' }}>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</span>
-                      <span className="td-mono" style={{ whiteSpace: 'nowrap' }}>{g.hours.toFixed(1)}h · {formatCurrency(g.amount, 'GBP')}</span>
+                      <span className="td-num" style={{ whiteSpace: 'nowrap' }}>{g.hours.toFixed(1)}h · {formatCurrency(g.amount, 'GBP')}</span>
                     </div>
                   ))}
                 </div>

@@ -38,7 +38,7 @@ export default function TimerBar() {
   return (
     <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[color:var(--border)] bg-white px-2.5 py-1 text-sm" title={error || undefined}>
       <span aria-hidden="true" className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#DC2626]" />
-      <span className="os-mono shrink-0 tabular-nums text-[color:var(--text)]">{fmtClock(elapsedSeconds)}</span>
+      <span className="shrink-0 tabular-nums text-[color:var(--text)]">{fmtClock(elapsedSeconds)}</span>
       <span className="hidden max-w-[26rem] truncate text-[color:var(--text-3)] md:inline">
         {unassigned ? <span className="font-medium text-[#B45309]">Unassigned</span> : parts.join(' › ')}
       </span>

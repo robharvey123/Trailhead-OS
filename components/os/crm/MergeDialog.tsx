@@ -63,7 +63,7 @@ export default function MergeDialog({ request, onClose, onMerged }: MergeDialogP
               <input type="radio" name="winner" checked={winnerId === opt.id} onChange={() => setWinnerId(opt.id)} />
               <div className="min-w-0">
                 <div className="text-sm font-medium text-[color:var(--text)]">{opt.name}</div>
-                <div className="td-mono text-xs" style={{ color: 'var(--text-3)' }}>
+                <div className="td-num text-xs" style={{ color: 'var(--text-3)' }}>
                   {winnerId === opt.id ? 'keep' : 'archive'}
                 </div>
               </div>

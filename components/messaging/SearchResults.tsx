@@ -50,7 +50,7 @@ export default function SearchResults({ groups, query, loading }: { groups: Sear
             >
               <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                 <span className="td-name" style={{ fontSize: 12, color: 'var(--text-2)' }}>{m.senderName}</span>
-                <span className="td-mono" style={{ fontSize: 11, color: 'var(--text-3)' }}>{fmtWhen(m.createdAt)}</span>
+                <span className="td-num" style={{ fontSize: 11, color: 'var(--text-3)' }}>{fmtWhen(m.createdAt)}</span>
               </span>
               <span style={{ display: 'block', fontSize: 13, color: 'var(--text)', marginTop: 2 }}>
                 <Highlighted text={m.body} query={query} />

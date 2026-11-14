@@ -48,7 +48,7 @@ export default async function HoursByPersonPage({
               <details key={p.person_id ?? 'none'} className="card" open>
                 <summary style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', listStyle: 'none' }}>
                   <span className="td-name">{p.person_name}</span>
-                  <span className="td-mono" style={{ color: 'var(--text-2)' }}>
+                  <span className="td-num" style={{ color: 'var(--text-2)' }}>
                     {p.total_hours.toFixed(1)}h · {p.billable_hours.toFixed(1)}h billable · {formatCurrency(p.total_cost, 'GBP')}
                   </span>
                 </summary>
@@ -66,9 +66,9 @@ export default async function HoursByPersonPage({
                     {p.byEngagement.map((e) => (
                       <tr key={e.engagement_name}>
                         <td className="td-name">{e.engagement_name}</td>
-                        <td style={{ textAlign: 'right' }} className="td-mono">{e.hours.toFixed(1)}h</td>
-                        <td style={{ textAlign: 'right' }} className="td-mono">{e.billable_hours.toFixed(1)}h</td>
-                        <td style={{ textAlign: 'right' }} className="td-mono">{formatCurrency(e.cost, 'GBP')}</td>
+                        <td style={{ textAlign: 'right' }} className="td-num">{e.hours.toFixed(1)}h</td>
+                        <td style={{ textAlign: 'right' }} className="td-num">{e.billable_hours.toFixed(1)}h</td>
+                        <td style={{ textAlign: 'right' }} className="td-num">{formatCurrency(e.cost, 'GBP')}</td>
                       </tr>
                     ))}
                   </tbody>

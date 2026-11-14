@@ -108,7 +108,7 @@ export default async function ConversationPage({
     <div className={`thmock ${mockupFontVars}`}>
       <div className="panel overflow-hidden" style={{ height: 'calc(100vh - 140px)', maxWidth: 720, display: 'flex', flexDirection: 'column' }}>
         <div className="topbar" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link href="/messages" className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Messages</Link>
+          <Link href="/messages" className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ Messages</Link>
           <span className="topbar-title" style={{ flex: 1 }}>{conv.kind === 'channel' ? `# ${title}` : title}</span>
           {conv.kind === 'channel' ? (
             <ChannelManageButton conversationId={conversationId} members={members} users={usersDirectory} isAdmin={amAdmin} meId={user.id} engagements={engagements} defaultEngagementId={(conv.default_engagement_id as string | null) ?? null} />

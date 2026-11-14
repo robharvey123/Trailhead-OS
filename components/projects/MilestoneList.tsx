@@ -81,7 +81,7 @@ export default function MilestoneList({
     <div className="panel" style={{ padding: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <div className="panel-section-title" style={{ margin: 0 }}>Milestones</div>
-        <span className="td-mono" style={{ color: 'var(--text-3)' }}>{milestones.length}</span>
+        <span className="td-num" style={{ color: 'var(--text-3)' }}>{milestones.length}</span>
       </div>
 
       {/* Bulk action bar — below the modal overlay (z-index 40 < dialog 50). */}
@@ -111,7 +111,7 @@ export default function MilestoneList({
                 <tr key={m.id}>
                   <td><input type="checkbox" checked={selected.has(m.id)} onChange={() => toggle(m.id)} aria-label={`Select ${m.title}`} /></td>
                   <td className="td-name">{m.title}{deps > 0 ? <span className="td-sub">{deps} linked task{deps === 1 ? '' : 's'}</span> : null}</td>
-                  <td className="td-mono">{fmtDate(m.due_date)}</td>
+                  <td className="td-num">{fmtDate(m.due_date)}</td>
                   <td><span className="channel-tag">{m.status}</span></td>
                   <td><button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }} onClick={() => setSingle(m)}>Delete</button></td>
                 </tr>

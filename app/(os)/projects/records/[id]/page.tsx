@@ -190,8 +190,8 @@ export default async function ProjectDetailPage({
                         <Link href={`/projects/records/${id}/import-roadmap?import_id=${imp.id}`}>{imp.source_filename}</Link>
                       </td>
                       <td><span className="channel-tag">{imp.status}</span></td>
-                      <td className="td-mono">{imp.task_count_committed ?? '—'}</td>
-                      <td className="td-mono">{fmtDate(imp.created_at)}</td>
+                      <td className="td-num">{imp.task_count_committed ?? '—'}</td>
+                      <td className="td-num">{fmtDate(imp.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -39,7 +39,7 @@ export default function CommentThread({
           <div key={c.id} className="card" style={{ padding: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>
               <span className="td-name">{c.author?.full_name ?? 'Unknown'}</span>
-              <span className="td-mono">{fmt(c.created_at)}</span>
+              <span className="td-num">{fmt(c.created_at)}</span>
             </div>
             {/* Plain text only — never rendered as HTML. */}
             <p style={{ fontSize: 13, whiteSpace: 'pre-wrap', margin: 0 }}>{c.body}</p>

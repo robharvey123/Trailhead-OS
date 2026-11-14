@@ -68,12 +68,12 @@ export default function TaskTimer({
     <div style={{ display: 'grid', gap: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <span className="field-label">Logged</span>
-        <span className="td-mono" style={{ fontSize: 13, color: 'var(--text)' }}>{fmtMinutes(loggedMinutes)}</span>
+        <span className="td-num" style={{ fontSize: 13, color: 'var(--text)' }}>{fmtMinutes(loggedMinutes)}</span>
       </div>
 
       {onThisTask ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <span className="td-mono" style={{ fontSize: 20, color: 'var(--accent)' }}>{fmtElapsed(elapsedSeconds)}</span>
+          <span className="td-num" style={{ fontSize: 20, color: 'var(--accent)' }}>{fmtElapsed(elapsedSeconds)}</span>
           <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red-strong)', borderColor: 'var(--red)' }} onClick={() => void onStop()} disabled={busy}>
             {busy ? 'Stopping…' : '■ Stop'}
           </button>

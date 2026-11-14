@@ -137,9 +137,9 @@ export default async function CampaignDetailPage({
               <tbody>
                 {steps.map((s) => (
                   <tr key={s.id}>
-                    <td className="td-mono">{s.step_number}</td>
+                    <td className="td-num">{s.step_number}</td>
                     <td>{s.template_name ?? '—'}</td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{s.delay_days}</td>
+                    <td style={{ textAlign: 'right' }} className="td-num">{s.delay_days}</td>
                     <td style={{ textAlign: 'right' }}>
                       {!isRunning ? (
                         <form action={removeCampaignStepAction}>
@@ -237,8 +237,8 @@ export default async function CampaignDetailPage({
                     <td className="td-name">{r.contact?.name ?? '—'}<div className="td-sub">{r.contact?.email}</div></td>
                     <td>{r.contact?.company ?? '—'}</td>
                     <td><span className="meta-chip">{OUTREACH_RECIPIENT_STATUS_LABELS[r.status]}</span></td>
-                    <td style={{ textAlign: 'right' }} className="td-mono">{r.current_step}</td>
-                    <td className="td-mono">{fmt(r.next_send_at)}</td>
+                    <td style={{ textAlign: 'right' }} className="td-num">{r.current_step}</td>
+                    <td className="td-num">{fmt(r.next_send_at)}</td>
                     <td>{r.stopped_reason ?? '—'}</td>
                   </tr>
                 ))}

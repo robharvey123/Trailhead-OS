@@ -381,7 +381,7 @@ export default function ComposeModal({
         </div>
 
         <div className="flex items-center justify-between border-t border-[var(--border)] px-5 py-3">
-          <span className="font-mono text-[11px] text-[var(--text-3)]">
+          <span className="text-xs text-[var(--text-3)]">
             {draftsEnabled && draftSaved ? 'Draft saved' : 'Sends from your Workspace mailbox'}
           </span>
           <div className="relative flex items-center gap-1">

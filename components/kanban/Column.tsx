@@ -36,7 +36,7 @@ function KanbanColumn({
     >
       <div className="panel-section-title" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
         <TaskStatusBadge status={status} />
-        <span className="td-mono" style={{ color: 'var(--text-3)' }}>{tasks.length}</span>
+        <span className="td-num" style={{ color: 'var(--text-3)' }}>{tasks.length}</span>
       </div>
       <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
         <div style={{ minHeight: 40, flex: 1 }}>

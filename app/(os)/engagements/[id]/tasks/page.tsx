@@ -30,7 +30,7 @@ export default async function EngagementTasksPage({ params }: { params: Promise<
     <div className={`thmock ${mockupFontVars}`}>
       <div className="panel overflow-hidden">
         <div className="topbar">
-          <Link href={`/engagements/${id}`} className="td-mono" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ {engagement.name}</Link>
+          <Link href={`/engagements/${id}`} className="td-num" style={{ textDecoration: 'none', color: 'var(--text-3)' }}>‹ {engagement.name}</Link>
           <span className="topbar-title">Tasks</span>
         </div>
         <div style={{ padding: 24 }}>
