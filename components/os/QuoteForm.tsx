@@ -377,7 +377,7 @@ export default function QuoteForm({
         contact_id: contactId || null,
         workstream_id: workstreamId || null,
         project_id: projectId || null,
-        enquiry_id: quoteRecord?.enquiry_id ?? initialEnquiryId ?? null,
+        enquiry_id: quoteRecord?.enquiry_id || initialEnquiryId || null,
         pricing_tier_id: pricingTierId,
         pricing_type: pricingType,
         valid_until: validUntil || null,
