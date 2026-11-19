@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
         supabase
           .from('quotes')
           .select('id, quote_number, title, status')
+          .is('deleted_at', null)
           .or(`quote_number.ilike.${pattern},title.ilike.${pattern}`)
           .limit(PER_MODULE),
         supabase.from('projects').select('id, name, status').ilike('name', pattern).limit(PER_MODULE),

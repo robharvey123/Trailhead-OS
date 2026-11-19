@@ -20,6 +20,7 @@
     "test:invoice-ledger": "tsx scripts/invoice-ledger-acceptance.ts",
     "test:time-links": "tsx scripts/test-time-links.ts",
     "test:mcp-connector": "tsx scripts/mcp-connector-guard.ts",
+    "test:cowork-quotes": "tsx scripts/cowork-quotes-unit.ts",
     "test:growth-publish": "tsx scripts/growth-publish-guard.ts",
     "test": "vitest run"
   },

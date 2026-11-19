@@ -68,6 +68,7 @@ export default async function OsLayout({
       const { count, error } = await supabase
         .from('quotes')
         .select('id', { count: 'exact', head: true })
+        .is('deleted_at', null)
         .in('status', ['draft', 'review'])
       if (error) throw error
       return count ?? 0

@@ -109,6 +109,7 @@ export async function getAccounts(
       .from('quotes')
       .select('id, account_id, status, created_at, issue_date')
       .in('account_id', accountIds)
+      .is('deleted_at', null)
       .order('issue_date', { ascending: false })
       .order('created_at', { ascending: false }),
   ])
@@ -177,6 +178,7 @@ export async function getAccountById(
       .from('quotes')
       .select('id')
       .eq('account_id', id)
+      .is('deleted_at', null)
       .order('issue_date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(8),

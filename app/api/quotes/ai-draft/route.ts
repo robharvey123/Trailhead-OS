@@ -884,6 +884,7 @@ export async function POST(request: NextRequest) {
       .from('quotes')
       .select('id')
       .eq('enquiry_id', enquiryId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
