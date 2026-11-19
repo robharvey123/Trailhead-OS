@@ -1,10 +1,13 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PublicQuote } from '@/lib/types'
 import { gbp, longDate, noteLines, shortDate } from '@/lib/quotes/format'
 import { selectionTotals } from '@/lib/quotes/selection'
+import AcceptDialog from './AcceptDialog'
+import DeclineLink from './DeclineLink'
 import FeatureCard from './FeatureCard'
 import QuestionForm from './QuestionForm'
 import { useCountUp } from './useCountUp'
@@ -35,6 +38,8 @@ export default function ProposalView({ quote, token, initialSelected, mode, cont
   const locked = quote.state === 'accepted' || quote.state === 'declined'
   const [selected, setSelected] = useState<string[]>(initialSelected)
   const [questionPrefill, setQuestionPrefill] = useState<string | null>(null)
+  const [acceptOpen, setAcceptOpen] = useState(false)
+  const router = useRouter()
   const questionsRef = useRef<HTMLElement>(null)
 
   const paidItems = quote.items.filter((item) => !item.included)
@@ -94,6 +99,7 @@ export default function ProposalView({ quote, token, initialSelected, mode, cont
       pdfHref={pdfHref}
       canAccept={quote.state === 'open' && mode === 'live' && totals.priced_count > 0}
       onAskForUpdate={askForUpdate}
+      onAccept={() => setAcceptOpen(true)}
     />
   )
 
@@ -291,6 +297,9 @@ export default function ProposalView({ quote, token, initialSelected, mode, cont
               disabled={mode !== 'live'}
               prefill={questionPrefill}
             />
+            {quote.state === 'open' && mode === 'live' && token ? (
+              <DeclineLink token={token} onDeclined={() => router.refresh()} />
+            ) : null}
           </section>
         </main>
 
@@ -312,8 +321,24 @@ export default function ProposalView({ quote, token, initialSelected, mode, cont
           pdfHref={pdfHref}
           canAccept={quote.state === 'open' && mode === 'live' && totals.priced_count > 0}
           onAskForUpdate={askForUpdate}
+          onAccept={() => setAcceptOpen(true)}
         />
       </div>
+
+      {token && mode === 'live' && quote.state === 'open' ? (
+        <AcceptDialog
+          open={acceptOpen}
+          token={token}
+          quote={quote}
+          selected={selected}
+          totals={totals}
+          onClose={(accepted) => {
+            setAcceptOpen(false)
+            // Re-render from the server in the accepted state.
+            if (accepted) router.refresh()
+          }}
+        />
+      ) : null}
 
       {/* Announce total changes once, not on every animation frame. */}
       <p aria-live="polite" className="sr-only">
@@ -364,9 +389,10 @@ interface SummaryProps {
   pdfHref: string | null
   canAccept: boolean
   onAskForUpdate: () => void
+  onAccept: () => void
 }
 
-function Actions({ quote, mode, pdfHref, canAccept, onAskForUpdate, compact }: Pick<SummaryProps, 'quote' | 'mode' | 'pdfHref' | 'canAccept' | 'onAskForUpdate'> & { compact?: boolean }) {
+function Actions({ quote, mode, pdfHref, canAccept, onAskForUpdate, onAccept, compact }: Pick<SummaryProps, 'quote' | 'mode' | 'pdfHref' | 'canAccept' | 'onAskForUpdate' | 'onAccept'> & { compact?: boolean }) {
   const accepted = quote.state === 'accepted'
   const pdfLabel = accepted ? 'Download signed PDF' : 'Download PDF'
   const pdf = pdfHref ? (
@@ -388,7 +414,7 @@ function Actions({ quote, mode, pdfHref, canAccept, onAskForUpdate, compact }: P
     )
   } else if (quote.state === 'open' || mode === 'preview') {
     primary = (
-      <button type="button" disabled={!canAccept} className={primaryButton} data-action="accept">
+      <button type="button" disabled={!canAccept} onClick={onAccept} className={primaryButton}>
         Accept proposal
       </button>
     )
