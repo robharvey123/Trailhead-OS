@@ -1,7 +1,11 @@
 import { notFound } from 'next/navigation'
 import QuoteDetailClient from '@/components/os/QuoteDetailClient'
 import type { ClientPageData } from '@/components/os/QuoteClientPagePanel'
+import { getAccounts } from '@/lib/db/accounts'
+import { getContacts } from '@/lib/db/contacts'
+import { getProjects } from '@/lib/db/projects'
 import { getQuoteById, getQuoteVersions } from '@/lib/db/quotes'
+import type { QuoteFieldOptions } from '@/components/os/QuoteHeaderFields'
 import { buildPublicItems } from '@/lib/quotes/projection'
 import { proposalUrl, publishGateFailures } from '@/lib/quotes/publish'
 import { createClient } from '@/lib/supabase/server'
@@ -19,7 +23,7 @@ export default async function QuoteDetailPage({
   const { id } = await params
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const supabase = await createClient()
-  const [quote, versions, events, acceptance] = await Promise.all([
+  const [quote, versions, events, acceptance, accounts, contacts, projects] = await Promise.all([
     getQuoteById(id, supabase).catch(() => null),
     getQuoteVersions(id, supabase).catch(() => []),
     supabase
@@ -35,6 +39,9 @@ export default async function QuoteDetailPage({
       .eq('quote_id', id)
       .maybeSingle()
       .then(({ data }) => (data as QuoteAcceptance | null) ?? null),
+    getAccounts({}, supabase).catch(() => []),
+    getContacts({}, supabase).catch(() => []),
+    getProjects({}, supabase).catch(() => []),
   ])
 
   if (!quote) {
@@ -50,8 +57,18 @@ export default async function QuoteDetailPage({
     itemTitles: Object.fromEntries(items.map((item) => [item.id, item.title])),
   }
 
+  // Slim option lists for the inline header editors (no CRM payload to the client).
+  const fieldOptions: QuoteFieldOptions = {
+    accounts: accounts.map((a) => ({ id: a.id, name: a.name })).sort((a, b) => a.name.localeCompare(b.name)),
+    contacts: contacts
+      .map((c) => ({ id: c.id, name: c.name, account_id: c.account_id ?? null, company: c.company ?? null }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    projects: projects.map((p) => ({ id: p.id, name: p.name })).sort((a, b) => a.name.localeCompare(b.name)),
+  }
+
   return (
     <QuoteDetailClient
+      fieldOptions={fieldOptions}
       quote={quote}
       versions={versions}
       clientPage={clientPage}

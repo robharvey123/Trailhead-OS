@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/api-fetch'
 import PageHeader from '@/components/ui/PageHeader'
 import EmailThread from './EmailThread'
 import QuoteClientPagePanel, { type ClientPageData } from './QuoteClientPagePanel'
+import QuoteHeaderFields, { type QuoteFieldOptions } from './QuoteHeaderFields'
 import RecordEmailDialog from './RecordEmailDialog'
 import StatusBadge from './StatusBadge'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -75,11 +76,13 @@ export default function QuoteDetailClient({
   quote,
   versions,
   clientPage,
+  fieldOptions,
   warning,
 }: {
   quote: QuoteListItem
   versions: QuoteVersion[]
   clientPage: ClientPageData
+  fieldOptions: QuoteFieldOptions
   warning?: string | null
 }) {
   const router = useRouter()
@@ -317,48 +320,7 @@ export default function QuoteDetailClient({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
         <div className="space-y-6">
           <div className="os-card p-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <p className="os-eyebrow">Account</p>
-                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.account?.name ?? '—'}</p>
-              </div>
-              <div>
-                <p className="os-eyebrow">Contact</p>
-                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.contact?.name ?? '—'}</p>
-              </div>
-              <div>
-                <p className="os-eyebrow">Project</p>
-                <p className="mt-2 text-sm text-[color:var(--text-2)]">
-                  {quoteState.project ? (
-                    <Link href={`/projects/records/${quoteState.project.id}`} className="text-[color:var(--accent-strong)] transition hover:text-[color:var(--accent-hover)]">
-                      {quoteState.project.name}
-                    </Link>
-                  ) : (
-                    '—'
-                  )}
-                </p>
-              </div>
-              <div>
-                <p className="os-eyebrow">Enquiry</p>
-                <p className="mt-2 text-sm text-[color:var(--text-2)]">
-                  {quoteState.enquiry ? (
-                    <Link href={`/enquiries/${quoteState.enquiry.id}`} className="text-[color:var(--accent-strong)] transition hover:text-[color:var(--accent-hover)]">
-                      {quoteState.enquiry.biz_name}
-                    </Link>
-                  ) : (
-                    '—'
-                  )}
-                </p>
-              </div>
-              <div>
-                <p className="os-eyebrow">Issue date</p>
-                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.issue_date}</p>
-              </div>
-              <div>
-                <p className="os-eyebrow">Valid until</p>
-                <p className="mt-2 text-sm text-[color:var(--text-2)]">{quoteState.valid_until ?? '—'}</p>
-              </div>
-            </div>
+            <QuoteHeaderFields quote={quoteState} options={fieldOptions} onSaved={setQuoteState} />
           </div>
 
           <div className="os-card p-6">
