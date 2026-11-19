@@ -1,5 +1,6 @@
 import { NextResponse, after } from 'next/server'
 import { z } from 'zod'
+import { proposalPdfFilename, renderQuotePdf } from '@/lib/pdf/QuotePDF'
 import { recordAcceptance } from '@/lib/quotes/accept'
 import { chosenTitles, sendSignerConfirmation } from '@/lib/quotes/emails'
 import { gbp } from '@/lib/quotes/format'
@@ -71,13 +72,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
         pushBody: `${paidCount} features, ${gbp(acceptance.total)}`,
         tag: `quote:${ctx.quoteId}:accepted`,
       }),
-      sendSignerConfirmation({
-        to: body.data.signer_email,
-        signerName: acceptance.signer_name,
-        quote,
-        acceptance,
-        proposalUrl: `${appOrigin()}/proposal/${token}`,
-      }),
+      (async () => {
+        // The signed copy: rendered from the same projection, with the acceptance block filled in.
+        const signedQuote = { ...quote, state: 'accepted' as const, acceptance }
+        const pdf = await renderQuotePdf({ quote: signedQuote, selectedIds: acceptance.selected_line_item_ids, acceptance }).catch(
+          (error: unknown) => {
+            console.error('[proposal] signed pdf render failed, sending without attachment', error)
+            return null
+          }
+        )
+        await sendSignerConfirmation({
+          to: body.data.signer_email,
+          signerName: acceptance.signer_name,
+          quote: signedQuote,
+          acceptance,
+          proposalUrl: `${appOrigin()}/proposal/${token}`,
+          ...(pdf ? { pdf: { filename: proposalPdfFilename(quote), content: pdf } } : {}),
+        })
+      })(),
     ]).then((results) => {
       for (const r of results) if (r.status === 'rejected') console.error('[proposal] post-accept task failed', r.reason)
     })

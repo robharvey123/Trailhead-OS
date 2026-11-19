@@ -14,7 +14,9 @@ import { getQuoteById } from '@/lib/db/quotes'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { DEFAULT_RESEND_FROM } from '@/lib/email/resend'
 import { renderInvoicePdf } from '@/lib/pdf/InvoicePDF'
-import { renderQuotePdf } from '@/lib/pdf/QuotePDF'
+import { proposalPdfFilename, renderQuotePdf } from '@/lib/pdf/QuotePDF'
+import { getPublicQuoteById } from '@/lib/quotes/public'
+import { defaultSelection } from '@/lib/quotes/selection'
 import { calculateTotals, roundMoney, type Enquiry, type Invoice, type InvoicePayment, type QuoteListItem, type RemittanceAccount } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
 import { BRAND } from '@/lib/brand'
@@ -191,7 +193,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Quote not found.' }, { status: 404 })
       }
 
-      const buffer = await renderQuotePdf(quote)
+      // Same projection and renderer the client gets: no internal fields can reach the attachment.
+      const proposal = await getPublicQuoteById(quote.id)
+      if (!proposal) {
+        return NextResponse.json({ error: 'Quote not found.' }, { status: 404 })
+      }
+      const pq = proposal.publicQuote
+      const acceptance = pq.state === 'accepted' ? pq.acceptance : null
+      const buffer = await renderQuotePdf({
+        quote: pq,
+        selectedIds: acceptance ? acceptance.selected_line_item_ids : defaultSelection(pq.items),
+        acceptance,
+      })
 
       await resend.emails.send({
         from: fromAddress,
@@ -200,7 +213,7 @@ export async function POST(request: Request) {
         html: buildQuoteEmailHtml(message, quote, companySettings),
         attachments: [
           {
-            filename: `${quote.quote_number}.pdf`,
+            filename: proposalPdfFilename(pq),
             content: buffer.toString('base64'),
           },
         ],

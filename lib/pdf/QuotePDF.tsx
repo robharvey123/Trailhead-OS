@@ -1,371 +1,302 @@
-import {
-  Document,
-  Page,
-  Rect,
-  Svg,
-  StyleSheet,
-  Text,
-  View,
-  renderToBuffer,
-} from '@react-pdf/renderer'
-import { calculateTotals, type QuoteWithRelations } from '@/lib/types'
+import { Document, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer'
+import { BRAND, COMPANY, TrailheadLockup } from '@/lib/pdf/brand'
+import { gbp, longDate, noteLines } from '@/lib/quotes/format'
+import { selectionTotals } from '@/lib/quotes/selection'
+import type { PublicQuote, PublicQuoteAcceptance, PublicQuoteItem } from '@/lib/types'
 
-const styles = StyleSheet.create({
+/**
+ * Client proposal PDF. Takes a PublicQuote, never a Quote, so it is
+ * structurally unable to print internal fields (internal_notes, estimated
+ * hours, complexity breakdown, AI drafts). The same renderer serves the public
+ * download, the signed copy emailed on acceptance and the OS download.
+ *
+ * react-pdf 4.x notes:
+ * - lineHeight must NOT sit on the page style: it silently suppresses the
+ *   fixed footer (see lib/reports/pdf.tsx). It lives on paragraphs.
+ * - lineHeight inside a wrap={false} block roughly doubles the line gap in
+ *   this version, so those blocks (items, panels, lists) use the default.
+ * - The page's paddingBottom (72) is well above the footer's height (about
+ *   30 from bottom 22), so body content never runs under it.
+ */
+
+const PAD_X = 44
+const PAD_TOP = 40
+
+const s = StyleSheet.create({
   page: {
-    paddingTop: 34,
-    paddingRight: 36,
-    paddingBottom: 60,
-    paddingLeft: 36,
+    paddingTop: PAD_TOP,
+    paddingBottom: 72,
+    paddingHorizontal: PAD_X,
     fontFamily: 'Helvetica',
     fontSize: 10,
-    color: '#0f172a',
+    color: BRAND.ink,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 22,
-  },
-  brand: {
-    flexDirection: 'row',
-    maxWidth: '56%',
-  },
-  brandMark: {
-    marginRight: 10,
-  },
-  companyName: {
-    fontSize: 15,
-    fontWeight: 700,
-    marginBottom: 4,
-  },
-  muted: {
-    color: '#475569',
-    marginBottom: 2,
-  },
-  rightMeta: {
-    width: '38%',
-    alignItems: 'flex-end',
-  },
-  quoteNumber: {
-    fontSize: 16,
-    fontWeight: 700,
-    marginBottom: 6,
-  },
-  section: {
-    marginTop: 18,
-  },
-  sectionTitle: {
-    fontSize: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 1.1,
-    color: '#64748b',
-    marginBottom: 8,
-  },
-  card: {
-    border: '1 solid #e2e8f0',
-    borderRadius: 14,
-    padding: 12,
-  },
-  preparedForName: {
-    fontSize: 12,
-    fontWeight: 700,
-    marginBottom: 3,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 700,
-    lineHeight: 1.2,
-  },
-  body: {
-    color: '#334155',
-    lineHeight: 1.45,
-  },
-  estimateBanner: {
-    border: '1 solid #bae6fd',
-    backgroundColor: '#f0f9ff',
-    borderRadius: 14,
-    padding: 10,
-  },
-  phaseCard: {
-    border: '1 solid #e2e8f0',
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 10,
-  },
-  phaseHeader: {
+  masthead: {
+    marginTop: -PAD_TOP,
+    marginHorizontal: -PAD_X,
+    paddingTop: 28,
+    paddingBottom: 26,
+    paddingHorizontal: PAD_X,
+    backgroundColor: BRAND.navy,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 6,
   },
-  phaseTitle: {
-    width: '72%',
-    fontSize: 12,
-    fontWeight: 700,
-  },
-  phaseMeta: {
-    width: '26%',
-    textAlign: 'right',
-    color: '#64748b',
-    fontSize: 9,
-  },
-  bullet: {
-    marginTop: 3,
-    marginLeft: 8,
-    color: '#334155',
-  },
-  table: {
-    marginTop: 8,
-    border: '1 solid #e2e8f0',
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#f8fafc',
-    paddingTop: 8,
-    paddingRight: 10,
-    paddingBottom: 8,
-    paddingLeft: 10,
-    borderBottom: '1 solid #e2e8f0',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    paddingTop: 8,
-    paddingRight: 10,
-    paddingBottom: 8,
-    paddingLeft: 10,
-    borderBottom: '0.5 solid #e2e8f0',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 8,
-    paddingRight: 10,
-    paddingBottom: 8,
-    paddingLeft: 10,
-    borderBottom: '0.5 solid #e2e8f0',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 10,
-    paddingRight: 10,
-    paddingBottom: 10,
-    paddingLeft: 10,
-    backgroundColor: '#e2f4ff',
-  },
-  colDescription: {
-    width: '38%',
-    paddingRight: 8,
-  },
-  colType: {
-    width: '16%',
-    paddingRight: 8,
-  },
-  colQty: {
-    width: '10%',
-    textAlign: 'right',
-    paddingRight: 8,
-  },
-  colUnitPrice: {
-    width: '16%',
-    textAlign: 'right',
-    paddingRight: 8,
-  },
-  colAmount: {
-    width: '20%',
-    textAlign: 'right',
-  },
-  appendixCard: {
-    border: '1 solid #e2e8f0',
-    borderRadius: 14,
-    padding: 12,
-  },
+  mastRight: { alignItems: 'flex-end' },
+  mastLabel: { fontFamily: 'Helvetica-Bold', fontSize: 16, letterSpacing: 3, color: BRAND.paper, marginBottom: 6 },
+  mastLine: { fontSize: 9, color: BRAND.coolLight, marginBottom: 2 },
+  mastNumber: { fontFamily: 'Courier-Bold', fontSize: 10, color: BRAND.blueBright, marginBottom: 6 },
+  accent: { marginHorizontal: -PAD_X, height: 3, backgroundColor: BRAND.blue, marginBottom: 22 },
+  eyebrow: { fontSize: 8, fontFamily: 'Helvetica-Bold', letterSpacing: 1.4, color: BRAND.blueInk, textTransform: 'uppercase', marginBottom: 4 },
+  preparedFor: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: BRAND.navy, marginBottom: 2 },
+  muted: { color: BRAND.muted },
+  title: { fontFamily: 'Times-Bold', fontSize: 22, color: BRAND.navy, marginTop: 18, marginBottom: 8, lineHeight: 1.2 },
+  summary: { fontSize: 10.5, color: BRAND.ink, lineHeight: 1.5, marginBottom: 6 },
+  h2: { fontFamily: 'Times-Bold', fontSize: 15, color: BRAND.navy, marginTop: 22, marginBottom: 8 },
+  tableHead: { flexDirection: 'row', borderBottomWidth: 1, borderColor: BRAND.navy, paddingBottom: 5, marginBottom: 2 },
+  th: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: BRAND.muted, textTransform: 'uppercase', letterSpacing: 0.8 },
+  row: { flexDirection: 'row', borderBottomWidth: 0.5, borderColor: BRAND.line, paddingVertical: 6 },
+  colNum: { width: 28 },
+  colTitle: { flex: 1, paddingRight: 8 },
+  colPrice: { width: 90, textAlign: 'right' },
+  totals: { marginTop: 8, marginLeft: 'auto', width: 220 },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
+  grandTotal: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1.5, borderColor: BRAND.navy, marginTop: 4, paddingTop: 6 },
+  grandLabel: { fontFamily: 'Helvetica-Bold', fontSize: 12, color: BRAND.navy },
+  grandValue: { fontFamily: 'Helvetica-Bold', fontSize: 14, color: BRAND.navy },
+  item: { borderLeftWidth: 3, borderColor: BRAND.blue, paddingLeft: 12, paddingVertical: 2, marginBottom: 16 },
+  itemHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+  itemTitle: { fontFamily: 'Helvetica-Bold', fontSize: 11.5, color: BRAND.navy, flex: 1, paddingRight: 8 },
+  itemPrice: { fontFamily: 'Helvetica-Bold', fontSize: 11, color: BRAND.navy },
+  itemDetail: { color: BRAND.ink, marginBottom: 4 },
+  itemDuration: { fontSize: 8, color: BRAND.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 4 },
+  bulletRow: { flexDirection: 'row', marginBottom: 2 },
+  bullet: { width: 12, color: BRAND.blueInk },
+  bulletText: { flex: 1 },
+  panel: { backgroundColor: BRAND.coolLight, borderRadius: 4, padding: 12 },
+  para: {},
+  accept: { marginTop: 24, borderWidth: 1, borderColor: BRAND.navy, borderRadius: 4, padding: 14 },
+  signRow: { flexDirection: 'row', marginTop: 18 },
+  signCell: { flex: 1, marginRight: 14 },
+  signLine: { borderBottomWidth: 0.75, borderColor: BRAND.ink, height: 22, marginBottom: 4 },
   footer: {
     position: 'absolute',
-    bottom: 24,
-    left: 36,
-    right: 36,
-    fontSize: 8,
-    color: '#64748b',
-    textAlign: 'center',
-    lineHeight: 1.4,
+    bottom: 22,
+    left: PAD_X,
+    right: PAD_X,
+    borderTopWidth: 0.5,
+    borderColor: BRAND.line,
+    paddingTop: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    fontSize: 7.5,
+    color: BRAND.muted,
   },
 })
 
-function formatMoney(value: number) {
-  return `£${value.toFixed(2)}`
+function itemPrice(item: PublicQuoteItem): string {
+  return item.included ? 'Included' : gbp(item.line_total)
 }
 
-function QuoteDocument({ quote }: { quote: QuoteWithRelations }) {
-  const totals = calculateTotals(quote.line_items, quote.vat_rate)
+function Footer({ quote }: { quote: PublicQuote }) {
+  const number = quote.company.number ?? COMPANY.number
+  return (
+    <View style={s.footer} fixed>
+      <Text>
+        {quote.company.name} · Company no. {number} · Registered in England and Wales · {quote.quote_number}
+      </Text>
+      <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+    </View>
+  )
+}
+
+function ProposalDocument({
+  quote,
+  selectedIds,
+  acceptance,
+}: {
+  quote: PublicQuote
+  selectedIds: string[]
+  acceptance: PublicQuoteAcceptance | null
+}) {
+  // An accepted proposal always prints what was accepted, whatever was asked for.
+  const selection = acceptance ? acceptance.selected_line_item_ids : selectedIds
+  const totals = selectionTotals(quote.items, selection, quote.vat_rate)
+  const counted = new Set(totals.counted_ids)
+  const numberOf = new Map(quote.items.map((item, index) => [item.id, index + 1]))
+  const chosen = quote.items.filter((item) => counted.has(item.id))
+  const notChosen = quote.items.filter((item) => item.optional && !counted.has(item.id))
+  const notes = noteLines(quote.client_notes)
+  const company = quote.prepared_for.company
 
   return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <View style={styles.brand}>
-            <View style={styles.brandMark}>
-              <Svg width="32" height="32" viewBox="0 0 52 52">
-                <Rect x="2" y="38" width="10" height="10" rx="2" fill="#0F172A" />
-                <Rect x="14" y="28" width="10" height="20" rx="2" fill="#0F172A" />
-                <Rect x="26" y="18" width="10" height="30" rx="2" fill="#0F172A" />
-                <Rect x="38" y="4" width="10" height="44" rx="2" fill="#0EA5E9" />
-              </Svg>
-            </View>
-            <View>
-              <Text style={styles.companyName}>Trailhead Holdings Ltd</Text>
-              <Text style={styles.muted}>Brentwood, Essex, UK</Text>
-              <Text style={styles.muted}>info@trailheadholdings.uk</Text>
-            </View>
-          </View>
-
-          <View style={styles.rightMeta}>
-            <Text style={styles.quoteNumber}>{quote.quote_number}</Text>
-            <Text style={styles.muted}>Issue date: {quote.issue_date}</Text>
-            <Text style={styles.muted}>Valid until: {quote.valid_until ?? 'Not set'}</Text>
+    <Document title={`Proposal ${quote.quote_number}`} author={quote.company.name} subject={quote.title}>
+      <Page size="A4" style={s.page}>
+        <View style={s.masthead}>
+          <TrailheadLockup size={28} onDark />
+          <View style={s.mastRight}>
+            <Text style={s.mastLabel}>PROPOSAL</Text>
+            <Text style={s.mastNumber}>{quote.quote_number}</Text>
+            <Text style={s.mastLine}>Issued {longDate(quote.issue_date)}</Text>
+            {quote.valid_until ? <Text style={s.mastLine}>Valid until {longDate(quote.valid_until)}</Text> : null}
           </View>
         </View>
+        <View style={s.accent} />
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Prepared for:</Text>
-          <Text style={styles.preparedForName}>{quote.account?.name ?? 'No account selected'}</Text>
-          <Text style={styles.body}>{quote.contact?.name ?? 'No contact selected'}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.title}>{quote.title}</Text>
-        </View>
-
-        {quote.summary ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Executive Summary</Text>
-            <Text style={styles.body}>{quote.summary}</Text>
+        {company || quote.prepared_for.contact_first_name ? (
+          <View>
+            <Text style={s.eyebrow}>Prepared for</Text>
+            {company ? <Text style={s.preparedFor}>{company}</Text> : null}
+            {quote.prepared_for.contact_first_name ? (
+              <Text style={s.muted}>For the attention of {quote.prepared_for.contact_first_name}</Text>
+            ) : null}
           </View>
         ) : null}
 
-        {quote.ai_generated && (quote.estimated_hours || quote.estimated_timeline) ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Estimated Hours & Timeline</Text>
-            <View style={styles.estimateBanner}>
-              <Text style={styles.body}>
-                Estimated: {quote.estimated_hours ?? '—'} hours
-                {quote.estimated_timeline ? ` · ${quote.estimated_timeline}` : ''}
+        <Text style={s.title}>{quote.title}</Text>
+        {quote.summary ? <Text style={s.summary}>{quote.summary}</Text> : null}
+
+        <Text style={s.h2}>Your selection</Text>
+        <View style={s.tableHead}>
+          <Text style={[s.th, s.colNum]}>#</Text>
+          <Text style={[s.th, s.colTitle]}>Feature</Text>
+          <Text style={[s.th, s.colPrice]}>Price</Text>
+        </View>
+        {chosen.map((item) => (
+          <View key={item.id} style={s.row} wrap={false}>
+            <Text style={[s.colNum, s.muted]}>{String(numberOf.get(item.id) ?? 0).padStart(2, '0')}</Text>
+            <Text style={s.colTitle}>{item.title}</Text>
+            <Text style={s.colPrice}>{itemPrice(item)}</Text>
+          </View>
+        ))}
+        <View style={s.totals} wrap={false}>
+          <View style={s.totalRow}>
+            <Text style={s.muted}>Subtotal</Text>
+            <Text>{gbp(totals.subtotal)}</Text>
+          </View>
+          {quote.vat_rate > 0 ? (
+            <View style={s.totalRow}>
+              <Text style={s.muted}>VAT ({quote.vat_rate}%)</Text>
+              <Text>{gbp(totals.vat_amount)}</Text>
+            </View>
+          ) : null}
+          <View style={s.grandTotal}>
+            <Text style={s.grandLabel}>Total</Text>
+            <Text style={s.grandValue}>{gbp(totals.total)}</Text>
+          </View>
+        </View>
+
+        {/* Detail starts on its own page so page 1 stays a one-glance summary. */}
+        <View break>
+          <Text style={[s.h2, { marginTop: 0 }]}>What you get</Text>
+        </View>
+        {chosen.map((item) => (
+          <View key={item.id} style={s.item} wrap={false}>
+            <View style={s.itemHead}>
+              <Text style={s.itemTitle}>
+                {String(numberOf.get(item.id) ?? 0).padStart(2, '0')}  {item.title}
               </Text>
+              <Text style={s.itemPrice}>{itemPrice(item)}</Text>
+            </View>
+            {item.duration ? <Text style={s.itemDuration}>{item.duration}</Text> : null}
+            {item.detail ? <Text style={s.itemDetail}>{item.detail}</Text> : null}
+            {item.deliverables.map((deliverable) => (
+              <View key={deliverable} style={s.bulletRow}>
+                <Text style={s.bullet}>•</Text>
+                <Text style={s.bulletText}>{deliverable}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+
+        {notChosen.length > 0 ? (
+          <View wrap={false}>
+            <Text style={s.h2}>Also available</Text>
+            {notChosen.map((item) => (
+              <View key={item.id} style={s.row}>
+                <Text style={[s.colNum, s.muted]}>{String(numberOf.get(item.id) ?? 0).padStart(2, '0')}</Text>
+                <Text style={s.colTitle}>{item.title}</Text>
+                <Text style={s.colPrice}>{itemPrice(item)}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        {quote.payment_terms || quote.estimated_timeline ? (
+          <View wrap={false}>
+            <Text style={s.h2}>Payment terms</Text>
+            <View style={s.panel}>
+              {quote.estimated_timeline ? (
+                <Text style={[s.para, { marginBottom: quote.payment_terms ? 4 : 0 }]}>Timeline: {quote.estimated_timeline}</Text>
+              ) : null}
+              {quote.payment_terms ? <Text style={s.para}>{quote.payment_terms}</Text> : null}
             </View>
           </View>
         ) : null}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Scope Of Work</Text>
-          {quote.scope.length ? (
-            quote.scope.map((phase, index) => (
-              <View key={`${phase.phase}-${index}`} style={styles.phaseCard}>
-                <View style={styles.phaseHeader}>
-                  <Text style={styles.phaseTitle}>
-                    {index + 1}. {phase.phase}
-                  </Text>
-                  <Text style={styles.phaseMeta}>
-                    {phase.duration}
-                    {phase.estimated_hours ? `\n${phase.estimated_hours} hrs` : ''}
-                  </Text>
-                </View>
-                <Text style={styles.body}>{phase.description}</Text>
-                {phase.deliverables.map((deliverable, deliverableIndex) => (
-                  <Text key={`${phase.phase}-${deliverableIndex}`} style={styles.bullet}>
-                    • {deliverable}
-                  </Text>
-                ))}
+        {notes.length > 0 ? (
+          <View wrap={false}>
+            <Text style={s.h2}>Good to know</Text>
+            {notes.map((line, index) => (
+              <View key={index} style={s.bulletRow}>
+                <Text style={s.bullet}>•</Text>
+                <Text style={s.bulletText}>{line}</Text>
               </View>
-            ))
+            ))}
+          </View>
+        ) : null}
+
+        <View style={s.accept} wrap={false}>
+          <Text style={s.eyebrow}>Acceptance</Text>
+          {acceptance ? (
+            <>
+              <Text style={[s.preparedFor, { marginTop: 2 }]}>
+                Accepted by {acceptance.signer_name} on {longDate(acceptance.accepted_at)}
+              </Text>
+              <Text style={s.muted}>
+                Accepted online. Total agreed: {gbp(acceptance.total)}
+                {quote.vat_rate > 0 ? ' including VAT' : ''}.
+              </Text>
+            </>
           ) : (
-            <View style={styles.card}>
-              <Text style={styles.body}>No scope phases added.</Text>
-            </View>
+            <>
+              <Text style={s.muted}>
+                Accept online from your proposal link, or sign below and return a copy to {quote.company.email ?? COMPANY.email}.
+              </Text>
+              <View style={s.signRow}>
+                <View style={s.signCell}>
+                  <View style={s.signLine} />
+                  <Text style={s.muted}>Accepted by</Text>
+                </View>
+                <View style={s.signCell}>
+                  <View style={s.signLine} />
+                  <Text style={s.muted}>Signature</Text>
+                </View>
+                <View style={[s.signCell, { marginRight: 0, flex: 0.6 }]}>
+                  <View style={s.signLine} />
+                  <Text style={s.muted}>Date</Text>
+                </View>
+              </View>
+            </>
           )}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Line Items</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.colDescription}>Description</Text>
-              <Text style={styles.colType}>Type</Text>
-              <Text style={styles.colQty}>Qty</Text>
-              <Text style={styles.colUnitPrice}>Unit price</Text>
-              <Text style={styles.colAmount}>Amount</Text>
-            </View>
-
-            {quote.line_items.map((item) => (
-              <View key={item.id} style={styles.tableRow}>
-                <Text style={styles.colDescription}>{item.description}</Text>
-                <Text style={styles.colType}>{item.type}</Text>
-                <Text style={styles.colQty}>{item.qty}</Text>
-                <Text style={styles.colUnitPrice}>{formatMoney(item.unit_price)}</Text>
-                <Text style={styles.colAmount}>{formatMoney(item.qty * item.unit_price)}</Text>
-              </View>
-            ))}
-
-            <View style={styles.summaryRow}>
-              <Text>Subtotal</Text>
-              <Text>{formatMoney(totals.subtotal)}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text>VAT ({quote.vat_rate}%)</Text>
-              <Text>{formatMoney(totals.vat_amount)}</Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text style={{ fontWeight: 700 }}>Total</Text>
-              <Text style={{ fontSize: 12, fontWeight: 700 }}>{formatMoney(totals.total)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {quote.ai_generated && quote.complexity_breakdown ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Complexity Breakdown</Text>
-            <View style={styles.appendixCard}>
-              <Text style={styles.body}>How this estimate was calculated:</Text>
-              {quote.complexity_breakdown.features_scored.map((feature, index) => (
-                <Text key={`${feature}-${index}`} style={styles.bullet}>
-                  • {feature}
-                </Text>
-              ))}
-              <Text style={[styles.body, { marginTop: 8 }]}>
-                Before buffer: {quote.complexity_breakdown.total_hours_before_buffer} hrs
-              </Text>
-              <Text style={styles.body}>
-                Final after {quote.complexity_breakdown.buffer_applied}:{' '}
-                {quote.complexity_breakdown.total_hours_final} hrs
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Terms</Text>
-          <Text style={styles.body}>{quote.payment_terms ?? '—'}</Text>
-        </View>
-
-        {quote.notes ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Assumptions & Notes</Text>
-            <Text style={styles.body}>{quote.notes}</Text>
-          </View>
-        ) : null}
-
-        <Text style={styles.footer}>
-          This quote is valid until {quote.valid_until ?? 'the stated expiry date'}
-          {'\n'}
-          Trailhead Holdings Ltd · Registered in England & Wales
-          {'\n'}
-          {quote.quote_number}
-        </Text>
+        <Footer quote={quote} />
       </Page>
     </Document>
   )
 }
 
-export async function renderQuotePdf(quote: QuoteWithRelations) {
-  return renderToBuffer(<QuoteDocument quote={quote} />)
+export async function renderQuotePdf(input: {
+  quote: PublicQuote
+  selectedIds: string[]
+  acceptance?: PublicQuote['acceptance']
+}): Promise<Buffer> {
+  return renderToBuffer(
+    <ProposalDocument quote={input.quote} selectedIds={input.selectedIds} acceptance={input.acceptance ?? null} />
+  )
+}
+
+export function proposalPdfFilename(quote: Pick<PublicQuote, 'quote_number'>): string {
+  return `Trailhead-Proposal-${quote.quote_number.replace(/[^A-Za-z0-9_-]/g, '')}.pdf`
 }
