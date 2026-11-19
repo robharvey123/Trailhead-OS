@@ -185,6 +185,8 @@ async function main() {
     'create_quote',
     'update_quote',
     'delete_quote',
+    'publish_quote',
+    'revoke_quote_link',
   ]) {
     ok(`tools/list includes ${expected}`, names.includes(expected))
   }
@@ -196,7 +198,7 @@ async function main() {
     result?: { tools?: { name: string }[] }
   }).result?.tools ?? []).map((tool) => tool.name)
   ok('tools/list over the bearer route returns every tool', bearerNames.length === tools.length, `${bearerNames.length} of ${tools.length}`)
-  for (const expected of ['list_quotes', 'get_quote', 'create_quote', 'update_quote', 'delete_quote']) {
+  for (const expected of ['list_quotes', 'get_quote', 'create_quote', 'update_quote', 'delete_quote', 'publish_quote', 'revoke_quote_link']) {
     ok(`bearer tools/list includes ${expected}`, bearerNames.includes(expected))
   }
   ok('every tool has a description', listed.every((tool) => Boolean(tool.description?.trim())))

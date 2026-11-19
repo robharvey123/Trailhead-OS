@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { pickLineItemExtras, pickScopeLink } from '@/lib/quotes/line-item-fields'
 import { anthropic, ANTHROPIC_MODELS } from '@/lib/anthropic/client'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getEnquiryById } from '@/lib/db/enquiries'
@@ -483,6 +484,7 @@ function sanitizeScope(value: unknown): QuoteScope[] {
         deliverables,
         duration: duration || 'TBC',
         estimated_hours: Number.isFinite(estimatedHours) ? estimatedHours : undefined,
+        ...pickScopeLink(record),
       }
 
       return scopeItem
@@ -523,6 +525,7 @@ function sanitizeLineItems(value: unknown): QuoteLineItem[] {
         qty,
         unit_price: unitPrice,
         type,
+        ...pickLineItemExtras(record),
       }
     })
     .filter((item): item is QuoteLineItem => item !== null)

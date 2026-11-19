@@ -642,6 +642,8 @@ export interface QuoteScope {
   deliverables: string[]
   duration: string
   estimated_hours?: number
+  /** Joins this scope phase to its line item (QuoteLineItem.id). Older rows match by phase === description. */
+  line_item_id?: string
 }
 
 export interface QuoteComplexityBreakdown {
@@ -654,11 +656,21 @@ export interface QuoteComplexityBreakdown {
 
 export interface QuoteLineItem {
   id: string
+  /** Short title shown on the proposal card. */
   description: string
   qty: number
   unit_price: number
   type: 'fixed' | 'hourly' | 'milestone'
+  /** true = the customer can switch it off on the proposal page. Default false (required). */
+  optional?: boolean
+  /** Only meaningful when optional. Default true. */
+  default_selected?: boolean
+  /** Plain-English, client-facing description shown on the card. Max 1,000 chars. */
+  detail?: string
 }
+
+/** Caps shared by every line-item sanitiser. */
+export const QUOTE_LINE_ITEM_DETAIL_MAX = 1000
 
 export interface QuoteDraftPricingItem {
   item: string
@@ -788,7 +800,10 @@ export interface Quote {
   vat_rate: number
   valid_until?: string
   payment_terms?: string
+  /** CLIENT-FACING. Shown on the proposal page and PDF. */
   notes?: string
+  /** INTERNAL ONLY. Never reaches the public projection. */
+  internal_notes?: string | null
   complexity_breakdown?: QuoteComplexityBreakdown
   converted_invoice_id?: string
   ai_generated: boolean
@@ -797,6 +812,98 @@ export interface Quote {
   created_at: string
   updated_at: string
   deleted_at?: string | null
+  // Client page (proposal). Written only by the publish, revoke and view paths,
+  // never through PATCH or MCP update.
+  public_token?: string | null
+  published_at?: string | null
+  first_viewed_at?: string | null
+  last_viewed_at?: string | null
+  view_count?: number
+}
+
+export type QuoteEventType =
+  | 'published'
+  | 'revoked'
+  | 'viewed'
+  | 'pdf_downloaded'
+  | 'question'
+  | 'accepted'
+  | 'declined'
+
+export interface QuoteEvent {
+  id: string
+  quote_id: string
+  type: QuoteEventType
+  meta: Record<string, unknown>
+  created_at: string
+}
+
+export interface QuoteAcceptance {
+  id: string
+  quote_id: string
+  quote_version: number
+  quote_updated_at: string
+  signer_name: string
+  signer_email: string
+  signer_role: string | null
+  selected_line_item_ids: string[]
+  /** The PublicQuote as shown, plus selection and totals. */
+  snapshot: Record<string, unknown>
+  subtotal: number
+  vat_amount: number
+  total: number
+  ip: string | null
+  user_agent: string | null
+  meta: Record<string, unknown>
+  accepted_at: string
+}
+
+/**
+ * The client-safe projection of a quote. Built field by field in
+ * lib/quotes/public.ts and never from a spread row, so internal fields
+ * (internal_notes, estimated_hours, complexity_breakdown, ...) cannot reach it.
+ */
+export interface PublicQuoteItem {
+  id: string
+  title: string
+  detail: string | null
+  qty: number
+  unit_price: number
+  line_total: number
+  optional: boolean
+  default_selected: boolean
+  /** line_total === 0 */
+  included: boolean
+  duration: string | null
+  deliverables: string[]
+}
+
+export type PublicQuoteState = 'open' | 'accepted' | 'declined' | 'expired' | 'unavailable'
+
+export interface PublicQuoteAcceptance {
+  signer_name: string
+  accepted_at: string
+  selected_line_item_ids: string[]
+  total: number
+}
+
+export interface PublicQuote {
+  quote_number: string
+  version: number
+  updated_at: string
+  title: string
+  summary: string | null
+  issue_date: string
+  valid_until: string | null
+  estimated_timeline: string | null
+  prepared_for: { company: string | null; contact_first_name: string | null }
+  items: PublicQuoteItem[]
+  vat_rate: number
+  payment_terms: string | null
+  client_notes: string | null
+  state: PublicQuoteState
+  acceptance: PublicQuoteAcceptance | null
+  company: { name: string; number: string | null; email: string | null }
 }
 
 export interface QuoteWithRelations extends Quote {

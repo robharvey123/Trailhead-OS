@@ -14,18 +14,25 @@ export const BRAND = {
   muted: '#6B7280', // secondary text (print)
   line: '#E5E7EB', // hairlines (print)
   paper: BASE.paper,
+  blueBright: BASE.blueBright, // blue as type on navy
+  blueInk: BASE.blueInk, // blue as type on white
+  coolLight: BASE.coolLight, // light panel ground
+  slate: BASE.slate, // captions on navy
 } as const
 
 export { BRAND_ARGB, COMPANY }
 
 /** The ascending-bars logo mark, redrawn as PDF primitives (SVG assets don't
  * embed cleanly in @react-pdf). */
-export function TrailheadMark({ size = 30 }: { size?: number }) {
+export function TrailheadMark({ size = 30, onDark = false }: { size?: number; onDark?: boolean }) {
+  // On a navy masthead the short bars turn cool light (as public/logo-dark.svg);
+  // the tallest bar stays brand blue either way.
+  const bar = onDark ? BASE.coolLight : BRAND.navy
   return (
     <Svg width={size} height={size} viewBox="0 0 52 52">
-      <Rect x="2" y="38" width="10" height="10" rx="2" fill={BRAND.navy} />
-      <Rect x="14" y="28" width="10" height="20" rx="2" fill={BRAND.navy} />
-      <Rect x="26" y="18" width="10" height="30" rx="2" fill={BRAND.navy} />
+      <Rect x="2" y="38" width="10" height="10" rx="2" fill={bar} />
+      <Rect x="14" y="28" width="10" height="20" rx="2" fill={bar} />
+      <Rect x="26" y="18" width="10" height="30" rx="2" fill={bar} />
       <Rect x="38" y="4" width="10" height="44" rx="2" fill={BRAND.blue} />
     </Svg>
   )
@@ -37,11 +44,11 @@ const lockup = StyleSheet.create({
 })
 
 /** Logo mark + company name — the standard document header lockup. */
-export function TrailheadLockup({ size = 30 }: { size?: number }) {
+export function TrailheadLockup({ size = 30, onDark = false }: { size?: number; onDark?: boolean }) {
   return (
     <View style={lockup.row}>
-      <TrailheadMark size={size} />
-      <Text style={lockup.name}>{COMPANY.name}</Text>
+      <TrailheadMark size={size} onDark={onDark} />
+      <Text style={onDark ? [lockup.name, { color: BRAND.paper }] : lockup.name}>{COMPANY.name}</Text>
     </View>
   )
 }

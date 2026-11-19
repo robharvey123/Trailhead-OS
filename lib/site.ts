@@ -35,3 +35,12 @@ export function buildAppLoginHref(isLocalhost: boolean) {
 /** WhatsApp Business number for the marketing site, as a wa.me deep link. */
 export const WHATSAPP_NUMBER = '+44 7346 808412'
 export const WHATSAPP_HREF = 'https://wa.me/447346808412'
+
+/**
+ * Canonical OS origin for absolute links in emails and copied URLs (proposal
+ * links, OS deep links). NEXT_PUBLIC_APP_URL when set, else the production app
+ * host. Proposal pages only resolve on the app host, never the marketing one.
+ */
+export function appOrigin(): string {
+  return (process.env.NEXT_PUBLIC_APP_URL || 'https://app.trailheadholdings.uk').replace(/\/$/, '')
+}

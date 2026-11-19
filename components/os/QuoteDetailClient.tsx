@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
 import PageHeader from '@/components/ui/PageHeader'
 import EmailThread from './EmailThread'
+import QuoteClientPagePanel, { type ClientPageData } from './QuoteClientPagePanel'
 import RecordEmailDialog from './RecordEmailDialog'
 import StatusBadge from './StatusBadge'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -73,10 +74,12 @@ function formatVersionTimestamp(value: string) {
 export default function QuoteDetailClient({
   quote,
   versions,
+  clientPage,
   warning,
 }: {
   quote: QuoteListItem
   versions: QuoteVersion[]
+  clientPage: ClientPageData
   warning?: string | null
 }) {
   const router = useRouter()
@@ -659,6 +662,8 @@ export default function QuoteDetailClient({
         </div>
 
         <div className="space-y-6 xl:sticky xl:top-8 xl:self-start">
+          <QuoteClientPagePanel quote={quoteState} data={clientPage} />
+
           <div className="os-card p-6">
             <p className="os-eyebrow">Status</p>
             <StatusBadge status={quoteState.status} kind="quote" className="mt-4" />
@@ -737,7 +742,7 @@ export default function QuoteDetailClient({
                   dialogTitle="Send quote to client"
                   defaultRecipient={quoteState.contact?.email ?? quoteState.enquiry?.contact_email ?? null}
                   defaultSubject={`Quote for ${quoteState.account?.name ?? quoteState.enquiry?.biz_name ?? quoteState.title}`}
-                  defaultMessage={`Hi,\n\nPlease find the attached quote for ${quoteState.title}. Let me know if you would like to review any part of the scope.\n\nBest,\nRob`}
+                  defaultMessage={`Hi,\n\nHere's the proposal for ${quoteState.title}. You can switch features on or off, see the total change as you go, and accept online when you're ready. The PDF is attached too.\n\nAny questions, just reply.\n\nBest,\nRob`}
                   buttonClassName={`btn w-full ${quoteState.status === 'review' ? 'btn-primary' : 'btn-ghost'}`}
                   fullWidth
                   onSent={handleQuoteSent}

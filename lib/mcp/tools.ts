@@ -75,12 +75,13 @@ import {
   QUOTE_UPDATE_STATUSES,
   createCoworkQuote,
   deleteCoworkQuote,
-  getQuoteByRef,
-  formatQuote,
+  getCoworkQuoteDetail,
   listCoworkQuotes,
+  publishCoworkQuote,
   quoteCreatedSummary,
   quoteDeletedSummary,
   quoteUpdatedSummary,
+  revokeCoworkQuoteLink,
   updateCoworkQuote,
 } from '@/lib/cowork-quotes'
 import { getCampaignDetail, listCampaigns } from '@/lib/cowork-outreach'
@@ -1392,12 +1393,19 @@ const quoteItem = z.object({
   deliverables: z.array(z.string()).optional().describe('optional bullet list of deliverables'),
   duration: z.string().optional().describe('optional, e.g. "2 weeks"; default "TBC"'),
   estimated_hours: z.number().min(0).optional(),
+  optional: z.boolean().optional().describe('true = the client can switch this item off on the proposal page. Default false (required)'),
+  default_selected: z.boolean().optional().describe('only when optional: whether it starts switched on. Default true'),
+  detail: z.string().max(1000).optional().describe('client-facing card text on the proposal page; overrides description there'),
 })
 const quoteLineItem = z.object({
+  id: z.string().optional().describe('keep the existing id when replacing line items, so scope links and proposal selections survive'),
   description: z.string().min(1),
   qty: z.number().positive(),
   unit_price: z.number().min(0).describe('GBP ex VAT; 0 allowed'),
   type: enumOf(QUOTE_LINE_ITEM_TYPES).optional().describe('default fixed'),
+  optional: z.boolean().optional().describe('true = the client can switch this item off on the proposal page. Default false (required)'),
+  default_selected: z.boolean().optional().describe('only when optional: whether it starts switched on. Default true'),
+  detail: z.string().max(1000).optional().describe('client-facing card text on the proposal page; falls back to the linked scope description'),
 })
 const quoteScopeEntry = z.object({
   phase: z.string().min(1),
@@ -1405,6 +1413,7 @@ const quoteScopeEntry = z.object({
   deliverables: z.array(z.string()).optional(),
   duration: z.string().optional().describe('default "TBC"'),
   estimated_hours: z.number().min(0).optional(),
+  line_item_id: z.string().optional().describe('id of the line item this phase describes; joins them on the proposal page'),
 })
 
 const quoteItemFields = {
@@ -1415,7 +1424,7 @@ const quoteItemFields = {
 
 export const listQuotesTool = defineTool({
   name: 'list_quotes',
-  description: 'List quotes, newest first (issue_date, then created). Filter by status and/or account (exact name). Excludes soft-deleted quotes. Returns totals and line_item_count but not the line items or scope; use get_quote for those.',
+  description: 'List quotes, newest first (issue_date, then created). Filter by status and/or account (exact name). Excludes soft-deleted quotes. Returns totals and line_item_count but not the line items or scope; use get_quote for those. Each quote also carries public_url (its client proposal page, null when not published), view_count and last_viewed_at.',
   inputSchema: z.object({
     status: enumOf(QUOTE_STATUSES).optional(),
     account_name: z.string().optional().describe('exact (case-insensitive) sales account name'),
@@ -1426,9 +1435,48 @@ export const listQuotesTool = defineTool({
 
 export const getQuoteTool = defineTool({
   name: 'get_quote',
-  description: 'Get one quote in full by quote number (e.g. QT-0007, case-insensitive) or uuid: account, contact, workstream, priced line items with line totals, the described scope, subtotal / VAT / total, status and the OS link. Soft-deleted quotes are not found.',
+  description: 'Get one quote in full by quote number (e.g. QT-0007, case-insensitive) or uuid: account, contact, workstream, priced line items with line totals (and optional / default_selected / detail for the proposal page), the described scope, subtotal / VAT / total, status, the OS link, notes (CLIENT-FACING) and internal_notes (never shown to the client), plus the client proposal page: public_url, published_at, view_count, last_viewed_at and acceptance (signer, date, selected item titles, total, manual true when recorded in the OS) or null. Soft-deleted quotes are not found.',
   inputSchema: z.object({ quote: quoteRef }),
-  handler: async ({ quote }) => formatQuote(await getQuoteByRef(quote)),
+  handler: async ({ quote }) => getCoworkQuoteDetail(quote),
+})
+
+export const publishQuoteTool = defineTool({
+  name: 'publish_quote',
+  description:
+    'Publish a quote as its interactive client proposal page (the client picks optional features, sees the total and accepts online) and return { published: true, public_url }. Runs the same completeness check as the OS Publish button: account or contact, at least one item priced above zero, valid_until set and not past, no TBC or TODO in item titles or client descriptions, and a summary. When it fails nothing changes and you get { published: false, failures: [...] } in plain English: fix those with update_quote and try again. Moves a draft or review quote to sent. Already published: returns the same link (already_published: true). regenerate: true swaps in a new link and the old one stops working at once. This does NOT email the client; share public_url yourself or send from the OS.',
+  inputSchema: z.object({
+    quote: quoteRef,
+    regenerate: z.boolean().optional().describe('true = issue a new link; the current link dies immediately'),
+  }),
+  handler: async ({ quote: ref, regenerate }) => {
+    const result = await publishCoworkQuote(ref, regenerate === true)
+    if (result.published && !result.already_published) {
+      void recordCoworkWrite({
+        action: 'update', entity: 'quote', entityId: null, entityLabel: result.quote_number,
+        summary: `${regenerate ? 'Regenerated the client page link for' : 'Published'} quote ${result.quote_number}`,
+        payload: { quote: ref, regenerate: regenerate === true },
+      })
+    }
+    return result
+  },
+})
+
+export const revokeQuoteLinkTool = defineTool({
+  name: 'revoke_quote_link',
+  description:
+    'Revoke a quote\'s client proposal link (quote number or uuid). The page then shows "This link is no longer active", exactly like any unknown link. The quote itself, its status and any acceptance are unchanged; publish_quote issues a fresh link later. Returns { revoked: false } when it had no link.',
+  inputSchema: z.object({ quote: quoteRef }),
+  handler: async ({ quote: ref }) => {
+    const result = await revokeCoworkQuoteLink(ref)
+    if (result.revoked) {
+      void recordCoworkWrite({
+        action: 'update', entity: 'quote', entityId: null, entityLabel: result.quote_number,
+        summary: `Revoked the client page link for quote ${result.quote_number}`,
+        payload: { quote: ref },
+      })
+    }
+    return result
+  },
 })
 
 export const createQuoteTool = defineTool({
@@ -1448,7 +1496,8 @@ export const createQuoteTool = defineTool({
     issue_date: isoDate.optional().describe('default today'),
     valid_until: isoDate.optional(),
     payment_terms: z.string().optional().describe('omit for the default 50% deposit / 50% on completion wording'),
-    notes: z.string().optional(),
+    notes: z.string().optional().describe('CLIENT-FACING: shown as "Good to know" on the proposal page and PDF, one point per line. Private remarks go in internal_notes'),
+    internal_notes: z.string().optional().describe('INTERNAL ONLY: never shown to the client (budget feasibility, margin, anything private)'),
     estimated_timeline: z.string().optional(),
     status: z.enum(QUOTE_CREATE_STATUSES).optional().describe('draft (default) or review'),
   }),
@@ -1466,7 +1515,7 @@ export const createQuoteTool = defineTool({
 export const updateQuoteTool = defineTool({
   name: 'update_quote',
   description:
-    'Update a quote by number (QT-0007) or uuid. Send only the fields to change. items REPLACES both line_items and scope in full (same shape as create_quote); line_items or scope alone replace just that list. null clears account_name, contact_name, workstream, project_id, valid_until, summary, notes, estimated_timeline. status can move to any value except converted (conversion happens only from the quote page in the OS); moving to sent stamps sent_at. A converted quote (status converted, or linked to an invoice) is LOCKED: only notes may change, anything else is a 409.',
+    'Update a quote by number (QT-0007) or uuid. Send only the fields to change. items REPLACES both line_items and scope in full (same shape as create_quote); line_items or scope alone replace just that list. null clears account_name, contact_name, workstream, project_id, valid_until, summary, notes, internal_notes, estimated_timeline. The public link, published_at and view counts cannot be set here: use publish_quote and revoke_quote_link. status can move to any value except converted (conversion happens only from the quote page in the OS); moving to sent stamps sent_at. A converted quote (status converted, or linked to an invoice) is LOCKED: only notes and internal_notes may change, anything else is a 409.',
   inputSchema: z.object({
     quote: quoteRef,
     title: z.string().min(1).optional(),
@@ -1481,9 +1530,10 @@ export const updateQuoteTool = defineTool({
     issue_date: isoDate.optional(),
     valid_until: isoDate.nullable().optional(),
     payment_terms: z.string().min(1).optional(),
-    notes: z.string().nullable().optional(),
+    notes: z.string().nullable().optional().describe('CLIENT-FACING: shown on the proposal page and PDF; null clears'),
+    internal_notes: z.string().nullable().optional().describe('INTERNAL ONLY: never shown to the client; null clears'),
     estimated_timeline: z.string().nullable().optional(),
-    status: enumOf(QUOTE_UPDATE_STATUSES).optional(),
+    status: enumOf(QUOTE_UPDATE_STATUSES).optional().describe('moving to accepted records a manual acceptance (default selection, the contact as signer)'),
   }),
   handler: async ({ quote: ref, ...changes }) => {
     const { quote, before, changed } = await updateCoworkQuote(ref, changes as Record<string, unknown>)
@@ -1718,6 +1768,8 @@ export const tools: McpTool[] = [
   createQuoteTool,
   updateQuoteTool,
   deleteQuoteTool,
+  publishQuoteTool,
+  revokeQuoteLinkTool,
   findAccountTool,
   createAccountTool,
   updateAccountTool,

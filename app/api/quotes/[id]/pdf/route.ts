@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
-import { getQuoteById } from '@/lib/db/quotes'
-import { renderQuotePdf } from '@/lib/pdf/QuotePDF'
+import { proposalPdfFilename, renderQuotePdf } from '@/lib/pdf/QuotePDF'
+import { canReadQuote } from '@/lib/quotes/os-access'
+import { getPublicQuoteById } from '@/lib/quotes/public'
+import { defaultSelection } from '@/lib/quotes/selection'
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const runtime = 'nodejs'
+export const maxDuration = 30
+
+/**
+ * OS download: the same PublicQuote projection and renderer a client gets, so
+ * this file is what a client would download with the default selection (or
+ * the accepted selection once accepted). Works for drafts too: the auth check
+ * here replaces the public status gate.
+ */
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getAuthenticatedSupabase()
   if (!auth.ok) {
     return auth.response
@@ -15,18 +23,29 @@ export async function GET(
   const { id } = await params
 
   try {
-    const quote = await getQuoteById(id, auth.supabase)
-
-    if (!quote) {
+    // RLS check first: the service-role projection below must not serve a quote
+    // this session could not read itself.
+    if (!(await canReadQuote(auth.supabase, id))) {
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
     }
 
-    const buffer = await renderQuotePdf(quote)
+    const ctx = await getPublicQuoteById(id)
+    if (!ctx) {
+      return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
+    }
+
+    const quote = ctx.publicQuote
+    const acceptance = quote.state === 'accepted' ? quote.acceptance : null
+    const buffer = await renderQuotePdf({
+      quote,
+      selectedIds: acceptance ? acceptance.selected_line_item_ids : defaultSelection(quote.items),
+      acceptance,
+    })
 
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${quote.quote_number}.pdf"`,
+        'Content-Disposition': `attachment; filename="${proposalPdfFilename(quote)}"`,
       },
     })
   } catch (error) {

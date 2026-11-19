@@ -5,6 +5,7 @@ import { getContactById } from '@/lib/db/contacts'
 import { createInvoice } from '@/lib/db/invoices'
 import { getQuoteById, updateQuote } from '@/lib/db/quotes'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
+import { getAcceptedSelection } from '@/lib/quotes/publish'
 
 export async function POST(
   _request: Request,
@@ -28,6 +29,11 @@ export async function POST(
       return NextResponse.json({ invoice_id: quote.converted_invoice_id })
     }
 
+    // When the client accepted a selection (online or recorded manually), invoice
+    // exactly that: selected + required + included. Otherwise every line, as before.
+    const accepted = await getAcceptedSelection(quote.id)
+    const invoiceLines = accepted ? quote.line_items.filter((item) => accepted.ids.has(item.id)) : quote.line_items
+
     const [account, contact] = await Promise.all([
       quote.account_id ? getAccountById(quote.account_id, auth.supabase).catch(() => null) : null,
       quote.contact_id ? getContactById(quote.contact_id, auth.supabase).catch(() => null) : null,
@@ -42,7 +48,7 @@ export async function POST(
         status: 'draft',
         issue_date: new Date().toISOString().slice(0, 10),
         due_date: null,
-        line_items: quote.line_items.map((item) => ({
+        line_items: invoiceLines.map((item) => ({
           id: item.id,
           description: item.description,
           qty: item.qty,
