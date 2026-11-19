@@ -16,7 +16,9 @@ const publicRoutes = [
   '/api/auth/google',
   '/api/auth/google/callback',
 ]
-const publicRoutePrefixes = ['/report', '/auth/claim', '/auth/confirm', '/auth/accept', '/auth/forgot']
+// Matched by whole segment (=== prefix or prefix + '/'), so '/proposal' opens
+// '/proposal/<token>' but never '/proposals' or anything under '/quotes'.
+const publicRoutePrefixes = ['/report', '/proposal', '/auth/claim', '/auth/confirm', '/auth/accept', '/auth/forgot']
 
 // The Sales Lead seat (profiles.role = 'sales') is deny-by-default: it may reach
 // only these prefixes (plus the public routes above). Everything else redirects
@@ -34,7 +36,10 @@ const SALES_HOME = '/sales/dashboard'
 // /api/outreach/unsubscribe is public by design (List-Unsubscribe one-click). Both
 // must be public to middleware or the 307-to-login makes Resend record every event
 // as failed, the same regression the cron/MCP comment above describes.
-const publicApiPrefixes = ['/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron', '/api/mcp', '/api/webhooks/resend', '/api/outreach/unsubscribe']
+// /api/proposal/* is the client proposal page's API (accept, decline, question,
+// pdf). Each handler re-checks the 256-bit token itself; nothing under
+// /api/quotes is public.
+const publicApiPrefixes = ['/api/proposal', '/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron', '/api/mcp', '/api/webhooks/resend', '/api/outreach/unsubscribe']
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
 // Next's generated metadata images (app/opengraph-image.tsx and friends) are
