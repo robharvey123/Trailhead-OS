@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api-fetch'
@@ -55,6 +56,8 @@ export default function QuoteClientPagePanel({ quote, data }: { quote: QuoteList
 
   const published = Boolean(data.publicUrl)
   const locked = quote.status === 'accepted' || quote.status === 'converted' || quote.status === 'declined'
+  // Same statuses the detail page offers "Edit quote" for.
+  const editable = quote.status === 'draft' || quote.status === 'review' || quote.status === 'sent'
   const firstName = quote.contact?.name?.trim().split(/\s+/)[0]
 
   async function call(action: 'publish' | 'regenerate' | 'revoke') {
@@ -206,6 +209,14 @@ export default function QuoteClientPagePanel({ quote, data }: { quote: QuoteList
               <li key={failure}>{failure}</li>
             ))}
           </ul>
+          {editable ? (
+            <Link
+              href={`/quotes/${quote.id}/edit`}
+              className="mt-2 inline-block font-semibold underline underline-offset-2 hover:text-[color:var(--text)]"
+            >
+              Edit quote to fix these →
+            </Link>
+          ) : null}
         </div>
       ) : null}
       {error && failures.length === 0 ? <p className="mt-3 text-sm text-[color:var(--red-strong)]">{error}</p> : null}
