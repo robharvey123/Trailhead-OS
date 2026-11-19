@@ -174,15 +174,26 @@ function sanitizeText(value: string | undefined) {
   return value?.trim() || null
 }
 
+/**
+ * Foreign keys: an empty or blank string means "none". Forms send '' for an
+ * unset select, and Postgres rejects '' for a uuid column with
+ * 'invalid input syntax for type uuid: ""', so every quote write goes through here.
+ */
+function idOrNull(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
+}
+
 function sanitizeQuotePayload(data: QuoteMutationInput) {
   const payload: Record<string, unknown> = {}
 
-  if ('account_id' in data) payload.account_id = data.account_id ?? null
-  if ('contact_id' in data) payload.contact_id = data.contact_id ?? null
-  if ('workstream_id' in data) payload.workstream_id = data.workstream_id ?? null
-  if ('enquiry_id' in data) payload.enquiry_id = data.enquiry_id ?? null
-  if ('project_id' in data) payload.project_id = data.project_id ?? null
-  if ('pricing_tier_id' in data) payload.pricing_tier_id = data.pricing_tier_id ?? null
+  if ('account_id' in data) payload.account_id = idOrNull(data.account_id)
+  if ('contact_id' in data) payload.contact_id = idOrNull(data.contact_id)
+  if ('workstream_id' in data) payload.workstream_id = idOrNull(data.workstream_id)
+  if ('enquiry_id' in data) payload.enquiry_id = idOrNull(data.enquiry_id)
+  if ('project_id' in data) payload.project_id = idOrNull(data.project_id)
+  if ('pricing_tier_id' in data) payload.pricing_tier_id = idOrNull(data.pricing_tier_id)
   if ('status' in data) payload.status = data.status
   if ('pricing_type' in data) payload.pricing_type = data.pricing_type
   if ('title' in data) payload.title = typeof data.title === 'string' ? data.title.trim() : data.title
@@ -211,7 +222,7 @@ function sanitizeQuotePayload(data: QuoteMutationInput) {
   if ('complexity_breakdown' in data) {
     payload.complexity_breakdown = data.complexity_breakdown ?? null
   }
-  if ('converted_invoice_id' in data) payload.converted_invoice_id = data.converted_invoice_id ?? null
+  if ('converted_invoice_id' in data) payload.converted_invoice_id = idOrNull(data.converted_invoice_id)
   if ('ai_generated' in data) payload.ai_generated = data.ai_generated ?? false
   if ('ai_generated_at' in data) payload.ai_generated_at = data.ai_generated_at ?? null
   if ('issue_date' in data) payload.issue_date = data.issue_date
