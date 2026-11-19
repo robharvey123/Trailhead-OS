@@ -93,7 +93,8 @@ function cleanDuration(value: string | null | undefined): string | null {
   return duration
 }
 
-function findScope(item: QuoteLineItem, scope: QuoteScope[]): QuoteScope | undefined {
+/** The scope phase describing a line item: linked by id, else exact phase name. */
+export function findScope(item: QuoteLineItem, scope: QuoteScope[]): QuoteScope | undefined {
   return (
     scope.find((phase) => phase.line_item_id === item.id) ??
     scope.find((phase) => !phase.line_item_id && phase.phase === item.description) ??

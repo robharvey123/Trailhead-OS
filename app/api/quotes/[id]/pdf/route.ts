@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { proposalPdfFilename, renderQuotePdf } from '@/lib/pdf/QuotePDF'
+import { canReadQuote } from '@/lib/quotes/os-access'
 import { getPublicQuoteById } from '@/lib/quotes/public'
 import { defaultSelection } from '@/lib/quotes/selection'
 
@@ -24,8 +25,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     // RLS check first: the service-role projection below must not serve a quote
     // this session could not read itself.
-    const { data: visible } = await auth.supabase.from('quotes').select('id').eq('id', id).is('deleted_at', null).maybeSingle()
-    if (!visible) {
+    if (!(await canReadQuote(auth.supabase, id))) {
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
     }
 

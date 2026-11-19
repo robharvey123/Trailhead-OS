@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { pickLineItemExtras, pickScopeLink } from '@/lib/quotes/line-item-fields'
+import { ensureManualAcceptance } from '@/lib/quotes/publish'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getQuoteById, updateQuote } from '@/lib/db/quotes'
 import type {
@@ -381,6 +382,11 @@ export async function PATCH(
     }
 
     const quote = await updateQuote(id, patch, auth.supabase)
+    // "Mark as accepted" and any other move to accepted outside the client page
+    // records the same acceptance row, so convert/project have one source.
+    if (patch.status === 'accepted' && existing.status !== 'accepted') {
+      await ensureManualAcceptance(id, auth.user?.email ?? null)
+    }
     return NextResponse.json({ quote })
   } catch (error) {
     return NextResponse.json(

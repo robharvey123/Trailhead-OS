@@ -16,6 +16,7 @@ import { DEFAULT_RESEND_FROM } from '@/lib/email/resend'
 import { renderInvoicePdf } from '@/lib/pdf/InvoicePDF'
 import { proposalPdfFilename, renderQuotePdf } from '@/lib/pdf/QuotePDF'
 import { getPublicQuoteById } from '@/lib/quotes/public'
+import { proposalUrl, publishQuote } from '@/lib/quotes/publish'
 import { defaultSelection } from '@/lib/quotes/selection'
 import { calculateTotals, roundMoney, type Enquiry, type Invoice, type InvoicePayment, type QuoteListItem, type RemittanceAccount } from '@/lib/types'
 import { formatMoney } from '@/lib/money'
@@ -88,11 +89,22 @@ function buildEnquirySummaryHtml(enquiry: Enquiry) {
   `
 }
 
-function buildQuoteEmailHtml(message: string, quote: QuoteListItem, companySettings: CompanySettings) {
+function buildQuoteEmailHtml(message: string, quote: QuoteListItem, companySettings: CompanySettings, publicUrl: string | null) {
+  // One bulletproof button (a padded link, no images, survives Outlook), the
+  // plain URL under it for clients that strip styling, and the PDF attached.
+  const link = publicUrl
+    ? `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 8px">
+      <tr><td style="border-radius:999px;background:${BRAND.navy}">
+        <a href="${escapeHtml(publicUrl)}" style="display:inline-block;padding:13px 26px;font-weight:600;font-size:15px;color:${BRAND.paper};text-decoration:none;border-radius:999px">View your proposal</a>
+      </td></tr>
+    </table>
+    <p style="margin:0 0 16px;font-size:13px;color:${BRAND.slate}">Or paste this link into your browser: ${escapeHtml(publicUrl)}</p>`
+    : ''
   return `
     ${renderMessageParagraphs(message)}
-    <p>Please find the attached quote${quote.quote_number ? ` (${escapeHtml(quote.quote_number)})` : ''}.</p>
-    <p><strong>${escapeHtml(quote.title)}</strong></p>
+    ${link}
+    <p style="font-size:13px;color:${BRAND.slate}">${escapeHtml(quote.quote_number)}: ${escapeHtml(quote.title)}. A PDF copy is attached.</p>
     ${renderCompanyEmailFooterHtml(companySettings)}
   `
 }
@@ -193,6 +205,21 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Quote not found.' }, { status: 404 })
       }
 
+      // "Send to client" publishes first, so the email always carries a live
+      // link. Accepted, converted and declined quotes are emailed with whatever
+      // link they already have (or none).
+      let publicUrl = quote.public_token ? proposalUrl(quote.public_token) : null
+      if (!publicUrl && (quote.status === 'draft' || quote.status === 'review' || quote.status === 'sent')) {
+        const published = await publishQuote(quote.id)
+        if (!published.ok) {
+          return NextResponse.json(
+            { error: `Not sent. The quote needs work before it can be shared: ${published.failures.join(' ')}`, failures: published.failures },
+            { status: 422 }
+          )
+        }
+        publicUrl = published.public_url
+      }
+
       // Same projection and renderer the client gets: no internal fields can reach the attachment.
       const proposal = await getPublicQuoteById(quote.id)
       if (!proposal) {
@@ -210,7 +237,7 @@ export async function POST(request: Request) {
         from: fromAddress,
         to: recipients,
         subject,
-        html: buildQuoteEmailHtml(message, quote, companySettings),
+        html: buildQuoteEmailHtml(message, quote, companySettings, publicUrl),
         attachments: [
           {
             filename: proposalPdfFilename(pq),

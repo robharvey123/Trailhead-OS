@@ -3,16 +3,21 @@ import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { createProject } from '@/lib/db/projects'
 import { getQuoteById, updateQuote } from '@/lib/db/quotes'
 import { planProjectFromBrief } from '@/lib/project-planner'
+import { findScope } from '@/lib/quotes/projection'
+import { getAcceptedSelection } from '@/lib/quotes/publish'
 
-function buildPlanningBrief(quote: NonNullable<Awaited<ReturnType<typeof getQuoteById>>>) {
+function buildPlanningBrief(
+  quote: NonNullable<Awaited<ReturnType<typeof getQuoteById>>>,
+  scope: NonNullable<Awaited<ReturnType<typeof getQuoteById>>>['scope']
+) {
   const sections = [
     quote.summary,
     quote.final_content?.overview,
     quote.final_content?.approach,
     quote.draft_content?.overview,
     quote.draft_content?.approach,
-    quote.scope.length > 0
-      ? `Scope:\n${quote.scope
+    scope.length > 0
+      ? `Scope:\n${scope
           .map((phase) => `${phase.phase}: ${phase.description}${phase.deliverables.length ? `\nDeliverables: ${phase.deliverables.join(', ')}` : ''}`)
           .join('\n\n')}`
       : null,
@@ -59,6 +64,15 @@ export async function POST(
       return NextResponse.json({ error: 'Quote must have a workstream before creating a project' }, { status: 400 })
     }
 
+    // Plan only what the client accepted, when there is an acceptance record.
+    const accepted = await getAcceptedSelection(quote.id)
+    const plannedScope = accepted
+      ? quote.line_items
+          .filter((item) => accepted.ids.has(item.id))
+          .map((item) => findScope(item, quote.scope))
+          .filter((phase): phase is NonNullable<typeof phase> => Boolean(phase))
+      : quote.scope
+
     const project = await createProject(
       {
         workstream_id: quote.workstream_id,
@@ -66,7 +80,7 @@ export async function POST(
         pricing_tier_id: quote.pricing_tier_id ?? null,
         name: quote.title,
         description: quote.summary ?? quote.final_content?.overview ?? quote.draft_content?.overview ?? null,
-        brief: buildPlanningBrief(quote) || quote.title,
+        brief: buildPlanningBrief(quote, plannedScope) || quote.title,
         status: 'planning',
         start_date: new Date().toISOString().slice(0, 10),
         estimated_end_date: quote.valid_until ?? null,
@@ -83,7 +97,7 @@ export async function POST(
     )
 
     let planningResult: Awaited<ReturnType<typeof planProjectFromBrief>> | null = null
-    const planningBrief = buildPlanningBrief(quote)
+    const planningBrief = buildPlanningBrief(quote, plannedScope)
 
     if (aiPlan && planningBrief) {
       planningResult = await planProjectFromBrief({

@@ -192,6 +192,7 @@ export default function QuoteForm({
     initialQuote?.payment_terms ?? 'Payment terms: 50% deposit on acceptance, 50% on completion.'
   )
   const [notes, setNotes] = useState(initialQuote?.notes ?? '')
+  const [internalNotes, setInternalNotes] = useState(initialQuote?.internal_notes ?? '')
   const [savingAs, setSavingAs] = useState<QuoteStatus | 'edit' | null>(null)
   const [refreshingFromEnquiry, setRefreshingFromEnquiry] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -275,6 +276,7 @@ export default function QuoteForm({
         'Payment terms: 50% deposit on acceptance, 50% on completion.'
     )
     setNotes(nextQuote.notes ?? '')
+    setInternalNotes(nextQuote.internal_notes ?? '')
     setPricingTierId(nextQuote.pricing_tier_id ?? null)
     setPricingTier(nextQuote.pricing_tier ?? null)
     setLineItemsMode(nextQuote.line_items.length ? 'manual' : 'empty')
@@ -344,6 +346,18 @@ export default function QuoteForm({
       }))
       .filter((item) => item.description)
 
+    // Link each unlinked scope phase to the line item it describes (exact name
+    // match), so the proposal joins them by id from now on and renaming one
+    // later does not break the card's description.
+    const linkedScope = sanitizedScope.map((phase) => {
+      if (phase.line_item_id && sanitizedLineItems.some((item) => item.id === phase.line_item_id)) return phase
+      const match = sanitizedLineItems.find((item) => item.description === phase.phase)
+      if (match) return { ...phase, line_item_id: match.id }
+      const { line_item_id: _stale, ...rest } = phase
+      void _stale
+      return rest
+    })
+
     if (!title.trim()) {
       setError('Title is required.')
       setSavingAs(null)
@@ -369,11 +383,12 @@ export default function QuoteForm({
         valid_until: validUntil || null,
         issue_date: issueDate,
         summary,
-        scope: sanitizedScope,
+        scope: linkedScope,
         line_items: sanitizedLineItems,
         vat_rate: Number(vatRate) || 0,
         payment_terms: paymentTerms,
         notes,
+        internal_notes: internalNotes,
         status: nextStatus === 'edit' ? quoteRecord?.status ?? 'draft' : nextStatus,
         ai_generated: quoteRecord?.ai_generated ?? false,
         ai_generated_at: quoteRecord?.ai_generated_at ?? null,
@@ -713,6 +728,25 @@ export default function QuoteForm({
             </div>
           ) : null}
 
+          {lineItems.length > 0 ? (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+              <p className="text-[color:var(--text-2)]">
+                Optional items can be switched off by the client on the proposal page. £0 items always show as included.
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  setLineItems((current) =>
+                    current.map((item) => (item.qty * item.unit_price > 0 ? { ...item, optional: true } : item))
+                  )
+                }
+                className="btn btn-ghost btn-sm"
+              >
+                Make all optional
+              </button>
+            </div>
+          ) : null}
+
           <div className="mt-4 overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead className="os-label text-left">
@@ -735,12 +769,53 @@ export default function QuoteForm({
                 ) : null}
                 {lineItems.map((item) => (
                   <tr key={item.id} className="border-t border-[color:var(--border)]">
-                    <td className="py-3">
+                    <td className="min-w-[280px] py-3 align-top">
                       <input
                         value={item.description}
                         onChange={(event) => updateLineItem(item.id, { description: event.target.value })}
+                        aria-label="Line item title"
                         className="os-input w-full px-3 py-2 text-sm"
                       />
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[color:var(--text-2)]">
+                        <label className="inline-flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={item.optional === true}
+                            onChange={(event) =>
+                              updateLineItem(item.id, {
+                                optional: event.target.checked || undefined,
+                                ...(event.target.checked ? {} : { default_selected: undefined }),
+                              })
+                            }
+                            className="!m-0 !h-4 !w-4"
+                          />
+                          Optional
+                        </label>
+                        {item.optional ? (
+                          <label className="inline-flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={item.default_selected !== false}
+                              onChange={(event) => updateLineItem(item.id, { default_selected: event.target.checked })}
+                              className="!m-0 !h-4 !w-4"
+                            />
+                            On by default
+                          </label>
+                        ) : null}
+                      </div>
+                      <textarea
+                        value={item.detail ?? ''}
+                        onChange={(event) => updateLineItem(item.id, { detail: event.target.value || undefined })}
+                        maxLength={1000}
+                        rows={2}
+                        aria-label="Client description"
+                        placeholder="Client description: what they get, in plain English"
+                        className="os-textarea mt-2 w-full px-3 py-2 text-xs"
+                      />
+                      {!item.detail?.trim() &&
+                      scope.some((phase) => phase.line_item_id === item.id || (phase.phase.trim() && phase.phase.trim() === item.description.trim())) ? (
+                        <p className="mt-1 text-xs text-[color:var(--text-3)]">Using scope description</p>
+                      ) : null}
                     </td>
                     <td className="py-3">
                       <select
@@ -830,12 +905,24 @@ export default function QuoteForm({
         </label>
 
         <label className="space-y-2">
-          <span className="field-label">Notes</span>
+          <span className="field-label">Notes for the client (shown on the proposal)</span>
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             rows={4}
+            placeholder="One point per line. Shown as Good to know on the proposal page and PDF."
             className="os-textarea w-full px-4 py-3 text-sm"
+          />
+        </label>
+
+        <label className="space-y-2">
+          <span className="field-label">Internal notes (never shown to the client)</span>
+          <textarea
+            value={internalNotes}
+            onChange={(event) => setInternalNotes(event.target.value)}
+            rows={3}
+            placeholder="Budget feasibility, margin, anything private."
+            className="os-textarea w-full border-dashed px-4 py-3 text-sm"
           />
         </label>
 

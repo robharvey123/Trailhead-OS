@@ -23,6 +23,7 @@ import {
 } from '@/lib/db/quotes'
 import { formatMoney } from '@/lib/money'
 import { pickLineItemExtras, pickScopeLink } from '@/lib/quotes/line-item-fields'
+import { ensureManualAcceptance } from '@/lib/quotes/publish'
 import {
   roundMoney,
   type PricingType,
@@ -591,6 +592,9 @@ export async function updateCoworkQuote(ref: string, body: Record<string, unknow
   // Single documented cast: QuotePatch allows null on clearable columns, which
   // sanitizeQuotePayload maps through as null.
   await updateQuote(existing.id, patch as Partial<Quote>, db).catch((error: unknown) => db500(error, 'Failed to update quote'))
+  if (patch.status === 'accepted' && existing.status !== 'accepted') {
+    await ensureManualAcceptance(existing.id, 'cowork')
+  }
   const quote = await getQuoteByRef(existing.id)
   return { quote: formatQuote(quote), before, changed }
 }
