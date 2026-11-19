@@ -205,6 +205,9 @@ function sanitizeQuotePayload(data: QuoteMutationInput) {
       'Payment terms: 50% deposit on acceptance, 50% on completion.'
   }
   if ('notes' in data) payload.notes = sanitizeText(data.notes)
+  if ('internal_notes' in data) payload.internal_notes = sanitizeText(data.internal_notes ?? undefined)
+  // public_token, published_at, first_viewed_at, last_viewed_at and view_count are
+  // deliberately absent: only the publish, revoke and view paths write them.
   if ('complexity_breakdown' in data) {
     payload.complexity_breakdown = data.complexity_breakdown ?? null
   }

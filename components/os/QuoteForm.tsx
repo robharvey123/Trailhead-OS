@@ -328,6 +328,10 @@ export default function QuoteForm({
         description: phase.description.trim(),
         deliverables: phase.deliverables.map((deliverable) => deliverable.trim()).filter(Boolean),
         duration: phase.duration.trim(),
+        // Carried through untouched: the form does not edit these, and dropping
+        // them on save would cut the proposal's line-item join and the AI estimate.
+        ...(phase.estimated_hours !== undefined ? { estimated_hours: phase.estimated_hours } : {}),
+        ...(phase.line_item_id ? { line_item_id: phase.line_item_id } : {}),
       }))
       .filter((phase) => phase.phase || phase.description || phase.deliverables.length || phase.duration)
 

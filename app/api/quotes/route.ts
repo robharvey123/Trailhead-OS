@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { pickLineItemExtras, pickScopeLink } from '@/lib/quotes/line-item-fields'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { createQuote, getQuotes } from '@/lib/db/quotes'
 import type {
@@ -71,6 +72,7 @@ function sanitizeScope(value: unknown): QuoteScope[] {
         estimated_hours: Number.isFinite(Number(record.estimated_hours))
           ? Number(record.estimated_hours)
           : undefined,
+        ...pickScopeLink(record),
       }
 
       return scopeItem
@@ -149,6 +151,7 @@ function sanitizeLineItems(value: unknown): QuoteLineItem[] {
         qty,
         unit_price: unitPrice,
         type,
+        ...pickLineItemExtras(record),
       }
     })
     .filter((item): item is QuoteLineItem => item !== null)
@@ -328,6 +331,7 @@ export async function POST(request: NextRequest) {
           sanitizeText(body.payment_terms) ??
           'Payment terms: 50% deposit on acceptance, 50% on completion.',
         notes: sanitizeText(body.notes) ?? undefined,
+        internal_notes: sanitizeText(body.internal_notes),
         complexity_breakdown: sanitizeComplexityBreakdown(body.complexity_breakdown),
         converted_invoice_id:
           body.converted_invoice_id === null || body.converted_invoice_id === undefined

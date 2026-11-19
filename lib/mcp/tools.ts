@@ -1392,12 +1392,19 @@ const quoteItem = z.object({
   deliverables: z.array(z.string()).optional().describe('optional bullet list of deliverables'),
   duration: z.string().optional().describe('optional, e.g. "2 weeks"; default "TBC"'),
   estimated_hours: z.number().min(0).optional(),
+  optional: z.boolean().optional().describe('true = the client can switch this item off on the proposal page. Default false (required)'),
+  default_selected: z.boolean().optional().describe('only when optional: whether it starts switched on. Default true'),
+  detail: z.string().max(1000).optional().describe('client-facing card text on the proposal page; overrides description there'),
 })
 const quoteLineItem = z.object({
+  id: z.string().optional().describe('keep the existing id when replacing line items, so scope links and proposal selections survive'),
   description: z.string().min(1),
   qty: z.number().positive(),
   unit_price: z.number().min(0).describe('GBP ex VAT; 0 allowed'),
   type: enumOf(QUOTE_LINE_ITEM_TYPES).optional().describe('default fixed'),
+  optional: z.boolean().optional().describe('true = the client can switch this item off on the proposal page. Default false (required)'),
+  default_selected: z.boolean().optional().describe('only when optional: whether it starts switched on. Default true'),
+  detail: z.string().max(1000).optional().describe('client-facing card text on the proposal page; falls back to the linked scope description'),
 })
 const quoteScopeEntry = z.object({
   phase: z.string().min(1),
@@ -1405,6 +1412,7 @@ const quoteScopeEntry = z.object({
   deliverables: z.array(z.string()).optional(),
   duration: z.string().optional().describe('default "TBC"'),
   estimated_hours: z.number().min(0).optional(),
+  line_item_id: z.string().optional().describe('id of the line item this phase describes; joins them on the proposal page'),
 })
 
 const quoteItemFields = {

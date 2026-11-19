@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { pickLineItemExtras, pickScopeLink } from '@/lib/quotes/line-item-fields'
 import { getAuthenticatedSupabase } from '@/lib/api/auth'
 import { getQuoteById, updateQuote } from '@/lib/db/quotes'
 import type {
@@ -70,6 +71,7 @@ function sanitizeScope(value: unknown): QuoteScope[] | null {
         estimated_hours: Number.isFinite(Number(record.estimated_hours))
           ? Number(record.estimated_hours)
           : undefined,
+        ...pickScopeLink(record),
       }
 
       return scopeItem
@@ -148,6 +150,7 @@ function sanitizeLineItems(value: unknown): QuoteLineItem[] | null {
         qty,
         unit_price: unitPrice,
         type,
+        ...pickLineItemExtras(record),
       }
     })
     .filter((item): item is QuoteLineItem => item !== null)
@@ -301,6 +304,7 @@ export async function PATCH(
   if (body.valid_until !== undefined) patch.valid_until = typeof body.valid_until === 'string' ? body.valid_until : null
   if (body.payment_terms !== undefined) patch.payment_terms = sanitizeText(body.payment_terms)
   if (body.notes !== undefined) patch.notes = sanitizeText(body.notes)
+  if (body.internal_notes !== undefined) patch.internal_notes = sanitizeText(body.internal_notes)
   if (body.version !== undefined) {
     const version = Number(body.version)
     if (!Number.isFinite(version) || version < 1) {

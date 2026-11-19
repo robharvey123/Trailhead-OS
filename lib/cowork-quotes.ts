@@ -22,6 +22,7 @@ import {
   updateQuote,
 } from '@/lib/db/quotes'
 import { formatMoney } from '@/lib/money'
+import { pickLineItemExtras, pickScopeLink } from '@/lib/quotes/line-item-fields'
 import {
   roundMoney,
   type PricingType,
@@ -81,6 +82,9 @@ export interface FormattedQuoteLineItem {
   unit_price: number
   type: QuoteLineItem['type']
   line_total: number
+  optional?: boolean
+  default_selected?: boolean
+  detail?: string
 }
 
 export interface FormattedQuoteBase {
@@ -160,6 +164,8 @@ export function formatQuote(quote: QuoteListItem): FormattedQuote {
       unit_price: Number(item.unit_price),
       type: item.type ?? 'fixed',
       line_total: roundMoney(Number(item.qty) * Number(item.unit_price)),
+      // Re-read through the shared picker so get_quote → update_quote round-trips them.
+      ...pickLineItemExtras(item as unknown as Record<string, unknown>),
     })),
     scope: quote.scope ?? [],
   }
@@ -251,8 +257,11 @@ export function parseQuoteItems(value: unknown): ParsedQuoteItems {
     const duration = optionalString(record.duration) ?? 'TBC'
     const estimatedHours = optionalRowNumber(record, 'estimated_hours', label)
 
-    line_items.push({ id: crypto.randomUUID(), description: title, qty, unit_price: price, type: 'fixed' })
-    const entry: QuoteScope = { phase: title, description, deliverables, duration }
+    const id = crypto.randomUUID()
+    // `description` here is already client-facing and lands on the scope phase,
+    // which the proposal joins by line_item_id. `detail` overrides it on the card.
+    line_items.push({ id, description: title, qty, unit_price: price, type: 'fixed', ...pickLineItemExtras(record) })
+    const entry: QuoteScope = { phase: title, description, deliverables, duration, line_item_id: id }
     if (estimatedHours !== undefined) entry.estimated_hours = estimatedHours
     scope.push(entry)
   })
@@ -273,7 +282,7 @@ export function parseQuoteLineItems(value: unknown): QuoteLineItem[] {
       throw new CoworkApiError(`${label}: type must be one of ${QUOTE_LINE_ITEM_TYPES.join(', ')}`, 400)
     }
     const id = typeof record.id === 'string' && record.id.trim() ? record.id.trim() : crypto.randomUUID()
-    return { id, description, qty, unit_price: unitPrice, type: rawType as QuoteLineItem['type'] }
+    return { id, description, qty, unit_price: unitPrice, type: rawType as QuoteLineItem['type'], ...pickLineItemExtras(record) }
   })
 }
 
@@ -291,6 +300,7 @@ export function parseQuoteScope(value: unknown): QuoteScope[] {
     }
     const hours = optionalRowNumber(record, 'estimated_hours', label)
     if (hours !== undefined) entry.estimated_hours = hours
+    Object.assign(entry, pickScopeLink(record))
     return entry
   })
 }
