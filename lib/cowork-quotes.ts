@@ -23,7 +23,7 @@ import {
 } from '@/lib/db/quotes'
 import { formatMoney } from '@/lib/money'
 import { pickLineItemExtras, pickScopeLink } from '@/lib/quotes/line-item-fields'
-import { ensureManualAcceptance } from '@/lib/quotes/publish'
+import { ensureManualAcceptance, proposalUrl, publishQuote, revokeQuoteLink } from '@/lib/quotes/publish'
 import {
   roundMoney,
   type PricingType,
@@ -67,11 +67,11 @@ export const QUOTE_LINE_ITEM_TYPES: readonly QuoteLineItem['type'][] = ['fixed',
 export const QUOTE_PATCH_FIELDS = [
   'title', 'account_name', 'contact_name', 'workstream', 'project_id', 'summary',
   'items', 'line_items', 'scope', 'pricing_type', 'vat_rate', 'issue_date', 'valid_until',
-  'payment_terms', 'notes', 'estimated_timeline', 'status',
+  'payment_terms', 'notes', 'internal_notes', 'estimated_timeline', 'status',
 ]
 /** Fields that accept null on update to clear them. */
 const CLEARABLE = new Set([
-  'account_name', 'contact_name', 'workstream', 'project_id', 'valid_until', 'summary', 'notes', 'estimated_timeline',
+  'account_name', 'contact_name', 'workstream', 'project_id', 'valid_until', 'summary', 'notes', 'internal_notes', 'estimated_timeline',
 ])
 
 // ── Output shapes ────────────────────────────────────────────────────────────
@@ -102,8 +102,14 @@ export interface FormattedQuoteBase {
   issue_date: string
   valid_until: string | null
   payment_terms: string | null
+  /** CLIENT-FACING: shown as "Good to know" on the proposal page and PDF. */
   notes: string | null
   estimated_timeline: string | null
+  /** The client proposal page link, when published. */
+  public_url: string | null
+  published_at: string | null
+  view_count: number
+  last_viewed_at: string | null
   vat_rate: number
   subtotal: number
   vat: number
@@ -118,6 +124,22 @@ export interface FormattedQuoteBase {
 export interface FormattedQuote extends FormattedQuoteBase {
   line_items: FormattedQuoteLineItem[]
   scope: QuoteScope[]
+  /** INTERNAL ONLY: never shown to the client. */
+  internal_notes: string | null
+}
+
+export interface FormattedAcceptance {
+  signer_name: string
+  signer_email: string | null
+  signer_role: string | null
+  accepted_at: string
+  manual: boolean
+  selected: string[]
+  total: number
+}
+
+export interface FormattedQuoteDetail extends FormattedQuote {
+  acceptance: FormattedAcceptance | null
 }
 
 export interface FormattedQuoteSummary extends FormattedQuoteBase {
@@ -143,6 +165,10 @@ function formatBase(quote: QuoteListItem): FormattedQuoteBase {
     payment_terms: quote.payment_terms ?? null,
     notes: quote.notes ?? null,
     estimated_timeline: quote.estimated_timeline ?? null,
+    public_url: quote.public_token ? proposalUrl(quote.public_token) : null,
+    published_at: quote.published_at ?? null,
+    view_count: Number(quote.view_count ?? 0),
+    last_viewed_at: quote.last_viewed_at ?? null,
     vat_rate: vatRate,
     subtotal: totals.subtotal,
     vat: totals.vat_amount,
@@ -169,7 +195,56 @@ export function formatQuote(quote: QuoteListItem): FormattedQuote {
       ...pickLineItemExtras(item as unknown as Record<string, unknown>),
     })),
     scope: quote.scope ?? [],
+    internal_notes: quote.internal_notes ?? null,
   }
+}
+
+/** get_quote: the full quote plus its acceptance record (who, when, which items, total). */
+export async function getCoworkQuoteDetail(ref: string): Promise<FormattedQuoteDetail> {
+  const quote = await getQuoteByRef(ref)
+  const { data } = await supabaseService
+    .from('quote_acceptances')
+    .select('signer_name, signer_email, signer_role, accepted_at, selected_line_item_ids, total, meta')
+    .eq('quote_id', quote.id)
+    .maybeSingle()
+  let acceptance: FormattedAcceptance | null = null
+  if (data) {
+    const ids = new Set(Array.isArray(data.selected_line_item_ids) ? (data.selected_line_item_ids as string[]) : [])
+    const meta = (data.meta ?? {}) as Record<string, unknown>
+    acceptance = {
+      signer_name: data.signer_name as string,
+      signer_email: data.signer_email === 'not recorded' ? null : (data.signer_email as string),
+      signer_role: (data.signer_role as string | null) ?? null,
+      accepted_at: data.accepted_at as string,
+      manual: meta.manual === true,
+      selected: (quote.line_items ?? []).filter((item) => ids.has(item.id)).map((item) => item.description),
+      total: Number(data.total),
+    }
+  }
+  return { ...formatQuote(quote), acceptance }
+}
+
+export interface PublishedQuote {
+  quote_number: string
+  published: boolean
+  public_url?: string
+  already_published?: boolean
+  failures?: string[]
+}
+
+/** publish_quote: the same completeness gate and token minting as the OS Publish button. */
+export async function publishCoworkQuote(ref: string, regenerate = false): Promise<PublishedQuote> {
+  const quote = await getQuoteByRef(ref)
+  const result = await publishQuote(quote.id, { regenerate }).catch((error: unknown) => db500(error, 'Failed to publish quote'))
+  if (!result.ok) return { quote_number: quote.quote_number, published: false, failures: result.failures }
+  return { quote_number: quote.quote_number, published: true, public_url: result.public_url, already_published: result.already }
+}
+
+/** revoke_quote_link: the link then 404s like any bad token. */
+export async function revokeCoworkQuoteLink(ref: string): Promise<{ quote_number: string; revoked: boolean }> {
+  const quote = await getQuoteByRef(ref)
+  const { revoked } = await revokeQuoteLink(quote.id).catch((error: unknown) => db500(error, 'Failed to revoke link'))
+  return { quote_number: quote.quote_number, revoked }
 }
 
 export function formatQuoteSummary(quote: QuoteListItem): FormattedQuoteSummary {
@@ -465,6 +540,8 @@ export async function createCoworkQuote(body: Record<string, unknown>): Promise<
   if (paymentTerms) input.payment_terms = paymentTerms
   const notes = optionalString(body.notes)
   if (notes) input.notes = notes
+  const internalNotes = optionalString(body.internal_notes)
+  if (internalNotes) input.internal_notes = internalNotes
   const timeline = optionalString(body.estimated_timeline)
   if (timeline) input.estimated_timeline = timeline
 
@@ -498,13 +575,13 @@ export async function updateCoworkQuote(ref: string, body: Record<string, unknow
 
   const existing = await getQuoteByRef(ref)
 
-  // Converted quotes are locked: only notes may change.
+  // Converted quotes are locked: only notes and internal notes may change.
   if (existing.status === 'converted' || existing.converted_invoice_id) {
-    const blocked = recognised.filter((key) => key !== 'notes')
+    const blocked = recognised.filter((key) => key !== 'notes' && key !== 'internal_notes')
     if (blocked.length > 0) {
       const invoiceLabel = existing.invoice?.invoice_number ?? existing.converted_invoice_id ?? 'an invoice'
       throw new CoworkApiError(
-        `Quote ${existing.quote_number} has been converted to invoice ${invoiceLabel} and is locked; only notes can change (refused: ${blocked.join(', ')})`,
+        `Quote ${existing.quote_number} has been converted to invoice ${invoiceLabel} and is locked; only notes and internal_notes can change (refused: ${blocked.join(', ')})`,
         409
       )
     }
@@ -521,6 +598,7 @@ export async function updateCoworkQuote(ref: string, body: Record<string, unknow
   if (body.title !== undefined) patch.title = requiredTitle(body.title)
   if (body.summary !== undefined) patch.summary = optionalString(body.summary)
   if (body.notes !== undefined) patch.notes = optionalString(body.notes)
+  if (body.internal_notes !== undefined) patch.internal_notes = optionalString(body.internal_notes)
   if (body.estimated_timeline !== undefined) patch.estimated_timeline = optionalString(body.estimated_timeline)
   if (body.payment_terms !== undefined) {
     const terms = optionalString(body.payment_terms)

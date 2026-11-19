@@ -3,8 +3,7 @@ import { validateCoworkToken } from '@/lib/cowork-auth'
 import { jsonError } from '@/lib/cowork-api'
 import {
   deleteCoworkQuote,
-  formatQuote,
-  getQuoteByRef,
+  getCoworkQuoteDetail,
   quoteDeletedSummary,
   quoteUpdatedSummary,
   updateCoworkQuote,
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   try {
     const { ref } = await params
-    return Response.json(formatQuote(await getQuoteByRef(decodeURIComponent(ref))))
+    return Response.json(await getCoworkQuoteDetail(decodeURIComponent(ref)))
   } catch (error) {
     return jsonError(error, 'Failed to load quote')
   }
