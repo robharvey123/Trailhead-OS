@@ -180,8 +180,24 @@ async function main() {
     'create_engagement',
     'update_engagement',
     'create_contact',
+    'list_quotes',
+    'get_quote',
+    'create_quote',
+    'update_quote',
+    'delete_quote',
   ]) {
     ok(`tools/list includes ${expected}`, names.includes(expected))
+  }
+  // The quote tools must be advertised on the bearer route too, not only the connector.
+  const bearerList = await bearer.POST(
+    rpcRequest('/api/mcp', TOOLS_LIST, { authorization: `Bearer ${BEARER}` })
+  )
+  const bearerNames = (((await bearerList.json().catch(() => ({}))) as {
+    result?: { tools?: { name: string }[] }
+  }).result?.tools ?? []).map((tool) => tool.name)
+  ok('tools/list over the bearer route returns every tool', bearerNames.length === tools.length, `${bearerNames.length} of ${tools.length}`)
+  for (const expected of ['list_quotes', 'get_quote', 'create_quote', 'update_quote', 'delete_quote']) {
+    ok(`bearer tools/list includes ${expected}`, bearerNames.includes(expected))
   }
   ok('every tool has a description', listed.every((tool) => Boolean(tool.description?.trim())))
   ok('every tool has an input schema', listed.every((tool) => Boolean(tool.inputSchema)))

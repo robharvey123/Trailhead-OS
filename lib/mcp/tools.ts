@@ -67,6 +67,22 @@ import {
   updateCoworkPayment,
 } from '@/lib/cowork-invoices'
 import { billCoworkExpenses, createCoworkExpense, listCoworkExpenses, unbilledExpensesFor } from '@/lib/cowork-expenses'
+import {
+  QUOTE_CREATE_STATUSES,
+  QUOTE_LINE_ITEM_TYPES,
+  QUOTE_PRICING_TYPES,
+  QUOTE_STATUSES,
+  QUOTE_UPDATE_STATUSES,
+  createCoworkQuote,
+  deleteCoworkQuote,
+  getQuoteByRef,
+  formatQuote,
+  listCoworkQuotes,
+  quoteCreatedSummary,
+  quoteDeletedSummary,
+  quoteUpdatedSummary,
+  updateCoworkQuote,
+} from '@/lib/cowork-quotes'
 import { getCampaignDetail, listCampaigns } from '@/lib/cowork-outreach'
 import { listCoworkActivity, recordCoworkWrite } from '@/lib/cowork-audit'
 import {
@@ -1363,6 +1379,141 @@ export const deleteInvoiceTool = defineTool({
   },
 })
 
+// ── Quotes ────────────────────────────────────────────────────────────────────
+
+const quoteRef = z.string().min(1).describe('quote number (e.g. QT-0007) or uuid')
+const enumOf = <T extends string>(values: readonly T[]) => z.enum(values as unknown as [T, ...T[]])
+
+const quoteItem = z.object({
+  title: z.string().min(1).describe('short name of the piece of work, e.g. "Quotes". Becomes the line item description and the scope phase'),
+  description: z.string().min(1).describe('the client-facing description of this piece of work: what the client gets, one to three sentences. Shown in the quote body and PDF'),
+  price: z.number().min(0).describe('unit price in GBP ex VAT; 0 allowed (included at no charge)'),
+  qty: z.number().positive().optional().describe('default 1'),
+  deliverables: z.array(z.string()).optional().describe('optional bullet list of deliverables'),
+  duration: z.string().optional().describe('optional, e.g. "2 weeks"; default "TBC"'),
+  estimated_hours: z.number().min(0).optional(),
+})
+const quoteLineItem = z.object({
+  description: z.string().min(1),
+  qty: z.number().positive(),
+  unit_price: z.number().min(0).describe('GBP ex VAT; 0 allowed'),
+  type: enumOf(QUOTE_LINE_ITEM_TYPES).optional().describe('default fixed'),
+})
+const quoteScopeEntry = z.object({
+  phase: z.string().min(1),
+  description: z.string().min(1).describe('client-facing description of this phase'),
+  deliverables: z.array(z.string()).optional(),
+  duration: z.string().optional().describe('default "TBC"'),
+  estimated_hours: z.number().min(0).optional(),
+})
+
+const quoteItemFields = {
+  items: z.array(quoteItem).min(1).optional().describe('CONVENIENCE: one row per piece of work; fills both line_items (priced rows) and scope (described rows) in order. Do not combine with line_items or scope'),
+  line_items: z.array(quoteLineItem).min(1).optional().describe('priced rows only, when you want the priced rows to differ from the scope. Not with items'),
+  scope: z.array(quoteScopeEntry).optional().describe('descriptive scope rows shown in the quote body and PDF. Not with items'),
+}
+
+export const listQuotesTool = defineTool({
+  name: 'list_quotes',
+  description: 'List quotes, newest first (issue_date, then created). Filter by status and/or account (exact name). Excludes soft-deleted quotes. Returns totals and line_item_count but not the line items or scope; use get_quote for those.',
+  inputSchema: z.object({
+    status: enumOf(QUOTE_STATUSES).optional(),
+    account_name: z.string().optional().describe('exact (case-insensitive) sales account name'),
+    limit: z.number().int().min(1).max(200).optional().describe('default 50, max 200'),
+  }),
+  handler: async (input) => listCoworkQuotes({ status: input.status, accountName: input.account_name, limit: input.limit }),
+})
+
+export const getQuoteTool = defineTool({
+  name: 'get_quote',
+  description: 'Get one quote in full by quote number (e.g. QT-0007, case-insensitive) or uuid: account, contact, workstream, priced line items with line totals, the described scope, subtotal / VAT / total, status and the OS link. Soft-deleted quotes are not found.',
+  inputSchema: z.object({ quote: quoteRef }),
+  handler: async ({ quote }) => formatQuote(await getQuoteByRef(quote)),
+})
+
+export const createQuoteTool = defineTool({
+  name: 'create_quote',
+  description:
+    'Create a quote (draft by default, or review). A quote has two parallel lists: line_items are the priced rows ({description, qty, unit_price, type}) and scope is the described work shown in the quote body and PDF ({phase, description, deliverables, duration}). Easiest: pass items, one row per piece of work with a title, a client-facing description and a price; it fills both lists in order. Pass line_items and/or scope directly only when they need to differ; never with items. At least one priced row is required. account_name / contact_name must match existing records exactly (never creates an account); a contact alone defaults the account. Amounts are GBP ex VAT; vat_rate defaults to 20. A quote cannot be created as sent, accepted or converted.',
+  inputSchema: z.object({
+    title: z.string().min(1).describe('quote title, e.g. "JobLogic replacement"'),
+    account_name: z.string().optional().describe('exact (case-insensitive) existing sales account name'),
+    contact_name: z.string().optional().describe('exact (case-insensitive) existing contact name'),
+    workstream: z.string().optional().describe('workstream slug: brand-sales, ecommerce, app-dev, mvp-cricket, consulting'),
+    project_id: z.string().uuid().optional(),
+    summary: z.string().optional().describe('intro paragraph shown above the scope'),
+    ...quoteItemFields,
+    pricing_type: enumOf(QUOTE_PRICING_TYPES).optional().describe('default fixed'),
+    vat_rate: z.number().min(0).optional().describe('percent, default 20'),
+    issue_date: isoDate.optional().describe('default today'),
+    valid_until: isoDate.optional(),
+    payment_terms: z.string().optional().describe('omit for the default 50% deposit / 50% on completion wording'),
+    notes: z.string().optional(),
+    estimated_timeline: z.string().optional(),
+    status: z.enum(QUOTE_CREATE_STATUSES).optional().describe('draft (default) or review'),
+  }),
+  handler: async (input) => {
+    const { quote } = await createCoworkQuote(input as Record<string, unknown>)
+    void recordCoworkWrite({
+      action: 'create', entity: 'quote', entityId: quote.id, entityLabel: quote.quote_number,
+      summary: quoteCreatedSummary(quote),
+      payload: input as Record<string, unknown>,
+    })
+    return quote
+  },
+})
+
+export const updateQuoteTool = defineTool({
+  name: 'update_quote',
+  description:
+    'Update a quote by number (QT-0007) or uuid. Send only the fields to change. items REPLACES both line_items and scope in full (same shape as create_quote); line_items or scope alone replace just that list. null clears account_name, contact_name, workstream, project_id, valid_until, summary, notes, estimated_timeline. status can move to any value except converted (conversion happens only from the quote page in the OS); moving to sent stamps sent_at. A converted quote (status converted, or linked to an invoice) is LOCKED: only notes may change, anything else is a 409.',
+  inputSchema: z.object({
+    quote: quoteRef,
+    title: z.string().min(1).optional(),
+    account_name: z.string().nullable().optional().describe('exact existing sales account name; null clears'),
+    contact_name: z.string().nullable().optional().describe('exact existing contact name; null clears'),
+    workstream: z.string().nullable().optional().describe('workstream slug; null clears'),
+    project_id: z.string().uuid().nullable().optional(),
+    summary: z.string().nullable().optional(),
+    ...quoteItemFields,
+    pricing_type: enumOf(QUOTE_PRICING_TYPES).optional(),
+    vat_rate: z.number().min(0).optional(),
+    issue_date: isoDate.optional(),
+    valid_until: isoDate.nullable().optional(),
+    payment_terms: z.string().min(1).optional(),
+    notes: z.string().nullable().optional(),
+    estimated_timeline: z.string().nullable().optional(),
+    status: enumOf(QUOTE_UPDATE_STATUSES).optional(),
+  }),
+  handler: async ({ quote: ref, ...changes }) => {
+    const { quote, before, changed } = await updateCoworkQuote(ref, changes as Record<string, unknown>)
+    if (changed.length > 0) {
+      void recordCoworkWrite({
+        action: 'update', entity: 'quote', entityId: quote.id, entityLabel: quote.quote_number,
+        summary: quoteUpdatedSummary(quote, before, changed),
+        before, payload: changes as Record<string, unknown>,
+      })
+    }
+    return quote
+  },
+})
+
+export const deleteQuoteTool = defineTool({
+  name: 'delete_quote',
+  description:
+    'Delete a quote by number (QT-0007) or uuid. This is a SOFT delete: the quote disappears from every list and page but stays in the database. Refused (409) when the quote is accepted or converted, or linked to an invoice; set its status to declined or expired instead. An unknown or already-deleted quote is a 404.',
+  inputSchema: z.object({ quote: quoteRef }),
+  handler: async ({ quote: ref }) => {
+    const { quote } = await deleteCoworkQuote(ref)
+    void recordCoworkWrite({
+      action: 'delete', entity: 'quote', entityId: quote.id, entityLabel: quote.quote_number,
+      summary: quoteDeletedSummary(quote),
+      payload: quote,
+    })
+    return { deleted: true, soft: true, quote_number: quote.quote_number }
+  },
+})
+
 export const deleteEngagementDocumentTool = defineTool({
   name: 'delete_engagement_document',
   description:
@@ -1562,6 +1713,11 @@ export const tools: McpTool[] = [
   updateInvoicePaymentTool,
   deleteInvoicePaymentTool,
   deleteInvoiceTool,
+  listQuotesTool,
+  getQuoteTool,
+  createQuoteTool,
+  updateQuoteTool,
+  deleteQuoteTool,
   findAccountTool,
   createAccountTool,
   updateAccountTool,

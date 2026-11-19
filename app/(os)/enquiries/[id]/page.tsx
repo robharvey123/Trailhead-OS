@@ -23,6 +23,7 @@ export default async function EnquiryDetailPage({
       .from('quotes')
       .select('id')
       .eq('enquiry_id', id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),

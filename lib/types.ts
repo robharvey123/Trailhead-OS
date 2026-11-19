@@ -796,12 +796,13 @@ export interface Quote {
   issue_date: string
   created_at: string
   updated_at: string
+  deleted_at?: string | null
 }
 
 export interface QuoteWithRelations extends Quote {
   account?: Account
   contact?: Contact
-  workstream?: { label: string; colour: string }
+  workstream?: { slug?: string; label: string; colour: string }
   project?: { id: string; name: string; status: ProjectStatus }
   totals: InvoiceTotals
 }

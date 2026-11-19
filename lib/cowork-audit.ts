@@ -72,6 +72,7 @@ export type RevertResult = { ok: true; entity: string; summary: string } | { ok:
 /**
  * Revert a Cowork write for the reversible cases only:
  *   - invoice status change  → restore the prior status (from `before`)
+ *   - quote update           → restore every changed field (from `before`); 409 once converted
  *   - time_entry create      → delete the entry
  *   - tier1_milestone gate   → restore the prior gate dates (from `before`)
  *   - expense create         → delete the expense (409 once it has been billed)
@@ -98,6 +99,22 @@ export async function revertCoworkActivity(activityId: string): Promise<RevertRe
     // hand-editing (no-op for draft/cancelled).
     const { recalcInvoicePaymentState } = await import('@/lib/db/invoice-payments')
     await recalcInvoicePaymentState(a.entity_id, supabaseService).catch(() => {})
+  } else if (a.entity === 'quote' && a.action === 'update' && a.before && Object.keys(a.before).length > 0) {
+    // Restore the prior DB values of every field the update changed. Refused once
+    // the quote is soft-deleted or has been converted to an invoice since.
+    const { data: q } = await supabaseService
+      .from('quotes')
+      .select('id, status, converted_invoice_id, deleted_at')
+      .eq('id', a.entity_id)
+      .maybeSingle()
+    const quote = q as { status: string; converted_invoice_id: string | null; deleted_at: string | null } | null
+    if (!quote || quote.deleted_at) return { ok: false, error: 'Quote no longer exists', status: 404 }
+    const restoresOnlyNotes = Object.keys(a.before).every((key) => key === 'notes')
+    if ((quote.status === 'converted' || quote.converted_invoice_id) && !restoresOnlyNotes) {
+      return { ok: false, error: 'Quote has since been converted to an invoice and is locked', status: 409 }
+    }
+    const { error: e } = await supabaseService.from('quotes').update(a.before).eq('id', a.entity_id)
+    if (e) return { ok: false, error: e.message, status: 500 }
   } else if (a.entity === 'time_entry' && a.action === 'create') {
     const { error: e } = await supabaseService.from('time_entries').delete().eq('id', a.entity_id)
     if (e) return { ok: false, error: e.message, status: 500 }

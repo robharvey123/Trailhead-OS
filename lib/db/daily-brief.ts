@@ -247,6 +247,7 @@ export async function getDailyBriefData(
     supabase
       .from('quotes')
       .select('id, status, title, summary, created_at, created_by_id, accounts(name)')
+      .is('deleted_at', null)
       .in('status', ['draft', 'review'])
       .eq('created_by_id', userId)
       .order('created_at', { ascending: false }),

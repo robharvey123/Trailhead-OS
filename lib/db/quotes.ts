@@ -24,7 +24,7 @@ type QuoteRow = Quote & {
   enquiries: Enquiry | null
   pricing_tiers: PricingTier | null
   projects: { id: string; name: string; status: ProjectStatus } | null
-  workstreams: { label: string; colour: string } | null
+  workstreams: { slug: string; label: string; colour: string } | null
 }
 
 async function getSupabase(client?: SupabaseClient) {
@@ -68,7 +68,8 @@ export async function getQuotes(
   const supabase = await getSupabase(client)
   let query = supabase
     .from('quotes')
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(slug, label, colour)')
+    .is('deleted_at', null)
     .order('issue_date', { ascending: false })
     .order('created_at', { ascending: false })
 
@@ -133,8 +134,9 @@ export async function getQuoteById(
   const supabase = await getSupabase(client)
   const { data, error } = await supabase
     .from('quotes')
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(slug, label, colour)')
     .eq('id', id)
+    .is('deleted_at', null)
     .maybeSingle()
 
   if (error) {
@@ -228,7 +230,7 @@ export async function createQuote(
   const { data: quote, error } = await supabase
     .from('quotes')
     .insert(payload)
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(slug, label, colour)')
     .single()
 
   if (error) {
@@ -254,7 +256,7 @@ export async function updateQuote(
     .from('quotes')
     .update(patch)
     .eq('id', id)
-    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(label, colour)')
+    .select('*, accounts(*), contacts(*), enquiries(*), pricing_tiers(*), projects(id, name, status), workstreams(slug, label, colour)')
     .single()
 
   if (error) {
@@ -262,6 +264,18 @@ export async function updateQuote(
   }
 
   return mapQuote(quote as QuoteRow)
+}
+
+/** Soft-delete: stamp deleted_at. Never hard-deletes (matches softDeleteInvoice).
+ *  Every reader filters `deleted_at is null`; restore by setting it back to null. */
+export async function softDeleteQuote(id: string, client?: SupabaseClient): Promise<void> {
+  const supabase = await getSupabase(client)
+  const { error } = await supabase
+    .from('quotes')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+    .is('deleted_at', null)
+  if (error) throw new Error(error.message || 'Failed to delete quote')
 }
 
 export async function getLatestDraftQuoteByEnquiryId(
@@ -273,6 +287,7 @@ export async function getLatestDraftQuoteByEnquiryId(
     .from('quotes')
     .select('id')
     .eq('enquiry_id', enquiryId)
+    .is('deleted_at', null)
     .in('status', ['draft', 'review'])
     .order('updated_at', { ascending: false })
     .limit(1)

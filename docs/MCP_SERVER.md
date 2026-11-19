@@ -94,10 +94,84 @@ These act as Rob (the owner) and refuse any contact that isn't on a sales list, 
 | `sales_dashboard` | none | this week and last week tiles, stage funnel, list health |
 | `list_queue` | `user_id?`, `limit?` | `{ count, rows[] }`: today's queue in order, CTPS-clear numbers only |
 
+### Quote tools
+
+Thin adapters over `lib/cowork-quotes.ts`, shared with the REST twin at
+`/api/cowork/quotes` (`GET` list `?status=&account=&limit=`, `POST` create) and
+`/api/cowork/quotes/{ref}` (`GET`, `PATCH`, `DELETE`). Every tool that takes a quote
+accepts its **number** (`QT-0007`, case-insensitive) or its **uuid**. Amounts are
+GBP ex VAT. Soft-deleted quotes are invisible to every tool and every OS page.
+
+| Tool | Input (required **bold**) | Returns |
+|---|---|---|
+| `list_quotes` | `status?`, `account_name?`, `limit?` (default 50, max 200) | quote rows without `line_items`/`scope`, plus `line_item_count`, newest first |
+| `get_quote` | **`quote`** | the full quote: account, contact, workstream slug, project, line items with `line_total`, scope, `subtotal`/`vat`/`total`, `url` |
+| `create_quote` | **`title`**, `items` or `line_items` (one is required), `scope?`, `account_name?`, `contact_name?`, `workstream?`, `project_id?`, `summary?`, `pricing_type?`, `vat_rate?` (20), `issue_date?` (today), `valid_until?`, `payment_terms?`, `notes?`, `estimated_timeline?`, `status?` (`draft` default, or `review`) | the full quote |
+| `update_quote` | **`quote`**, + any create field, `status` (any value except `converted`) | the full quote |
+| `delete_quote` | **`quote`** | `{ deleted: true, soft: true, quote_number }` |
+
+**Two lists, one convenience field.** A quote has `line_items` (priced rows:
+`{ description, qty, unit_price, type }`, `type` = `fixed` · `hourly` ·
+`milestone`, default `fixed`) and `scope` (described rows for the quote body and
+PDF: `{ phase, description, deliverables[], duration, estimated_hours? }`). The
+`items` field fills both from one array, in order:
+
+```ts
+items: Array<{
+  title: string            // short name of the piece of work → line item description + scope phase
+  description: string      // client-facing description, one to three sentences → scope description
+  price: number            // unit price; 0 allowed (included at no charge)
+  qty?: number             // default 1
+  deliverables?: string[]  // default []
+  duration?: string        // default "TBC"
+  estimated_hours?: number
+}>
+```
+
+`items` cannot be combined with `line_items` or `scope` (400). On `update_quote`,
+`items` replaces **both** lists in full; `line_items` or `scope` alone replace just
+that list. Negative qty or price is a 400 naming the row (`items[1] ("Bad"): price
+must be zero or greater`).
+
+**Rules.**
+- `account_name` / `contact_name` must match an existing record exactly
+  (case-insensitive); not found is a 400. Accounts are never created here. A
+  contact alone defaults the account from the contact.
+- `workstream` is a slug (`app-dev`, `consulting`, …); unknown is a 400.
+- On update, `null` clears `account_name`, `contact_name`, `workstream`,
+  `project_id`, `valid_until`, `summary`, `notes`, `estimated_timeline`. Moving to
+  `sent` stamps `sent_at` if empty. Setting `converted` is a 400; conversion only
+  happens from the quote page in the OS.
+- **Lock:** a quote with status `converted`, or with `converted_invoice_id` set,
+  only accepts `notes`; anything else is a 409.
+- **Delete is soft** (`quotes.deleted_at`). Refused (409) for `accepted` or
+  `converted` quotes, or any quote linked to an invoice; set the status to
+  `declined` or `expired` instead. Unknown or already-deleted is a 404.
+- Every write is logged to `cowork_activity` (entity `quote`). A quote update
+  stores the changed fields' prior values in `before` and can be reverted from
+  the activity log; creates and deletes are not revertible (same as invoices).
+
+Create a 3-item quote:
+```sh
+... "params":{"name":"create_quote","arguments":{
+      "title":"JobLogic replacement",
+      "account_name":"Bright Fire Services",
+      "workstream":"app-dev",
+      "summary":"A field-service app to replace JobLogic for the engineering team.",
+      "valid_until":"2026-12-31",
+      "items":[
+        {"title":"Job scheduling","description":"Office staff schedule and reassign jobs on a shared calendar; engineers see their day on their phone.","price":2500,"deliverables":["Calendar","Mobile job list"],"duration":"3 weeks"},
+        {"title":"Engineer forms","description":"Digital service sheets with photos and customer sign-off, synced when signal returns.","price":1800,"duration":"2 weeks"},
+        {"title":"Data migration","description":"Customers and sites imported from the JobLogic export.","price":0}
+      ]}}}
+```
+
 ### Enums
 - project `status`: `planning` · `active` · `on_hold` · `completed` · `cancelled`
 - engagement task `status`: `backlog` · `in_progress` · `review` · `done` · `cancelled`
 - engagement task `priority`: `low` · `normal` · `high` · `urgent`
+- quote `status`: `draft` · `review` · `sent` · `accepted` · `rejected` · `declined` · `expired` · `converted`
+- quote `pricing_type`: `fixed` · `time_and_materials` · `milestone`
 - dates: `YYYY-MM-DD`; `completed_at`: ISO datetime
 
 ### Example invocations (raw JSON-RPC)
