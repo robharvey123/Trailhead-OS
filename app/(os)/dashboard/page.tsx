@@ -6,6 +6,7 @@ import PortfolioOverview from '@/components/os/PortfolioOverview'
 import { getDailyBriefData } from '@/lib/db/daily-brief'
 import { getPortfolioOverview } from '@/lib/db/portfolio'
 import { createClient } from '@/lib/supabase/server'
+import { getCurrentProfile } from '@/lib/auth/roles'
 
 export const metadata = { title: 'Dashboard' }
 
@@ -29,8 +30,9 @@ export default async function DashboardPage() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const todayLabel = formatDate(today)
+  const profile = await getCurrentProfile(supabase)
   const [dailyBrief, portfolio] = await Promise.all([
-    getDailyBriefData(user.id, today, supabase),
+    getDailyBriefData(user.id, profile?.person_id ?? null, today, supabase),
     getPortfolioOverview(supabase).catch(() => null),
   ])
 

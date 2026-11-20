@@ -114,6 +114,20 @@ export async function moveTask(id: string, status: EngagementTaskStatus, positio
   return {}
 }
 
+/** Mark a task done from outside the kanban (the dashboard's complete button). completed_at is set by trigger. */
+export async function completeTask(id: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('engagement_tasks')
+    .update({ status: 'done' })
+    .eq('id', id)
+    .select('engagement_id')
+    .single()
+  if (error) return { error: error.message }
+  revalidateTask(data?.engagement_id, id)
+  return {}
+}
+
 export async function assignTask(id: string, personId: string | null): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

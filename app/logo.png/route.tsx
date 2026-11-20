@@ -45,7 +45,9 @@ export function GET() {
               style={{
                 width: 48,
                 height: bar.height,
-                borderRadius: 'var(--radius-control)',
+                // A literal: @vercel/og cannot resolve CSS variables, and a var() here made
+                // every /logo.png request throw.
+                borderRadius: 10,
                 background: bar.colour,
               }}
             />

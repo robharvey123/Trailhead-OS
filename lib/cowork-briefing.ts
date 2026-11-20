@@ -1,4 +1,4 @@
-import { TASK_SELECT, addDays, formatTask, startOfDayIso, todayDate } from '@/lib/cowork-api'
+import { addDays, startOfDayIso, todayDate } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
 import { listEngagements, engagementHoursThisMonth } from '@/lib/db/engagements'
 import { daysLeftInPeriod } from '@/lib/engagements/periods'
@@ -8,6 +8,54 @@ type ServerClient = Parameters<typeof listEngagements>[1]
 const svc = supabaseService as unknown as ServerClient
 
 const RENEWAL_WINDOW_DAYS = 45
+
+// Tasks come from engagement_tasks, the canonical table behind /tasks. The brief
+// used to read the legacy `tasks` table, frozen since October 2026, so it missed
+// every live task. Scope: the owner's tasks plus unassigned ones (most tasks carry
+// no assignee). Overdue is capped so a long backlog can't swamp the brief; the
+// full count is returned alongside.
+const BRIEF_TASK_SELECT = 'id, title, priority, status, due_date, engagement:engagements(id, name), project:projects(id, name)'
+const OVERDUE_LIMIT = 25
+
+type BriefTaskRow = {
+  id: string
+  title: string
+  priority: string
+  status: string
+  due_date: string | null
+  engagement: { id: string; name: string } | { id: string; name: string }[] | null
+  project: { id: string; name: string } | { id: string; name: string }[] | null
+}
+
+function one<T>(value: T | T[] | null): T | null {
+  return Array.isArray(value) ? (value[0] ?? null) : value
+}
+
+function formatBriefTask(row: BriefTaskRow) {
+  const engagement = one(row.engagement)
+  const project = one(row.project)
+  return {
+    id: row.id,
+    title: row.title,
+    priority: row.priority,
+    status: row.status,
+    due_date: row.due_date,
+    engagement: engagement ? { id: engagement.id, name: engagement.name } : null,
+    project: project ? { id: project.id, name: project.name } : null,
+  }
+}
+
+function openBriefTasks(ownerPersonId: string | null) {
+  let query = supabaseService
+    .from('engagement_tasks')
+    .select(BRIEF_TASK_SELECT, { count: 'exact' })
+    .is('completed_at', null)
+    .neq('status', 'done')
+  query = ownerPersonId
+    ? query.or(`assignee_person_id.eq.${ownerPersonId},assignee_person_id.is.null`)
+    : query.is('assignee_person_id', null)
+  return query
+}
 
 /**
  * Per active engagement: hours used vs included with days left in the month,
@@ -115,6 +163,7 @@ export async function getCoworkBriefing() {
   const today = todayDate()
   const tomorrow = addDays(today, 1)
   const weekEnd = addDays(today, 7)
+  const { data: ownerPersonId } = await supabaseService.rpc('owner_person_id')
 
   const [
     dueTodayResult,
@@ -127,26 +176,18 @@ export async function getCoworkBriefing() {
     overdueInvoicesResult,
     sentInvoicesResult,
   ] = await Promise.all([
-    supabaseService
-      .from('tasks')
-      .select(TASK_SELECT)
+    openBriefTasks(ownerPersonId)
       .eq('due_date', today)
-      .is('completed_at', null)
       .order('priority', { ascending: false })
       .order('created_at', { ascending: true }),
-    supabaseService
-      .from('tasks')
-      .select(TASK_SELECT)
+    openBriefTasks(ownerPersonId)
       .lt('due_date', today)
-      .is('completed_at', null)
-      .order('due_date', { ascending: true })
-      .order('created_at', { ascending: true }),
-    supabaseService
-      .from('tasks')
-      .select(TASK_SELECT)
+      .order('due_date', { ascending: false })
+      .order('created_at', { ascending: true })
+      .limit(OVERDUE_LIMIT),
+    openBriefTasks(ownerPersonId)
       .gte('due_date', tomorrow)
       .lte('due_date', weekEnd)
-      .is('completed_at', null)
       .order('due_date', { ascending: true })
       .order('created_at', { ascending: true }),
     supabaseService
@@ -197,9 +238,11 @@ export async function getCoworkBriefing() {
     date: today,
     engagements,
     tasks: {
-      due_today: (dueTodayResult.data ?? []).map((row) => formatTask(row as never)),
-      overdue: (overdueResult.data ?? []).map((row) => formatTask(row as never)),
-      due_this_week: (dueThisWeekResult.data ?? []).map((row) => formatTask(row as never)),
+      due_today: ((dueTodayResult.data ?? []) as unknown as BriefTaskRow[]).map(formatBriefTask),
+      // Most recently overdue first, capped at OVERDUE_LIMIT; overdue_count is the full figure.
+      overdue: ((overdueResult.data ?? []) as unknown as BriefTaskRow[]).map(formatBriefTask),
+      overdue_count: overdueResult.count ?? 0,
+      due_this_week: ((dueThisWeekResult.data ?? []) as unknown as BriefTaskRow[]).map(formatBriefTask),
     },
     calendar: {
       today: calendarTodayResult.data ?? [],

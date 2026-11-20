@@ -70,10 +70,11 @@ export function getOAuthClient() {
   )
 }
 
-export function getAuthUrl() {
+export function getAuthUrl(state: string) {
   const client = getOAuthClient()
 
   return client.generateAuthUrl({
+    state,
     access_type: 'offline',
     scope: SCOPES,
     prompt: 'consent',

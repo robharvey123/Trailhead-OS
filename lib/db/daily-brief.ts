@@ -1,21 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
-import type { QuoteStatus, TaskPriority } from '@/lib/types'
+import type { EngagementTaskPriority, QuoteStatus, TaskPriority } from '@/lib/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 type RelationValue<T> = T | T[] | null
 
+// The daily brief reads engagement_tasks, the canonical task table behind /tasks
+// and /my-work/[id]. It used to read the legacy `tasks` table, which stopped being
+// written in October 2026, so the brief showed stale tasks whose links 404'd.
 type DailyBriefTaskRow = {
   id: string
   title: string
-  priority: TaskPriority
+  priority: EngagementTaskPriority
   due_date: string | null
-  owner_user_id: string | null
-  workstream_id: string | null
-  workstreams: RelationValue<{
-    slug: string
-    label: string
-    colour: string
+  engagement_id: string | null
+  engagement: RelationValue<{
+    id: string
+    name: string
   }>
 }
 
@@ -127,17 +128,20 @@ function isUrgentTier(priority: TaskPriority) {
 }
 
 function mapTask(row: DailyBriefTaskRow): DailyBriefTask {
-  const workstream = firstRelation(row.workstreams)
+  const engagement = firstRelation(row.engagement)
 
   return {
     id: row.id,
     title: row.title,
-    priority: row.priority,
+    // engagement_tasks uses 'normal' where the brief's ranking expects 'medium'.
+    priority: row.priority === 'normal' ? 'medium' : row.priority,
     due_date: row.due_date,
-    workstream_id: row.workstream_id,
-    workstream_slug: workstream?.slug ?? null,
-    workstream_label: workstream?.label ?? null,
-    workstream_colour: workstream?.colour ?? null,
+    // The brief's card shape predates engagements; the engagement fills the
+    // grouping slot the workstream used to.
+    workstream_id: row.engagement_id,
+    workstream_slug: null,
+    workstream_label: engagement?.name ?? null,
+    workstream_colour: null,
   }
 }
 
@@ -221,6 +225,7 @@ function toEventDateKey(value: string) {
 
 export async function getDailyBriefData(
   userId: string,
+  personId: string | null,
   today: Date,
   client?: SupabaseClient
 ): Promise<DailyBriefData> {
@@ -235,15 +240,20 @@ export async function getDailyBriefData(
   const weekEndExclusiveIso = weekEndExclusive.toISOString()
 
   const [tasksResult, quotesResult, eventsResult] = await Promise.all([
-    supabase
-      .from('tasks')
-      .select('id, title, priority, due_date, owner_user_id, workstream_id, workstreams(slug, label, colour)')
-      .not('due_date', 'is', null)
-      .eq('owner_user_id', userId)
-      .lte('due_date', weekEndKey)
-      .is('completed_at', null)
-      .order('due_date', { ascending: true })
-      .order('created_at', { ascending: true }),
+    personId
+      ? supabase
+          .from('engagement_tasks')
+          .select('id, title, priority, due_date, engagement_id, engagement:engagements(id, name)')
+          // Mine, plus unassigned: most engagement tasks carry no assignee, and
+          // in a one-operator business an unassigned task is the owner's.
+          .or(`assignee_person_id.eq.${personId},assignee_person_id.is.null`)
+          .not('due_date', 'is', null)
+          .lte('due_date', weekEndKey)
+          .is('completed_at', null)
+          .neq('status', 'done')
+          .order('due_date', { ascending: true })
+          .order('created_at', { ascending: true })
+      : Promise.resolve({ data: [] as DailyBriefTaskRow[], error: null }),
     supabase
       .from('quotes')
       .select('id, status, title, summary, created_at, created_by_id, accounts(name)')
