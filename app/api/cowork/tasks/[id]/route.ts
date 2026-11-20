@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
-import { formatTask, getTaskById, jsonError } from '@/lib/cowork-api'
-import { updateCoworkTask } from '@/lib/cowork-tasks'
+import { jsonError } from '@/lib/cowork-api'
+import { deleteCoworkTask, getCoworkTask, updateCoworkTask } from '@/lib/cowork-tasks'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
-import { supabaseService } from '@/lib/supabase/service'
 
 export async function GET(
   request: NextRequest,
@@ -15,8 +14,7 @@ export async function GET(
 
   try {
     const { id } = await params
-    const task = await getTaskById(id)
-    return Response.json(formatTask(task))
+    return Response.json(await getCoworkTask(id))
   } catch (error) {
     return jsonError(error, 'Failed to load task')
   }
@@ -58,16 +56,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    const existing = await getTaskById(id)
-
-    const { error } = await supabaseService
-      .from('tasks')
-      .delete()
-      .eq('id', id)
-
-    if (error) {
-      throw error
-    }
+    const existing = await deleteCoworkTask(id)
 
     void recordCoworkWrite({
       action: 'delete',

@@ -1,61 +1,107 @@
 import {
-  TASK_SELECT,
-  addDays,
   CoworkApiError,
-  noRecognisedFieldsError,
-  formatTask,
-  getColumnIdForWorkstream,
-  getTaskById,
-  getWorkstreamBySlug,
-  optionalDate,
+  addDays,
   isUuid,
-  optionalIsoDatetime,
-  optionalNumber,
+  noRecognisedFieldsError,
+  optionalDate,
   optionalString,
   parseTags,
-  parseColumnKey,
-  parsePriority,
   requiredString,
   sendCoworkTaskNotification,
   todayDate,
 } from '@/lib/cowork-api'
 import { supabaseService } from '@/lib/supabase/service'
-import type { TaskPriority } from '@/lib/types'
+import type { EngagementTaskPriority, EngagementTaskStatus } from '@/lib/types'
 
 /**
- * Shared task logic for the Cowork REST API *and* the MCP server. Both the
- * `/api/cowork/tasks` routes and the MCP `list_tasks` / `create_task` /
- * `update_task` / `complete_task` tools call these so there is a single source
- * of truth for validation and the response shape (`formatTask`).
+ * Shared task logic for the Cowork REST API (`/api/cowork/tasks`) and the MCP
+ * `list_tasks` / `create_task` / `update_task` tools.
  *
- * Helpers throw `CoworkApiError` on bad input; the REST routes map that to the
- * right status via `jsonError`, and the MCP server wraps thrown errors into tool
- * error responses.
+ * Since Nov 2026 these read and write `engagement_tasks`, the table /tasks,
+ * My Work, the dashboard and the weekly report all use. The legacy kanban
+ * `tasks` table has been frozen since 15 Oct 2026, so anything written there
+ * never showed up in the app.
+ *
+ * Back-compat with the old kanban contract:
+ * - priority `medium` is accepted and stored as `normal`.
+ * - `column` is an alias for `status`, and `in-progress` maps to `in_progress`.
+ * - `tags` is an alias for `labels`.
+ * - `workstream`, `phase_id`, `start_date`, `due_time`, `estimated_hours`,
+ *   `actual_hours`, `account_id`, `contact_id` and `is_master_todo` have no
+ *   column on engagement_tasks and are ignored.
+ *
+ * New tasks need a project_id or engagement_id so they land on a board; the
+ * engagement is taken from the project when only project_id is given. They are
+ * reported by, and by default assigned to, the owner's person record.
  */
+
+const TASK_SELECT =
+  'id, title, description, status, priority, due_date, labels, position, completed_at, created_at, updated_at, engagement_id, project_id, assignee_person_id, reporter_person_id, engagement:engagements(id, name), project:projects(id, name), assignee:people!assignee_person_id(id, full_name)'
 
 export type CoworkTaskDueFilter = 'today' | 'overdue' | 'this_week' | 'all'
 
-/** Accepted-field list quoted back on a no-recognised-fields 400. */
 export const TASK_PATCH_FIELDS = [
   'title',
   'description',
+  'status',
+  'column',
   'priority',
   'due_date',
-  'start_date',
-  'is_master_todo',
-  'completed_at',
-  'column',
-  'status',
-  'workstream',
+  'labels',
+  'tags',
   'project_id',
+  'engagement_id',
+  'assignee_person_id',
+  'completed_at',
+]
+
+const IGNORED_LEGACY_FIELDS = new Set([
+  'workstream',
   'phase_id',
-  'account_id',
-  'contact_id',
+  'start_date',
   'due_time',
   'estimated_hours',
   'actual_hours',
-  'tags',
-]
+  'account_id',
+  'contact_id',
+  'is_master_todo',
+])
+
+const STATUS_ALIASES: Record<string, EngagementTaskStatus> = {
+  backlog: 'backlog',
+  todo: 'backlog',
+  'in-progress': 'in_progress',
+  in_progress: 'in_progress',
+  review: 'review',
+  done: 'done',
+  cancelled: 'cancelled',
+}
+
+const PRIORITY_ALIASES: Record<string, EngagementTaskPriority> = {
+  low: 'low',
+  medium: 'normal',
+  normal: 'normal',
+  high: 'high',
+  urgent: 'urgent',
+}
+
+export function parseTaskStatus(value: unknown): EngagementTaskStatus {
+  const key = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  const status = STATUS_ALIASES[key]
+  if (!status) {
+    throw new CoworkApiError('status must be backlog|in_progress|review|done|cancelled', 400)
+  }
+  return status
+}
+
+export function parseTaskPriority(value: unknown): EngagementTaskPriority {
+  const key = typeof value === 'string' ? value.trim().toLowerCase() : ''
+  const priority = PRIORITY_ALIASES[key]
+  if (!priority) {
+    throw new CoworkApiError('priority must be low|normal|high|urgent', 400)
+  }
+  return priority
+}
 
 function nullableUuid(value: unknown, field: string): string | null {
   if (value === null || value === '') return null
@@ -65,20 +111,26 @@ function nullableUuid(value: unknown, field: string): string | null {
   return value
 }
 
-function optionalTime(value: unknown, field: string) {
-  if (value === null || value === undefined || value === '') return null
-  if (typeof value !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value)) {
-    throw new CoworkApiError(`${field} must be HH:MM`, 400)
-  }
-  return value
+async function ownerPersonId(): Promise<string | null> {
+  const { data } = await supabaseService
+    .from('profiles')
+    .select('person_id')
+    .eq('role', 'owner')
+    .not('person_id', 'is', null)
+    .limit(1)
+    .maybeSingle()
+  return (data?.person_id as string | undefined) ?? null
 }
 
-function optionalHours(value: unknown, field: string) {
-  const hours = optionalNumber(value, field)
-  if (hours !== null && !Number.isInteger(hours)) {
-    throw new CoworkApiError(`${field} must be a whole number of hours`, 400)
-  }
-  return hours
+async function projectEngagementId(projectId: string): Promise<string | null> {
+  const { data, error } = await supabaseService
+    .from('projects')
+    .select('id, engagement_id')
+    .eq('id', projectId)
+    .maybeSingle()
+  if (error) throw new CoworkApiError(error.message || 'Failed to load project', 500)
+  if (!data) throw new CoworkApiError(`project_id not found: ${projectId}`, 400)
+  return (data.engagement_id as string | null) ?? null
 }
 
 async function assertExists(table: string, id: string, field: string) {
@@ -87,308 +139,268 @@ async function assertExists(table: string, id: string, field: string) {
   if (!data) throw new CoworkApiError(`${field} not found: ${id}`, 400)
 }
 
-/**
- * A phase belongs to one project, so a task's phase and project must agree.
- * Returns the phase's project id; callers use it to fill project_id when only
- * phase_id was supplied.
- */
-async function phaseProjectId(phaseId: string) {
-  const { data, error } = await supabaseService
-    .from('project_phases')
-    .select('project_id')
-    .eq('id', phaseId)
-    .maybeSingle()
-  if (error) throw new CoworkApiError(error.message || 'Failed to load phase', 500)
-  if (!data) throw new CoworkApiError(`phase_id not found: ${phaseId}`, 400)
-  return data.project_id as string
+type TaskRow = {
+  id: string
+  title: string
+  description: string | null
+  status: EngagementTaskStatus
+  priority: EngagementTaskPriority
+  due_date: string | null
+  labels: string[] | null
+  position: number
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+  engagement_id: string | null
+  project_id: string | null
+  assignee_person_id: string | null
+  reporter_person_id: string | null
+  engagement: { id: string; name: string } | { id: string; name: string }[] | null
+  project: { id: string; name: string } | { id: string; name: string }[] | null
+  assignee: { id: string; full_name: string } | { id: string; full_name: string }[] | null
 }
 
-/**
- * Resolves project_id / phase_id together so the pair always agrees: a phase
- * implies its project, both sent must match (409 otherwise), and moving a
- * task to another project drops a phase that belonged to the old one.
- */
-async function resolveProjectAndPhase(
-  body: Record<string, unknown>,
-  current: { project_id: string | null; phase_id: string | null }
-) {
-  const patch: Record<string, unknown> = {}
-  const projectSent = body.project_id !== undefined
-  const phaseSent = body.phase_id !== undefined
-  const projectId = projectSent ? nullableUuid(body.project_id, 'project_id') : null
-  const phaseId = phaseSent ? nullableUuid(body.phase_id, 'phase_id') : null
+const one = <T,>(value: T | T[] | null): T | null => (Array.isArray(value) ? value[0] ?? null : value)
 
-  if (projectSent) {
-    if (projectId) await assertExists('projects', projectId, 'project_id')
-    patch.project_id = projectId
+export function formatCoworkTask(row: TaskRow) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    status: row.status,
+    priority: row.priority,
+    due_date: row.due_date,
+    labels: row.labels ?? [],
+    completed_at: row.completed_at,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    engagement: one(row.engagement),
+    project: one(row.project),
+    assignee: one(row.assignee),
+    url: `/my-work/${row.id}`,
   }
+}
 
-  if (phaseSent) {
-    patch.phase_id = phaseId
-    if (phaseId) {
-      const owner = await phaseProjectId(phaseId)
-      if (projectSent && projectId !== owner) {
-        throw new CoworkApiError('phase_id belongs to a different project than project_id', 409)
-      }
-      patch.project_id = owner
-    }
-  } else if (projectSent && current.phase_id) {
-    const owner = await phaseProjectId(current.phase_id).catch(() => null)
-    if (owner !== projectId) patch.phase_id = null
-  }
+export type CoworkTask = ReturnType<typeof formatCoworkTask>
 
-  return patch
+/** Load one engagement task, 404 if it does not exist. */
+export async function getCoworkTask(id: string): Promise<CoworkTask> {
+  if (!isUuid(id)) throw new CoworkApiError('Task not found', 404)
+  const { data, error } = await supabaseService.from('engagement_tasks').select(TASK_SELECT).eq('id', id).maybeSingle()
+  if (error) throw new CoworkApiError(error.message || 'Failed to load task', 500)
+  if (!data) throw new CoworkApiError('Task not found', 404)
+  return formatCoworkTask(data as unknown as TaskRow)
 }
 
 export interface ListCoworkTasksFilters {
-  workstreamSlug?: string | null
   projectId?: string | null
-  priority?: TaskPriority | null
+  engagementId?: string | null
+  status?: EngagementTaskStatus | null
+  priority?: EngagementTaskPriority | null
   due?: CoworkTaskDueFilter
-  master?: boolean
+  /** Include done and cancelled tasks. Off by default. */
+  includeClosed?: boolean
   limit?: number
 }
 
-/** GET /api/cowork/tasks — list OS kanban tasks with optional filters. */
+/** List engagement tasks, open ones by default, soonest due first. */
 export async function listCoworkTasks(filters: ListCoworkTasksFilters = {}) {
-  const { workstreamSlug = null, projectId = null, priority = null } = filters
   const due = filters.due ?? 'all'
   const limit = filters.limit ?? 50
   const today = todayDate()
   const weekEnd = addDays(today, 7)
-  const workstream = workstreamSlug ? await getWorkstreamBySlug(workstreamSlug) : null
 
   let query = supabaseService
-    .from('tasks')
+    .from('engagement_tasks')
     .select(TASK_SELECT)
     .order('due_date', { ascending: true, nullsFirst: false })
-    .order('start_date', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true })
     .limit(limit)
 
-  if (workstream) {
-    query = query.eq('workstream_id', workstream.id)
+  if (filters.projectId) query = query.eq('project_id', filters.projectId)
+  if (filters.engagementId) query = query.eq('engagement_id', filters.engagementId)
+  if (filters.priority) query = query.eq('priority', filters.priority)
+  if (filters.status) {
+    query = query.eq('status', filters.status)
+  } else if (!filters.includeClosed) {
+    query = query.not('status', 'in', '(done,cancelled)')
   }
 
-  if (projectId) {
-    query = query.eq('project_id', projectId)
-  }
-
-  if (priority) {
-    query = query.eq('priority', priority)
-  }
-
-  if (filters.master === true) {
-    query = query.eq('is_master_todo', true)
-  }
-
-  if (due === 'today') {
-    query = query.eq('due_date', today).is('completed_at', null)
-  }
-
-  if (due === 'overdue') {
-    query = query.lt('due_date', today).is('completed_at', null)
-  }
-
-  if (due === 'this_week') {
-    query = query.gte('due_date', today).lte('due_date', weekEnd).is('completed_at', null)
-  }
+  if (due === 'today') query = query.eq('due_date', today)
+  if (due === 'overdue') query = query.lt('due_date', today)
+  if (due === 'this_week') query = query.gte('due_date', today).lte('due_date', weekEnd)
 
   const { data, error } = await query
-
-  if (error) {
-    throw new CoworkApiError(error.message || 'Failed to load tasks', 500)
-  }
-
-  return (data ?? []).map((row) => formatTask(row as never))
+  if (error) throw new CoworkApiError(error.message || 'Failed to load tasks', 500)
+  return ((data ?? []) as unknown as TaskRow[]).map(formatCoworkTask)
 }
 
-/**
- * POST /api/cowork/tasks — create a single OS task in the workstream's Backlog.
- * Accepts the raw request body (REST) or a validated object (MCP); validation is
- * enforced here either way.
- */
+/** Create one engagement task. Accepts a raw REST body or a validated MCP object. */
 export async function createCoworkTask(body: Record<string, unknown>) {
   const title = requiredString(body.title, 'title')
-  const workstream = await getWorkstreamBySlug(requiredString(body.workstream, 'workstream'))
-  const backlogColumnId = await getColumnIdForWorkstream(workstream.id, 'backlog')
-  const priority = parsePriority(body.priority)
-  const dueDate = optionalDate(body.due_date, 'due_date')
-  const startDate = optionalDate(body.start_date, 'start_date')
-  const description = optionalString(body.description)
-  const isMasterTodo = body.is_master_todo === true
-  const columnValue = body.column !== undefined ? body.column : body.status
-  const columnId =
-    columnValue !== undefined && columnValue !== null
-      ? await getColumnIdForWorkstream(workstream.id, parseColumnKey(columnValue))
-      : backlogColumnId
-  const links = await resolveProjectAndPhase(body, { project_id: null, phase_id: null })
+
+  const projectId = body.project_id !== undefined ? nullableUuid(body.project_id, 'project_id') : null
+  let engagementId = body.engagement_id !== undefined ? nullableUuid(body.engagement_id, 'engagement_id') : null
+  if (projectId) {
+    const fromProject = await projectEngagementId(projectId)
+    if (engagementId && fromProject && engagementId !== fromProject) {
+      throw new CoworkApiError('engagement_id does not match the project’s engagement', 409)
+    }
+    engagementId = engagementId ?? fromProject
+  } else if (engagementId) {
+    await assertExists('engagements', engagementId, 'engagement_id')
+  }
+  if (!projectId && !engagementId) {
+    throw new CoworkApiError(
+      'project_id or engagement_id is required so the task lands on a board. Use list_projects to find one.',
+      400
+    )
+  }
+
+  const owner = await ownerPersonId()
+  const assignee =
+    body.assignee_person_id !== undefined ? nullableUuid(body.assignee_person_id, 'assignee_person_id') : owner
+  if (assignee && assignee !== owner) await assertExists('people', assignee, 'assignee_person_id')
+
+  const statusValue = body.status !== undefined ? body.status : body.column
+  const labels = parseTags(body.labels !== undefined ? body.labels : body.tags) ?? []
+
+  // Append to the end of the project's board.
+  let position = 0
+  if (projectId) {
+    const { data: last } = await supabaseService
+      .from('engagement_tasks')
+      .select('position')
+      .eq('project_id', projectId)
+      .order('position', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    position = Number(last?.position ?? 0) + 1
+  }
 
   const { data, error } = await supabaseService
-    .from('tasks')
+    .from('engagement_tasks')
     .insert({
       title,
-      workstream_id: workstream.id,
-      project_id: (links.project_id as string | null | undefined) ?? null,
-      phase_id: (links.phase_id as string | null | undefined) ?? null,
-      column_id: columnId,
-      priority,
-      due_date: dueDate,
-      start_date: startDate,
-      due_time: optionalTime(body.due_time, 'due_time'),
-      estimated_hours: optionalHours(body.estimated_hours, 'estimated_hours'),
-      tags: parseTags(body.tags) ?? [],
-      description,
-      is_master_todo: isMasterTodo,
-      completed_at: columnValue === 'done' ? new Date().toISOString() : null,
-      contact_id: optionalString(body.contact_id),
-      account_id: optionalString(body.account_id),
+      description: optionalString(body.description),
+      status: statusValue !== undefined && statusValue !== null ? parseTaskStatus(statusValue) : 'backlog',
+      priority: body.priority !== undefined && body.priority !== null ? parseTaskPriority(body.priority) : 'normal',
+      due_date: optionalDate(body.due_date, 'due_date'),
+      labels,
+      project_id: projectId,
+      engagement_id: engagementId,
+      assignee_person_id: assignee,
+      reporter_person_id: owner,
+      position,
     })
     .select(TASK_SELECT)
     .single()
 
-  if (error) {
-    throw new CoworkApiError(error.message || 'Failed to create task', 500)
-  }
+  if (error) throw new CoworkApiError(error.message || 'Failed to create task', 500)
 
-  void sendCoworkTaskNotification({
-    id: String(data.id),
-    title: String(data.title),
-  }).catch(() => {})
-
-  return formatTask(data as never)
+  void sendCoworkTaskNotification({ id: String(data.id), title: String(data.title) }).catch(() => {})
+  return formatCoworkTask(data as unknown as TaskRow)
 }
 
 /**
- * PATCH /api/cowork/tasks/:id — patch an OS task. Accepts the raw request body
- * (REST) or a validated object (MCP). Only supplied keys are changed.
+ * Patch one engagement task. Only supplied keys change. completed_at is
+ * stamped by a DB trigger on the move to/from done; sending completed_at
+ * (any non-null value) is treated as "mark done", null as "reopen".
  */
 export async function updateCoworkTask(id: string, body: Record<string, unknown>) {
-  const existingTask = await getTaskById(id)
+  const existing = await getCoworkTask(id)
   const patch: Record<string, unknown> = {}
 
   if (body.title !== undefined) {
     const title = optionalString(body.title)
-    if (!title) {
-      throw new CoworkApiError('title must be a non-empty string', 400)
-    }
+    if (!title) throw new CoworkApiError('title must be a non-empty string', 400)
     patch.title = title
   }
+  if (body.description !== undefined) patch.description = optionalString(body.description)
+  if (body.priority !== undefined) patch.priority = parseTaskPriority(body.priority)
+  if (body.due_date !== undefined) patch.due_date = optionalDate(body.due_date, 'due_date')
 
-  if (body.description !== undefined) {
-    patch.description = optionalString(body.description)
-  }
-
-  if (body.priority !== undefined) {
-    patch.priority = parsePriority(body.priority)
-  }
-
-  if (body.due_date !== undefined) {
-    patch.due_date = optionalDate(body.due_date, 'due_date')
-  }
-
-  if (body.start_date !== undefined) {
-    patch.start_date = optionalDate(body.start_date, 'start_date')
-  }
-
-  if (body.is_master_todo !== undefined) {
-    if (typeof body.is_master_todo !== 'boolean') {
-      throw new CoworkApiError('is_master_todo must be a boolean', 400)
+  const statusValue = body.status !== undefined ? body.status : body.column
+  if (statusValue !== undefined) {
+    patch.status = parseTaskStatus(statusValue)
+  } else if (body.completed_at !== undefined) {
+    if (body.completed_at === null) {
+      if (existing.status === 'done') patch.status = 'backlog'
+    } else {
+      patch.status = 'done'
     }
-    patch.is_master_todo = body.is_master_todo
   }
 
-  if (body.completed_at !== undefined) {
-    patch.completed_at = optionalIsoDatetime(body.completed_at, 'completed_at')
+  const labelsValue = body.labels !== undefined ? body.labels : body.tags
+  if (labelsValue !== undefined) patch.labels = parseTags(labelsValue) ?? []
+
+  if (body.assignee_person_id !== undefined) {
+    const assignee = nullableUuid(body.assignee_person_id, 'assignee_person_id')
+    if (assignee) await assertExists('people', assignee, 'assignee_person_id')
+    patch.assignee_person_id = assignee
   }
 
-  if (body.due_time !== undefined) patch.due_time = optionalTime(body.due_time, 'due_time')
-  if (body.estimated_hours !== undefined) {
-    patch.estimated_hours = optionalHours(body.estimated_hours, 'estimated_hours')
-  }
-  if (body.actual_hours !== undefined) {
-    patch.actual_hours = optionalHours(body.actual_hours, 'actual_hours')
-  }
-  if (body.tags !== undefined) patch.tags = parseTags(body.tags) ?? []
-
-  if (body.account_id !== undefined) {
-    const accountId = nullableUuid(body.account_id, 'account_id')
-    if (accountId) await assertExists('accounts', accountId, 'account_id')
-    patch.account_id = accountId
-  }
-
-  if (body.contact_id !== undefined) {
-    const contactId = nullableUuid(body.contact_id, 'contact_id')
-    if (contactId) await assertExists('contacts', contactId, 'contact_id')
-    patch.contact_id = contactId
-  }
-
-  if (body.project_id !== undefined || body.phase_id !== undefined) {
-    Object.assign(
-      patch,
-      await resolveProjectAndPhase(body, {
-        project_id: existingTask.project_id,
-        phase_id: existingTask.phase_id ?? null,
-      })
-    )
-  }
-
-  // `status` is an alias for `column` — the obvious field name cost twenty
-  // minutes of live probing (23 Aug). Same enum, `column` wins if both sent.
-  // Moving workstream re-homes the card on the new board: the named column if
-  // one was sent, otherwise Backlog, since column ids are per-workstream.
-  const columnValue = body.column !== undefined ? body.column : body.status
-  let targetWorkstreamId = existingTask.workstream_id
-  if (body.workstream !== undefined) {
-    const workstream = await getWorkstreamBySlug(requiredString(body.workstream, 'workstream'))
-    targetWorkstreamId = workstream.id
-    patch.workstream_id = workstream.id
-  }
-
-  if (columnValue !== undefined || body.workstream !== undefined) {
-    if (!targetWorkstreamId) {
-      throw new CoworkApiError('Task has no workstream to move within', 400)
+  if (body.project_id !== undefined) {
+    const projectId = nullableUuid(body.project_id, 'project_id')
+    patch.project_id = projectId
+    if (projectId) {
+      const fromProject = await projectEngagementId(projectId)
+      if (fromProject) patch.engagement_id = fromProject
     }
-
-    patch.column_id = await getColumnIdForWorkstream(
-      targetWorkstreamId,
-      columnValue !== undefined ? parseColumnKey(columnValue) : 'backlog'
-    )
+  }
+  if (body.engagement_id !== undefined && patch.engagement_id === undefined) {
+    const engagementId = nullableUuid(body.engagement_id, 'engagement_id')
+    if (engagementId) await assertExists('engagements', engagementId, 'engagement_id')
+    patch.engagement_id = engagementId
   }
 
   if (Object.keys(patch).length === 0) {
     if (Object.keys(body).length > 0) {
+      const onlyLegacy = Object.keys(body).every((key) => IGNORED_LEGACY_FIELDS.has(key))
+      if (onlyLegacy) {
+        throw new CoworkApiError(
+          `${Object.keys(body).join(', ')} no longer exist on tasks. Accepted: ${TASK_PATCH_FIELDS.join(', ')}`,
+          400
+        )
+      }
       throw noRecognisedFieldsError(body, TASK_PATCH_FIELDS)
     }
     throw new CoworkApiError('No changes supplied', 400)
   }
 
   const { data, error } = await supabaseService
-    .from('tasks')
+    .from('engagement_tasks')
     .update(patch)
     .eq('id', id)
     .select(TASK_SELECT)
     .single()
-
-  if (error) {
-    throw new CoworkApiError(error.message || 'Failed to update task', 500)
-  }
-
-  return formatTask(data as never)
+  if (error) throw new CoworkApiError(error.message || 'Failed to update task', 500)
+  return formatCoworkTask(data as unknown as TaskRow)
 }
 
-/**
- * Convenience used by the MCP `complete_task` tool: mark a task done and stamp
- * `completed_at` now. Moves it into the Done column too (when it has a
- * workstream), matching how the board treats completed cards.
- */
+/** Mark a task done. completed_at is stamped by the DB trigger. */
 export async function completeCoworkTask(id: string) {
-  const existingTask = await getTaskById(id)
-  const body: Record<string, unknown> = {
-    completed_at: new Date().toISOString(),
-  }
-  if (existingTask.workstream_id) {
-    body.column = 'done'
-  }
-  return updateCoworkTask(id, body)
+  return updateCoworkTask(id, { status: 'done' })
+}
+
+/** Delete one engagement task. Returns the deleted task's title for the audit log. */
+export async function deleteCoworkTask(id: string) {
+  const existing = await getCoworkTask(id)
+  const { error } = await supabaseService.from('engagement_tasks').delete().eq('id', id)
+  if (error) throw new CoworkApiError(error.message || 'Failed to delete task', 500)
+  return existing
+}
+
+/** Add a comment to an engagement task, authored by the owner. */
+export async function addCoworkTaskComment(taskId: string, body: string) {
+  await getCoworkTask(taskId)
+  const text = body.trim()
+  if (!text) throw new CoworkApiError('Comment body cannot be empty', 400)
+  const { data, error } = await supabaseService
+    .from('engagement_task_comments')
+    .insert({ task_id: taskId, body: text, author_person_id: await ownerPersonId() })
+    .select('id, task_id, body, created_at')
+    .single()
+  if (error) throw new CoworkApiError(error.message || 'Failed to add comment', 500)
+  return data
 }
