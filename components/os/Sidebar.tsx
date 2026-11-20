@@ -203,7 +203,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     header: 'Sell',
     items: [
-      { href: '/outreach', label: 'Outreach', icon: <IconOutreach className={ICON_CLASS} />, match: (p) => p.startsWith('/outreach') || p.startsWith('/sales') },
+      { href: '/outreach/calls', label: 'Call queue', icon: <IconTasks className={ICON_CLASS} />, match: (p) => p === '/outreach/calls' || p.startsWith('/sales') },
+      { href: '/outreach', label: 'Outreach', icon: <IconOutreach className={ICON_CLASS} />, match: (p) => p.startsWith('/outreach') && p !== '/outreach/calls' },
       { href: '/enquiries', label: 'Enquiries', icon: <IconEnquiries className={ICON_CLASS} />, match: (p) => p.startsWith('/enquiries'), badgeKey: 'enquiries' },
       { href: '/crm/accounts', label: 'Accounts', icon: <IconAccounts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/accounts') },
       { href: '/crm/contacts', label: 'Contacts', icon: <IconContacts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/contacts') || p.startsWith('/crm/meetings') },

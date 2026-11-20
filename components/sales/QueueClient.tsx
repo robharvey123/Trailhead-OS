@@ -11,7 +11,22 @@ function fmt(v: string | null) {
 
 const BUCKETS: QueueBucket[] = ['callback', 'warm', 'trial', 'cold']
 
-export default function QueueClient({ initialRows }: { initialRows: QueueRow[] }) {
+/**
+ * The daily call queue, shared by the sales seat (/sales/queue) and the OS
+ * (/outreach/calls). Both log through the same outcome action, so a call either
+ * person logs drops the contact out of the other's queue on their next load.
+ */
+export default function QueueClient({
+  initialRows,
+  contactBasePath = '/sales/contacts',
+  ownerNames = {},
+}: {
+  initialRows: QueueRow[]
+  /** Where "Open record" links: the seat's contact page or the OS CRM. */
+  contactBasePath?: string
+  /** auth user id -> display name, to show who has claimed a contact. */
+  ownerNames?: Record<string, string>
+}) {
   const [rows, setRows] = useState(initialRows)
   const [activeId, setActiveId] = useState<string | null>(initialRows[0]?.id ?? null)
   const [doneCount, setDoneCount] = useState(0)
@@ -63,6 +78,9 @@ export default function QueueClient({ initialRows }: { initialRows: QueueRow[] }
                           <a href={`tel:${r.phone.replace(/\s+/g, '')}`} className="btn btn-primary btn-sm">Call {r.phone}</a>
                         ) : null}
                         <span className="status-badge status-prospect">{STAGE_LABELS[r.pipeline_stage]}</span>
+                        {r.owner_user_id && ownerNames[r.owner_user_id] ? (
+                          <span className="text-[11px] text-[color:var(--text-3)]">Claimed by {ownerNames[r.owner_user_id]}</span>
+                        ) : null}
                       </div>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[color:var(--text-2)]">
@@ -73,7 +91,7 @@ export default function QueueClient({ initialRows }: { initialRows: QueueRow[] }
                       <span>
                         Last: {r.lastTouch ? `${r.lastTouch.outcome_code ? OUTCOME_LABELS[r.lastTouch.outcome_code] : r.lastTouch.subject} ${fmt(r.lastTouch.occurred_at)}` : 'no touchpoints yet'}
                       </span>
-                      <Link href={`/sales/contacts/${r.id}`} className="tap inline-flex items-center hover:underline">Open record</Link>
+                      <Link href={`${contactBasePath}/${r.id}`} className="tap inline-flex items-center hover:underline">Open record</Link>
                     </div>
                     {r.lastTouch?.body ? <p className="mt-1 line-clamp-2 text-xs text-[color:var(--text-3)]">{r.lastTouch.body}</p> : null}
                     {active ? (

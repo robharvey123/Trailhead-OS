@@ -5,7 +5,6 @@ import {
   listProjectEngagementTasks,
   updateEngagementTask,
 } from '@/lib/db/engagement-tasks'
-import { addNote } from '@/lib/db/notes'
 import { periodHoursFor } from '@/lib/db/engagements'
 import { billingPeriodFromStart, clampStartDay } from '@/lib/engagements/periods'
 import { getProjectById, getProjects } from '@/lib/db/projects'
@@ -19,7 +18,7 @@ import {
   updateProjectMilestone,
   updateProjectPhase,
 } from '@/lib/cowork-projects'
-import { createCoworkTask, listCoworkTasks, updateCoworkTask } from '@/lib/cowork-tasks'
+import { addCoworkTaskComment, createCoworkTask, listCoworkTasks, parseTaskPriority, updateCoworkTask } from '@/lib/cowork-tasks'
 import type { createClient as createServerClient } from '@/lib/supabase/server'
 import { supabaseService } from '@/lib/supabase/service'
 import { getOwnerUserId } from '@/lib/auth/owner'
@@ -89,6 +88,7 @@ import { listCoworkActivity, recordCoworkWrite } from '@/lib/cowork-audit'
 import {
   ENGAGEMENT_TASK_PRIORITIES,
   ENGAGEMENT_TASK_STATUSES,
+  type EngagementTaskStatus,
   type ProjectStatus,
 } from '@/lib/types'
 
@@ -366,21 +366,16 @@ export const updateEngagementTaskTool = defineTool({
 export const addNoteTool = defineTool({
   name: 'add_note',
   description:
-    'Add a note attached to a task. Provide a task_id, plus a title and/or body.',
+    'Add a comment to a task (shows on the task page in /tasks). Provide task_id and body; an optional title is prepended as the first line.',
   inputSchema: z.object({
     task_id: z.string().min(1),
     title: z.string().optional(),
     body: z.string().optional(),
   }),
-  handler: async (input) =>
-    addNote(
-      {
-        task_id: input.task_id,
-        title: input.title,
-        body: input.body,
-      },
-      db
-    ),
+  handler: async (input) => {
+    const text = [input.title?.trim(), input.body?.trim()].filter(Boolean).join('\n\n')
+    return addCoworkTaskComment(input.task_id, text)
+  },
 })
 
 export const briefing = defineTool({
@@ -959,9 +954,8 @@ function definedOnly<T extends Record<string, unknown>>(input: T) {
   return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined))
 }
 
-const taskPriority = z.enum(['low', 'medium', 'high', 'urgent'])
-const taskColumn = z.enum(['backlog', 'in-progress', 'review', 'done'])
-const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, 'must be HH:MM')
+// `medium` is still accepted from older prompts and stored as `normal`.
+const taskPriority = z.enum(['low', 'normal', 'medium', 'high', 'urgent'])
 
 export const createProjectTool = defineTool({
   name: 'create_project',
@@ -1054,22 +1048,24 @@ export const deleteProjectMilestoneTool = defineTool({
 export const listTasksTool = defineTool({
   name: 'list_tasks',
   description:
-    'List OS kanban tasks (not engagement tickets). Filters: workstream slug, project_id, priority, due (today|overdue|this_week|all), master.',
+    'List tasks (the same ones /tasks and My Work show). Open tasks only unless status or include_closed is given. Filters: project_id, engagement_id, status (backlog|in_progress|review|done|cancelled), priority (low|normal|high|urgent), due (today|overdue|this_week|all).',
   inputSchema: z.object({
-    workstream: z.string().optional(),
-    project_id: z.string().optional(),
+    project_id: z.string().uuid().optional(),
+    engagement_id: z.string().uuid().optional(),
+    status: engagementTaskStatus.optional(),
     priority: taskPriority.optional(),
     due: z.enum(['today', 'overdue', 'this_week', 'all']).optional(),
-    master: z.boolean().optional(),
+    include_closed: z.boolean().optional(),
     limit: z.number().int().min(1).max(200).optional(),
   }),
   handler: async (input) =>
     listCoworkTasks({
-      workstreamSlug: input.workstream ?? null,
       projectId: input.project_id ?? null,
-      priority: input.priority ?? null,
+      engagementId: input.engagement_id ?? null,
+      status: (input.status as EngagementTaskStatus | undefined) ?? null,
+      priority: input.priority ? parseTaskPriority(input.priority) : null,
       due: input.due,
-      master: input.master,
+      includeClosed: input.include_closed,
       limit: input.limit,
     }),
 })
@@ -1077,23 +1073,17 @@ export const listTasksTool = defineTool({
 export const createTaskTool = defineTool({
   name: 'create_task',
   description:
-    'Create an OS kanban task. Priorities are low|medium|high|urgent (not "normal"). Lands in Backlog unless column is given. phase_id implies its project.',
+    'Create a task. Needs project_id (preferred, use list_projects) or engagement_id; the engagement is taken from the project. Assigned to Rob unless assignee_person_id is given. status backlog|in_progress|review|done (default backlog), priority low|normal|high|urgent (default normal).',
   inputSchema: z.object({
     title: z.string().min(1),
-    workstream: z.string().min(1),
-    description: z.string().optional(),
-    priority: taskPriority.optional(),
-    column: taskColumn.optional(),
-    due_date: isoDate.optional(),
-    due_time: hhmm.optional(),
-    start_date: isoDate.optional(),
     project_id: z.string().uuid().optional(),
-    phase_id: z.string().uuid().optional(),
-    account_id: z.string().uuid().optional(),
-    contact_id: z.string().uuid().optional(),
-    estimated_hours: z.number().int().nonnegative().optional(),
-    tags: z.array(z.string()).optional(),
-    is_master_todo: z.boolean().optional(),
+    engagement_id: z.string().uuid().optional(),
+    description: z.string().optional(),
+    status: engagementTaskStatus.optional(),
+    priority: taskPriority.optional(),
+    due_date: isoDate.optional(),
+    labels: z.array(z.string()).optional(),
+    assignee_person_id: z.string().uuid().optional(),
   }),
   handler: async (input) => {
     const task = await createCoworkTask(definedOnly(input))
@@ -1102,7 +1092,7 @@ export const createTaskTool = defineTool({
       entity: 'task',
       entityId: task.id,
       entityLabel: task.title,
-      summary: `Created task "${task.title}"`,
+      summary: `Created task "${task.title}"${task.project ? ` in ${task.project.name}` : ''}`,
       payload: input,
     })
     return task
@@ -1112,26 +1102,18 @@ export const createTaskTool = defineTool({
 export const updateTaskTool = defineTool({
   name: 'update_task',
   description:
-    'Patch an OS kanban task. Any of: title, description, priority, column (backlog|in-progress|review|done), workstream (slug; re-homes the card), due_date, due_time, start_date, completed_at, project_id, phase_id, account_id, contact_id, estimated_hours, actual_hours, tags, is_master_todo. null clears a nullable field.',
+    'Patch a task. Any of: title, description, status (backlog|in_progress|review|done|cancelled; done stamps completed_at), priority (low|normal|high|urgent), due_date, labels, project_id (also moves it to that project\'s engagement), engagement_id, assignee_person_id. null clears a nullable field.',
   inputSchema: z.object({
     id: z.string().min(1),
     title: z.string().optional(),
     description: z.string().nullable().optional(),
+    status: engagementTaskStatus.optional(),
     priority: taskPriority.optional(),
-    column: taskColumn.optional(),
-    workstream: z.string().optional(),
     due_date: isoDate.nullable().optional(),
-    due_time: hhmm.nullable().optional(),
-    start_date: isoDate.nullable().optional(),
-    completed_at: z.string().nullable().optional(),
+    labels: z.array(z.string()).optional(),
     project_id: z.string().uuid().nullable().optional(),
-    phase_id: z.string().uuid().nullable().optional(),
-    account_id: z.string().uuid().nullable().optional(),
-    contact_id: z.string().uuid().nullable().optional(),
-    estimated_hours: z.number().int().nonnegative().nullable().optional(),
-    actual_hours: z.number().int().nonnegative().nullable().optional(),
-    tags: z.array(z.string()).optional(),
-    is_master_todo: z.boolean().optional(),
+    engagement_id: z.string().uuid().nullable().optional(),
+    assignee_person_id: z.string().uuid().nullable().optional(),
   }),
   handler: async ({ id, ...rest }) => {
     const body = definedOnly(rest)

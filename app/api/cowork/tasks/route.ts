@@ -1,13 +1,7 @@
 import { NextRequest } from 'next/server'
 import { validateCoworkToken } from '@/lib/cowork-auth'
-import {
-  jsonError,
-  parseBooleanParam,
-  parseLimit,
-  parsePriority,
-  parseTaskDueFilter,
-} from '@/lib/cowork-api'
-import { createCoworkTask, listCoworkTasks } from '@/lib/cowork-tasks'
+import { jsonError, parseBooleanParam, parseLimit, parseTaskDueFilter } from '@/lib/cowork-api'
+import { createCoworkTask, listCoworkTasks, parseTaskPriority, parseTaskStatus } from '@/lib/cowork-tasks'
 import { recordCoworkWrite } from '@/lib/cowork-audit'
 
 export async function GET(request: NextRequest) {
@@ -17,24 +11,16 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams
-    // This lists the workstream KANBAN `tasks`, which are not engagement-scoped.
-    // Reject engagement_id rather than silently returning every task — the counts
-    // can coincide (49 kanban == 49 engagement tickets) and look filtered when they
-    // aren't. Engagement tickets are their own table; use the engagement detail.
-    if (searchParams.get('engagement_id') || searchParams.get('engagement')) {
-      return Response.json(
-        { error: 'engagement_id is not supported here — /api/cowork/tasks lists workstream kanban tasks, not engagement tickets.' },
-        { status: 400 }
-      )
-    }
     const priorityParam = searchParams.get('priority')
+    const statusParam = searchParams.get('status')
 
     const tasks = await listCoworkTasks({
-      workstreamSlug: searchParams.get('workstream'),
       projectId: searchParams.get('project_id'),
-      priority: priorityParam ? parsePriority(priorityParam) : null,
+      engagementId: searchParams.get('engagement_id') ?? searchParams.get('engagement'),
+      priority: priorityParam ? parseTaskPriority(priorityParam) : null,
+      status: statusParam ? parseTaskStatus(statusParam) : null,
       due: parseTaskDueFilter(searchParams.get('due')),
-      master: parseBooleanParam(searchParams.get('master')) === true,
+      includeClosed: parseBooleanParam(searchParams.get('include_closed')) === true,
       limit: parseLimit(searchParams.get('limit'), 50, 200),
     })
 
@@ -57,7 +43,7 @@ export async function POST(request: NextRequest) {
       entity: 'task',
       entityId: task.id,
       entityLabel: task.title,
-      summary: `Created task "${task.title}"${task.workstream ? ` in ${task.workstream.label}` : ''}`,
+      summary: `Created task "${task.title}"${task.project ? ` in ${task.project.name}` : ''}`,
       payload: body,
     })
     return Response.json(task, { status: 201 })
