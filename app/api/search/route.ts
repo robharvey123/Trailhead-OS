@@ -32,16 +32,15 @@ export async function GET(request: NextRequest) {
     // Escape PostgREST's ilike wildcards so a literal % or _ doesn't match everything.
     const pattern = `%${q.replace(/[%_]/g, (c) => `\\${c}`)}%`
 
-    const [tasks, accounts, contacts, deals, invoices, quotes, projects, engagements] =
+    const [tasks, accounts, contacts, invoices, quotes, projects, engagements] =
       await Promise.all([
-        supabase.from('tasks').select('id, title, status').ilike('title', pattern).limit(PER_MODULE),
+        supabase.from('engagement_tasks').select('id, title, status').ilike('title', pattern).limit(PER_MODULE),
         supabase.from('accounts').select('id, name, status').eq('record_type', 'sales').ilike('name', pattern).limit(PER_MODULE),
         supabase
           .from('contacts')
           .select('id, name, email, company')
           .or(`name.ilike.${pattern},email.ilike.${pattern},company.ilike.${pattern}`)
           .limit(PER_MODULE),
-        supabase.from('deals').select('id, name, stage').ilike('name', pattern).limit(PER_MODULE),
         supabase
           .from('invoices')
           .select('id, invoice_number, status')
@@ -64,9 +63,6 @@ export async function GET(request: NextRequest) {
     const results: SearchHit[] = [
       ...(tasks.data ?? []).map((t) => ({
         id: t.id, label: t.title, sub: t.status ?? null, module: 'Tasks', href: `/my-work/${t.id}`,
-      })),
-      ...(deals.data ?? []).map((d) => ({
-        id: d.id, label: d.name, sub: d.stage ?? null, module: 'Deals', href: `/deals?deal=${d.id}`,
       })),
       ...(accounts.data ?? []).map((a) => ({
         id: a.id, label: a.name, sub: a.status ?? null, module: 'Accounts', href: `/crm/accounts/${a.id}`,

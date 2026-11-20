@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import OsShell from '@/components/os/OsShell'
 import { getCurrentProfile } from '@/lib/auth/roles'
-import { getUnreadTaskCount, getUnreadMailCount, getUnreadMessagesCount, getUnreadMentionsCount } from '@/lib/notifications/unread'
+import { getUnreadTaskCount, getUnreadMailCount } from '@/lib/notifications/unread'
 import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
@@ -30,8 +30,8 @@ export default async function OsLayout({
     redirect('/login')
   }
 
-  // These six badge counts are independent of each other. Awaiting them in
-  // series put ~6 round-trips on the critical path of every OS navigation,
+  // These four badge counts are independent of each other. Awaiting them in
+  // series put ~4 round-trips on the critical path of every OS navigation,
   // because this is the layout. They now run concurrently.
   //
   // `null` means "this query failed" and is rendered as a warning glyph, not a
@@ -43,8 +43,6 @@ export default async function OsLayout({
   const [
     taskResult,
     mailResult,
-    messageResult,
-    mentionsResult,
     enquiryResult,
     quoteResult,
   ] = await Promise.allSettled([
@@ -54,8 +52,6 @@ export default async function OsLayout({
       return getUnreadTaskCount(profile.person_id, supabase)
     })(),
     getUnreadMailCount(supabase),
-    getUnreadMessagesCount(user.id, supabase),
-    getUnreadMentionsCount(user.id, supabase),
     (async () => {
       const { count, error } = await supabase
         .from('enquiries')
@@ -77,8 +73,6 @@ export default async function OsLayout({
 
   const unreadTaskCount = settled(taskResult)
   const unreadMailCount = settled(mailResult)
-  const unreadMessageCount = settled(messageResult)
-  const unreadMentionsCount = settled(mentionsResult)
   const newEnquiryCount = settled(enquiryResult)
   const activeQuoteCount = settled(quoteResult)
 
@@ -88,8 +82,6 @@ export default async function OsLayout({
       activeQuoteCount={activeQuoteCount}
       unreadTaskCount={unreadTaskCount}
       unreadMailCount={unreadMailCount}
-      unreadMessageCount={unreadMessageCount}
-      unreadMentionsCount={unreadMentionsCount}
       userId={user.id}
     >
       {children}

@@ -9,7 +9,7 @@ import type { SearchHit } from '@/app/api/search/route'
 /**
  * ⌘K command palette — the OS's only recall surface.
  *
- * Rob is a single operator holding ~21 nav destinations and thousands of records
+ * Rob is a single operator holding ~18 nav destinations and thousands of records
  * in his head. Everything here is built for the keyboard: open with ⌘K, type,
  * arrow to a result, Enter to go. The mouse is the fallback, not the path.
  */
@@ -18,11 +18,15 @@ const QUICK_ACTIONS: Array<{ label: string; sub: string; href: string }> = [
   { label: 'Dashboard', sub: 'Daily brief', href: '/dashboard' },
   { label: 'Tasks', sub: 'My work', href: '/tasks' },
   { label: 'Inbox', sub: 'Email', href: '/inbox' },
-  { label: 'Deals', sub: 'Pipeline', href: '/deals' },
+  { label: 'Outreach', sub: 'Call queue', href: '/outreach' },
   { label: 'Engagements', sub: 'Delivery', href: '/engagements' },
   { label: 'Timesheet', sub: 'Time tracking', href: '/timesheet' },
   { label: 'Invoicing', sub: 'Money', href: '/invoicing' },
   { label: 'Calendar', sub: 'Schedule', href: '/calendar' },
+  { label: 'Sites', sub: 'Search Console', href: '/growth' },
+  { label: 'Sales seat', sub: "Francesca's view", href: '/sales/dashboard' },
+  { label: 'Blog', sub: 'Content', href: '/blog' },
+  { label: 'Discovery form', sub: 'Client intake', href: '/discovery?view=form' },
 ]
 
 export default function CommandPalette({
@@ -156,8 +160,8 @@ export default function CommandPalette({
             aria-expanded="true"
             aria-controls={listId}
             aria-autocomplete="list"
-            aria-label="Search tasks, deals, accounts, contacts, invoices and quotes"
-            placeholder="Search tasks, deals, accounts, invoices…"
+            aria-label="Search tasks, accounts, contacts, invoices and quotes"
+            placeholder="Search tasks, accounts, contacts, invoices…"
             className="w-full bg-transparent py-4 text-sm text-[color:var(--text)] outline-none placeholder:text-[color:var(--text-3)]"
           />
           <kbd className="os-mono shrink-0 rounded-control border border-[color:var(--border)] px-1.5 py-0.5 text-[10px] text-[color:var(--text-3)]">

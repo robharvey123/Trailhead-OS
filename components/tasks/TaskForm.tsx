@@ -3,7 +3,6 @@
 import { useId, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createTask } from '@/app/(os)/my-work/actions'
-import { convertMessageToTask } from '@/app/(os)/messages/actions'
 import LabelPicker from '@/components/tasks/LabelPicker'
 import Modal from '@/components/ui/Modal'
 import { ENGAGEMENT_TASK_PRIORITIES, ENGAGEMENT_TASK_PRIORITY_LABELS, type EngagementTask, type EngagementTaskPriority } from '@/lib/types'
@@ -20,8 +19,6 @@ export default function TaskForm({
   initialDescription,
   initialAssigneeId,
   initialEngagementId,
-  sourceMessageId,
-  onConverted,
   onCreated,
   onClose,
 }: {
@@ -37,9 +34,6 @@ export default function TaskForm({
   initialAssigneeId?: string
   /** Pre-selects an engagement but leaves the picker editable (channel default). */
   initialEngagementId?: string
-  /** When set, the task is created via convertMessageToTask (stamps source_message_id). */
-  sourceMessageId?: string
-  onConverted?: (taskId: string, title: string) => void
   /** Fires after a normal task create with the new row, so the caller can reveal it. */
   onCreated?: (task: EngagementTask) => void
   onClose: () => void
@@ -56,30 +50,13 @@ export default function TaskForm({
   const [error, setError] = useState('')
   const errorId = useId()
 
-  const heading = sourceMessageId ? 'New task from message' : 'New task'
+  const heading = 'New task'
   const input = 'w-full rounded-control border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-sm text-[var(--text)] outline-none focus:border-[var(--accent)]'
   const label = 'field-label block'
 
   async function submit() {
     if (!title.trim()) { setError('Title is required.'); return }
     setBusy(true); setError('')
-
-    if (sourceMessageId) {
-      // Convert-from-message path: stamps source_message_id, reporter = me.
-      const res = await convertMessageToTask({
-        messageId: sourceMessageId,
-        title,
-        description,
-        assigneePersonId: assignee || null,
-        engagementId: (fixedEngagementId ?? engagementId) || null,
-        projectId: fixedProjectId || null,
-        priority,
-      })
-      if (res.error || !res.taskId) { setError(res.error ?? 'Could not create the task.'); setBusy(false); return }
-      onConverted?.(res.taskId, res.title ?? title)
-      onClose()
-      return
-    }
 
     const res = await createTask({
       title,

@@ -12,7 +12,6 @@ import SyncMailButton from './SyncMailButton'
 import ProjectsSection from './ProjectsSection'
 import QuickAddTask from './QuickAddTask'
 import TouchpointTimeline from './TouchpointTimeline'
-import DealForm from './DealForm'
 import ComposeModal from './inbox/ComposeModal'
 import PageHeader from '@/components/ui/PageHeader'
 import { apiFetch } from '@/lib/api-fetch'
@@ -20,9 +19,6 @@ import { formatCurrency } from '@/lib/format'
 import { formatTaskSchedule } from '@/lib/os'
 import type {
   Activity,
-  DealInput,
-  DealStage,
-  DealWithRelations,
   EmailThread,
   ProjectListItem,
   Tag,
@@ -37,7 +33,6 @@ import type { MeetingWithRelations } from '@/lib/db/meetings'
 const TABS = [
   'Overview',
   'Emails',
-  'Deals',
   'Tasks',
   'Projects',
   'Time',
@@ -66,7 +61,6 @@ export default function AccountDetailClient({
   workstreams,
   projects,
   initialActivities = [],
-  deals: initialDeals,
   timeEntries,
   tags,
   emailThreads = [],
@@ -80,7 +74,6 @@ export default function AccountDetailClient({
   workstreams: Workstream[]
   projects: ProjectListItem[]
   initialActivities?: Activity[]
-  deals: DealWithRelations[]
   timeEntries: TimeEntry[]
   tags: Tag[]
   emailThreads?: EmailThread[]
@@ -96,9 +89,6 @@ export default function AccountDetailClient({
   const [tab, setTab] = useState<TabName>('Overview')
   const [editing, setEditing] = useState(false)
   const [notes, setNotes] = useState(initialAccount.notes ?? '')
-  const [deals, setDeals] = useState(initialDeals)
-  const [dealFormOpen, setDealFormOpen] = useState(false)
-  const [editingDeal, setEditingDeal] = useState<DealWithRelations | null>(null)
 
   const openTasks = useMemo(() => account.recent_tasks.filter((t) => !t.completed_at), [account.recent_tasks])
   const completedTasks = useMemo(() => account.recent_tasks.filter((t) => t.completed_at), [account.recent_tasks])
@@ -134,24 +124,6 @@ export default function AccountDetailClient({
     }
   }
 
-  async function saveDeal(input: DealInput) {
-    if (input.id) {
-      const { deal } = await apiFetch<{ deal: DealWithRelations }>(`/api/deals/${input.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      })
-      setDeals((d) => d.map((x) => (x.id === input.id ? { ...x, ...deal } : x)))
-    } else {
-      const { deal } = await apiFetch<{ deal: DealWithRelations }>('/api/deals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      })
-      setDeals((d) => [{ ...deal, account: { id: account.id, name: account.name } }, ...d])
-    }
-  }
-
   return (
     <>
       <PageHeader
@@ -182,7 +154,6 @@ export default function AccountDetailClient({
           {TABS.map((t) => (
             <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
               {t}
-              {t === 'Deals' && deals.length ? ` (${deals.length})` : ''}
               {t === 'Time' && timeEntries.length ? ` (${timeEntries.length})` : ''}
             </button>
           ))}
@@ -296,37 +267,6 @@ export default function AccountDetailClient({
             </div>
           ) : null}
 
-          {/* DEALS */}
-          {tab === 'Deals' ? (
-            <div>
-              <div className="mb-3 flex justify-end">
-                <button className="btn btn-primary btn-sm" onClick={() => { setEditingDeal(null); setDealFormOpen(true) }}>+ New deal</button>
-              </div>
-              {deals.length === 0 ? (
-                <div className="empty">No deals for this account yet.</div>
-              ) : (
-                <div className="overflow-x-auto">
-                <table className="data-table">
-                  <thead>
-                    <tr><th>Name</th><th>Stage</th><th className="text-right!">Value</th><th className="text-right!">Prob.</th><th>Close</th></tr>
-                  </thead>
-                  <tbody>
-                    {deals.map((d) => (
-                      <tr key={d.id} className="cursor-pointer" onClick={() => { setEditingDeal(d); setDealFormOpen(true) }}>
-                        <td className="td-name">{d.name}</td>
-                        <td><span className={`status-badge ${stageClass(d.stage)}`}>{d.stage}</span></td>
-                        <td className="td-num text-right">{d.value_amount != null ? formatCurrency(d.value_amount, d.value_currency || 'GBP') : '—'}</td>
-                        <td className="td-num text-right">{d.probability}%</td>
-                        <td className="td-num">{fmtDate(d.expected_close_date)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                </div>
-              )}
-            </div>
-          ) : null}
-
           {/* TASKS */}
           {tab === 'Tasks' ? (
             <div>
@@ -427,16 +367,6 @@ export default function AccountDetailClient({
           ) : null}
         </div>
 
-        {dealFormOpen ? (
-          <DealForm
-            deal={editingDeal}
-            accounts={[{ id: account.id, name: account.name }]}
-            contacts={contactOptions}
-            onClose={() => setDealFormOpen(false)}
-            onSave={saveDeal}
-          />
-        ) : null}
-
         {composeOpen ? (
           <ComposeModal
             contacts={(account.contacts ?? []).map((c) => ({ id: c.id, name: c.name, email: c.email ?? null, account_id: account.id }))}
@@ -460,16 +390,4 @@ function Field({ label, value, mono }: { label: string; value?: string | null; m
       <div className={`field-value ${mono ? 'mono' : ''}`}>{value || '—'}</div>
     </div>
   )
-}
-
-function stageClass(stage: DealStage) {
-  switch (stage) {
-    case 'Qualified': return 'status-prospect'
-    case 'Proposal Sent': return 'status-contacted'
-    case 'Negotiation': return 'status-contacted'
-    case 'Won': return 'status-active'
-    case 'Lost': return 'status-declined'
-    case 'On Hold': return 'status-on_hold'
-    default: return 'status-on_hold'
-  }
 }
