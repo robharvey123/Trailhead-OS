@@ -24,8 +24,9 @@ function getRedirectUri() {
   return process.env.MICROSOFT_REDIRECT_URI!
 }
 
-export function getMicrosoftAuthUrl() {
+export function getMicrosoftAuthUrl(state: string) {
   const params = new URLSearchParams({
+    state,
     client_id: getClientId(),
     response_type: 'code',
     redirect_uri: getRedirectUri(),

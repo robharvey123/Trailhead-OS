@@ -1,8 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { clearOAuthState, verifyOAuthCallback } from '@/lib/auth/oauth-state'
 import { exchangeCodeForTokens, getUserEmail } from '@/lib/microsoft/oauth'
 import { createClient } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
+  return clearOAuthState(await handleCallback(request), 'microsoft')
+}
+
+async function handleCallback(request: NextRequest): Promise<NextResponse> {
+  // Owner/admin session + matching state, or nothing is stored. See lib/auth/oauth-state.
+  if (!(await verifyOAuthCallback(request, 'microsoft'))) {
+    return NextResponse.redirect(new URL('/calendar/integrations?microsoft=error', request.url))
+  }
+
   const code = request.nextUrl.searchParams.get('code')
 
   if (!code) {

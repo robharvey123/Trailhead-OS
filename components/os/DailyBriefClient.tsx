@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 
 import Link from 'next/link'
 import { useMemo, useState, type ReactNode } from 'react'
-import { apiFetch } from '@/lib/api-fetch'
+import { completeTask } from '@/app/(os)/my-work/actions'
 import { getPriorityClasses } from '@/lib/os'
 import PageHeader from '@/components/ui/PageHeader'
 import StatusBadge from './StatusBadge'
@@ -271,7 +271,8 @@ export default function DailyBriefClient({ today, initialData, children }: Daily
     }))
 
     try {
-      await apiFetch<{ ok: true }>(`/api/os/tasks/${taskId}`, { method: 'DELETE' })
+      const result = await completeTask(taskId)
+      if (result.error) throw new Error(result.error)
       setStatusMessage(`${completedTitle} marked complete.`)
       // Closing the loop. The app used to acknowledge a completed task by
       // silently removing its row — clearing the last one of the day is the

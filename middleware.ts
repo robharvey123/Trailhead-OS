@@ -13,8 +13,6 @@ const publicRoutes = [
   '/contact',
   '/unsubscribe',
   '/unsubscribed',
-  '/api/auth/google',
-  '/api/auth/google/callback',
 ]
 // Matched by whole segment (=== prefix or prefix + '/'), so '/proposal' opens
 // '/proposal/<token>' but never '/proposals' or anything under '/quotes'.
@@ -40,6 +38,21 @@ const SALES_HOME = '/sales/dashboard'
 // pdf). Each handler re-checks the 256-bit token itself; nothing under
 // /api/quotes is public.
 const publicApiPrefixes = ['/api/proposal', '/api/enquiries', '/api/contact', '/api/calendar/ical', '/api/cowork', '/api/cron', '/api/mcp', '/api/webhooks/resend', '/api/outreach/unsubscribe']
+// The COWORK_API_KEY bearer bypass is honoured only under these prefixes (matched
+// by whole segment). It used to apply to every /api route, and getApiKeyAuth()
+// hands back the service-role client, so one leaked key opened every route with
+// RLS bypassed. These are the routes Cowork, the MCP server and the repo's
+// acceptance scripts actually call with the key.
+const API_KEY_PREFIXES = [
+  '/api/cowork',
+  '/api/mcp',
+  '/api/invoices',
+  '/api/contacts',
+  '/api/os/tasks',
+  '/api/tasks/reorder',
+  '/api/enquiries',
+  '/api/calendar',
+]
 const PUBLIC_ASSET_PATTERN = /\.[^/]+$/
 
 // Next's generated metadata images (app/opengraph-image.tsx and friends) are
@@ -193,7 +206,10 @@ export async function middleware(request: NextRequest) {
 
   // API key bypass for programmatic access (e.g. cowork agent)
   // Early return before Supabase session check, signal downstream via header
-  if (isApiRequest) {
+  const isApiKeyRoute = API_KEY_PREFIXES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  )
+  if (isApiRequest && isApiKeyRoute) {
     const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '')
     if (safeEqual(apiKey, process.env.COWORK_API_KEY)) {
       const requestHeaders = new Headers(request.headers)

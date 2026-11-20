@@ -1,12 +1,13 @@
 import { NextRequest } from 'next/server'
 import ical from 'ical-generator'
 import { supabaseService } from '@/lib/supabase/service'
+import { safeEqual } from '@/lib/auth/safe-equal'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
 
-  if (!token || token !== process.env.ICAL_SECRET) {
+  if (!safeEqual(token, process.env.ICAL_SECRET)) {
     return new Response('Unauthorised', { status: 401 })
   }
 

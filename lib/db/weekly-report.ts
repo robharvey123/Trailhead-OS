@@ -66,6 +66,20 @@ function getWeekRange(date: Date = new Date()): { start: string; end: string; la
   }
 }
 
+// Tasks come from engagement_tasks, the canonical table behind /tasks (the legacy
+// `tasks` table stopped being written in October 2026). engagement_tasks has no
+// workstream of its own, so a task inherits its project's workstream.
+const TASK_WS_SELECT = 'id, project:projects(workstream_id)'
+
+type TaskWsRow = { id: string; project: { workstream_id: string | null } | { workstream_id: string | null }[] | null }
+
+function withWorkstream(rows: unknown): { id: string; workstream_id: string | null }[] {
+  return ((rows ?? []) as TaskWsRow[]).map((row) => {
+    const project = Array.isArray(row.project) ? row.project[0] : row.project
+    return { id: row.id, workstream_id: project?.workstream_id ?? null }
+  })
+}
+
 export async function getWeeklyReportData(
   client?: SupabaseClient
 ): Promise<WeeklyReportData> {
@@ -86,32 +100,35 @@ export async function getWeeklyReportData(
     supabase.from('workstreams').select('id, slug, label, colour, sort_order').order('sort_order'),
 
     supabase
-      .from('tasks')
-      .select('id, workstream_id')
-      .is('completed_at', null),
+      .from('engagement_tasks')
+      .select(TASK_WS_SELECT)
+      .is('completed_at', null)
+      .neq('status', 'done'),
 
     supabase
-      .from('tasks')
-      .select('id, workstream_id')
+      .from('engagement_tasks')
+      .select(TASK_WS_SELECT)
       .gte('completed_at', `${start}T00:00:00`)
       .lte('completed_at', `${end}T23:59:59`),
 
     supabase
-      .from('tasks')
+      .from('engagement_tasks')
       .select('id')
       .gte('created_at', `${start}T00:00:00`)
       .lte('created_at', `${end}T23:59:59`),
 
     supabase
-      .from('tasks')
-      .select('id, workstream_id')
+      .from('engagement_tasks')
+      .select(TASK_WS_SELECT)
       .is('completed_at', null)
+      .neq('status', 'done')
       .lt('due_date', today),
 
     supabase
-      .from('tasks')
+      .from('engagement_tasks')
       .select('id')
       .is('completed_at', null)
+      .neq('status', 'done')
       .gte('due_date', today)
       .lte('due_date', end),
 
@@ -125,10 +142,10 @@ export async function getWeeklyReportData(
   ])
 
   const workstreams = workstreamsResult.data ?? []
-  const openTasks = openTasksResult.data ?? []
-  const completedTasks = completedThisWeekResult.data ?? []
+  const openTasks = withWorkstream(openTasksResult.data)
+  const completedTasks = withWorkstream(completedThisWeekResult.data)
   const addedTasks = addedThisWeekResult.data ?? []
-  const overdueTasks = overdueResult.data ?? []
+  const overdueTasks = withWorkstream(overdueResult.data)
   const dueSoonTasks = dueSoonResult.data ?? []
   const projects = projectsResult.data ?? []
 
@@ -156,13 +173,14 @@ export async function getWeeklyReportData(
 
   // Get due-this-week per workstream
   const dueThisWeekResult = await supabase
-    .from('tasks')
-    .select('id, workstream_id')
+    .from('engagement_tasks')
+    .select(TASK_WS_SELECT)
     .is('completed_at', null)
+    .neq('status', 'done')
     .gte('due_date', start)
     .lte('due_date', end)
 
-  const dueThisWeekTasks = dueThisWeekResult.data ?? []
+  const dueThisWeekTasks = withWorkstream(dueThisWeekResult.data)
   for (const ws of workstreamReports) {
     ws.dueThisWeek = dueThisWeekTasks.filter((t) => t.workstream_id === ws.id).length
   }
@@ -173,8 +191,8 @@ export async function getWeeklyReportData(
 
   if (projectIds.length > 0) {
     const [totalResult, completedResult] = await Promise.all([
-      supabase.from('tasks').select('project_id').in('project_id', projectIds),
-      supabase.from('tasks').select('project_id').in('project_id', projectIds).not('completed_at', 'is', null),
+      supabase.from('engagement_tasks').select('project_id').in('project_id', projectIds),
+      supabase.from('engagement_tasks').select('project_id').in('project_id', projectIds).not('completed_at', 'is', null),
     ])
 
     const totalTasks = totalResult.data ?? []
@@ -195,6 +213,7 @@ export async function getWeeklyReportData(
         .select('project_id, title, due_date')
         .in('project_id', projectIds)
         .is('completed_at', null)
+      .neq('status', 'done')
         .order('due_date', { ascending: true })
     : { data: [] }
 

@@ -1,9 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { clearOAuthState, verifyOAuthCallback } from '@/lib/auth/oauth-state'
 import { google } from 'googleapis'
 import { getOAuthClient, getTokensFromCode, refreshTokenStorage } from '@/lib/google/oauth'
 import { createClient } from '@/lib/supabase/service'
 
 export async function GET(request: NextRequest) {
+  return clearOAuthState(await handleCallback(request), 'google')
+}
+
+async function handleCallback(request: NextRequest): Promise<NextResponse> {
+  // Owner/admin session + matching state, or nothing is stored. See lib/auth/oauth-state.
+  if (!(await verifyOAuthCallback(request, 'google'))) {
+    return NextResponse.redirect(new URL('/calendar/integrations?google=error', request.url))
+  }
+
   const code = request.nextUrl.searchParams.get('code')
 
   if (!code) {

@@ -386,7 +386,7 @@ export const addNoteTool = defineTool({
 export const briefing = defineTool({
   name: 'briefing',
   description:
-    "Today's brief: tasks (due today / overdue / due this week), calendar events, new enquiries, and invoice totals.",
+    "Today's brief: engagement tasks owned by you or unassigned (due today / overdue, newest 25 plus overdue_count / due this week), calendar events, new enquiries, and invoice totals.",
   inputSchema: z.object({}),
   handler: async () => getCoworkBriefing(),
 })
