@@ -16,32 +16,18 @@ const nextConfig: NextConfig = {
     ]
   },
   async redirects() {
+    // Retired modules (Nov 2026 cut): the brand analytics workspace, internal
+    // messages and deals. Old bookmarks land on the dashboard. Not permanent, so
+    // a path can be reused later without fighting browser caches.
     return [
-      {
-        source: '/workspaces',
-        destination: '/analytics',
-        permanent: true,
-      },
-      {
-        source: '/workspace/:id',
-        destination: '/analytics/:id',
-        permanent: true,
-      },
-      {
-        source: '/workspace/:id/dashboard',
-        destination: '/analytics/:id',
-        permanent: true,
-      },
-      {
-        source: '/workspace/:id/imports',
-        destination: '/analytics/:id/imports',
-        permanent: true,
-      },
-      {
-        source: '/workspace/:id/settings',
-        destination: '/analytics/:id/settings',
-        permanent: true,
-      },
+      { source: '/workspaces', destination: '/dashboard', permanent: false },
+      { source: '/workspace/:path*', destination: '/dashboard', permanent: false },
+      { source: '/analytics', destination: '/dashboard', permanent: false },
+      { source: '/analytics/:path*', destination: '/dashboard', permanent: false },
+      { source: '/messages', destination: '/dashboard', permanent: false },
+      { source: '/messages/:path*', destination: '/dashboard', permanent: false },
+      { source: '/deals', destination: '/crm/accounts', permanent: false },
+      { source: '/growth/:siteId/:section(articles|briefs|clusters|gap|keywords|links|pages|paid|prompts)/:path*', destination: '/growth/:siteId', permanent: false },
     ];
   },
 };

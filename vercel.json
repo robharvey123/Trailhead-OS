@@ -43,40 +43,8 @@
       "schedule": "0 5 * * *"
     },
     {
-      "path": "/api/cron/growth-collect",
-      "schedule": "*/15 * * * *"
-    },
-    {
       "path": "/api/cron/growth-score",
       "schedule": "45 5 * * *"
-    },
-    {
-      "path": "/api/cron/growth-draft",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/growth-publish-verify",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/growth-tasks",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/growth-ai-visibility",
-      "schedule": "30 6 * * 1"
-    },
-    {
-      "path": "/api/cron/ads-sync",
-      "schedule": "15 5 * * *"
-    },
-    {
-      "path": "/api/cron/growth-enrich",
-      "schedule": "30 5 * * *"
-    },
-    {
-      "path": "/api/cron/growth-crawl",
-      "schedule": "0 */6 * * *"
     }
   ],
   "redirects": [

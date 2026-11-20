@@ -5,11 +5,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useId, useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
-  IconDashboard, IconCalendar, IconTasks, IconMessages, IconInbox,
+  IconDashboard, IconCalendar, IconTasks, IconInbox,
   IconEngagements, IconProjects, IconTimesheet, IconAccounts, IconContacts,
-  IconMeetings, IconDeals, IconOutreach, IconEnquiries, IconQuotes,
-  IconInvoicing, IconExpenses, IconAnalytics, IconGrowth, IconReport, IconBlog,
-  IconDiscovery, IconSettings, IconSignOut,
+  IconOutreach, IconEnquiries, IconQuotes,
+  IconInvoicing, IconExpenses, IconGrowth, IconReport,
+  IconSettings, IconSignOut,
 } from '@/components/os/nav-icons'
 import TrailheadLogo from '@/components/brand/TrailheadLogo'
 
@@ -20,8 +20,6 @@ interface SidebarProps {
   activeQuoteCount: number | null
   unreadTaskCount?: number | null
   unreadMailCount?: number | null
-  unreadMessageCount?: number | null
-  unreadMentionsCount?: number | null
   collapsed?: boolean
   onToggle?: () => void
 }
@@ -31,7 +29,7 @@ const FOCUS_RING =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]'
 
 /**
- * Count badge on a nav row. Two kinds only: `unread` (mail and messages) is a
+ * Count badge on a nav row. Two kinds only: `unread` (mail) is a
  * filled brand-blue badge with navy type; everything else is a neutral count.
  * `null` means the count query failed and is rendered as a warning, never as 0.
  */
@@ -86,7 +84,6 @@ function NavLink({
   icon,
   badge,
   unread,
-  mentionBadge,
   collapsed,
 }: {
   href: string
@@ -97,10 +94,8 @@ function NavLink({
   icon?: ReactNode
   /** `null` means the count query failed. Rendered as a warning, never as 0. */
   badge?: number | null
-  /** True for unread mail and unread messages: the only filled badges. */
+  /** True for unread mail: the only filled badge. */
   unread?: boolean
-  /** "@N" mentions count, additive to `badge`. A neutral count like the rest. */
-  mentionBadge?: number | null
   collapsed?: boolean
 }) {
   // Active row: blue-tinted ground, white type, blue-bright icon and a 3px
@@ -109,7 +104,6 @@ function NavLink({
     ? 'bg-[var(--accent-dim)] text-[var(--text)] before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-pill before:bg-[var(--blue)]'
     : 'text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]'
   const iconTone = active ? 'text-[var(--accent-strong)]' : 'text-[var(--text-3)] group-hover:text-[var(--text)]'
-  const hasMentions = typeof mentionBadge === 'number' && mentionBadge > 0
 
   if (collapsed) {
     return (
@@ -127,14 +121,6 @@ function NavLink({
         ) : (
           <span className="text-xs font-semibold">{label.charAt(0)}</span>
         )}
-        {hasMentions ? (
-          <span
-            className="absolute -left-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-pill bg-[var(--text-3)] px-1 text-[9px] font-bold text-[var(--navy)]"
-            aria-label={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}
-          >
-            <span aria-hidden="true">@{mentionBadge}</span>
-          </span>
-        ) : null}
         <CountBadge value={badge} label={label} unread={unread} compact />
       </Link>
     )
@@ -158,14 +144,6 @@ function NavLink({
         <span className="truncate">{label}</span>
       </span>
       <span className="flex items-center gap-1.5">
-        {hasMentions ? (
-          <span
-            className="rounded-pill bg-[var(--surface-3)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text)]"
-            aria-label={`${mentionBadge} mention${mentionBadge === 1 ? '' : 's'}`}
-          >
-            <span aria-hidden="true">@{mentionBadge}</span>
-          </span>
-        ) : null}
         <CountBadge value={badge} label={label} unread={unread} />
       </span>
     </Link>
@@ -200,70 +178,59 @@ function CollapseToggle({ collapsed, onToggle }: { collapsed: boolean; onToggle:
   )
 }
 
-type BadgeKey = 'enquiries' | 'quotes' | 'tasks' | 'mail' | 'messages'
+type BadgeKey = 'enquiries' | 'quotes' | 'tasks' | 'mail'
 type NavItem = {
   href: string
   label: string
   icon: ReactNode
   match: (p: string) => boolean
   badgeKey?: BadgeKey
-  mention?: boolean
 }
 type NavGroup = { header?: string; items: NavItem[] }
 
-// Grouped by "what am I doing": daily workspace first, then delivery (the where-are-we
-// cluster), clients/CRM, money, insights, content. Reorder here — the render is generic.
+// Nine sections, in the order the day runs: today, selling, delivery, billing,
+// reports. Blog, Discovery form and the sales seat live in the command palette (⌘K).
+// Reorder here, the render is generic.
 const NAV_GROUPS: NavGroup[] = [
   {
+    header: 'Today',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: <IconDashboard className={ICON_CLASS} />, match: (p) => p === '/dashboard' },
       { href: '/calendar', label: 'Calendar', icon: <IconCalendar className={ICON_CLASS} />, match: (p) => p === '/calendar' },
-      { href: '/tasks', label: 'Tasks', icon: <IconTasks className={ICON_CLASS} />, match: (p) => p === '/tasks' || p.startsWith('/my-work/'), badgeKey: 'tasks' },
-      { href: '/messages', label: 'Messages', icon: <IconMessages className={ICON_CLASS} />, match: (p) => p === '/messages' || p.startsWith('/messages/'), badgeKey: 'messages', mention: true },
       { href: '/inbox', label: 'Inbox', icon: <IconInbox className={ICON_CLASS} />, match: (p) => p.startsWith('/inbox'), badgeKey: 'mail' },
     ],
   },
   {
-    header: 'Delivery',
+    header: 'Sell',
+    items: [
+      { href: '/outreach', label: 'Outreach', icon: <IconOutreach className={ICON_CLASS} />, match: (p) => p.startsWith('/outreach') || p.startsWith('/sales') },
+      { href: '/enquiries', label: 'Enquiries', icon: <IconEnquiries className={ICON_CLASS} />, match: (p) => p.startsWith('/enquiries'), badgeKey: 'enquiries' },
+      { href: '/crm/accounts', label: 'Accounts', icon: <IconAccounts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/accounts') },
+      { href: '/crm/contacts', label: 'Contacts', icon: <IconContacts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/contacts') || p.startsWith('/crm/meetings') },
+    ],
+  },
+  {
+    header: 'Work',
     items: [
       { href: '/engagements', label: 'Engagements', icon: <IconEngagements className={ICON_CLASS} />, match: (p) => p.startsWith('/engagements') },
-      { href: '/projects', label: 'Projects', icon: <IconProjects className={ICON_CLASS} />, match: (p) => p === '/projects' || p.startsWith('/projects/records') || p === '/projects/new' },
+      { href: '/projects', label: 'Projects', icon: <IconProjects className={ICON_CLASS} />, match: (p) => p === '/projects' || p.startsWith('/projects/') },
+      { href: '/tasks', label: 'Tasks', icon: <IconTasks className={ICON_CLASS} />, match: (p) => p === '/tasks' || p.startsWith('/my-work/'), badgeKey: 'tasks' },
+    ],
+  },
+  {
+    header: 'Billing',
+    items: [
+      { href: '/quotes', label: 'Quotes', icon: <IconQuotes className={ICON_CLASS} />, match: (p) => p.startsWith('/quotes'), badgeKey: 'quotes' },
+      { href: '/invoicing', label: 'Invoices', icon: <IconInvoicing className={ICON_CLASS} />, match: (p) => p.startsWith('/invoicing') },
+      { href: '/expenses', label: 'Expenses', icon: <IconExpenses className={ICON_CLASS} />, match: (p) => p.startsWith('/expenses') },
       { href: '/timesheet', label: 'Timesheet', icon: <IconTimesheet className={ICON_CLASS} />, match: (p) => p.startsWith('/timesheet') },
     ],
   },
   {
-    header: 'Clients',
+    header: 'Reports',
     items: [
-      { href: '/crm/accounts', label: 'Accounts', icon: <IconAccounts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/accounts') },
-      { href: '/crm/contacts', label: 'Contacts', icon: <IconContacts className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/contacts') },
-      { href: '/crm/meetings', label: 'Meetings', icon: <IconMeetings className={ICON_CLASS} />, match: (p) => p.startsWith('/crm/meetings') },
-      { href: '/deals', label: 'Deals', icon: <IconDeals className={ICON_CLASS} />, match: (p) => p.startsWith('/deals') },
-      { href: '/outreach', label: 'Outreach', icon: <IconOutreach className={ICON_CLASS} />, match: (p) => p.startsWith('/outreach') },
-      { href: '/sales/dashboard', label: 'Sales seat', icon: <IconContacts className={ICON_CLASS} />, match: (p) => p.startsWith('/sales') },
-      { href: '/enquiries', label: 'Enquiries', icon: <IconEnquiries className={ICON_CLASS} />, match: (p) => p.startsWith('/enquiries'), badgeKey: 'enquiries' },
-    ],
-  },
-  {
-    header: 'Commercial',
-    items: [
-      { href: '/quotes', label: 'Quotes', icon: <IconQuotes className={ICON_CLASS} />, match: (p) => p.startsWith('/quotes'), badgeKey: 'quotes' },
-      { href: '/invoicing', label: 'Invoicing', icon: <IconInvoicing className={ICON_CLASS} />, match: (p) => p.startsWith('/invoicing') },
-      { href: '/expenses', label: 'Expenses', icon: <IconExpenses className={ICON_CLASS} />, match: (p) => p.startsWith('/expenses') },
-    ],
-  },
-  {
-    header: 'Insights',
-    items: [
-      { href: '/analytics', label: 'Analytics', icon: <IconAnalytics className={ICON_CLASS} />, match: (p) => p.startsWith('/analytics') || p.startsWith('/workspaces') || p.startsWith('/workspace') },
-      { href: '/growth', label: 'Growth', icon: <IconGrowth className={ICON_CLASS} />, match: (p) => p.startsWith('/growth') },
-      { href: '/reports/weekly', label: 'Weekly Report', icon: <IconReport className={ICON_CLASS} />, match: (p) => p.startsWith('/reports') },
-    ],
-  },
-  {
-    header: 'Content',
-    items: [
-      { href: '/blog', label: 'Blog', icon: <IconBlog className={ICON_CLASS} />, match: (p) => p === '/blog' || p.startsWith('/blog/') || p.startsWith('/os/blog') },
-      { href: '/discovery?view=form', label: 'Discovery form', icon: <IconDiscovery className={ICON_CLASS} />, match: (p) => p.startsWith('/discovery') },
+      { href: '/reports/weekly', label: 'Weekly report', icon: <IconReport className={ICON_CLASS} />, match: (p) => p.startsWith('/reports') },
+      { href: '/growth', label: 'Sites', icon: <IconGrowth className={ICON_CLASS} />, match: (p) => p.startsWith('/growth') },
     ],
   },
 ]
@@ -273,8 +240,6 @@ export default function Sidebar({
   activeQuoteCount,
   unreadTaskCount = 0,
   unreadMailCount = 0,
-  unreadMessageCount = 0,
-  unreadMentionsCount = 0,
   collapsed = false,
   onToggle,
 }: SidebarProps) {
@@ -283,7 +248,6 @@ export default function Sidebar({
     quotes: activeQuoteCount,
     tasks: unreadTaskCount,
     mail: unreadMailCount,
-    messages: unreadMessageCount,
   }
   const pathname = usePathname()
   const router = useRouter()
@@ -355,8 +319,7 @@ export default function Sidebar({
                     onClick={() => setMobileOpen(false)}
                     collapsed={collapsed}
                     badge={item.badgeKey ? badgeValues[item.badgeKey] : undefined}
-                    unread={item.badgeKey === 'mail' || item.badgeKey === 'messages'}
-                    mentionBadge={item.mention ? unreadMentionsCount : undefined}
+                    unread={item.badgeKey === 'mail'}
                   />
                 ))}
               </div>

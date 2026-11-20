@@ -30,7 +30,6 @@ export default async function SettingsPage() {
   let newEnquiryCount = 0
   let draftInvoiceCount = 0
   let paidInvoicesThisMonth = 0
-  let workspaces: Array<{ id: string; name: string }> = []
   let workstreams: Workstream[] = []
   let pricingTiers: PricingTier[] = []
   let googleEmail: string | null = null
@@ -83,14 +82,6 @@ export default async function SettingsPage() {
   } catch {}
 
   try {
-    const { data } = await supabase
-      .from('workspaces')
-      .select('id, name')
-      .order('created_at', { ascending: false })
-    workspaces = data ?? []
-  } catch {}
-
-  try {
     pricingTiers = await getPricingTiers(supabase)
   } catch {}
 
@@ -130,7 +121,7 @@ export default async function SettingsPage() {
       <PageHeader
         eyebrow="System"
         title="Settings"
-        description="A control panel for the core OS surfaces, live workspace settings, and the current signed-in account."
+        description="A control panel for the core OS surfaces and the current signed-in account."
       />
 
       {profile ? (
@@ -190,10 +181,6 @@ export default async function SettingsPage() {
               <p className="mt-2 text-sm text-[color:var(--text)]">{user?.email ?? 'Unknown user'}</p>
             </div>
             <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
-              <p className="os-label">Workspace count</p>
-              <p className="mt-2 text-sm text-[color:var(--text)]">{workspaces.length}</p>
-            </div>
-            <div className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] p-4">
               <p className="os-label">New enquiries</p>
               <p className="mt-2 text-sm text-[color:var(--text)]">{newEnquiryCount}</p>
             </div>
@@ -208,9 +195,6 @@ export default async function SettingsPage() {
           <p className="os-eyebrow">Shortcuts</p>
           <h2 className="mt-2 os-section-title">Core OS areas</h2>
           <div className="mt-5 grid gap-3">
-            <Link href="/analytics" className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
-              Analytics workspace list
-            </Link>
             <Link href="/crm/contacts" className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 text-sm text-[color:var(--text-2)] transition hover:border-[color:var(--border-light)]">
               CRM contacts ({contactsCount})
             </Link>
@@ -235,44 +219,6 @@ export default async function SettingsPage() {
         />
       ) : null}
 
-      <section className="os-card p-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="os-eyebrow">Analytics</p>
-            <h2 className="mt-2 os-section-title">Workspace settings</h2>
-            <p className="mt-2 text-sm text-[color:var(--text-2)]">
-              Jump straight into any analytics workspace configuration surface.
-            </p>
-          </div>
-          <Link
-            href="/analytics"
-            className="btn btn-ghost"
-          >
-            Open workspace list
-          </Link>
-        </div>
-
-        {workspaces.length === 0 ? (
-          <div className="mt-6 rounded-card border border-dashed border-[color:var(--border)] px-4 py-10 text-center text-sm text-[color:var(--text-3)]">
-            No analytics workspaces yet.
-          </div>
-        ) : (
-          <div className="mt-6 grid gap-3 md:grid-cols-2">
-            {workspaces.map((workspace) => (
-              <Link
-                key={workspace.id}
-                href={`/analytics/${workspace.id}/settings`}
-                className="rounded-card border border-[color:var(--border)] bg-[var(--surface-2)] px-4 py-4 transition hover:border-[color:var(--border-light)]"
-              >
-                <p className="text-sm font-medium text-[color:var(--text)]">{workspace.name}</p>
-                <p className="os-label mt-1">
-                  Workspace settings
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
 
       <PricingTierSettings pricingTiers={pricingTiers} />
 
