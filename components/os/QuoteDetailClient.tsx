@@ -8,6 +8,7 @@ import PageHeader from '@/components/ui/PageHeader'
 import EmailThread from './EmailThread'
 import QuoteClientPagePanel, { type ClientPageData } from './QuoteClientPagePanel'
 import QuoteHeaderFields, { type QuoteFieldOptions } from './QuoteHeaderFields'
+import QuoteLineItemsEditor from './QuoteLineItemsEditor'
 import RecordEmailDialog from './RecordEmailDialog'
 import StatusBadge from './StatusBadge'
 import WorkstreamBadge from './WorkstreamBadge'
@@ -475,33 +476,7 @@ export default function QuoteDetailClient({
             )}
           </div>
 
-          <div className="os-card p-6">
-            <h2 className="os-section-title">Line items</h2>
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="os-label text-left">
-                  <tr>
-                    <th className="pb-3">Description</th>
-                    <th className="pb-3">Type</th>
-                    <th className="pb-3 text-right">Qty</th>
-                    <th className="pb-3 text-right">Unit price</th>
-                    <th className="pb-3 text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {quoteState.line_items.map((item) => (
-                    <tr key={item.id} className="border-t border-[color:var(--border)]">
-                      <td className="py-3 text-[color:var(--text)]">{item.description}</td>
-                      <td className="py-3 text-[color:var(--text-2)]">{item.type}</td>
-                      <td className="py-3 text-right text-[color:var(--text-2)]">{item.qty}</td>
-                      <td className="py-3 text-right text-[color:var(--text-2)]">{formatMoney(item.unit_price)}</td>
-                      <td className="py-3 text-right text-[color:var(--text)]">{formatMoney(item.qty * item.unit_price)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <QuoteLineItemsEditor quote={quoteState} onSaved={setQuoteState} />
 
           {quoteState.ai_generated && quoteState.complexity_breakdown ? (
             <div className="os-card p-6">
