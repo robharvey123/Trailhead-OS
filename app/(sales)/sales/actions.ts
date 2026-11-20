@@ -28,6 +28,7 @@ async function salesSession() {
 
 function revalidateSales(contactId?: string) {
   revalidatePath('/sales/queue')
+  revalidatePath('/outreach/calls')
   revalidatePath('/sales/pipeline')
   revalidatePath('/sales/dashboard')
   revalidatePath('/sales/contacts')

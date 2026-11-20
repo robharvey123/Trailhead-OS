@@ -1,28 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCallQueue, getUnscreenedCallCount } from '@/lib/db/outreach'
+import { getUnscreenedCallCount } from '@/lib/db/outreach'
+import { getSalesQueue } from '@/lib/sales/queue'
 import { mockupFontVars } from '@/lib/fonts'
 import PageHeader from '@/components/ui/PageHeader'
 import CtpsScreenButton from '@/components/os/CtpsScreenButton'
-import { logCallOutcome } from './actions'
+import QueueClient from '@/components/sales/QueueClient'
 
 export const metadata = { title: 'Call queue' }
 
-const OUTCOMES = ['no_answer', 'voicemail', 'connected', 'interested', 'not_interested', 'callback', 'bad_number', 'do_not_call']
-
+// One queue for Rob and Francesca: the same list, order and outcome logger as
+// /sales/queue. Owner sees every in-scope contact, including ones the sales seat
+// has claimed (labelled), so nobody rings a contact the other is working.
 export default async function CallQueuePage() {
   const supabase = await createClient()
-  const [queue, unscreened] = await Promise.all([
-    getCallQueue(supabase).catch(() => []),
+  const [rows, unscreened, { data: profiles }] = await Promise.all([
+    getSalesQueue(supabase, { forUserId: null }).catch(() => []),
     getUnscreenedCallCount(supabase).catch(() => 0),
+    supabase.from('profiles').select('id, display_name'),
   ])
+  const ownerNames = Object.fromEntries(
+    ((profiles ?? []) as Array<{ id: string; display_name: string | null }>)
+      .filter((p) => p.display_name)
+      .map((p) => [p.id, p.display_name as string])
+  )
 
   return (
     <div className={`thmock ${mockupFontVars}`}>
       <div className="space-y-6">
         <PageHeader
           back={{ href: '/outreach', label: 'Outreach' }}
-          title="Call queue"
-          description="Delivered prospects, earliest first. Only numbers CTPS-screened clear in the last 28 days, and not unsubscribed, bounced or do-not-call, appear."
+          title="Today's call queue"
+          description="Shared with the sales seat. Callbacks first, then warm follow-ups, trials, and fresh numbers. Only CTPS-clear numbers (screened in the last 28 days) appear."
         />
 
         {unscreened > 0 ? (
@@ -35,40 +43,7 @@ export default async function CallQueuePage() {
           </div>
         ) : null}
 
-        {queue.length === 0 ? (
-          <div className="empty">No callable prospects yet. Emails need to deliver first.</div>
-        ) : (
-          <div className="space-y-3">
-            {queue.map((row) => (
-              <div key={row.recipient_id} className="os-card p-4">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--text)]">{row.company ?? row.name}</p>
-                    <p className="text-xs text-[var(--text-2)]">
-                      {row.name}{row.phone ? ` · ${row.phone}` : ''}{row.website ? ` · ${row.website}` : ''}
-                    </p>
-                    <p className="mt-1 text-xs text-[var(--text-2)]">
-                      {[row.sub_trade, row.size_signal].filter(Boolean).join(' · ') || 'No opening-line context'}
-                    </p>
-                    {row.call_status ? (
-                      <p className="mt-1 text-xs text-[var(--accent-strong)]">Last outcome: {row.call_status}</p>
-                    ) : null}
-                  </div>
-                  <form action={logCallOutcome} className="flex flex-wrap items-center gap-2">
-                    <input type="hidden" name="recipient_id" value={row.recipient_id} />
-                    <input type="hidden" name="contact_id" value={row.contact_id} />
-                    <select name="outcome" className="filter-select" defaultValue="">
-                      <option value="" disabled>Outcome…</option>
-                      {OUTCOMES.map((o) => <option key={o} value={o}>{o.replace(/_/g, ' ')}</option>)}
-                    </select>
-                    <input name="notes" placeholder="Notes" className="os-input min-w-40 px-2.5 py-[7px] text-xs" />
-                    <button className="btn btn-primary btn-sm">Log</button>
-                  </form>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <QueueClient initialRows={rows} contactBasePath="/crm/contacts" ownerNames={ownerNames} />
       </div>
     </div>
   )

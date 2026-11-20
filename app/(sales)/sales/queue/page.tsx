@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsSales } from '@/lib/auth/roles'
 import { getSalesQueue } from '@/lib/sales/queue'
 import PageHeader from '@/components/ui/PageHeader'
-import QueueClient from './QueueClient'
+import QueueClient from '@/components/sales/QueueClient'
 
 export const metadata = { title: 'Call queue | Sales' }
 
