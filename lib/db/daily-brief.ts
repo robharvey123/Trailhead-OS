@@ -250,7 +250,7 @@ export async function getDailyBriefData(
           .not('due_date', 'is', null)
           .lte('due_date', weekEndKey)
           .is('completed_at', null)
-          .neq('status', 'done')
+          .not('status', 'in', '(done,cancelled)')
           .order('due_date', { ascending: true })
           .order('created_at', { ascending: true })
       : Promise.resolve({ data: [] as DailyBriefTaskRow[], error: null }),

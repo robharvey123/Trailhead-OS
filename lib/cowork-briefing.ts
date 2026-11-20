@@ -50,7 +50,7 @@ function openBriefTasks(ownerPersonId: string | null) {
     .from('engagement_tasks')
     .select(BRIEF_TASK_SELECT, { count: 'exact' })
     .is('completed_at', null)
-    .neq('status', 'done')
+    .not('status', 'in', '(done,cancelled)')
   query = ownerPersonId
     ? query.or(`assignee_person_id.eq.${ownerPersonId},assignee_person_id.is.null`)
     : query.is('assignee_person_id', null)

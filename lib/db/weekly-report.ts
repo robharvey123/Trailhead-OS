@@ -103,7 +103,7 @@ export async function getWeeklyReportData(
       .from('engagement_tasks')
       .select(TASK_WS_SELECT)
       .is('completed_at', null)
-      .neq('status', 'done'),
+      .not('status', 'in', '(done,cancelled)'),
 
     supabase
       .from('engagement_tasks')
@@ -121,14 +121,14 @@ export async function getWeeklyReportData(
       .from('engagement_tasks')
       .select(TASK_WS_SELECT)
       .is('completed_at', null)
-      .neq('status', 'done')
+      .not('status', 'in', '(done,cancelled)')
       .lt('due_date', today),
 
     supabase
       .from('engagement_tasks')
       .select('id')
       .is('completed_at', null)
-      .neq('status', 'done')
+      .not('status', 'in', '(done,cancelled)')
       .gte('due_date', today)
       .lte('due_date', end),
 
@@ -176,7 +176,7 @@ export async function getWeeklyReportData(
     .from('engagement_tasks')
     .select(TASK_WS_SELECT)
     .is('completed_at', null)
-    .neq('status', 'done')
+    .not('status', 'in', '(done,cancelled)')
     .gte('due_date', start)
     .lte('due_date', end)
 
@@ -213,7 +213,7 @@ export async function getWeeklyReportData(
         .select('project_id, title, due_date')
         .in('project_id', projectIds)
         .is('completed_at', null)
-      .neq('status', 'done')
+        .not('status', 'in', '(done,cancelled)')
         .order('due_date', { ascending: true })
     : { data: [] }
 
