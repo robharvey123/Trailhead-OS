@@ -42,7 +42,7 @@ type Draft = Partial<RemittanceAccount> & { currency: RemittanceAccount['currenc
 
 function emptyDraft(currency: RemittanceAccount['currency']): Draft {
   const rail: RemittanceRail = currency === 'GBP' ? 'uk_local' : currency === 'EUR' ? 'sepa' : 'us_local'
-  return { currency, rail, label: '', beneficiary_name: '', sort_order: 0, active: true }
+  return { currency, rail, label: '', beneficiary_name: '', sort_order: 0, active: true, print_by_default: true }
 }
 
 export default function RemittanceAccountsSection({ initialAccounts }: { initialAccounts: RemittanceAccount[] }) {
@@ -146,7 +146,7 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
               <div className="mt-2 overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead className="os-label text-left">
-                    <tr><th className="pb-2">Label</th><th className="pb-2">Rail</th><th className="pb-2">Number</th><th className="pb-2 text-right">Order</th><th className="pb-2">Active</th><th className="pb-2" /></tr>
+                    <tr><th className="pb-2">Label</th><th className="pb-2">Rail</th><th className="pb-2">Number</th><th className="pb-2 text-right">Order</th><th className="pb-2">Prints</th><th className="pb-2">Active</th><th className="pb-2" /></tr>
                   </thead>
                   <tbody>
                     {list.map((a) => (
@@ -155,6 +155,7 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
                         <td className="py-2.5 text-[color:var(--text-2)]">{RAIL_LABELS[a.rail]}</td>
                         <td className="py-2.5 font-mono text-xs text-[color:var(--text-2)]">{maskNumber(a.iban ?? a.account_number)}</td>
                         <td className="py-2.5 text-right text-[color:var(--text-2)]">{a.sort_order}</td>
+                        <td className="py-2.5 text-[color:var(--text-2)]">{a.print_by_default === false ? 'When chosen' : 'By default'}</td>
                         <td className="py-2.5">
                           <button type="button" onClick={() => void toggleActive(a)} className={`rounded-pill border px-2.5 py-0.5 text-xs font-semibold ${a.active ? 'border-[color:var(--emerald)]/30 bg-[var(--emerald-dim)] text-[color:var(--emerald-strong)]' : 'border-[color:var(--border)] bg-[var(--grey-dim)] text-[color:var(--grey-strong)]'}`}>
                             {a.active ? 'Active' : 'Inactive'}
@@ -213,6 +214,15 @@ export default function RemittanceAccountsSection({ initialAccounts }: { initial
                   <input type="checkbox" checked={draft.active !== false} onChange={(e) => set('active', e.target.checked)} /> Active
                 </label>
               </div>
+              <label className="flex items-start gap-2 text-sm text-[color:var(--text-2)]">
+                <input type="checkbox" className="mt-1" checked={draft.print_by_default !== false} onChange={(e) => set('print_by_default', e.target.checked)} />
+                <span>
+                  Print on every {draft.currency} invoice by default
+                  <span className="block text-xs text-[color:var(--text-3)]">
+                    Untick for an alternative account (e.g. a second GBP account). It then prints only on invoices where you pick it under &ldquo;Pay into&rdquo;.
+                  </span>
+                </span>
+              </label>
               <label className="space-y-2">
                 <span className={labelClass}>Notes (printed under the block)</span>
                 <input className={inputClass} value={draft.notes ?? ''} onChange={(e) => set('notes', e.target.value)} />

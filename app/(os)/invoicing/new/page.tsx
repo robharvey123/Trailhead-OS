@@ -3,6 +3,7 @@ import { getAccounts } from '@/lib/db/accounts'
 import { getContacts } from '@/lib/db/contacts'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { getCompanySettings } from '@/lib/company-settings'
+import { listRemittanceAccounts } from '@/lib/db/remittance-accounts'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'New invoice' }
@@ -14,11 +15,12 @@ export default async function NewInvoicePage({
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const supabase = await createClient()
-  const [accounts, contacts, workstreams, companySettings] = await Promise.all([
+  const [accounts, contacts, workstreams, companySettings, remittanceAccounts] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getWorkstreams(supabase).catch(() => []),
     getCompanySettings(supabase).catch(() => null),
+    listRemittanceAccounts(supabase).catch(() => []),
   ])
 
   return (
@@ -30,6 +32,7 @@ export default async function NewInvoicePage({
       initialEngagementId={resolvedSearchParams?.engagement_id ?? ''}
       vatRegistered={companySettings?.vat_registered ?? false}
       defaultPaymentTermsDays={companySettings?.default_payment_terms_days ?? 14}
+      remittanceAccounts={remittanceAccounts.filter((a) => a.active)}
     />
   )
 }

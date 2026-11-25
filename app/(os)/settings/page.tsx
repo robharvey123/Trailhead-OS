@@ -241,7 +241,8 @@ export default async function SettingsPage() {
           <h2 className="os-section-title">Remittance details</h2>
           <p className="mt-2 max-w-2xl text-sm text-[color:var(--text-2)]">
             Beneficiary blocks printed on invoice PDFs and emails, per currency and rail. When a currency has
-            active accounts here they replace the legacy payment block above for that currency.
+            active default accounts here they replace the legacy payment block above for that currency. Accounts
+            not printed by default are alternatives you pick per invoice under &ldquo;Pay into&rdquo;.
           </p>
           <div className="mt-4">
             <RemittanceAccountsSection initialAccounts={remittanceAccounts} />

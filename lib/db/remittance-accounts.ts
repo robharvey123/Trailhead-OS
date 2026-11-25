@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { normaliseIban } from '@/lib/remittance'
-import type { RemittanceAccount } from '@/lib/types'
+import { normaliseIban, selectRemittanceAccountsForInvoice } from '@/lib/remittance'
+import type { Invoice, RemittanceAccount } from '@/lib/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -38,6 +38,45 @@ export async function getRemittanceAccountsForCurrency(
   return (data ?? []) as RemittanceAccount[]
 }
 
+/**
+ * The accounts that print on one invoice: its chosen account, else the
+ * currency's print_by_default accounts. Empty means the legacy block prints.
+ */
+export async function getRemittanceAccountsForInvoice(
+  invoice: Pick<Invoice, 'currency' | 'remittance_account_id'>,
+  client?: SupabaseClient
+): Promise<RemittanceAccount[]> {
+  const active = await getRemittanceAccountsForCurrency(invoice.currency ?? 'GBP', client)
+  return selectRemittanceAccountsForInvoice(active, invoice)
+}
+
+/**
+ * Validate a requested remittance_account_id for an invoice. Returns the id to
+ * store (null = currency default) or an error message. The account must exist,
+ * be active and match the invoice currency.
+ */
+export async function checkRemittanceChoice(
+  value: unknown,
+  currency: string,
+  client?: SupabaseClient
+): Promise<{ id: string | null; error?: undefined } | { id?: undefined; error: string }> {
+  if (value === null || value === undefined || value === '') return { id: null }
+  if (typeof value !== 'string') return { error: 'remittance_account_id must be a string or null' }
+  const supabase = await getSupabase(client)
+  const { data, error } = await supabase
+    .from('remittance_accounts')
+    .select('id, currency, active')
+    .eq('id', value)
+    .maybeSingle()
+  if (error) return { error: error.message || 'Failed to check remittance account' }
+  if (!data) return { error: 'Remittance account not found' }
+  if (!data.active) return { error: 'That remittance account is inactive' }
+  if (data.currency !== currency.toUpperCase()) {
+    return { error: `That remittance account is ${data.currency}; this invoice is ${currency.toUpperCase()}` }
+  }
+  return { id: data.id as string }
+}
+
 type WriteInput = Partial<Omit<RemittanceAccount, 'id' | 'created_at' | 'updated_at'>>
 
 function cleanPayload(input: WriteInput): Record<string, unknown> {
@@ -56,6 +95,7 @@ function cleanPayload(input: WriteInput): Record<string, unknown> {
   if ('routing_number' in input) out.routing_number = text(input.routing_number)
   if ('sort_order' in input) out.sort_order = Number.isInteger(Number(input.sort_order)) ? Number(input.sort_order) : 0
   if ('active' in input) out.active = input.active !== false
+  if ('print_by_default' in input) out.print_by_default = input.print_by_default !== false
   return out
 }
 

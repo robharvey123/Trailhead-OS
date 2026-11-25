@@ -14,6 +14,7 @@ import {
   type ExpenseWithRelations,
   type Invoice,
   type LineItem,
+  type RemittanceAccount,
   type UnbilledTimeGroup,
   type Workstream,
 } from '@/lib/types'
@@ -75,6 +76,7 @@ export default function InvoiceForm({
   initialEngagementId = '',
   vatRegistered = true,
   defaultPaymentTermsDays = 14,
+  remittanceAccounts = [],
 }: {
   accounts: Account[]
   contacts: Contact[]
@@ -85,6 +87,8 @@ export default function InvoiceForm({
   initialEngagementId?: string
   vatRegistered?: boolean
   defaultPaymentTermsDays?: number
+  /** Active remittance accounts (all currencies), for the "Pay into" picker. */
+  remittanceAccounts?: RemittanceAccount[]
 }) {
   const router = useRouter()
   const initialContact =
@@ -146,6 +150,7 @@ export default function InvoiceForm({
   const [billToCompanyNumber, setBillToCompanyNumber] = useState(initialInvoice?.bill_to_company_number ?? initialDerivedBillTo.bill_to_company_number ?? '')
   const [poNumber, setPoNumber] = useState(initialInvoice?.po_number ?? '')
   const [vatNote, setVatNote] = useState(initialInvoice?.vat_note ?? '')
+  const [remittanceAccountId, setRemittanceAccountId] = useState(initialInvoice?.remittance_account_id ?? '')
   const [isRecurring, setIsRecurring] = useState(initialInvoice?.is_recurring ?? false)
   const [recurringInterval, setRecurringInterval] = useState<'month' | 'year'>(initialInvoice?.recurring_interval ?? 'month')
   const selectionSyncReadyRef = useRef(false)
@@ -205,6 +210,24 @@ export default function InvoiceForm({
   useEffect(() => {
     if (!isForeign || fxQuote) return
     void fetchRate()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency])
+
+  // "Pay into": the accounts on offer for this currency. Blank = the default
+  // (accounts marked print-by-default, else the legacy block in Settings).
+  const payIntoOptions = remittanceAccounts.filter((a) => a.active && a.currency === currency)
+  const payIntoDefaults = payIntoOptions.filter((a) => a.print_by_default !== false)
+  const showPayInto = payIntoOptions.length > 1 || payIntoOptions.some((a) => a.print_by_default === false)
+  const payIntoDefaultLabel = payIntoDefaults.length
+    ? `Default (${payIntoDefaults.map((a) => a.label).join(' + ')})`
+    : currency === 'GBP'
+      ? 'Default (UK account in Settings)'
+      : 'Default (payment details in Settings)'
+  // A chosen account from another currency can't stay selected.
+  useEffect(() => {
+    if (remittanceAccountId && !payIntoOptions.some((a) => a.id === remittanceAccountId)) {
+      setRemittanceAccountId('')
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currency])
 
@@ -372,6 +395,7 @@ export default function InvoiceForm({
         bill_to_company_number: billToCompanyNumber || null,
         po_number: poNumber || null,
         vat_note: vatNote || null,
+        remittance_account_id: remittanceAccountId || null,
         notes,
         line_items: outLineItems,
         currency,
@@ -537,6 +561,21 @@ export default function InvoiceForm({
               ))}
             </select>
           </label>
+          {showPayInto ? (
+            <label className="space-y-2">
+              <span className="field-label block">Pay into</span>
+              <select
+                value={remittanceAccountId}
+                onChange={(event) => setRemittanceAccountId(event.target.value)}
+                className="os-select w-full"
+              >
+                <option value="">{payIntoDefaultLabel}</option>
+                {payIntoOptions.map((a) => (
+                  <option key={a.id} value={a.id}>{a.label}</option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label className="space-y-2">
             <span className="field-label block">Issue date</span>
             <input

@@ -159,3 +159,25 @@ export function remittanceDisplayFields(a: RemittanceAccount): Array<[string, st
   }
   return rows
 }
+
+/**
+ * Which remittance accounts print on an invoice. `accounts` are the ACTIVE
+ * accounts for the invoice's currency, in print order.
+ *
+ * - The invoice chose an account that is still active in its currency: only
+ *   that account prints.
+ * - Otherwise (no choice, or the chosen account was deactivated or deleted):
+ *   every account marked print_by_default prints. An empty result means the
+ *   legacy payment block from company settings prints instead.
+ */
+export function selectRemittanceAccountsForInvoice(
+  accounts: RemittanceAccount[],
+  invoice: { remittance_account_id?: string | null }
+): RemittanceAccount[] {
+  const chosenId = invoice.remittance_account_id ?? null
+  if (chosenId) {
+    const chosen = accounts.find((a) => a.id === chosenId)
+    if (chosen) return [chosen]
+  }
+  return accounts.filter((a) => a.print_by_default !== false)
+}

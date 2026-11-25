@@ -4,6 +4,7 @@ import { getApiKeyAuth } from '@/lib/api/auth'
 import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { createInvoice, getInvoices } from '@/lib/db/invoices'
+import { checkRemittanceChoice } from '@/lib/db/remittance-accounts'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import { getCompanySettings } from '@/lib/company-settings'
 import { parseInvoiceCurrencyFields, CoworkApiError } from '@/lib/cowork-api'
@@ -191,6 +192,11 @@ export async function POST(request: NextRequest) {
     throw e
   }
 
+  const remittanceChoice = await checkRemittanceChoice(body.remittance_account_id, currencyFields.currency, auth.supabase)
+  if (remittanceChoice.error !== undefined) {
+    return NextResponse.json({ error: remittanceChoice.error }, { status: 400 })
+  }
+
   const payload: Omit<Invoice, 'id' | 'invoice_number' | 'created_at' | 'updated_at'> = {
     account_id: accountId,
     contact_id: contactId,
@@ -225,6 +231,7 @@ export async function POST(request: NextRequest) {
       bill_to_company_number: sanitizeText(body.bill_to_company_number) ?? derivedBillTo.bill_to_company_number,
     po_number: sanitizeText(body.po_number),
     vat_note: sanitizeText(body.vat_note),
+    remittance_account_id: remittanceChoice.id,
     notes: sanitizeText(body.notes),
     is_recurring: body.is_recurring === true,
     recurring_interval:
