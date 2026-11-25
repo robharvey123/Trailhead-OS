@@ -24,6 +24,7 @@ export default function InvoiceDetailClient({
   subscriptionStatus,
   warning,
   isAdmin = false,
+  bankAccountLabel = null,
 }: {
   invoice: Invoice
   contact: Contact | null
@@ -33,6 +34,8 @@ export default function InvoiceDetailClient({
   subscriptionStatus: string | null
   warning?: string | null
   isAdmin?: boolean
+  /** Bank account printed on this invoice's PDF and email. */
+  bankAccountLabel?: string | null
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -314,6 +317,9 @@ export default function InvoiceDetailClient({
             <p className="mt-2 text-sm text-[color:var(--text-2)]">{invoice.due_date ?? '—'}</p>
             {invoice.po_number ? (
               <p className="mt-1 text-sm text-[color:var(--text-2)]">PO number: {invoice.po_number}</p>
+            ) : null}
+            {bankAccountLabel ? (
+              <p className="mt-1 text-sm text-[color:var(--text-2)]">Paid into: {bankAccountLabel}</p>
             ) : null}
           </div>
           <div>

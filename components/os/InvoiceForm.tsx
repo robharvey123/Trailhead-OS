@@ -14,6 +14,7 @@ import {
   type ExpenseWithRelations,
   type Invoice,
   type LineItem,
+  type RemittanceAccount,
   type UnbilledTimeGroup,
   type Workstream,
 } from '@/lib/types'
@@ -75,6 +76,8 @@ export default function InvoiceForm({
   initialEngagementId = '',
   vatRegistered = true,
   defaultPaymentTermsDays = 14,
+  remittanceAccounts = [],
+  legacyBankLabel = null,
 }: {
   accounts: Account[]
   contacts: Contact[]
@@ -85,6 +88,10 @@ export default function InvoiceForm({
   initialEngagementId?: string
   vatRegistered?: boolean
   defaultPaymentTermsDays?: number
+  /** Active remittance accounts (all currencies) for the bank account picker. */
+  remittanceAccounts?: RemittanceAccount[]
+  /** Label for the legacy GBP block on company settings, e.g. "Main account (04-06-05, ••••1234)". */
+  legacyBankLabel?: string | null
 }) {
   const router = useRouter()
   const initialContact =
@@ -146,6 +153,8 @@ export default function InvoiceForm({
   const [billToCompanyNumber, setBillToCompanyNumber] = useState(initialInvoice?.bill_to_company_number ?? initialDerivedBillTo.bill_to_company_number ?? '')
   const [poNumber, setPoNumber] = useState(initialInvoice?.po_number ?? '')
   const [vatNote, setVatNote] = useState(initialInvoice?.vat_note ?? '')
+  // Bank account printed on the invoice. '' = the default for the currency.
+  const [remittanceAccountId, setRemittanceAccountId] = useState(initialInvoice?.remittance_account_id ?? '')
   const [isRecurring, setIsRecurring] = useState(initialInvoice?.is_recurring ?? false)
   const [recurringInterval, setRecurringInterval] = useState<'month' | 'year'>(initialInvoice?.recurring_interval ?? 'month')
   const selectionSyncReadyRef = useRef(false)
@@ -176,6 +185,16 @@ export default function InvoiceForm({
   // GBP totals are what Rob books; foreign totals are what the client is billed.
   const totals = calculateTotals(lineItems, Number(vatRate) || 0)
   const isForeign = currency !== 'GBP'
+  const bankAccountsForCurrency = remittanceAccounts.filter((a) => a.currency === currency)
+  const defaultBankAccounts = bankAccountsForCurrency.filter((a) => a.print_by_default !== false)
+  const defaultBankOptionLabel =
+    defaultBankAccounts.length > 0
+      ? `Default: ${defaultBankAccounts.map((a) => a.label).join(', ')}`
+      : currency === 'GBP' && legacyBankLabel
+        ? `${legacyBankLabel} (default)`
+        : 'Default'
+  // A chosen account from another currency can't print: drop back to the default.
+  const effectiveRemittanceAccountId = bankAccountsForCurrency.some((a) => a.id === remittanceAccountId) ? remittanceAccountId : ''
   const quote = isForeign ? Number(fxQuote) : 1
   const hasValidQuote = !isForeign || (Number.isFinite(quote) && quote > 0)
   // Catch the "typed the amount into the rate box" mistake (e.g. 3500).
@@ -372,6 +391,7 @@ export default function InvoiceForm({
         bill_to_company_number: billToCompanyNumber || null,
         po_number: poNumber || null,
         vat_note: vatNote || null,
+        remittance_account_id: effectiveRemittanceAccountId || null,
         notes,
         line_items: outLineItems,
         currency,
@@ -537,6 +557,22 @@ export default function InvoiceForm({
               ))}
             </select>
           </label>
+          {bankAccountsForCurrency.length > 0 ? (
+            <label className="space-y-2">
+              <span className="field-label block">{currency} bank account</span>
+              <select
+                value={effectiveRemittanceAccountId}
+                onChange={(event) => setRemittanceAccountId(event.target.value)}
+                className="os-select w-full"
+              >
+                <option value="">{defaultBankOptionLabel}</option>
+                {bankAccountsForCurrency.map((a) => (
+                  <option key={a.id} value={a.id}>{a.label}</option>
+                ))}
+              </select>
+              <span className="block text-xs text-[color:var(--text-3)]">The payment details printed on the PDF and invoice email.</span>
+            </label>
+          ) : null}
           <label className="space-y-2">
             <span className="field-label block">Issue date</span>
             <input

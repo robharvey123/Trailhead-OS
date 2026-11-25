@@ -5,6 +5,8 @@ import { getContacts } from '@/lib/db/contacts'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { getCompanySettings } from '@/lib/company-settings'
+import { listRemittanceAccounts } from '@/lib/db/remittance-accounts'
+import { legacyBankLabel } from '@/lib/remittance'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'Edit invoice' }
@@ -26,11 +28,12 @@ export default async function EditInvoicePage({
     redirect(`/invoicing/${invoice.id}?warning=edit-blocked`)
   }
 
-  const [accounts, contacts, workstreams, companySettings] = await Promise.all([
+  const [accounts, contacts, workstreams, companySettings, remittanceAccounts] = await Promise.all([
     getAccounts({}, supabase).catch(() => []),
     getContacts({}, supabase).catch(() => []),
     getWorkstreams(supabase).catch(() => []),
     getCompanySettings(supabase).catch(() => null),
+    listRemittanceAccounts(supabase).catch(() => []),
   ])
 
   return (
@@ -40,6 +43,8 @@ export default async function EditInvoicePage({
       workstreams={workstreams}
       initialInvoice={invoice}
       defaultPaymentTermsDays={companySettings?.default_payment_terms_days ?? 14}
+      remittanceAccounts={remittanceAccounts.filter((a) => a.active)}
+      legacyBankLabel={legacyBankLabel(companySettings)}
     />
   )
 }

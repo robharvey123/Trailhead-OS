@@ -4,6 +4,9 @@ import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { listPayments } from '@/lib/db/invoice-payments'
+import { getRemittanceAccountsForInvoice } from '@/lib/db/remittance-accounts'
+import { getCompanySettings } from '@/lib/company-settings'
+import { legacyBankLabel } from '@/lib/remittance'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile, roleIsAdmin } from '@/lib/auth/roles'
@@ -26,12 +29,21 @@ export default async function InvoiceDetailPage({
     notFound()
   }
 
-  const [contact, account, workstreams, payments] = await Promise.all([
+  const [contact, account, workstreams, payments, printedAccounts, companySettings] = await Promise.all([
     invoice.contact_id ? getContactById(invoice.contact_id, supabase).catch(() => null) : null,
     invoice.account_id ? getAccountById(invoice.account_id, supabase).catch(() => null) : null,
     getWorkstreams(supabase).catch(() => []),
     listPayments(id, supabase).catch(() => []),
+    getRemittanceAccountsForInvoice(invoice, supabase).catch(() => []),
+    getCompanySettings(supabase).catch(() => null),
   ])
+  // Mirrors the PDF: chosen or default remittance accounts, else the legacy GBP block.
+  const bankAccountLabel =
+    printedAccounts.length > 0
+      ? printedAccounts.map((a) => a.label).join(', ')
+      : (invoice.currency ?? 'GBP') === 'GBP'
+        ? legacyBankLabel(companySettings)
+        : null
   const stripeCustomerResult = invoice.account_id
     ? await supabase
         .from('stripe_customers')
@@ -56,6 +68,7 @@ export default async function InvoiceDetailPage({
       subscriptionStatus={stripeCustomerResult.data?.subscription_status ?? null}
       warning={resolvedSearchParams?.warning ?? null}
       isAdmin={isAdmin}
+      bankAccountLabel={bankAccountLabel}
     />
   )
 }
