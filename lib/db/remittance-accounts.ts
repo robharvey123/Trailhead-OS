@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { normaliseIban } from '@/lib/remittance'
-import type { RemittanceAccount } from '@/lib/types'
+import { normaliseIban, resolveInvoiceRemittanceAccounts } from '@/lib/remittance'
+import type { Invoice, RemittanceAccount } from '@/lib/types'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
@@ -38,6 +38,15 @@ export async function getRemittanceAccountsForCurrency(
   return (data ?? []) as RemittanceAccount[]
 }
 
+/** The accounts that print on one invoice: its chosen account, or the currency defaults. */
+export async function getRemittanceAccountsForInvoice(
+  invoice: Pick<Invoice, 'currency' | 'remittance_account_id'>,
+  client?: SupabaseClient
+): Promise<RemittanceAccount[]> {
+  const accounts = await getRemittanceAccountsForCurrency(invoice.currency ?? 'GBP', client)
+  return resolveInvoiceRemittanceAccounts(invoice, accounts)
+}
+
 type WriteInput = Partial<Omit<RemittanceAccount, 'id' | 'created_at' | 'updated_at'>>
 
 function cleanPayload(input: WriteInput): Record<string, unknown> {
@@ -56,6 +65,7 @@ function cleanPayload(input: WriteInput): Record<string, unknown> {
   if ('routing_number' in input) out.routing_number = text(input.routing_number)
   if ('sort_order' in input) out.sort_order = Number.isInteger(Number(input.sort_order)) ? Number(input.sort_order) : 0
   if ('active' in input) out.active = input.active !== false
+  if ('print_by_default' in input) out.print_by_default = input.print_by_default !== false
   return out
 }
 
@@ -77,4 +87,23 @@ export async function deleteRemittanceAccount(id: string, client?: SupabaseClien
   const supabase = await getSupabase(client)
   const { error } = await supabase.from('remittance_accounts').delete().eq('id', id)
   if (error) throw new Error(error.message || 'Failed to delete remittance account')
+}
+
+/**
+ * Validate an invoice's remittance_account_id from a request body. '' / null
+ * mean "use the default". Anything else must be an active account in the
+ * invoice currency, so a USD account can never print on a GBP invoice.
+ */
+export async function parseInvoiceRemittanceChoice(
+  raw: unknown,
+  currency: string,
+  client?: SupabaseClient
+): Promise<{ ok: true; value: string | null } | { ok: false; error: string }> {
+  if (raw === null || raw === undefined || raw === '') return { ok: true, value: null }
+  if (typeof raw !== 'string') return { ok: false, error: 'remittance_account_id must be a string or null' }
+  const accounts = await getRemittanceAccountsForCurrency(currency, client)
+  if (!accounts.some((a) => a.id === raw)) {
+    return { ok: false, error: `That bank account is not an active ${currency.toUpperCase()} account.` }
+  }
+  return { ok: true, value: raw }
 }

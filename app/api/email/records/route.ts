@@ -6,7 +6,7 @@ import { getCompanySettings, getBankAccountForCurrency, renderCompanyEmailFooter
 import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { listPayments } from '@/lib/db/invoice-payments'
-import { getRemittanceAccountsForCurrency } from '@/lib/db/remittance-accounts'
+import { getRemittanceAccountsForInvoice } from '@/lib/db/remittance-accounts'
 import { OUR_CHARGES_LINE, remittanceDisplayFields } from '@/lib/remittance'
 import { getEnquiryById } from '@/lib/db/enquiries'
 import { getInvoiceById } from '@/lib/db/invoices'
@@ -262,7 +262,7 @@ export async function POST(request: Request) {
       getWorkstreams(auth.supabase).catch(() => []),
       invoiceCurrency !== 'GBP' ? getBankAccountForCurrency(invoiceCurrency, auth.supabase).catch(() => null) : null,
       listPayments(id, auth.supabase).catch(() => []),
-      getRemittanceAccountsForCurrency(invoiceCurrency, auth.supabase).catch(() => []),
+      getRemittanceAccountsForInvoice(invoice, auth.supabase).catch(() => []),
     ])
     const workstream = workstreams.find((item) => item.id === invoice.workstream_id) ?? null
     const buffer = await renderInvoicePdf(invoice, contact, workstream, companySettings, bankAccount, invAccount, payments, remittanceAccounts)

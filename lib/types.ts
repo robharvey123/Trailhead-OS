@@ -735,6 +735,8 @@ export interface Invoice {
   bill_to_company_number?: string | null
   po_number?: string | null
   vat_note?: string | null
+  /** Bank account chosen for this invoice; null = default for its currency. */
+  remittance_account_id?: string | null
   notes: string | null
   freeagent_invoice_url?: string | null
   freeagent_synced_at?: string | null
@@ -2191,6 +2193,8 @@ export interface RemittanceAccount {
   notes: string | null
   sort_order: number
   active: boolean
+  /** Prints on invoices without an explicit choice. False = only when an invoice selects it. */
+  print_by_default: boolean
   created_at: string
   updated_at: string
 }

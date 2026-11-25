@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { listPayments } from '@/lib/db/invoice-payments'
-import { getRemittanceAccountsForCurrency } from '@/lib/db/remittance-accounts'
+import { getRemittanceAccountsForInvoice } from '@/lib/db/remittance-accounts'
 import { getInvoiceById } from '@/lib/db/invoices'
 import { getWorkstreams } from '@/lib/db/workstreams'
 import { getCompanySettings, getBankAccountForCurrency } from '@/lib/company-settings'
@@ -37,7 +37,7 @@ export async function GET(
     getCompanySettings(supabase).catch(() => null),
     invoiceCurrency !== 'GBP' ? getBankAccountForCurrency(invoiceCurrency, supabase).catch(() => null) : null,
     listPayments(id, supabase).catch(() => []),
-    getRemittanceAccountsForCurrency(invoiceCurrency, supabase).catch(() => []),
+    getRemittanceAccountsForInvoice(invoice, supabase).catch(() => []),
   ])
   const workstream =
     workstreams.find((item) => item.id === invoice.workstream_id) ?? null

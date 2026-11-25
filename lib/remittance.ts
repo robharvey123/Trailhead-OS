@@ -159,3 +159,36 @@ export function remittanceDisplayFields(a: RemittanceAccount): Array<[string, st
   }
   return rows
 }
+
+/**
+ * Which remittance accounts print on an invoice. `accounts` are the active
+ * accounts for the invoice currency, in print order. An explicit choice that
+ * still exists (and matches the currency) prints alone; otherwise every
+ * print_by_default account prints. An empty result means the PDF falls back to
+ * the legacy company settings bank block.
+ */
+export function resolveInvoiceRemittanceAccounts(
+  invoice: { remittance_account_id?: string | null; currency?: string | null },
+  accounts: RemittanceAccount[]
+): RemittanceAccount[] {
+  const currency = (invoice.currency ?? 'GBP').toUpperCase()
+  const forCurrency = accounts.filter((a) => a.currency === currency && a.active)
+  if (invoice.remittance_account_id) {
+    const chosen = forCurrency.find((a) => a.id === invoice.remittance_account_id)
+    if (chosen) return [chosen]
+  }
+  return forCurrency.filter((a) => a.print_by_default !== false)
+}
+
+/**
+ * Short label for the legacy GBP bank block on company settings, used as the
+ * "default" option in the invoice form's bank account picker.
+ */
+export function legacyBankLabel(
+  settings: { bank_name?: string | null; bank_sort_code?: string | null; bank_account_number?: string | null } | null
+): string | null {
+  if (!settings?.bank_account_number) return null
+  const sortCode = (settings.bank_sort_code ?? '').replace(/[-\s]/g, '').replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')
+  const detail = [sortCode, maskNumber(settings.bank_account_number)].filter(Boolean).join(', ')
+  return `${settings.bank_name?.trim() || 'Main account'} (${detail})`
+}

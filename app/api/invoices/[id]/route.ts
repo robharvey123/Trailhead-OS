@@ -4,6 +4,7 @@ import { getApiKeyAuth } from '@/lib/api/auth'
 import { getAccountById } from '@/lib/db/accounts'
 import { getContactById } from '@/lib/db/contacts'
 import { getInvoiceById, updateInvoice } from '@/lib/db/invoices'
+import { parseInvoiceRemittanceChoice } from '@/lib/db/remittance-accounts'
 import { deriveInvoiceBillTo } from '@/lib/invoice-bill-to'
 import { parseInvoiceCurrencyFields, CoworkApiError } from '@/lib/cowork-api'
 import { calculateTotals, type InvoiceStatus, type LineItem } from '@/lib/types'
@@ -311,6 +312,17 @@ export async function PATCH(
     patch.fx_rate_quote = cf.fx_rate_quote
     patch.fx_rate_date = cf.fx_rate_date
     patch.fx_rate_source = cf.fx_rate_source
+  }
+
+  // Which bank account prints. Checked against the invoice's (possibly just
+  // patched) currency so an account from another currency can never print.
+  if (body.remittance_account_id !== undefined) {
+    const currency = (patch.currency as string | undefined) ?? (existing.currency as string | null) ?? 'GBP'
+    const choice = await parseInvoiceRemittanceChoice(body.remittance_account_id, currency, auth.supabase)
+    if (!choice.ok) {
+      return NextResponse.json({ error: choice.error }, { status: 400 })
+    }
+    patch.remittance_account_id = choice.value
   }
 
   if (Object.keys(patch).length === 0) {
